@@ -6147,15 +6147,19 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-general.csv'},
         'status_code': 303,
         'regexes': [
-            r"/general_imports/16"]},
+            r"/general_imports/16"
+        ]
+    },
     {
         'path': '/general_imports/16',
         'tries': {},
 
         # Check it's loaded ok
         'regexes': [
-            r"The file has been imported successfully"],
-        'status_code': 200},
+            r"The file has been imported successfully"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/supplier_bills/14',
         'tries': {},
@@ -6164,11 +6168,13 @@ def virtual_bill(ds):
         'regexes': [
             r'<td>\s*<a href="/reports/111\?bill_id=14">Check</a>\s*</td>',
             r'<td>38992</td>\s*<td>\s*<a title="Estimated"\s*'
-            r'href="/read_types/4">E</a>\s*</td>\s*'
+            r'href="/read_types/5">E</a>\s*</td>\s*'
             r'<td>2007-01-17 00:00</td>\s*<td>39000\s*</td>\s*<td>\s*'
             r'<a title="Estimated"\s*'
-            r'href="/read_types/4">E</a>\s*</td>'],
-        'status_code': 200},
+            r'href="/read_types/5">E</a>\s*</td>'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Check the 'update bill' page.",
         'path': '/supplier_bills/10/edit',
@@ -6176,7 +6182,9 @@ def virtual_bill(ds):
         'regexes': [
             r"type_id",
             r'<option value="2" selected>N Normal</option>',
-            r'name="account" value="SA342376000"']},
+            r'name="account" value="SA342376000"'
+        ]
+    },
     {
         'name': "Check the batch page.",
         'path': '/supplier_batches/5',
@@ -9434,16 +9442,18 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "473",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2012",
             'present_month': "01",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "725",
-            'present_type_id': "1",
-            'update': "Update"},
-        'status_code': 303},
+            'present_type_id': "12",
+            'update': "Update"
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Delete the channel to make it a dumb NHH",
@@ -9496,14 +9506,14 @@ def virtual_bill(ds):
             'previous_hour': "00",
             'previous_minute': "30",
             'previous_value': "14281",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2010",
             'present_month': "01",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "15924",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -11554,14 +11564,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "0",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2011",
             'present_month': "02",
             'present_day': "08",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "97",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -11582,14 +11592,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "8053",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2011",
             'present_month': "02",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "8553",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -11610,14 +11620,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "473",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2012",
             'present_month': "01",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "725",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -11783,14 +11793,14 @@ def virtual_bill(ds):
             'previous_hour': "00",
             'previous_minute': "00",
             'previous_value': "38992",
-            'previous_type_id': "4",
+            'previous_type_id': "5",
             'present_year': "2009",
             'present_month': "04",
             'present_day': "05",
             'present_hour': "00",
             'present_minute': "30",
             'present_value': "14281",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -12026,14 +12036,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "0",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2011",
             'present_month': "02",
             'present_day': "08",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "97",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -12054,14 +12064,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "8053",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2011",
             'present_month': "02",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "8553",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -12082,14 +12092,14 @@ def virtual_bill(ds):
             'previous_hour': "23",
             'previous_minute': "30",
             'previous_value': "473",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2012",
             'present_month': "01",
             'present_day': "06",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "725",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303
@@ -12452,14 +12462,14 @@ def virtual_bill(ds):
             'previous_hour': "00",
             'previous_minute': "00",
             'previous_value': "0",
-            'previous_type_id': "1",
+            'previous_type_id': "12",
             'present_year': "2014",
             'present_month': "12",
             'present_day': "31",
             'present_hour': "23",
             'present_minute': "30",
             'present_value': "100",
-            'present_type_id': "1"
+            'present_type_id': "12"
         },
         'regexes': [
             r"/supplier_bills/23"
@@ -12807,14 +12817,14 @@ def virtual_bill(ds):
             'previous_hour': "00",
             'previous_minute': "00",
             'previous_value': "38992",
-            'previous_type_id': "4",
+            'previous_type_id': "5",
             'present_year': "2009",
             'present_month': "04",
             'present_day': "05",
             'present_hour': "00",
             'present_minute': "30",
             'present_value': "14281",
-            'present_type_id': "1",
+            'present_type_id': "12",
             'update': "Update"
         },
         'status_code': 303

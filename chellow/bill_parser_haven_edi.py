@@ -8,11 +8,20 @@ from werkzeug.exceptions import BadRequest
 from datetime import datetime as Datetime
 
 
-read_type_map = {
-    '00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM',
-    '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'
+READ_TYPE_MAP = {
+    'A': 'A',
+    'C': 'C',
+    'D': 'D',
+    'E': 'E',
+    'F': 'F',
+    'X': 'H',
+    'I': 'I',
+    'R': 'N',
+    'O': 'O',
+    'Q': 'Q',
+    'S': 'S',
+    'Z': 'Z',
 }
-
 
 TMOD_MAP = {
     '700285': ('standing-gbp', 'standing-rate', 'standing-days'),
@@ -96,14 +105,13 @@ def _process_segment(code, elements, line, headers):
         _process_CCD(elements, headers)
 
     elif code == 'CLO':
-        cloc = elements['CLOC']
-        headers['account'] = cloc[2]
+        _process_CLO(elements, headers)
 
     elif code == "MTR":
         return _process_MTR(elements, headers)
 
     elif code == "MAN":
-        pass
+        _process_MAN(elements, headers)
 
 
 def _process_BTL(elements, headers):
@@ -112,11 +120,31 @@ def _process_BTL(elements, headers):
     headers['vat'] = Decimal('0.00') + _to_decimal(elements['UTVA'], '1000')
 
 
+def _process_CLO(elements, headers):
+    cloc = elements['CLOC']
+    headers['account'] = cloc[1]
+    headers['msn'] = cloc[2]
+
+
+def _process_MAN(elements, headers):
+    madn = elements['MADN']
+    dno = madn[0]
+    unique = madn[1]
+    check_digit = madn[2]
+    pc = madn[3]
+    mtc = madn[4]
+    llfc = madn[5]
+
+    headers['mpan_cores'].append(''.join([dno, unique + check_digit]))
+    headers['mpan'] = ' '.join([pc, mtc, llfc, dno, unique + check_digit])
+
+
 def _process_MTR(elements, headers):
     if headers['message_type'] == "UTLBIL":
         return {
             'kwh': headers['kwh'],
             'reference': headers['reference'],
+            'mpan_cores': ', '.join(headers['mpan_cores']),
             'issue_date': headers['issue_date'],
             'account': headers['account'],
             'start_date': headers['start_date'],
@@ -135,6 +163,7 @@ def _process_MHD(elements, headers):
     if message_type == "UTLBIL":
         headers.clear()
         headers['reads'] = []
+        headers['mpan_cores'] = []
         headers['breakdown'] = defaultdict(int, {'raw-lines': []})
     headers['message_type'] = message_type
 
@@ -150,18 +179,16 @@ def _process_CCD(elements, headers):
         prev_read_date = _to_date(elements['PVDT'][0]) + relativedelta(
             days=1) - HH
 
-        m = elements['MLOC'][0]
-        mpan = ' '.join(
-            (m[13:15], m[15:18], m[18:], m[:2], m[2:6], m[6:10], m[10:13]))
+        # m = elements['MLOC'][0]
 
         prrd = elements['PRRD']
-        pres_read_type = read_type_map[prrd[1]]
-        prev_read_type = read_type_map[prrd[3]]
+        pres_read_type = READ_TYPE_MAP[prrd[1]]
+        prev_read_type = READ_TYPE_MAP[prrd[3]]
 
         coefficient = Decimal(elements['ADJF'][1]) / Decimal(100000)
         pres_reading_value = Decimal(prrd[0])
         prev_reading_value = Decimal(prrd[2])
-        msn = elements['MTNR'][0]
+        # msn = elements['MTNR'][0]
         tpr_code = elements['TMOD'][0]
         if tpr_code == 'kW':
             units = 'kW'
@@ -175,7 +202,8 @@ def _process_CCD(elements, headers):
 
         headers['reads'].append(
             {
-                'msn': msn, 'mpan': mpan,
+                'msn': headers['msn'],
+                'mpan': headers['mpan'],
                 'coefficient': coefficient, 'units': units,
                 'tpr_code': tpr_code, 'prev_date': prev_read_date,
                 'prev_value': prev_reading_value,

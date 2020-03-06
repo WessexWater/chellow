@@ -34,6 +34,8 @@ def test_process_MTR_UTLBIL(mocker):
     elements = {}
     headers = {
         'message_type': "UTLBIL",
+        'mpan': "0850",
+        'mpan_cores': ["0850"],
         'breakdown': {},
         'kwh': 8,
         'reference': 'a',
@@ -50,6 +52,22 @@ def test_process_MTR_UTLBIL(mocker):
     chellow.bill_parser_haven_edi._process_MTR(elements, headers)
 
 
+def test_process_MAN(mocker):
+    elements = {
+        'MADN': ['20', '0000000', '0', '00', '001', '002'],
+    }
+
+    headers = {
+        'mpan_cores': [],
+    }
+    chellow.bill_parser_haven_edi._process_MAN(elements, headers)
+    expected_headers = {
+        'mpan': '00 001 002 20 00000000',
+        'mpan_cores': ['2000000000']
+    }
+    assert headers == expected_headers
+
+
 def test_process_MHD(mocker):
     message_type = 'UTLBIL'
     elements = {
@@ -61,6 +79,7 @@ def test_process_MHD(mocker):
     expected_headers = {
         'message_type': message_type,
         'reads': [],
+        'mpan_cores': [],
         'breakdown': {
             'raw-lines': []
         }

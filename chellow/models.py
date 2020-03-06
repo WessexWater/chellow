@@ -4084,16 +4084,30 @@ def db_init(sess, root_path):
     sess.commit()
 
     for code, desc in (
-            ("N", "Normal"),
-            ("N3", "Normal 3rd Party"),
+            ("A", "Actual Change of Supplier Read"),
+            (
+                "D",
+                "Deemed (Settlement Registers) or Estimated (Non-Settlement "
+                "Registers)"
+            ),
             ("C", "Customer"),
+            ("CP", "Computer"),
             ("E", "Estimated"),
             ("E3", "Estimated 3rd Party"),
             ("EM", "Estimated Manual"),
+            ("F", "Final"),
+            ("H", "Data Collector Reading Queried By Supplier"),
+            ("I", "Initial"),
+            ("IF", "Information"),
+            ("N", "Normal"),
+            ("N3", "Normal 3rd Party"),
+            ("O", "Old Supplier's Estimated CoS Reading"),
+            ("Q", "Meter Reading modified manually by DC"),
+            ("S", "Special"),
             ("W", "Withdrawn"),
             ("X", "Exchange"),
-            ("CP", "Computer"),
-            ("IF", "Information")):
+            ("Z", "Actual Change of Tenancy Read"),
+            ):
         sess.add(ReadType(code, desc))
     sess.commit()
 
@@ -4787,6 +4801,25 @@ def db_upgrade_20_to_21(sess, root_path):
         })
 
 
+def db_upgrade_21_to_22(sess, root_path):
+    for code, desc in (
+            ("A", "Actual Change of Supplier Read"),
+            (
+                "D",
+                "Deemed (Settlement Registers) or Estimated (Non-Settlement "
+                "Registers)"
+            ),
+            ("F", "Final"),
+            ("H", "Data Collector Reading Queried By Supplier"),
+            ("I", "Initial"),
+            ("O", "Old Supplier's Estimated CoS Reading"),
+            ("Q", "Meter Reading modified manually by DC"),
+            ("S", "Special"),
+            ("Z", "Actual Change of Tenancy Read"),
+            ):
+        sess.add(ReadType(code, desc))
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
@@ -4794,7 +4827,7 @@ upgrade_funcs = [
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
     db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20,
-    db_upgrade_20_to_21]
+    db_upgrade_20_to_21, db_upgrade_21_to_22]
 
 
 def db_upgrade(root_path):
