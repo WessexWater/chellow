@@ -7039,7 +7039,10 @@ def virtual_bill(ds):
         'name': "Check 'insert supplier batch' page.",
         'path': '/supplier_contracts/16/add_batch',
         'regexes': [
-            r'="description"'
+            r'="description"',
+            r'<form\s*'
+            r'action="/supplier_contracts/16/add_batch"\s*'
+            r'method="post">'
         ]
     },
     {
