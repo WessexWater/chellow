@@ -1608,7 +1608,8 @@ def supplier_contract_add_get():
 def supplier_contract_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     rate_scripts = g.sess.query(RateScript).filter(
-        RateScript.contract == contract).order_by(RateScript.start_date).all()
+        RateScript.contract == contract).order_by(
+        RateScript.start_date.desc()).all()
 
     now = Datetime.utcnow() - relativedelta(months=1)
     month_start = Datetime(now.year, now.month, 1)
