@@ -69,15 +69,15 @@ def content(user):
             'NonDomesticCustomer/ExportPortfolioMPANs?fileType=csv',
             proxies=proxies)
 
-        writer.writerow(
-            (
-                "MPAN Core", "MPAN Core No Spaces", "ECOES PC", "Chellow PC",
-                "ECOES MTC", "Chellow MTC", "ECOES LLFC", "Chellow LLFC",
-                "ECOES SSC", "Chellow SSC", "ECOES Supplier",
-                "Chellow Supplier", "ECOES DC", "Chellow DC", "ECOES MOP",
-                "Chellow MOP", "ECOES GSP Group", "Chellow GSP Group",
-                "ECOES MSN", "Chellow MSN", "ECOES Meter Type",
-                "Chellow Meter Type", "Problem"))
+        titles = (
+            "MPAN Core", "MPAN Core No Spaces", "ECOES PC", "Chellow PC",
+            "ECOES MTC", "Chellow MTC", "ECOES LLFC", "Chellow LLFC",
+            "ECOES SSC", "Chellow SSC", "ECOES Supplier", "Chellow Supplier",
+            "ECOES DC", "Chellow DC", "ECOES MOP", "Chellow MOP",
+            "ECOES GSP Group", "Chellow GSP Group", "ECOES MSN", "Chellow MSN",
+            "ECOES Meter Type", "Chellow Meter Type", "Problem"
+        )
+        writer.writerow(titles)
 
         parser = iter(csv.reader(r.text.splitlines(True)))
         next(parser)  # Skip titles
@@ -95,7 +95,7 @@ def content(user):
                 'mop-appoint-date', 'gsp-group', 'gsp-effective-from', 'dno',
                 'msn', 'meter-install-date', 'meter-type', 'map-id']
 
-            ecoes = dict(zip(ecoes_titles, values))
+            ecoes = dict(zip(ecoes_titles, map(str.strip, values)))
 
             mpan_spaces = ' '.join(
                 (
