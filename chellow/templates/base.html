@@ -120,7 +120,8 @@
         {%- if required %} required="required"{% endif %}>
 {%- endmacro -%}
 
-{% macro input_textarea(name, initial, rows, cols, placeholder=None) -%}
+{% macro input_textarea(
+    name, initial, rows, cols, placeholder=None, show_pos=False) -%}
   <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
     cols="{{ cols }}"
     {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}>
@@ -130,6 +131,23 @@
       {{ initial }}
     {%- endif -%}
   </textarea>
+  {% if show_pos %}
+    <p id="{{name}}_pos"></p>
+    <script type="text/javascript">
+      var props = document.getElementById('{{name}}');
+      var cursorPos = document.getElementById('{{name}}_pos');
+
+      props.onkeyup = updateLineCharacter;
+      props.onclick = updateLineCharacter;
+
+      function updateLineCharacter() {
+        var textLines = props.value.substr(0, props.selectionStart).split("\n");
+        var line = textLines.length;
+        var column = textLines[textLines.length - 1].length + 1;
+        cursorPos.innerHTML = "Line: " + line + " Column: "+ column
+      };
+    </script>
+  {% endif %}
 {%- endmacro -%}
 
 {%- macro input_checkbox(name, initial) %}

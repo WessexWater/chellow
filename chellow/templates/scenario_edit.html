@@ -52,8 +52,8 @@
 								<br>
 								Properties
 								<br>
-								{{input_textarea('properties', scenario.properties, 20, 80)}}
-								<p id="cursorPos"></p>
+								{{input_textarea(
+									'properties', scenario.properties, 20, 80, show_pos=True)}}
 								<br>
 								<input type="submit" value="Update">
 							</fieldset>
@@ -288,18 +288,4 @@
 		</div>
 		<!-- End Layer Section -->
 	{% endif %}
-	<script type="text/javascript">
-    var props = document.getElementById('properties');
-    var cursorPos = document.getElementById('cursorPos');
-
-    props.onkeyup = updateLineCharacter;
-    props.onclick = updateLineCharacter;
-
-    function updateLineCharacter() {
-      var textLines = props.value.substr(0, props.selectionStart).split("\n");
-      var line = textLines.length;
-      var column = textLines[textLines.length - 1].length + 1;
-      cursorPos.innerHTML = "Line: " + line + " Column: "+ column
-    };
-	</script>
 {% endblock %}
