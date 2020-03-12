@@ -15,7 +15,8 @@ def get_ct_date(row, name, datemode):
 
 
 def get_start_date(row, name, datemode):
-    return to_utc(get_ct_date(row, name, datemode))
+    dt = get_ct_date(row, name, datemode)
+    return None if dt is None else to_utc(dt)
 
 
 def get_value(row, idx):
