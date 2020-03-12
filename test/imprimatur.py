@@ -7049,7 +7049,10 @@ def virtual_bill(ds):
         'name': "Viewing the insert batch page of a DC contract.",
         'path': '/dc_contracts/9/add_batch',
         'regexes': [
-            r'="description"'
+            r'="description"',
+            r'<form\s*'
+            r'action="/dc_contracts/9/add_batch"\s*'
+            r'method="post">'
         ]
     },
     {
