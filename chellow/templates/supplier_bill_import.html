@@ -45,7 +45,7 @@
 						<thead>
 							<tr>
 								<th>Error</th>
-								<th>MPAN Cores</th>
+								<th>MPAN Core</th>
 								<th>Account</th>
 								<th>Reference</th>
 								<th>Bill Type Code</th>
@@ -66,8 +66,8 @@
 									<td>{{bill.error}}</td>
 									<td>
 										<a
-												href="/supplies?search_pattern={{bill.mpan_cores}}"
-												>{{bill.mpan_cores}}</a>
+												href="/supplies?search_pattern={{bill.mpan_core}}"
+												>{{bill.mpan_core}}</a>
 									</td>
 									<td>{{bill.account}}</td>
 									<td>{{bill.reference}}</td>
@@ -79,7 +79,7 @@
 									<td>{{bill.net}}</td>
 									<td>{{bill.vat}}</td>
 									<td>{{bill.gross}}</td>
-									<td>{{bill.breakdown|dictsort}}</td>
+									<td><pre>{{bill.breakdown|dumps}}</pre></td>
 									<td>{{bill.reads}}</td>
 								</tr>
 							{% endfor %}
@@ -95,7 +95,7 @@
 								<th>Reference</th>
 								<th>Account</th>
 								<th>Bill Type</th>
-								<th>MPAN Cores</th>
+								<th>MPAN Core</th>
 								<th>Issue Date</th>
 								<th>Start Date</th>
 								<th>Finish Date</th>
@@ -125,7 +125,7 @@
 									<td>{{bill.reference}}</td>
 									<td>{{bill.account}}</td>
 									<td>{{bill.bill_type_code}}</td>
-									<td>{{bill.mpan_cores}}</td>
+									<td>{{bill.mpan_core}}</td>
 									<td>{{bill.issue_date|hh_format}}</td>
 									<td>{{bill.start_date|hh_format}}</td>
 									<td>{{bill.finish_date|hh_format}}</td>
@@ -146,7 +146,7 @@
 										<td>{{read.pres_value}}</td>
 										<td>{{read.pres_type_code}}</td>
 									{% endfor %}
-									<td>{{bill.breakdown|dictsort}}</td>
+									<td><pre>{{bill.breakdown|dumps}}</pre></td>
 								</tr>
 							{% endfor %}
 						</tbody>

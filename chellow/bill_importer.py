@@ -4,11 +4,10 @@ import collections
 from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
-from chellow.models import Session, Era, Supply, Batch, BillType, Tpr, ReadType
+from chellow.models import Session, Supply, Batch, BillType, Tpr, ReadType
 import chellow
 import chellow.bill_parser_engie_xls
 from chellow.utils import keydefaultdict, utc_datetime_now
-from sqlalchemy import or_, and_
 
 
 import_id = 0
@@ -88,37 +87,17 @@ class BillImport(threading.Thread):
                 lambda k: ReadType.get_by_code(sess, k))
 
             batch = Batch.get_by_id(sess, self.batch_id)
-            contract = batch.contract
             raw_bills = self.parser.make_raw_bills()
             self._log(
                 "Successfully parsed the file, and now I'm starting to "
                 "insert the raw bills.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
-                    account = raw_bill['account']
-                    supply = sess.query(Supply).join(Era).filter(
-                        or_(
-                            and_(
-                                Era.imp_supplier_contract == contract,
-                                Era.imp_supplier_account == account),
-                            and_(
-                                Era.exp_supplier_contract == contract,
-                                Era.exp_supplier_account == account),
-                            and_(
-                                Era.mop_contract == contract,
-                                Era.mop_account == account),
-                            and_(
-                                Era.dc_contract == contract,
-                                Era.dc_account == account))
-                        ).distinct().order_by(Supply.id).first()
-
-                    if supply is None:
-                        raise BadRequest(
-                            "Can't find an era with contract '" +
-                            contract.name + "' and account '" + account + "'.")
+                    mpan_core = raw_bill['mpan_core']
+                    supply = Supply.get_by_mpan_core(sess, mpan_core)
                     with sess.begin_nested():
                         bill = batch.insert_bill(
-                            sess, account, raw_bill['reference'],
+                            sess, raw_bill['account'], raw_bill['reference'],
                             raw_bill['issue_date'], raw_bill['start_date'],
                             raw_bill['finish_date'], raw_bill['kwh'],
                             raw_bill['net'], raw_bill['vat'],

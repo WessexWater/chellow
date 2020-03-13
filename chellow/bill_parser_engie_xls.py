@@ -283,7 +283,7 @@ def _parse_row(row, row_index, datemode, title_row):
         'breakdown': {'raw_lines': [str(title_row)]},
         'account': mpan_core, 'issue_date': issue_date,
         'start_date': from_date, 'finish_date': to_date,
-        'mpans': [mpan_core],
+        'mpan_core': mpan_core,
     }
     bd = bill['breakdown']
 

@@ -3,7 +3,7 @@ from datetime import datetime as Datetime
 import csv
 from dateutil.relativedelta import relativedelta
 from werkzeug.exceptions import BadRequest
-from chellow.utils import validate_hh_start, HH, to_utc
+from chellow.utils import validate_hh_start, HH, to_utc, parse_mpan_core
 from io import StringIO
 
 
@@ -82,7 +82,8 @@ col_map = {
     'Network UoS Charges Price': 'triad-estimate-rate',
     'Network UoS Charges Units': 'triad-estimate-gsp-kw',
     'Network UoS Charges Charge': 'triad-estimate-gbp',
-    'CAP_M_TTL': 'capacity-market-gbp'}
+    'CAP_M_TTL': 'capacity-market-gbp'
+}
 
 
 class Parser():
@@ -149,11 +150,14 @@ class Parser():
             net = Decimal('0.00') + dec_val('NET_AMT')
             vat = Decimal('0.00') + dec_val('VATTTL')
             gross = Decimal('0.00') + dec_val('TTLCHG')
-            raw_bills.append(
-                {
-                    'bill_type_code': 'N', 'account': val('Bill Ref No.'),
-                    'mpans': [], 'reference': val('Invoice No.'),
-                    'issue_date': issue_date, 'start_date': bill_from,
-                    'finish_date': bill_to, 'kwh': kwh, 'net': net, 'vat': vat,
-                    'gross': gross, 'breakdown': breakdown, 'reads': []})
+            mpan_core = parse_mpan_core(val('Mpan'))
+            raw_bill = {
+                'bill_type_code': 'N', 'account': val('Bill Ref No.'),
+                'mpan_core': mpan_core, 'reference': val('Invoice No.'),
+                'issue_date': issue_date, 'start_date': bill_from,
+                'finish_date': bill_to, 'kwh': kwh, 'net': net, 'vat': vat,
+                'gross': gross, 'breakdown': breakdown, 'reads': []
+            }
+            raw_bills.append(raw_bill)
+
         return raw_bills

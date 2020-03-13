@@ -1,7 +1,8 @@
 from decimal import Decimal
 import csv
 from dateutil.relativedelta import relativedelta
-from chellow.utils import HH, validate_hh_start, utc_datetime_parse, loads
+from chellow.utils import (
+    HH, validate_hh_start, utc_datetime_parse, loads, parse_mpan_core)
 from werkzeug.exceptions import BadRequest
 from io import StringIO
 
@@ -43,7 +44,7 @@ class Parser():
             if bill_type_code.startswith('#'):
                 continue  # skip comment lines
             account = self.vals[1]
-            mpan_strings = self.vals[2].split(",")
+            mpan_core = parse_mpan_core(self.vals[2])
             reference = self.vals[3]
             issue_date = parse_date(self.vals, 4)
             start_date = parse_date(self.vals, 5)
@@ -87,14 +88,16 @@ class Parser():
                         'pres_value': Decimal(self.vals[i + 9]),
                         'pres_type_code': self.vals[i + 10]})
 
-            raw_bills.append(
-                {
-                    'bill_type_code': bill_type_code, 'account': account,
-                    'mpans': mpan_strings, 'reference': reference,
-                    'issue_date': issue_date, 'start_date': start_date,
-                    'finish_date': finish_date, 'kwh': kwh, 'net': net,
-                    'vat': vat, 'gross': gross, 'breakdown': breakdown,
-                    'reads': reads})
+            raw_bill = {
+                'bill_type_code': bill_type_code, 'account': account,
+                'mpan_core': mpan_core, 'reference': reference,
+                'issue_date': issue_date, 'start_date': start_date,
+                'finish_date': finish_date, 'kwh': kwh, 'net': net,
+                'vat': vat, 'gross': gross, 'breakdown': breakdown,
+                'reads': reads
+            }
+            raw_bills.append(raw_bill)
+
         return raw_bills
 
     def to_decimal(self, dec_index, dec_name, is_money=False):

@@ -6,12 +6,14 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/dc_contracts">DC Contracts</a> &raquo; 
-	<a href="/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
 	<a href="/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
 	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a>
  	&raquo; 
-	<a href="/dc_bill_imports?dc_batch_id={{batch.id}}">Bill Imports</a> &raquo; {{importer_id}}
+	<a href="/dc_bill_imports?dc_batch_id={{batch.id}}">Bill Imports</a> &raquo;
+ 	{{importer_id}}
 {% endblock %}
 
 {% block content %}
@@ -66,7 +68,7 @@
             					<th>Reference</th>
             					<th>Account</th>
             					<th>Bill Type</th>
-            					<th>MPANs</th>
+            					<th>MPAN Core</th>
             					<th>Issue Date</th>
             					<th>Start Date</th>
             					<th>Finish Date</th>
@@ -96,7 +98,7 @@
             						<td>{{bill.reference}}</td>
             						<td>{{bill.account}}</td>
             						<td>{{bill.bill_type_code}}</td>
-            						<td>{{bill.mpans}}</td>
+            						<td>{{bill.mpan_core}}</td>
             						<td>{{bill.issue_date|hh_format}}</td>
             						<td>{{bill.start_date|hh_format}}</td>
             						<td>{{bill.finish_date|hh_format}}</td>
@@ -117,7 +119,7 @@
             							<td>{{read.pres_value}}</td>
             							<td>{{read.pres_type_code}}</td>
             						{% endfor %}
-            						<td>{{bill.breakdown}}</td>
+            						<td>{{bill.breakdown|dumps}}</td>
             					</tr>
             				{% endfor %}
             			</tbody>

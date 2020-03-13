@@ -49,7 +49,8 @@
             r'<fieldset>\s*'
             r'<input type="hidden" name="Delete this user">\s*'
         ],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Check that a duplicate email gives a proper error message",
@@ -1741,11 +1742,14 @@ def virtual_bill_titles():
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '1'},
+            'supplier_batch_id': '1'
+        },
         'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
-            r'/supplier_bill_imports/0']},
+            r'/supplier_bill_imports/0'
+        ]
+    },
 
     {
         'name': "Supplier contract 10, batch 1",
@@ -1755,7 +1759,9 @@ def virtual_bill_titles():
         'regexes': [
             r"<td>2007-02-28 00:00</td>\s*<td>0.00</td>\s*<td>4463.08</td>",
             r"All the bills have been successfully loaded and attached to the "
-            r"batch\."]},
+            r"batch\."
+        ]
+    },
 
     # Valid import of supplies
     {
@@ -1913,15 +1919,18 @@ def virtual_bill_titles():
         'method': 'post',
         'data': {
             'reference': "06-004",
-            'description': "CSV batch"},
-        'status_code': 303},
+            'description': "CSV batch"
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Insert bills. Supplier contract",
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '4'},
+            'supplier_batch_id': '4'
+        },
         'files': {'import_file': 'test/bills.csv'},
         'status_code': 303,
         'regexes': [
@@ -4875,8 +4884,9 @@ def virtual_bill(ds):
         'path': '/supplier_bill_imports/3',
         'tries': {},
         'regexes': [
-            r'<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*'
-            r'<th>MPAN Cores</th>\s*<th>Issue Date</th>\s*'
+            r'<th>Reference</th>\s*'
+            r'<th>Account</th>\s*<th>Bill Type</th>\s*'
+            r'<th>MPAN Core</th>\s*<th>Issue Date</th>\s*'
             r'<th>Start Date</th>\s*'
             r"<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
             r"<th>VAT</th>\s*<th>Gross</th>\s*<th>R1 MPAN</th>\s*"
@@ -4889,8 +4899,10 @@ def virtual_bill(ds):
             r"<th>R1 Present Read Value</th>\s*"
             r"<th>R1 Present Read Type</th>\s*"
             r"<th>Breakdown</th>",
-            r"<td>3423760005</td>\s*<td>SA342376000</td>\s*<td>N</td>\s*"
-            r'<td>2210653921534</td>\s*'
+            r'<td>3423760005</td>\s*'
+            r'<td>SA342376000</td>\s*'
+            r'<td>N</td>\s*'
+            r'<td>22 1065 3921 534</td>\s*'
             r'<td>2010-05-12 00:00</td>\s*'
             r'<td>2010-01-19 00:00</td>\s*'
             r'<td>2010-04-20 23:30</td>\s*'
@@ -5055,23 +5067,41 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills.gdf.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/4"]},
+            r"/supplier_bill_imports/4"
+        ]
+    },
 
     {
         'name': "Supplier contract 10, batch 6",
         'path': '/supplier_bill_imports/4',
         'tries': {},
         'regexes': [
-            r"<th>Reference</th>\s*<th>Account</th>\s*<th>Bill Type</th>\s*"
-            r'<th>MPAN Cores</th>\s*<th>Issue Date</th>\s*'
+            r'<th>Reference</th>\s*'
+            r'<th>Account</th>\s*'
+            r'<th>Bill Type</th>\s*'
+            r'<th>MPAN Core</th>\s*'
+            r'<th>Issue Date</th>\s*'
             r'<th>Start Date</th>\s*'
-            r"<th>Finish Date</th>\s*<th>kWh</th>\s*<th>Net</th>\s*"
-            r"<th>VAT</th>\s*<th>Gross</th>\s*<th>Breakdown</th>",
-            r"<td>KUH773</td>\s*<td>02</td>\s*<td>N</td>\s*<td></td>\s*"
-            r"<td>2010-06-09 01:00</td>\s*<td>2010-05-01 01:00</td>\s*"
-            r"<td>2010-06-01 00:30</td>\s*<td>32124.5</td>\s*"
-            r'<td>2219.41</td>\s*<td>388.40</td>\s*<td>2607.81</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;5.29&#39;\)\),',
+            r'<th>Finish Date</th>\s*'
+            r'<th>kWh</th>\s*'
+            r'<th>Net</th>\s*'
+            r'<th>VAT</th>\s*'
+            r'<th>Gross</th>\s*'
+            r'<th>Breakdown</th>',
+            r'<td>KUH773</td>\s*'
+            r'<td>02</td>\s*'
+            r'<td>N</td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
+            r'<td>2010-06-09 01:00</td>\s*'
+            r'<td>2010-05-01 01:00</td>\s*'
+            r'<td>2010-06-01 00:30</td>\s*'
+            r'<td>32124.5</td>\s*'
+            r'<td>2219.41</td>\s*'
+            r'<td>388.40</td>\s*'
+            r'<td>2607.81</td>\s*'
+            r'<td><pre>\{\s*'
+            r'&#34;aahedc-gbp&#34;: 5.29,\s*'
+            r'&#34;aahedc-gsp-kwh&#34;: 32124.5,',
             r"All the bills have been successfully loaded and attached to "
             r"the batch\."
         ],
@@ -6241,11 +6271,14 @@ def virtual_bill(ds):
         'path': '/dc_bill_imports',
         'method': 'post',
         'data': {
-            'dc_batch_id': "8"},
+            'dc_batch_id': "8"
+        },
         'files': {'import_file': 'test/dc-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/dc_bill_imports/6"]},
+            r"/dc_bill_imports/6"
+        ]
+    },
 
     {
         'name': "Contract 34 batch 8",
@@ -6254,7 +6287,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            r"the batch\."]},
+            r"the batch\."
+        ]
+    },
 
     {
         'name': "Add batch to MOP contract",
@@ -6289,18 +6324,22 @@ def virtual_bill(ds):
     {
         'name': "Check we can see it in 'view' mode. Contract 'MOP Contract'",
         'path': '/mop_batches/9',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Try adding bills to the MOP batch",
         'path': '/mop_bill_imports',
         'method': 'post',
         'data': {
-            'mop_batch_id': "9"},
+            'mop_batch_id': "9"
+        },
         'files': {'import_file': 'test/mop-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/mop_bill_imports/7"]},
+            r"/mop_bill_imports/7"
+        ]
+    },
 
     {
         'path': '/mop_bill_imports/7',
@@ -6308,7 +6347,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to "
-            r"the batch\."]},
+            r"the batch\."
+        ]
+    },
     {
         'name': "If a new supply has a blank LLFC field, check it gives a "
         "good error message. Also make sure that site name doesn't change "
@@ -8294,7 +8335,9 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills2.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/8"]},
+            r"/supplier_bill_imports/8"
+        ]
+    },
 
     # Supplier contract 64.
     {
@@ -8846,8 +8889,10 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00045_FINISHED_watkinsexamplecom_register_reads\.csv"],
-        'status_code': 200},
+            r"00045_FINISHED_watkinsexamplecom_register_reads\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00045_FINISHED_watkinsexamplecom_register_reads.csv',
@@ -8856,7 +8901,9 @@ def virtual_bill(ds):
         'regexes': [
             r'2002-01-01 00:00,2002-01-31 23:30,7,22 4862 4512 332,,'
             r'06-078,20,jg87593jfj,2002-02-02 00:00,N,15,00001,'
-            r'1,2002-01-04 23:30,2286,E,2002-01-06 23:30,2927,E']},
+            r'1,2002-01-04 23:30,2286,E,2002-01-06 23:30,2927,E'
+        ]
+    },
 
     # Attach another site to an era. Supply 2
     {
@@ -8865,8 +8912,10 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'site_code': "CI005",
-            'attach': "Attach"},
-        'status_code': 303},
+            'attach': "Attach"
+        },
+        'status_code': 303
+    },
     {
         'path': '/sites/1',
         'regexes': [
@@ -13749,7 +13798,8 @@ def virtual_bill(ds):
         'path': '/supplier_bill_imports',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '4'},
+            'supplier_batch_id': '4'
+        },
         'files': {'import_file': 'test/bills_fail.csv'},
         'status_code': 303,
         'regexes': [
@@ -13762,15 +13812,15 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r"Can&#39;t find an era with contract &#39;Half-hourlies 2007&#39;"
-            r" and account &#39;Landau&#39;\."
+            r"The MPAN core 26 9757 2279 576 is not set up in Chellow\."
         ]
     },
 
     {
         'name': "CSV Sites Duration",
         'path': '/csv_sites_duration',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "View channel edit",
@@ -16136,14 +16186,18 @@ def virtual_bill(ss):
         'files': {'import_file': 'test/bills3.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/12"]},
+            r"/supplier_bill_imports/12"
+        ]
+    },
     {
         'name': "SSE EDI bill with multiple rates for an element",
         'path': '/supplier_bill_imports/12',
         'tries': {},
         'regexes': [
-            r'\(&#39;fit-rate&#39;, &#39;0.00205, 0.00206&#39;\)'],
-        'status_code': 200},
+            r'&#34;fit-rate&#34;: &#34;0.00205, 0.00206&#34;,'
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Check months before and after forecast for NHH",
@@ -16247,7 +16301,7 @@ finally:
             r'<td>99708221.0_2_bsuos</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
-            r'<td></td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
             r'<td>2016-09-14 00:00</td>\s*'
             r'<td>2016-08-01 00:00</td>\s*'
             r'<td>2016-08-31 23:30</td>\s*'
@@ -16255,13 +16309,14 @@ finally:
             r'<td>770.69</td>\s*'
             r'<td>0.00</td>\s*'
             r'<td>770.69</td>\s*'
-            r'<td>\[\(&#39;bsuos-gbp&#39;, Decimal\(&#39;770.69&#39;\)\), ',
+            r'<td><pre>\{\s*'
+            r'&#34;bsuos-gbp&#34;: 770.69,',
 
             r'<tr>\s*'
             r'<td>99708221.0_8_bsuos</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
-            r'<td></td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
             r'<td>2016-09-14 00:00</td>\s*'
             r'<td>2016-08-01 00:00</td>\s*'
             r'<td>2016-08-31 23:30</td>\s*'
@@ -16269,15 +16324,18 @@ finally:
             r'<td>611.00</td>\s*'
             r'<td>0.00</td>\s*'
             r'<td>611.00</td>\s*'
-            r'<td>\[\(&#39;bsuos-gbp&#39;, Decimal\(&#39;611.0&#39;\)\), '
-            r'\(&#39;bsuos-nbp-kwh&#39;, Decimal\(&#39;23971.88&#39;\)\), '
-            r'\(&#39;bsuos-rate&#39;, \[Decimal\(&#39;0.0911&#39;\)\]\), ',
+            r'<td><pre>\{\s*'
+            r'&#34;bsuos-gbp&#34;: 611.0,\s*'
+            r'&#34;bsuos-nbp-kwh&#34;: 23971.88,\s*'
+            r'&#34;bsuos-rate&#34;: \[\s*'
+            r'0.0911\s*'
+            r'\],',
 
             r'<tr>\s*'
             r'<td>99708221.0_9_aahedc</td>\s*'
             r'<td>22 9813 2107 763</td>\s*'
             r'<td>N</td>\s*'
-            r'<td></td>\s*'
+            r'<td>22 9813 2107 763</td>\s*'
             r'<td>2016-09-14 00:00</td>\s*'
             r'<td>2016-08-01 00:00</td>\s*'
             r'<td>2016-08-31 23:30</td>\s*'
@@ -16285,10 +16343,12 @@ finally:
             r'<td>0.89</td>\s*'
             r'<td>0.00</td>\s*'
             r'<td>0.89</td>\s*'
-            r'<td>\[\(&#39;aahedc-gbp&#39;, Decimal\(&#39;0.89&#39;\)\), '
-            r'\(&#39;aahedc-gsp-kwh&#39;, Decimal\(&#39;55866.88&#39;\)\), '
-            r'\(&#39;aahedc-rate&#39;, '
-            r'\[Decimal\(&#39;0.0088658712&#39;\)\]\), ',
+            r'<td><pre>\{\s*'
+            r'&#34;aahedc-gbp&#34;: 0.89,\s*'
+            r'&#34;aahedc-gsp-kwh&#34;: 55866.88,\s*'
+            r'&#34;aahedc-rate&#34;: \[\s*'
+            r'0.0088658712\s*'
+            r'\],',
 
             r"All the bills have been successfully loaded and attached to "
             r"the batch\."

@@ -4,8 +4,7 @@ from datetime import datetime as Datetime
 from chellow.utils import parse_mpan_core, to_utc, to_ct
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
-from chellow.models import Session, Era
-from sqlalchemy import or_, null
+from chellow.models import Session
 
 
 def get_date(row, name, datemode):
@@ -105,26 +104,6 @@ class Parser():
                         "gross GBP.")
 
                 gross = round(gross_dec, 2)
-                era = sess.query(Era).filter(
-                    or_(
-                        Era.imp_mpan_core == mpan_core,
-                        Era.exp_mpan_core == mpan_core),
-                    Era.start_date <= finish_date, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date > start_date)).order_by(
-                    Era.start_date).first()
-
-                if era is None:
-                    era = sess.query(Era).filter(
-                        or_(
-                            Era.imp_mpan_core == mpan_core,
-                            Era.exp_mpan_core == mpan_core)).order_by(
-                        Era.start_date.desc()).first()
-
-                if era is None:
-                    account = mpan_core + '/MOP'
-                else:
-                    account = era.mop_account
 
                 breakdown = {
                     'raw-lines': [str(title_row)],
@@ -135,9 +114,9 @@ class Parser():
                     {
                         'bill_type_code': 'N', 'kwh': Decimal(0), 'vat': vat,
                         'net': net, 'gross': gross, 'reads': [],
-                        'breakdown': breakdown, 'account': account,
+                        'breakdown': breakdown, 'account': mpan_core,
                         'issue_date': issue_date, 'start_date': start_date,
-                        'finish_date': finish_date, 'mpans': [mpan_core],
+                        'finish_date': finish_date, 'mpan_core': mpan_core,
                         'reference': '_'.join(
                             (
                                 start_date.strftime('%Y%m%d'),

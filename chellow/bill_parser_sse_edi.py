@@ -1,7 +1,7 @@
 from decimal import Decimal
 from collections import defaultdict
 from chellow.edi_lib import EdiParser, to_decimal
-from chellow.utils import to_ct, to_utc, ct_datetime
+from chellow.utils import to_ct, to_utc, ct_datetime, parse_mpan_core
 from werkzeug.exceptions import BadRequest
 from io import StringIO
 from datetime import datetime as Datetime
@@ -9,7 +9,8 @@ from datetime import datetime as Datetime
 
 read_type_map = {
     '00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM',
-    '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'}
+    '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'
+}
 
 tmod_map = {
     '0001': '00001',
@@ -184,8 +185,9 @@ class Parser():
                     kwh = Decimal(0)
                     reads = []
                     bill_type_code = None
-                    mpan_cores = []
+                    mpan_core = None
                     breakdown = defaultdict(int, {'raw-lines': []})
+
             elif code == "CCD":
                 ccde = self.parser.elements[1]
                 consumption_charge_indicator = ccde[0]
@@ -376,17 +378,17 @@ class Parser():
                         if isinstance(v, set):
                             breakdown[k] = ', '.join(sorted(map(str, v)))
 
-                    raw_bills.append(
-                        {
-                            'bill_type_code': bill_type_code,
-                            'account': account,
-                            'mpan_cores': ', '.join(mpan_cores),
-                            'reference': reference, 'issue_date': issue_date,
-                            'start_date': start_date,
-                            'finish_date': finish_date, 'kwh': kwh, 'net': net,
-                            'vat': vat, 'gross': gross, 'breakdown': breakdown,
-                            'reads': reads})
+                    raw_bill = {
+                        'bill_type_code': bill_type_code, 'account': account,
+                        'mpan_core': mpan_core, 'reference': reference,
+                        'issue_date': issue_date, 'start_date': start_date,
+                        'finish_date': finish_date, 'kwh': kwh, 'net': net,
+                        'vat': vat, 'gross': gross, 'breakdown': breakdown,
+                        'reads': reads
+                    }
+                    raw_bills.append(raw_bill)
                     breakdown = None
+
             elif code == "MAN":
                 madn = self.parser.elements[2]
                 '''
@@ -395,7 +397,9 @@ class Parser():
                 llfc_code = madn[5]
                 '''
 
-                mpan_cores.append(''.join((madn[0], madn[1], madn[2])))
+                mpan_core = parse_mpan_core(
+                    ''.join((madn[0], madn[1], madn[2])))
+
             elif code == "VAT":
                 uvla = self.parser.elements[5]
                 net += to_decimal(uvla) / Decimal('100')

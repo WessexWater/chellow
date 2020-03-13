@@ -2,8 +2,7 @@ from decimal import Decimal, InvalidOperation
 from chellow.utils import parse_mpan_core, to_utc, ct_datetime
 from xlrd import xldate_as_tuple, open_workbook
 from werkzeug.exceptions import BadRequest
-from chellow.models import Session, Era
-from sqlalchemy import or_, null
+from chellow.models import Session
 from datetime import datetime as Datetime
 
 
@@ -101,27 +100,6 @@ class Parser():
                 vat = round(get_dec(row, 9), 2)
                 gross = round(get_dec(row, 10), 2)
 
-                era = sess.query(Era).filter(
-                    or_(
-                        Era.imp_mpan_core == mpan_core,
-                        Era.exp_mpan_core == mpan_core),
-                    Era.start_date <= finish_date, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date > start_date)).order_by(
-                    Era.start_date).first()
-
-                if era is None:
-                    era = sess.query(Era).filter(
-                        or_(
-                            Era.imp_mpan_core == mpan_core,
-                            Era.exp_mpan_core == mpan_core)).order_by(
-                        Era.start_date.desc()).first()
-
-                if era is None:
-                    account = mpan_core + '/MOP'
-                else:
-                    account = era.mop_account
-
                 breakdown = {
                     'raw-lines': [str(title_row)], 'comms': comms,
                     'settlement-status': [settlement_status],
@@ -132,9 +110,9 @@ class Parser():
                     {
                         'bill_type_code': 'N', 'kwh': Decimal(0), 'net': net,
                         'vat': vat, 'gross': gross, 'reads': [],
-                        'breakdown': breakdown, 'account': account,
+                        'breakdown': breakdown, 'account': mpan_core,
                         'issue_date': issue_date, 'start_date': start_date,
-                        'finish_date': finish_date, 'mpans': [mpan_core],
+                        'finish_date': finish_date, 'mpan_core': mpan_core,
                         'reference': '_'.join(
                             (
                                 start_date.strftime('%Y%m%d'),
