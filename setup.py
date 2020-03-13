@@ -66,7 +66,7 @@ setup(
         'pip>=9.0.1',
         'pysftp==0.2.9',
         'pympler==0.7',
-        'psutil==5.0.1',
+        'psutil==5.6.6',
         'xlrd==0.9.4',
         'zish==0.1.6'
     ],
