@@ -7,14 +7,20 @@ from chellow.utils import to_utc, to_ct
 class EdiParser():
     def __init__(self, f):
         self.f_iterator = iter(f)
+        self.line_number = 0
 
     def __iter__(self):
         return self
 
     def __next__(self):
         self.line = next(self.f_iterator).strip()
+        self.line_number += 1
+
         if self.line[-1] != "'":
-            raise BadRequest("This parser expects one segment per line.")
+            raise BadRequest(
+                "The parser expects each line to end with a ', but line "
+                "number " + str(self.line_number) + " doesn't: " + self.line +
+                ".")
         self.elements = [
             element.split(':') for element in self.line[4:-1].split("+")]
         return self.line[:3]
