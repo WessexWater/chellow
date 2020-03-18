@@ -6,13 +6,16 @@ from xlrd import open_workbook
 from werkzeug.exceptions import BadRequest
 
 
-def get_value(row, title_row, name):
+def get_value(row, title_row, name, required=True):
     try:
         idx = title_row.index(name)
     except ValueError:
-        raise BadRequest(
-            "The title '" + name + "', can't be found in the title row " +
-            str(title_row) + " .")
+        if required:
+            raise BadRequest(
+                "The title '" + name + "', can't be found in the title row " +
+                str(title_row) + " .")
+        else:
+            return None
 
     try:
         val = row[idx].value
@@ -27,16 +30,18 @@ def get_value(row, title_row, name):
         return val
 
 
-def get_dec(row, title_row, name):
+def get_dec(row, title_row, name, required=True):
+    val = get_value(row, title_row, name, required=required)
+
     try:
-        return Decimal(str(get_value(row, title_row, name)))
+        return val if val is None else Decimal(str(val))
     except decimal.InvalidOperation:
         return None
 
 
-def get_rate(row, title_row, name):
-    raw = get_dec(row, title_row, name)
-    return None if raw is None else raw / Decimal('100')
+def get_rate(row, title_row, name, required=True):
+    raw = get_dec(row, title_row, name, required=required)
+    return None if raw is None else [raw / Decimal('100')]
 
 
 def get_date_ct(row, title_row, name):
@@ -49,7 +54,6 @@ def _parse_row(row, row_index, datemode, title_row):
     titles = [c.value for c in title_row]
     bill_start_date = get_date_ct(row, titles, 'BILL START DATE')
     bill_finish_date = get_date_ct(row, titles, 'BILL END DATE') + (HH * 47)
-    mpan = get_value(row, titles, 'MPAN')
     issue_date = utc_datetime_now()
 
     aahedc_kwh = get_dec(row, titles, 'LVY-AAHEDC-ALL USE KWH')
@@ -62,57 +66,66 @@ def _parse_row(row, row_index, datemode, title_row):
         ),
         (
             'duos-availability-rate',
-            [get_rate(row, titles, 'DUOS-AVAIL-AV RATE P/KVADAY')]
+            get_rate(row, titles, 'DUOS-AVAIL-AV RATE P/KVADAY')
         ),
         (
             'duos-availability-gbp',
             get_dec(row, titles, 'DUOS-AVAIL-AV COST GBP')),
         (
             'duos-fixed-rate',
-            [get_rate(row, titles, 'DUOS-STND-SITE RATE P/DAY')]
+            get_rate(row, titles, 'DUOS-STND-SITE RATE P/DAY')
         ),
         ('duos-fixed-gbp', get_dec(row, titles, 'DUOS-STND-SITE COST GBP')),
         ('duos-amber-kwh', get_dec(row, titles, 'DUOS-UNIT-AMBER USE KWH')),
         (
             'duos-amber-rate',
-            [get_rate(row, titles, 'DUOS-UNIT-AMBER RATE P/KWH')]
+            get_rate(row, titles, 'DUOS-UNIT-AMBER RATE P/KWH')
         ),
         ('duos-amber-gbp', get_dec(row, titles, 'DUOS-UNIT-AMBER COST GBP')),
         ('duos-green-kwh', get_dec(row, titles, 'DUOS-UNIT-GREEN USE KWH')),
         (
             'duos-green-rate',
-            [get_rate(row, titles, 'DUOS-UNIT-GREEN RATE P/KWH')]
+            get_rate(row, titles, 'DUOS-UNIT-GREEN RATE P/KWH')
         ),
         ('duos-green-gbp', get_dec(row, titles, 'DUOS-UNIT-GREEN COST GBP')),
         ('duos-red-kwh', get_dec(row, titles, 'DUOS-UNIT-RED USE KWH')),
-        ('duos-red-rate', [get_rate(row, titles, 'DUOS-UNIT-RED RATE P/KWH')]),
+        ('duos-red-rate', get_rate(row, titles, 'DUOS-UNIT-RED RATE P/KWH')),
         ('duos-red-gbp', get_dec(row, titles, 'DUOS-UNIT-RED COST GBP')),
         ('aahedc-kwh', aahedc_kwh),
-        ('aahedc-rate', [get_rate(row, titles, 'LVY-AAHEDC-ALL RATE P/KWH')]),
+        ('aahedc-rate', get_rate(row, titles, 'LVY-AAHEDC-ALL RATE P/KWH')),
         ('aahedc-gbp', get_dec(row, titles, 'LVY-AAHEDC-ALL COST GBP')),
         ('bsuos-nbp-kwh', get_dec(row, titles, 'LVY-BSUOS-ALL USE KWH')),
-        ('bsuos-rate', [get_rate(row, titles, 'LVY-BSUOS-ALL RATE P/KWH')]),
+        ('bsuos-rate', get_rate(row, titles, 'LVY-BSUOS-ALL RATE P/KWH')),
         ('bsuos-gbp', get_dec(row, titles, 'LVY-BSUOS-ALL COST GBP')),
         ('ccl-kwh', get_dec(row, titles, 'LVY-CCL-ALL USE KWH')),
-        ('ccl-rate', [get_rate(row, titles, 'LVY-CCL-ALL RATE P/KWH')]),
+        ('ccl-rate', get_rate(row, titles, 'LVY-CCL-ALL RATE P/KWH')),
         ('ccl-gbp', get_dec(row, titles, 'LVY-CCL-ALL COST GBP')),
         ('cfdob-kwh', get_dec(row, titles, 'LVY-CFDOB-ALL USE KWH')),
-        ('cfdob-rate', [get_rate(row, titles, 'LVY-CFDOB-ALL RATE P/KWH')]),
+        ('cfdob-rate', get_rate(row, titles, 'LVY-CFDOB-ALL RATE P/KWH')),
         ('cfdob-gbp', get_dec(row, titles, 'LVY-CFDOB-ALL COST GBP')),
         ('cfdop-kwh', get_dec(row, titles, 'LVY-CFDOP-ALL USE KWH')),
-        ('cfdop-rate', [get_rate(row, titles, 'LVY-CFDOP-ALL RATE P/KWH')]),
+        ('cfdop-rate', get_rate(row, titles, 'LVY-CFDOP-ALL RATE P/KWH')),
         ('cfdop-gbp', get_dec(row, titles, 'LVY-CFDOP-ALL COST GBP')),
         ('fit-kwh', get_dec(row, titles, 'LVY-FIT-ALL USE KWH')),
-        ('fit-rate', [get_rate(row, titles, 'LVY-FIT-ALL RATE P/KWH')]),
+        ('fit-rate', get_rate(row, titles, 'LVY-FIT-ALL RATE P/KWH')),
         ('fit-gbp', get_dec(row, titles, 'LVY-FIT-ALL COST GBP')),
         ('ro-kwh', get_dec(row, titles, 'LVY-RO-ALL USE KWH')),
-        ('ro-rate', [get_rate(row, titles, 'LVY-RO-ALL RATE P/KWH')]),
+        ('ro-rate', get_rate(row, titles, 'LVY-RO-ALL RATE P/KWH')),
         ('ro-gbp', get_dec(row, titles, 'LVY-RO-ALL COST GBP')),
-        ('summer-kwh', get_dec(row, titles, 'NRG-UNIT-SUMMER USE KWH')),
-        ('summer-rate', [get_rate(row, titles, 'NRG-UNIT-SUMMER RATE P/KWH')]),
-        ('summer-gbp', get_dec(row, titles, 'NRG-UNIT-SUMMER COST GBP')),
+        (
+            'summer-kwh',
+            get_dec(row, titles, 'NRG-UNIT-SUMMER USE KWH', required=False)
+        ),
+        (
+            'summer-rate',
+            get_rate(row, titles, 'NRG-UNIT-SUMMER RATE P/KWH', required=False)
+        ),
+        (
+            'summer-gbp',
+            get_dec(row, titles, 'NRG-UNIT-SUMMER COST GBP', required=False)
+        ),
         ('winter-kwh', get_dec(row, titles, 'NRG-UNIT-WINTER USE KWH')),
-        ('winter-rate', [get_rate(row, titles, 'NRG-UNIT-WINTER RATE P/KWH')]),
+        ('winter-rate', get_rate(row, titles, 'NRG-UNIT-WINTER RATE P/KWH')),
         ('winter-gbp', get_dec(row, titles, 'NRG-UNIT-WINTER COST GBP')),
         ('admin-months', get_dec(row, titles, 'SYS-ADMIN-ALL USE MO')),
         ('admin-rate', [get_dec(row, titles, 'SYS-ADMIN-ALL RATE GBP/MO')]),
@@ -145,7 +158,7 @@ def _parse_row(row, row_index, datemode, title_row):
         'account': '2007', 'issue_date': issue_date,
         'start_date': bill_start_date,
         'finish_date': bill_finish_date,
-        'mpans': [mpan],
+        'mpan_core': '22 0003 0354 632',
         'reference': reference,
     }
 
@@ -182,5 +195,5 @@ class Parser():
                 bills.append(_parse_row(row, row_index, datemode, title_row))
             except BadRequest as e:
                 raise BadRequest(
-                    "On row " + str(row_index + 1) + ": " + str(e.description))
+                    "On row " + str(row_index) + ": " + str(e.description))
         return bills

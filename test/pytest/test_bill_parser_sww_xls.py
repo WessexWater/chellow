@@ -135,3 +135,4 @@ def test_parse_row(mocker):
 
     assert bill['net'] == Decimal('82805.98')
     assert bill['breakdown']['aahedc-gbp'] == Decimal('8483')
+    assert bill['mpan_core'] == '22 0003 0354 632'
