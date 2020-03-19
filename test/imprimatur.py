@@ -2735,7 +2735,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2005-12-31 23:30,CI005,Wheal Rodney,,,11,net,,_L,'
-            r'22,LV,nhh,no,05,803,5,0154,2,MOP Contract,'
+            r'22,LV,nhh,no,05,803,5,0154,7-hour E7,2,MOP Contract,'
             r'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
             r'K87D74429,2005-10-06 01:00,,,,,2005-10-06 01:00,,{},false,false,'
             r'false,false,false,false,22 9974 3438 105,20,540,'
@@ -2766,8 +2766,9 @@ def virtual_bill(ds):
             r'Date,Physical Site Id,Physical Site Name,Other Site Ids,'
             r'Other Site Names,Supply Id,Source,Generator Type,GSP Group,'
             r'DNO Name,'
-            r'Voltage Level,Metering Type,Mandatory HH,PC,MTC,CoP,SSC,'
-            r'Number Of Registers,MOP Contract,Mop Account,DC Contract,'
+            r'Voltage Level,Metering Type,Mandatory HH,PC,MTC,CoP,SSC Code,'
+            r'SSC Description,Number Of Registers,MOP Contract,Mop Account,'
+            r'DC Contract,'
             r'DC Account,Meter Serial Number,Meter Installation Date,'
             r'Latest Normal Meter Read Date,Latest Normal Meter Read Type,'
             r'Latest DC Bill Date,Latest MOP Bill Date,Supply Start Date,'
@@ -2785,7 +2786,7 @@ def virtual_bill(ds):
             r'Export Mandatory kW,Latest Export Supplier Bill Date',
 
             r'2008-10-01 00:30,CH017,Parbola,,,1,net,,_L,22,'
-            r'LV,hh,no,00,845,5,,,MOP Contract,'
+            r'LV,hh,no,00,845,5,,,,MOP Contract,'
             r'mc-22 0470 7514 535,HH contract,01,,2003-08-03 01:00,'
             r'hh,,,,2003-08-03 01:00,,\{\},true,true,false,true,false,true,,,'
             r',,,,1.866,,22 0470 7514 535,150,581,'
@@ -8701,7 +8702,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2007-10-01 00:30,CI004,Lower Treave,,,9,net,,_L,'
-            r'22,HV,nhh,no,05,535,5,0127,3,MOP Contract,'
+            r'22,HV,nhh,no,05,535,5,0127,3-rate SToD,3,MOP Contract,'
             r'mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,'
             r'P96C93722,2005-08-06 01:00,2007-08-01 00:00,N,,,'
             r'2005-08-06 01:00,,\{\},'
@@ -8731,7 +8732,8 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2011-06-01 00:30,CI004,Lower Treave,,,9,net,,_L,'
-            r'22,LV,unmetered,no,08,857,6c,0428,2,'
+            r'22,LV,unmetered,no,08,857,6c,0428,'
+            r'"Unmetered Type A \(""flat"" profile\)",2,'
             r'MOP Contract,mc-22 0195 4836 192,Dynamat data,'
             r'dc-22 0195 4836 192,P96C93722,2005-08-06 01:00,unmetered,'
             r',,,2005-08-06 01:00,,\{\},false,false,false,false,false,false,'
@@ -8763,7 +8765,7 @@ def virtual_bill(ds):
         'regexes': [
             r'Other Site Ids,Other Site Names',
             r'2012-06-01 00:30,CI017,Roselands,,,6,net,,_L,22,LV,hh,no,00,845,'
-            r'5,,,MOP Contract,mc-22 6354 2983 570,HH contract,01,,'
+            r'5,,,,MOP Contract,mc-22 6354 2983 570,HH contract,01,,'
             r'2007-01-01 00:00,hh,,,,2007-01-01 00:00,,\{\},true,true,false,'
             r'false,false,true,22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
             r'Half-hourlies 2007,141 5532,,2011-06-30 01:00,,,,,,,,$'
@@ -8929,13 +8931,15 @@ def virtual_bill(ds):
         "DC bills",
         'path': '/reports/33?supply_id=5&date_year=2014&date_month=05&'
         'date_day=31&date_hour=23&date_minute=30',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
             r"00046_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
         '00046_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
@@ -8943,32 +8947,38 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2014-05-31 23:30,CI005,Wheal Rodney,,,5,gen,'
-            r'chp,_L,22,LV,hh,no,00,845,5,,,MOP Contract,'
+            r'chp,_L,22,LV,hh,no,00,845,5,,,,MOP Contract,'
             r'22 0883 6932 301,HH contract,22 0883 6932 301,,'
             r'2002-01-01 00:00,hh,,2007-10-31 23:30,2007-10-31 23:30,'
             r'2002-01-01 00:00,,\{\},'
             r'true,true,false,false,false,true,22 0883 6932 301,'
             r'350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
-            r',,,,,,,']},
+            r',,,,,,,'
+        ]
+    },
     {
         'name': "Site summary page that has data quality errors.",
         'path': '/sites/1/months?finish_year=2005&finish_month=11',
         'regexes': [
             r'See <a href="/sites/1/gen_graph\?months=1&amp;'
-            'finish_year=2005&amp;finish_month=10">generation graph</a>']},
+            'finish_year=2005&amp;finish_month=10">generation graph</a>'
+        ]
+    },
     {
         'name': "HTML virtual bill",
         'path': '/supplies/10/virtual_bill?start_year=2014&start_month=05&'
         'start_day=1&start_hour=0&start_minute=0&finish_year=2014&'
         'finish_month=05&finish_day=31&finish_hour=23&finish_minute=30',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "HTML virtual bill that spans 3 eras",
         'path': '/supplies/2/virtual_bill?start_year=2005&start_month=05&'
         'start_day=1&start_hour=0&start_minute=0&finish_year=2006&'
         'finish_month=07&finish_day=31&finish_hour=23&finish_minute=30',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Make sure rate scripts remain contiguous.",

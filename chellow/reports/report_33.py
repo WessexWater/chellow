@@ -9,7 +9,7 @@ from chellow.models import (
     MeasurementRequirement, GeneratorType, Mtc)
 from chellow.utils import (
     HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core,
-    hh_min)
+    hh_min, csv_make_val)
 import chellow.dloads
 import sys
 import os
@@ -29,23 +29,23 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             'Date', 'Physical Site Id', 'Physical Site Name', 'Other Site Ids',
             'Other Site Names', 'Supply Id', 'Source', 'Generator Type',
             'GSP Group', 'DNO Name', 'Voltage Level', 'Metering Type',
-            'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC', 'Number Of Registers',
-            'MOP Contract', 'Mop Account', 'DC Contract', 'DC Account',
-            'Meter Serial Number', 'Meter Installation Date',
-            'Latest Normal Meter Read Date', 'Latest Normal Meter Read Type',
-            'Latest DC Bill Date', 'Latest MOP Bill Date', 'Supply Start Date',
-            'Supply Finish Date', 'Properties', 'Import ACTIVE?',
-            'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
-            'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
-            'Export REACTIVE_EXPORT?', 'Import MPAN core',
-            'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
-            'Import LLFC Description', 'Import Supplier Contract',
-            'Import Supplier Account', 'Import Mandatory kW',
-            'Latest Import Supplier Bill Date', 'Export MPAN core',
-            'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
-            'Export LLFC Description', 'Export Supplier Contract',
-            'Export Supplier Account', 'Export Mandatory kW',
-            'Latest Export Supplier Bill Date'
+            'Mandatory HH', 'PC', 'MTC', 'CoP', 'SSC Code', 'SSC Description',
+            'Number Of Registers', 'MOP Contract', 'Mop Account',
+            'DC Contract', 'DC Account', 'Meter Serial Number',
+            'Meter Installation Date', 'Latest Normal Meter Read Date',
+            'Latest Normal Meter Read Type', 'Latest DC Bill Date',
+            'Latest MOP Bill Date', 'Supply Start Date', 'Supply Finish Date',
+            'Properties', 'Import ACTIVE?', 'Import REACTIVE_IMPORT?',
+            'Import REACTIVE_EXPORT?', 'Export ACTIVE?',
+            'Export REACTIVE_IMPORT?', 'Export REACTIVE_EXPORT?',
+            'Import MPAN core', 'Import Agreed Supply Capacity (kVA)',
+            'Import LLFC Code', 'Import LLFC Description',
+            'Import Supplier Contract', 'Import Supplier Account',
+            'Import Mandatory kW', 'Latest Import Supplier Bill Date',
+            'Export MPAN core', 'Export Agreed Supply Capacity (kVA)',
+            'Export LLFC Code', 'Export LLFC Description',
+            'Export Supplier Contract', 'Export Supplier Account',
+            'Export Mandatory kW', 'Latest Export Supplier Bill Date'
         )
         writer.writerow(titles)
 
@@ -293,43 +293,42 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             meter_installation_date = sess.query(func.min(Era.start_date)) \
                 .filter(Era.supply == era.supply, Era.msn == era.msn).one()[0]
 
-            if era.ssc is None:
-                ssc_code = num_registers = None
+            ssc = era.ssc
+            if ssc is None:
+                ssc_code = ssc_description = num_registers = None
             else:
-                ssc_code = era.ssc.code
+                ssc_code, ssc_description = ssc.code, ssc.description
                 num_registers = sess.query(MeasurementRequirement).filter(
-                    MeasurementRequirement.ssc == era.ssc).count()
+                    MeasurementRequirement.ssc == ssc).count()
 
-            writer.writerow(
-                (
-                    ('' if value is None else str(value))) for value in [
-                    hh_format(date), physical_site.code, physical_site.name,
-                    ', '.join(site_codes), ', '.join(site_names), supply.id,
-                    supply.source.code, generator_type_str,
-                    supply.gsp_group.code, supply.dno.dno_code,
-                    voltage_level_code, metering_type, mandatory_hh,
-                    era.pc.code, era.mtc.code, era.cop.code, ssc_code,
-                    num_registers, mop_contract_name, mop_account,
-                    dc_contract_name, dc_account, era.msn,
-                    hh_format(meter_installation_date),
-                    latest_normal_read_date, latest_normal_read_type,
-                    latest_dc_bill_date, latest_mop_bill_date,
-                    hh_format(supply_start_date),
-                    hh_format(supply_finish_date, ongoing_str=''),
-                    era.properties] + channel_values + [
-                    era.imp_mpan_core, era.imp_sc,
-                    None if era.imp_llfc is None else era.imp_llfc.code,
-                    None if era.imp_llfc is None else era.imp_llfc.description,
-                    None if era.imp_supplier_contract is None else
-                    era.imp_supplier_contract.name,
-                    era.imp_supplier_account, imp_avg_months,
-                    imp_latest_supplier_bill_date] + [
-                    era.exp_mpan_core, era.exp_sc,
-                    None if era.exp_llfc is None else era.exp_llfc.code,
-                    None if era.exp_llfc is None else era.exp_llfc.description,
-                    None if era.exp_supplier_contract is None else
-                    era.exp_supplier_contract.name, era.exp_supplier_account,
-                    exp_avg_months, exp_latest_supplier_bill_date])
+            vals = [
+                date, physical_site.code, physical_site.name,
+                ', '.join(site_codes), ', '.join(site_names), supply.id,
+                supply.source.code, generator_type_str, supply.gsp_group.code,
+                supply.dno.dno_code, voltage_level_code, metering_type,
+                mandatory_hh, era.pc.code, era.mtc.code, era.cop.code,
+                ssc_code, ssc_description, num_registers, mop_contract_name,
+                mop_account, dc_contract_name, dc_account, era.msn,
+                meter_installation_date, latest_normal_read_date,
+                latest_normal_read_type, latest_dc_bill_date,
+                latest_mop_bill_date, supply_start_date, supply_finish_date,
+                era.properties
+            ] + channel_values + [
+                era.imp_mpan_core, era.imp_sc,
+                None if era.imp_llfc is None else era.imp_llfc.code,
+                None if era.imp_llfc is None else era.imp_llfc.description,
+                None if era.imp_supplier_contract is None else
+                era.imp_supplier_contract.name, era.imp_supplier_account,
+                imp_avg_months, imp_latest_supplier_bill_date
+            ] + [
+                era.exp_mpan_core, era.exp_sc,
+                None if era.exp_llfc is None else era.exp_llfc.code,
+                None if era.exp_llfc is None else era.exp_llfc.description,
+                None if era.exp_supplier_contract is None else
+                era.exp_supplier_contract.name, era.exp_supplier_account,
+                exp_avg_months, exp_latest_supplier_bill_date
+            ]
+            writer.writerow([csv_make_val(v) for v in vals])
 
             # Avoid a long-running transaction
             sess.rollback()
