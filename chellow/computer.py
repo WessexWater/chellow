@@ -518,16 +518,17 @@ class SiteSource(DataSource):
             rs = iter(
                 sess.query(
                     cast(HhDatum.value, Float), HhDatum.start_date,
-                    Channel.imp_related, Source.code).join(Channel).join(Era).
-                join(Supply).join(Source).filter(
+                    HhDatum.status, Channel.imp_related,
+                    Source.code).join(Channel).join(Era).join(Supply).join(
+                    Source).filter(
                     Channel.channel_type == 'ACTIVE',
                     HhDatum.start_date >= self.history_start,
                     HhDatum.start_date <= self.history_finish,
                     Era.id.in_(list(self.era_ids))).order_by(
                         HhDatum.start_date))
 
-        hh_value, hh_start_date, imp_related, source_code = next(
-            rs, (None, None, None, None))
+        hh_value, hh_start_date, status, imp_related, source_code = next(
+            rs, (None, None, None, None, None))
         hist_map = {}
 
         for hist_date in hh_range(
@@ -537,8 +538,10 @@ class SiteSource(DataSource):
             export_gen_kwh = 0
             import_gen_kwh = 0
             import_3rd_party_kwh = 0
+            statuses = set()
             export_3rd_party_kwh = 0
             while hh_start_date == hist_date:
+                statuses.add(status)
                 if not imp_related and source_code in ('net', 'gen-net'):
                     export_net_kwh += hh_value
                 if imp_related and source_code in ('net', 'gen-net'):
@@ -558,11 +561,16 @@ class SiteSource(DataSource):
                         source_code == '3rd-party-reverse'):
                     export_3rd_party_kwh += hh_value
 
-                hh_value, hh_start_date, imp_related, source_code = next(
-                    rs, (None, None, None, None))
+                hh_value, hh_start_date, status, imp_related, source_code = \
+                    next(rs, (None, None, None, None, None))
+
+            if len(statuses) == 1 and statuses.pop() == 'A':
+                status = 'A'
+            else:
+                status = 'E'
 
             hh_values = {
-                'status': 'E', 'hist-import-net-kwh': import_net_kwh,
+                'status': status, 'hist-import-net-kwh': import_net_kwh,
                 'hist-export-net-kwh': export_net_kwh,
                 'hist-import-gen-kwh': import_gen_kwh,
                 'hist-export-gen-kwh': export_gen_kwh,

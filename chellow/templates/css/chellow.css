@@ -9,6 +9,40 @@ and open the template in the editor.
     Author      : AL
 */
 
+/* Etheling */
+
+table.etheling {
+  border-collapse: separate;
+}
+
+table.etheling th {
+  border-style: solid;
+  border-width: thin;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+table.etheling td {
+  border-style: solid;
+  border-width: thin;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+table.etheling_sticky {
+  position: relative;
+}
+
+table.etheling_sticky th {
+  position: sticky;
+  top: 0;
+  background: white;
+}
+
 html, body {
     height: 100%;
 }
@@ -46,6 +80,7 @@ fieldset.grid {
   display: inline-grid;
   grid-template-columns: auto auto;
   column-gap: 1em;
+  grid-row-gap: 0.5em;
 }
 
 label {
@@ -75,10 +110,12 @@ dd {
     margin-left: 20px;
 }
 
+/*
 table {
     border-collapse: collapse;
     margin: 0 0 12px;
 }
+*/
 
 .alignCenter { text-align: center;}
 .alignLeft { text-align: left; }

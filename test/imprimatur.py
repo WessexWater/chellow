@@ -2021,8 +2021,12 @@ def virtual_bill_titles():
             r"/sites/1",
 
             # Check that columns are in the right order
-            r'kWh</th>\s*<th colspan="4">\s*1 net\s*</th>'],
-        'status_code': 200},
+            r'<th\s*'
+            r'style="border-left-width: medium;"\s*'
+            r'>1 net Imp kWh</th>'
+        ],
+        'status_code': 200
+    },
     {
         'name': "Check no duplicate supplies in Supplies Duration report.",
         'path': '/reports/149?start_year=2008&start_month=07&start_day=01&'
@@ -13978,14 +13982,18 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'<tr>\s*'
-            r'<td>2008-07-06 04:30</td>\s*'
+            r'<td\s*'
+            r'style="white-space: nowrap"\s*'
+            r'>2008-07-06 04:30</td>\s*'
             r'<td>0</td>\s*'
             r'<td>0.249</td>\s*'
             r'<td>0</td>\s*'
             r'<td>0</td>\s*'
             r'<td>0</td>\s*'
             r'<td>0</td>\s*'
-            r'<td>0.249</td>\s*'
+            r'<td\s*'
+            r'style="border-left-width: medium;"\s*'
+            r'>0.249</td>\s*'
             r'<td>A</td>\s*'
             r'<td></td>\s*'
             r'<td></td>\s*'
