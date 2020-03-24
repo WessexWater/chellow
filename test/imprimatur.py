@@ -2738,12 +2738,12 @@ def virtual_bill(ds):
         'tries': {'max': 10, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r'2005-12-31 23:30,CI005,Wheal Rodney,,,11,net,,_L,'
-            r'22,LV,nhh,no,05,803,5,0154,7-hour E7,2,MOP Contract,'
+            r'2005-12-31 23:30,22 9974 3438 105,,CI005,Wheal Rodney,,,11,net,'
+            r',_L,22,LV,nhh,no,05,803,5,0154,7-hour E7,2,MOP Contract,'
             r'mc-22 9974 3438 105,Dynamat data,dc-22 9974 3438 105,'
             r'K87D74429,2005-10-06 01:00,,,,,2005-10-06 01:00,,{},false,false,'
-            r'false,false,false,false,22 9974 3438 105,20,540,'
-            r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,,,,,,'
+            r'false,false,false,false,20,540,'
+            r'PC 5-8 & HH S/S,Non half-hourlies 2007,341665,,,,,,,,,'
         ]
     },
 
@@ -2767,7 +2767,8 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'Date,Physical Site Id,Physical Site Name,Other Site Ids,'
+            r'Date,Import MPAN Core,Export MPAN Core,Physical Site Id,'
+            r'Physical Site Name,Other Site Ids,'
             r'Other Site Names,Supply Id,Source,Generator Type,GSP Group,'
             r'DNO Name,'
             r'Voltage Level,Metering Type,Mandatory HH,PC,MTC,CoP,SSC Code,'
@@ -2780,21 +2781,20 @@ def virtual_bill(ds):
             r'Import REACTIVE_IMPORT\?,Import REACTIVE_EXPORT\?,'
             r'Export ACTIVE\?,'
             r'Export REACTIVE_IMPORT\?,Export REACTIVE_EXPORT\?,'
-            r'Import MPAN core,Import Agreed Supply Capacity \(kVA\),'
+            r'Import Agreed Supply Capacity \(kVA\),'
             r'Import LLFC Code,Import LLFC Description,'
             r'Import Supplier Contract,Import Supplier Account,'
             r'Import Mandatory kW,Latest Import Supplier Bill Date,'
-            r'Export MPAN core,Export Agreed Supply Capacity \(kVA\),'
+            r'Export Agreed Supply Capacity \(kVA\),'
             r'Export LLFC Code,Export LLFC Description,'
             r'Export Supplier Contract,Export Supplier Account,'
             r'Export Mandatory kW,Latest Export Supplier Bill Date',
 
-            r'2008-10-01 00:30,CH017,Parbola,,,1,net,,_L,22,'
-            r'LV,hh,no,00,845,5,,,,MOP Contract,'
+            r'2008-10-01 00:30,,22 0470 7514 535,CH017,Parbola,,,1,net,,'
+            r'_L,22,LV,hh,no,00,845,5,,,,MOP Contract,'
             r'mc-22 0470 7514 535,HH contract,01,,2003-08-03 01:00,'
             r'hh,,,,2003-08-03 01:00,,\{\},true,true,false,true,false,true,,,'
-            r',,,,1.866,,22 0470 7514 535,150,581,'
-            r'Export \(LV\),Half-hourlies 2007,010,,'
+            r',,,1.866,,150,581,Export \(LV\),Half-hourlies 2007,010,,'
             r'2007-02-28 23:30'
         ]
     },
@@ -8705,14 +8705,13 @@ def virtual_bill(ds):
         '00041_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r'2007-10-01 00:30,CI004,Lower Treave,,,9,net,,_L,'
-            r'22,HV,nhh,no,05,535,5,0127,3-rate SToD,3,MOP Contract,'
+            r'2007-10-01 00:30,22 0195 4836 192,,CI004,Lower Treave,,,9,net,'
+            r',_L,22,HV,nhh,no,05,535,5,0127,3-rate SToD,3,MOP Contract,'
             r'mc-22 0195 4836 192,Dynamat data,dc-22 0195 4836 192,'
             r'P96C93722,2005-08-06 01:00,2007-08-01 00:00,N,,,'
-            r'2005-08-06 01:00,,\{\},'
-            r'false,false,false,false,false,false,'
-            r'22 0195 4836 192,30,510,PC 5-8 & HH HV,'
-            r'Non half-hourlies 2007,341664,,2007-08-01 00:00,,,,,,,,'
+            r'2005-08-06 01:00,,\{\},false,false,false,false,false,false,'
+            r'30,510,PC 5-8 & HH HV,'
+            r'Non half-hourlies 2007,341664,,2007-08-01 00:00,,,,,,,'
         ]
     },
 
@@ -8735,15 +8734,15 @@ def virtual_bill(ds):
         '00042_FINISHED_watkinsexamplecom_supplies_snapshot.csv',
         'status_code': 200,
         'regexes': [
-            r'2011-06-01 00:30,CI004,Lower Treave,,,9,net,,_L,'
-            r'22,LV,unmetered,no,08,857,6c,0428,'
+            r'2011-06-01 00:30,22 0195 4836 192,,CI004,Lower Treave,,,9,net,'
+            r',_L,22,LV,unmetered,no,08,857,6c,0428,'
             r'"Unmetered Type A \(""flat"" profile\)",2,'
             r'MOP Contract,mc-22 0195 4836 192,Dynamat data,'
             r'dc-22 0195 4836 192,P96C93722,2005-08-06 01:00,unmetered,'
             r',,,2005-08-06 01:00,,\{\},false,false,false,false,false,false,'
-            r'22 0195 4836 192,304,980,NHH UMS Cat B : Dusk to Dawn,'
-            r'Non half-hourlies 2007,SA342376,,2007-08-01 00:00,,,'
-            r',,,,,$'
+            r'304,980,NHH UMS Cat B : Dusk to Dawn,'
+            r'Non half-hourlies 2007,SA342376,,2007-08-01 00:00,,,,'
+            r',,,$'
         ]
     },
 
@@ -8768,11 +8767,12 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'Other Site Ids,Other Site Names',
-            r'2012-06-01 00:30,CI017,Roselands,,,6,net,,_L,22,LV,hh,no,00,845,'
-            r'5,,,,MOP Contract,mc-22 6354 2983 570,HH contract,01,,'
+            r'2012-06-01 00:30,22 6354 2983 570,,CI017,Roselands,,,6,net,'
+            r',_L,22,LV,hh,no,00,845,5,,,,MOP Contract,mc-22 6354 2983 570,'
+            r'HH contract,01,,'
             r'2007-01-01 00:00,hh,,,,2007-01-01 00:00,,\{\},true,true,false,'
-            r'false,false,true,22 6354 2983 570,2300,570,PC 5-8 & HH LV,'
-            r'Half-hourlies 2007,141 5532,,2011-06-30 01:00,,,,,,,,$'
+            r'false,false,true,2300,570,PC 5-8 & HH LV,'
+            r'Half-hourlies 2007,141 5532,,2011-06-30 01:00,,,,,,,$'
         ]
     },
 
@@ -8941,7 +8941,8 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00046_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"],
+            r"00046_FINISHED_watkinsexamplecom_supplies_snapshot\.csv"
+        ],
         'status_code': 200
     },
     {
@@ -8950,14 +8951,14 @@ def virtual_bill(ds):
         'tries': {},
         'status_code': 200,
         'regexes': [
-            r'2014-05-31 23:30,CI005,Wheal Rodney,,,5,gen,'
+            r'2014-05-31 23:30,22 0883 6932 301,,CI005,Wheal Rodney,,,5,gen,'
             r'chp,_L,22,LV,hh,no,00,845,5,,,,MOP Contract,'
             r'22 0883 6932 301,HH contract,22 0883 6932 301,,'
             r'2002-01-01 00:00,hh,,2007-10-31 23:30,2007-10-31 23:30,'
             r'2002-01-01 00:00,,\{\},'
-            r'true,true,false,false,false,true,22 0883 6932 301,'
+            r'true,true,false,false,false,true,'
             r'350,570,PC 5-8 & HH LV,Half-hourlies 2013,4341,0,,'
-            r',,,,,,,'
+            r',,,,,,'
         ]
     },
     {
