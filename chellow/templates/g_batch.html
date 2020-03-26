@@ -31,7 +31,23 @@
 					</tr>
 					<tr>
 						<th>Number Of Bills</th>
-						<td>{{g_bills|length}}</td>
+						<td>{{ "{:,}".format(num_bills) }}</td>
+					</tr>
+					<tr>
+						<th>Sum net GBP</th>
+						<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum VAT GBP</th>
+						<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum gross GBP</th>
+						<td>{{ "£{:,}".format(sum_gross_gbp) }}</td>
+					</tr>
+					<tr>
+						<th>Sum kWh</th>
+						<td>{{ "{:,}".format(sum_kwh) }}</td>
 					</tr>
 					{% if g_batch_reports %}
 						<tr>

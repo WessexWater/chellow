@@ -5817,19 +5817,34 @@ def g_batch_get(g_batch_id):
     g_bills = g.sess.query(GBill).options(joinedload('g_reads')).filter(
         GBill.g_batch == g_batch).order_by(
         GBill.reference, GBill.start_date).all()
+
+    num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh = g.sess.query(
+        func.count(GBill.id), func.sum(GBill.net), func.sum(GBill.vat),
+        func.sum(GBill.gross), func.sum(GBill.kwh)).filter(
+        GBill.g_batch == g_batch).one()
+
+    if sum_net_gbp is None:
+        sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
+
     if len(g_bills) > 0:
         max_reads = max([len(g_bill.g_reads) for g_bill in g_bills])
     else:
         max_reads = 0
     config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
     properties = config_contract.make_properties()
-    fields = {'g_batch': g_batch, 'g_bills': g_bills, 'max_reads': max_reads}
+
     if 'g_batch_reports' in properties:
         g_batch_reports = []
         for report_id in properties['g_batch_reports']:
             g_batch_reports.append(Report.get_by_id(g.sess, report_id))
-        fields['g_batch_reports'] = g_batch_reports
-    return render_template('g_batch.html', **fields)
+    else:
+        g_batch_reports = None
+
+    return render_template(
+        'g_batch.html', g_batch_reports=g_batch_reports,
+        g_batch=g_batch, g_bills=g_bills, max_reads=max_reads,
+        num_bills=num_bills, sum_net_gbp=sum_net_gbp, sum_vat_gbp=sum_vat_gbp,
+        sum_gross_gbp=sum_gross_gbp, sum_kwh=sum_kwh)
 
 
 @app.route('/g_batches/<int:g_batch_id>/edit')
