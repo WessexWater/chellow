@@ -13,24 +13,29 @@ and open the template in the editor.
 
 table.etheling {
   border-collapse: separate;
+  border-color: silver;
+  border-style: solid;
+  border-width: thin;
 }
 
 table.etheling th {
-  border-style: solid;
-  border-width: thin;
+  border-color: silver;
   padding-left: 0.5em;
   padding-right: 0.5em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
+  border-style: solid;
+  border-width: thin;
 }
 
 table.etheling td {
-  border-style: solid;
-  border-width: thin;
+  border-color: silver;
   padding-left: 0.5em;
   padding-right: 0.5em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
+  border-style: solid;
+  border-width: thin;
 }
 
 table.etheling_sticky {

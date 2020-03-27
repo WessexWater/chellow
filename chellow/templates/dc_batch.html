@@ -76,54 +76,47 @@
 		</div>
 		<div class="section-content">
 			<div class="section-data">
-				<div class="noWrap">
-					<table  class="DataTable widthAuto noMarginBottom">
-						<thead>
+				<table class="etheling etheling_sticky">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Reference</th>
+							<th>Supply</th>
+							<th>Account</th>
+							<th>Issue Date</th>
+							<th>From</th>
+							<th>To</th>
+							<th>kWh</th>
+							<th>Net</th>
+							<th>VAT</th>
+							<th>Gross</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for bill in bills %}
 							<tr>
-								<th>View</th>
-								<th>Reference</th>
-								<th>Supply</th>
-								<th>Account</th>
-								<th>Issue Date</th>
-								<th>From</th>
-								<th>To</th>
-								<th>kWh</th>
-								<th>Net</th>
-								<th>VAT</th>
-								<th>Gross</th>
-								<th>Type</th>
+								<td><a href="/dc_bills/{{bill.id}}">View</a></td>
+								<td>{{ bill.reference }}</td>
+								<td><a href="/supplies/{{bill.supply.id}}">supply</a></td>
+								<td>{{ bill.account }}</td>
+								<td>{{ bill.issue_date|hh_format }}</td>
+								<td>{{ bill.start_date|hh_format }}</td>
+								<td>{{ bill.finish_date|hh_format }}</td>
+								<td>{{ bill.kwh }}</td>
+								<td>{{ bill.net }}</td>
+								<td>{{ bill.vat }}</td>
+								<td>{{ bill.gross }}</td>
+								<td>
+									<a href="/bill_types/{{bill.bill_type.id}}"
+										title="{{bill.bill_type.description}}"
+										>{{bill.bill_type.code}}</a>
+								</td>
 							</tr>
-						</thead>
-						<tbody>
-							{% for bill in bills %}
-								<tr>
-									<td>
-										<a href="/dc_bills/{{bill.id}}">View</a>
-									</td>
-									<td>{{ bill.reference }}</td>
-									<td>
-										<a href="/supplies/{{bill.supply.id}}">supply</a>
-									</td>
-									<td>{{ bill.account }}</td>
-									<td>{{ bill.issue_date|hh_format }}</td>
-									<td>{{ bill.start_date|hh_format }}</td>
-									<td>{{ bill.finish_date|hh_format }}</td>
-									<td>{{ bill.kwh }}</td>
-									<td>{{ bill.net }}</td>
-									<td>{{ bill.vat }}</td>
-									<td>{{ bill.gross }}</td>
-									<td>
-										<a href="/bill_types/{{bill.bill_type.id}}"
-										 	title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
-									</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
+						{% endfor %}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
-	
-	
 {% endblock %}

@@ -107,47 +107,45 @@
 		<div class="section-content">
 			<div class="section-data">
 				{% if bills != None %}
-					<div class="DataTable widthAuto noMarginBottom">
-						<table>
-							<thead>
+					<table class="etheling etheling_sticky">
+						<thead>
+							<tr>
+								<th>View</th>
+								<th>Reference</th>
+								<th>Account</th>
+								<th>Issued</th>
+								<th>From</th>
+								<th>To</th>
+								<th>kWh</th>
+								<th>Net</th>
+								<th>VAT</th>
+								<th>Gross</th>
+								<th>Type</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for bill in bills %}
 								<tr>
-									<th>View</th>
-									<th>Reference</th>
-									<th>Account</th>
-									<th>Issued</th>
-									<th>From</th>
-									<th>To</th>
-									<th>kWh</th>
-									<th>Net</th>
-									<th>VAT</th>
-									<th>Gross</th>
-									<th>Type</th>
+									<td><a href="/supplier_bills/{{bill.id}}">View</a></td>
+									<td>{{bill.reference}}</td>
+									<td>{{bill.account}}</td>
+									<td>{{bill.issue_date|hh_format}}</td>
+									<td>{{bill.start_date|hh_format}}</td>
+									<td>{{bill.finish_date|hh_format}}</td>
+									<td>{{bill.kwh}}</td>
+									<td>{{bill.net}}</td>
+									<td>{{bill.vat}}</td>
+									<td>{{bill.gross}}</td>
+									<td>
+										<a
+												href="/bill_types/{{bill.bill_type.id}}"
+												title="{{bill.bill_type.description}}"
+												>{{bill.bill_type.code}}</a>
+									</td>
 								</tr>
-							</thead>
-							<tbody>
-								{% for bill in bills %}
-									<tr>
-										<td><a href="/supplier_bills/{{bill.id}}">View</a></td>
-										<td>{{bill.reference}}</td>
-										<td>{{bill.account}}</td>
-										<td>{{bill.issue_date|hh_format}}</td>
-										<td>{{bill.start_date|hh_format}}</td>
-										<td>{{bill.finish_date|hh_format}}</td>
-										<td>{{bill.kwh}}</td>
-										<td>{{bill.net}}</td>
-										<td>{{bill.vat}}</td>
-										<td>{{bill.gross}}</td>
-										<td>
-											<a
-													href="/bill_types/{{bill.bill_type.id}}"
-													title="{{bill.bill_type.description}}"
-													>{{bill.bill_type.code}}</a>
-										</td>
-									</tr>
-								{% endfor %}
-							</tbody>
-						</table>
-					</div>
+							{% endfor %}
+						</tbody>
+					</table>
 				{% else %}
 					<p><a href="/supplier_batches/{{batch.id}}">Bills</a></p>
 				{% endif %}

@@ -15,68 +15,67 @@
 {% endblock %}
 
 {% block content %}
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Batch</h2>
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<div class="noWrap">
-				<table class="DataTable widthAuto">
-					<tr>
-						<th>Reference</th>
-						<td>{{ batch.reference }}</td>
-					</tr>
-					<tr>
-						<th>Description</th>
-						<td>{{ batch.description }}</td>
-					</tr>
-					<tr>
-						<th>Number Of Bills</th>
-						<td>{{ bills|length }}</td>
-					</tr>
-					{% if batch_reports %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Batch</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap">
+					<table class="DataTable widthAuto">
 						<tr>
-							<th>Custom Reports</th>
-							<td>
-								<ul>
-									{% for report in batch_reports %}
-										<li>
-											<a href="/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
-										</li>
-									{% endfor %}
-								</ul>
-							</td>
+							<th>Reference</th>
+							<td>{{ batch.reference }}</td>
 						</tr>
-					{% endif %}
-				</table>
+						<tr>
+							<th>Description</th>
+							<td>{{ batch.description }}</td>
+						</tr>
+						<tr>
+							<th>Number Of Bills</th>
+							<td>{{ bills|length }}</td>
+						</tr>
+						{% if batch_reports %}
+							<tr>
+								<th>Custom Reports</th>
+								<td>
+									<ul>
+										{% for report in batch_reports %}
+											<li>
+												<a href="/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
+											</li>
+										{% endfor %}
+									</ul>
+								</td>
+							</tr>
+						{% endif %}
+					</table>
+				</div>
+			</div>
+			<div class="section-data">
+				<ul>
+					<li>
+						<a href="/reports/111?batch_id={{batch.id}}">Check Bills</a>
+					</li>
+					<li>
+						[<a href="/mop_bill_imports?mop_batch_id={{batch.id}}">Bill Imports</a>]
+					</li>
+					<li>
+						<a
+								href="/mop_batches/{{batch.id}}/csv"
+								>CSV of Bills</a>
+					</li>
+				</ul>
 			</div>
 		</div>
-		<div class="section-data">
-			<ul>
-				<li>
-					<a href="/reports/111?batch_id={{batch.id}}">Check Bills</a>
-				</li>
-				<li>
-					[<a href="/mop_bill_imports?mop_batch_id={{batch.id}}">Bill Imports</a>]
-				</li>
-				<li>
-					<a
-							href="/mop_batches/{{batch.id}}/csv"
-							>CSV of Bills</a>
-				</li>
-			</ul>
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Bills [<a href="/mop_batches/{{batch.id}}/add_bill">add</a>]</h2>
 		</div>
-	</div>
-</div>
-<div class="layer-section">
-	<div class="section-header">
-		<h2>Bills [<a href="/mop_batches/{{batch.id}}/add_bill">add</a>]</h2>
-	</div>
-	<div class="section-content">
-		<div class="section-data">
-			<div class="noWrap">
-				<table class="DataTable widthAuto">
+		<div class="section-content">
+			<div class="section-data">
+				<table class="etheling etheling_sticky">
 					<thead>
 						<tr>
 							<th>View</th>
@@ -122,5 +121,4 @@
 			</div>
 		</div>
 	</div>
-</div>
 {% endblock %}
