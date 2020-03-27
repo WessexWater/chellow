@@ -1,13 +1,10 @@
-from dateutil.relativedelta import relativedelta
-from datetime import datetime as Datetime
-import pytz
 import traceback
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 from chellow.models import (
     Session, Contract, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
 from chellow.utils import (
-    HH, hh_min, hh_max, hh_format, req_date, req_int, make_val)
+    hh_min, hh_max, req_date, req_int, csv_make_val, c_months_u)
 from chellow.computer import contract_func, SupplySource
 from chellow.views import chellow_redirect
 import chellow.computer
@@ -32,10 +29,9 @@ def content(start_date, finish_date, contract_id, user):
         contract = Contract.get_supplier_by_id(sess, contract_id)
         forecast_date = chellow.computer.forecast_date()
 
-        month_start = Datetime(
-            start_date.year, start_date.month, 1, tzinfo=pytz.utc)
-
-        month_finish = month_start + relativedelta(months=1) - HH
+        month_pairs = c_months_u(
+            start_year=start_date.year, start_month=start_date.month,
+            finish_year=finish_date.year, finish_month=finish_date.month)
 
         bill_titles = contract_func(caches, contract, 'virtual_bill_titles')()
 
@@ -54,7 +50,7 @@ def content(start_date, finish_date, contract_id, user):
             bill_titles)
         vb_func = contract_func(caches, contract, 'virtual_bill')
 
-        while not month_start > finish_date:
+        for month_start, month_finish in month_pairs:
             period_start = hh_max(start_date, month_start)
             period_finish = hh_min(finish_date, month_finish)
 
@@ -87,15 +83,15 @@ def content(start_date, finish_date, contract_id, user):
 
                     vals = [
                         data_source.mpan_core, site.code, site.name,
-                        data_source.supplier_account,
-                        hh_format(data_source.start_date),
-                        hh_format(data_source.finish_date)]
+                        data_source.supplier_account, data_source.start_date,
+                        data_source.finish_date
+                    ]
 
                     vb_func(data_source)
                     bill = data_source.supplier_bill
                     for title in bill_titles:
                         if title in bill:
-                            val = make_val(bill[title])
+                            val = bill[title]
                             del bill[title]
                         else:
                             val = ''
@@ -104,10 +100,8 @@ def content(start_date, finish_date, contract_id, user):
                     for k in sorted(bill.keys()):
                         vals.append(k)
                         vals.append(str(bill[k]))
-                    writer.writerow(vals)
+                    writer.writerow(csv_make_val(v) for v in vals)
 
-            month_start += relativedelta(months=1)
-            month_finish = month_start + relativedelta(months=1) - HH
     except BadRequest as e:
         writer.writerow([e.description])
     except BaseException:
