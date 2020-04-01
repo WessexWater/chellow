@@ -62,13 +62,17 @@ def find_elements(bill):
 
 def content(
         batch_id, bill_id, contract_id, start_date, finish_date, user,
-        mpan_cores):
+        mpan_cores, fname_additional):
     caches = {}
     tmp_file = sess = bill = None
     forecast_date = to_utc(Datetime.max)
-    sess = None
-    fname_additional = ''
+
     try:
+        running_name, finished_name = chellow.dloads.make_names(
+            'bill_check' + fname_additional + '.csv', user)
+        tmp_file = open(running_name, mode='w', newline='')
+        writer = csv.writer(tmp_file, lineterminator='\n')
+
         sess = Session()
         bills = sess.query(Bill).order_by(
             Bill.supply_id, Bill.reference).options(
@@ -91,23 +95,15 @@ def content(
             batch = Batch.get_by_id(sess, batch_id)
             bills = bills.filter(Bill.batch == batch)
             contract = batch.contract
-            fname_additional = '_batch_' + batch.reference
         elif bill_id is not None:
             bill = Bill.get_by_id(sess, bill_id)
             bills = bills.filter(Bill.id == bill.id)
             contract = bill.batch.contract
-            fname_additional = '_bill_' + str(bill.id)
         elif contract_id is not None:
             contract = Contract.get_by_id(sess, contract_id)
             bills = bills.join(Batch).filter(
                 Batch.contract == contract, Bill.start_date <= finish_date,
                 Bill.finish_date >= start_date)
-            fname_additional = '_contract_' + str(contract.id)
-
-        running_name, finished_name = chellow.dloads.make_names(
-            'bill_check' + fname_additional + '.csv', user)
-        tmp_file = open(running_name, mode='w', newline='')
-        writer = csv.writer(tmp_file, lineterminator='\n')
 
         vbf = chellow.computer.contract_func(caches, contract, 'virtual_bill')
         if vbf is None:
@@ -173,12 +169,21 @@ def do_get(sess):
     else:
         mpan_cores = []
 
+    fname_additional = ''
+
     if 'batch_id' in request.values:
         batch_id = req_int("batch_id")
+        batch = Batch.get_by_id(sess, batch_id)
+        fname_additional = '_batch_' + batch.reference
     elif 'bill_id' in request.values:
         bill_id = req_int("bill_id")
+        bill = Bill.get_by_id(sess, bill_id)
+        fname_additional = '_bill_' + str(bill.id)
     elif 'contract_id' in request.values:
         contract_id = req_int("contract_id")
+        contract = Contract.get_by_id(sess, contract_id)
+        fname_additional = '_contract_' + str(contract.id)
+
         start_date = req_date("start_date")
         finish_date = req_date("finish_date")
     else:
@@ -188,7 +193,7 @@ def do_get(sess):
 
     args = (
         batch_id, bill_id, contract_id, start_date, finish_date, g.user,
-        mpan_cores)
+        mpan_cores, fname_additional)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect('/downloads', 303)
 

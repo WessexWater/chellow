@@ -21341,5 +21341,11 @@ def virtual_bill(ds):
         'path': '/downloads/'
         '00033_FINISHED_adminexamplecom_bill_check_batch_07-002.csv',
         'status_code': 200
+    },
+
+    {
+        'name': "Error message if bill id invalid in bill check",
+        'path': '/reports/111?bill_id=0',
+        'status_code': 404
     }
 ]
