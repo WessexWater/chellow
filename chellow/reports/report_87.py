@@ -4,7 +4,7 @@ from sqlalchemy.sql.expression import null, true
 from chellow.models import (
     Session, Contract, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
 from chellow.utils import (
-    hh_min, hh_max, req_date, req_int, csv_make_val, c_months_u)
+    hh_min, hh_max, req_date, req_int, csv_make_val, c_months_u, to_ct)
 from chellow.computer import contract_func, SupplySource
 from chellow.views import chellow_redirect
 import chellow.computer
@@ -28,10 +28,11 @@ def content(start_date, finish_date, contract_id, user):
         writer = csv.writer(f, lineterminator='\n')
         contract = Contract.get_supplier_by_id(sess, contract_id)
         forecast_date = chellow.computer.forecast_date()
+        start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
 
         month_pairs = c_months_u(
-            start_year=start_date.year, start_month=start_date.month,
-            finish_year=finish_date.year, finish_month=finish_date.month)
+            start_year=start_date_ct.year, start_month=start_date_ct.month,
+            finish_year=finish_date_ct.year, finish_month=finish_date_ct.month)
 
         bill_titles = contract_func(caches, contract, 'virtual_bill_titles')()
 
