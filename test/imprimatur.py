@@ -21347,5 +21347,38 @@ def virtual_bill(ds):
         'name': "Error message if bill id invalid in bill check",
         'path': '/reports/111?bill_id=0',
         'status_code': 404
-    }
+    },
+
+    {
+        'name': "Supplier contract with more than one rate script",
+        'path': '/supplier_contracts/10/add_rate_script',
+        'method': 'post',
+        'data': {
+            'start_year': "2020",
+            'start_month': "02",
+            'start_day': "06",
+            'start_hour': "01",
+            'start_minute': "00",
+            'script': "{}"
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_rate_scripts/53'
+        ],
+    },
+    {
+        'name': "Supplier contract",
+        'path': '/supplier_contracts/10',
+        'status_code': 200,
+        'regexes': [
+            r'<tr>\s*'
+            r'<th>Start Date</th>\s*'
+            r'<td>2000-01-03 00:00</td>\s*'
+            r'</tr>\s*'
+            r'<tr>\s*'
+            r'<th>Finish Date</th>\s*'
+            r'<td>Ongoing</td>\s*'
+            r'</tr>\s*'
+        ],
+    },
 ]
