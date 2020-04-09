@@ -1,0 +1,9 @@
+[Unit]
+Description=Chellow Upgrader
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /var/www/chellow/chellow_upgrader.sh
+
+[Install]
+WantedBy=multi-user.target

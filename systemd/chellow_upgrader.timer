@@ -1,0 +1,9 @@
+[Unit]
+Description=Run Chellow Upgrader every minute
+
+[Timer]
+OnBootSec=60
+OnUnitActiveSec=60
+
+[Install]
+WantedBy=timers.target

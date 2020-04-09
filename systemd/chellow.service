@@ -1,0 +1,9 @@
+[Unit]
+Description=Chellow
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /var/www/chellow/venv/bin/chellow_start.sh
+
+[Install]
+WantedBy=multi-user.target
