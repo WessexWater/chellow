@@ -1106,8 +1106,11 @@ order by hh_datum.start_date
                                 'imp-msp-kvar': imp_kvarh * 2,
                                 'exp-msp-kvarh': exp_kvarh,
                                 'exp-msp-kvar': exp_kvarh * 2,
-                                'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh,
-                                'hist-kwh': msp_kwh}
+                                'msp-kw': msp_kwh * 2,
+                                'msp-kwh': msp_kwh,
+                                'anti-msp-kwh': anti_msp_kwh,
+                                'hist-kwh': msp_kwh,
+                            }
                             (
                                 msp_kwh, anti_msp_kwh, status, imp_kvarh,
                                 exp_kvarh, hist_start) = next(

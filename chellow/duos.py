@@ -364,7 +364,8 @@ def datum_2010_04_01(ds, hh):
     start_date = hh['start-date']
     dno_cache = ds.caches['dno'][ds.dno_code]
 
-    if not ds.full_channels and hh['msp-kwh'] == 0:
+    if not ds.full_channels and not (
+            hh['msp-kwh'] > 0 and hh['anti-msp-kwh'] == 0):
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
         imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
@@ -573,8 +574,7 @@ def datum_2012_02_23(ds, hh):
     start_date = hh['start-date']
     dno_cache = ds.caches['dno'][ds.dno_code]
 
-    if not ds.full_channels and not (
-            hh['msp-kwh'] > 0 and hh['anti-msp-kwh'] == 0):
+    if not ds.full_channels and hh['msp-kwh'] == 0:
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
         imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
