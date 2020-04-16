@@ -4,10 +4,19 @@
 	&raquo; Supplies &raquo; {{supply.id}} &raquo; Hh Data
 {% endblock %}
 
+{% block inside_head %}
+	<style>
+		table.hh_data tr td {
+			white-space: nowrap;
+			text-align: right;
+			background-color: white;
+		}
+	</style>
+{% endblock %}
+
 {% block nav %}
-	&raquo; <a href="/supplies">Supplies</a> &raquo;
-	<a href="/supplies/{{supply.id}}">{{supply.name}}</a>
-	&raquo; HH Data
+	<a href="/supplies">Supplies</a> &raquo;
+	<a href="/supplies/{{supply.id}}">{{supply.name}}</a> &raquo; HH Data
 {% endblock %}
 
 {% block content %}
@@ -42,130 +51,107 @@
 	</div>
 	<div class="layer-section">
 		<div class="section-header">
-		<h2>Show HH Data</h2>
+			<h2>Show HH Data</h2>
 		</div>
 		<div class="section-data">
-			<div class="standardForm textWidthAuto">
-				<form action="/supplies/{{supply.id}}/hh_data">
-					<fieldset>
-						For {{ input_text('months', months, 2, 2) }} month(s)
-						finishing at the end of
-						{{input_date('finish', finish_date, 'month')}}
-						<input type="submit" value="Show">
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
-	<div class="layer-section">
-		<div class="section-header">
-		<h2>Show HH Data</h2>
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<div class="noWrap">
-					<table class="DataTable">
-						<thead>
-							<tr>
-								<th rowspan="3">HH Starting</th>
-								<th colspan="9">Import</th>
-								<th colspan="9">Export</th>
-							</tr>
-							<tr>
-								<th colspan="3">ACTIVE</th>
-								<th colspan="3">REACTIVE_IMP</th>
-								<th colspan="3">REACTIVE_EXP</th>
-								<th colspan="3">ACTIVE</th>
-								<th colspan="3">REACTIVE_IMP</th>
-								<th colspan="3">REACTIVE_EXP</th>
-							</tr>
-							<tr>
-								<th>kWh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-								<th>kVArh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-								<th>kVArh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-								<th>kWh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-								<th>kVArh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-								<th>kVArh</th>
-								<th>Status</th>
-								<th>Last Modified</th>
-							</tr>
-						</thead>
-						<tbody>
-						{% for hh_line in hh_lines %}
-							<tr>
-								<td>
-								{{hh_line.timestamp|hh_format}}
-								</td>
-							{% if hh_line.import_active %}
-								<td>{{hh_line.import_active.value}}</td>
-								<td>{{hh_line.import_active.status}}</td>
-								<td>{{hh_line.import_active.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							{% if hh_line.import_reactive_imp %}
-								<td>{{hh_line.import_reactive_imp.value}}</td>
-								<td>{{hh_line.import_reactive_imp.status}}</td>
-								<td>{{hh_line.import_reactive_imp.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							{% if hh_line.import_reactive_exp %}
-								<td>{{hh_line.import_reactive_exp.value}}</td>
-								<td>{{hh_line.import_reactive_exp.status}}</td>
-								<td>{{hh_line.import_reactive_exp.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							{% if hh_line.export_active %}
-								<td>{{hh_line.export_active.value}}</td>
-								<td>{{hh_line.export_active.status}}</td>
-								<td>{{hh_line.export_active.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							{% if hh_line.export_reactive_imp %}
-								<td>{{hh_line.export_reactive_imp.value}}</td>
-								<td>{{hh_line.export_reactive_imp.status}}</td>
-								<td>{{hh_line.export_reactive_imp.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							{% if hh_line.export_reactive_exp %}
-								<td>{{hh_line.export_reactive_exp.value}}</td>
-								<td>{{hh_line.export_reactive_exp.status}}</td>
-								<td>{{hh_line.export_reactive_exp.last_modified|hh_format}}</td>
-							{% else %}
-								<td></td>
-								<td></td>
-								<td></td>
-							{% endif %}
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
+			<form action="/supplies/{{supply.id}}/hh_data">
+				<fieldset>
+					For {{ input_text('months', months, 2, 2) }} month(s)
+					finishing at the end of
+					{{input_date('finish', finish_date, 'month')}}
+					<input type="submit" value="Show">
+				</fieldset>
+			</form>
+			<br>
+			<table class="etheling etheling_sticky hh_data">
+				<caption>HH Data</caption>
+				<thead>
+					<tr>
+						<th>HH Starting</th>
+						<th colspan="3">
+							Imp<br> ACTIVE<br> kWh, Status, Modified
+						</th>
+						<th colspan="3">
+							Imp<br> REACTIVE_IMP<br> kVArh, Status, Modified
+						</th>
+						<th colspan="3">
+							Imp<br> REACTIVE_EXP<br> kVArh, Status, Modified
+						</th>
+						<th colspan="3">
+							Exp<br> ACTIVE<br> kWh, Status, Modified
+						</th>
+						<th colspan="3">
+							Exp<br> REACTIVE_IMP<br> kVArh, Status, Modified
+						</th>
+						<th colspan="3">
+							Exp<br> REACTIVE_EXP<br> kVArh, Status, Modified
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for hh_line in hh_lines %}
+					<tr>
+						<td>
+							{{hh_line.timestamp|hh_format}}
+						</td>
+					{% if hh_line.import_active %}
+						<td>{{hh_line.import_active.value}}</td>
+						<td>{{hh_line.import_active.status}}</td>
+						<td>{{hh_line.import_active.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					{% if hh_line.import_reactive_imp %}
+						<td>{{hh_line.import_reactive_imp.value}}</td>
+						<td>{{hh_line.import_reactive_imp.status}}</td>
+						<td>{{hh_line.import_reactive_imp.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					{% if hh_line.import_reactive_exp %}
+						<td>{{hh_line.import_reactive_exp.value}}</td>
+						<td>{{hh_line.import_reactive_exp.status}}</td>
+						<td>{{hh_line.import_reactive_exp.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					{% if hh_line.export_active %}
+						<td>{{hh_line.export_active.value}}</td>
+						<td>{{hh_line.export_active.status}}</td>
+						<td>{{hh_line.export_active.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					{% if hh_line.export_reactive_imp %}
+						<td>{{hh_line.export_reactive_imp.value}}</td>
+						<td>{{hh_line.export_reactive_imp.status}}</td>
+						<td>{{hh_line.export_reactive_imp.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					{% if hh_line.export_reactive_exp %}
+						<td>{{hh_line.export_reactive_exp.value}}</td>
+						<td>{{hh_line.export_reactive_exp.status}}</td>
+						<td>{{hh_line.export_reactive_exp.last_modified|hh_format}}</td>
+					{% else %}
+						<td></td>
+						<td></td>
+						<td></td>
+					{% endif %}
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		</div>
 	</div>
 {% endblock %}

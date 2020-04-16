@@ -1675,7 +1675,7 @@ def virtual_bill_titles():
 
     # Assumes various site snags are present at this stage },
     {
-        'name': "site snags stay ignored",
+        'name': "Site snags stay ignored",
         'path': '/site_snags/edit',
         'method': 'post',
         'data': {
@@ -1684,8 +1684,10 @@ def virtual_bill_titles():
             'ignore_day': "26",
             'ignore_hour': "00",
             'ignore_minute': "00",
-            'ignore': "Ignore"},
-        'status_code': 303},
+            'ignore': "Ignore"
+        },
+        'status_code': 303
+    },
     {
         'path': '/dc_contracts/8/hh_imports',
         'method': 'post',
@@ -1697,22 +1699,35 @@ def virtual_bill_titles():
         'path': '/dc_contracts/8/hh_imports/11',
         'tries': {},
         'regexes': [
-            r"The import has completed.*successfully"],
-        'status_code': 200},
+            r"The import has completed.*successfully"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/site_snags',
         'regexes': [
-            r"<tbody>\s*</tbody>"],
-        'status_code': 200},
+            r"<tbody>\s*</tbody>"
+        ],
+        'status_code': 200
+    },
     {
         'path': '/supplies/5/hh_data?months=1&finish_year=2010&'
         'finish_month=03',
         'regexes': [
             r'<form action="/supplies/5/hh_data">',
-            r"<tr>\s*<td>\s*2010-03-15 12:00\s*</td>\s*<td>0</td>\s*"
-            r"<td>A</td>",
+            r'<tr>\s*'
+            r'<td>\s*'
+            r'2010-03-15 12:00\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'0\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'A\s*',
+            r'</td>'
         ],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     # Create a new batch
     {
@@ -4620,11 +4635,19 @@ def virtual_bill(ds):
         'status_code': 200},
 
     {
-        'name': "that the first datum has been correctly loaded in",
+        'name': "Has the first datum been correctly loaded in?",
         'path': '/supplies/7/hh_data?months=1&finish_year=2010&'
         'finish_month=02',
         'regexes': [
-            r"<td>\s*2010-02-04 20:00\s*</td>\s*<td>30.4339</td>"
+            r'<td>\s*'
+            r'2010-02-04 20:00\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'30.4339\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'A\s*'
+            r'</td>'
         ],
         'status_code': 200
     },
@@ -8834,20 +8857,34 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/hh_clock_change.df2'},
         'status_code': 303,
         'regexes': [
-            r"/dc_contracts/8/hh_imports/15"]},
+            r"/dc_contracts/8/hh_imports/15"
+        ]
+    },
     {
         'path': '/dc_contracts/8/hh_imports/15',
         'tries': {},
         'regexes': [
-            r"The import has completed.*successfully."],
-        'status_code': 200},
+            r"The import has completed.*successfully."
+        ],
+        'status_code': 200
+    },
     {
         'path': '/supplies/5/hh_data?months=1&finish_year=2014&'
         'finish_month=03',
         'regexes': [
-            r"<tr>\s*<td>\s*2014-03-30 00:30\s*</td>\s*<td>0</td>\s*"
-            r"<td>A</td>"],
-        'status_code': 200},
+            r'<tr>\s*'
+            r'<td>\s*'
+            r'2014-03-30 00:30\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'0\s*'
+            r'</td>\s*'
+            r'<td>\s*'
+            r'A\s*'
+            r'</td>'
+        ],
+        'status_code': 200
+    },
 
     # Create a new batch
     {
