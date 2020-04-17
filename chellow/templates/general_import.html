@@ -10,38 +10,47 @@
 {% endblock %}
 
 {% block content %}
-	{% if line_number %}
-		<p>Line number {{line_number}}.</p>
-	{% endif %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>General Import</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+			  {% if line_number %}
+					<p>Line number {{line_number}}.</p>
+				{% endif %}
 
-	{% if is_alive %}
-			<p>Still running. Refresh the page to see latest progress.</p>
-	{% else %}
-			{% if error_message %}
-					<p>
-						The import has failed and so the whole import has been rolled
-						back. The reason for the failure is:</p>
-					<pre>{{error_message}}</pre>
-			{% else %}
-					<p>The file has been imported successfully.</p>
-			{% endif %}
-	{% endif %}
+				{% if is_alive %}
+						<p>Still running. Refresh the page to see latest progress.</p>
+				{% else %}
+						{% if error_message %}
+								<p>
+									The import has failed and so the whole import has been rolled
+									back. The reason for the failure is:</p>
+								<pre>{{error_message}}</pre>
+						{% else %}
+								<p>The file has been imported successfully.</p>
+						{% endif %}
+				{% endif %}
 
-	{% if csv_line %}
-		<table>
-			<caption>Failed Line</caption>
-			<tbody>
-				<tr>
-					{% for title, value in csv_line %}
-						<th>{{title}}</th>
-					{% endfor %}
-				</tr>
-				<tr>
-					{% for title, value in csv_line %}
-						<td>{{value}}</td>
-					{% endfor %}
-				</tr>
-			</tbody>
-		</table>
-	{% endif %}
+				{% if csv_line %}
+					<table class="etheling">
+						<caption>Failed Line</caption>
+						<tbody>
+							<tr>
+								{% for title, value in csv_line %}
+									<th>{{title}}</th>
+								{% endfor %}
+							</tr>
+							<tr>
+								{% for title, value in csv_line %}
+									<td>{{value}}</td>
+								{% endfor %}
+							</tr>
+						</tbody>
+					</table>
+				{% endif %}
+			</div>
+		</div>
+	</div>
 {% endblock %}
