@@ -90,3 +90,28 @@ def test_parse_breakdown():
     expected = {'date': utc_datetime(2009, 5, 12, 3)}
     actual = chellow.general_import._parse_breakdown(breakdown_str)
     assert actual == expected
+
+
+def test_general_import_era_update(mocker):
+    MockSupply = mocker.patch('chellow.general_import.Supply', autospec=True)
+
+    mock_supply = mocker.Mock()
+
+    MockSupply.get_by_mpan_core.return_value = mock_supply
+
+    mock_era = mocker.Mock()
+    mock_era.properties = '{}'
+
+    mock_supply.find_era_at.return_value = mock_era
+
+    sess = mocker.Mock()
+    action = 'update'
+    vals = [
+        'CH4U', '2019-09-08 00:00', '{no change}', '{no change}',
+        'A Mop Contract', '{no change}', '{no change}', '{no change}',
+        '{no change}', '{no change}', '{no change}', '{no change}',
+        '{no change}', '{no change}', '{no change}', '{no change}',
+        '{no change}', '{no change}', '{no change}',
+    ]
+    args = []
+    chellow.general_import.general_import_era(sess, action, vals, args)

@@ -67,8 +67,7 @@ def general_import_era(sess, action, vals, args):
         if mop_contract_name == NO_CHANGE:
             mop_contract = era.mop_contract
         elif len(mop_contract_name) > 0:
-            mop_contract = Contract.get_mop_contract(
-                mop_contract_name)
+            mop_contract = Contract.get_mop_by_name(sess, mop_contract_name)
 
         mop_account = add_arg(args, "MOP Account", vals, 5)
         if mop_account == NO_CHANGE:
