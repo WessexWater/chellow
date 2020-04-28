@@ -74,10 +74,24 @@ def before_first_request():
     chellow.g_cv.startup()
     chellow.utils.root_path = app.root_path
 
-    if request.url_root.startswith('http'):
-        chellow.utils.url_root = 'https' + request.url_root[4:]
-    else:
-        chellow.utils.url_root = request.url_root
+    try:
+        scheme = request.headers['X-Forwarded-Proto']
+    except KeyError:
+        sess = Session()
+        try:
+            config_contract = Contract.get_non_core_by_name(
+                sess, 'configuration')
+            props = config_contract.make_properties()
+            scheme = props.get('redirect_scheme', 'http')
+        finally:
+            sess.close()
+
+    try:
+        host = request.headers['X-Forwarded-Host']
+    except KeyError:
+        host = request.host
+
+    chellow.utils.url_root = scheme + '://' + host + '/'
 
 
 @app.before_request

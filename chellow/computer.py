@@ -138,7 +138,7 @@ def hh_rate(sess, caches, contract_id, date):
 
             vals = PropDict(
                 "the rate script " + chellow.utils.url_root + seg +
-                str(rs.id) + ".", loads(rs.script), [])
+                str(rs.id), loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals
