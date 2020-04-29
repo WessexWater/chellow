@@ -941,10 +941,12 @@ def do_get(sess):
         months = req_int("months")
         start_date, _ = next(
             c_months_c(finish_year=year, finish_month=month, months=months))
+        by_hh = req_bool("by_hh")
         scenario_props = {
             'scenario_start_year': start_date.year,
             'scenario_start_month': start_date.month,
-            'scenario_duration': months
+            'scenario_duration': months,
+            'by_hh': by_hh
         }
         base_name.append('monthly_duration')
 
