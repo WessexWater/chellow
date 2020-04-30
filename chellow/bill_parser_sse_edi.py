@@ -1,7 +1,7 @@
 from decimal import Decimal
 from collections import defaultdict
 from chellow.edi_lib import EdiParser, to_decimal
-from chellow.utils import to_ct, to_utc, ct_datetime, parse_mpan_core
+from chellow.utils import to_ct, to_utc, ct_datetime, parse_mpan_core, HH
 from werkzeug.exceptions import BadRequest
 from io import StringIO
 from datetime import datetime as Datetime
@@ -168,7 +168,11 @@ class Parser():
 
                 sumo = self.parser.elements[7]
                 start_date = to_start_date(sumo[0])
-                finish_date = to_finish_date(sumo[1])
+                if to_ct_date(sumo[1]) in (
+                        ct_datetime(2020, 4, 1), ct_datetime(2020, 3, 16)):
+                    finish_date = to_start_date(sumo[1]) - HH
+                else:
+                    finish_date = to_finish_date(sumo[1])
 
             elif code == "MHD":
                 type = self.parser.elements[1]
