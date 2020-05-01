@@ -4,7 +4,7 @@ import traceback
 from chellow.utils import (
     HH, csv_make_val, req_int, ct_datetime, reduce_bill_hhs, to_utc,
     c_months_u)
-from chellow.models import Site, SiteEra, Era, Supply, Source, Session
+from chellow.models import Site, SiteEra, Era, Supply, Source, Session, Pc
 import chellow.computer
 import chellow.duos
 import chellow.triad
@@ -18,8 +18,9 @@ from werkzeug.exceptions import BadRequest
 
 
 def _make_sites(sess, year_start, year_finish, site_id, source_codes):
-    sites = sess.query(Site).join(SiteEra).join(Era).join(Supply).join(
-        Source).filter(
+    sites = sess.query(Site).join(SiteEra).join(Era).join(Pc).join(
+        Supply).join(Source).filter(
+        Pc.code == '00',
         Source.code.in_(source_codes),
         Era.start_date <= year_finish, or_(
             Era.finish_date == null(),
