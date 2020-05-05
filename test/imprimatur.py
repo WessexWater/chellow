@@ -10619,7 +10619,7 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="112.331\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.00847" '
+            r'<table:table-cell office:value="0.00775" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell/>\s*'
             r'<table:table-cell office:value="5.89" '
