@@ -8,7 +8,7 @@ from chellow.models import (
     GRateScript)
 from chellow.utils import (
     HH, hh_max, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
-    utc_datetime, PropDict, hh_format, hh_before, hh_after)
+    utc_datetime, PropDict, hh_before, hh_after)
 from chellow.computer import hh_rate
 from types import MappingProxyType
 from datetime import timedelta
@@ -236,8 +236,8 @@ def g_rates(sess, caches, g_contract_id, date):
                     cfinish = min(rs.finish_date, month_after)
 
             vals = PropDict(
-                "the local rate script for contract " + str(g_contract_id) +
-                " at " + hh_format(cstart) + ".", loads(rs.script), [])
+                "the rate script " + chellow.utils.url_root +
+                "g_rate_scripts/" + str(rs.id) + " ", loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals
