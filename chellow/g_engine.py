@@ -510,15 +510,16 @@ def _bill_kwh(
 def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
     cvs = chellow.computer.hh_rate(
         sess, caches, g_cv_id, dt)['cvs'][g_ldz_code]
+    ct = to_ct(dt)
     try:
-        cv_props = cvs[dt.day]
+        cv_props = cvs[ct.day]
     except KeyError:
         cv_props = sorted(cvs.items())[-1][1]
 
     cv = float(cv_props['cv'])
 
     try:
-        avg_cv = caches['g_engine']['avg_cvs'][g_ldz_code][dt.year][dt.month]
+        avg_cv = caches['g_engine']['avg_cvs'][g_ldz_code][ct.year][ct.month]
     except KeyError:
         try:
             gec = caches['g_engine']
@@ -536,15 +537,15 @@ def find_cv(sess, caches, g_cv_id, dt, g_ldz_code):
             avg_cvs_cache = avg_cache[g_ldz_code] = {}
 
         try:
-            year_cache = avg_cvs_cache[dt.year]
+            year_cache = avg_cvs_cache[ct.year]
         except KeyError:
-            year_cache = avg_cvs_cache[dt.year] = {}
+            year_cache = avg_cvs_cache[ct.year] = {}
 
         try:
-            avg_cv = year_cache[dt.month]
+            avg_cv = year_cache[ct.month]
         except KeyError:
             cv_list = [float(v['cv']) for v in cvs.values()]
-            avg_cv = year_cache[dt.month] = floor(
+            avg_cv = year_cache[ct.month] = floor(
                 (sum(cv_list) / len(cv_list)) * 10) / 10
     return cv, avg_cv
 
