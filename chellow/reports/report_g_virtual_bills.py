@@ -14,6 +14,7 @@ import os
 import threading
 from flask import g
 from chellow.views import chellow_redirect
+from werkzeug.exceptions import BadRequest
 
 
 def content(start_date, finish_date, g_contract_id, user):
@@ -84,6 +85,8 @@ def content(start_date, finish_date, g_contract_id, user):
 
             month_start += relativedelta(months=1)
             month_finish = month_start + relativedelta(months=1) - HH
+    except BadRequest as e:
+        writer.writerow(["Problem: " + e.description])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

@@ -215,9 +215,7 @@ def content(
             write_spreadsheet(rf, compression, site_rows, g_era_rows)
 
     except BadRequest as e:
-        msg = e.description + traceback.format_exc()
-        sys.stderr.write(msg + '\n')
-        site_rows.append(["Problem " + msg])
+        site_rows.append(["Problem " + e.description])
         write_spreadsheet(rf, compression, site_rows, g_era_rows)
     except BaseException:
         msg = traceback.format_exc()
