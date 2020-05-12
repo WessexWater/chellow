@@ -124,7 +124,7 @@ class RcrcImporter(threading.Thread):
 
                         r = requests.get(url_str, timeout=60)
                         parser = csv.reader(
-                            (l.decode() for l in r.iter_lines()),
+                            (x.decode() for x in r.iter_lines()),
                             delimiter=',', quotechar='"')
                         next(parser)
                         next(parser)

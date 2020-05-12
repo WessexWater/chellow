@@ -156,7 +156,7 @@ def _import_tlms(log_func):
 
             r = requests.get(url_str)
             parser = csv.reader(
-                (l.decode() for l in r.iter_lines()),
+                (x.decode() for x in r.iter_lines()),
                 delimiter=',', quotechar='"')
             log_func("Opened " + url_str + ".")
 
