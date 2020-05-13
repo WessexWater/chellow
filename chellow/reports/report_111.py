@@ -64,7 +64,7 @@ def content(
         batch_id, bill_id, contract_id, start_date, finish_date, user,
         mpan_cores, fname_additional):
     caches = {}
-    tmp_file = sess = bill = None
+    tmp_file = sess = supply_id = None
     forecast_date = to_utc(Datetime.max)
 
     try:
@@ -136,22 +136,22 @@ def content(
         for bill in bills:
             bill_map[bill.supply.id].add(bill.id)
 
-        for bill_ids in bill_map.values():
+        for supply_id in bill_map.keys():
             _process_supply(
-                sess, caches, bill_ids, forecast_date, contract, vbf,
-                virtual_bill_titles, writer, titles)
+                sess, caches, supply_id, bill_map, forecast_date, contract,
+                vbf, virtual_bill_titles, writer, titles)
 
     except BadRequest as e:
-        if bill is None:
+        if supply_id is None:
             prefix = "Problem: "
         else:
-            prefix = "Problem with bill " + str(bill.id) + ':'
+            prefix = "Problem with supply " + str(supply_id) + ':'
         tmp_file.write(prefix + e.description)
     except BaseException:
-        if bill is None:
+        if supply_id is None:
             prefix = "Problem: "
         else:
-            prefix = "Problem with bill " + str(bill.id) + ':'
+            prefix = "Problem with supply " + str(supply_id) + ':'
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         tmp_file.write(prefix + msg)
@@ -199,11 +199,12 @@ def do_get(sess):
 
 
 def _process_supply(
-        sess, caches, bill_ids, forecast_date, contract, vbf,
+        sess, caches, supply_id, bill_map, forecast_date, contract, vbf,
         virtual_bill_titles, writer, titles):
     gaps = {}
     data_sources = {}
     market_role_code = contract.market_role.code
+    bill_ids = bill_map[supply_id]
 
     while len(bill_ids) > 0:
         bill_id = list(sorted(bill_ids))[0]
