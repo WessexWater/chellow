@@ -16,6 +16,7 @@ table.etheling {
   border-color: silver;
   border-style: solid;
   border-width: thin;
+  background: white;
 }
 
 table.etheling th {

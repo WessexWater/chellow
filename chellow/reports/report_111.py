@@ -11,8 +11,8 @@ from itertools import combinations
 import chellow.computer
 import chellow.dloads
 from chellow.models import (
-    Batch, Bill, Contract, Era, Llfc, MarketRole, Mtc, RegisterRead, Session,
-    Site, SiteEra, Supply)
+    Batch, Bill, Contract, Era, Llfc, MarketRole, Mtc, RegisterRead,
+    ReportRun, Session, Site, SiteEra, Supply)
 from chellow.utils import (
     HH, csv_make_val, hh_format, hh_max, hh_min, hh_range, parse_mpan_core,
     req_date, req_int, req_str, to_utc)
@@ -75,11 +75,14 @@ def content(
 
     try:
         running_name, finished_name = chellow.dloads.make_names(
-            'bill_check' + fname_additional + '.csv', user)
+            'bill_check_' + fname_additional + '.csv', user)
         tmp_file = open(running_name, mode='w', newline='')
         writer = csv.writer(tmp_file, lineterminator='\n')
 
         sess = Session()
+        report_run = ReportRun('bill_check', user, fname_additional)
+        sess.add(report_run)
+
         bills = sess.query(Bill).order_by(
             Bill.supply_id, Bill.reference).options(
             joinedload(Bill.supply),
@@ -145,15 +148,22 @@ def content(
         for supply_id in bill_map.keys():
             _process_supply(
                 sess, caches, supply_id, bill_map, forecast_date, contract,
-                vbf, virtual_bill_titles, writer, titles)
+                vbf, virtual_bill_titles, writer, titles, report_run)
+
+        report_run.update('finished')
+        sess.commit()
 
     except BadRequest as e:
+        if report_run is not None:
+            report_run.update('problem')
         if supply_id is None:
             prefix = "Problem: "
         else:
             prefix = "Problem with supply " + str(supply_id) + ':'
         tmp_file.write(prefix + e.description)
     except BaseException:
+        if report_run is not None:
+            report_run.update('interrupted')
         if supply_id is None:
             prefix = "Problem: "
         else:
@@ -184,14 +194,18 @@ def do_get(sess):
     elif 'bill_id' in request.values:
         bill_id = req_int("bill_id")
         bill = Bill.get_by_id(sess, bill_id)
-        fname_additional = '_bill_' + str(bill.id)
+        fname_additional = 'bill_' + str(bill.id)
     elif 'contract_id' in request.values:
         contract_id = req_int("contract_id")
         contract = Contract.get_by_id(sess, contract_id)
-        fname_additional = '_contract_' + str(contract.id)
 
         start_date = req_date("start_date")
         finish_date = req_date("finish_date")
+
+        s = ['contract', str(contract.id)]
+        for dt in (start_date, finish_date):
+            s.append(hh_format(dt).replace(' ', 'T').replace(':', ''))
+        fname_additional = '_'.join(s)
     else:
         raise BadRequest(
             "The bill check needs a batch_id, a bill_id or a start_date "
@@ -207,7 +221,7 @@ def do_get(sess):
 
 def _process_supply(
         sess, caches, supply_id, bill_map, forecast_date, contract, vbf,
-        virtual_bill_titles, writer, titles):
+        virtual_bill_titles, writer, titles, report_run):
     gaps = {}
     data_sources = {}
     market_role_code = contract.market_role.code
@@ -497,12 +511,10 @@ def _process_supply(
 
         values = [
             bill.batch.reference, bill.reference, bill.bill_type.code,
-            bill.kwh, bill.net, bill.vat, hh_format(bill_start),
-            hh_format(bill_finish), imp_mpan_core, exp_mpan_core, site_code,
-            site_name, hh_format(covered_start),
-            hh_format(covered_finish), ':'.join(
-                str(i).replace(',', '') for i in covered_bills.keys()),
-            metered_kwh]
+            bill.kwh, bill.net, bill.vat, bill_start, bill_finish,
+            imp_mpan_core, exp_mpan_core, site_code, site_name, covered_start,
+            covered_finish, covered_bills.keys(), metered_kwh
+        ]
 
         for title in virtual_bill_titles:
             try:
@@ -514,7 +526,7 @@ def _process_supply(
                 values.append('')
 
             try:
-                virt_val = csv_make_val(virtual_bill[title])
+                virt_val = virtual_bill[title]
                 values.append(virt_val)
                 del virtual_bill[title]
             except KeyError:
@@ -528,17 +540,51 @@ def _process_supply(
                     else:
                         values.append(0 - float(virt_val))
                 else:
-                    values.append('')
+                    values.append(0)
 
+        report_run_values = {}
+        report_run_titles = list(titles)
         for title in sorted(virtual_bill.keys()):
-            virt_val = csv_make_val(virtual_bill[title])
-            values += ['virtual-' + title, virt_val]
+            virt_val = virtual_bill[title]
+            virt_title = 'virtual-' + title
+            values += [virt_title, virt_val]
+            report_run_values[virt_title] = virt_val
+            report_run_titles.append(virt_title)
             if title in covered_bdown:
-                values += ['covered-' + title, covered_bdown[title]]
-            else:
-                values += ['', '']
+                cov_title = 'covered-' + title
+                cov_val = covered_bdown[title]
+                report_run_values[cov_title] = cov_val
+                report_run_titles.append(cov_title)
+                if title.endswith('-gbp'):
+                    if isinstance(virt_val, (int, float, Decimal)):
+                        if isinstance(cov_val, (int, float, Decimal)):
+                            diff_val = float(cov_val) - float(virt_val)
+                        else:
+                            diff_val = 0 - float(virt_val)
+                    else:
+                        diff_val = 0
 
-        writer.writerow(values)
+                    report_run_values[f'difference-{title}'] = diff_val
+
+                    t = 'difference-tpr-gbp'
+                    try:
+                        report_run_values[t] += diff_val
+                    except KeyError:
+                        report_run_values[t] = diff_val
+                        report_run_titles.append(t)
+            else:
+                cov_title, cov_val = '', ''
+
+            values += [cov_title, cov_val]
+
+        writer.writerow([csv_make_val(v) for v in values])
+
+        report_run_values.update(dict(zip(titles, values)))
+        report_run_values['bill_id'] = bill.id
+        report_run_values['batch_id'] = bill.batch.id
+        report_run_values['supply_id'] = supply.id
+        report_run_values['site_id'] = None if site_code is None else site.id
+        report_run.insert_row(sess, '', report_run_titles, report_run_values)
 
         for bill in sess.query(Bill).filter(
                 Bill.supply == supply, Bill.start_date <= covered_finish,
@@ -551,7 +597,7 @@ def _process_supply(
                         bill.finish_date, False, v)
 
         # Avoid long-running transactions
-        sess.rollback()
+        sess.commit()
 
     clumps = []
     for element, elgap in sorted(gaps.items()):
@@ -571,7 +617,13 @@ def _process_supply(
                     clumps[-1]['finish_date'] = start_date
 
     for i, clump in enumerate(clumps):
-        vals = dict((title, '') for title in titles)
+        vals = {}
+        for title in titles:
+            if title.startswith('difference-') and title.endswith('-gbp'):
+                vals[title] = 0
+            else:
+                vals[title] = None
+
         vals['covered-problem'] = '_'.join(
             (
                 'missing', clump['element'], 'supplyid', str(supply.id),
@@ -582,7 +634,14 @@ def _process_supply(
         vals['bill-start-date'] = hh_format(clump['start_date'])
         vals['bill-finish-date'] = hh_format(clump['finish_date'])
         vals['difference-net-gbp'] = clump['gbp']
-        writer.writerow(vals[title] for title in titles)
+        writer.writerow(csv_make_val(vals[title]) for title in titles)
+
+        vals['bill_id'] = None
+        vals['batch_id'] = None
+        vals['supply_id'] = supply.id
+        vals['site_id'] = None if site_code is None else site.id
+
+        report_run.insert_row(sess, '', titles, vals)
 
     # Avoid long-running transactions
-    sess.rollback()
+    sess.commit()

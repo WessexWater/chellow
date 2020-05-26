@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs
+{% endblock %}
+
+{% block nav %}
+	Report Runs
+{% endblock %}
+
+{% block content %}
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Report Runs</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="etheling etheling_sticky">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Date Created</th>
+							<th>Created By</th>
+							<th>Name</th>
+							<th>Title</th>
+							<th>State</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for run in runs %}
+							<tr>
+								<td>
+									<a href="/report_runs/{{run.id}}">View</a>
+								</td>
+								<td>{{run.date_created|hh_format}}</td>
+								<td>{{run.creator}}</td>
+								<td>{{run.name}}</td>
+								<td>{{run.title}}</td>
+								<td>{{run.state}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+{% endblock %}

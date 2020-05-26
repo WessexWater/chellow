@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	{% if request.method == "GET" and request.values.delete %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>
+					Are you sure you want to delete this report run?
+				</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form method="post" action="/report_runs/{{run.id}}">
+							<fieldset>
+								<input type="submit" name="delete" value="delete"> 
+								<a href="/report_runs/{{run.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% elif run.name == 'bill_check' %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Bill Check</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Date Created</th>
+								<th>Created By</th>
+								<th>Title</th>
+								<th>State</th>
+								<th>Number Of Rows</th>
+								<th>Sum Of Difference GBP</th>
+								<th>Delete</th>
+								<th>Download Spreadsheet</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{run.date_created|hh_format}}</td>
+								<td>{{run.creator}}</td>
+								<td>{{run.title}}</td>
+								<td>{{run.state}}</td>
+								<td>{{rows|length}}</td>
+								<td>{{"%.2f"|format(summary.sum_difference)}}</td>
+								<td>
+									<form action="/report_runs/{{run.id}}">
+										<fieldset style="border: none;">
+											<input type="submit" name="delete" value="Delete">
+										</fieldset>
+									</form>
+								</td>
+								<td>
+									<a href="/report_runs/{{run.id}}/spreadsheet">Download</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					{% if summary.missing_bills|length > 0 %}
+						<table class="etheling etheling_sticky">
+							<caption>Some Missing Bills (<a href="/report_runs/{{report_run}}">x</a>)</caption>
+							<thead>
+								<tr>
+									<th>View</th>
+									<th>Import MPAN Core</th>
+									<th>Export MPAN Core</th>
+									<th>Start</th>
+									<th>Finish</th>
+									<th>Problem</th>
+									<th>Estimated Difference GBP</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in rows %}
+									<tr>
+										<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+										{% for title in row.data.titles %}
+											<td>{{row.data['values'][title]}}</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% endif %}
+					{% if rows|length > 0 %}
+						<table class="etheling etheling_sticky">
+							<caption>Elements</caption>
+							<thead>
+								<tr>
+									<th>Element</th>
+									{% for elname, diff in elements  %}
+										<th>{{elname}}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>Sum of differences (GBP)</td>
+									{% for elname, diff in elements  %}
+											<td>{{"%.2f"|format(diff)}}</td>
+									{% endfor %}
+								</tr>
+								<tr>
+									<td>Order rows</td>
+									{% for elname, diff in elements  %}
+										<td>
+											{% if elname == element %}
+												Order
+											{% else %}
+												<a href="/report_runs/{{run.id}}?element={{elname}}"
+													>Order</a>
+											{% endif %}
+										</td>
+									{% endfor %}
+								</tr>
+							</tbody>
+						</table>
+						<br>
+						<table class="etheling etheling_sticky">
+							<caption>Rows - Ordered By Difference In {{element}}</caption>
+							{% set titles = [
+												'batch',	'bill-reference', 'imp-mpan-core',
+												'exp-mpan-core', 'site-code', 'site-name',
+												'covered-from', 'covered-to'
+								]
+							%}
+							<thead>
+								<tr>
+									<th rowspan="2">View</th>
+									{% for title in titles %}
+										<th rowspan="2">{{title}}</th>
+									{% endfor %}
+									<th colspan="{{elements|length}}">Difference GBP</th>
+								</tr>
+								<tr>
+									{% for elem, diff in elements %}
+										<th>{{elem}}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in rows %}
+									{% set values = row.data['values'] %}
+									<tr>
+										<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+										{% for title in titles %}
+											<td>	
+												{%
+													if title == 'covered-bills' and
+			 										values['covered-bills'] != None
+												%}
+													<ul>
+														{% for bill_id in values['covered-bills'] %}
+															<li>
+																<a href="/supplier_bills/{{bill_id}}"
+																		>{{bill_id}}</a>
+																{% if bill_id == values.bill_id %}
+																	(This bill)
+																{% endif %}
+															</li>
+														{% endfor %}
+													</ul>
+												{% else %}
+													{{values[title]}}
+												{% endif %}
+											</td>
+										{% endfor %}
+										{% for elem, diff in elements %}
+											{% set title = 'difference-' + elem + '-gbp' %}
+											<td>	
+												{% if title in values %}
+													{{"%.2f"|format(values[title])}}
+												{% endif %}
+											</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% endif %}
+				</div>
+				
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% else %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Report Run</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Date Created</th>
+								<th>Created By</th>
+								<th>Name</th>
+								<th>Title</th>
+								<th>State</th>
+								<th>Number Of Rows</th>
+								<th>Sum Of Difference GBP</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{run.date_created|hh_format}}</td>
+								<td>{{run.creator}}</td>
+								<td>{{run.name}}</td>
+								<td>{{run.title}}</td>
+								<td>{{run.state}}</td>
+								<th>{{rows|length}}</th>
+								<td>{{summary.sum_difference}}</td>
+								<td>
+									<form action="/report_runs/{{run.id}}">
+										<fieldset style="border: none;">
+											<input type="submit" name="delete" value="Delete">
+										</fieldset>
+									</form>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					{% if rows|length > 0 %}
+						<table class="etheling etheling_sticky">
+							<caption>Rows - Ordered By {{order_by}}</caption>
+							<thead>
+								<tr>
+									<th>View</th>
+									{% for title in rows[0].data.titles %}
+										<th>{{title}}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+							<tbody>
+								{% for row in rows %}
+									<tr>
+										<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+										{% for title in row.data.titles %}
+											<td>	
+												{{values[title]}}
+											</td>
+										{% endfor %}
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					{% endif %}
+				</div>
+				
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

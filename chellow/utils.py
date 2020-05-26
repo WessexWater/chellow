@@ -2,7 +2,7 @@ import os
 import time
 import traceback
 from collections import defaultdict
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -571,9 +571,9 @@ def c_months_c(
 
 
 def csv_make_val(v):
-    if isinstance(v, (set, list)):
+    if isinstance(v, (Set, list)):
         if len(v) == 1:
-            return csv_make_val(v.pop())
+            return csv_make_val(next(iter(v)))
         elif 1 < len(v) < 4:
             vals = set(str(csv_make_val(val)) for val in v)
             return ' | '.join(sorted(vals))
@@ -588,9 +588,9 @@ def csv_make_val(v):
 
 
 def make_val(v):
-    if isinstance(v, (set, list)):
+    if isinstance(v, (Set, list)):
         if len(v) == 1:
-            return make_val(v.pop())
+            return make_val(next(iter(v)))
         elif 1 < len(v) < 4:
             vals = set(str(csv_make_val(val)) for val in v)
             return ' | '.join(sorted(vals))

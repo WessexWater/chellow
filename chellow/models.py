@@ -5,7 +5,7 @@ import operator
 import os.path
 import sys
 from binascii import hexlify, unhexlify
-from collections.abc import Mapping
+from collections.abc import Mapping, Set
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal
 from functools import lru_cache
@@ -22,6 +22,7 @@ from sqlalchemy import (
     Boolean, Column, DateTime, Enum, ForeignKey, Integer, LargeBinary, Numeric,
     String, Text, and_, create_engine, event, not_, null, or_
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, ProgrammingError, SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
@@ -4293,6 +4294,91 @@ class GExitZone(Base, PersistentClass):
             raise BadRequest(
                 "The Exit Zone with code " + code + " can't be found.")
         return typ
+
+
+class ReportRun(Base, PersistentClass):
+    __tablename__ = 'report_run'
+    id = Column(Integer, primary_key=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, index=True)
+    creator = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False, index=True)
+    title = Column(String, nullable=False, index=True)
+    state = Column(String, nullable=False, index=True)
+    rows = relationship(
+        'ReportRunRow', backref='report_run', cascade="all, delete-orphan",
+        passive_deletes=True)
+
+    def __init__(self, name, user, title):
+        self.name = name
+
+        if user is None:
+            creator = ''
+        else:
+            if hasattr(user, 'proxy_username'):
+                creator = user.proxy_username
+            else:
+                creator = user.email_address
+        self.creator = creator
+
+        self.title = title
+        self.date_created = utc_datetime_now()
+        self.state = 'running'
+
+    def update(self, state):
+        self.state = state
+
+    def insert_row(self, sess, tab, titles, values):
+        vals = {
+            'titles': titles,
+            'values': values
+        }
+        row = ReportRunRow(self, tab, vals)
+        sess.add(row)
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
+def _jsonize(val):
+    if isinstance(val, dict):
+        d = {}
+        for k, v in val.items():
+            d[k] = _jsonize(v)
+        return d
+
+    elif isinstance(val, list):
+        array = []
+        for v in val:
+            array.append(_jsonize(v))
+        return array
+
+    elif isinstance(val, Set):
+        return [_jsonize(v) for v in sorted(val)[:3]]
+
+    elif isinstance(val, Decimal):
+        return float(val)
+
+    elif isinstance(val, Datetime):
+        return hh_format(val)
+
+    else:
+        return val
+
+
+class ReportRunRow(Base, PersistentClass):
+    __tablename__ = 'report_run_row'
+    id = Column(Integer, primary_key=True)
+    report_run_id = Column(
+        Integer, ForeignKey('report_run.id', ondelete='CASCADE'),
+        index=True, nullable=False)
+    tab = Column(String, nullable=False, index=True)
+    data = Column(JSONB, nullable=False)
+
+    def __init__(self, report_run, tab, data):
+        self.report_run = report_run
+        self.tab = tab
+        self.data = _jsonize(data)
 
 
 def read_file(pth, fname, attr):

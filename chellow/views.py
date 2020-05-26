@@ -1,7 +1,7 @@
 import csv
 import gc
 import importlib
-import io
+import json
 import math
 import os
 import platform
@@ -37,8 +37,9 @@ from chellow.models import (
     GReadType, GReadingFrequency, GRegisterRead, GSupply, GUnit, GeneratorType,
     GspGroup, HhDatum, Llfc, METER_TYPES, MarketRole, MeasurementRequirement,
     MeterPaymentType, MeterType, Mtc, Participant, Party, Pc, RateScript,
-    ReadType, RegisterRead, Report, Scenario, Site, SiteEra, SiteGEra, Snag,
-    Source, Ssc, Supply, Tpr, User, UserRole, VoltageLevel
+    ReadType, RegisterRead, Report, ReportRun, ReportRunRow, Scenario, Session,
+    Site, SiteEra, SiteGEra, Snag, Source, Ssc, Supply, Tpr, User, UserRole,
+    VoltageLevel, db_upgrade
 )
 from chellow.utils import (
     HH, PropDict, c_months_u, csv_make_val, ct_datetime_now, get_file_scripts,
@@ -50,23 +51,105 @@ from chellow.utils import (
 from dateutil.relativedelta import relativedelta
 
 from flask import (
-    Blueprint, Response, current_app, flash, g, jsonify, make_response,
-    redirect, render_template, request, send_file
-)
+    Blueprint, Flask, Response, current_app, flash, g, jsonify, make_response,
+    redirect, render_template, request, send_file)
 
 import psutil
 
 from pympler import muppy, summary
 
 from sqlalchemy import (
-    Float, case, cast, false, func, not_, null, or_, text, true
-)
+    Float, case, cast, false, func, not_, null, or_, text, true)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest, NotFound
 
 from zish import dumps, loads
+
+
+app = Flask('chellow', instance_relative_config=True)
+app.secret_key = os.urandom(24)
+
+
+@app.before_first_request
+def before_first_request():
+    db_upgrade(app.root_path)
+    chellow.rcrc.startup()
+    chellow.bsuos.startup()
+    chellow.system_price.startup()
+    chellow.hh_importer.startup()
+    chellow.tlms.startup()
+    chellow.bank_holidays.startup()
+    chellow.dloads.startup(app.instance_path)
+    chellow.g_cv.startup()
+    chellow.utils.root_path = app.root_path
+
+    try:
+        scheme = request.headers['X-Forwarded-Proto']
+    except KeyError:
+        sess = Session()
+        try:
+            config_contract = Contract.get_non_core_by_name(
+                sess, 'configuration')
+            props = config_contract.make_properties()
+            scheme = props.get('redirect_scheme', 'http')
+        finally:
+            sess.close()
+
+    try:
+        host = request.headers['X-Forwarded-Host']
+    except KeyError:
+        host = request.host
+
+    chellow.utils.url_root = scheme + '://' + host + '/'
+
+
+@app.before_request
+def before_request():
+    g.sess = Session()
+
+    print(
+        ' '.join(
+            '-' if v is None else v for v in (
+                request.remote_addr, str(request.user_agent),
+                request.remote_user,
+                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
+                '"' + request.method + ' ' + request.path + ' ' +
+                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    if getattr(g, 'sess', None) is not None:
+        g.sess.close()
+
+
+@app.context_processor
+def chellow_context_processor():
+    global_alerts = []
+    for task in chellow.hh_importer.tasks.values():
+        if task.is_error:
+            try:
+                contract = Contract.get_by_id(g.sess, task.contract_id)
+                global_alerts.append(
+                    "There's a problem with the automatic HH data importer "
+                    "for contract '" + str(contract.name) + "'.")
+            except NotFound:
+                pass
+
+    for importer in (
+            chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer):
+        if importer is not None and importer.global_alert is not None:
+            global_alerts.append(importer.global_alert)
+
+    return {'current_user': g.user, 'global_alerts': global_alerts}
+
+
+TEMPLATE_FORMATS = {
+    'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
+    'minute': '%M', 'full': '%Y-%m-%d %H:%M', 'date': '%Y-%m-%d'}
+
 
 views = Blueprint('', __name__, template_folder='templates')
 
@@ -632,7 +715,7 @@ def general_imports_post():
         if not file_name.endswith('.csv'):
             raise BadRequest(
                 "The file name should have the extension '.csv'.")
-        f = io.StringIO(
+        f = StringIO(
             str(
                 file_item.stream.read(), encoding='utf-8-sig',
                 errors='ignore'))
@@ -671,7 +754,7 @@ def edi_viewer_post():
     try:
         file_item = request.files["edi_file"]
         file_name = file_item.filename
-        f = io.StringIO(
+        f = StringIO(
             str(
                 file_item.stream.read(), encoding='utf-8-sig',
                 errors='ignore'))
@@ -2186,7 +2269,7 @@ def dc_contracts_hh_imports_post(contract_id):
         contract = Contract.get_dc_by_id(g.sess, contract_id)
 
         file_item = request.files["import_file"]
-        f = io.StringIO(str(file_item.stream.read(), 'utf-8'))
+        f = StringIO(str(file_item.stream.read(), 'utf-8'))
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)
@@ -2851,6 +2934,156 @@ def download_post(fname):
     full_name = os.path.join(download_path, name)
     os.remove(full_name)
     return chellow_redirect("/downloads", 303)
+
+
+@views.route('/report_runs')
+def report_runs_get():
+    runs = g.sess.query(ReportRun).order_by(ReportRun.date_created.desc())
+
+    return render_template('report_runs.html', runs=runs)
+
+
+@views.route('/report_runs/<int:run_id>')
+def report_run_get(run_id):
+    run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
+    if run.name == 'bill_check':
+        row = g.sess.query(ReportRunRow).filter(
+            ReportRunRow.report_run == run).order_by(ReportRunRow.id).first()
+        elements = []
+        summary = {}
+        if row is None:
+            pass
+
+        else:
+            titles = row.data['titles']
+            diff_titles = [
+                t for t in titles if t.startswith("difference-") and
+                t.endswith("-gbp")]
+            diff_selects = [
+                func.sum(ReportRunRow.data['values'][t].as_float())
+                for t in diff_titles]
+            sum_diffs = g.sess.query(*diff_selects).filter(
+                ReportRunRow.report_run == run).one()
+
+            for t, sum_diff in zip(diff_titles, sum_diffs):
+                elem = t[11:-4]
+                if elem == 'net':
+                    summary['sum_difference'] = sum_diff
+                else:
+                    elements.append((elem, sum_diff))
+
+            elements.sort(key=lambda x: abs(x[1]), reverse=True)
+            elements.insert(0, ('net', summary['sum_difference']))
+
+        if 'element' in request.values:
+            element = req_str('element')
+        else:
+            element = 'net'
+
+        order_by = f'difference-{element}-gbp'
+        rows = g.sess.query(ReportRunRow).filter(
+            ReportRunRow.report_run == run).order_by(
+                func.abs(
+                    ReportRunRow.data['values'][order_by].as_float()).desc()
+            ).limit(200).all()
+        return render_template(
+            'report_run_bill_check.html', run=run, rows=rows,
+            summary=summary, elements=elements, element=element)
+
+    else:
+        order_by = 'row.id'
+        ob = ReportRunRow.id
+        summary = {}
+
+        rows = g.sess.query(ReportRunRow).filter(
+            ReportRunRow.report_run == run).order_by(ob).limit(200).all()
+
+        return render_template(
+            'report_run.html', run=run, rows=rows, order_by=order_by,
+            summary=summary)
+
+
+@views.route('/report_runs/<int:run_id>', methods=['POST'])
+def report_run_post(run_id):
+    run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
+    run.delete(g.sess)
+    g.sess.commit()
+    return chellow_redirect("/report_runs", 303)
+
+
+@views.route('/report_runs/<int:run_id>/spreadsheet')
+def report_run_spreadsheet_get(run_id):
+    run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
+
+    si = StringIO()
+    cw = csv.writer(si)
+
+    first_row = g.sess.query(ReportRunRow).filter(
+        ReportRunRow.report_run == run).order_by(ReportRunRow.id).first()
+
+    titles = first_row.data['titles']
+    cw.writerow(titles)
+
+    for row in g.sess.query(ReportRunRow).filter(
+            ReportRunRow.report_run == run).order_by(ReportRunRow.id):
+        cw.writerow([csv_make_val(row.data['values'][t]) for t in titles])
+
+    output = make_response(si.getvalue())
+    output.headers["Content-Disposition"] = \
+        f'attachment; filename="{run.title}"'
+    output.headers["Content-type"] = "text/csv"
+    return output
+
+
+@views.route('/report_run_rows/<int:row_id>')
+def report_run_row_get(row_id):
+    row = g.sess.query(ReportRunRow).filter(ReportRunRow.id == row_id).one()
+    raw_data = json.dumps(row.data, sort_keys=True, indent=4)
+    tables = []
+
+    if row.report_run.name == 'bill_check':
+        values = row.data['values']
+        elements = {}
+        for t in row.data['values'].keys():
+            if t == 'difference-tpr-gbp':
+                continue
+
+            if (t.startswith('covered-') or t.startswith('virtual-') or
+                    t.startswith('difference-')) and t not in (
+                    'covered-from', 'covered-to', 'covered-bills',
+                    'covered-problem', 'virtual-problem'):
+
+                toks = t.split('-')
+                name = toks[1]
+                try:
+                    table = elements[name]
+                except KeyError:
+                    table = elements[name] = {'order': 0}
+
+                if 'titles' not in table:
+                    table['titles'] = []
+                table['titles'].append(toks[0] + '-' + '-'.join(toks[2:]))
+                if 'values' not in table:
+                    table['values'] = []
+                table['values'].append(values[t])
+                if t.startswith('difference-') and t.endswith('-gbp'):
+                    table['order'] = abs(values[t])
+
+        for k, v in elements.items():
+            if k == 'net':
+                continue
+            v['name'] = k
+            tables.append(v)
+
+        tables.sort(key=lambda t: t['order'], reverse=True)
+        return render_template(
+            'report_run_row_bill_check.html', row=row, raw_data=raw_data,
+            tables=tables)
+
+    else:
+
+        return render_template(
+            'report_run_row.html', row=row, raw_data=raw_data, tables=tables)
 
 
 @views.route('/channel_snags')
