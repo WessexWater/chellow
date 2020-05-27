@@ -131,7 +131,7 @@ def test_process_segment_CCD2(mocker):
         'bill_type_code': 'N',
         'reference': 'kdhgsf_aahedc',
         'issue_date': issue_date,
-        'mpan_cores': '22 7673 9575 6734',
+        'mpan_core': '22 7673 9575 6734',
         'account': '22 7673 9575 6734',
         'start_date': utc_datetime(2019, 9, 30, 23, 0),
         'finish_date': utc_datetime(2019, 10, 31, 23, 30),
@@ -149,7 +149,6 @@ def test_process_segment_CCD2(mocker):
     }
 
     assert headers == expected_headers
-    print(bill)
     assert bill == expected_bill
     assert isinstance(bill['kwh'], Decimal)
     assert isinstance(bill['net'], Decimal)
