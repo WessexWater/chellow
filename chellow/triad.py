@@ -55,14 +55,11 @@ def _process_hh(ds, rate_period, est_kw, hh):
     if ds.site is None:
         era = ds.supply.find_era_at(ds.sess, earliest_triad)
         if era is None or era.get_channel(
-                ds.sess, ds.is_import, 'ACTIVE') is None:
-            if est_kw is not None:
-                est_triad_kw = est_kw
-            else:
-                est_triad_kw = 0.85 * max(
-                    datum['msp-kwh'] for datum in ds.hh_data) * 2
+                ds.sess, ds.is_import, 'ACTIVE') is None and est_kw is None:
+            est_kw = 0.85 * max(datum['msp-kwh'] for datum in ds.hh_data) * 2
+        if est_kw is not None:
             for est_datum in est_triad_kws:
-                est_datum['msp-kw'] = est_triad_kw
+                est_datum['msp-kw'] = est_kw
                 est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
 
     gsp_kw = 0
