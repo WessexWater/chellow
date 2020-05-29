@@ -204,7 +204,7 @@ def _process_segment(code, elements, line, headers):
             mpan_core = ' '.join((m[:2], m[2:6], m[6:10], m[10:]))
 
             cons = elements['CONS']
-            kwh = None
+            kwh = Decimal('0')
             if eln_cons is not None and len(cons[0]) > 0:
                 el_cons = _to_decimal(cons, '1000')
                 breakdown[eln_cons] = kwh = el_cons
@@ -242,7 +242,7 @@ def _process_segment(code, elements, line, headers):
                 'account': mpan_core,
                 'start_date': start_date,
                 'finish_date': finish_date,
-                'kwh': kwh if eln_gbp == 'ro-gbp' else Decimal('0.00'),
+                'kwh': kwh if eln_gbp == 'ro-gbp' else Decimal('0'),
                 'net': net,
                 'vat': Decimal('0.00'),
                 'gross': net,

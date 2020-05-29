@@ -322,3 +322,73 @@ def test_process_segment_ccd2_blank_CONS(mocker):
     }
     chellow.bill_parser_engie_edi._process_segment(
         code, elements, line, headers)
+
+
+def test_process_segment_CCD2_blank_ro(mocker):
+    code = 'CCD'
+    elements = {
+        'CCDE': ['2', 'ADD'],
+        'TCOD': ['378246', 'Ro'],
+        'TMOD': [],
+        'MTNR': [],
+        'MLOC': ['22767395756734'],
+        'PRDT': [],
+        'PVDT': [],
+        'NDRP': [],
+        'PRRD': [],
+        'CONS': [''],
+        'CONB': [],
+        'ADJF': ['UG'],
+        'CONA': [],
+        'BPRI': ['974'],
+        'NUCT': [],
+        'CSDT': ['191001'],
+        'CEDT': ['191101'],
+        'CPPU': ['748'],
+        'CTOT': ['76981'],
+    }
+    line = ''
+    reference = 'kdhgsf'
+    issue_date = utc_datetime(2019, 4, 1)
+    headers = {
+        'reference': reference,
+        'issue_date': issue_date,
+        'bill_type_code': 'N'
+    }
+    bill = chellow.bill_parser_engie_edi._process_segment(
+        code, elements, line, headers)
+    expected_headers = {
+        'bill_type_code': 'N',
+        'reference': reference,
+        'issue_date': issue_date,
+        'mpan_core': '22 7673 9575 6734',
+        'bill_start_date': to_utc(ct_datetime(2019, 10, 1)),
+        'bill_finish_date': to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+    }
+    expected_bill = {
+        'bill_type_code': 'N',
+        'reference': 'kdhgsf_ro',
+        'issue_date': issue_date,
+        'mpan_core': '22 7673 9575 6734',
+        'account': '22 7673 9575 6734',
+        'start_date': utc_datetime(2019, 9, 30, 23, 0),
+        'finish_date': utc_datetime(2019, 10, 31, 23, 30),
+        'kwh': Decimal('0.00'),
+        'net': Decimal('769.81'),
+        'vat': 0,
+        'gross': Decimal('769.81'),
+        'breakdown': {
+            'raw-lines': '',
+            'ro-rate': [Decimal('0.00974')],
+            'ro-gbp': Decimal('769.81')
+        },
+        'reads': []
+    }
+
+    assert headers == expected_headers
+    assert bill == expected_bill
+    assert isinstance(bill['kwh'], Decimal)
+    assert isinstance(bill['net'], Decimal)
+    assert isinstance(bill['vat'], Decimal)
+    assert isinstance(bill['gross'], Decimal)
+    assert str(bill['net']) == str(expected_bill['net'])
