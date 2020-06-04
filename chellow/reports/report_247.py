@@ -832,8 +832,7 @@ def content(
                 join(Source).filter(
                     Era.start_date <= finish_date_utc, or_(
                         Era.finish_date == null(),
-                        Era.finish_date >= start_date_utc),
-                    Source.code.in_(('net', '3rd-party'))
+                        Era.finish_date >= start_date_utc)
                 ).distinct().order_by(Contract.id)
             if supply_id is not None:
                 conts = conts.filter(Era.supply_id == supply_id)
