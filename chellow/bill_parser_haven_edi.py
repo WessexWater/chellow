@@ -12,11 +12,147 @@ from chellow.models import Session, Supply
 READ_TYPE_MAP = {
     '00': 'N',
     '02': 'E',
-    '04': 'E',
-    '06': 'E',
+    '04': 'C',
+    '06': 'I',
 }
 
 SSC_MAP = {
+    # 0326
+    '20 0000 5855 970': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0000 6048 528': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 1909 377': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 2254 214': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 2326 515': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 2371 155': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 5282 171': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 5476 287': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 6228 157': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 6440 184': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    '20 0002 6419 768': {
+        'Night': '00187',
+        'Other': '00210',
+        'Weekday': '00184'
+    },
+    # 0246
+    '22 0001 3834 361': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0001 4442 321': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1401 756': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1427 578': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1442 103': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1502 222': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1528 986': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1540 176': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1589 599': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1823 142': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1829 376': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1839 541': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1878 160': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    '22 0002 1394 727': {
+        'Night': '00277',
+        'Other': '00160',
+        'Weekday': '00276',
+    },
+    # 0174
+    '20 0002 6308 157': {
+        'Day': '01072',
+        'Night': '01071'
+    },
+    '20 0002 6467 511': {
+        'Day': '01072',
+        'Night': '01071'
+    },
     '0008': {
         'Other': '00159',
     },
@@ -235,12 +371,16 @@ def _process_MTR(elements, headers):
         if era is None:
             era = supply.find_last_era(sess)
         if era is not None and era.ssc is not None:
-            ssc_code = era.ssc.code
             try:
-                tpr_map = SSC_MAP[ssc_code]
+                ssc_lookup = era.imp_mpan_core
+                tpr_map = SSC_MAP[ssc_lookup]
             except KeyError:
-                raise BadRequest(
-                    "The SSC " + ssc_code + " isn't in the SSC_MAP.")
+                ssc_lookup = era.ssc.code
+                try:
+                    tpr_map = SSC_MAP[ssc_lookup]
+                except KeyError:
+                    raise BadRequest(
+                        "The SSC " + ssc_lookup + " isn't in the SSC_MAP.")
 
             for read in reads:
                 desc = read['tpr_code']
@@ -249,7 +389,7 @@ def _process_MTR(elements, headers):
                 except KeyError:
                     raise BadRequest(
                         "The description " + desc + " isn't in the SSC_MAP "
-                        "for the SSC " + ssc_code + ".")
+                        "for the SSC " + ssc_lookup + ".")
 
             for el in headers['bill_elements']:
                 if el.titles is None:
@@ -258,7 +398,7 @@ def _process_MTR(elements, headers):
                     except KeyError:
                         raise BadRequest(
                             "The billing element description " + el.desc +
-                            " isn't in the SSC_MAP for the SSC " + ssc_code +
+                            " isn't in the SSC_MAP for the SSC " + ssc_lookup +
                             ".")
 
                     titles = (tpr + '-gbp', tpr + '-rate', tpr + '-kwh')
