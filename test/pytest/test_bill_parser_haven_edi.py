@@ -108,7 +108,7 @@ def test_process_MTR_UTLBIL(mocker):
         'gross': 0,
         'breakdown': {
             '00206-gbp': Decimal(gbp),
-            '00206-rate': Decimal('0.0001'),
+            '00206-rate': {Decimal('0.0001')},
             '00206-kwh': Decimal(cons)
         },
         'reads': [
@@ -168,6 +168,7 @@ def test_process_MHD(mocker):
         'kwh': Decimal('0')
     }
     assert headers == expected_headers
+    assert type(headers['breakdown']) == type(expected_headers)
 
 
 def test_process_CCD_3(mocker):

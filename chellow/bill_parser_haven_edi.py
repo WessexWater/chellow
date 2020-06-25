@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from dateutil.relativedelta import relativedelta
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 from chellow.edi_lib import EdiParser, SEGMENTS
 from chellow.utils import HH, to_utc, to_ct, parse_mpan_core
 from io import StringIO
@@ -297,6 +297,7 @@ class Parser():
             except BadRequest as e:
                 raise BadRequest(
                     "Can't parse the line: " + line + " :" + e.description)
+
             if bill is not None:
                 raw_bills.append(bill)
         sess.close()
@@ -431,7 +432,13 @@ def _process_MTR(elements, headers):
             breakdown[eln_gbp] = bill_el.gbp
             rate = bill_el.rate
             if eln_rate is not None and rate is not None:
-                breakdown[eln_rate] = rate
+                try:
+                    rates = breakdown[eln_rate]
+                except KeyError:
+                    rates = breakdown[eln_rate] = set()
+
+                rates.add(rate)
+
             cons = bill_el.cons
             if eln_cons is not None and cons is not None:
                 breakdown[eln_cons] = cons
@@ -447,7 +454,7 @@ def _process_MTR(elements, headers):
             'net': headers['net'],
             'vat': headers['vat'],
             'gross': headers['gross'],
-            'breakdown': headers['breakdown'],
+            'breakdown': breakdown,
             'reads': reads,
             'bill_type_code': headers['bill_type_code'],
         }
@@ -460,7 +467,7 @@ def _process_MHD(elements, headers):
         headers.clear()
         headers['kwh'] = Decimal('0')
         headers['reads'] = []
-        headers['breakdown'] = defaultdict(int, {'raw-lines': []})
+        headers['breakdown'] = {'raw-lines': []}
         headers['bill_elements'] = []
         headers['sess'] = sess
     headers['message_type'] = message_type
@@ -492,15 +499,21 @@ def _process_CCD(elements, headers):
         m = elements['MLOC'][0]
         mpan_core = ' '.join((m[:2], m[2:6], m[6:10], m[10:]))
         '''
+        breakdown = headers['breakdown']
 
         cons = elements['CONS']
         if eln_cons is not None and len(cons[0]) > 0:
             el_cons = _to_decimal(cons, '1000')
-            headers['breakdown'][eln_cons] = el_cons
+            breakdown[eln_cons] = el_cons
 
         if eln_rate is not None:
             rate = _to_decimal(elements['BPRI'], '100000')
-            headers['breakdown'][eln_rate] = [rate]
+            try:
+                rates = breakdown[eln_rate]
+            except KeyError:
+                rates = breakdown[eln_rate] = set()
+
+            rates.append(rate)
 
         '''
         start_date = _to_date(elements['CSDT'][0])
@@ -512,7 +525,7 @@ def _process_CCD(elements, headers):
         else:
             net = Decimal('0.00')
 
-        headers['breakdown'][eln_gbp] = net
+        breakdown[eln_gbp] = net
 
 
 def _process_CCD_1(elements, headers):
