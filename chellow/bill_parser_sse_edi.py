@@ -378,10 +378,6 @@ class Parser():
                             to_decimal(ctot) / Decimal('100')
             elif code == "MTR":
                 if message_type == "UTLBIL":
-                    for k, v in tuple(breakdown.items()):
-                        if isinstance(v, set):
-                            breakdown[k] = ', '.join(sorted(map(str, v)))
-
                     raw_bill = {
                         'bill_type_code': bill_type_code, 'account': account,
                         'mpan_core': mpan_core, 'reference': reference,

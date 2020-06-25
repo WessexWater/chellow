@@ -16514,7 +16514,10 @@ def virtual_bill(ss):
         'path': '/supplier_bill_imports/12',
         'tries': {},
         'regexes': [
-            r'&#34;fit-rate&#34;: &#34;0.00205, 0.00206&#34;,'
+            r'&#34;fit-rate&#34;: \[\s*'
+            r'0.00205,\s*'
+            r'0.00206\s*'
+            r'\],'
         ],
         'status_code': 200
     },
