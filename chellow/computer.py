@@ -910,7 +910,7 @@ class SupplySource(DataSource):
 
                 bills = dict(
                     (b.id, b) for b in sess.query(Bill).filter(
-                        Bill.supply == self.supply, Bill.reads.any(),
+                        Bill.supply == self.supply,
                         Bill.start_date <= chunk_finish,
                         Bill.finish_date >= chunk_start).order_by(
                         Bill.issue_date.desc(), Bill.start_date))
