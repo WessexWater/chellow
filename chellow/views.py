@@ -3295,10 +3295,10 @@ def supply_hh_data_get(supply_id):
     finish_month = req_int("finish_month")
     supply = Supply.get_by_id(g.sess, supply_id)
 
-    finish_date = utc_datetime(finish_year, finish_month) + \
-        relativedelta(months=1) - HH
-    start_date = utc_datetime(finish_year, finish_month) - \
-        relativedelta(months=months-1)
+    month_pairs = list(
+        c_months_u(
+            finish_year=finish_year, finish_month=finish_month, months=months))
+    start_date, finish_date = month_pairs[0][0], month_pairs[-1][1]
 
     era = g.sess.query(Era).filter(
         Era.supply == supply, Era.start_date <= finish_date, or_(
