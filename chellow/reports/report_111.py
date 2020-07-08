@@ -250,7 +250,7 @@ def _process_supply(
         bill_finish = bill.finish_date
 
         covered_start = bill_start
-        covered_finish = bill_finish
+        covered_finish = bill_start
         covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
 
         vb_elems = set()
