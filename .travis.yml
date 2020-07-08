@@ -1,8 +1,8 @@
 os: linux
-dist: trusty
+dist: xenial
 language: python
 python:
-  - '3.5'
+  - '3.6'
 
 install:
   - pip install tox
@@ -11,7 +11,7 @@ script:
   - tox
 
 addons:
-  postgresql: '9.5'
+  postgresql: '10'
 
 git:
   depth: 1000000
