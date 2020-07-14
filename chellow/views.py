@@ -10,7 +10,8 @@ from chellow.models import (
     RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
     ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
     GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency, Scenario)
+    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency, Scenario,
+    BatchFile)
 from sqlalchemy.exc import IntegrityError
 import traceback
 from datetime import datetime as Datetime
@@ -2764,7 +2765,7 @@ def supplier_batch_add_post(contract_id):
 
         batch = contract.insert_batch(g.sess, reference, description)
         g.sess.commit()
-        return chellow_redirect("/supplier_batches/" + str(batch.id), 303)
+        return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
 
     except BadRequest as e:
         flash(e.description)
@@ -2775,42 +2776,6 @@ def supplier_batch_add_post(contract_id):
             render_template(
                 'supplier_batch_add.html', contract=contract, batches=batches),
             400)
-
-
-@app.route('/supplier_bill_imports')
-def supplier_bill_imports_get():
-    batch_id = req_int('supplier_batch_id')
-    batch = Batch.get_by_id(g.sess, batch_id)
-    importer_ids = sorted(
-        chellow.bill_importer.get_bill_import_ids(batch.id), reverse=True)
-    return render_template(
-        'supplier_bill_imports.html', batch=batch, importer_ids=importer_ids,
-        parser_names=chellow.bill_importer.find_parser_names())
-
-
-@app.route('/supplier_bill_imports', methods=['POST'])
-def supplier_bill_imports_post():
-    try:
-        batch_id = req_int('supplier_batch_id')
-        batch = Batch.get_by_id(g.sess, batch_id)
-        file_item = request.files["import_file"]
-        f = io.BytesIO(file_item.stream.read())
-        f.seek(0, os.SEEK_END)
-        file_size = f.tell()
-        f.seek(0)
-        import_id = chellow.bill_importer.start_bill_import(
-            g.sess, batch.id, file_item.filename, file_size, f)
-        return chellow_redirect(
-            "/supplier_bill_imports/" + str(import_id), 303)
-    except BadRequest as e:
-        flash(e.description)
-        importer_ids = sorted(
-            chellow.bill_importer.get_bill_import_ids(batch.id), reverse=True)
-        return make_response(
-            render_template(
-                'supplier_bill_imports.html', batch=batch,
-                importer_ids=importer_ids,
-                parser_names=chellow.bill_importer.find_parser_names()), 400)
 
 
 @app.route('/supplier_bill_imports/<int:import_id>')
@@ -2867,11 +2832,134 @@ def supplier_batch_get(batch_id):
             batch_reports.append(Report.get_by_id(g.sess, report_id))
     else:
         batch_reports = None
+
+    importer_ids = sorted(
+        chellow.bill_importer.get_bill_import_ids(batch), reverse=True)
     return render_template(
         'supplier_batch.html', batch=batch, bills=bills,
         batch_reports=batch_reports, num_bills=num_bills,
         sum_net_gbp=sum_net_gbp, sum_vat_gbp=sum_vat_gbp,
-        sum_gross_gbp=sum_gross_gbp, sum_kwh=sum_kwh)
+        sum_gross_gbp=sum_gross_gbp, sum_kwh=sum_kwh,
+        importer_ids=importer_ids)
+
+
+@app.route('/supplier_batches/<int:batch_id>', methods=['POST'])
+def supplier_batch_post(batch_id):
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        if 'import_bills' in request.values:
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/supplier_bill_imports/{import_id}", 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            return chellow_redirect(f'/supplier_batches/{batch.id}', 303)
+        elif 'delete_import_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/supplier_bill_imports/{import_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        importer_ids = sorted(
+            chellow.bill_importer.get_bill_import_ids(batch),
+            reverse=True)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'supplier_batch.html', batch=batch, importer_ids=importer_ids,
+                parser_names=parser_names), 400)
+
+
+@app.route('/supplier_batches/<int:batch_id>/upload_file')
+def supplier_batch_upload_file_get(batch_id):
+    batch = Batch.get_by_id(g.sess, batch_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+    bf = g.sess.query(BatchFile).join(Batch).filter(
+        Batch.contract == batch.contract).order_by(
+        BatchFile.upload_timestamp.desc()).first()
+    default_parser_name = bf.parser_name if bf is not None else None
+
+    return render_template(
+        'supplier_batch_upload_file.html', batch=batch,
+        parser_names=parser_names, default_parser_name=default_parser_name)
+
+
+@app.route('/supplier_batches/<int:batch_id>/upload_file', methods=['POST'])
+def supplier_batch_upload_file_post(batch_id):
+    batch = None
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        file_item = request.files["import_file"]
+        parser_name = req_str('parser_name')
+
+        batch_file = batch.insert_file(
+            g.sess, file_item.filename, file_item.stream.read(), parser_name)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_batch_files/{batch_file.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'supplier_batch_upload_file.html', batch=batch,
+                parser_names=parser_names), 400)
+
+
+@app.route('/supplier_batch_files/<int:file_id>')
+def supplier_batch_file_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    return render_template('supplier_batch_file.html', batch_file=batch_file)
+
+
+@app.route('/supplier_batch_files/<int:file_id>/download')
+def supplier_batch_file_download_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+    output = make_response(batch_file.data)
+    output.headers["Content-Disposition"] = \
+        f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-type"] = "application/octet-stream"
+    return output
+
+
+@app.route('/supplier_batch_files/<int:file_id>/edit')
+def supplier_batch_file_edit_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+    return render_template(
+        'supplier_batch_file_edit.html',
+        batch_file=batch_file, parser_names=parser_names)
+
+
+@app.route('/supplier_batch_files/<int:file_id>/edit', methods=['POST'])
+def supplier_batch_file_edit_post(file_id):
+    batch_file = None
+    try:
+        batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+        if 'delete' in request.values:
+            batch_id = batch_file.batch.id
+            batch_file.delete(g.sess)
+            g.sess.commit()
+            flash("Deletion successful")
+            return chellow_redirect(f"/supplier_batches/{batch_id}", 303)
+
+        else:
+            parser_name = req_str('parser_name')
+            batch_file.update(parser_name)
+            g.sess.commit()
+            flash("Update successful")
+            return chellow_redirect(
+                f"/supplier_batch_files/{batch_file.id}", 303)
+
+    except BadRequest as e:
+        flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'supplier_batch_file_edit.html', batch_file=batch_file,
+                parser_names=parser_names), 400)
 
 
 @app.route('/hh_data/<int:datum_id>/edit')
@@ -3608,6 +3696,34 @@ def dc_batch_csv_get(batch_id):
     return output
 
 
+@app.route('/dc_batches/<int:batch_id>', methods=['POST'])
+def dc_batch_post(batch_id):
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        if 'import_bills' in request.values:
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            return chellow_redirect(f'/dc_batches/{batch.id}', 303)
+        elif 'delete_import_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        importer_ids = sorted(
+            chellow.bill_importer.get_bill_import_ids(batch),
+            reverse=True)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'dc_batch.html', batch=batch, importer_ids=importer_ids,
+                parser_names=parser_names), 400)
+
+
 @app.route('/supplier_bills/<int:bill_id>/edit')
 def supplier_bill_edit_get(bill_id):
     bill_types = g.sess.query(BillType).order_by(BillType.code).all()
@@ -3718,38 +3834,94 @@ def dc_batch_edit_post(batch_id):
             render_template('dc_batch_edit.html', batch=batch), 400)
 
 
-@app.route('/dc_bill_imports')
-def dc_bill_imports_get():
-    batch_id = req_int('dc_batch_id')
+@app.route('/dc_batches/<int:batch_id>/upload_file')
+def dc_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+
     return render_template(
-        'dc_bill_imports.html', importer_ids=sorted(
-            chellow.bill_importer.get_bill_import_ids(batch.id),
-            reverse=True), batch=batch,
-        parser_names=chellow.bill_importer.find_parser_names())
+        'dc_batch_upload_file.html', batch=batch, parser_names=parser_names)
 
 
-@app.route('/dc_bill_imports', methods=['POST'])
-def dc_bill_imports_post():
+@app.route('/dc_batches/<int:batch_id>/upload_file', methods=['POST'])
+def dc_batch_upload_file_post(batch_id):
+    batch = None
     try:
-        batch_id = req_int('dc_batch_id')
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
+        parser_name = req_str('parser_name')
 
-        f = io.BytesIO(file_item.stream.read())
-        f.seek(0, os.SEEK_END)
-        file_size = f.tell()
-        f.seek(0)
-        import_id = chellow.bill_importer.start_bill_import(
-            g.sess, batch.id, file_item.filename, file_size, f)
-        return chellow_redirect("/dc_bill_imports/" + str(import_id), 303)
+        batch_file = batch.insert_file(
+            g.sess, file_item.filename, file_item.stream.read(), parser_name)
+        g.sess.commit()
+        return chellow_redirect(f"/dc_batch_files/{batch_file.id}", 303)
     except BadRequest as e:
         flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
         return make_response(
             render_template(
-                'dc_bill_imports.html', importer_ids=sorted(
-                    chellow.bill_importer.get_bill_import_ids(batch.id),
-                    reverse=True), batch=batch), 400)
+                'dc_batch_upload_file.html', batch=batch,
+                parser_names=parser_names), 400)
+
+
+@app.route('/dc_batch_files/<int:file_id>')
+def dc_batch_file_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    importer_ids = sorted(
+        chellow.bill_importer.get_bill_import_ids(batch_file), reverse=True)
+    return render_template(
+        'dc_batch_file.html', batch_file=batch_file,
+        importer_ids=importer_ids)
+
+
+@app.route('/dc_batch_files/<int:file_id>/download')
+def dc_batch_file_download_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+    output = make_response(batch_file.data)
+    output.headers["Content-Disposition"] = \
+        f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-type"] = "application/octet-stream"
+    return output
+
+
+@app.route('/dc_batch_files/<int:file_id>/edit')
+def dc_batch_file_edit_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+    return render_template(
+        'dc_batch_file_edit.html', batch_file=batch_file,
+        parser_names=parser_names)
+
+
+@app.route('/dc_batch_files/<int:file_id>/edit', methods=['POST'])
+def dc_batch_file_edit_post(file_id):
+    batch_file = None
+    try:
+        batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+        if 'delete' in request.values:
+            batch_id = batch_file.batch.id
+            batch_file.delete(g.sess)
+            g.sess.commit()
+            flash("Deletion successful")
+            return chellow_redirect(f"/dc_batches/{batch_id}", 303)
+
+        else:
+            parser_name = req_str('parser_name')
+            batch_file.update(parser_name)
+            g.sess.commit()
+            flash("Update successful")
+            return chellow_redirect(
+                f"/dc_batch_files/{batch_file.id}", 303)
+
+    except BadRequest as e:
+        flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'dc_batch_file_edit.html', batch_file=batch_file,
+                parser_names=parser_names), 400)
 
 
 @app.route('/dc_bill_imports/<int:import_id>')
@@ -3952,6 +4124,34 @@ def mop_batch_get(batch_id):
     return render_template('mop_batch.html', **fields)
 
 
+@app.route('/mop_batches/<int:batch_id>', methods=['POST'])
+def mop_batch_post(batch_id):
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        if 'import_bills' in request.values:
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
+        elif 'delete_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            return chellow_redirect(f'/mop_batches/{batch.id}', 303)
+        elif 'delete_import_bills' in request.values:
+            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.commit()
+            import_id = chellow.bill_importer.start_bill_import(batch)
+            return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        importer_ids = sorted(
+            chellow.bill_importer.get_bill_import_ids(batch),
+            reverse=True)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'mop_batch.html', batch=batch, importer_ids=importer_ids,
+                parser_names=parser_names), 400)
+
+
 @app.route('/mop_batches/<int:batch_id>/csv')
 def mop_batch_csv_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
@@ -3979,54 +4179,109 @@ def mop_batch_csv_get(batch_id):
     return output
 
 
-@app.route('/mop_bill_imports')
-def mop_bill_imports_get():
-    batch_id = req_int('mop_batch_id')
+@app.route('/mop_batches/<int:batch_id>/upload_file')
+def mop_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+
     return render_template(
-        'mop_bill_imports.html', importer_ids=sorted(
-            chellow.bill_importer.get_bill_import_ids(batch.id),
-            reverse=True), batch=batch,
-        parser_names=chellow.bill_importer.find_parser_names())
+        'mop_batch_upload_file.html', batch=batch, parser_names=parser_names)
 
 
-@app.route('/mop_bill_imports', methods=['POST'])
-def mop_bill_imports_post():
+@app.route('/mop_batches/<int:batch_id>/upload_file', methods=['POST'])
+def mop_batch_upload_file_post(batch_id):
+    batch = None
     try:
-        batch_id = req_int('mop_batch_id')
         batch = Batch.get_by_id(g.sess, batch_id)
         file_item = request.files["import_file"]
-        f = io.BytesIO(file_item.stream.read())
-        f.seek(0, os.SEEK_END)
-        file_size = f.tell()
-        f.seek(0)
-        iid = chellow.bill_importer.start_bill_import(
-            g.sess, batch.id, file_item.filename, file_size, f)
-        return chellow_redirect("/mop_bill_imports/" + str(iid), 303)
+        parser_name = req_str('parser_name')
+
+        batch_file = batch.insert_file(
+            g.sess, file_item.filename, file_item.stream.read(), parser_name)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_batch_files/{batch_file.id}", 303)
     except BadRequest as e:
         flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
         return make_response(
             render_template(
-                'mop_bill_imports.html', importer_ids=sorted(
-                    chellow.bill_importer.get_bill_import_ids(batch.id),
-                    reverse=True), batch=batch), 400)
+                'mop_batch_upload_file.html', batch=batch,
+                parser_names=parser_names), 400)
+
+
+@app.route('/mop_batch_files/<int:file_id>')
+def mop_batch_file_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    importer_ids = sorted(
+        chellow.bill_importer.get_bill_import_ids(batch_file), reverse=True)
+    return render_template(
+        'mop_batch_file.html', batch_file=batch_file,
+        importer_ids=importer_ids)
+
+
+@app.route('/mop_batch_files/<int:file_id>/download')
+def mop_batch_file_download_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+    output = make_response(batch_file.data)
+    output.headers["Content-Disposition"] = \
+        f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-type"] = "application/octet-stream"
+    return output
+
+
+@app.route('/mop_batch_files/<int:file_id>/edit')
+def mop_batch_file_edit_get(file_id):
+    batch_file = BatchFile.get_by_id(g.sess, file_id)
+    parser_names = chellow.bill_importer.find_parser_names()
+    return render_template(
+        'mop_batch_file_edit.html', batch_file=batch_file,
+        parser_names=parser_names)
+
+
+@app.route('/mop_batch_files/<int:file_id>/edit', methods=['POST'])
+def mop_batch_file_edit_post(file_id):
+    batch_file = None
+    try:
+        batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+        if 'delete' in request.values:
+            batch_id = batch_file.batch.id
+            batch_file.delete(g.sess)
+            g.sess.commit()
+            flash("Deletion successful")
+            return chellow_redirect(f"/mop_batches/{batch_id}", 303)
+
+        else:
+            parser_name = req_str('parser_name')
+            batch_file.update(parser_name)
+            g.sess.commit()
+            flash("Update successful")
+            return chellow_redirect(
+                f"/mop_batch_files/{batch_file.id}", 303)
+
+    except BadRequest as e:
+        flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                'mop_batch_file_edit.html', batch_file=batch_file,
+                parser_names=parser_names), 400)
 
 
 @app.route('/mop_bill_imports/<int:import_id>')
 def mop_bill_import_get(import_id):
-    bill_import = chellow.bill_importer.get_bill_import(import_id)
-    batch = Batch.get_by_id(g.sess, bill_import.batch_id)
+    importer = chellow.bill_importer.get_bill_import(import_id)
+    batch = Batch.get_by_id(g.sess, importer.batch_id)
     fields = {'batch': batch}
-    if bill_import is not None:
-        imp_fields = bill_import.make_fields()
+    if importer is not None:
+        imp_fields = importer.make_fields()
         if 'successful_bills' in imp_fields and \
                 len(imp_fields['successful_bills']) > 0:
-            fields['successful_max_registers'] = \
-                max(
-                    len(bill['reads']) for bill in imp_fields[
-                        'successful_bills'])
+            fields['successful_max_registers'] = max(
+                len(bill['reads']) for bill in imp_fields['successful_bills'])
         fields.update(imp_fields)
-        fields['status'] = bill_import.status()
+        fields['status'] = importer.status()
     return render_template('mop_bill_import.html', **fields)
 
 
@@ -4278,10 +4533,6 @@ def supplier_batch_edit_post(batch_id):
             return chellow_redirect(
                 '/supplier_batches?supplier_contract_id=' +
                 str(contract_id), 303)
-        elif 'delete_bills' in request.values:
-            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
-            g.sess.commit()
-            return chellow_redirect('/supplier_batches/' + str(batch.id), 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(

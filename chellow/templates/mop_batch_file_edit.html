@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{batch_file.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{batch_file.batch.reference}} &raquo;
+ 	{{batch_file.filename}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	&raquo; <a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{batch_file.batch.contract.id}}">{{batch_file.batch.contract.name}}</a> &raquo; 
+	<a href="/mop_batches?mop_contract_id={{batch_file.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/mop_batches/{{batch_file.batch.id}}">{{batch_file.batch.reference}}</a> &raquo; 
+	<a href="/mop_batch_files/{{batch_file.id}}">{{batch_file.filename}}</a>
+ 	&raquo; Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.values.confirm_delete %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Are you sure you want to delete this file?</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form
+						 		method="post"
+							 	action="/mop_batch_files/{{batch_file.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<a href="/mop_batch_files/{{batch_file.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>	
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+		
+	{% else %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Update This Batch File</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<ul>
+						<li>Filename: {{batch_file.filename}}</li>
+						<li>
+							Upload Timestamp:
+							{{batch_file.upload_timestamp|hh_format}}
+						</li>
+					</ul>
+					<form action="/mop_batch_files/{{batch_file.id}}/edit" method="post">
+						<fieldset class="grid">
+							<label>Parser</label>
+							<select name="parser_name">
+								{% for parser_name in parser_names  %}
+									{{input_option('bill_parser_name', parser_name, parser_name)}}
+								{% endfor %}
+							</select>
+							<input type="submit" name="update" value="Update">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+		
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Delete This Batch File</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form action="/mop_batch_files/{{batch_file.id}}/edit">
+							<fieldset>
+								<input type="submit" name="confirm_delete" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

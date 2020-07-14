@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{batch_file.batch.contract.name}} &raquo;
+	Batches &raquo; {{batch_file.batch.reference}} &raquo; {{batch_file.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{batch_file.batch.contract.id}}">{{batch_file.batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{batch_file.batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{batch_file.batch.id}}">{{batch_file.batch.reference}}</a> &raquo; 
+	{{batch_file.filename}}
+	[<a href="/supplier_batch_files/{{batch_file.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Billing File</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="etheling">
+					<thead>
+						<tr>
+							<th>Filename</th>
+							<th>Upload Timestamp</th>
+							<th>Parser</th>
+							<th>Download</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>{{batch_file.filename}}</td>
+							<td>{{batch_file.upload_timestamp|hh_format}}</td>
+							<td>{{batch_file.parser_name}}</td>
+							<td>
+								<a href="/supplier_batch_files/{{batch_file.id}}/download">Download</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

@@ -54,7 +54,7 @@ setup(
     install_requires=[
         'odio==0.0.16',
         'pg8000==1.13.2',
-        'Flask==1.0.2',
+        'Flask==1.1.2',
         'SQLAlchemy==1.3.3',
         'openpyxl==2.4.8',
         'python-dateutil==2.4.2',

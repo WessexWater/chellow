@@ -37,26 +37,6 @@
 			</div>
 		</div>
 
-	{% elif request.method == 'GET' and request.values.confirm_delete_bills %}
-		<div class="layer-section">
-			<div class="section-header">
-				<h2>Are you sure you want to delete all the bills in this batch?</h2>	
-			</div>
-			<div class="section-content">
-				<div class="section-data">
-					<div class="standardForm">
-						<form method="post" action="">
-							<fieldset>
-								<input type="submit" name="delete_bills" value="Delete">
-								<input
-										type="reset" value="Cancel"
-										onClick="window.location='/supplier_batches/{{batch.id}}/edit'"/>
-							</fieldset>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
 	{% else %}
 	
 	 <div class="layer-section">
@@ -89,23 +69,6 @@
 			</div>
 		</div>
 	</div>
-
-		<div class="layer-section">
-			<div class="section-header">
-				<h2>Delete all the bills in this batch</h2>	
-			</div>
-			<div class="section-content">
-				<div class="section-data">
-					<div class="standardForm">
-						<form action="">
-							<fieldset>
-								<input type="submit" name="confirm_delete_bills" value="Delete">
-							</fieldset>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
 
 		<div class="layer-section">
 			<div class="section-header">

@@ -1729,18 +1729,22 @@ def virtual_bill_titles():
         'status_code': 200
     },
 
-    # Create a new batch
     {
-        'name': "Batches",
+        'name': "Create a new batch",
         'path': '/supplier_contracts/10/add_batch',
         'method': 'post',
         'data': {
             'reference': "04-003",
-            'description': "Contract 4, batch number 3"},
-        'status_code': 303},
+            'description': "Contract 4, batch number 3"
+        },
+        'regexes': [
+            r'/supplier_batches/1'
+        ],
+        'status_code': 303
+    },
 
-    # Check it gives a good error message for a duplicate name
     {
+        'name': "Check it gives a good error message for a duplicate name",
         'path': '/supplier_contracts/10/add_batch',
         'method': 'post',
         'data': {
@@ -1748,18 +1752,40 @@ def virtual_bill_titles():
             'description': "dup batch"},
         'regexes': [
             r"There&#39;s already a batch attached to the contract "
-            r"Half-hourlies 2007 with the reference 04-003\."],
-        'status_code': 400},
+            r"Half-hourlies 2007 with the reference 04-003\."
+        ],
+        'status_code': 400
+    },
 
-    # Create a new import. Supplier contract 31
     {
-        'name': "Bill imports",
-        'path': '/supplier_bill_imports',
+        'name': "Create a new batch file",
+        'path': '/supplier_batches/1/upload_file',
+        'status_code': 200,
+        'regexes': [
+            r'<option value="haven_edi">haven_edi</option>'
+        ]
+    },
+    {
+        'name': "Create a new batch file",
+        'path': '/supplier_batches/1/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '1'
+            'parser_name': 'mm'
         },
         'files': {'import_file': 'test/bills.mm'},
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_batch_files/1'
+        ]
+    },
+
+    {
+        'name': "Import the bills from a file",
+        'path': '/supplier_batches/1',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import'
+        },
         'status_code': 303,
         'regexes': [
             r'/supplier_bill_imports/0'
@@ -1803,25 +1829,61 @@ def virtual_bill_titles():
             r"K87D74429"],
         'status_code': 200},
 
-    # Create a new batch
     {
+        'name': "Create a new batch",
         'path': '/supplier_contracts/13/add_batch',
         'method': 'post',
         'data': {
             'reference': "06-002",
-            'description': "Bgb batch"},
-        'status_code': 303},
+            'description': "Bgb batch"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/3"
+        ]
+    },
 
     {
-        'name': "Supplier contract 13",
-        'path': '/supplier_bill_imports',
+        'name': "Upload bill file",
+        'path': '/supplier_batches/3/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '3'},
+            'parser_name': 'bgb_edi'
+        },
         'files': {'import_file': 'test/bills.bgb.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/1"]},
+            r"/supplier_batch_files/2"
+        ]
+    },
+
+    {
+        'name': "Test sse edi bill with MD line. Upload file",
+        'path': '/supplier_batches/3/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': "sse_edi",
+        },
+        'files': {'import_file': 'test/bills2.sse.edi'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/3"
+        ]
+    },
+
+    {
+        'name': "Import bills",
+        'path': '/supplier_batches/3',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/1"
+        ]
+    },
+
 
     {
         'name': "Supplier contract 19, batch 3",
@@ -1830,7 +1892,9 @@ def virtual_bill_titles():
         'status_code': 200,
         'regexes': [
             r"All the bills have been successfully loaded and attached to the "
-            r"batch\."]},
+            r"batch\."
+        ]
+    },
 
     # Set a previously estimated HH to actual, supply 1, era 1, channel 3
     {
@@ -1927,33 +1991,47 @@ def virtual_bill_titles():
             r"The file has been imported successfully\."],
         'status_code': 200},
 
-    # Create new batch },
     {
-        'name': "CSV import",
+        'name': "Create new batch",
         'path': '/supplier_contracts/10/add_batch',
         'method': 'post',
         'data': {
             'reference': "06-004",
             'description': "CSV batch"
         },
-        'status_code': 303
+        'status_code': 303,
+        'regexes': [
+            r'/supplier_batches/4'
+        ],
     },
 
     {
-        'name': "Insert bills. Supplier contract",
-        'path': '/supplier_bill_imports',
+        'name': "Upload bill file",
+        'path': '/supplier_batches/4/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '4'
+            'parser_name': 'csv'
         },
         'files': {'import_file': 'test/bills.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/4"
+        ]
+    },
+
+    {
+        'name': "Import bills",
+        'path': '/supplier_batches/4',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
         'status_code': 303,
         'regexes': [
             r"/supplier_bill_imports/2"
         ]
     },
 
-    # Supplier contract 59, batch 4
     {
         'path': '/supplier_bill_imports/2',
         'tries': {},
@@ -4884,23 +4962,41 @@ def virtual_bill(ds):
             'imp_supplier_account': "SA342376000"},
         'status_code': 303},
 
-    # Create a new batch
     {
+        'name': "Create a new batch",
         'path': '/supplier_contracts/16/add_batch',
         'method': 'post',
         'data': {
             'reference': "07-008",
-            'description': "SSE batch"},
-        'status_code': 303},
+            'description': "SSE batch"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/5"
+        ]
+    },
 
-    # Supplier contract 50.
     {
-        'path': '/supplier_bill_imports',
+        'name': "Create batch file",
+        'path': '/supplier_batches/5/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "5"
+            'parser_name': 'sse_edi',
         },
         'files': {'import_file': 'test/bills.sse.edi'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/5"
+        ]
+    },
+
+    {
+        'name': "Import bills",
+        'path': '/supplier_batches/5',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills",
+        },
         'status_code': 303,
         'regexes': [
             r"/supplier_bill_imports/3"
@@ -4974,7 +5070,7 @@ def virtual_bill(ds):
             r'covered-problem,virtual-problem',
             r'07-008,3423760005,N,253,36.16,1.80,'
             r'2010-01-19 00:00,2010-04-20 23:30,22 1065 3921 534,,'
-            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,10,'
+            r'CI017,Roselands,2010-01-19 00:00,2010-04-20 23:30,11,'
             r'0,36.16,0,36.16,253.0,252.99999\d*,,'
         ],
         'status_code': 200
@@ -4987,7 +5083,8 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'code': "B00LG",
-            'name': "Bieling"},
+            'name': "Bieling"
+        },
         'status_code': 303},
     {
         'path': '/sites/8/months?finish_year=2008&finish_month=07',
@@ -5074,25 +5171,45 @@ def virtual_bill(ds):
             'delete': "Delete"},
         'status_code': 303},
 
-    # Create a new batch.
     {
-        'name': "GDF CSV Bills",
+        'name': "Create a new batch. GDF CSV Bills",
         'path': '/supplier_contracts/10/add_batch',
         'method': 'post',
         'data': {
             'reference': "008",
-            'description': "GDF CSV batch"},
-        'status_code': 303},
+            'description': "GDF CSV batch"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/6"
+        ],
+    },
 
     {
-        'name': "Supplier contract 15",
-        'path': '/supplier_bill_imports',
+        'name': "Upload bill file",
+        'path': '/supplier_batches/6/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "6"},
+            'parser_name': 'gdf_csv'
+        },
 
         # File has a character outside 8 bits to check unicode handling
         'files': {'import_file': 'test/bills.gdf.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/6"
+        ]
+    },
+
+    {
+        'name': "Import bills",
+        'path': '/supplier_batches/6',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
+
+        # File has a character outside 8 bits to check unicode handling
         'status_code': 303,
         'regexes': [
             r"/supplier_bill_imports/4"
@@ -6012,9 +6129,11 @@ def virtual_bill(ds):
             r'imp-supplier-ccl-rate,imp-supplier-ccl-gbp,imp-supplier-net-gbp,'
             r'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
-            r'22 9974 3438 105,,CI005,Wheal Rodney,SA341665,'
-            r'2010-04-01 01:00,2010-04-14 00:30,,0,,,0,,,'
-            r',,,0,0,0,0,'
+            r'22 9974 3438 105,,CI005,Wheal Rodney,SA341665,2010-04-01 01:00,'
+            r'2010-04-14 00:30,,0,,,0,,,1569.63221\d*,0.0047,'
+            r'7.37727\d*,7.3772714\d*,0,7.37727\d*,'
+            r'1569.632\d*,,,,,,,,,,,,,,,,'
+
         ],
         'status_code': 200
     },
@@ -6026,17 +6145,46 @@ def virtual_bill(ds):
             'reference': "07-002",
             'description': "nhh csv batch"
         },
-        'status_code': 303
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batches/7"
+        ]
     },
 
     {
         'name': "Supplier contract 16",
-        'path': '/supplier_bill_imports',
+        'path': '/supplier_batches/7/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "7"
+            'parser_name': "csv"
         },
         'files': {'import_file': 'test/bills-nhh.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/7"
+        ]
+    },
+    {
+        'name': "Try sites monthly duration with a clocked bill. Upload file",
+        'path': '/supplier_batches/7/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': "csv"
+        },
+        'files': {'import_file': 'test/bills-nhh-clocked.csv'},
+        'status_code': 303,
+        'regexes': [
+          r'supplier_batch_files/8'
+        ]
+    },
+
+    {
+        'name': "Supplier contract 16",
+        'path': '/supplier_batches/7',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
         'status_code': 303,
         'regexes': [
             r"/supplier_bill_imports/5"
@@ -6122,7 +6270,7 @@ def virtual_bill(ds):
             r'>CI004</a>',
 
             # Check a link to supplier bill is correct
-            r'<a href="/supplier_bills/11">View</a>',
+            r'<a href="/supplier_bills/12">View</a>',
 
             # Check link to supply duration is correct
             r'<form action="/reports/149">\s*<fieldset>\s*'
@@ -6219,12 +6367,12 @@ def virtual_bill(ds):
         'status_code': 200
     },
     {
-        'path': '/supplier_bills/14',
+        'path': '/supplier_bills/16',
         'tries': {},
 
         # Check it's loaded ok
         'regexes': [
-            r'<td>\s*<a href="/reports/111\?bill_id=14">Check</a>\s*</td>',
+            r'<td>\s*<a href="/reports/111\?bill_id=16">Check</a>\s*</td>',
             r'<td>38992</td>\s*<td>\s*<a title="Estimated"\s*'
             r'href="/read_types/5">E</a>\s*</td>\s*'
             r'<td>2007-01-17 00:00</td>\s*<td>39000\s*</td>\s*<td>\s*'
@@ -6235,7 +6383,7 @@ def virtual_bill(ds):
     },
     {
         'name': "Check the 'update bill' page.",
-        'path': '/supplier_bills/10/edit',
+        'path': '/supplier_bills/11/edit',
         'status_code': 200,
         'regexes': [
             r"type_id",
@@ -6279,29 +6427,51 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'reference': "001-7t",
-            'description': "dc batch"},
+            'description': "dc batch"
+        },
         'status_code': 303,
         'regexes': [
-            r"/dc_batches/8"]},
+            r"/dc_batches/8"
+        ]
+    },
 
     {
         'name': "Check that it's there to edit. DC contract 35",
         'path': '/dc_batches/8/edit',
-        'status_code': 200},
+        'status_code': 200
+    },
+
+
     {
-        'name': "View DC bill imports. Contract 13",
-        'path': '/dc_bill_imports?dc_batch_id=8',
-        'status_code': 200,
-        'regexes': [
-            r'<a href="/dc_batches/8">001-7t</a>']},
-    {
-        'name': "Try adding bills to the DC batch. Contract 9",
-        'path': '/dc_bill_imports',
+        'name': "Upload a bill file to the DC batch.",
+        'path': '/dc_batches/8/upload_file',
         'method': 'post',
         'data': {
-            'dc_batch_id': "8"
+            'parser_name': "csv"
         },
         'files': {'import_file': 'test/dc-bill.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/dc_batch_files/9"
+        ]
+    },
+
+    {
+        'name': "View DC batch file",
+        'path': '/dc_batch_files/9',
+        'status_code': 200,
+        'regexes': [
+            r'<a href="/dc_batches/8">001-7t</a>'
+        ]
+    },
+
+    {
+        'name': "Import bills",
+        'path': '/dc_batches/8',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
         'status_code': 303,
         'regexes': [
             r"/dc_bill_imports/6"
@@ -6328,7 +6498,9 @@ def virtual_bill(ds):
             'description': "mop batch"},
         'status_code': 303,
         'regexes': [
-            r"/mop_batches/9"]},
+            r"/mop_batches/9"
+        ]
+    },
 
     {
         'name': "Check that it's there in edit mode. Contract 15",
@@ -6356,13 +6528,25 @@ def virtual_bill(ds):
     },
 
     {
-        'name': "Try adding bills to the MOP batch",
-        'path': '/mop_bill_imports',
+        'name': "Create a batch file.",
+        'path': '/mop_batches/9/upload_file',
         'method': 'post',
         'data': {
-            'mop_batch_id': "9"
+            'parser_name': "csv"
         },
         'files': {'import_file': 'test/mop-bill.csv'},
+        'status_code': 303,
+        'regexes': [
+            r"/mop_batch_files/10"
+        ]
+    },
+    {
+        'name': "Import bills",
+        'path': '/mop_batches/9',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
         'status_code': 303,
         'regexes': [
             r"/mop_bill_imports/7"
@@ -6730,13 +6914,19 @@ def virtual_bill(ds):
             r'<table:table-cell '
             r'office:date-value="2010-07-31T23:30:00" '
             r'office:value-type="date" table:style-name="cell_date"/>\s*'
-            r'<table:table-cell office:value="0" '
-            r'office:value-type="float" table:number-columns-repeated="9"/>\s*'
-            r'<table:table-cell office:value="20.0" '
+            r'<table:table-cell office:value="3580.074175824037" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
-            r'<table:table-cell office:value="20.0" '
+            r'<table:table-cell office:value="3580.074\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="378.0074\d*" '
+            r'office:value-type="float"/>\s*'
+            r'<table:table-cell office:value="0" '
+            r'office:value-type="float" table:number-columns-repeated="6"/>\s*'
+            r'<table:table-cell office:value="378.007\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float" table:number-columns-repeated="3"/>\s*'
@@ -6749,13 +6939,13 @@ def virtual_bill(ds):
             r'<table:table-cell office:value="10" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="2"/>\s*'
-            r'<table:table-cell office:value="0.0" '
+            r'<table:table-cell office:value="358.0074\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="81"/>\s*'
             r'<table:table-cell office:string-value="" '
             r'office:value-type="string"/>\s*'
             r'<table:table-cell table:number-columns-repeated="21"/>\s*'
-            r'<table:table-cell office:value="0" '
+            r'<table:table-cell office:value="3580.074\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell table:number-columns-repeated="12"/>\s*'
             r'</table:table-row>\s*'
@@ -6927,12 +7117,14 @@ def virtual_bill(ds):
             'bill_type_id': "1",
             'breakdown': "{}"},
         'regexes': [
-            r"/supplier_bills/18"],
-        'status_code': 303},
+            r"/supplier_bills/20"
+        ],
+        'status_code': 303
+    },
 
     {
         'name': "Supplier contract 30, batch 6",
-        'path': '/supplier_bills/18/edit',
+        'path': '/supplier_bills/20/edit',
         'regexes': [
             r'<select name="start_day">\s*'
             r'<option value="1">01</option>\s*'
@@ -7054,7 +7246,8 @@ def virtual_bill(ds):
             r'</select>:<select name="finish_minute">\s*'
             r'<option value="0" selected>00</option>\s*'
             r'<option value="30">30</option>\s*</select>'],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "Check that bill with two sets of register reads gets "
         "displayed correctly.",
@@ -7092,7 +7285,8 @@ def virtual_bill(ds):
             r'<td>\s*'
             r'<a href="/tprs/1">00003</a>\s*'
             r'</td>'],
-        'status_code': 200},
+        'status_code': 200
+    },
 
     # Supplier contract 63
     {
@@ -7147,8 +7341,10 @@ def virtual_bill(ds):
         'path': '/mop_batches/9',
         'regexes': [
             r"/local_reports/1/output",
-            r'<a href="/mop_bill_imports\?mop_batch_id=9">Bill Imports</a>'],
-        'status_code': 200},
+            r'Billing Files',
+        ],
+        'status_code': 200
+    },
 
     {
         'name': "Check that we can see a supplier batch okay. Contract 58",
@@ -7419,7 +7615,7 @@ def virtual_bill(ds):
         'name': "Check that later bills are at the top.",
         'path': '/supplies/1',
         'regexes': [
-            r"supplier_bills/7.*supplier_bills/1",
+            r"supplier_bills/8.*supplier_bills/1",
             r"2007-02-28 23:30"
         ],
         'status_code': 200
@@ -7567,8 +7763,9 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r"00021_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_"
-            r"10_1_to_2011_1\.csv"]
-        },
+            r"10_1_to_2011_1\.csv"
+        ]
+    },
     {
         'path': '/downloads/'
         '00021_FINISHED_watkinsexamplecom_supplies_monthly_duration_for_'
@@ -7583,8 +7780,11 @@ def virtual_bill(ds):
             r"metered-export-estimated-kwh,billed-export-kwh,"
             r"billed-export-net-gbp,problem,timestamp",
             r'10,"2","net","","2011-01-31 23:30","03","I02D89150","CI017",'
-            r'"Roselands","nhh","22 1065 3921 534","0","10.0","0","150.0",'
-            r'"98.17","None","0","0","0","0",""']},
+            r'"Roselands","nhh","22 1065 3921 534","3580.07417\d*",'
+            r'"368.00741\d*","0","150.0",'
+            r'"98.17","None","0","0","0","0",""'
+        ]
+    },
     {
         'name': "Try monthly supply duration with a half-hourly.",
         'path': '/reports/177?supply_id=4&months=1&end_year=2010&end_month=05',
@@ -8204,8 +8404,10 @@ def virtual_bill(ds):
             r"Previous Read Date,Previous Read Value,Previous Read Type,"
             r"Present Read Date,Present Read Value,Present Read Type",
             r'2011-01-01 00:00,2011-01-31 23:30,10,22 1065 3921 534,'
-            r',07-002,13,3423760005,2011-02-02 00:00,N,8,00001,'
-            r'1,2011-01-04 23:30,24286,E,2011-01-06 23:30,25927,E']},
+            r',07-002,14,3423760005,2011-02-02 00:00,N,10,00001,'
+            r'1,2011-01-04 23:30,24286,E,2011-01-06 23:30,25927,E'
+        ]
+    },
 
     {
         'name': "Period where there's a read with no TPR (an MD read)",
@@ -8216,8 +8418,10 @@ def virtual_bill(ds):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"00033_FINISHED_watkinsexamplecom_register_reads\.csv"],
-        'status_code': 200},
+            r"00033_FINISHED_watkinsexamplecom_register_reads\.csv"
+        ],
+        'status_code': 200
+    },
     {
         'name': "Period where there's a read with no TPR (an MD read)",
         'path': '/downloads/'
@@ -8225,8 +8429,10 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2007-01-01 00:00,2007-01-31 23:30,10,22 1065 3921 534,'
-            r',06-002,14,SA342376,2007-01-01 00:00,N,12,md,1,'
-            r'2007-01-04 00:00,45,E,2007-01-17 00:00,76,E']},
+            r',06-002,16,SA342376,2007-01-01 00:00,N,15,md,1,'
+            r'2007-01-04 00:00,45,E,2007-01-17 00:00,76,E'
+        ]
+    },
 
     {
         'name': "View a MOP rate script. Contract 38.",
@@ -8353,42 +8559,23 @@ def virtual_bill(ds):
         'path': '/bill_types/1',
         'status_code': 200},
 
-    # Supplier contract 64.
-    {
-        'name': "Test sse edi bill with MD line",
-        'path': '/supplier_bill_imports',
-        'method': 'post',
-        'data': {
-            'supplier_batch_id': "3", },
-        'files': {'import_file': 'test/bills2.sse.edi'},
-        'status_code': 303,
-        'regexes': [
-            r"/supplier_bill_imports/8"
-        ]
-    },
-
-    # Supplier contract 64.
-    {
-        'path': '/supplier_bill_imports/8',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"All the bills have been successfully loaded and attached to "
-            r"the batch\."]},
     {
         'name': "Look at an DC batch",
         'path': '/dc_batches/8',
         'status_code': 200,
         'regexes': [
             r'<a href="/local_reports/1/output\?batch_id=8">',
-            r"<tbody>\s*<tr>"]},
+            r"<tbody>\s*<tr>"
+        ]
+    },
 
-    # Supplier contract 63, batch 7, bill 10
     {
-        'name': "Edit register read with a TPR that's not 00001",
+        'name': "Edit register read with a TPR that's not 00001. Batch 3",
         'path': '/reads/1/edit',
         'regexes': [
-            r'<option value="36" selected>00040</option>']},
+            r'<option value="36" selected>00040</option>'
+        ]
+    },
 
     # Insert a new batch
     {
@@ -8468,30 +8655,31 @@ def virtual_bill(ds):
             r'imp-supplier-vat-gbp,imp-supplier-gross-gbp,'
             r'imp-supplier-sum-msp-kwh,imp-supplier-problem',
             r'22 1065 3921 534,,CI017,Roselands,SA342376,'
-            r'2010-01-01 00:00,2010-01-03 23:30,,0,,,0,,,,,,0,0,0,0,'
+            r'2010-01-01 00:00,2010-01-03 23:30,,0,,,0,,,,,,0,0,0,'
+            r'346.4587\d*,'
         ],
         'status_code': 200
     },
     {
         'name': "A bill check with multiple covered bills",
-        'path': '/reports/111?bill_id=8',
+        'path': '/reports/111?bill_id=9',
         'status_code': 303
     },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00037_FINISHED_watkinsexamplecom_bill_check_bill_8\.csv"
+            r"00037_FINISHED_watkinsexamplecom_bill_check_bill_9\.csv"
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00037_FINISHED_watkinsexamplecom_bill_check_bill_8.csv',
+        '00037_FINISHED_watkinsexamplecom_bill_check_bill_9.csv',
         'regexes': [
             r'06-004,00101,N,244,3810.08,355.03,2011-05-01 01:00,'
             r'2011-06-30 01:00,22 6354 2983 570,,CI017,Roselands,'
-            r'2011-05-01 01:00,2011-06-30 01:00,8,0,3810.08,0,3810.08,,,,,'
+            r'2011-05-01 01:00,2011-06-30 01:00,9,0,3810.08,0,3810.08,,,,,'
             r'11.4,0.00485,,,0.0,,,0.0,,,,,,,,,0.0,,,,,,,,,0.0,,,,,0.0,,,,,0.0'
             r',,,,,0.0,,,0.0,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,0.0,,,,'
             r',,,0.0,,,,,,,0.0,,,,,,,0.0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,'
@@ -8908,18 +9096,33 @@ def virtual_bill(ds):
     },
 
     {
-        'path': '/supplier_bill_imports',
+        'path': '/supplier_batches/12/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': "12"},
+            'parser_name': "csv"
+        },
         'files': {'import_file': 'test/nhh_bills2007.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/9"]},
+            r"/supplier_batch_files/11"
+        ]
+    },
+
+    {
+        'path': '/supplier_batches/12',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/8"
+        ]
+    },
 
     {
         'name': 'Supplier contract 13, batch 12',
-        'path': '/supplier_bill_imports/9',
+        'path': '/supplier_bill_imports/8',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -8943,7 +9146,7 @@ def virtual_bill(ds):
         'status_code': 200,
         'regexes': [
             r'2002-01-01 00:00,2002-01-31 23:30,7,22 4862 4512 332,,'
-            r'06-078,20,jg87593jfj,2002-02-02 00:00,N,15,00001,'
+            r'06-078,21,jg87593jfj,2002-02-02 00:00,N,16,00001,'
             r'1,2002-01-04 23:30,2286,E,2002-01-06 23:30,2927,E'
         ]
     },
@@ -9068,49 +9271,34 @@ def virtual_bill(ds):
         'status_code': 303},
 
     {
-        'name': "Try sites monthly duration with a clocked bill",
-        'path': '/supplier_bill_imports',
-        'method': 'post',
-        'data': {
-            'supplier_batch_id': "7"},
-        'files': {'import_file': 'test/bills-nhh-clocked.csv'},
-        'status_code': 303,
-        'regexes': [
-          r'supplier_bill_imports/10']},
-
-    {
-        'name': "Bill check on a clocked bill",
-        'path': '/supplier_bill_imports/10',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r'have been successfully loaded']},
-
-    {
-        'name': "Bill check on a clocked bill",
-        'path': '/reports/111?bill_id=21',
-        'status_code': 303},
+        'name': "Bill check on a clocked bill. Batch 7",
+        'path': '/reports/111?bill_id=15',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00047_FINISHED_watkinsexamplecom_bill_check_bill_21\.csv"
+            r"00047_FINISHED_watkinsexamplecom_bill_check_bill_15\.csv"
         ]
     },
     {
         'path': '/downloads/'
-        '00047_FINISHED_watkinsexamplecom_bill_check_bill_21.csv',
+        '00047_FINISHED_watkinsexamplecom_bill_check_bill_15.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
-            r'2012-01-05 00:00,2012-01-10 23:30,21,30.\d*,9.07,0,9.07,'
-            r'10.0,9.999999\d*,,']},
+            r'2012-01-05 00:00,2012-01-10 23:30,15,30.\d*,9.07,0,9.07,'
+            r'10.0,9.999999\d*,,'
+        ]
+    },
     {
         'name': "Monthly supplies duration with export hh data",
         'path': '/reports/177?supply_id=1&months=1&end_year=2008&end_month=07',
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {},
@@ -9300,8 +9488,13 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'reference': "7",
-            'description': ""},
-        'status_code': 303},
+            'description': ""
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/dc_batches/13',
+        ],
+    },
     {
         'path': '/dc_batches?dc_contract_id=8',
         'status_code': 200,
@@ -9320,8 +9513,13 @@ def virtual_bill(ds):
         'method': 'post',
         'data': {
             'reference': "7a",
-            'description': ""},
-        'status_code': 303},
+            'description': ""
+        },
+        'status_code': 303,
+        'regexes': [
+            r'/mop_batches/14',
+        ],
+    },
     {
         'path': '/mop_batches?mop_contract_id=11',
         'status_code': 200,
@@ -9416,7 +9614,8 @@ def virtual_bill(ds):
             'imp_mpan_core': "22 1065 3921 534",
             'imp_sc': "30",
             'imp_supplier_contract_id': "16",
-            'imp_supplier_account': "SA342376000"},
+            'imp_supplier_account': "SA342376000"
+        },
         'status_code': 303
     },
 
@@ -9509,7 +9708,7 @@ def virtual_bill(ds):
 
     {
         'name': "Check the bill",
-        'path': '/reports/111?bill_id=13',
+        'path': '/reports/111?bill_id=14',
         'status_code': 303
     },
     {
@@ -9517,17 +9716,17 @@ def virtual_bill(ds):
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00053_FINISHED_watkinsexamplecom_bill_check_bill_13\.csv"
+            r"00053_FINISHED_watkinsexamplecom_bill_check_bill_14\.csv"
         ]
     },
     {
         'path': '/downloads/'
-        '00053_FINISHED_watkinsexamplecom_bill_check_bill_13.csv',
+        '00053_FINISHED_watkinsexamplecom_bill_check_bill_14.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760005,N,150,98.17,15.01,'
             r'2011-01-05 00:00,2011-01-10 23:30,22 1065 3921 534,,'
-            r'CI017,Roselands,2011-01-05 00:00,2011-01-10 23:30,13,'
+            r'CI017,Roselands,2011-01-05 00:00,2011-01-10 23:30,14,'
             r'692.9175824\d*,98.17,0,98.17,150.0,14239.0\d*,,'
         ]
     },
@@ -9535,7 +9734,7 @@ def virtual_bill(ds):
     # Update register read to make the TPR a teleswitch one
     {
         'name': "Check bill with teleswitch TPR",
-        'path': '/reads/16/edit',
+        'path': '/reads/13/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -9574,24 +9773,25 @@ def virtual_bill(ds):
 
     {
         'name': "Check the bill",
-        'path': '/reports/111?bill_id=21',
-        'status_code': 303},
+        'path': '/reports/111?bill_id=15',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'status_code': 200,
         'regexes': [
-            r"00054_FINISHED_watkinsexamplecom_bill_check_bill_21\.csv"
+            r"00054_FINISHED_watkinsexamplecom_bill_check_bill_15\.csv"
         ]
     },
     {
         'path': '/downloads/'
-        '00054_FINISHED_watkinsexamplecom_bill_check_bill_21.csv',
+        '00054_FINISHED_watkinsexamplecom_bill_check_bill_15.csv',
         'status_code': 200,
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
-            r'2012-01-05 00:00,2012-01-10 23:30,21,0,9.07,0,9.07,'
+            r'2012-01-05 00:00,2012-01-10 23:30,15,0,9.07,0,9.07,'
             r'10.0,0,,'
         ]
     },
@@ -9599,7 +9799,7 @@ def virtual_bill(ds):
     # Update register read to make the TPR a teleswitch one },
     {
         'name': "CRC with read pair straddling eras",
-        'path': '/reads/7/edit',
+        'path': '/reads/9/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -11619,7 +11819,7 @@ def virtual_bill(ds):
     },
     {
         'name': "Update a bill",
-        'path': '/supplier_bills/21/edit',
+        'path': '/supplier_bills/15/edit',
         'method': 'post',
         'data': {
             'reference': '3423760010',
@@ -11657,7 +11857,7 @@ def virtual_bill(ds):
 
     {
         'name': "CRC meter change reads",
-        'path': '/reads/9/edit',
+        'path': '/reads/11/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -11685,7 +11885,7 @@ def virtual_bill(ds):
     },
     {
         'name': "CRC meter change reads",
-        'path': '/reads/10/edit',
+        'path': '/reads/12/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -11713,7 +11913,7 @@ def virtual_bill(ds):
     },
     {
         'name': "CRC meter change reads",
-        'path': '/reads/16/edit',
+        'path': '/reads/13/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -11830,24 +12030,24 @@ def virtual_bill(ds):
     },
     {
         'name': "Reads covered by bill without. Run bill check.",
-        'path': '/reports/111?bill_id=21',
+        'path': '/reports/111?bill_id=15',
         'status_code': 303
     },
     {
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"00079_FINISHED_watkinsexamplecom_bill_check_bill_21\.csv"
+            r"00079_FINISHED_watkinsexamplecom_bill_check_bill_15\.csv"
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00079_FINISHED_watkinsexamplecom_bill_check_bill_21.csv',
+        '00079_FINISHED_watkinsexamplecom_bill_check_bill_15.csv',
         'regexes': [
             r'07-002,3423760010,N,10,9.07,0.21,2012-01-05 00:00,'
             r'2012-01-10 23:30,22 1065 3921 534,,CI017,Roselands,'
-            r'2012-01-05 00:00,2012-01-10 23:30,21,756.0,9.07,0,9.07,10.0,'
+            r'2012-01-05 00:00,2012-01-10 23:30,15,756.0,9.07,0,9.07,10.0,'
             r'252.0\d*,,'
         ],
         'status_code': 200
@@ -11886,7 +12086,7 @@ def virtual_bill(ds):
 
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/reads/11/edit',
+        'path': '/reads/15/edit',
         'method': 'post',
         'data': {
             'mpan': "2210653921534",
@@ -12129,7 +12329,7 @@ def virtual_bill(ds):
 
     {
         'name': "CRC meter change reads",
-        'path': '/reads/9/edit',
+        'path': '/reads/11/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -12157,7 +12357,7 @@ def virtual_bill(ds):
     },
     {
         'name': "CRC meter change reads",
-        'path': '/reads/10/edit',
+        'path': '/reads/12/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -12185,7 +12385,7 @@ def virtual_bill(ds):
     },
     {
         'name': "CRC meter change reads",
-        'path': '/reads/16/edit',
+        'path': '/reads/13/edit',
         'method': 'post',
         'data': {
             'mpan': "22 1065 3921 534",
@@ -12587,8 +12787,10 @@ def virtual_bill(ds):
         'name': "3rd party in monthly duration report.",
         'path': '/supplier_bills/23',
         'regexes': [
-            r"/reads/17"],
-        'status_code': 200},
+            r"/reads/17"
+        ],
+        'status_code': 200
+    },
     {
         'name': "3rd party in monthly duration report.",
         'path': '/reports/247?supply_id=16&months=1&finish_year=2014&'
@@ -12944,7 +13146,7 @@ def virtual_bill(ds):
 
     {
         'name': "Supplies duration normal reads with prev, pres the same.",
-        'path': '/reads/11/edit',
+        'path': '/reads/15/edit',
         'method': 'post',
         'data': {
             'mpan': "2210653921534",
@@ -13395,7 +13597,8 @@ def virtual_bill(ds):
             'gross': '14.25',
             'account': '22 7907 4116 080',
             'bill_type_id': '2',
-            'breakdown': '{}'},
+            'breakdown': '{}'
+        },
         'status_code': 303,
         'regexes': [
             r"/dc_bills/24"
@@ -13552,7 +13755,7 @@ def virtual_bill(ds):
 
     {
         'name': "Displaying bill raw lines",
-        'path': '/supplier_bills/11',
+        'path': '/supplier_bills/12',
         'regexes': [
             r"Customer Name,",
             r'triad-estimate'
@@ -13880,21 +14083,33 @@ def virtual_bill(ds):
     },
 
     {
-        'name': "Bill import error. Supplier contract",
-        'path': '/supplier_bill_imports',
+        'name': "Supplier bill import error. Upload file",
+        'path': '/supplier_batches/4/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '4'
+            'parser_name': 'csv'
         },
         'files': {'import_file': 'test/bills_fail.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/11"
+            r"/supplier_batch_files/12"
+        ]
+    },
+    {
+        'name': "Supplier bill import error. Import bills",
+        'path': '/supplier_batches/4',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/9"
         ]
     },
     {
         'name': "Supplier contract 11, batch 4",
-        'path': '/supplier_bill_imports/11',
+        'path': '/supplier_bill_imports/9',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -14102,28 +14317,34 @@ def virtual_bill(ds):
 
     {
         'name': "Confirm delete supplier bill",
-        'path': '/supplier_bills/11/edit?confirm_delete=Delete',
+        'path': '/supplier_bills/12/edit?confirm_delete=Delete',
         'status_code': 200,
         'regexes': [
             r'<form method="post" action="">\s*',
             r'<fieldset>\s*',
-            r'<input type="submit" name="delete" value="Delete">']},
+            r'<input type="submit" name="delete" value="Delete">'
+        ]
+    },
 
     {
         'name': "Delete supplier bill",
-        'path': '/supplier_bills/11/edit',
+        'path': '/supplier_bills/12/edit',
         'method': 'post',
         'data': {
-            'delete': 'Delete'},
-        'status_code': 303},
+            'delete': 'Delete'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Ignore channel snag",
         'path': '/channel_snags/100/edit',
         'method': 'post',
         'data': {
-            'ignore': 'true'},
-        'status_code': 303},
+            'ignore': 'true'
+        },
+        'status_code': 303
+    },
     {
         'name': "Ignore channel snag",
         'path': '/channel_snags/100',
@@ -14160,8 +14381,10 @@ def virtual_bill(ds):
             'vat': '-112.29',
             'gross': '0.00',
             'bill_type_id': '2',
-            'breakdown': '{}'},
-        'status_code': 303},
+            'breakdown': '{}'
+        },
+        'status_code': 303
+    },
     {
         'name': "Bill check with exception",
         'path': "/supplier_contracts/16/edit",
@@ -14186,10 +14409,11 @@ def virtual_bill(supply_source):
     bill['sum-msp-kwh'] += sum_msp_kwh
 """,
             'properties': '{}'},
-        'status_code': 303},
+        'status_code': 303
+    },
     {
         'name': "Bill check with exception",
-        'path': '/reports/111?bill_id=12',
+        'path': '/reports/111?bill_id=13',
         'status_code': 303
     },
     {
@@ -14197,14 +14421,14 @@ def virtual_bill(supply_source):
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"00002_FINISHED_adminexamplecom_bill_check_bill_12\.csv"
+            r"00002_FINISHED_adminexamplecom_bill_check_bill_13\.csv"
         ],
         'status_code': 200
     },
     {
         'name': "Bill check with exception",
         'path': '/downloads/'
-        '00002_FINISHED_adminexamplecom_bill_check_bill_12.csv',
+        '00002_FINISHED_adminexamplecom_bill_check_bill_13.csv',
         'regexes': [
             r'Theory laden\.'
         ],
@@ -14352,15 +14576,17 @@ def virtual_bill(ds):
     {
         'name': "View add DC rate script",
         'path': '/dc_contracts/9/add_rate_script',
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'name': "View add mop bill.",
         'path': '/mop_batches/9/add_bill',
-        'status_code': 200},
+        'status_code': 200
+    },
 
     {
         'name': "Bill that cancel, bill check.",
-        'path': '/supplier_bills/14/edit',
+        'path': '/supplier_bills/16/edit',
         'method': 'post',
         'data': {
             'reference': 'SA342376',
@@ -14385,30 +14611,33 @@ def virtual_bill(ds):
             'vat': '553609.00',
             'gross': '0.00',
             'bill_type_id': '2',
-            'breakdown': '{}'},
-        'status_code': 303},
+            'breakdown': '{}'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Test the supplier batch checking",
-        'path': '/reports/111?bill_id=14',
-        'status_code': 303},
+        'path': '/reports/111?bill_id=16',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00004_FINISHED_adminexamplecom_bill_check_bill_14\.csv"
+            r"00004_FINISHED_adminexamplecom_bill_check_bill_16\.csv"
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00004_FINISHED_adminexamplecom_bill_check_bill_14.csv',
+        '00004_FINISHED_adminexamplecom_bill_check_bill_16.csv',
         'status_code': 200
     },
 
     {
         'name': "Bill that cancel, bill check with primary bill.",
-        'path': '/supplier_bills/12/edit',
+        'path': '/supplier_bills/13/edit',
         'method': 'post',
         'data': {
             'reference': '3423760004',
@@ -14433,24 +14662,26 @@ def virtual_bill(ds):
             'vat': '15.01',
             'gross': '0.00',
             'bill_type_id': '2',
-            'breakdown': '{}'},
-        'status_code': 303},
+            'breakdown': '{}'
+        },
+        'status_code': 303
+    },
     {
         'name': "Test the supplier batch checking",
-        'path': '/reports/111?bill_id=14',
+        'path': '/reports/111?bill_id=16',
         'status_code': 303
     },
     {
         'path': '/downloads',
         'tries': {},
         'regexes': [
-            r"00005_FINISHED_adminexamplecom_bill_check_bill_14\.csv"
+            r"00005_FINISHED_adminexamplecom_bill_check_bill_16\.csv"
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00005_FINISHED_adminexamplecom_bill_check_bill_14.csv',
+        '00005_FINISHED_adminexamplecom_bill_check_bill_16.csv',
         'regexes': [
             r'batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,'
             r'bill-vat-gbp,bill-start-date,bill-finish-date,imp-mpan-core,'
@@ -14479,10 +14710,7 @@ def virtual_bill(ds):
             r'/mop_batches/9'
         ]
     },
-    {
-        'name': "Mop bill imports for a batch",
-        'path': '/mop_bill_imports?mop_batch_id=9',
-        'status_code': 200},
+
     {
         'name': "Monthly duration Report: gen-net",
         'path': '/reports/247?supply_id=5&months=1&finish_year=2014&'
@@ -16496,22 +16724,37 @@ def virtual_bill(ss):
             'description': "Multiple rate batch"},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batches/16"]},
+            r"/supplier_batches/16"
+        ]
+    },
     {
-        'name': "SSE EDI bill with multiple rates for an element",
-        'path': '/supplier_bill_imports',
+        'name': "SSE EDI bill with multiple rates for an element. Upload file",
+        'path': '/supplier_batches/16/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '16'},
+            'parser_name': 'sse_edi'
+        },
         'files': {'import_file': 'test/bills3.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/12"
+            r"/supplier_batch_files/13"
+        ]
+    },
+    {
+        'name': "SSE EDI bill with multiple rates for an element. Import bill",
+        'path': '/supplier_batches/16',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/10"
         ]
     },
     {
         'name': "SSE EDI bill with multiple rates for an element",
-        'path': '/supplier_bill_imports/12',
+        'path': '/supplier_bill_imports/10',
         'tries': {},
         'regexes': [
             r'&#34;fit-rate&#34;: \[\s*'
@@ -16555,7 +16798,9 @@ finally:
         'path': '/local_reports/1/output',
         'status_code': 200,
         'regexes': [
-            r'Henriki']},
+            r'Henriki'
+        ]
+    },
 
     {
         'name': "Engie XLS Bills",
@@ -16587,8 +16832,10 @@ finally:
             'exp_mpan_core': '22 3475 1614 211',
             'exp_sc': "900",
             'exp_supplier_contract_id': '10',
-            'exp_supplier_account': '4341'},
-        'status_code': 303},
+            'exp_supplier_account': '4341'
+        },
+        'status_code': 303
+    },
     {
         'name': "Engie XLS Bills",
         'path': '/supplier_contracts/10/add_batch',
@@ -16603,21 +16850,83 @@ finally:
     },
 
     {
-        'name': "Engie XLS Bills",
-        'path': '/supplier_bill_imports',
+        'name': "Engie XLS Bills. Upload file",
+        'path': '/supplier_batches/17/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '17'},
-        'files': {'import_file': 'test/bills.engie.xls'},
+            'parser_name': 'engie_xls'
+        },
+        'files': {'import_file': 'test/bills_fail.engie.xls'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/13"
+            r"/supplier_batch_files/14"
+        ]
+    },
+    {
+        'name': "Engie XLS Bills. Import bills",
+        'path': '/supplier_batches/17',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/11"
         ]
     },
 
     {
         'name': "Engie XLS Bills",
-        'path': '/supplier_bill_imports/13',
+        'path': '/supplier_bill_imports/11',
+        'tries': {},
+        'regexes': [
+            r'Problem: On row 5: Can&#39;t find a bill start date\.'
+        ],
+        'status_code': 200
+    },
+    {
+        'name': "Engie XLS Bills. Delete file upload.",
+        'path': '/supplier_batch_files/14/edit',
+        'method': 'post',
+        'data': {
+           'delete': 'Delete'
+        },
+        'status_code': 303,
+        'regexes': [
+            '/supplier_batches/17'
+        ]
+    },
+
+
+    {
+        'name': "Engie XLS Bills. Upload file",
+        'path': '/supplier_batches/17/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': 'engie_xls'
+        },
+        'files': {'import_file': 'test/bills.engie.xls'},
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_batch_files/15"
+        ]
+    },
+    {
+        'name': "Engie XLS Bills. Import bills",
+        'path': '/supplier_batches/17',
+        'method': 'post',
+        'data': {
+            'import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/12"
+        ]
+    },
+
+    {
+        'name': "Engie XLS Bills",
+        'path': '/supplier_bill_imports/12',
         'tries': {},
         'regexes': [
             r'<tr>\s*'
@@ -16690,30 +16999,6 @@ finally:
             r'<td>571.25</td>\s*'
             r'<td>0.00</td>\s*'
             r'<td>571.25</td>\s*'
-        ],
-        'status_code': 200
-    },
-
-    {
-        'name': "Engie XLS Bills",
-        'path': '/supplier_bill_imports',
-        'method': 'post',
-        'data': {
-            'supplier_batch_id': '17'
-        },
-        'files': {'import_file': 'test/bills_fail.engie.xls'},
-        'status_code': 303,
-        'regexes': [
-            r"/supplier_bill_imports/14"
-        ]
-    },
-
-    {
-        'name': "Engie XLS Bills",
-        'path': '/supplier_bill_imports/14',
-        'tries': {},
-        'regexes': [
-            r'Problem: On row 5: Can&#39;t find a bill start date\.'
         ],
         'status_code': 200
     },
@@ -16856,13 +17141,16 @@ finally:
 
     {
         'name': "Delete all bills from a batch",
-        'path': '/supplier_batches/17/edit',
+        'path': '/supplier_batches/17',
         'method': 'post',
         'data': {
-            'delete_bills': 'delete bills'},
+            'delete_bills': 'delete bills'
+        },
         'status_code': 303,
         'regexes': [
-            r'/supplier_batches/17']},
+            r'/supplier_batches/17'
+        ]
+    },
 
     {
         'name': "Show insert gas contract",
@@ -17387,20 +17675,32 @@ def virtual_bill(ds):
     },
 
     {
-        'name': "Insert bills with negative register reads",
-        'path': '/supplier_bill_imports',
+        'name': "Insert bills with negative register reads. Upload file.",
+        'path': '/supplier_batches/7/upload_file',
         'method': 'post',
         'data': {
-            'supplier_batch_id': '7'},
+            'parser_name': 'csv'},
         'files': {'import_file': 'test/bills-nhh-negative.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_bill_imports/15"
+            r"/supplier_batch_files/16"
         ]
     },
     {
         'name': "Insert bills with negative register reads",
-        'path': '/supplier_bill_imports/15',
+        'path': '/supplier_batches/7',
+        'method': 'post',
+        'data': {
+            'delete_import_bills': 'Import Bills'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/supplier_bill_imports/13"
+        ]
+    },
+    {
+        'name': "Insert bills with negative register reads",
+        'path': '/supplier_bill_imports/13',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -17413,9 +17713,10 @@ def virtual_bill(ds):
         'path': '/reads/15/edit',
         'method': 'post',
         'data': {
-            'delete': 'Delete'},
+            'delete': 'Delete'
+        },
         'regexes': [
-            r'/supplier_bills/20'
+            r'/supplier_bills/16'
         ]
     },
 
@@ -17841,22 +18142,24 @@ def virtual_bill(supply_source):
     {
 
         'name': "Test the supplier batch checking",
-        'path': '/reports/111?bill_id=7',
-        'status_code': 303},
+        'path': '/reports/111?bill_id=8',
+        'status_code': 303
+    },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00015_FINISHED_adminexamplecom_bill_check_bill_7\.csv"
+            r"00015_FINISHED_adminexamplecom_bill_check_bill_8\.csv"
         ],
-        'status_code': 200},
+        'status_code': 200
+    },
     {
         'path': '/downloads/'
-        '00015_FINISHED_adminexamplecom_bill_check_bill_7.csv',
+        '00015_FINISHED_adminexamplecom_bill_check_bill_8.csv',
         'regexes': [
             r'06-004,00080,N,0,4463.08,781.03,2007-02-02 00:00,'
             r'2007-02-28 23:30,,22 0470 7514 535,CH017,Parbola,'
-            r'2007-02-02 00:00,2007-02-28 23:30,7,0,4463.08,0,4463.08,,,,,,'
+            r'2007-02-02 00:00,2007-02-28 23:30,8,0,4463.08,0,4463.08,,,,,,'
             r'0.00441,,,0.0,,,0.0,,,,,,,,,0.0,'
             r',0,,,,,,,0.0,,,,,0.0,,,,,0.0,,,,,0.0,,,0.0,,,0.0,,,,,,,0.0'
             r',,,,,,,0.0,,,,,,,0.0,,,,,'
@@ -18151,23 +18454,23 @@ def virtual_bill(supply_source):
 
     {
         'name': "Bill check on bill without era.",
-        'path': '/reports/111?bill_id=17',
+        'path': '/reports/111?bill_id=19',
         'status_code': 303
     },
     {
         'path': '/downloads',
         'tries': {'max': 20, 'period': 1},
         'regexes': [
-            r"00022_FINISHED_adminexamplecom_bill_check_bill_17\.csv"
+            r"00022_FINISHED_adminexamplecom_bill_check_bill_19\.csv"
         ],
         'status_code': 200
     },
     {
         'path': '/downloads/'
-        '00022_FINISHED_adminexamplecom_bill_check_bill_17.csv',
+        '00022_FINISHED_adminexamplecom_bill_check_bill_19.csv',
         'regexes': [
             r'99/992,08,N,0,6.40,1.05,2000-10-01 01:00,2000-10-31 23:30,,,,,'
-            r'2000-10-01 01:00,2000-10-31 23:30,17,0,6.4,0,6.4,,'
+            r'2000-10-01 01:00,2000-10-31 23:30,19,0,6.4,0,6.4,,'
         ],
         'status_code': 200
     },
@@ -20461,8 +20764,8 @@ def virtual_bill(supply_source):
     },
 
     {
-        'name': "Update an DC bill",
-        'path': '/dc_bills/15/edit',
+        'name': "Update a DC bill",
+        'path': '/dc_bills/17/edit',
         'method': 'post',
         'data': {
             'reference': "00031",
@@ -20487,8 +20790,10 @@ def virtual_bill(supply_source):
             'vat': '0.00',
             'gross': '0.00',
             'bill_type_id': '2',
-            'breakdown': '{}'},
-        'status_code': 303},
+            'breakdown': '{}'
+        },
+        'status_code': 303
+    },
 
     {
         'name': "Test DC HTTPS auto importer: Add ACTIVE channel",
@@ -21039,76 +21344,120 @@ def virtual_bill(ds):
     },
 
     {
-        'name': "Stark settlement DC bill parser",
-        'path': '/dc_bill_imports',
+        'name': "Stark settlement DC bill parser. Upload file",
+        'path': '/dc_batches/13/upload_file',
         'method': 'post',
         'data': {
-            'dc_batch_id': "13"
+            'parser_name': "settlement_dc_stark_xlsx"
         },
         'files': {
             'import_file': 'test/electricity/bills.settlement.dc.stark.xlsx'
         },
         'status_code': 303,
         'regexes': [
-            r"/dc_bill_imports/16"
+            r"/dc_batch_files/17"
         ]
     },
-
     {
-        'name': "Stark settlement DC bill parser",
-        'path': '/dc_bill_imports/16',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"All the bills have been successfully loaded and attached to "
-            r"the batch\."
-        ]
-    },
-
-    {
-        'name': "Stark MOP bill parser for annual charges",
-        'path': '/mop_bill_imports',
+        'name': "Stark non-settlement DC bill parser. Upload file",
+        'path': '/dc_batches/13/upload_file',
         'method': 'post',
         'data': {
-            'mop_batch_id': "14"},
-        'files': {
-            'import_file': 'test/electricity/bills.annual.mop.stark.xlsx'
+            'parser_name': "nonsettlement_dc_stark_xlsx"
         },
-        'status_code': 303,
-        'regexes': [
-            r"/mop_bill_imports/17"
-        ]
-    },
-
-    {
-        'name': "Stark MOP bill parser for annual charges",
-        'path': '/mop_bill_imports/17',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"All the bills have been successfully loaded and attached to "
-            r"the batch\."
-        ]
-    },
-
-    {
-        'name': "Stark non-settlement DC bill parser",
-        'path': '/dc_bill_imports',
-        'method': 'post',
-        'data': {
-            'dc_batch_id': "13"},
         'files': {
             'import_file': 'test/electricity/bills.nonsettlement.dc.stark.xlsx'
         },
         'status_code': 303,
         'regexes': [
-            r"/dc_bill_imports/18"
+            r"/dc_batch_files/18"
+        ]
+    },
+    {
+        'name': "Stark DC Non-settlement bill parser (old). Upload file",
+        'path': '/dc_batches/13/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': "nonsettlement_dc_stark_xlsx"
+        },
+        'files': {
+            'import_file': 'test/electricity/bills_old.nonsettlement.dc.stark.'
+            'xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/dc_batch_files/19"
+        ]
+    },
+    {
+        'name': "Stark settlement DC bill parser. Import files.",
+        'path': '/dc_batches/13',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/dc_bill_imports/14"
+        ]
+    },
+    {
+        'name': "Stark settlement DC bill parser",
+        'path': '/dc_bill_imports/14',
+        'tries': {},
+        'status_code': 200,
+        'regexes': [
+            r"All the bills have been successfully loaded and attached to "
+            r"the batch\."
         ]
     },
 
     {
-        'name': "Stark non-settlement DC bill parser",
-        'path': '/dc_bill_imports/18',
+        'name': "Stark MOP bill parser for annual charges. Upload file",
+        'path': '/mop_batches/14/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': "annual_mop_stark_xlsx"
+        },
+        'files': {
+            'import_file': 'test/electricity/bills.annual.mop.stark.xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/mop_batch_files/20"
+        ]
+    },
+    {
+        'name': "Stark MOP bill parser for activities. Upload file",
+        'path': '/mop_batches/14/upload_file',
+        'method': 'post',
+        'data': {
+            'parser_name': "activity_mop_stark_xlsx"
+        },
+        'files': {
+            'import_file': 'test/electricity/bills.activity.mop.stark.xlsx'
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/mop_batch_files/21"
+        ]
+    },
+    {
+        'name': "Stark MOP bill parser for annual charges. Import bills.",
+        'path': '/mop_batches/14',
+        'method': 'post',
+        'data': {
+            'import_bills': "Import Bills"
+        },
+        'status_code': 303,
+        'regexes': [
+            r"/mop_bill_imports/15"
+        ]
+    },
+
+    {
+        'name': "Stark MOP bill parser for annual charges",
+        'path': '/mop_bill_imports/15',
         'tries': {},
         'status_code': 200,
         'regexes': [
@@ -21205,60 +21554,6 @@ def virtual_bill(ds):
             r"/dc_rate_scripts/52"
         ],
         'status_code': 303
-    },
-
-    {
-        'name': "Stark MOP bill parser for activities",
-        'path': '/mop_bill_imports',
-        'method': 'post',
-        'data': {
-            'mop_batch_id': "14"
-        },
-        'files': {
-            'import_file': 'test/electricity/bills.activity.mop.stark.xlsx'
-        },
-        'status_code': 303,
-        'regexes': [
-            r"/mop_bill_imports/19"
-        ]
-    },
-
-    {
-        'name': "Stark MOP bill parser for activities",
-        'path': '/mop_bill_imports/19',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"All the bills have been successfully loaded and attached to "
-            r"the batch\."
-        ]
-    },
-
-    {
-        'name': "Stark DC Non-settlement bill parser (old)",
-        'path': '/dc_bill_imports',
-        'method': 'post',
-        'data': {
-            'dc_batch_id': "13"},
-        'files': {
-            'import_file': 'test/electricity/bills_old.nonsettlement.dc.stark.'
-            'xlsx'
-        },
-        'status_code': 303,
-        'regexes': [
-            r"/dc_bill_imports/20"
-        ]
-    },
-
-    {
-        'name': "Stark DC Non-settlement bill parser (old)",
-        'path': '/dc_bill_imports/20',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"All the bills have been successfully loaded and attached to "
-            r"the batch\."
-        ]
     },
 
     {
@@ -21484,29 +21779,21 @@ def virtual_bill(ds):
             r'office:value-type="string"/>\s*'
             r'<table:table-cell office:string-value="chp" '
             r'office:value-type="string"/>\s*'
-            r'<table:table-cell office:value="4326.415548931821" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="74.17709885742673" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="80.0" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="0" office:value-type="float" '
-            r'table:number-columns-repeated="3"/>\s*'
-            r'<table:table-cell office:value="5.822901142573274" '
-            r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="4332.238450074394" '
-            r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="3428.80311\d*" '
+            r'<table:table-cell office:value="80.0" '
+            r'office:value-type="float" table:number-columns-repeated="2"/>\s*'
+            r'<table:table-cell office:value="0" office:value-type="float" '
+            r'table:number-columns-repeated="6"/>\s*'
+            r'<table:table-cell office:value="2911.59\d*" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="94.41582\d*" '
+            r'<table:table-cell office:value="94.45710\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="4"/>\s*'
             r'<table:table-cell office:value="0.0" '
             r'office:value-type="float"/>\s*'
-            r'<table:table-cell office:value="3428.80311\d*" '
+            r'<table:table-cell office:value="2911.59\d*" '
             r'office:value-type="float"/>\s*'
             r'<table:table-cell office:value="0" office:value-type="float" '
             r'table:number-columns-repeated="3"/>\s*'

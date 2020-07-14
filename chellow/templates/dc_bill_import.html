@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DC Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
- 	{{batch.reference}} &raquo; Bill Imports &raquo; {{importer_id}}
+	&raquo; DC Contracts &raquo; {{batch.contract.name}} &raquo;
+ 	Batches &raquo; {{batch.reference}} &raquo;
+ 	Bill Imports &raquo; {{importer_id}}
 {% endblock %}
 
 {% block nav %}
@@ -10,9 +11,7 @@
 	<a href="/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
  	&raquo; 
 	<a href="/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
-	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a>
- 	&raquo; 
-	<a href="/dc_bill_imports?dc_batch_id={{batch.id}}">Bill Imports</a> &raquo;
+	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
  	{{importer_id}}
 {% endblock %}
 
@@ -76,19 +75,6 @@
             					<th>Net</th>
             					<th>VAT</th>
             					<th>Gross</th>
-            					{% for i in range(successful_max_registers) %}
-            						<th>R{{loop.index}} MPAN</th>
-            						<th>R{{loop.index}} Meter Serial Number</th>
-            						<th>R{{loop.index}} Coefficient</th>
-            						<th>R{{loop.index}} Units</th>
-            						<th>R{{loop.index}} TPR</th>
-            						<th>R{{loop.index}} Previous Read Date</th>
-            						<th>R{{loop.index}} Previous Read Value</th>
-            						<th>R{{loop.index}} Previous Read Type</th>
-            						<th>R{{loop.index}} Present Read Date</th>
-            						<th>R{{loop.index}} Present Read Value</th>
-            						<th>R{{loop.index}} Present Read Type</th>
-            					{% endfor %}
             					<th>Breakdown</th>
             				</tr>
             			</thead>
@@ -106,19 +92,6 @@
             						<td>{{bill.net}}</td>
             						<td>{{bill.vat}}</td>
             						<td>{{bill.gross}}</td>
-            						{% for read in bill.reads %}
-            							<td>{{read.mpan}}</td>
-            							<td>{{read.msn}}</td>
-            							<td>{{read.coefficient}}</td>
-            							<td>{{read.units}}</td>
-            							<td>{{read.tpr_code}}</td>
-            							<td>{{read.prev_date|hh_format}}</td>
-            							<td>{{read.prev_value}}</td>
-            							<td>{{read.prev_type_code}}</td>
-            							<td>{{read.pres_date|hh_format}}</td>
-            							<td>{{read.pres_value}}</td>
-            							<td>{{read.pres_type_code}}</td>
-            						{% endfor %}
             						<td>{{bill.breakdown|dumps}}</td>
             					</tr>
             				{% endfor %}

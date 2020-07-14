@@ -1,19 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-	MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo;
-	{{batch.reference}} &raquo; Bill Imports &raquo; {{importer_id}}
+	MOP Contracts &raquo; {{batch.contract.name}} &raquo;
+ 	Batches &raquo; {{batch.reference}} &raquo; Bill Imports &raquo;
+ 	{{importer_id}}
 {% endblock %}
 
 {% block nav %}
 	<a href="/mop_contracts">MOP Contracts</a> &raquo;
 	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
  	&raquo;
-	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &gt;
-	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a>
- 	&raquo;
-	<a href="/mop_bill_imports?mop_batch_id={{batch.id}}">Bill Imports</a>
- 	&raquo; {{importer_id}}
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a> &raquo;
+ 	Import {{importer_id}}
 {% endblock %}
 
 {% block content %}
@@ -21,7 +20,7 @@
 	<div class="layer-section">
 		<!-- Section Header -->
 		<div class="section-header">
-			<h2>Bill Imports</h2>	
+			<h2>Bill Import</h2>	
 		</div>
 		<!-- End Section Header -->
 		<!-- Section Content -->

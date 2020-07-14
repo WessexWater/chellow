@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{batch.contract.name}} &raquo; Batches
+	&raquo; {{batch.reference}} &raquo; Upload Bill File
+{% endblock %}
+
+{% block nav %}
+	<a href="/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
+ 	Upload Bill File
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Upload Bill File</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+					 	enctype="multipart/form-data" method="post"
+						action="/supplier_batch/{{batch.id}}/upload_file">
+						<fieldset>
+							<input type="file" name="import_file" size="45"
+								value="{{request.values.import_file}}">
+							<input type="submit" value="Import">
+							<br>
+							<select name="bill_parser_name">
+								{% for {{parser_name}} in {{parser_names}}  %}
+									{{input_option('bill_parser_name', parser_name, parser_named)}}
+								{% endfor %}
+							</select>
+							<table class="DataTable widthAuto">
+								<caption>The '.csv' Format</caption>
+								<tbody>
+									<tr>
+										<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
+										<td>Account Reference</td>
+										<td>MPAN Core</td>
+										<td>Invoice Reference</td>
+										<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+										<td>Start Date (YYYY-mm-dd HH:MM)</td>
+										<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+										<td>kWh</td>
+										<td>Net</td>
+										<td>VAT</td>
+										<td>Gross</td>
+										<td>Breakdown</td>
+										<td>R1 Meter Serial Number</td>
+										<td>R1 MPAN</td>
+										<td>R1 Coefficient</td>
+										<td>R1 Units (kWh, kW, kVA or kVArh)</td>
+										<td>R1 TPR (Blank if kW or kVA)</td>
+										<td>R1 Previous Read Date</td>
+										<td>R1 Previous Read Value</td>
+										<td>R1 Previous Read Type</td>
+										<td>R1 Present Read Date</td>
+										<td>R1 Present Read Value</td>
+										<td>R1 Present Read Type</td>
+									</tr>
+								</tbody>
+							</table>
+
+							<p>
+								The register read block of fields can be repeated for each
+								register, or can be left out entirely if the bill doesn't have
+								any readings associated with it.
+							</p>
+						
+							<table class="DataTable widthAuto">
+								<caption>
+									Mapping Between Chellow, sse.edi and bgb.edi read types
+								</caption>
+								<thead>
+									<tr>
+										<th colspan="2">Chellow</th>
+										<th colspan="2">
+											<a href="https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0171">J0171</a>
+										</th>
+										<th colspan="2">SSE EDI</th>
+										<th colspan="2">BGB EDI</th>
+										<th colspan="2">Haven EDI</th>
+									</tr>
+									<tr>
+										<th>Code</th>
+										<th>Description</th>
+										<th>Code</th>
+										<th>Description</th>
+										<th>Code</th>
+										<th>Description</th>
+										<th>Code</th>
+										<th>Description</th>
+										<th>Code</th>
+										<th>Description</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>A</td>
+										<td>Actual Change of Supplier Read</td>
+										<td>A</td>
+										<td>Actual Change of Supplier Read</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>A</td>
+										<td>Actual Read</td>
+									</tr>
+									<tr>
+										<td>C</td>
+										<td>Customer</td>
+										<td>C</td>
+										<td>Customer own read</td>
+										<td>04</td>
+										<td>Customer's Own Reading</td>
+										<td>04</td>
+										<td>Customer's own reading</td>
+										<td>C</td>
+										<td>Customer's Own Read</td>
+									</tr>
+									<tr>
+										<td>CP</td>
+										<td>Computer</td>
+										<td></td>
+										<td></td>
+										<td>05</td>
+										<td>Computer Reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>D</td>
+										<td>
+											Deemed (Settlement Registers) or Estimated (Non-Settlement
+											Registers)
+										</td>
+										<td>D</td>
+										<td>
+											Deemed (Settlement Registers) or Estimated (Non-Settlement
+											Registers)
+										</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>D</td>
+										<td>Deemed Read</td>
+									</tr>
+									<tr>
+										<td>E</td>
+										<td>Estimated</td>
+										<td></td>
+										<td></td>
+										<td>02</td>
+										<td>Estimated (Computer) Reading</td>
+										<td>02</td>
+										<td>Estimated (computer)</td>
+										<td>E</td>
+										<td>Estimated</td>
+									</tr>
+									<tr>
+										<td>E3</td>
+										<td>Estimated 3rd Party</td>
+										<td></td>
+										<td></td>
+										<td>11</td>
+										<td>Third Party Estimated (Computer) Reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>EM</td>
+										<td>Estimated Manual</td>
+										<td></td>
+										<td></td>
+										<td>01</td>
+										<td>Estimated (manual)</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>F</td>
+										<td>Final</td>
+										<td>F</td>
+										<td>Final</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>F</td>
+										<td>Final Read</td>
+									</tr>
+									<tr>
+										<td>H</td>
+										<td>Data Collector Reading Queried By Supplier</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>X</td>
+										<td>Data Collector Reading Queried By Haven</td>
+									</tr>
+									<tr>
+										<td>I</td>
+										<td>Initial</td>
+										<td>I</td>
+										<td>Initial</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>I</td>
+										<td>Initial Read</td>
+									</tr>
+									<tr>
+										<td>IF</td>
+										<td>Information</td>
+										<td></td>
+										<td></td>
+										<td>12</td>
+										<td>Reading for Information only</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td>M</td>
+										<td>MAR</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>N</td>
+										<td>Normal</td>
+										<td>R</td>
+										<td>Routine</td>
+										<td>00</td>
+										<td>Normal Reading</td>
+										<td>00</td>
+										<td>Normal Reading - Default</td>
+										<td>R</td>
+										<td>Routine</td>
+									</tr>
+									<tr>
+										<td>N3</td>
+										<td>Normal 3rd Party</td>
+										<td></td>
+										<td></td>
+										<td>09</td>
+										<td>Third Party Normal Reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>O</td>
+										<td>Old Supplier's Estimated CoS Reading</td>
+										<td>O</td>
+										<td>Old Supplier's Estimated CoS Reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>O</td>
+										<td>Old Suppliers Estimated Change of Supplier Reading</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td>P</td>
+										<td>Electronically collected via PPMIP</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>Q</td>
+										<td>Meter Reading modified manually by DC</td>
+										<td>Q</td>
+										<td>Meter Reading modified manually by DC</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>Q</td>
+										<td>Reading Modified Manually by DC</td>
+									</tr>
+									<tr>
+										<td>S</td>
+										<td>Special</td>
+										<td>S</td>
+										<td>Special</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>S</td>
+										<td>Actual Read</td>
+									</tr>
+									<tr>
+										<td></td>
+										<td></td>
+										<td>T</td>
+										<td>Proving Test Reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>W</td>
+										<td>Withdrawn</td>
+										<td>W</td>
+										<td>Withdrawn</td>
+										<td>03</td>
+										<td>Removed meter reading</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>X</td>
+										<td>Exchange</td>
+										<td></td>
+										<td></td>
+										<td>06</td>
+										<td>Exchange Meter Reading</td>
+										<td>06</td>
+										<td>Exchange Meter Reading</td>
+										<td></td>
+										<td></td>
+									</tr>
+									<tr>
+										<td>Z</td>
+										<td>Actual Change of Tenancy Read</td>
+										<td>Z</td>
+										<td>Actual Change of Tenancy Read</td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td>Z</td>
+										<td>Actual Change of Tenancy Read</td>
+									</tr>
+								</tbody>
+							</table>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+{% endblock %}

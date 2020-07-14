@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches
+	&raquo; {{batch.reference}} &raquo; Upload Bill File
+{% endblock %}
+
+{% block nav %}
+	<a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
+ 	Upload Bill File
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Upload Bill File</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<form
+					enctype="multipart/form-data" method="post"
+					action="/mop_batches/{{batch.id}}/upload_file">
+					<fieldset class="grid">
+						<label>File</label>
+						<input type="file" name="import_file"
+							value="{{request.values.import_file}}">
+						<label>Parser</label>
+						<select name="parser_name">
+							{% for parser_name in parser_names  %}
+								{{input_option('bill_parser_name', parser_name, parser_name)}}
+							{% endfor %}
+						</select>
+						<input type="submit" value="Upload">
+					</fieldset>
+				</form>
+				<br>
+
+				<table class="DataTable widthAuto">
+					<caption>The '.csv' Format</caption>
+					<tbody>
+						<tr>
+							<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
+							<td>Account Reference</td>
+							<td>MPAN Core</td>
+							<td>Invoice Reference</td>
+							<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+							<td>Start Date (YYYY-mm-dd HH:MM)</td>
+							<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+							<td>kWh</td>
+							<td>Net</td>
+							<td>VAT</td>
+							<td>Gross</td>
+							<td>Breakdown</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+{% endblock %}

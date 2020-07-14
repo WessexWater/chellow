@@ -1,6 +1,6 @@
 from sqlalchemy import (
     ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
-    not_, and_, Enum, null, create_engine, event)
+    not_, and_, Enum, null, create_engine, event, LargeBinary)
 from sqlalchemy.orm import sessionmaker, relationship, joinedload, aliased
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.engine import Engine
@@ -434,6 +434,34 @@ class RegisterRead(Base, PersistentClass):
         return self.UNITS_INT[self.units]
 
 
+class BatchFile(Base, PersistentClass):
+
+    __tablename__ = 'batch_file'
+    id = Column(Integer, primary_key=True)
+    batch_id = Column(
+        Integer, ForeignKey('batch.id', ondelete='CASCADE'), nullable=False,
+        index=True)
+    filename = Column(String, nullable=False, index=True)
+    upload_timestamp = Column(
+        DateTime(timezone=True), nullable=False, index=True)
+    data = Column(LargeBinary, nullable=False)
+    parser_name = Column(String, nullable=False)
+
+    def __init__(self, batch, filename, data, parser_name):
+        self.batch = batch
+        self.filename = filename
+        self.data = data
+        self.upload_timestamp = utc_datetime_now()
+        self.parser_name = parser_name
+
+    def update(self, parser_name):
+        self.parser_name = parser_name
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
 class Bill(Base, PersistentClass):
 
     __tablename__ = 'bill'
@@ -576,6 +604,9 @@ class Batch(Base, PersistentClass):
     reference = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
     bills = relationship('Bill', backref='batch')
+    files = relationship(
+        'BatchFile', backref='batch', cascade="all, delete-orphan",
+        passive_deletes=True)
 
     def __init__(self, sess, contract, reference, description):
         self.contract = contract
@@ -612,6 +643,12 @@ class Batch(Base, PersistentClass):
         sess.add(bill)
         sess.flush()
         return bill
+
+    def insert_file(self, sess, name, data, parser_name):
+        batch_file = BatchFile(self, name, data, parser_name)
+        sess.add(batch_file)
+        sess.flush()
+        return batch_file
 
     @staticmethod
     def get_mop_by_id(sess, batch_id):

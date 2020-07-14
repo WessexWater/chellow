@@ -4,10 +4,12 @@ import collections
 from werkzeug.exceptions import BadRequest
 import importlib
 from pkgutil import iter_modules
-from chellow.models import Session, Supply, Batch, BillType, Tpr, ReadType
+from chellow.models import (
+    Session, Supply, BatchFile, BillType, Tpr, ReadType, Batch)
 import chellow
 import chellow.bill_parser_engie_xls
 from chellow.utils import keydefaultdict, utc_datetime_now
+from io import BytesIO
 
 
 import_id = 0
@@ -16,43 +18,25 @@ imports = {}
 
 
 def find_parser_names():
-    return ', '.join(
-        '.' + name[12:].replace('_', '.') for module_finder, name, ispkg in
-        iter_modules(chellow.__path__) if name.startswith('bill_parser_'))
+    return [
+        name[12:] for _, name, _ in iter_modules(chellow.__path__)
+        if name.startswith('bill_parser_')
+    ]
 
 
 class BillImport(threading.Thread):
-    def __init__(self, sess, batch_id, file_name, file_size, f):
+    def __init__(self, batch):
         threading.Thread.__init__(self)
         global import_id
         self.import_id = import_id
         import_id += 1
 
-        self.batch_id = batch_id
-        if file_size == 0:
-            raise BadRequest("File has zero length")
-
-        imp_mod = None
-        parts = file_name.split('.')[::-1]
-        for i in range(len(parts)):
-            nm = 'bill_parser_' + '_'.join(parts[:i+1][::-1]).lower()
-            try:
-                imp_mod = nm, importlib.import_module('chellow.' + nm)
-            except ImportError:
-                pass
-
-        if imp_mod is None:
-            raise BadRequest(
-                "Can't find a parser for the file '" + file_name +
-                "'. The file name needs to have an extension that's one of " +
-                "the following: " + find_parser_names() + ".")
-
-        self.parser_name = imp_mod[0]
-        self.parser = imp_mod[1].Parser(f)
+        self.batch_id = batch.id
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
         self.bill_num = None
+        self.parser = None
 
     def _log(self, msg):
         with import_lock:
@@ -61,21 +45,30 @@ class BillImport(threading.Thread):
 
     def status(self):
         if self.isAlive():
-            if self.bill_num is None:
+            if self.bill_num is not None:
+                return "Inserting raw bills: I've reached bill number " + \
+                    str(self.bill_num) + "."
+            elif self.parser is not None:
                 return "Parsing file: I've reached line number " + \
                     str(self.parser.line_number) + "."
             else:
-                return "Inserting raw bills: I've reached bill number " + \
-                    str(self.bill_num) + "."
+                return 'Running'
         else:
-            return ''
+            return 'Not running'
 
     def run(self):
         sess = None
         try:
             sess = Session()
-            self._log(
-                "Starting to parse the file with '" + self.parser_name + "'.")
+            batch = Batch.get_by_id(sess, self.batch_id)
+            raw_bills = []
+            for bf in sess.query(BatchFile).filter(
+                    BatchFile.batch == batch).order_by(
+                    BatchFile.upload_timestamp):
+
+                self.parser = _process_batch_file(sess, bf, self._log)
+                raw_bills.extend(self.parser.make_raw_bills())
+                self._log(f"Successfully parsed the file {bf.filename}")
 
             bill_types = keydefaultdict(
                 lambda k: BillType.get_by_code(sess, k))
@@ -86,11 +79,9 @@ class BillImport(threading.Thread):
             read_types = keydefaultdict(
                 lambda k: ReadType.get_by_code(sess, k))
 
-            batch = Batch.get_by_id(sess, self.batch_id)
-            raw_bills = self.parser.make_raw_bills()
             self._log(
-                "Successfully parsed the file, and now I'm starting to "
-                "insert the raw bills.")
+                "Successfully parsed all the files, and now the raw bills "
+                "will be inserted.")
             for self.bill_num, raw_bill in enumerate(raw_bills):
                 try:
                     mpan_core = raw_bill['mpan_core']
@@ -151,18 +142,38 @@ class BillImport(threading.Thread):
             return fields
 
 
-def start_bill_import(sess, batch_id, file_name, file_size, f):
+def _process_batch_file(sess, batch_file, log_f):
+    data = batch_file.data
+    parser_name = batch_file.parser_name
+
+    if len(data) == 0:
+        raise BadRequest("File has zero length")
+
+    try:
+        imp_mod = importlib.import_module(
+            f'chellow.bill_parser_{parser_name}')
+    except ImportError:
+        raise BadRequest(
+            f"Can't find a parser with the name '{parser_name}'.")
+
+    parser = imp_mod.Parser(BytesIO(data))
+    log_f(f"Starting to parse the file with '{parser_name}'.")
+
+    return parser
+
+
+def start_bill_import(batch):
     with import_lock:
-        bi = BillImport(sess, batch_id, file_name, file_size, f)
+        bi = BillImport(batch)
         imports[bi.import_id] = bi
         bi.start()
 
     return bi.import_id
 
 
-def get_bill_import_ids(batch_id):
+def get_bill_import_ids(batch):
     with import_lock:
-        return [k for k, v in imports.items() if v.batch_id == batch_id]
+        return [k for k, v in imports.items() if v.batch_id == batch.id]
 
 
 def get_bill_import(id):
