@@ -11,8 +11,11 @@ from chellow.models import Session, Supply
 
 READ_TYPE_MAP = {
     '00': 'N',
+    '01': 'Q',
     '02': 'E',
+    '03': 'F',
     '04': 'C',
+    '05': 'M',
     '06': 'I',
 }
 

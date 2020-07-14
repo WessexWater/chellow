@@ -83,9 +83,12 @@
 										</th>
 										<th colspan="2">SSE EDI</th>
 										<th colspan="2">BGB EDI</th>
+										<th colspan="2">Haven CSV</th>
 										<th colspan="2">Haven EDI</th>
 									</tr>
 									<tr>
+										<th>Code</th>
+										<th>Description</th>
 										<th>Code</th>
 										<th>Description</th>
 										<th>Code</th>
@@ -110,6 +113,8 @@
 										<td></td>
 										<td>A</td>
 										<td>Actual Read</td>
+										<td>00</td>
+										<td>Actual Read</td>
 									</tr>
 									<tr>
 										<td>C</td>
@@ -122,6 +127,8 @@
 										<td>Customer's own reading</td>
 										<td>C</td>
 										<td>Customer's Own Read</td>
+										<td>04</td>
+										<td>Customer's Own Read</td>
 									</tr>
 									<tr>
 										<td>CP</td>
@@ -130,6 +137,8 @@
 										<td></td>
 										<td>05</td>
 										<td>Computer Reading</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -152,6 +161,8 @@
 										<td></td>
 										<td>D</td>
 										<td>Deemed Read</td>
+										<td>02</td>
+										<td>Deemed Read</td>
 									</tr>
 									<tr>
 										<td>E</td>
@@ -164,6 +175,8 @@
 										<td>Estimated (computer)</td>
 										<td>E</td>
 										<td>Estimated</td>
+										<td>02</td>
+										<td>Estimated</td>
 									</tr>
 									<tr>
 										<td>E3</td>
@@ -172,6 +185,8 @@
 										<td></td>
 										<td>11</td>
 										<td>Third Party Estimated (Computer) Reading</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -188,6 +203,8 @@
 										<td></td>
 										<td></td>
 										<td></td>
+										<td></td>
+										<td></td>
 									</tr>
 									<tr>
 										<td>F</td>
@@ -199,6 +216,8 @@
 										<td></td>
 										<td></td>
 										<td>F</td>
+										<td>Final Read</td>
+										<td>03</td>
 										<td>Final Read</td>
 									</tr>
 									<tr>
@@ -212,6 +231,8 @@
 										<td></td>
 										<td>X</td>
 										<td>Data Collector Reading Queried By Haven</td>
+										<td></td>
+										<td></td>
 									</tr>
 									<tr>
 										<td>I</td>
@@ -224,6 +245,8 @@
 										<td></td>
 										<td>I</td>
 										<td>Initial Read</td>
+										<td>06</td>
+										<td>Initial Read</td>
 									</tr>
 									<tr>
 										<td>IF</td>
@@ -232,6 +255,8 @@
 										<td></td>
 										<td>12</td>
 										<td>Reading for Information only</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -248,6 +273,8 @@
 										<td></td>
 										<td></td>
 										<td></td>
+										<td>05</td>
+										<td>MAR</td>
 									</tr>
 									<tr>
 										<td>N</td>
@@ -260,6 +287,8 @@
 										<td>Normal Reading - Default</td>
 										<td>R</td>
 										<td>Routine</td>
+										<td></td>
+										<td></td>
 									</tr>
 									<tr>
 										<td>N3</td>
@@ -268,6 +297,8 @@
 										<td></td>
 										<td>09</td>
 										<td>Third Party Normal Reading</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -284,12 +315,16 @@
 										<td></td>
 										<td>O</td>
 										<td>Old Suppliers Estimated Change of Supplier Reading</td>
+										<td>02</td>
+										<td>Old Suppliers Estimated Change of Supplier Reading</td>
 									</tr>
 									<tr>
 										<td></td>
 										<td></td>
 										<td>P</td>
 										<td>Electronically collected via PPMIP</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -308,6 +343,8 @@
 										<td></td>
 										<td>Q</td>
 										<td>Reading Modified Manually by DC</td>
+										<td>01</td>
+										<td>Reading Modified Manually by DC</td>
 									</tr>
 									<tr>
 										<td>S</td>
@@ -319,6 +356,8 @@
 										<td></td>
 										<td></td>
 										<td>S</td>
+										<td>Actual Read</td>
+										<td>00</td>
 										<td>Actual Read</td>
 									</tr>
 									<tr>
@@ -332,6 +371,8 @@
 										<td></td>
 										<td></td>
 										<td></td>
+										<td>00</td>
+										<td>Proving Test Reading</td>
 									</tr>
 									<tr>
 										<td>W</td>
@@ -340,6 +381,8 @@
 										<td>Withdrawn</td>
 										<td>03</td>
 										<td>Removed meter reading</td>
+										<td></td>
+										<td></td>
 										<td></td>
 										<td></td>
 										<td></td>
@@ -356,6 +399,8 @@
 										<td>Exchange Meter Reading</td>
 										<td></td>
 										<td></td>
+										<td></td>
+										<td></td>
 									</tr>
 									<tr>
 										<td>Z</td>
@@ -367,6 +412,8 @@
 										<td></td>
 										<td></td>
 										<td>Z</td>
+										<td>Actual Change of Tenancy Read</td>
+										<td>04</td>
 										<td>Actual Change of Tenancy Read</td>
 									</tr>
 								</tbody>
