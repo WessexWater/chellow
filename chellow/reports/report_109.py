@@ -164,15 +164,19 @@ def content(contract_id, end_year, end_month, months, user):
                     added_so_far = 0
                     for key in sorted(gen_breakdown.keys()):
                         kwh = gen_breakdown[key]
-                        if kwh + added_so_far > displaced:
-                            total_gen_breakdown[key] = \
-                                total_gen_breakdown.get(key, 0) + \
-                                displaced - added_so_far
-                            break
-                        else:
+                        if displaced < 0:
                             total_gen_breakdown[key] = \
                                 total_gen_breakdown.get(key, 0) + kwh
-                            added_so_far += kwh
+                        else:
+                            if kwh + added_so_far > displaced:
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + \
+                                    displaced - added_so_far
+                                break
+                            else:
+                                total_gen_breakdown[key] = \
+                                    total_gen_breakdown.get(key, 0) + kwh
+                                added_so_far += kwh
 
                 for title in ['chp', 'lm', 'turb', 'pv']:
                     vals.append(str(total_gen_breakdown.get(title, '')))
