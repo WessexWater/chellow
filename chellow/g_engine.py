@@ -15,7 +15,7 @@ from datetime import timedelta
 from zish import loads, dumps
 import chellow.bank_holidays
 from math import floor, log10
-from itertools import count
+from itertools import count, combinations
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -465,23 +465,31 @@ def _bill_kwh(
             'avg_cv': avg_cv
         }
 
-    g_bills = []
-    for cand_bill in sess.query(GBill).join(BillType).filter(
-                GBill.g_supply == g_supply, GBill.g_reads.any(),
-                GBill.start_date <= chunk_finish,
-                GBill.finish_date >= chunk_start,
-                BillType.code != 'W').order_by(
-                GBill.issue_date.desc(), GBill.start_date):
-        can_insert = True
-        for g_bill in g_bills:
-            if not cand_bill.start_date > g_bill.finish_date \
-                    and not cand_bill.finish_date < g_bill.start_date:
-                can_insert = False
+    g_bills = dict(
+        (b.id, b) for b in sess.query(GBill).filter(
+            GBill.g_supply == g_supply,
+            GBill.start_date <= chunk_finish,
+            GBill.finish_date >= chunk_start).order_by(
+            GBill.issue_date.desc(), GBill.start_date))
+    while True:
+        to_del = None
+        for a, b in combinations(g_bills.values(), 2):
+            if all(
+                    (
+                        a.start_date == b.start_date,
+                        a.finish_date == b.finish_date,
+                        a.kwh == -1 * b.kwh, a.net == -1 * b.net,
+                        a.vat == -1 * b.vat,
+                        a.gross == -1 * b.gross)):
+                to_del = (a.id, b.id)
                 break
-        if can_insert:
-            g_bills.append(cand_bill)
+        if to_del is None:
+            break
+        else:
+            for k in to_del:
+                del g_bills[k]
 
-    for g_bill in g_bills:
+    for _, g_bill in sorted(g_bills.items()):
         units_consumed = 0
         for prev_value, pres_value in sess.query(
                 cast(GRegisterRead.prev_value, Float),
