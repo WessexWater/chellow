@@ -605,7 +605,7 @@ def _process_CCD_2(elements, headers):
     if tmod_1 == '700285':  # standing charge
         start_date = _to_date(elements['CSDT'][0])
         finish_date = _to_date(elements['CEDT'][0])
-        elcons = Decimal((finish_date - start_date).days)
+        elcons = Decimal((finish_date - start_date).days + 1)
     else:
         cons = elements['CONS']
         if len(cons[0]) > 0:
@@ -645,7 +645,7 @@ def _process_CCD_3(elements, headers):
     if tmod_1 == '700285':  # standing charge
         start_date = _to_date(elements['CSDT'][0])
         finish_date = _to_date(elements['CEDT'][0])
-        consumption = Decimal((finish_date - start_date).days)
+        consumption = Decimal((finish_date - start_date).days + 1)
     else:
         cons = elements['CONS']
         if len(cons[0]) > 0:
