@@ -280,7 +280,8 @@ def _read_generator(sess, g_supply, start, is_forwards, is_prev):
             GBill.finish_date >= r.g_bill.start_date,
             GBill.start_date <= r.g_bill.finish_date,
             BillType.code != 'W').order_by(
-            GBill.issue_date.desc(), BillType.code).first()
+            GBill.issue_date.desc(), BillType.code,
+            GBill.reference.desc()).first()
 
         if g_bill.id != r.g_bill.id:
             continue
