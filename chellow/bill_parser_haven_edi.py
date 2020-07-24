@@ -205,6 +205,9 @@ SSC_MAP = {
         'Other': '00277',
         'Weekday': '00276',
     },
+    '0252': {
+        'Other': '00212',
+    },
     '0265': {
         'Other': '00190',
     },
@@ -259,6 +262,8 @@ def _to_date(component):
 
 def _to_decimal(components, divisor=None):
     comp_0 = components[0]
+    if comp_0 == '':
+        return None
 
     try:
         result = Decimal(comp_0)
@@ -658,10 +663,9 @@ def _process_CCD_3(elements, headers):
 
     rate = _to_decimal(elements['BPRI'], '100000')
 
+    gbp = Decimal('0.00')
     if 'CTOT' in elements:
-        gbp = Decimal('0.00') + _to_decimal(elements['CTOT'], '100')
-    else:
-        gbp = Decimal('0.00')
+        gbp += _to_decimal(elements['CTOT'], '100')
 
     if desc == 'Energy Charges':
         headers['bill_elements'].append(
