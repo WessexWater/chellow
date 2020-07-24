@@ -2151,7 +2151,9 @@ class Era(Base, PersistentClass):
     def meter_category(self):
         if not hasattr(self, '_meter_category'):
             meter_type = self.props.get('meter_type')
-            if meter_type is None:
+            try:
+                cat = METER_CATEGORY[meter_type]
+            except KeyError:
                 if self.pc.code == '00':
                     cat = 'hh'
                 elif len(self.channels) > 0:
@@ -2160,16 +2162,16 @@ class Era(Base, PersistentClass):
                     cat = 'unmetered'
                 else:
                     cat = 'nhh'
-            else:
-                if meter_type == 'H':
-                    cat = 'hh'
-                elif meter_type == 'N' or len(self.channels) == 0:
-                    cat = 'nhh'
-                else:
-                    cat = 'amr'
 
             self._meter_category = cat
         return self._meter_category
+
+
+METER_CATEGORY = {
+    'H': 'hh',
+    'N': 'nhh',
+    'S1': 'amr'
+}
 
 
 class Channel(Base, PersistentClass):
