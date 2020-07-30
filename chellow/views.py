@@ -3387,19 +3387,17 @@ def non_core_contract_edit_post(contract_id):
 def site_months_get(site_id):
     finish_year = req_int('finish_year')
     finish_month = req_int('finish_month')
-    start_date = utc_datetime(finish_year, finish_month)
-    start_date -= relativedelta(months=11)
     site = Site.get_by_id(g.sess, site_id)
 
     typs = ('imp_net', 'exp_net', 'used', 'displaced', 'imp_gen', 'exp_gen')
 
     months = []
-    month_start = start_date
-    for i in range(12):
-        month_finish = month_start + relativedelta(months=1) - HH
+    for month_start, month_finish in c_months_u(
+            finish_year=finish_year, finish_month=finish_month, months=12):
         month = dict(
             (typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
         month['start_date'] = month_start
+        month['start_date_ct'] = to_ct(month_start)
         months.append(month)
 
         for hh in site.hh_data(g.sess, month_start, month_finish):
@@ -3414,8 +3412,6 @@ def site_months_get(site_id):
             or_(
                 Snag.finish_date == null(),
                 Snag.finish_date > month_start)).count() > 0
-
-        month_start += relativedelta(months=1)
 
     totals = dict((typ, {'md': 0, 'md_date': None, 'kwh': 0}) for typ in typs)
 
