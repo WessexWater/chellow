@@ -68,7 +68,9 @@
 							<label>Parser</label>
 							<select name="parser_name">
 								{% for parser_name in parser_names  %}
-									{{input_option('bill_parser_name', parser_name, parser_name)}}
+									{{input_option(
+										'bill_parser_name', parser_name, parser_name,
+										initial=batch_file.parser_name)}}
 								{% endfor %}
 							</select>
 							<input type="submit" name="update" value="Update">

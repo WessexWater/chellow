@@ -16863,6 +16863,14 @@ finally:
         ]
     },
     {
+        'name': "Engie XLS Bills. View edit file upload.",
+        'path': '/supplier_batch_files/14/edit',
+        'status_code': 200,
+        'regexes': [
+            r'<option value="engie_xls" selected>engie_xls</option>'
+        ]
+    },
+    {
         'name': "Engie XLS Bills. Import bills",
         'path': '/supplier_batches/17',
         'method': 'post',
