@@ -2896,7 +2896,8 @@ def supplier_batch_upload_file_post(batch_id):
         batch_file = batch.insert_file(
             g.sess, file_item.filename, file_item.stream.read(), parser_name)
         g.sess.commit()
-        return chellow_redirect(f"/supplier_batch_files/{batch_file.id}", 303)
+        return chellow_redirect(
+            f"/supplier_batches/{batch.id}#batch_file_{batch_file.id}", 303)
     except BadRequest as e:
         flash(e.description)
         parser_names = chellow.bill_importer.find_parser_names()
@@ -3854,7 +3855,8 @@ def dc_batch_upload_file_post(batch_id):
         batch_file = batch.insert_file(
             g.sess, file_item.filename, file_item.stream.read(), parser_name)
         g.sess.commit()
-        return chellow_redirect(f"/dc_batch_files/{batch_file.id}", 303)
+        return chellow_redirect(
+            f"/dc_batches/{batch.id}#batch_file_{batch_file.id}", 303)
     except BadRequest as e:
         flash(e.description)
         parser_names = chellow.bill_importer.find_parser_names()
@@ -4199,7 +4201,8 @@ def mop_batch_upload_file_post(batch_id):
         batch_file = batch.insert_file(
             g.sess, file_item.filename, file_item.stream.read(), parser_name)
         g.sess.commit()
-        return chellow_redirect(f"/mop_batch_files/{batch_file.id}", 303)
+        return chellow_redirect(
+            f"/mop_batches/{batch.id}#batch_file_{batch_file.id}", 303)
     except BadRequest as e:
         flash(e.description)
         parser_names = chellow.bill_importer.find_parser_names()

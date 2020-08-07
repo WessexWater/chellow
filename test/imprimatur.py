@@ -1775,7 +1775,7 @@ def virtual_bill_titles():
         'files': {'import_file': 'test/bills.mm'},
         'status_code': 303,
         'regexes': [
-            r'/supplier_batch_files/1'
+            r'batch_file_1'
         ]
     },
 
@@ -1853,7 +1853,7 @@ def virtual_bill_titles():
         'files': {'import_file': 'test/bills.bgb.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/2"
+            r"/supplier_batches/3#batch_file_2"
         ]
     },
 
@@ -1867,7 +1867,7 @@ def virtual_bill_titles():
         'files': {'import_file': 'test/bills2.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/3"
+            r"/supplier_batches/3#batch_file_3"
         ]
     },
 
@@ -2015,7 +2015,7 @@ def virtual_bill_titles():
         'files': {'import_file': 'test/bills.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/4"
+            r"/supplier_batches/4#batch_file_4"
         ]
     },
 
@@ -4986,7 +4986,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/5"
+            r"/supplier_batches/5#batch_file_5"
         ]
     },
 
@@ -5197,7 +5197,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills.gdf.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/6"
+            r"/supplier_batches/6#batch_file_6"
         ]
     },
 
@@ -6161,7 +6161,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-nhh.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/7"
+            r"/supplier_batches/7#batch_file_7"
         ]
     },
     {
@@ -6174,7 +6174,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-nhh-clocked.csv'},
         'status_code': 303,
         'regexes': [
-          r'supplier_batch_files/8'
+          r'supplier_batches/7#batch_file_8'
         ]
     },
 
@@ -6452,7 +6452,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/dc-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/dc_batch_files/9"
+            r"/dc_batches/8#batch_file_9"
         ]
     },
 
@@ -6537,7 +6537,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/mop-bill.csv'},
         'status_code': 303,
         'regexes': [
-            r"/mop_batch_files/10"
+            r"/mop_batches/9#batch_file_10"
         ]
     },
     {
@@ -9104,7 +9104,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/nhh_bills2007.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/11"
+            r"/supplier_batches/12#batch_file_11"
         ]
     },
 
@@ -14092,7 +14092,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills_fail.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/12"
+            r"/supplier_batches/4#batch_file_12"
         ]
     },
     {
@@ -16737,7 +16737,7 @@ def virtual_bill(ss):
         'files': {'import_file': 'test/bills3.sse.edi'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/13"
+            r"/supplier_batches/16#batch_file_13"
         ]
     },
     {
@@ -16859,7 +16859,7 @@ finally:
         'files': {'import_file': 'test/bills_fail.engie.xls'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/14"
+            r"/supplier_batches/17#batch_file_14"
         ]
     },
     {
@@ -16916,7 +16916,7 @@ finally:
         'files': {'import_file': 'test/bills.engie.xls'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/15"
+            r"/supplier_batches/17#batch_file_15"
         ]
     },
     {
@@ -17691,7 +17691,7 @@ def virtual_bill(ds):
         'files': {'import_file': 'test/bills-nhh-negative.csv'},
         'status_code': 303,
         'regexes': [
-            r"/supplier_batch_files/16"
+            r"/supplier_batches/7#batch_file_16"
         ]
     },
     {
@@ -21363,7 +21363,7 @@ def virtual_bill(ds):
         },
         'status_code': 303,
         'regexes': [
-            r"/dc_batch_files/17"
+            r"/dc_batches/13#batch_file_17"
         ]
     },
     {
@@ -21378,7 +21378,7 @@ def virtual_bill(ds):
         },
         'status_code': 303,
         'regexes': [
-            r"/dc_batch_files/18"
+            r"/dc_batches/13#batch_file_18"
         ]
     },
     {
@@ -21394,7 +21394,7 @@ def virtual_bill(ds):
         },
         'status_code': 303,
         'regexes': [
-            r"/dc_batch_files/19"
+            r"/dc_batches/13#batch_file_19"
         ]
     },
     {
@@ -21432,7 +21432,7 @@ def virtual_bill(ds):
         },
         'status_code': 303,
         'regexes': [
-            r"/mop_batch_files/20"
+            r"/mop_batches/14#batch_file_20"
         ]
     },
     {
@@ -21447,7 +21447,7 @@ def virtual_bill(ds):
         },
         'status_code': 303,
         'regexes': [
-            r"/mop_batch_files/21"
+            r"/mop_batches/14#batch_file_21"
         ]
     },
     {
