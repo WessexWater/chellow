@@ -2893,8 +2893,12 @@ def supplier_batch_upload_file_post(batch_id):
         file_item = request.files["import_file"]
         parser_name = req_str('parser_name')
 
+        filename = file_item.filename
+        if filename == '':
+            raise BadRequest('No file selected')
+
         batch_file = batch.insert_file(
-            g.sess, file_item.filename, file_item.stream.read(), parser_name)
+            g.sess, filename, file_item.stream.read(), parser_name)
         g.sess.commit()
         return chellow_redirect(
             f"/supplier_batches/{batch.id}#batch_file_{batch_file.id}", 303)
