@@ -18,3 +18,4 @@ chellow.egg-info/
 instance/
 .cache/
 .pytest_cache/
+venv/
