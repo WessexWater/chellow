@@ -1,15 +1,19 @@
-from dateutil.relativedelta import relativedelta
-import traceback
-import threading
-from collections import defaultdict, deque
-from chellow.models import RateScript, Contract, Session
-from chellow.utils import (
-    hh_format, utc_datetime_now, to_utc, to_ct, c_months_u)
 import atexit
-import requests
 import csv
-from decimal import Decimal
+import threading
+import traceback
+from collections import defaultdict, deque
 from datetime import datetime as Datetime, timedelta as Timedelta
+from decimal import Decimal
+
+from chellow.models import Contract, RateScript, Session
+from chellow.utils import (
+    c_months_u, hh_format, to_ct, to_utc, utc_datetime_now)
+
+from dateutil.relativedelta import relativedelta
+
+import requests
+
 from zish import loads
 
 
@@ -29,6 +33,7 @@ class GCvImporter(threading.Thread):
         self.going = threading.Event()
         self.PROXY_HOST_KEY = 'proxy.host'
         self.PROXY_PORT_KEY = 'proxy.port'
+        self.globabl_alert = None
 
     def stop(self):
         self.stopped.set()
@@ -54,12 +59,14 @@ class GCvImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
+                sess = self.global_alert = None
                 try:
                     sess = Session()
                     self.run_inner(sess)
                 except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
+                    self.global_alert = \
+                        "There's a problem with the g_cv automatic importer."
                     sess.rollback()
                 finally:
                     if sess is not None:

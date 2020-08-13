@@ -128,7 +128,8 @@ def chellow_context_processor():
             except NotFound:
                 pass
 
-    for importer in (chellow.bsuos.bsuos_importer,):
+    for importer in (
+            chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer):
         if importer is not None and importer.global_alert is not None:
             global_alerts.append(importer.global_alert)
 
