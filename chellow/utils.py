@@ -1,28 +1,24 @@
-from dateutil.relativedelta import relativedelta
-from werkzeug.exceptions import BadRequest
-from pytz import timezone, utc
-from decimal import Decimal, InvalidOperation
-from collections import defaultdict, deque
-from datetime import datetime as Datetime, timedelta as Timedelta
-from flask import request, Response
-from jinja2 import Environment
+import os
 import time
 import traceback
-import os
+from collections import defaultdict
 from collections.abc import Mapping
-from zish import loads, ZishException
+from datetime import datetime as Datetime, timedelta as Timedelta
+from decimal import Decimal, InvalidOperation
+
+from dateutil.relativedelta import relativedelta
+
+from flask import Response, request
+
+from jinja2 import Environment
+
+from pytz import timezone, utc
+
+from werkzeug.exceptions import BadRequest
+
+from zish import ZishException, loads
 
 url_root = None
-
-
-clogs = deque(maxlen=1000)
-
-
-def clog(msg):
-    clogs.appendleft(
-        utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " +
-        str(msg))
-
 
 HH = relativedelta(minutes=30)
 MONTH = relativedelta(months=1)
@@ -33,7 +29,7 @@ def req_str(name):
     try:
         return request.values[name]
     except KeyError:
-        raise BadRequest("The field " + name + " is required.")
+        raise BadRequest(f"The field {name} is required.")
 
 
 def req_bool(name):
@@ -48,15 +44,14 @@ def req_int(name):
         return int(req_str(name))
     except ValueError as e:
         raise BadRequest(
-            "Problem parsing the field " + name + " as an integer: " + str(e))
+            f"Problem parsing the field {name} as an integer: {e}")
 
 
 def req_zish(name):
     try:
         return loads(req_str(name))
     except ZishException as e:
-        raise BadRequest(
-            "Problem parsing the field " + name + " as Zish: " + str(e))
+        raise BadRequest(f"Problem parsing the field {name} as Zish: {e}")
 
 
 def req_date(prefix, resolution='minute'):
@@ -64,12 +59,15 @@ def req_date(prefix, resolution='minute'):
     month = req_int(prefix + '_month')
     day = req_int(prefix + '_day')
 
-    if resolution == 'day':
-        d = ct_datetime(year, month, day)
-    elif resolution == 'minute':
-        hour = req_int(prefix + '_hour')
-        minute = req_int(prefix + '_minute')
-        d = ct_datetime(year, month, day, hour, minute)
+    try:
+        if resolution == 'day':
+            d = ct_datetime(year, month, day)
+        elif resolution == 'minute':
+            hour = req_int(prefix + '_hour')
+            minute = req_int(prefix + '_minute')
+            d = ct_datetime(year, month, day, hour, minute)
+    except ValueError as e:
+        raise BadRequest(f"Problem parsing the date {prefix}: {e}.")
 
     return to_utc(d)
 
@@ -79,7 +77,7 @@ def req_decimal(name):
         return Decimal(req_str(name))
     except InvalidOperation as e:
         raise BadRequest(
-            "Problem parsing the field " + name + " as a decimal: " + str(e))
+            f"Problem parsing the field {name} as a decimal: {e}.")
 
 
 def prev_hh(dt):
