@@ -1,12 +1,15 @@
-from decimal import Decimal, InvalidOperation
-from dateutil.relativedelta import relativedelta
 from collections import namedtuple
-from chellow.edi_lib import EdiParser, SEGMENTS
-from chellow.utils import HH, to_utc, to_ct, parse_mpan_core
-from io import StringIO
-from werkzeug.exceptions import BadRequest
 from datetime import datetime as Datetime
+from decimal import Decimal, InvalidOperation
+from io import StringIO
+
+from chellow.edi_lib import EdiParser, SEGMENTS
 from chellow.models import Session, Supply
+from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
+
+from dateutil.relativedelta import relativedelta
+
+from werkzeug.exceptions import BadRequest
 
 
 READ_TYPE_MAP = {
@@ -230,7 +233,8 @@ SSC_MAP = {
         'Day': '00184',
     },
     '0393': {
-        'Day': '00001'
+        'Day': '00001',
+        'Energy Charges': '00001',
     },
     '0428': {
         'Energy Charges': '00258',
@@ -305,7 +309,8 @@ class Parser():
                 bill = _process_segment(code, elements, line, headers)
             except BadRequest as e:
                 raise BadRequest(
-                    "Can't parse the line: " + line + " :" + e.description)
+                    f"Can't parse the line number {self.line_number} "
+                    f"{line} : {e.description}")
 
             if bill is not None:
                 raw_bills.append(bill)
@@ -390,7 +395,7 @@ def _process_MTR(elements, headers):
                     tpr_map = SSC_MAP[ssc_lookup]
                 except KeyError:
                     raise BadRequest(
-                        "The SSC " + ssc_lookup + " isn't in the SSC_MAP.")
+                        f"The SSC {ssc_lookup} isn't in the SSC_MAP.")
 
             for read in reads:
                 desc = read['tpr_code']
@@ -398,8 +403,8 @@ def _process_MTR(elements, headers):
                     read['tpr_code'] = tpr_map[desc]
                 except KeyError:
                     raise BadRequest(
-                        "The description " + desc + " isn't in the SSC_MAP "
-                        "for the SSC " + ssc_lookup + ".")
+                        f"The description {desc} isn't in the SSC_MAP "
+                        f"for the SSC {ssc_lookup}.")
 
             for el in headers['bill_elements']:
                 if el.titles is None:
@@ -407,9 +412,8 @@ def _process_MTR(elements, headers):
                         tpr = tpr_map[el.desc]
                     except KeyError:
                         raise BadRequest(
-                            "The billing element description " + el.desc +
-                            " isn't in the SSC_MAP for the SSC " + ssc_lookup +
-                            ".")
+                            f"The billing element description {el.desc} "
+                            f"isn't in the SSC_MAP for the SSC {ssc_lookup}.")
 
                     titles = (tpr + '-gbp', tpr + '-rate', tpr + '-kwh')
                 else:
@@ -668,17 +672,6 @@ def _process_CCD_3(elements, headers):
     if 'CTOT' in elements:
         gbp += _to_decimal(elements['CTOT'], '100')
 
-    if desc == 'Energy Charges':
-        headers['bill_elements'].append(
-            BillElement(
-                gbp=(gbp / 2), rate=rate, cons=(consumption / 2),
-                titles=titles, desc=desc))
-        headers['bill_elements'].append(
-            BillElement(
-                gbp=(gbp / 2), rate=rate, cons=(consumption / 2),
-                titles=titles, desc='Energy Charges 2'))
-    else:
-        headers['bill_elements'].append(
-            BillElement(
-                gbp=gbp, rate=rate, cons=consumption, titles=titles,
-                desc=desc))
+    headers['bill_elements'].append(
+        BillElement(
+            gbp=gbp, rate=rate, cons=consumption, titles=titles, desc=desc))
