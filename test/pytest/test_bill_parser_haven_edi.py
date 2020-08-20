@@ -1,5 +1,6 @@
-import chellow.bill_parser_haven_edi
 from decimal import Decimal
+
+import chellow.bill_parser_haven_edi
 from chellow.utils import utc_datetime
 
 
@@ -126,6 +127,70 @@ def test_process_MTR_UTLBIL(mocker):
                 'pres_type_code': 'N'
             }
         ],
+        'bill_type_code': 'N'
+    }
+    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    assert bill == expected_bill
+
+
+def test_process_MTR_UTLBIL_unmetered(mocker):
+    MockSupply = mocker.patch(
+        'chellow.bill_parser_haven_edi.Supply', autospec=True)
+    mock_supply = mocker.Mock()
+    MockSupply.get_by_mpan_core.return_value = mock_supply
+    mock_era = mocker.Mock()
+    mock_era.ssc.code = '0428'
+    mock_mr_00258 = mocker.Mock()
+    mock_mr_00258.tpr.code = '00258'
+    mock_mr_00259 = mocker.Mock()
+    mock_mr_00259.tpr.code = '00259'
+    mock_era.ssc.measurement_requirements = [mock_mr_00258, mock_mr_00259]
+    gbp = '10.31'
+    cons = '113'
+    mock_supply.find_era_at.return_value = mock_era
+    elements = {}
+    headers = {
+        'sess': mocker.Mock(),
+        'message_type': "UTLBIL",
+        'breakdown': {},
+        'bill_elements': [
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp), rate=Decimal('0.0001'),
+                cons=Decimal(cons), titles=None, desc='Energy Charges')
+        ],
+        'mpan_core': ["0850"],
+        'kwh': 8,
+        'reference': 'a',
+        'issue_date': 'd',
+        'account': 'acc',
+        'start_date': 'd',
+        'finish_date': 'd',
+        'net': 0,
+        'vat': 0,
+        'gross': 0,
+        'reads': [],
+        'bill_type_code': 'N',
+    }
+    expected_bill = {
+        'kwh': 8,
+        'reference': 'a',
+        'mpan_core': ['0850'],
+        'issue_date': 'd',
+        'account': 'acc',
+        'start_date': 'd',
+        'finish_date': 'd',
+        'net': 0,
+        'vat': 0,
+        'gross': 0,
+        'breakdown': {
+            '00258-gbp': Decimal(gbp) / 2,
+            '00258-rate': {Decimal('0.0001')},
+            '00258-kwh': Decimal(cons) / 2,
+            '00259-gbp': Decimal(gbp) / 2,
+            '00259-rate': {Decimal('0.0001')},
+            '00259-kwh': Decimal(cons) / 2,
+        },
+        'reads': [],
         'bill_type_code': 'N'
     }
     bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)

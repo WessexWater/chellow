@@ -4,7 +4,7 @@ from decimal import Decimal, InvalidOperation
 from io import StringIO
 
 from chellow.edi_lib import EdiParser, SEGMENTS
-from chellow.models import Session, Supply
+from chellow.models import Session, Ssc, Supply
 from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
 from dateutil.relativedelta import relativedelta
@@ -375,102 +375,114 @@ def _process_MAN(elements, headers):
 
 
 def _process_MTR(elements, headers):
-    if headers['message_type'] == "UTLBIL":
-        sess = headers['sess']
-        mpan_core = headers['mpan_core']
-        start_date = headers['start_date']
-        reads = headers['reads']
-        supply = Supply.get_by_mpan_core(sess, mpan_core)
-        era = supply.find_era_at(sess, start_date)
-        bill_elements = []
-        if era is None:
-            era = supply.find_last_era(sess)
-        if era is not None and era.ssc is not None:
-            try:
-                ssc_lookup = era.imp_mpan_core
-                tpr_map = SSC_MAP[ssc_lookup]
-            except KeyError:
-                ssc_lookup = era.ssc.code
-                try:
-                    tpr_map = SSC_MAP[ssc_lookup]
-                except KeyError:
-                    raise BadRequest(
-                        f"The SSC {ssc_lookup} isn't in the SSC_MAP.")
+    if headers['message_type'] != "UTLBIL":
+        return
 
-            for read in reads:
-                desc = read['tpr_code']
-                try:
-                    read['tpr_code'] = tpr_map[desc]
-                except KeyError:
-                    raise BadRequest(
-                        f"The description {desc} isn't in the SSC_MAP "
-                        f"for the SSC {ssc_lookup}.")
+    sess = headers['sess']
+    mpan_core = headers['mpan_core']
+    start_date = headers['start_date']
+    reads = headers['reads']
+    supply = Supply.get_by_mpan_core(sess, mpan_core)
+    era = supply.find_era_at(sess, start_date)
+    bill_elements = []
+    if era is None:
+        era = supply.find_last_era(sess)
 
-            for el in headers['bill_elements']:
-                if el.titles is None:
-                    try:
-                        tpr = tpr_map[el.desc]
-                    except KeyError:
-                        raise BadRequest(
-                            f"The billing element description {el.desc} "
-                            f"isn't in the SSC_MAP for the SSC {ssc_lookup}.")
+    if era is None:
+        imp_mpan_core = ''
+        ssc = Ssc.get_by_code(sess, '0393')
+    else:
+        imp_mpan_core = era.imp_mpan_core
+        ssc = Ssc.get_by_code(sess, '0393') if era.ssc is None else era.ssc
 
-                    titles = (tpr + '-gbp', tpr + '-rate', tpr + '-kwh')
-                else:
-                    titles = el.titles
+    try:
+        ssc_lookup = imp_mpan_core
+        tpr_map = SSC_MAP[ssc_lookup]
+    except KeyError:
+        ssc_lookup = ssc.code
+        try:
+            tpr_map = SSC_MAP[ssc_lookup]
+        except KeyError:
+            raise BadRequest(
+                f"The SSC {ssc_lookup} isn't in the SSC_MAP.")
 
+    for read in reads:
+        desc = read['tpr_code']
+        try:
+            read['tpr_code'] = tpr_map[desc]
+        except KeyError:
+            raise BadRequest(
+                f"The description {desc} isn't in the SSC_MAP "
+                f"for the SSC {ssc_lookup}.")
+
+    for el in headers['bill_elements']:
+        if el.desc == 'Energy Charges':
+            # If it's an unmetered supply there is only one charge
+            # line in the EDI, no mater how many TPRs there are.
+            # Therefore we split the charge evenly between the
+            # TPRs.
+            mrs = ssc.measurement_requirements
+            num_mrs = len(mrs)
+            gbp = el.gbp / num_mrs
+            cons = el.cons / num_mrs
+            for mr in mrs:
+                tpr_code = mr.tpr.code
+                titles = (
+                    tpr_code + '-gbp', tpr_code + '-rate', tpr_code + '-kwh')
                 bill_elements.append(
                     BillElement(
-                        gbp=el.gbp, titles=titles, rate=el.rate, cons=el.cons,
+                        gbp=gbp, rate=el.rate, cons=cons, titles=titles,
                         desc=None))
         else:
-            for read in reads:
-                read['tpr_code'] = '00001'
-
-            for el in headers['bill_elements']:
-                if el.titles is None:
-                    des = el.desc
-                    titles = (des + '-kwh', des + '-rate', des + '-gbp')
-                else:
-                    titles = el.titles
-
-                bill_elements.append(
-                    BillElement(
-                        gbp=el.gbp, titles=titles, rate=el.rate, cons=el.cons,
-                        desc=None))
-
-        breakdown = headers['breakdown']
-        for bill_el in bill_elements:
-            eln_gbp, eln_rate, eln_cons = bill_el.titles
-            breakdown[eln_gbp] = bill_el.gbp
-            rate = bill_el.rate
-            if eln_rate is not None and rate is not None:
+            if el.titles is None:
                 try:
-                    rates = breakdown[eln_rate]
+                    tpr = tpr_map[el.desc]
                 except KeyError:
-                    rates = breakdown[eln_rate] = set()
+                    raise BadRequest(
+                        f"The billing element description {el.desc} "
+                        f"isn't in the SSC_MAP for the SSC {ssc_lookup}.")
 
-                rates.add(rate)
+                titles = (tpr + '-gbp', tpr + '-rate', tpr + '-kwh')
+            else:
+                titles = el.titles
 
-            cons = bill_el.cons
-            if eln_cons is not None and cons is not None:
-                breakdown[eln_cons] = cons
+            bill_elements.append(
+                BillElement(
+                    gbp=el.gbp, titles=titles, rate=el.rate, cons=el.cons,
+                    desc=None))
 
-        return {
-            'kwh': headers['kwh'],
-            'reference': headers['reference'],
-            'mpan_core': mpan_core,
-            'issue_date': headers['issue_date'],
-            'account': headers['account'],
-            'start_date': start_date,
-            'finish_date': headers['finish_date'],
-            'net': headers['net'],
-            'vat': headers['vat'],
-            'gross': headers['gross'],
-            'breakdown': breakdown,
-            'reads': reads,
-            'bill_type_code': headers['bill_type_code'],
-        }
+    breakdown = headers['breakdown']
+    for bill_el in bill_elements:
+        eln_gbp, eln_rate, eln_cons = bill_el.titles
+        breakdown[eln_gbp] = bill_el.gbp
+        rate = bill_el.rate
+        if eln_rate is not None and rate is not None:
+            try:
+                rates = breakdown[eln_rate]
+            except KeyError:
+                rates = breakdown[eln_rate] = set()
+
+            rates.add(rate)
+
+        cons = bill_el.cons
+        if eln_cons is not None and cons is not None:
+            breakdown[eln_cons] = cons
+
+    return {
+        'kwh': headers['kwh'],
+        'reference': headers['reference'],
+        'mpan_core': mpan_core,
+        'issue_date': headers['issue_date'],
+        'account': headers['account'],
+        'start_date': start_date,
+        'finish_date': headers['finish_date'],
+        'net': headers['net'],
+        'vat': headers['vat'],
+        'gross': headers['gross'],
+        'breakdown': breakdown,
+        'reads': reads,
+        'bill_type_code': headers['bill_type_code'],
+    }
 
 
 def _process_MHD(elements, headers):
@@ -640,8 +652,7 @@ def _process_CCD_3(elements, headers):
         titles = TMOD_MAP[tmod_1]
     except KeyError:
         raise BadRequest(
-            "Can't find the Tariff Code Modifier 1 " + tmod_1 +
-            " in the TMOD_MAP.")
+            "Can't find the Tariff Code Modifier 1 {tmod_1} in the TMOD_MAP.")
 
     if len(tcod) == 2:
         desc = tcod[1]
