@@ -1,167 +1,73 @@
-from io import StringIO, DEFAULT_BUFFER_SIZE
 import csv
-from flask import (
-    request, Response, g, redirect, render_template, send_file, flash,
-    make_response, Flask, jsonify)
-from chellow.models import (
-    Session, Contract, Report, User, Party, MarketRole, Participant, UserRole,
-    Site, Source, GeneratorType, GspGroup, Era, SiteEra, Pc, Cop, Ssc,
-    RateScript, Supply, Mtc, Channel, Tpr, MeasurementRequirement, Bill,
-    RegisterRead, HhDatum, Snag, Batch, ReadType, BillType, MeterPaymentType,
-    ClockInterval, db_upgrade, Llfc, MeterType, GEra, GSupply, SiteGEra, GBill,
-    GContract, GRateScript, GBatch, GRegisterRead, GReadType, VoltageLevel,
-    GUnit, GLdz, GExitZone, GDn, METER_TYPES, GReadingFrequency, Scenario,
-    BatchFile)
-from sqlalchemy.exc import IntegrityError
-import traceback
-from datetime import datetime as Datetime
-import os
-from dateutil.relativedelta import relativedelta
-from chellow.utils import (
-    HH, req_str, req_int, req_date, parse_mpan_core, req_bool, req_hh_date,
-    hh_after, req_decimal, send_response, hh_min, hh_max, hh_format, hh_range,
-    utc_datetime, utc_datetime_now, req_zish, get_file_scripts, to_utc,
-    csv_make_val, PropDict, to_ct, c_months_u, ct_datetime_now)
-from werkzeug.exceptions import BadRequest, NotFound
-import chellow.general_import
-import io
-import chellow.hh_importer
-import chellow.bill_importer
-import chellow.system_price
-from sqlalchemy import (
-    text, true, false, null, func, not_, or_, cast, Float, case)
-from sqlalchemy.orm import joinedload
-from collections import defaultdict, OrderedDict
-from itertools import chain, islice
-import importlib
-import math
-from operator import itemgetter
-from importlib import import_module
-import sys
-import chellow.rcrc
-import chellow.bsuos
-import chellow.tlms
-import chellow.bank_holidays
-import chellow.dloads
-import chellow.computer
-from random import choice
-import types
 import gc
-import psutil
-from pympler import muppy, summary
+import importlib
+import io
+import math
+import os
 import platform
+import sys
+import traceback
+import types
+from collections import OrderedDict, defaultdict
+from datetime import datetime as Datetime
+from importlib import import_module
+from io import DEFAULT_BUFFER_SIZE, StringIO
+from itertools import chain, islice
+from operator import itemgetter
+from random import choice
+from xml.dom import Node
+
+import chellow.bank_holidays
+import chellow.bill_importer
+import chellow.bsuos
+import chellow.computer
+import chellow.dloads
+import chellow.edi_lib
 import chellow.g_bill_import
 import chellow.g_cv
-from xml.dom import Node
+import chellow.general_import
 import chellow.hh_importer
+import chellow.rcrc
+import chellow.system_price
+import chellow.tlms
+from chellow.models import (
+    Batch, BatchFile, Bill, BillType, Channel, ClockInterval, Contract, Cop,
+    Era, GBatch, GBill, GContract, GDn, GEra, GExitZone, GLdz, GRateScript,
+    GReadType, GReadingFrequency, GRegisterRead, GSupply, GUnit, GeneratorType,
+    GspGroup, HhDatum, Llfc, METER_TYPES, MarketRole, MeasurementRequirement,
+    MeterPaymentType, MeterType, Mtc, Participant, Party, Pc, RateScript,
+    ReadType, RegisterRead, Report, Scenario, Site, SiteEra, SiteGEra, Snag,
+    Source, Ssc, Supply, Tpr, User, UserRole, VoltageLevel
+)
+from chellow.utils import (
+    HH, PropDict, c_months_u, csv_make_val, ct_datetime_now, get_file_scripts,
+    hh_after, hh_format, hh_max, hh_min, hh_range, parse_mpan_core, req_bool,
+    req_date, req_decimal, req_hh_date, req_int, req_str, req_zish,
+    send_response, to_ct, to_utc, utc_datetime, utc_datetime_now
+)
+
+from dateutil.relativedelta import relativedelta
+
+from flask import (
+    Blueprint, Response, current_app, flash, g, jsonify, make_response,
+    redirect, render_template, request, send_file
+)
+
+import psutil
+
+from pympler import muppy, summary
+
+from sqlalchemy import (
+    Float, case, cast, false, func, not_, null, or_, text, true
+)
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
+
+from werkzeug.exceptions import BadRequest, NotFound
+
 from zish import dumps, loads
-import chellow.edi_lib
 
-
-app = Flask('chellow', instance_relative_config=True)
-app.secret_key = os.urandom(24)
-
-
-@app.before_first_request
-def before_first_request():
-    db_upgrade(app.root_path)
-    chellow.rcrc.startup()
-    chellow.bsuos.startup()
-    chellow.system_price.startup()
-    chellow.hh_importer.startup()
-    chellow.tlms.startup()
-    chellow.bank_holidays.startup()
-    chellow.dloads.startup(app.instance_path)
-    chellow.g_cv.startup()
-    chellow.utils.root_path = app.root_path
-
-    try:
-        scheme = request.headers['X-Forwarded-Proto']
-    except KeyError:
-        sess = Session()
-        try:
-            config_contract = Contract.get_non_core_by_name(
-                sess, 'configuration')
-            props = config_contract.make_properties()
-            scheme = props.get('redirect_scheme', 'http')
-        finally:
-            sess.close()
-
-    try:
-        host = request.headers['X-Forwarded-Host']
-    except KeyError:
-        host = request.host
-
-    chellow.utils.url_root = scheme + '://' + host + '/'
-
-
-@app.before_request
-def before_request():
-    g.sess = Session()
-
-    print(
-        ' '.join(
-            '-' if v is None else v for v in (
-                request.remote_addr, str(request.user_agent),
-                request.remote_user,
-                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
-                '"' + request.method + ' ' + request.path + ' ' +
-                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
-
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    if getattr(g, 'sess', None) is not None:
-        g.sess.close()
-
-
-@app.context_processor
-def chellow_context_processor():
-    global_alerts = []
-    for task in chellow.hh_importer.tasks.values():
-        if task.is_error:
-            try:
-                contract = Contract.get_by_id(g.sess, task.contract_id)
-                global_alerts.append(
-                    "There's a problem with the automatic HH data importer "
-                    "for contract '" + str(contract.name) + "'.")
-            except NotFound:
-                pass
-
-    for importer in (
-            chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer):
-        if importer is not None and importer.global_alert is not None:
-            global_alerts.append(importer.global_alert)
-
-    return {'current_user': g.user, 'global_alerts': global_alerts}
-
-
-TEMPLATE_FORMATS = {
-    'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
-    'minute': '%M', 'full': '%Y-%m-%d %H:%M', 'date': '%Y-%m-%d'}
-
-
-@app.template_filter('hh_format')
-def hh_format_filter(dt, modifier='full'):
-    if dt is None:
-        return "Ongoing"
-    else:
-        return to_ct(dt).strftime(TEMPLATE_FORMATS[modifier])
-
-
-@app.template_filter('now_if_none')
-def now_if_none(dt):
-    return utc_datetime_now() if dt is None else dt
-
-
-@app.template_filter('to_ct')
-def to_ct_filter(dt):
-    return to_ct(dt)
-
-
-@app.template_filter('dumps')
-def dumps_filter(d):
-    return dumps(d)
+views = Blueprint('', __name__, template_folder='templates')
 
 
 def chellow_redirect(path, code=None):
@@ -185,109 +91,7 @@ def chellow_redirect(path, code=None):
         return redirect(location, code)
 
 
-@app.before_request
-def check_permissions(*args, **kwargs):
-    g.user = None
-    config_contract = Contract.get_non_core_by_name(g.sess, 'configuration')
-    props = config_contract.make_properties()
-    ad_props = props.get('ad_authentication', {})
-    ad_auth_on = ad_props.get('on', False)
-    if ad_auth_on:
-        username = request.headers['X-Isrw-Proxy-Logon-User'].upper()
-        user = g.sess.query(User).filter(
-            User.email_address == username).first()
-        if user is None:
-            try:
-                username = ad_props['default_user']
-                user = g.sess.query(User).filter(
-                    User.email_address == username).first()
-            except KeyError:
-                user = None
-        if user is not None:
-            g.user = user
-    else:
-        auth = request.authorization
-
-        if auth is None:
-            try:
-                ips = props['ips']
-                if request.remote_addr in ips:
-                    key = request.remote_addr
-                elif '*.*.*.*' in ips:
-                    key = '*.*.*.*'
-                else:
-                    key = None
-
-                email = ips[key]
-                g.user = g.sess.query(User).filter(
-                    User.email_address == email).first()
-            except KeyError:
-                pass
-        else:
-            user = g.sess.query(User).filter(
-                User.email_address == auth.username).first()
-            if user is not None and user.password_matches(auth.password):
-                g.user = user
-
-    # Got our user
-    path = request.path
-    method = request.method
-    if path in (
-            '/health', '/nationalgrid/sf_bsuos.xls', '/nationalgrid/cv.csv',
-            '/elexonportal/file/download/BESTVIEWPRICES_FILE', '/ecoes',
-            '/elexonportal/file/download/TLM_FILE',
-            '/elexonportal/file/download/RCRC_FILE',
-            '/ecoes/NonDomesticCustomer/ExportPortfolioMPANs', '/hh_api'):
-        return
-
-    if g.user is not None:
-        if 'X-Isrw-Proxy-Logon-User' in request.headers:
-            g.user.proxy_username = \
-                request.headers['X-Isrw-Proxy-Logon-User'].upper()
-
-        role = g.user.user_role
-        role_code = role.code
-
-        if role_code == "viewer" and (
-                method in ("GET", "HEAD") or path in (
-                    '/reports/169', '/reports/187')):
-            return
-        elif role_code == "editor":
-            return
-        elif role_code == "party-viewer":
-            if method in ("GET", "HEAD"):
-                party = g.user.party
-                market_role_code = party.market_role.code
-                if market_role_code in ('C', 'D'):
-                    dc_contract_id = request.args["dc_contract_id"]
-                    dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
-                    if dc_contract.party == party and \
-                            request.full_path.startswith("/channel_snags?"):
-                        return
-                elif market_role_code == 'X':
-                    if path.startswith("/supplier_contracts/" + party.id):
-                        return
-
-    if g.user is None and g.sess.query(User).count() == 0:
-        g.sess.rollback()
-        user_role = g.sess.query(UserRole).filter(
-            UserRole.code == 'editor').one()
-        User.insert(g.sess, 'admin@example.com', 'admin', user_role, None)
-        g.sess.commit()
-        return
-
-    if g.user is None or (not ad_auth_on and auth is None):
-        return Response(
-            'Could not verify your access level for that URL.\n'
-            'You have to login with proper credentials', 401,
-            {'WWW-Authenticate': 'Basic realm="Chellow"'})
-
-    config = Contract.get_non_core_by_name(g.sess, 'configuration')
-    return make_response(
-        render_template('403.html', properties=config.make_properties()), 403)
-
-
-@app.route('/nationalgrid/<fname>', methods=['GET', 'POST'])
+@views.route('/nationalgrid/<fname>', methods=['GET', 'POST'])
 def nationalgrid(fname):
     filename = os.path.join(os.path.dirname(__file__), 'nationalgrid', fname)
     return send_file(
@@ -301,7 +105,7 @@ ELEXON_LOOKUP = {
     'TLM_FILE': ('text/csv', 'tlm.csv')}
 
 
-@app.route('/elexonportal/file/download/<path:fname>')
+@views.route('/elexonportal/file/download/<path:fname>')
 def elexonportal(fname):
     key = request.args['key']
     if key != 'xxx':
@@ -314,17 +118,17 @@ def elexonportal(fname):
         attachment_filename=filename)
 
 
-@app.route('/ecoes')
+@views.route('/ecoes')
 def ecoes_get():
     return 'ecoes_get'
 
 
-@app.route('/ecoes', methods=['POST'])
+@views.route('/ecoes', methods=['POST'])
 def ecoes_post():
     return 'ecoes_post'
 
 
-@app.route('/hh_api')
+@views.route('/hh_api')
 def hh_api():
     return jsonify(
         {
@@ -335,7 +139,7 @@ def hh_api():
                     'Value': 21}]})
 
 
-@app.route('/chellowcss', methods=['GET'])
+@views.route('/chellowcss', methods=['GET'])
 def chellowcss_get():
     props = Contract.get_non_core_by_name(g.sess, 'configuration'). \
         make_properties()
@@ -346,7 +150,7 @@ def chellowcss_get():
     return response
 
 
-@app.route('/chellowjs', methods=['GET'])
+@views.route('/chellowjs', methods=['GET'])
 def chellowjs_get():
     response = make_response(
         render_template(
@@ -355,7 +159,8 @@ def chellowjs_get():
     return response
 
 
-@app.route('/ecoes/NonDomesticCustomer/ExportPortfolioMPANs', methods=['GET'])
+@views.route(
+    '/ecoes/NonDomesticCustomer/ExportPortfolioMPANs', methods=['GET'])
 def ecoes_mpans_get():
     return Response(
         ','.join(
@@ -375,12 +180,12 @@ def ecoes_mpans_get():
                 'Meter Asset Provider')), mimetype='text/csv')
 
 
-@app.route('/health')
+@views.route('/health')
 def health():
     return Response('healthy\n', mimetype='text/plain')
 
 
-@app.route('/local_reports/<int:report_id>/output', methods=['GET', 'POST'])
+@views.route('/local_reports/<int:report_id>/output', methods=['GET', 'POST'])
 def local_report_output_post(report_id):
     report = g.sess.query(Report).get(report_id)
     try:
@@ -393,13 +198,13 @@ def local_report_output_post(report_id):
         return Response(traceback.format_exc(), status=500)
 
 
-@app.route('/local_reports', methods=['GET'])
+@views.route('/local_reports', methods=['GET'])
 def local_reports_get():
     reports = g.sess.query(Report).order_by(Report.id, Report.name).all()
     return render_template('local_reports.html', reports=reports)
 
 
-@app.route('/local_reports', methods=['POST'])
+@views.route('/local_reports', methods=['POST'])
 def local_reports_post():
     name = req_str("name")
     report = Report(name, "", None)
@@ -415,13 +220,13 @@ def local_reports_post():
     return chellow_redirect('/local_reports/' + str(report.id), 303)
 
 
-@app.route('/local_reports/<int:report_id>')
+@views.route('/local_reports/<int:report_id>')
 def local_report_get(report_id):
     report = Report.get_by_id(g.sess, report_id)
     return render_template('local_report.html', report=report)
 
 
-@app.route('/local_reports/<int:report_id>', methods=['POST'])
+@views.route('/local_reports/<int:report_id>', methods=['POST'])
 def local_report_post(report_id):
     report = Report.get_by_id(g.sess, report_id)
     name = req_str("name")
@@ -439,7 +244,7 @@ def local_report_post(report_id):
     return chellow_redirect('/local_reports/' + str(report.id), 303)
 
 
-@app.route('/system')
+@views.route('/system')
 def system_get():
     traces = []
     for thread_id, stack in sys._current_frames().items():
@@ -578,7 +383,7 @@ def add_obj(objects, path, leaves):
         leaves.append(path)
 
 
-@app.route('/system/chains')
+@views.route('/system/chains')
 def chains_get():
     unreachable = gc.collect()
     objects = get_objects()
@@ -593,7 +398,7 @@ def chains_get():
     return render_template('chain.html', paths=paths, unreachable=unreachable)
 
 
-@app.route('/system/object_summary')
+@views.route('/system/object_summary')
 def object_summary_get():
     sumry = summary.summarize(muppy.get_objects())
     sumry_text = '\n'.join(
@@ -601,7 +406,7 @@ def object_summary_get():
     return render_template('object_summary.html', summary=sumry_text)
 
 
-@app.route('/')
+@views.route('/')
 def home_get():
     config = Contract.get_non_core_by_name(g.sess, 'configuration')
     now = utc_datetime_now()
@@ -614,7 +419,7 @@ def home_get():
         month_start=month_start, month_finish=month_finish)
 
 
-@app.route('/local_reports_home')
+@views.route('/local_reports_home')
 def local_reports_home():
     config = Contract.get_non_core_by_name(g.sess, 'configuration')
     properties = config.make_properties()
@@ -622,85 +427,85 @@ def local_reports_home():
     return local_report_output_post(report_id)
 
 
-@app.errorhandler(500)
+@views.errorhandler(500)
 def error_500(error):
     return traceback.format_exc(), 500
 
 
-@app.errorhandler(RuntimeError)
+@views.errorhandler(RuntimeError)
 def error_runtime(error):
     return "called rtime handler " + str(error), 500
 
 
-@app.route('/cops')
+@views.route('/cops')
 def cops_get():
     cops = g.sess.query(Cop).order_by(Cop.code)
     return render_template('cops.html', cops=cops)
 
 
-@app.route('/cops/<int:cop_id>')
+@views.route('/cops/<int:cop_id>')
 def cop_get(cop_id):
     cop = Cop.get_by_id(g.sess, cop_id)
     return render_template('cop.html', cop=cop)
 
 
-@app.route('/read_types')
+@views.route('/read_types')
 def read_types_get():
     read_types = g.sess.query(ReadType).order_by(ReadType.code)
     return render_template('read_types.html', read_types=read_types)
 
 
-@app.route('/read_types/<int:read_type_id>')
+@views.route('/read_types/<int:read_type_id>')
 def read_type_get(read_type_id):
     read_type = ReadType.get_by_id(g.sess, read_type_id)
     return render_template('read_type.html', read_type=read_type)
 
 
-@app.route('/sources')
+@views.route('/sources')
 def sources_get():
     sources = g.sess.query(Source).order_by(Source.code)
     return render_template('sources.html', sources=sources)
 
 
-@app.route('/sources/<int:source_id>')
+@views.route('/sources/<int:source_id>')
 def source_get(source_id):
     source = Source.get_by_id(g.sess, source_id)
     return render_template('source.html', source=source)
 
 
-@app.route('/meter_types')
+@views.route('/meter_types')
 def meter_types_get():
     meter_types = g.sess.query(MeterType).order_by(MeterType.code)
     return render_template('meter_types.html', meter_types=meter_types)
 
 
-@app.route('/meter_types/<int:meter_type_id>')
+@views.route('/meter_types/<int:meter_type_id>')
 def meter_type_get(meter_type_id):
     meter_type = MeterType.get_by_id(g.sess, meter_type_id)
     return render_template('meter_type.html', meter_type=meter_type)
 
 
-@app.route('/generator_types')
+@views.route('/generator_types')
 def generator_types_get():
     generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
     return render_template(
         'generator_types.html', generator_types=generator_types)
 
 
-@app.route('/generator_types/<int:generator_type_id>')
+@views.route('/generator_types/<int:generator_type_id>')
 def generator_type_get(generator_type_id):
     generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
     return render_template(
         'generator_type.html', generator_type=generator_type)
 
 
-@app.route('/bill_types')
+@views.route('/bill_types')
 def bill_types_get():
     bill_types = g.sess.query(BillType).order_by(BillType.code)
     return render_template('bill_types.html', bill_types=bill_types)
 
 
-@app.route('/users', methods=['GET'])
+@views.route('/users', methods=['GET'])
 def users_get():
     users = g.sess.query(User).order_by(User.email_address).all()
     parties = g.sess.query(Party).join(MarketRole).join(Participant).order_by(
@@ -714,7 +519,7 @@ def users_get():
         'users.html', users=users, parties=parties, ad_auth_on=ad_auth_on)
 
 
-@app.route('/users', methods=['POST'])
+@views.route('/users', methods=['POST'])
 def users_post():
     email_address = req_str('email_address')
 
@@ -749,7 +554,7 @@ def users_post():
                 ad_auth_on=ad_auth_on), 400)
 
 
-@app.route('/users/<int:user_id>', methods=['POST'])
+@views.route('/users/<int:user_id>', methods=['POST'])
 def user_post(user_id):
     try:
         user = User.get_by_id(g.sess, user_id)
@@ -797,7 +602,7 @@ def user_post(user_id):
                 ad_auth_on=ad_auth_on), 400)
 
 
-@app.route('/users/<int:user_id>')
+@views.route('/users/<int:user_id>')
 def user_get(user_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).order_by(
         MarketRole.code, Participant.code)
@@ -810,7 +615,7 @@ def user_get(user_id):
         'user.html', parties=parties, user=user, ad_auth_on=ad_auth_on)
 
 
-@app.route('/general_imports')
+@views.route('/general_imports')
 def general_imports_get():
     return render_template(
         'general_imports.html',
@@ -818,7 +623,7 @@ def general_imports_get():
             chellow.general_import.get_process_ids(), reverse=True))
 
 
-@app.route('/general_imports', methods=['POST'])
+@views.route('/general_imports', methods=['POST'])
 def general_imports_post():
     try:
         file_item = request.files["import_file"]
@@ -841,7 +646,7 @@ def general_imports_post():
                 chellow.general_import.get_process_ids(), reverse=True))
 
 
-@app.route('/general_imports/<int:import_id>')
+@views.route('/general_imports/<int:import_id>')
 def general_import_get(import_id):
     try:
         proc = chellow.general_import.get_process(import_id)
@@ -854,12 +659,12 @@ def general_import_get(import_id):
         return render_template('general_import.html', process_id=import_id)
 
 
-@app.route('/edi_viewer')
+@views.route('/edi_viewer')
 def edi_viewer_get():
     return render_template('edi_viewer.html')
 
 
-@app.route('/edi_viewer', methods=['POST'])
+@views.route('/edi_viewer', methods=['POST'])
 def edi_viewer_post():
     segments = []
     try:
@@ -961,7 +766,7 @@ def edi_viewer_post():
             'edi_viewer.html', segments=segments, file_name=file_name)
 
 
-@app.route('/sites/<int:site_id>/edit')
+@views.route('/sites/<int:site_id>/edit')
 def site_edit_get(site_id):
     try:
         site = Site.get_by_id(g.sess, site_id)
@@ -1005,7 +810,7 @@ def site_edit_get(site_id):
             g_reading_frequencies=g_reading_frequencies)
 
 
-@app.route('/sites/<int:site_id>/edit', methods=['POST'])
+@views.route('/sites/<int:site_id>/edit', methods=['POST'])
 def site_edit_post(site_id):
     try:
         site = Site.get_by_id(g.sess, site_id)
@@ -1170,7 +975,7 @@ def site_edit_post(site_id):
                 g_reading_frequencies=g_reading_frequencies), 400)
 
 
-@app.route('/sites/add', methods=['POST'])
+@views.route('/sites/add', methods=['POST'])
 def site_add_post():
     try:
         code = req_str("code")
@@ -1183,12 +988,12 @@ def site_add_post():
         return render_template('site_add.html')
 
 
-@app.route('/sites/add')
+@views.route('/sites/add')
 def site_add_get():
     return render_template('site_add.html')
 
 
-@app.route('/sites')
+@views.route('/sites')
 def sites_get():
     LIMIT = 50
     if 'pattern' in request.values:
@@ -1208,14 +1013,14 @@ def sites_get():
         return render_template('sites.html')
 
 
-@app.route('/dc_contracts')
+@views.route('/dc_contracts')
 def dc_contracts_get():
     dc_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code.in_(('C', 'D'))).order_by(Contract.name).all()
     return render_template('dc_contracts.html', dc_contracts=dc_contracts)
 
 
-@app.route('/dc_contracts/add', methods=['POST'])
+@views.route('/dc_contracts/add', methods=['POST'])
 def dc_contracts_add_post():
     try:
         party_id = req_int('party_id')
@@ -1250,7 +1055,7 @@ def dc_contracts_add_post():
                 parties=parties), 400)
 
 
-@app.route('/dc_contracts/add')
+@views.route('/dc_contracts/add')
 def dc_contracts_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
@@ -1260,7 +1065,7 @@ def dc_contracts_add_get():
         'dc_contracts_add.html', initial_date=initial_date, parties=parties)
 
 
-@app.route('/dc_contracts/<int:dc_contract_id>')
+@views.route('/dc_contracts/<int:dc_contract_id>')
 def dc_contract_get(dc_contract_id):
     rate_scripts = None
     try:
@@ -1285,13 +1090,13 @@ def dc_contract_get(dc_contract_id):
                 rate_scripts=rate_scripts, last_month_finish=last_month_finish)
 
 
-@app.route('/parties/<int:party_id>')
+@views.route('/parties/<int:party_id>')
 def party_get(party_id):
     party = Party.get_by_id(g.sess, party_id)
     return render_template('party.html', party=party)
 
 
-@app.route('/parties')
+@views.route('/parties')
 def parties_get():
     return render_template(
         'parties.html',
@@ -1299,31 +1104,31 @@ def parties_get():
             Party.name, MarketRole.code).all())
 
 
-@app.route('/market_roles/<int:market_role_id>')
+@views.route('/market_roles/<int:market_role_id>')
 def market_role_get(market_role_id):
     market_role = MarketRole.get_by_id(g.sess, market_role_id)
     return render_template('market_role.html', market_role=market_role)
 
 
-@app.route('/market_roles')
+@views.route('/market_roles')
 def market_roles_get():
     market_roles = g.sess.query(MarketRole).order_by(MarketRole.code).all()
     return render_template('market_roles.html', market_roles=market_roles)
 
 
-@app.route('/participants/<int:participant_id>')
+@views.route('/participants/<int:participant_id>')
 def participant_get(participant_id):
     participant = Participant.get_by_id(g.sess, participant_id)
     return render_template('participant.html', participant=participant)
 
 
-@app.route('/participants')
+@views.route('/participants')
 def participants_get():
     participants = g.sess.query(Participant).order_by(Participant.code).all()
     return render_template('participants.html', participants=participants)
 
 
-@app.route('/dc_contracts/<int:dc_contract_id>/edit')
+@views.route('/dc_contracts/<int:dc_contract_id>/edit')
 def dc_contract_edit_get(dc_contract_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code.in_(('C', 'D'))).order_by(Participant.code).all()
@@ -1334,7 +1139,7 @@ def dc_contract_edit_get(dc_contract_id):
         dc_contract=dc_contract)
 
 
-@app.route('/dc_contracts/<int:contract_id>/edit', methods=['POST'])
+@views.route('/dc_contracts/<int:contract_id>/edit', methods=['POST'])
 def dc_contract_edit_post(contract_id):
     contract = None
     try:
@@ -1385,7 +1190,7 @@ def dc_contract_edit_post(contract_id):
                     initial_date=initial_date, dc_contract=contract), 400)
 
 
-@app.route('/dc_contracts/<int:contract_id>/add_rate_script')
+@views.route('/dc_contracts/<int:contract_id>/add_rate_script')
 def dc_rate_script_add_get(contract_id):
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
@@ -1395,7 +1200,8 @@ def dc_rate_script_add_get(contract_id):
         initial_date=initial_date)
 
 
-@app.route('/dc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
+@views.route(
+    '/dc_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def dc_rate_script_add_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -1413,7 +1219,7 @@ def dc_rate_script_add_post(contract_id):
             initial_date=initial_date)
 
 
-@app.route('/dc_rate_scripts/<int:dc_rate_script_id>')
+@views.route('/dc_rate_scripts/<int:dc_rate_script_id>')
 def dc_rate_script_get(dc_rate_script_id):
     rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
     contract = rate_script.contract
@@ -1431,7 +1237,7 @@ def dc_rate_script_get(dc_rate_script_id):
         next_rate_script=next_rate_script)
 
 
-@app.route('/dc_rate_scripts/<int:dc_rate_script_id>/edit')
+@views.route('/dc_rate_scripts/<int:dc_rate_script_id>/edit')
 def dc_rate_script_edit_get(dc_rate_script_id):
     dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
     rs_example_func = chellow.computer.contract_func(
@@ -1443,7 +1249,7 @@ def dc_rate_script_edit_get(dc_rate_script_id):
         rate_script_example=rs_example)
 
 
-@app.route(
+@views.route(
     '/dc_rate_scripts/<int:dc_rate_script_id>/edit', methods=['POST'])
 def dc_rate_script_edit_post(dc_rate_script_id):
     try:
@@ -1470,7 +1276,7 @@ def dc_rate_script_edit_post(dc_rate_script_id):
             'dc_rate_script_edit.html', dc_rate_script=dc_rate_script)
 
 
-@app.route('/supplier_contracts/<int:contract_id>/edit')
+@views.route('/supplier_contracts/<int:contract_id>/edit')
 def supplier_contract_edit_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     parties = g.sess.query(Party).join(MarketRole, Participant).filter(
@@ -1479,7 +1285,7 @@ def supplier_contract_edit_get(contract_id):
         'supplier_contract_edit.html', contract=contract, parties=parties)
 
 
-@app.route('/supplier_contracts/<int:contract_id>/edit', methods=['POST'])
+@views.route('/supplier_contracts/<int:contract_id>/edit', methods=['POST'])
 def supplier_contract_edit_post(contract_id):
     try:
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
@@ -1512,7 +1318,7 @@ def supplier_contract_edit_post(contract_id):
                     parties=parties), 400)
 
 
-@app.route('/supplier_rate_scripts/<int:rate_script_id>')
+@views.route('/supplier_rate_scripts/<int:rate_script_id>')
 def supplier_rate_script_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
     contract = rate_script.contract
@@ -1529,7 +1335,7 @@ def supplier_rate_script_get(rate_script_id):
         next_rate_script=next_rate_script, rate_script=rate_script)
 
 
-@app.route('/supplier_rate_scripts/<int:rate_script_id>/edit')
+@views.route('/supplier_rate_scripts/<int:rate_script_id>/edit')
 def supplier_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
     rs_example_func = chellow.computer.contract_func(
@@ -1540,7 +1346,7 @@ def supplier_rate_script_edit_get(rate_script_id):
         rate_script_example=rs_example)
 
 
-@app.route(
+@views.route(
     '/supplier_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
 def supplier_rate_script_edit_post(rate_script_id):
     try:
@@ -1570,7 +1376,7 @@ def supplier_rate_script_edit_post(rate_script_id):
                 supplier_rate_script=rate_script), 400)
 
 
-@app.route('/supplier_contracts')
+@views.route('/supplier_contracts')
 def supplier_contracts_get():
     contracts = g.sess.query(Contract).join(MarketRole).join(
         Contract.finish_rate_script).filter(MarketRole.code == 'X').order_by(
@@ -1583,7 +1389,7 @@ def supplier_contracts_get():
         ended_supplier_contracts=ended_contracts)
 
 
-@app.route('/supplier_contracts/add', methods=['POST'])
+@views.route('/supplier_contracts/add', methods=['POST'])
 def supplier_contract_add_post():
     try:
         participant_id = req_str("participant_id")
@@ -1610,7 +1416,7 @@ def supplier_contract_add_post():
                 parties=parties), 400)
 
 
-@app.route('/supplier_contracts/add')
+@views.route('/supplier_contracts/add')
 def supplier_contract_add_get():
     contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'X').order_by(Contract.name)
@@ -1620,8 +1426,9 @@ def supplier_contract_add_get():
         'supplier_contract_add.html', contracts=contracts, parties=parties)
 
 
-@app.route('/supplier_contracts/<int:contract_id>')
+@views.route('/supplier_contracts/<int:contract_id>')
 def supplier_contract_get(contract_id):
+    print("starting to find supplier contracts")
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     rate_scripts = g.sess.query(RateScript).filter(
         RateScript.contract == contract).order_by(
@@ -1636,7 +1443,7 @@ def supplier_contract_get(contract_id):
         month_finish=month_finish, rate_scripts=rate_scripts)
 
 
-@app.route('/supplier_contracts/<int:contract_id>/add_rate_script')
+@views.route('/supplier_contracts/<int:contract_id>/add_rate_script')
 def supplier_rate_script_add_get(contract_id):
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
@@ -1646,7 +1453,7 @@ def supplier_rate_script_add_get(contract_id):
         initial_date=initial_date)
 
 
-@app.route(
+@views.route(
     '/supplier_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def supplier_rate_script_add_post(contract_id):
     try:
@@ -1665,7 +1472,7 @@ def supplier_rate_script_add_post(contract_id):
             initial_date=initial_date)
 
 
-@app.route('/mop_contracts/<int:contract_id>/edit')
+@views.route('/mop_contracts/<int:contract_id>/edit')
 def mop_contract_edit_get(contract_id):
     parties = g.sess.query(Party).join(MarketRole).join(Participant).filter(
         MarketRole.code == 'M').order_by(Participant.code).all()
@@ -1676,7 +1483,7 @@ def mop_contract_edit_get(contract_id):
         initial_date=initial_date)
 
 
-@app.route('/mop_contracts/<int:contract_id>/edit', methods=['POST'])
+@views.route('/mop_contracts/<int:contract_id>/edit', methods=['POST'])
 def mop_contract_edit_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
@@ -1722,7 +1529,7 @@ def mop_contract_edit_post(contract_id):
                 initial_date=initial_date), 400)
 
 
-@app.route('/mop_rate_scripts/<int:rate_script_id>')
+@views.route('/mop_rate_scripts/<int:rate_script_id>')
 def mop_rate_script_get(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
     contract = rate_script.contract
@@ -1740,7 +1547,7 @@ def mop_rate_script_get(rate_script_id):
         next_rate_script=next_rate_script)
 
 
-@app.route('/mop_rate_scripts/<int:rate_script_id>/edit')
+@views.route('/mop_rate_scripts/<int:rate_script_id>/edit')
 def mop_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
     rs_example_func = chellow.computer.contract_func(
@@ -1751,7 +1558,7 @@ def mop_rate_script_edit_get(rate_script_id):
         rate_script_example=rs_example)
 
 
-@app.route('/mop_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
+@views.route('/mop_rate_scripts/<int:rate_script_id>/edit', methods=['POST'])
 def mop_rate_script_edit_post(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
     contract = rate_script.contract
@@ -1779,14 +1586,14 @@ def mop_rate_script_edit_post(rate_script_id):
                     'mop_rate_script_edit.html', rate_script=rate_script), 400)
 
 
-@app.route('/mop_contracts')
+@views.route('/mop_contracts')
 def mop_contracts_get():
     mop_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'M').order_by(Contract.name).all()
     return render_template('mop_contracts.html', mop_contracts=mop_contracts)
 
 
-@app.route('/mop_contracts/add', methods=['POST'])
+@views.route('/mop_contracts/add', methods=['POST'])
 def mop_contract_add_post():
     try:
         participant_id = req_int('participant_id')
@@ -1809,7 +1616,7 @@ def mop_contract_add_post():
                 parties=parties), 400)
 
 
-@app.route('/mop_contracts/add')
+@views.route('/mop_contracts/add')
 def mop_contract_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
@@ -1819,7 +1626,7 @@ def mop_contract_add_get():
         'mop_contract_add.html', inital_date=initial_date, parties=parties)
 
 
-@app.route('/mop_contracts/<int:contract_id>')
+@views.route('/mop_contracts/<int:contract_id>')
 def mop_contract_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     rate_scripts = g.sess.query(RateScript).filter(
@@ -1836,7 +1643,7 @@ def mop_contract_get(contract_id):
         party=party)
 
 
-@app.route('/mop_contracts/<int:contract_id>/add_rate_script')
+@views.route('/mop_contracts/<int:contract_id>/add_rate_script')
 def mop_rate_script_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     now = utc_datetime_now()
@@ -1846,7 +1653,7 @@ def mop_rate_script_add_get(contract_id):
         initial_date=initial_date)
 
 
-@app.route(
+@views.route(
     '/mop_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def mop_rate_script_add_post(contract_id):
     try:
@@ -1866,7 +1673,7 @@ def mop_rate_script_add_post(contract_id):
                 initial_date=initial_date), 400)
 
 
-@app.route('/supplies/<int:supply_id>/months')
+@views.route('/supplies/<int:supply_id>/months')
 def supply_months_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
 
@@ -1947,7 +1754,7 @@ def supply_months_get(supply_id):
         is_import=is_import, now=utc_datetime_now())
 
 
-@app.route('/supplies/<int:supply_id>/edit')
+@views.route('/supplies/<int:supply_id>/edit')
 def supply_edit_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
     sources = g.sess.query(Source).order_by(Source.code)
@@ -1960,7 +1767,7 @@ def supply_edit_get(supply_id):
         generator_types=generator_types, gsp_groups=gsp_groups, eras=eras)
 
 
-@app.route('/supplies/<int:supply_id>/edit', methods=['POST'])
+@views.route('/supplies/<int:supply_id>/edit', methods=['POST'])
 def supply_edit_post(supply_id):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
@@ -2005,7 +1812,7 @@ def supply_edit_post(supply_id):
                 eras=eras), 400)
 
 
-@app.route('/eras/<int:era_id>/edit')
+@views.route('/eras/<int:era_id>/edit')
 def era_edit_get(era_id):
     era = Era.get_by_id(g.sess, era_id)
     pcs = g.sess.query(Pc).order_by(Pc.code)
@@ -2025,7 +1832,7 @@ def era_edit_get(era_id):
         supplier_contracts=supplier_contracts, site_eras=site_eras)
 
 
-@app.route('/eras/<int:era_id>/edit', methods=['POST'])
+@views.route('/eras/<int:era_id>/edit', methods=['POST'])
 def era_edit_post(era_id):
     try:
         era = Era.get_by_id(g.sess, era_id)
@@ -2154,7 +1961,7 @@ def era_edit_post(era_id):
             400)
 
 
-@app.route('/eras/<int:era_id>/add_supplier_bill')
+@views.route('/eras/<int:era_id>/add_supplier_bill')
 def era_supplier_bill_add_get(era_id):
     era = Era.get_by_id(g.sess, era_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
@@ -2182,7 +1989,7 @@ def era_supplier_bill_add_get(era_id):
         next_batch_description=next_batch_description)
 
 
-@app.route('/eras/<int:era_id>/add_supplier_bill', methods=['POST'])
+@views.route('/eras/<int:era_id>/add_supplier_bill', methods=['POST'])
 def era_supplier_bill_add_post(era_id):
     try:
         era = Era.get_by_id(g.sess, era_id)
@@ -2224,7 +2031,7 @@ def era_supplier_bill_add_post(era_id):
             400)
 
 
-@app.route('/supplies')
+@views.route('/supplies')
 def supplies_get():
     if 'search_pattern' in request.args:
         pattern = req_str('search_pattern')
@@ -2286,7 +2093,7 @@ limit :max_results""")
         return render_template('supplies.html')
 
 
-@app.route('/supplies/<int:supply_id>')
+@views.route('/supplies/<int:supply_id>')
 def supply_get(supply_id):
     debug = ''
     era_bundles = []
@@ -2504,7 +2311,7 @@ def supply_get(supply_id):
         debug=debug)
 
 
-@app.route('/channels/<int:channel_id>')
+@views.route('/channels/<int:channel_id>')
 def channel_get(channel_id):
     channel = Channel.get_by_id(g.sess, channel_id)
     page = req_int('page') if 'page' in request.values else 0
@@ -2526,7 +2333,7 @@ def channel_get(channel_id):
         prev_page=prev_page, this_page=page, next_page=next_page)
 
 
-@app.route('/dc_contracts/<int:contract_id>/hh_imports')
+@views.route('/dc_contracts/<int:contract_id>/hh_imports')
 def dc_contracts_hh_imports_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     processes = chellow.hh_importer.get_hh_import_processes(contract.id)
@@ -2535,7 +2342,7 @@ def dc_contracts_hh_imports_get(contract_id):
         parser_names=', '.join(chellow.hh_importer.extensions))
 
 
-@app.route('/dc_contracts/<int:contract_id>/hh_imports', methods=['POST'])
+@views.route('/dc_contracts/<int:contract_id>/hh_imports', methods=['POST'])
 def dc_contracts_hh_imports_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -2563,7 +2370,7 @@ def dc_contracts_hh_imports_post(contract_id):
                     processes=processes), 400)
 
 
-@app.route('/dc_contracts/<int:contract_id>/hh_imports/<int:import_id>')
+@views.route('/dc_contracts/<int:contract_id>/hh_imports/<int:import_id>')
 def dc_contracts_hh_import_get(contract_id, import_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     process = chellow.hh_importer.get_hh_import_processes(
@@ -2572,7 +2379,7 @@ def dc_contracts_hh_import_get(contract_id, import_id):
         'dc_contract_hh_import.html', contract=contract, process=process)
 
 
-@app.route('/site_snags')
+@views.route('/site_snags')
 def site_snags_get():
     snags = g.sess.query(Snag).filter(
         Snag.is_ignored == false(), Snag.site_id != null()).order_by(
@@ -2583,7 +2390,7 @@ def site_snags_get():
         'site_snags.html', snags=snags, site_count=site_count)
 
 
-@app.route('/sites/<int:site_id>/site_snags')
+@views.route('/sites/<int:site_id>/site_snags')
 def site_site_snags_get(site_id):
     site = Site.get_by_id(g.sess, site_id)
     snags = g.sess.query(Snag).filter(
@@ -2592,12 +2399,12 @@ def site_site_snags_get(site_id):
     return render_template('site_site_snags.html', site=site, snags=snags)
 
 
-@app.route('/site_snags/edit')
+@views.route('/site_snags/edit')
 def site_snags_edit_get():
     return render_template('site_snags_edit.html')
 
 
-@app.route('/site_snags/edit', methods=['POST'])
+@views.route('/site_snags/edit', methods=['POST'])
 def site_snags_edit_post():
     try:
         finish_date = req_date('ignore')
@@ -2612,19 +2419,19 @@ def site_snags_edit_post():
         return make_response(render_template('site_snags_edit.html'), 400)
 
 
-@app.route('/channel_snags/<int:snag_id>')
+@views.route('/channel_snags/<int:snag_id>')
 def channel_snag_get(snag_id):
     snag = Snag.get_by_id(g.sess, snag_id)
     return render_template('channel_snag.html', snag=snag)
 
 
-@app.route('/channel_snags/<int:snag_id>/edit')
+@views.route('/channel_snags/<int:snag_id>/edit')
 def channel_snag_edit_get(snag_id):
     snag = Snag.get_by_id(g.sess, snag_id)
     return render_template('channel_snag_edit.html', snag=snag)
 
 
-@app.route('/channel_snags/<int:snag_id>/edit', methods=['POST'])
+@views.route('/channel_snags/<int:snag_id>/edit', methods=['POST'])
 def channel_snag_edit_post(snag_id):
     try:
         ignore = req_bool('ignore')
@@ -2639,14 +2446,14 @@ def channel_snag_edit_post(snag_id):
             render_template('channel_snag_edit.html', snag=snag), 400)
 
 
-@app.route('/channels/<int:channel_id>/edit')
+@views.route('/channels/<int:channel_id>/edit')
 def channel_edit_get(channel_id):
     channel = Channel.get_by_id(g.sess, channel_id)
     now = utc_datetime_now()
     return render_template('channel_edit.html', channel=channel, now=now)
 
 
-@app.route('/channels/<int:channel_id>/edit', methods=['POST'])
+@views.route('/channels/<int:channel_id>/edit', methods=['POST'])
 def channel_edit_post(channel_id):
     try:
         channel = Channel.get_by_id(g.sess, channel_id)
@@ -2699,7 +2506,7 @@ def channel_edit_post(channel_id):
         return render_template('channel_edit.html', channel=channel, now=now)
 
 
-@app.route('/eras/<int:era_id>/add_channel')
+@views.route('/eras/<int:era_id>/add_channel')
 def add_channel_get(era_id):
     era = Era.get_by_id(g.sess, era_id)
     channels = g.sess.query(Channel).filter(
@@ -2707,7 +2514,7 @@ def add_channel_get(era_id):
     return render_template('channel_add.html', era=era, channels=channels)
 
 
-@app.route('/eras/<int:era_id>/add_channel', methods=['POST'])
+@views.route('/eras/<int:era_id>/add_channel', methods=['POST'])
 def add_channel_post(era_id):
     try:
         imp_related = req_bool('imp_related')
@@ -2724,27 +2531,27 @@ def add_channel_post(era_id):
         return render_template('channel_add.html', era=era, channels=channels)
 
 
-@app.route('/site_snags/<int:snag_id>')
+@views.route('/site_snags/<int:snag_id>')
 def site_snag_post(snag_id):
     snag = Snag.get_by_id(g.sess, snag_id)
     return render_template('site_snag.html', snag=snag)
 
 
-@app.route('/reports/<report_id>')
+@views.route('/reports/<report_id>')
 def report_get(report_id):
     report_module = importlib.import_module(
         "chellow.reports.report_" + report_id)
     return report_module.do_get(g.sess)
 
 
-@app.route('/reports/<report_id>', methods=['POST'])
+@views.route('/reports/<report_id>', methods=['POST'])
 def report_post(report_id):
     report_module = importlib.import_module(
         "chellow.reports.report_" + report_id)
     return report_module.do_post(g.sess)
 
 
-@app.route('/supplier_contracts/<int:contract_id>/add_batch')
+@views.route('/supplier_contracts/<int:contract_id>/add_batch')
 def supplier_batch_add_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(
@@ -2757,7 +2564,8 @@ def supplier_batch_add_get(contract_id):
         next_batch_description=next_batch_description)
 
 
-@app.route('/supplier_contracts/<int:contract_id>/add_batch', methods=['POST'])
+@views.route(
+    '/supplier_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def supplier_batch_add_post(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     try:
@@ -2779,7 +2587,7 @@ def supplier_batch_add_post(contract_id):
             400)
 
 
-@app.route('/supplier_bill_imports/<int:import_id>')
+@views.route('/supplier_bill_imports/<int:import_id>')
 def supplier_bill_import_get(import_id):
     importer = chellow.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
@@ -2797,7 +2605,7 @@ def supplier_bill_import_get(import_id):
         'supplier_bill_import.html', batch=batch, importer=importer, **fields)
 
 
-@app.route('/supplier_batches')
+@views.route('/supplier_batches')
 def supplier_batches_get():
     contract_id = req_int('supplier_contract_id')
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
@@ -2807,7 +2615,7 @@ def supplier_batches_get():
         'supplier_batches.html', contract=contract, batches=batches)
 
 
-@app.route('/supplier_batches/<int:batch_id>')
+@views.route('/supplier_batches/<int:batch_id>')
 def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
 
@@ -2844,7 +2652,7 @@ def supplier_batch_get(batch_id):
         importer_ids=importer_ids)
 
 
-@app.route('/supplier_batches/<int:batch_id>', methods=['POST'])
+@views.route('/supplier_batches/<int:batch_id>', methods=['POST'])
 def supplier_batch_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -2872,7 +2680,7 @@ def supplier_batch_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/supplier_batches/<int:batch_id>/upload_file')
+@views.route('/supplier_batches/<int:batch_id>/upload_file')
 def supplier_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -2886,7 +2694,7 @@ def supplier_batch_upload_file_get(batch_id):
         parser_names=parser_names, default_parser_name=default_parser_name)
 
 
-@app.route('/supplier_batches/<int:batch_id>/upload_file', methods=['POST'])
+@views.route('/supplier_batches/<int:batch_id>/upload_file', methods=['POST'])
 def supplier_batch_upload_file_post(batch_id):
     batch = None
     try:
@@ -2912,13 +2720,13 @@ def supplier_batch_upload_file_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/supplier_batch_files/<int:file_id>')
+@views.route('/supplier_batch_files/<int:file_id>')
 def supplier_batch_file_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     return render_template('supplier_batch_file.html', batch_file=batch_file)
 
 
-@app.route('/supplier_batch_files/<int:file_id>/download')
+@views.route('/supplier_batch_files/<int:file_id>/download')
 def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
@@ -2929,7 +2737,7 @@ def supplier_batch_file_download_get(file_id):
     return output
 
 
-@app.route('/supplier_batch_files/<int:file_id>/edit')
+@views.route('/supplier_batch_files/<int:file_id>/edit')
 def supplier_batch_file_edit_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -2938,7 +2746,7 @@ def supplier_batch_file_edit_get(file_id):
         batch_file=batch_file, parser_names=parser_names)
 
 
-@app.route('/supplier_batch_files/<int:file_id>/edit', methods=['POST'])
+@views.route('/supplier_batch_files/<int:file_id>/edit', methods=['POST'])
 def supplier_batch_file_edit_post(file_id):
     batch_file = None
     try:
@@ -2968,13 +2776,13 @@ def supplier_batch_file_edit_post(file_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/hh_data/<int:datum_id>/edit')
+@views.route('/hh_data/<int:datum_id>/edit')
 def hh_datum_edit_get(datum_id):
     hh = HhDatum.get_by_id(g.sess, datum_id)
     return render_template('hh_datum_edit.html', hh=hh)
 
 
-@app.route('/hh_data/<int:datum_id>/edit', methods=['POST'])
+@views.route('/hh_data/<int:datum_id>/edit', methods=['POST'])
 def hh_datum_edit_post(datum_id):
     try:
         hh = HhDatum.get_by_id(g.sess, datum_id)
@@ -3005,7 +2813,7 @@ def hh_datum_edit_post(datum_id):
         return make_response(render_template('hh_datum_edit.html', hh=hh), 400)
 
 
-@app.route('/sites/<int:site_id>/hh_data')
+@views.route('/sites/<int:site_id>/hh_data')
 def site_hh_data_get(site_id):
     caches = {}
     site = Site.get_by_id(g.sess, site_id)
@@ -3088,7 +2896,7 @@ def site_hh_data_get(site_id):
         'site_hh_data.html', site=site, supplies=supplies, hh_data=hh_data)
 
 
-@app.route('/sites/<int:site_id>')
+@views.route('/sites/<int:site_id>')
 def site_get(site_id):
     configuration_contract = Contract.get_non_core_by_name(
         g.sess, 'configuration')
@@ -3153,7 +2961,7 @@ def site_get(site_id):
         g_groups=g_groups)
 
 
-@app.route('/downloads')
+@views.route('/downloads')
 def downloads_get():
     files = []
     download_path = chellow.dloads.download_path
@@ -3169,17 +2977,17 @@ def downloads_get():
     return render_template('downloads.html', files=files)
 
 
-@app.route('/downloads', methods=['POST'])
+@views.route('/downloads', methods=['POST'])
 def downloads_post():
     chellow.dloads.reset()
     return chellow_redirect("/downloads", 303)
 
 
-@app.route('/downloads/<fname>')
+@views.route('/downloads/<fname>')
 def download_get(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
 
-    download_path = os.path.join(app.instance_path, 'downloads')
+    download_path = os.path.join(current_app.instance_path, 'downloads')
 
     full_name = os.path.join(download_path, name)
 
@@ -3197,17 +3005,17 @@ def download_get(fname):
     return send_response(content, file_name=name)
 
 
-@app.route('/downloads/<fname>', methods=['POST'])
+@views.route('/downloads/<fname>', methods=['POST'])
 def download_post(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
 
-    download_path = os.path.join(app.instance_path, 'downloads')
+    download_path = os.path.join(current_app.instance_path, 'downloads')
     full_name = os.path.join(download_path, name)
     os.remove(full_name)
     return chellow_redirect("/downloads", 303)
 
 
-@app.route('/channel_snags')
+@views.route('/channel_snags')
 def channel_snags_get():
     contract_id = req_int('dc_contract_id')
     contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -3251,7 +3059,7 @@ def channel_snags_get():
         is_ignored=is_ignored)
 
 
-@app.route('/non_core_contracts')
+@views.route('/non_core_contracts')
 def non_core_contracts_get():
     non_core_contracts = g.sess.query(Contract).join(MarketRole).filter(
         MarketRole.code == 'Z').order_by(Contract.name).all()
@@ -3259,7 +3067,7 @@ def non_core_contracts_get():
         'non_core_contracts.html', non_core_contracts=non_core_contracts)
 
 
-@app.route('/non_core_contracts/<int:contract_id>')
+@views.route('/non_core_contracts/<int:contract_id>')
 def non_core_contract_get(contract_id):
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
     rate_scripts = g.sess.query(RateScript).filter(
@@ -3278,7 +3086,7 @@ def non_core_contract_get(contract_id):
         has_auto_importer=has_auto_importer)
 
 
-@app.route('/sites/<int:site_id>/used_graph')
+@views.route('/sites/<int:site_id>/used_graph')
 def site_used_graph_get(site_id):
     cache = {}
     finish_year = req_int("finish_year")
@@ -3381,7 +3189,7 @@ def site_used_graph_get(site_id):
         finish_date=finish_date)
 
 
-@app.route('/supplies/<int:supply_id>/hh_data')
+@views.route('/supplies/<int:supply_id>/hh_data')
 def supply_hh_data_get(supply_id):
     caches = {}
     months = req_int('months')
@@ -3429,7 +3237,7 @@ def supply_hh_data_get(supply_id):
         start_date=start_date, finish_date=finish_date)
 
 
-@app.route('/dnos/<int:dno_id>/rate_scripts/<start_date_str>')
+@views.route('/dnos/<int:dno_id>/rate_scripts/<start_date_str>')
 def dno_rate_script_get(dno_id, start_date_str):
     dno = Party.get_dno_by_id(g.sess, dno_id)
     start_date = to_utc(Datetime.strptime(start_date_str, '%Y%m%d%H%M'))
@@ -3444,13 +3252,13 @@ def dno_rate_script_get(dno_id, start_date_str):
         'dno_rate_script.html', dno=dno, rate_script=rate_script)
 
 
-@app.route('/non_core_contracts/<int:contract_id>/edit')
+@views.route('/non_core_contracts/<int:contract_id>/edit')
 def non_core_contract_edit_get(contract_id):
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
     return render_template('non_core_contract_edit.html', contract=contract)
 
 
-@app.route('/non_core_contracts/<int:contract_id>/edit', methods=['POST'])
+@views.route('/non_core_contracts/<int:contract_id>/edit', methods=['POST'])
 def non_core_contract_edit_post(contract_id):
     try:
         contract = Contract.get_non_core_by_id(g.sess, contract_id)
@@ -3477,7 +3285,7 @@ def non_core_contract_edit_post(contract_id):
                 'non_core_contract_edit.html', contract=contract), 400)
 
 
-@app.route('/sites/<int:site_id>/months')
+@views.route('/sites/<int:site_id>/months')
 def site_months_get(site_id):
     finish_year = req_int('finish_year')
     finish_month = req_int('finish_month')
@@ -3521,7 +3329,7 @@ def site_months_get(site_id):
     return render_template('site_months.html', site=site, months=months)
 
 
-@app.route('/supplier_bills/<int:bill_id>')
+@views.route('/supplier_bills/<int:bill_id>')
 def supplier_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     register_reads = g.sess.query(RegisterRead).filter(
@@ -3597,7 +3405,7 @@ def supplier_bill_get(bill_id):
     return render_template('supplier_bill.html', **fields)
 
 
-@app.route('/reads/<int:read_id>/edit')
+@views.route('/reads/<int:read_id>/edit')
 def read_edit_get(read_id):
     read = RegisterRead.get_by_id(g.sess, read_id)
     read_types = g.sess.query(ReadType).order_by(ReadType.code).all()
@@ -3606,7 +3414,7 @@ def read_edit_get(read_id):
         'read_edit.html', read=read, read_types=read_types, tprs=tprs)
 
 
-@app.route('/reads/<int:read_id>/edit', methods=['POST'])
+@views.route('/reads/<int:read_id>/edit', methods=['POST'])
 def read_edit_post(read_id):
     try:
         read = RegisterRead.get_by_id(g.sess, read_id)
@@ -3648,7 +3456,7 @@ def read_edit_post(read_id):
             400)
 
 
-@app.route('/dc_batches')
+@views.route('/dc_batches')
 def dc_batches_get():
     contract_id = req_int('dc_contract_id')
     contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -3658,7 +3466,7 @@ def dc_batches_get():
         'dc_batches.html', contract=contract, batches=batches)
 
 
-@app.route('/dc_batches/<int:batch_id>')
+@views.route('/dc_batches/<int:batch_id>')
 def dc_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
@@ -3675,7 +3483,7 @@ def dc_batch_get(batch_id):
     return render_template('dc_batch.html', **fields)
 
 
-@app.route('/dc_batches/<int:batch_id>/csv')
+@views.route('/dc_batches/<int:batch_id>/csv')
 def dc_batch_csv_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     si = StringIO()
@@ -3702,7 +3510,7 @@ def dc_batch_csv_get(batch_id):
     return output
 
 
-@app.route('/dc_batches/<int:batch_id>', methods=['POST'])
+@views.route('/dc_batches/<int:batch_id>', methods=['POST'])
 def dc_batch_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -3730,7 +3538,7 @@ def dc_batch_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/supplier_bills/<int:bill_id>/edit')
+@views.route('/supplier_bills/<int:bill_id>/edit')
 def supplier_bill_edit_get(bill_id):
     bill_types = g.sess.query(BillType).order_by(BillType.code).all()
     bill = Bill.get_by_id(g.sess, bill_id)
@@ -3738,7 +3546,7 @@ def supplier_bill_edit_get(bill_id):
         'supplier_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/supplier_bills/<int:bill_id>/edit', methods=['POST'])
+@views.route('/supplier_bills/<int:bill_id>/edit', methods=['POST'])
 def supplier_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
@@ -3776,7 +3584,7 @@ def supplier_bill_edit_post(bill_id):
             400)
 
 
-@app.route('/dc_contracts/<int:contract_id>/add_batch')
+@views.route('/dc_contracts/<int:contract_id>/add_batch')
 def dc_batch_add_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
@@ -3789,7 +3597,7 @@ def dc_batch_add_get(contract_id):
         next_batch_description=next_batch_description)
 
 
-@app.route('/dc_contracts/<int:contract_id>/add_batch', methods=['POST'])
+@views.route('/dc_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def dc_batch_add_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -3808,13 +3616,13 @@ def dc_batch_add_post(contract_id):
             400)
 
 
-@app.route('/dc_batches/<int:batch_id>/edit')
+@views.route('/dc_batches/<int:batch_id>/edit')
 def dc_batch_edit_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     return render_template('dc_batch_edit.html', batch=batch)
 
 
-@app.route('/dc_batches/<int:batch_id>/edit', methods=['POST'])
+@views.route('/dc_batches/<int:batch_id>/edit', methods=['POST'])
 def dc_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -3840,7 +3648,7 @@ def dc_batch_edit_post(batch_id):
             render_template('dc_batch_edit.html', batch=batch), 400)
 
 
-@app.route('/dc_batches/<int:batch_id>/upload_file')
+@views.route('/dc_batches/<int:batch_id>/upload_file')
 def dc_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -3849,7 +3657,7 @@ def dc_batch_upload_file_get(batch_id):
         'dc_batch_upload_file.html', batch=batch, parser_names=parser_names)
 
 
-@app.route('/dc_batches/<int:batch_id>/upload_file', methods=['POST'])
+@views.route('/dc_batches/<int:batch_id>/upload_file', methods=['POST'])
 def dc_batch_upload_file_post(batch_id):
     batch = None
     try:
@@ -3871,7 +3679,7 @@ def dc_batch_upload_file_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/dc_batch_files/<int:file_id>')
+@views.route('/dc_batch_files/<int:file_id>')
 def dc_batch_file_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     importer_ids = sorted(
@@ -3881,7 +3689,7 @@ def dc_batch_file_get(file_id):
         importer_ids=importer_ids)
 
 
-@app.route('/dc_batch_files/<int:file_id>/download')
+@views.route('/dc_batch_files/<int:file_id>/download')
 def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
@@ -3892,7 +3700,7 @@ def dc_batch_file_download_get(file_id):
     return output
 
 
-@app.route('/dc_batch_files/<int:file_id>/edit')
+@views.route('/dc_batch_files/<int:file_id>/edit')
 def dc_batch_file_edit_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -3901,7 +3709,7 @@ def dc_batch_file_edit_get(file_id):
         parser_names=parser_names)
 
 
-@app.route('/dc_batch_files/<int:file_id>/edit', methods=['POST'])
+@views.route('/dc_batch_files/<int:file_id>/edit', methods=['POST'])
 def dc_batch_file_edit_post(file_id):
     batch_file = None
     try:
@@ -3931,7 +3739,7 @@ def dc_batch_file_edit_post(file_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/dc_bill_imports/<int:import_id>')
+@views.route('/dc_bill_imports/<int:import_id>')
 def dc_bill_import_get(import_id):
     importer = chellow.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
@@ -3947,7 +3755,7 @@ def dc_bill_import_get(import_id):
     return render_template('dc_bill_import.html', **fields)
 
 
-@app.route('/dc_bills/<int:bill_id>')
+@views.route('/dc_bills/<int:bill_id>')
 def dc_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     fields = {'bill': bill}
@@ -4010,7 +3818,7 @@ def dc_bill_get(bill_id):
     return render_template('dc_bill.html', **fields)
 
 
-@app.route('/dc_bills/<int:bill_id>/edit')
+@views.route('/dc_bills/<int:bill_id>/edit')
 def dc_bill_edit_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
@@ -4018,7 +3826,7 @@ def dc_bill_edit_get(bill_id):
         'dc_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/dc_bills/<int:bill_id>/edit', methods=["POST"])
+@views.route('/dc_bills/<int:bill_id>/edit', methods=["POST"])
 def dc_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
@@ -4052,7 +3860,7 @@ def dc_bill_edit_post(bill_id):
             'dc_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/mop_contracts/<int:contract_id>/add_batch')
+@views.route('/mop_contracts/<int:contract_id>/add_batch')
 def mop_batch_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     batches = g.sess.query(Batch).filter(Batch.contract == contract).order_by(
@@ -4065,7 +3873,7 @@ def mop_batch_add_get(contract_id):
         next_batch_description=next_batch_description)
 
 
-@app.route('/mop_contracts/<int:contract_id>/add_batch', methods=['POST'])
+@views.route('/mop_contracts/<int:contract_id>/add_batch', methods=['POST'])
 def mop_batch_add_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
@@ -4084,13 +3892,13 @@ def mop_batch_add_post(contract_id):
                 'mop_batch_add.html', contract=contract, batches=batches), 303)
 
 
-@app.route('/mop_batches/<int:batch_id>/edit')
+@views.route('/mop_batches/<int:batch_id>/edit')
 def mop_batch_edit_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     return render_template('mop_batch_edit.html', batch=batch)
 
 
-@app.route('/mop_batches/<int:batch_id>/edit', methods=['POST'])
+@views.route('/mop_batches/<int:batch_id>/edit', methods=['POST'])
 def mop_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -4114,7 +3922,7 @@ def mop_batch_edit_post(batch_id):
         return render_template('mop_batch_edit.html', batch=batch)
 
 
-@app.route('/mop_batches/<int:batch_id>')
+@views.route('/mop_batches/<int:batch_id>')
 def mop_batch_get(batch_id):
     batch = Batch.get_mop_by_id(g.sess, batch_id)
     bills = g.sess.query(Bill).filter(Bill.batch == batch).order_by(
@@ -4131,7 +3939,7 @@ def mop_batch_get(batch_id):
     return render_template('mop_batch.html', **fields)
 
 
-@app.route('/mop_batches/<int:batch_id>', methods=['POST'])
+@views.route('/mop_batches/<int:batch_id>', methods=['POST'])
 def mop_batch_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -4159,7 +3967,7 @@ def mop_batch_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/mop_batches/<int:batch_id>/csv')
+@views.route('/mop_batches/<int:batch_id>/csv')
 def mop_batch_csv_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     si = StringIO()
@@ -4186,7 +3994,7 @@ def mop_batch_csv_get(batch_id):
     return output
 
 
-@app.route('/mop_batches/<int:batch_id>/upload_file')
+@views.route('/mop_batches/<int:batch_id>/upload_file')
 def mop_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -4195,7 +4003,7 @@ def mop_batch_upload_file_get(batch_id):
         'mop_batch_upload_file.html', batch=batch, parser_names=parser_names)
 
 
-@app.route('/mop_batches/<int:batch_id>/upload_file', methods=['POST'])
+@views.route('/mop_batches/<int:batch_id>/upload_file', methods=['POST'])
 def mop_batch_upload_file_post(batch_id):
     batch = None
     try:
@@ -4217,7 +4025,7 @@ def mop_batch_upload_file_post(batch_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/mop_batch_files/<int:file_id>')
+@views.route('/mop_batch_files/<int:file_id>')
 def mop_batch_file_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     importer_ids = sorted(
@@ -4227,7 +4035,7 @@ def mop_batch_file_get(file_id):
         importer_ids=importer_ids)
 
 
-@app.route('/mop_batch_files/<int:file_id>/download')
+@views.route('/mop_batch_files/<int:file_id>/download')
 def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
@@ -4238,7 +4046,7 @@ def mop_batch_file_download_get(file_id):
     return output
 
 
-@app.route('/mop_batch_files/<int:file_id>/edit')
+@views.route('/mop_batch_files/<int:file_id>/edit')
 def mop_batch_file_edit_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     parser_names = chellow.bill_importer.find_parser_names()
@@ -4247,7 +4055,7 @@ def mop_batch_file_edit_get(file_id):
         parser_names=parser_names)
 
 
-@app.route('/mop_batch_files/<int:file_id>/edit', methods=['POST'])
+@views.route('/mop_batch_files/<int:file_id>/edit', methods=['POST'])
 def mop_batch_file_edit_post(file_id):
     batch_file = None
     try:
@@ -4277,7 +4085,7 @@ def mop_batch_file_edit_post(file_id):
                 parser_names=parser_names), 400)
 
 
-@app.route('/mop_bill_imports/<int:import_id>')
+@views.route('/mop_bill_imports/<int:import_id>')
 def mop_bill_import_get(import_id):
     importer = chellow.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
@@ -4293,7 +4101,7 @@ def mop_bill_import_get(import_id):
     return render_template('mop_bill_import.html', **fields)
 
 
-@app.route('/mop_batches/<int:batch_id>/add_bill')
+@views.route('/mop_batches/<int:batch_id>/add_bill')
 def mop_bill_add_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
@@ -4303,7 +4111,7 @@ def mop_bill_add_get(batch_id):
         'mop_bill_add.html', batch=batch, bill_types=bill_types, bills=bills)
 
 
-@app.route('/mop_batches/<int:batch_id>/add_bill', methods=['POST'])
+@views.route('/mop_batches/<int:batch_id>/add_bill', methods=['POST'])
 def mop_bill_add_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -4342,7 +4150,7 @@ def mop_bill_add_post(batch_id):
                 bills=bills), 400)
 
 
-@app.route('/meter_payment_types')
+@views.route('/meter_payment_types')
 def meter_payment_types_get():
     meter_payment_types = g.sess.query(MeterPaymentType).order_by(
         MeterPaymentType.code).all()
@@ -4350,14 +4158,14 @@ def meter_payment_types_get():
         'meter_payment_types.html', meter_payment_types=meter_payment_types)
 
 
-@app.route('/meter_payment_types/<int:type_id>')
+@views.route('/meter_payment_types/<int:type_id>')
 def meter_payment_type_get(type_id):
     meter_payment_type = MeterPaymentType.get_by_id(g.sess, type_id)
     return render_template(
         'meter_payment_type.html', meter_payment_type=meter_payment_type)
 
 
-@app.route('/non_core_contracts/<int:contract_id>/add_rate_script')
+@views.route('/non_core_contracts/<int:contract_id>/add_rate_script')
 def non_core_rate_script_add_get(contract_id):
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
@@ -4367,7 +4175,7 @@ def non_core_rate_script_add_get(contract_id):
         contract=contract)
 
 
-@app.route(
+@views.route(
     '/non_core_contracts/<int:contract_id>/add_rate_script', methods=['POST'])
 def non_core_rate_script_add_post(contract_id):
     try:
@@ -4387,7 +4195,7 @@ def non_core_rate_script_add_post(contract_id):
                 initial_date=initial_date, contract=contract), 400)
 
 
-@app.route('/non_core_rate_scripts/<int:rs_id>')
+@views.route('/non_core_rate_scripts/<int:rs_id>')
 def non_core_rate_script_get(rs_id):
     rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
     contract = rate_script.contract
@@ -4405,7 +4213,7 @@ def non_core_rate_script_get(rs_id):
         next_rate_script=next_rate_script)
 
 
-@app.route('/non_core_rate_scripts/<int:rs_id>/edit')
+@views.route('/non_core_rate_scripts/<int:rs_id>/edit')
 def non_core_rate_script_edit_get(rs_id):
     rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
     rs_example_func = chellow.computer.contract_func(
@@ -4416,7 +4224,7 @@ def non_core_rate_script_edit_get(rs_id):
         rate_script_example=rs_example)
 
 
-@app.route('/non_core_rate_scripts/<int:rs_id>/edit', methods=['POST'])
+@views.route('/non_core_rate_scripts/<int:rs_id>/edit', methods=['POST'])
 def non_core_rate_script_edit_post(rs_id):
     try:
         rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
@@ -4447,7 +4255,7 @@ def non_core_rate_script_edit_post(rs_id):
             400)
 
 
-@app.route('/supplier_batches/<int:batch_id>/add_bill')
+@views.route('/supplier_batches/<int:batch_id>/add_bill')
 def supplier_bill_add_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
@@ -4480,7 +4288,7 @@ def supplier_bill_add_get(batch_id):
                 normal_bill_type_id=normal_bill_type_id), 400)
 
 
-@app.route('/supplier_batches/<int:batch_id>/add_bill', methods=['POST'])
+@views.route('/supplier_batches/<int:batch_id>/add_bill', methods=['POST'])
 def supplier_bill_add_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -4518,13 +4326,13 @@ def supplier_bill_add_post(batch_id):
                 bills=bills), 400)
 
 
-@app.route('/supplier_batches/<int:batch_id>/edit')
+@views.route('/supplier_batches/<int:batch_id>/edit')
 def supplier_batch_edit_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     return render_template('supplier_batch_edit.html', batch=batch)
 
 
-@app.route('/supplier_batches/<int:batch_id>/edit', methods=['POST'])
+@views.route('/supplier_batches/<int:batch_id>/edit', methods=['POST'])
 def supplier_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -4547,7 +4355,7 @@ def supplier_batch_edit_post(batch_id):
             render_template('supplier_batch_edit.html', batch=batch), 400)
 
 
-@app.route('/supplier_batches/<int:batch_id>/csv')
+@views.route('/supplier_batches/<int:batch_id>/csv')
 def supplier_batch_csv_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     si = StringIO()
@@ -4574,7 +4382,7 @@ def supplier_batch_csv_get(batch_id):
     return output
 
 
-@app.route('/mop_batches')
+@views.route('/mop_batches')
 def mop_batches_get():
     contract_id = req_int('mop_contract_id')
     contract = Contract.get_mop_by_id(g.sess, contract_id)
@@ -4584,7 +4392,7 @@ def mop_batches_get():
         'mop_batches.html', contract=contract, batches=batches)
 
 
-@app.route('/supplies/<int:supply_id>/notes')
+@views.route('/supplies/<int:supply_id>/notes')
 def supply_notes_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
 
@@ -4598,13 +4406,13 @@ def supply_notes_get(supply_id):
         'supply_notes.html', supply=supply, supply_note=supply_note)
 
 
-@app.route('/supplies/<int:supply_id>/notes/add')
+@views.route('/supplies/<int:supply_id>/notes/add')
 def supply_note_add_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
     return render_template('supply_note_add.html', supply=supply)
 
 
-@app.route('/supplies/<int:supply_id>/notes/add', methods=['POST'])
+@views.route('/supplies/<int:supply_id>/notes/add', methods=['POST'])
 def supply_note_add_post(supply_id):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
@@ -4627,7 +4435,7 @@ def supply_note_add_post(supply_id):
             render_template('supply_note_add.html', supply=supply), 400)
 
 
-@app.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
+@views.route('/supplies/<int:supply_id>/notes/<int:index>/edit')
 def supply_note_edit_get(supply_id, index):
     supply = Supply.get_by_id(g.sess, supply_id)
     supply_note = eval(supply.note)
@@ -4636,7 +4444,7 @@ def supply_note_edit_get(supply_id, index):
     return render_template('supply_note_edit.html', supply=supply, note=note)
 
 
-@app.route(
+@views.route(
     '/supplies/<int:supply_id>/notes/<int:index>/edit', methods=['POST'])
 def supply_note_edit_post(supply_id, index):
     try:
@@ -4669,7 +4477,7 @@ def supply_note_edit_post(supply_id, index):
             'supply_note_edit.html', supply=supply, note=note)
 
 
-@app.route('/dc_contracts/<int:contract_id>/auto_importer')
+@views.route('/dc_contracts/<int:contract_id>/auto_importer')
 def dc_auto_importer_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     task = chellow.hh_importer.get_hh_import_task(contract)
@@ -4677,7 +4485,7 @@ def dc_auto_importer_get(contract_id):
         'dc_auto_importer.html', contract=contract, task=task)
 
 
-@app.route('/dc_contracts/<int:contract_id>/auto_importer', methods=['POST'])
+@views.route('/dc_contracts/<int:contract_id>/auto_importer', methods=['POST'])
 def dc_auto_importer_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -4692,7 +4500,7 @@ def dc_auto_importer_post(contract_id):
                 'dc_auto_importer.html', contract=contract, task=task), 400)
 
 
-@app.route('/non_core_contracts/<int:contract_id>/auto_importer')
+@views.route('/non_core_contracts/<int:contract_id>/auto_importer')
 def non_core_auto_importer_get(contract_id):
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
     importer = import_module('chellow.' + contract.name).get_importer()
@@ -4700,7 +4508,7 @@ def non_core_auto_importer_get(contract_id):
         'non_core_auto_importer.html', importer=importer, contract=contract)
 
 
-@app.route(
+@views.route(
     '/non_core_contracts/<int:contract_id>/auto_importer', methods=['POST'])
 def non_core_auto_importer_post(contract_id):
     try:
@@ -4718,7 +4526,7 @@ def non_core_auto_importer_post(contract_id):
                 contract=contract), 400)
 
 
-@app.route('/mop_bills/<int:bill_id>')
+@views.route('/mop_bills/<int:bill_id>')
 def mop_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
     register_reads = g.sess.query(RegisterRead).filter(
@@ -4783,7 +4591,7 @@ def mop_bill_get(bill_id):
     return render_template('mop_bill.html', **fields)
 
 
-@app.route('/mop_bills/<int:bill_id>/edit')
+@views.route('/mop_bills/<int:bill_id>/edit')
 def mop_bill_edit_get(bill_id):
     bill_types = g.sess.query(BillType).order_by(BillType.code).all()
     bill = Bill.get_by_id(g.sess, bill_id)
@@ -4791,7 +4599,7 @@ def mop_bill_edit_get(bill_id):
         'mop_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/mop_bills/<int:bill_id>/edit', methods=["POST"])
+@views.route('/mop_bills/<int:bill_id>/edit', methods=["POST"])
 def mop_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
@@ -4825,7 +4633,7 @@ def mop_bill_edit_post(bill_id):
             'mop_bill_edit.html', bill=bill, bill_types=bill_types)
 
 
-@app.route('/csv_sites_triad')
+@views.route('/csv_sites_triad')
 def csv_sites_triad_get():
     now = Datetime.utcnow()
     if now.month < 3:
@@ -4833,7 +4641,7 @@ def csv_sites_triad_get():
     return render_template('csv_sites_triad.html', year=now.year)
 
 
-@app.route('/csv_sites_hh_data')
+@views.route('/csv_sites_hh_data')
 def csv_sites_hh_data_get():
     now = Datetime.utcnow()
     start_date = Datetime(now.year, now.month, 1) - relativedelta(months=1)
@@ -4843,7 +4651,7 @@ def csv_sites_hh_data_get():
         finish_date=finish_date)
 
 
-@app.route('/csv_sites_duration')
+@views.route('/csv_sites_duration')
 def csv_sites_duration_get():
     now = utc_datetime_now()
     month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
@@ -4853,14 +4661,14 @@ def csv_sites_duration_get():
         month_finish=month_finish)
 
 
-@app.route('/csv_register_reads')
+@views.route('/csv_register_reads')
 def csv_register_reads_get():
     init = Datetime.utcnow()
     init = Datetime(init.year, init.month, 1) - relativedelta(months=1)
     return render_template('csv_register_reads.html', init=init)
 
 
-@app.route('/csv_supplies_hh_data')
+@views.route('/csv_supplies_hh_data')
 def csv_supplies_hh_data_get():
     now = Datetime.utcnow()
     start_date = Datetime(now.year, now.month, 1) - relativedelta(months=1)
@@ -4870,7 +4678,7 @@ def csv_supplies_hh_data_get():
         finish_date=finish_date)
 
 
-@app.route('/csv_supplies_snapshot')
+@views.route('/csv_supplies_snapshot')
 def csv_supplies_snapshot_get():
     now = utc_datetime_now()
     return render_template(
@@ -4878,7 +4686,7 @@ def csv_supplies_snapshot_get():
             now.year, now.month, now.day))
 
 
-@app.route('/csv_supplies_duration')
+@views.route('/csv_supplies_duration')
 def csv_supplies_duration_get():
     last_month = utc_datetime_now() - relativedelta(months=1)
     last_month_start = utc_datetime(last_month.year, last_month.month)
@@ -4888,27 +4696,27 @@ def csv_supplies_duration_get():
         last_month_finish=last_month_finish)
 
 
-@app.route('/csv_supplies_monthly_duration')
+@views.route('/csv_supplies_monthly_duration')
 def csv_supplies_monthly_duration_get():
     init = Datetime.utcnow()
     init = Datetime(init.year, init.month, 1) - relativedelta(months=1)
     return render_template('csv_supplies_monthly_duration.html', init=init)
 
 
-@app.route('/csv_bills')
+@views.route('/csv_bills')
 def csv_bills_get():
     init = Datetime.utcnow()
     init = Datetime(init.year, init.month, 1) - relativedelta(months=1)
     return render_template('csv_bills.html', init=init)
 
 
-@app.route('/tprs')
+@views.route('/tprs')
 def tprs_get():
     tprs = g.sess.query(Tpr).order_by(Tpr.code).all()
     return render_template('tprs.html', tprs=tprs)
 
 
-@app.route('/tprs/<int:tpr_id>')
+@views.route('/tprs/<int:tpr_id>')
 def tpr_get(tpr_id):
     tpr = Tpr.get_by_id(g.sess, tpr_id)
     clock_intervals = g.sess.query(ClockInterval).filter(
@@ -4917,19 +4725,19 @@ def tpr_get(tpr_id):
         'tpr.html', tpr=tpr, clock_intervals=clock_intervals)
 
 
-@app.route('/user_roles')
+@views.route('/user_roles')
 def user_roles_get():
     user_roles = g.sess.query(UserRole).order_by(UserRole.code)
     return render_template('user_roles.html', user_roles=user_roles)
 
 
-@app.route('/bill_types/<int:type_id>')
+@views.route('/bill_types/<int:type_id>')
 def bill_type_get(type_id):
     bill_type = BillType.get_by_id(g.sess, type_id)
     return render_template('bill_type.html', bill_type=bill_type)
 
 
-@app.route('/ods_monthly_duration')
+@views.route('/ods_monthly_duration')
 def ods_monthly_duration_get():
     now = Datetime.utcnow()
     month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
@@ -4939,13 +4747,13 @@ def ods_monthly_duration_get():
         month_finish=month_finish)
 
 
-@app.route('/scenarios')
+@views.route('/scenarios')
 def scenarios_get():
     scenarios = g.sess.query(Scenario).order_by(Scenario.name).all()
     return render_template('scenarios.html', scenarios=scenarios)
 
 
-@app.route('/scenarios/add', methods=['POST'])
+@views.route('/scenarios/add', methods=['POST'])
 def scenario_add_post():
     try:
         name = req_str("name")
@@ -4961,7 +4769,7 @@ def scenario_add_post():
             render_template('scenario_add.html', scenarios=scenarios), 400)
 
 
-@app.route('/scenarios/add')
+@views.route('/scenarios/add')
 def scenario_add_get():
     now = utc_datetime_now()
     props = {
@@ -4972,19 +4780,19 @@ def scenario_add_get():
     return render_template('scenario_add.html', initial_props=dumps(props))
 
 
-@app.route('/scenarios/<int:scenario_id>')
+@views.route('/scenarios/<int:scenario_id>')
 def scenario_get(scenario_id):
     scenario = Scenario.get_by_id(g.sess, scenario_id)
     return render_template('scenario.html', scenario=scenario)
 
 
-@app.route('/scenarios/<int:scenario_id>/edit')
+@views.route('/scenarios/<int:scenario_id>/edit')
 def scenario_edit_get(scenario_id):
     scenario = Scenario.get_by_id(g.sess, scenario_id)
     return render_template('scenario_edit.html', scenario=scenario)
 
 
-@app.route('/scenarios/<int:scenario_id>/edit', methods=['POST'])
+@views.route('/scenarios/<int:scenario_id>/edit', methods=['POST'])
 def scenario_edit_post(scenario_id):
     try:
         scenario = Scenario.get_by_id(g.sess, scenario_id)
@@ -5006,13 +4814,13 @@ def scenario_edit_post(scenario_id):
             render_template('scenario_edit.html', scenario=scenario, ), 400)
 
 
-@app.route('/site_snags/<int:snag_id>/edit')
+@views.route('/site_snags/<int:snag_id>/edit')
 def site_snag_edit_get(snag_id):
     snag = Snag.get_by_id(g.sess, snag_id)
     return render_template('site_snag_edit.html', snag=snag)
 
 
-@app.route('/site_snags/<int:snag_id>/edit', methods=['POST'])
+@views.route('/site_snags/<int:snag_id>/edit', methods=['POST'])
 def site_snag_edit_post(snag_id):
     try:
         ignore = req_bool('ignore')
@@ -5027,7 +4835,7 @@ def site_snag_edit_post(snag_id):
             render_template('site_snag_edit.html', snag=snag), 400)
 
 
-@app.route('/supplies/<int:supply_id>/virtual_bill')
+@views.route('/supplies/<int:supply_id>/virtual_bill')
 def supply_virtual_bill_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
     start_date = req_date('start')
@@ -5101,21 +4909,21 @@ def supply_virtual_bill_get(supply_id):
         finish_date=finish_date, meras=meras, net_gbp=net_gbp)
 
 
-@app.route('/mtcs')
+@views.route('/mtcs')
 def mtcs_get():
     mtcs = g.sess.query(Mtc).outerjoin(Mtc.dno).order_by(
         Mtc.code, Party.dno_code).options(joinedload(Mtc.dno)).all()
     return render_template('mtcs.html', mtcs=mtcs)
 
 
-@app.route('/mtcs/<int:mtc_id>')
+@views.route('/mtcs/<int:mtc_id>')
 def mtc_get(mtc_id):
     mtc = g.sess.query(Mtc).outerjoin(Mtc.dno).filter(
         Mtc.id == mtc_id).options(joinedload(Mtc.dno)).one()
     return render_template('mtc.html', mtc=mtc)
 
 
-@app.route('/mtcs/<int:mtc_id>/edit')
+@views.route('/mtcs/<int:mtc_id>/edit')
 def mtc_edit_get(mtc_id):
     mtc = Mtc.get_by_id(g.sess, mtc_id)
     meter_types = g.sess.query(MeterType).order_by(MeterType.code).all()
@@ -5126,7 +4934,7 @@ def mtc_edit_get(mtc_id):
         meter_payment_types=meter_payment_types)
 
 
-@app.route('/mtcs/<int:mtc_id>/edit', methods=['POST'])
+@views.route('/mtcs/<int:mtc_id>/edit', methods=['POST'])
 def mtc_edit_post(mtc_id):
     try:
         mtc = Mtc.get_by_id(g.sess, mtc_id)
@@ -5163,7 +4971,7 @@ def mtc_edit_post(mtc_id):
                 meter_payment_types=meter_payment_types), 400)
 
 
-@app.route('/csv_crc')
+@views.route('/csv_crc')
 def csv_crc_get():
     start_date = utc_datetime_now()
     if start_date.month < 3:
@@ -5171,7 +4979,7 @@ def csv_crc_get():
     return render_template('csv_crc.html', start_date=start_date)
 
 
-@app.route('/dnos')
+@views.route('/dnos')
 def dnos_get():
     dnos = []
     for dno in g.sess.query(Party).join(MarketRole).filter(
@@ -5191,7 +4999,7 @@ def dnos_get():
     return render_template('dnos.html', dnos=dnos, gsp_groups=gsp_groups)
 
 
-@app.route('/dnos/<int:dno_id>')
+@views.route('/dnos/<int:dno_id>')
 def dno_get(dno_id):
     dno = Party.get_dno_by_id(g.sess, dno_id)
     rate_scripts = get_file_scripts(dno.dno_code)[::-1]
@@ -5199,10 +5007,10 @@ def dno_get(dno_id):
         'dno.html', dno=dno, rate_scripts=rate_scripts, reports=[])
 
 
-@app.route('/industry_contracts')
+@views.route('/industry_contracts')
 def industry_contracts_get():
     contracts = []
-    contracts_path = os.path.join(app.root_path, 'rate_scripts')
+    contracts_path = os.path.join(current_app.root_path, 'rate_scripts')
 
     for contract_code in sorted(os.listdir(contracts_path)):
         try:
@@ -5219,7 +5027,7 @@ def industry_contracts_get():
     return render_template('industry_contracts.html', contracts=contracts)
 
 
-@app.route('/industry_contracts/<contract_code>')
+@views.route('/industry_contracts/<contract_code>')
 def industry_contract_get(contract_code):
     rate_scripts = get_file_scripts(contract_code)[::-1]
     return render_template(
@@ -5227,7 +5035,8 @@ def industry_contract_get(contract_code):
         contract_code=contract_code)
 
 
-@app.route('/industry_contracts/<contract_code>/rate_scripts/<start_date_str>')
+@views.route(
+    '/industry_contracts/<contract_code>/rate_scripts/<start_date_str>')
 def industry_rate_script_get(contract_code, start_date_str):
     rate_script = None
     start_date = to_utc(Datetime.strptime(start_date_str, '%Y%m%d%H%M'))
@@ -5242,7 +5051,7 @@ def industry_rate_script_get(contract_code, start_date_str):
         rate_script=rate_script)
 
 
-@app.route('/llfcs')
+@views.route('/llfcs')
 def llfcs_get():
     dno_id = req_int('dno_id')
     dno = Party.get_dno_by_id(g.sess, dno_id)
@@ -5250,13 +5059,13 @@ def llfcs_get():
     return render_template('llfcs.html', llfcs=llfcs, dno=dno)
 
 
-@app.route('/llfcs/<int:llfc_id>')
+@views.route('/llfcs/<int:llfc_id>')
 def llfc_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
     return render_template('llfc.html', llfc=llfc)
 
 
-@app.route('/llfcs/<int:llfc_id>/edit')
+@views.route('/llfcs/<int:llfc_id>/edit')
 def llfc_edit_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
     voltage_levels = g.sess.query(VoltageLevel).order_by(
@@ -5265,7 +5074,7 @@ def llfc_edit_get(llfc_id):
         'llfc_edit.html', llfc=llfc, voltage_levels=voltage_levels)
 
 
-@app.route('/llfcs/<int:llfc_id>/edit', methods=['POST'])
+@views.route('/llfcs/<int:llfc_id>/edit', methods=['POST'])
 def llfc_edit_post(llfc_id):
     try:
         llfc = Llfc.get_by_id(g.sess, llfc_id)
@@ -5295,7 +5104,7 @@ def llfc_edit_post(llfc_id):
         return make_response(render_template('llfc_edit.html', llfc=llfc), 400)
 
 
-@app.route('/sscs')
+@views.route('/sscs')
 def sscs_get():
     sscs = g.sess.query(Ssc).options(
         joinedload(Ssc.measurement_requirements).
@@ -5303,19 +5112,19 @@ def sscs_get():
     return render_template('sscs.html', sscs=sscs)
 
 
-@app.route('/sscs/<int:ssc_id>')
+@views.route('/sscs/<int:ssc_id>')
 def ssc_get(ssc_id):
     ssc = Ssc.get_by_id(g.sess, ssc_id)
     return render_template('ssc.html', ssc=ssc)
 
 
-@app.route('/csv_supplies_triad')
+@views.route('/csv_supplies_triad')
 def csv_supplies_triad_get():
     now = Datetime.utcnow()
     return render_template('csv_supplies_triad.html', year=now.year - 1)
 
 
-@app.route('/supplier_bills/<int:bill_id>/add_read')
+@views.route('/supplier_bills/<int:bill_id>/add_read')
 def read_add_get(bill_id):
     read_types = g.sess.query(ReadType).order_by(ReadType.code)
     estimated_read_type_id = g.sess.query(ReadType.id).filter(
@@ -5354,7 +5163,7 @@ def read_add_get(bill_id):
         estimated_read_type_id=estimated_read_type_id)
 
 
-@app.route('/supplier_bills/<int:bill_id>/add_read', methods=["POST"])
+@views.route('/supplier_bills/<int:bill_id>/add_read', methods=["POST"])
 def read_add_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
@@ -5389,7 +5198,7 @@ def read_add_post(bill_id):
             400)
 
 
-@app.route('/dc_batches/<int:batch_id>/add_bill')
+@views.route('/dc_batches/<int:batch_id>/add_bill')
 def dc_bill_add_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code)
@@ -5399,7 +5208,7 @@ def dc_bill_add_get(batch_id):
         'dc_bill_add.html', batch=batch, bill_types=bill_types, bills=bills)
 
 
-@app.route('/dc_batches/<int:batch_id>/add_bill', methods=['POST'])
+@views.route('/dc_batches/<int:batch_id>/add_bill', methods=['POST'])
 def dc_bill_add_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
@@ -5438,36 +5247,36 @@ def dc_bill_add_post(batch_id):
                 bills=bills), 400)
 
 
-@app.route('/pcs')
+@views.route('/pcs')
 def pcs_get():
     return render_template('pcs.html', pcs=g.sess.query(Pc).order_by(Pc.code))
 
 
-@app.route('/pcs/<int:pc_id>')
+@views.route('/pcs/<int:pc_id>')
 def pc_get(pc_id):
     pc = Pc.get_by_id(g.sess, pc_id)
     return render_template('pc.html', pc=pc)
 
 
-@app.route('/gsp_groups')
+@views.route('/gsp_groups')
 def gsp_groups_get():
     return render_template(
         'gsp_groups.html',
         groups=g.sess.query(GspGroup).order_by(GspGroup.code).all())
 
 
-@app.route('/gsp_groups/<int:group_id>')
+@views.route('/gsp_groups/<int:group_id>')
 def gsp_group_get(group_id):
     group = GspGroup.get_by_id(g.sess, group_id)
     return render_template('gsp_group.html', gsp_group=group)
 
 
-@app.route('/dtc_meter_types')
+@views.route('/dtc_meter_types')
 def dtc_meter_types_get():
     return render_template('dtc_meter_types.html', dtc_meter_types=METER_TYPES)
 
 
-@app.route('/dtc_meter_types/<code>')
+@views.route('/dtc_meter_types/<code>')
 def dtc_meter_type_get(code):
     desc = METER_TYPES[code]
     return render_template(
@@ -5475,7 +5284,7 @@ def dtc_meter_type_get(code):
         dtc_meter_type_code=code, dtc_meter_type_description=desc)
 
 
-@app.route('/sites/<int:site_id>/gen_graph')
+@views.route('/sites/<int:site_id>/gen_graph')
 def site_gen_graph_get(site_id):
     cache = {}
     if 'finish_year' in request.args:
@@ -5696,7 +5505,7 @@ def site_gen_graph_get(site_id):
         graph_names=graph_names, title=title, height=height, days=days)
 
 
-@app.route('/g_supplies')
+@views.route('/g_supplies')
 def g_supplies_get():
     if 'search_pattern' in request.values:
         pattern = req_str('search_pattern')
@@ -5734,7 +5543,7 @@ def g_supplies_get():
         return render_template('g_supplies.html')
 
 
-@app.route('/g_supplies/<int:g_supply_id>')
+@views.route('/g_supplies/<int:g_supply_id>')
 def g_supply_get(g_supply_id):
     debug = ''
     try:
@@ -5848,7 +5657,7 @@ def g_supply_get(g_supply_id):
         return render_template('g_supply.html')
 
 
-@app.route('/g_supplies/<int:g_supply_id>/edit')
+@views.route('/g_supplies/<int:g_supply_id>/edit')
 def g_supply_edit_get(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     g_eras = g.sess.query(GEra).filter(
@@ -5859,7 +5668,7 @@ def g_supply_edit_get(g_supply_id):
         g_exit_zones=g_exit_zones)
 
 
-@app.route('/g_supplies/<int:g_supply_id>/edit', methods=["POST"])
+@views.route('/g_supplies/<int:g_supply_id>/edit', methods=["POST"])
 def g_supply_edit_post(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     try:
@@ -5891,13 +5700,13 @@ def g_supply_edit_post(g_supply_id):
                 g_exit_zones=g_exit_zones), 400)
 
 
-@app.route('/g_contracts')
+@views.route('/g_contracts')
 def g_contracts_get():
     contracts = g.sess.query(GContract).order_by(GContract.name)
     return render_template('g_contracts.html', contracts=contracts)
 
 
-@app.route('/g_contracts/<int:contract_id>')
+@views.route('/g_contracts/<int:contract_id>')
 def g_contract_get(contract_id):
     contract = GContract.get_by_id(g.sess, contract_id)
     rate_scripts = g.sess.query(GRateScript).filter(
@@ -5913,13 +5722,13 @@ def g_contract_get(contract_id):
         month_finish=month_finish, rate_scripts=rate_scripts)
 
 
-@app.route('/g_contracts/add')
+@views.route('/g_contracts/add')
 def g_contract_add_get():
     contracts = g.sess.query(GContract).order_by(GContract.name)
     return render_template('g_contract_add.html', contracts=contracts)
 
 
-@app.route('/g_contracts/add', methods=["POST"])
+@views.route('/g_contracts/add', methods=["POST"])
 def g_contract_add_post():
     try:
         name = req_str('name')
@@ -5939,13 +5748,13 @@ def g_contract_add_post():
             render_template('g_contract_add.html', contracts=contracts), 400)
 
 
-@app.route('/g_contracts/<int:g_contract_id>/edit')
+@views.route('/g_contracts/<int:g_contract_id>/edit')
 def g_contract_edit_get(g_contract_id):
     g_contract = GContract.get_by_id(g.sess, g_contract_id)
     return render_template('g_contract_edit.html', g_contract=g_contract)
 
 
-@app.route('/g_contracts/<int:g_contract_id>/edit', methods=["POST"])
+@views.route('/g_contracts/<int:g_contract_id>/edit', methods=["POST"])
 def g_contract_edit_post(g_contract_id):
     try:
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
@@ -5968,7 +5777,7 @@ def g_contract_edit_post(g_contract_id):
             400)
 
 
-@app.route('/g_contracts/<int:g_contract_id>/add_rate_script')
+@views.route('/g_contracts/<int:g_contract_id>/add_rate_script')
 def g_rate_script_add_get(g_contract_id):
     now = utc_datetime_now()
     initial_date = utc_datetime(now.year, now.month)
@@ -5978,7 +5787,7 @@ def g_rate_script_add_get(g_contract_id):
         initial_date=initial_date)
 
 
-@app.route(
+@views.route(
     '/g_contracts/<int:g_contract_id>/add_rate_script', methods=["POST"])
 def g_rate_script_add_post(g_contract_id):
     try:
@@ -5999,14 +5808,14 @@ def g_rate_script_add_post(g_contract_id):
                 initial_date=initial_date), 400)
 
 
-@app.route('/g_rate_scripts/<int:g_rate_script_id>/edit')
+@views.route('/g_rate_scripts/<int:g_rate_script_id>/edit')
 def g_rate_script_edit_get(g_rate_script_id):
     g_rate_script = GRateScript.get_by_id(g.sess, g_rate_script_id)
     return render_template(
         'g_rate_script_edit.html', g_rate_script=g_rate_script)
 
 
-@app.route(
+@views.route(
     '/g_rate_scripts/<int:g_rate_script_id>/edit', methods=["POST"])
 def g_rate_script_edit_post(g_rate_script_id):
     try:
@@ -6034,13 +5843,13 @@ def g_rate_script_edit_post(g_rate_script_id):
                 'g_rate_script_edit.html', g_rate_script=g_rate_script), 400)
 
 
-@app.route('/g_rate_scripts/<int:g_rate_script_id>')
+@views.route('/g_rate_scripts/<int:g_rate_script_id>')
 def g_rate_script_get(g_rate_script_id):
     g_rate_script = GRateScript.get_by_id(g.sess, g_rate_script_id)
     return render_template('g_rate_script.html', g_rate_script=g_rate_script)
 
 
-@app.route('/g_batches')
+@views.route('/g_batches')
 def g_batches_get():
     g_contract_id = req_int('g_contract_id')
     g_contract = GContract.get_by_id(g.sess, g_contract_id)
@@ -6050,7 +5859,7 @@ def g_batches_get():
         'g_batches.html', g_contract=g_contract, g_batches=g_batches)
 
 
-@app.route('/g_contracts/<int:g_contract_id>/add_batch')
+@views.route('/g_contracts/<int:g_contract_id>/add_batch')
 def g_batch_add_get(g_contract_id):
     g_contract = GContract.get_by_id(g.sess, g_contract_id)
     g_batches = g.sess.query(GBatch).filter(
@@ -6059,7 +5868,7 @@ def g_batch_add_get(g_contract_id):
         'g_batch_add.html', g_contract=g_contract, g_batches=g_batches)
 
 
-@app.route('/g_contracts/<int:g_contract_id>/add_batch', methods=["POST"])
+@views.route('/g_contracts/<int:g_contract_id>/add_batch', methods=["POST"])
 def g_batch_add_post(g_contract_id):
     try:
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
@@ -6080,7 +5889,7 @@ def g_batch_add_post(g_contract_id):
                 g_batches=g_batches), 400)
 
 
-@app.route('/g_batches/<int:g_batch_id>')
+@views.route('/g_batches/<int:g_batch_id>')
 def g_batch_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
     g_bills = g.sess.query(GBill).options(joinedload('g_reads')).filter(
@@ -6116,13 +5925,13 @@ def g_batch_get(g_batch_id):
         sum_gross_gbp=sum_gross_gbp, sum_kwh=sum_kwh)
 
 
-@app.route('/g_batches/<int:g_batch_id>/edit')
+@views.route('/g_batches/<int:g_batch_id>/edit')
 def g_batch_edit_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
     return render_template('g_batch_edit.html', g_batch=g_batch)
 
 
-@app.route('/g_batches/<int:g_batch_id>/edit', methods=["POST"])
+@views.route('/g_batches/<int:g_batch_id>/edit', methods=["POST"])
 def g_batch_edit_post(g_batch_id):
     try:
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
@@ -6148,7 +5957,7 @@ def g_batch_edit_post(g_batch_id):
             render_template('g_batch_edit.html', g_batch=g_batch), 400)
 
 
-@app.route('/g_bills/<int:g_bill_id>')
+@views.route('/g_bills/<int:g_bill_id>')
 def g_bill_get(g_bill_id):
     g_bill = GBill.get_by_id(g.sess, g_bill_id)
     g_reads = g.sess.query(GRegisterRead).filter(
@@ -6208,7 +6017,7 @@ def g_bill_get(g_bill_id):
     return render_template('g_bill.html', **fields)
 
 
-@app.route('/g_bill_imports')
+@views.route('/g_bill_imports')
 def g_bill_imports_get():
     g_batch_id = req_int('g_batch_id')
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
@@ -6220,7 +6029,7 @@ def g_bill_imports_get():
         parser_names=chellow.g_bill_import.find_parser_names())
 
 
-@app.route('/g_bill_imports', methods=["POST"])
+@views.route('/g_bill_imports', methods=["POST"])
 def g_bill_imports_post():
     try:
         g_batch_id = req_int('g_batch_id')
@@ -6245,7 +6054,7 @@ def g_bill_imports_post():
                 parser_names=chellow.g_bill_import.find_parser_names()), 400)
 
 
-@app.route('/g_bill_imports/<int:imp_id>')
+@views.route('/g_bill_imports/<int:imp_id>')
 def g_bill_import_get(imp_id):
     importer = chellow.g_bill_import.get_bill_importer(imp_id)
     g_batch = GBatch.get_by_id(g.sess, importer.g_batch_id)
@@ -6262,7 +6071,7 @@ def g_bill_import_get(imp_id):
     return render_template('g_bill_import.html', **fields)
 
 
-@app.route('/g_batches/<int:g_batch_id>/add_bill')
+@views.route('/g_batches/<int:g_batch_id>/add_bill')
 def g_bill_add_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
     g_bills = g.sess.query(GBill).filter(GBill.g_batch == g_batch).order_by(
@@ -6273,7 +6082,7 @@ def g_bill_add_get(g_batch_id):
         bill_types=bill_types)
 
 
-@app.route('/g_batches/<int:g_batch_id>/add_bill', methods=['POST'])
+@views.route('/g_batches/<int:g_batch_id>/add_bill', methods=['POST'])
 def g_bill_add_post(g_batch_id):
     try:
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
@@ -6308,7 +6117,7 @@ def g_bill_add_post(g_batch_id):
                 bill_types=bill_types), 400)
 
 
-@app.route('/g_supplies/<int:g_supply_id>/notes')
+@views.route('/g_supplies/<int:g_supply_id>/notes')
 def g_supply_notes_get(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
 
@@ -6322,13 +6131,13 @@ def g_supply_notes_get(g_supply_id):
         'g_supply_notes.html', g_supply=g_supply, g_supply_note=g_supply_note)
 
 
-@app.route('/g_supplies/<int:g_supply_id>/notes/add')
+@views.route('/g_supplies/<int:g_supply_id>/notes/add')
 def g_supply_note_add_get(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     return render_template('g_supply_note_add.html', g_supply=g_supply)
 
 
-@app.route('/g_supplies/<int:g_supply_id>/notes/add', methods=['POST'])
+@views.route('/g_supplies/<int:g_supply_id>/notes/add', methods=['POST'])
 def g_supply_note_add_post(g_supply_id):
     try:
         g_supply = GSupply.get_by_id(g.sess, g_supply_id)
@@ -6351,7 +6160,7 @@ def g_supply_note_add_post(g_supply_id):
             render_template('g_supply_note_add.html', g_supply=g_supply), 400)
 
 
-@app.route('/g_supplies/<int:g_supply_id>/notes/<int:index>/edit')
+@views.route('/g_supplies/<int:g_supply_id>/notes/<int:index>/edit')
 def g_supply_note_edit_get(g_supply_id, index):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     g_supply_note = eval(g_supply.note)
@@ -6361,7 +6170,7 @@ def g_supply_note_edit_get(g_supply_id, index):
         'g_supply_note_edit.html', g_supply=g_supply, note=note)
 
 
-@app.route(
+@views.route(
     '/g_supplies/<int:g_supply_id>/notes/<int:index>/edit', methods=['POST'])
 def g_supply_note_edit_post(g_supply_id, index):
     try:
@@ -6394,7 +6203,7 @@ def g_supply_note_edit_post(g_supply_id, index):
             'g_supply_note_edit.html', g_supply=g_supply, note=note)
 
 
-@app.route('/g_eras/<int:g_era_id>/edit')
+@views.route('/g_eras/<int:g_era_id>/edit')
 def g_era_edit_get(g_era_id):
     g_era = GEra.get_by_id(g.sess, g_era_id)
     supplier_g_contracts = g.sess.query(GContract).order_by(GContract.name)
@@ -6409,7 +6218,7 @@ def g_era_edit_get(g_era_id):
         g_units=g_units, g_reading_frequencies=g_reading_frequencies)
 
 
-@app.route('/g_eras/<int:g_era_id>/edit', methods=['POST'])
+@views.route('/g_eras/<int:g_era_id>/edit', methods=['POST'])
 def g_era_edit_post(g_era_id):
     try:
         g_era = GEra.get_by_id(g.sess, g_era_id)
@@ -6476,7 +6285,7 @@ def g_era_edit_post(g_era_id):
                 g_reading_frequencies=g_reading_frequencies), 400)
 
 
-@app.route('/g_bills/<int:g_bill_id>/edit')
+@views.route('/g_bills/<int:g_bill_id>/edit')
 def g_bill_edit_get(g_bill_id):
     g_bill = GBill.get_by_id(g.sess, g_bill_id)
     bill_types = g.sess.query(BillType).order_by(BillType.code).all()
@@ -6484,7 +6293,7 @@ def g_bill_edit_get(g_bill_id):
         'g_bill_edit.html', g_bill=g_bill, bill_types=bill_types)
 
 
-@app.route('/g_bills/<int:g_bill_id>/edit', methods=['POST'])
+@views.route('/g_bills/<int:g_bill_id>/edit', methods=['POST'])
 def g_bill_edit_post(g_bill_id):
     try:
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
@@ -6524,7 +6333,7 @@ def g_bill_edit_post(g_bill_id):
             400)
 
 
-@app.route('/g_bills/<int:g_bill_id>/add_read')
+@views.route('/g_bills/<int:g_bill_id>/add_read')
 def g_read_add_get(g_bill_id):
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code)
     g_bill = GBill.get_by_id(g.sess, g_bill_id)
@@ -6534,7 +6343,7 @@ def g_read_add_get(g_bill_id):
         g_units=g_units)
 
 
-@app.route('/g_bills/<int:g_bill_id>/add_read', methods=['POST'])
+@views.route('/g_bills/<int:g_bill_id>/add_read', methods=['POST'])
 def g_read_add_post(g_bill_id):
     try:
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
@@ -6564,7 +6373,7 @@ def g_read_add_post(g_bill_id):
             'g_read_add.html', g_bill=g_bill, g_read_types=g_read_types)
 
 
-@app.route('/g_reads/<int:g_read_id>/edit')
+@views.route('/g_reads/<int:g_read_id>/edit')
 def g_read_edit_get(g_read_id):
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code).all()
     g_read = GRegisterRead.get_by_id(g.sess, g_read_id)
@@ -6574,7 +6383,7 @@ def g_read_edit_get(g_read_id):
         g_units=g_units)
 
 
-@app.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
+@views.route('/g_reads/<int:g_read_id>/edit', methods=['POST'])
 def g_read_edit_post(g_read_id):
     try:
         g_read = GRegisterRead.get_by_id(g.sess, g_read_id)
@@ -6614,31 +6423,31 @@ def g_read_edit_post(g_read_id):
                 g_units=g_units), 400)
 
 
-@app.route('/g_units')
+@views.route('/g_units')
 def g_units_get():
     g_units = g.sess.query(GUnit).order_by(GUnit.code)
     return render_template('g_units.html', g_units=g_units)
 
 
-@app.route('/g_units/<int:g_unit_id>')
+@views.route('/g_units/<int:g_unit_id>')
 def g_unit_get(g_unit_id):
     g_unit = GUnit.get_by_id(g.sess, g_unit_id)
     return render_template('g_unit.html', g_unit=g_unit)
 
 
-@app.route('/g_read_types/<int:g_read_type_id>')
+@views.route('/g_read_types/<int:g_read_type_id>')
 def g_read_type_get(g_read_type_id):
     g_read_type = GReadType.get_by_id(g.sess, g_read_type_id)
     return render_template('g_read_type.html', g_read_type=g_read_type)
 
 
-@app.route('/g_read_types')
+@views.route('/g_read_types')
 def g_read_types_get():
     g_read_types = g.sess.query(GReadType).order_by(GReadType.code)
     return render_template('g_read_types.html', g_read_types=g_read_types)
 
 
-@app.route('/g_reports')
+@views.route('/g_reports')
 def g_reports_get():
     now = utc_datetime_now()
     now_day = utc_datetime(now.year, now.month, now.day)
@@ -6649,13 +6458,13 @@ def g_reports_get():
         now_day=now_day)
 
 
-@app.route('/g_dns')
+@views.route('/g_dns')
 def g_dns_get():
     g_dns = g.sess.query(GDn).order_by(GDn.code)
     return render_template('g_dns.html', g_dns=g_dns)
 
 
-@app.route('/g_dns/<int:g_dn_id>')
+@views.route('/g_dns/<int:g_dn_id>')
 def g_dn_get(g_dn_id):
     g_dn = GDn.get_by_id(g.sess, g_dn_id)
     g_ldzs = g.sess.query(GLdz).filter(
@@ -6663,7 +6472,7 @@ def g_dn_get(g_dn_id):
     return render_template('g_dn.html', g_dn=g_dn, g_ldzs=g_ldzs)
 
 
-@app.route('/g_ldzs/<int:g_ldz_id>')
+@views.route('/g_ldzs/<int:g_ldz_id>')
 def g_ldz_get(g_ldz_id):
     g_ldz = GLdz.get_by_id(g.sess, g_ldz_id)
     g_exit_zones = g.sess.query(GExitZone).filter(
@@ -6672,13 +6481,13 @@ def g_ldz_get(g_ldz_id):
         'g_ldz.html', g_ldz=g_ldz, g_exit_zones=g_exit_zones)
 
 
-@app.route('/g_ldzs')
+@views.route('/g_ldzs')
 def g_ldzs_get():
     g_ldzs = g.sess.query(GLdz).order_by(GLdz.code)
     return render_template('g_ldzs.html', g_ldzs=g_ldzs)
 
 
-@app.route('/g_reading_frequencies/<int:g_reading_frequency_id>')
+@views.route('/g_reading_frequencies/<int:g_reading_frequency_id>')
 def g_reading_frequency_get(g_reading_frequency_id):
     g_reading_frequency = GReadingFrequency.get_by_id(
         g.sess, g_reading_frequency_id)
@@ -6686,7 +6495,7 @@ def g_reading_frequency_get(g_reading_frequency_id):
         'g_reading_frequency.html', g_reading_frequency=g_reading_frequency)
 
 
-@app.route('/g_reading_frequencies')
+@views.route('/g_reading_frequencies')
 def g_reading_frequencies_get():
     g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
         GReadingFrequency.code)
@@ -6695,13 +6504,13 @@ def g_reading_frequencies_get():
         g_reading_frequencies=g_reading_frequencies)
 
 
-@app.route('/g_exit_zones/<int:g_exit_zone_id>')
+@views.route('/g_exit_zones/<int:g_exit_zone_id>')
 def g_exit_zone_get(g_exit_zone_id):
     g_exit_zone = GExitZone.get_by_id(g.sess, g_exit_zone_id)
     return render_template('g_exit_zone.html', g_exit_zone=g_exit_zone)
 
 
-@app.route('/g_batches/<int:g_batch_id>/csv')
+@views.route('/g_batches/<int:g_batch_id>/csv')
 def g_batch_csv_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
     si = StringIO()

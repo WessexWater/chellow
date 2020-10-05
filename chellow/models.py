@@ -1,32 +1,38 @@
-from sqlalchemy import (
-    ForeignKey, Column, Integer, String, Boolean, DateTime, Text, Numeric, or_,
-    not_, and_, Enum, null, create_engine, event, LargeBinary)
-from sqlalchemy.orm import sessionmaker, relationship, joinedload, aliased
-from sqlalchemy.schema import UniqueConstraint
-from sqlalchemy.engine import Engine
-from datetime import datetime as Datetime, timedelta as Timedelta
-import datetime
 import ast
+import datetime
 import math
-from sqlalchemy.sql.expression import true, false
-from sqlalchemy.exc import ProgrammingError, SQLAlchemyError, IntegrityError
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.ext.declarative import declarative_base
 import operator
-from chellow.utils import (
-    hh_after, HH, parse_mpan_core, hh_before, next_hh, prev_hh, hh_format,
-    hh_range, utc_datetime, utc_datetime_now, to_utc, to_ct)
-from dateutil.relativedelta import relativedelta
-from functools import lru_cache
-from werkzeug.exceptions import BadRequest, NotFound
 import os.path
 import sys
-from hashlib import pbkdf2_hmac
 from binascii import hexlify, unhexlify
-from decimal import Decimal
-from zish import dumps, loads, ZishException
 from collections.abc import Mapping
+from datetime import datetime as Datetime, timedelta as Timedelta
+from decimal import Decimal
+from functools import lru_cache
+from hashlib import pbkdf2_hmac
 from itertools import takewhile
+
+from chellow.utils import (
+    HH, hh_after, hh_before, hh_format, hh_range, next_hh, parse_mpan_core,
+    prev_hh, to_ct, to_utc, utc_datetime, utc_datetime_now)
+
+from dateutil.relativedelta import relativedelta
+
+from sqlalchemy import (
+    Boolean, Column, DateTime, Enum, ForeignKey, Integer, LargeBinary, Numeric,
+    String, Text, and_, create_engine, event, not_, null, or_
+)
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError, ProgrammingError, SQLAlchemyError
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import aliased, joinedload, relationship, sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.schema import UniqueConstraint
+from sqlalchemy.sql.expression import false, true
+
+from werkzeug.exceptions import BadRequest, NotFound
+
+from zish import ZishException, dumps, loads
 
 
 config = {
@@ -57,9 +63,35 @@ db_url = ''.join(
         "@", config['PGHOST'], ":", config['PGPORT'], "/",
         config['PGDATABASE']])
 
-engine = create_engine(db_url, isolation_level="SERIALIZABLE")
-Session = sessionmaker(bind=engine)
 Base = declarative_base()
+
+engine = None
+session = None
+
+
+def start_sqlalchemy():
+    global engine, session
+
+    if engine is not None or session is not None:
+        raise Exception("SQLAlchemy has already been started!")
+
+    engine = create_engine(db_url, isolation_level="SERIALIZABLE")
+    session = sessionmaker(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+
+def stop_sqlalchemy():
+    global engine, session
+
+    if engine is not None:
+        engine.dispose()
+        engine = None
+        session = None
+
+
+def Session():
+    return session()
+
 
 CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
 
@@ -4871,8 +4903,6 @@ upgrade_funcs = [
 
 
 def db_upgrade(root_path):
-    Base.metadata.create_all(bind=engine)
-
     sess = None
     try:
         sess = Session()

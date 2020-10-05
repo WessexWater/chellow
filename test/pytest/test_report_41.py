@@ -1,6 +1,7 @@
-from chellow.utils import utc_datetime
 import chellow.reports.report_41
-from chellow.models import Session
+from chellow.utils import utc_datetime
+
+from sqlalchemy.orm.session import Session
 
 
 def test_eras(mocker):
@@ -13,6 +14,7 @@ def test_eras(mocker):
     supply_id = None
     eras = chellow.reports.report_41._make_eras(
         sess, year_start, year_finish, supply_id)
+    print(eras)
     desired = ''.join(
         (
             'SELECT era.id AS era_id, era.supply_id AS era_supply_id, '
@@ -41,9 +43,11 @@ def test_eras(mocker):
             'FROM era JOIN supply ON supply.id = era.supply_id '
             'JOIN source ON source.id = supply.source_id '
             'JOIN pc ON pc.id = era.pc_id \n'
-            'WHERE era.start_date <= %s '
-            'AND (era.finish_date IS NULL OR era.finish_date >= %s) '
-            'AND source.code IN (%s, %s) AND pc.code = %s ORDER BY supply.id'
+            'WHERE era.start_date <= :start_date_1 AND '
+            '(era.finish_date IS NULL OR era.finish_date >= :finish_date_1) '
+            'AND source.code IN (:code_1, :code_2) AND pc.code = :code_3 '
+            'ORDER BY supply.id'
         )
     )
+    print(desired)
     assert str(eras) == desired

@@ -1,28 +1,34 @@
+import csv
+import os
+import sys
+import threading
+import traceback
 from collections import OrderedDict, defaultdict
 from datetime import datetime as Datetime
+from decimal import Decimal
+from itertools import combinations
+
+import chellow.computer
+import chellow.dloads
+from chellow.models import (
+    Batch, Bill, Contract, Era, Llfc, MarketRole, Mtc, RegisterRead, Session,
+    Site, SiteEra, Supply)
+from chellow.utils import (
+    HH, csv_make_val, hh_format, hh_max, hh_min, hh_range, parse_mpan_core,
+    req_date, req_int, req_str, to_utc)
+from chellow.views import chellow_redirect
+
 from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.sql.expression import null, true
-import traceback
-from chellow.models import (
-    Batch, Bill, Session, Era, Site, SiteEra, MarketRole, Contract, Mtc, Llfc,
-    RegisterRead, Supply)
-import chellow.computer
-import chellow.dloads
-import sys
-import os
-import threading
+
 from werkzeug.exceptions import BadRequest
-from chellow.utils import (
-    HH, hh_format, hh_min, hh_max, req_int, csv_make_val, to_utc, req_date,
-    hh_range, req_str, parse_mpan_core)
-from chellow.views import chellow_redirect
-from flask import request, g
-import csv
-from itertools import combinations
-from decimal import Decimal
-from zish import loads, ZishLocationException
+
+from zish import ZishLocationException, loads
 
 
 def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):
@@ -174,7 +180,7 @@ def do_get(sess):
     if 'batch_id' in request.values:
         batch_id = req_int("batch_id")
         batch = Batch.get_by_id(sess, batch_id)
-        fname_additional = '_batch_' + batch.reference
+        fname_additional = f'_batch_{batch.reference}'
     elif 'bill_id' in request.values:
         bill_id = req_int("bill_id")
         bill = Bill.get_by_id(sess, bill_id)
@@ -194,6 +200,7 @@ def do_get(sess):
     args = (
         batch_id, bill_id, contract_id, start_date, finish_date, g.user,
         mpan_cores, fname_additional)
+    print(args)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect('/downloads', 303)
 

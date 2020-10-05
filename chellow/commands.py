@@ -1,21 +1,28 @@
-import shutil
-import subprocess
-import sys
-import os.path
-from os import environ
-from pep3143daemon import DaemonContext, PidFile
-import waitress
 import argparse
+import os.path
 import signal
+import sys
 import time
-from chellow import app
+from os import environ
+
+from chellow import create_app
+
+from pep3143daemon import DaemonContext, PidFile
+
+import waitress
+
+app = create_app()
 
 
 def chellow_test_setup():
+    '''
+    import subprocess
+    import shutil
     downloads_path = os.path.join(app.instance_path, 'downloads')
     if os.path.exists(downloads_path):
         shutil.rmtree(downloads_path)
     subprocess.Popen(["python", "test/ftp.py"])
+    '''
 
 
 def chellow_start(daemon):

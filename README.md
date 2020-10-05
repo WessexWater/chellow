@@ -177,6 +177,8 @@ Install tox:
 Run tests:
 
 `tox`
+
+Old style tests: run\_tests\_0.sh run\_tests\_1.sh run\_tests\_2.sh
  
 
 ##  Getting Started

@@ -1,8 +1,12 @@
-import chellow.views
-from werkzeug.exceptions import BadRequest
-from sqlalchemy.orm.session import Session
-from chellow.utils import utc_datetime
 from datetime import datetime as Datetime
+
+import chellow.views
+from chellow.models import Contract
+from chellow.utils import utc_datetime
+
+from utils import match
+
+from werkzeug.exceptions import BadRequest
 
 
 def test_supply_edit_post(mocker):
@@ -10,7 +14,7 @@ def test_supply_edit_post(mocker):
     """
     supply_id = 1
     g = mocker.patch("chellow.views.g", autospec=True)
-    g.sess = mocker.Mock(spec=Session)
+    g.sess = mocker.Mock()
     supply_class = mocker.patch("chellow.views.Supply", autospec=True)
 
     request = mocker.patch("chellow.views.request", autospec=True)
@@ -88,3 +92,87 @@ def test_read_add_get(mocker):
     mocker.patch('chellow.views.render_template', autospec=True)
 
     chellow.views.read_add_get(bill_id)
+
+
+def test_view_supplier_contract(client, sess):
+    sess.execute(
+        "INSERT INTO market_role (code, description) "
+        "VALUES ('X', 'Supplier')")
+    sess.execute(
+        "INSERT INTO participant (code, name) "
+        "VALUES ('FUSE', 'Fusion')")
+    sess.execute(
+        "INSERT INTO party (market_role_id, participant_id, name, "
+        "valid_from, valid_to, dno_code) "
+        "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)")
+    sess.execute(
+        "INSERT INTO contract (name, charge_script, properties, "
+        "state, market_role_id, party_id, start_rate_script_id, "
+        "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
+        "2, 2, null, null)")
+    sess.execute(
+        "INSERT INTO rate_script (contract_id, start_date, finish_date, "
+        "script) VALUES (2, '2000-01-03', null, '{}')")
+    sess.execute(
+        "UPDATE contract set start_rate_script_id = 2, "
+        "finish_rate_script_id = 2 where id = 2;")
+    sess.commit()
+
+    response = client.get('/supplier_contracts/2')
+
+    patterns = [
+        r'<tr>\s*'
+        r'<th>Start Date</th>\s*'
+        r'<td>2000-01-03 00:00</td>\s*'
+        r'</tr>\s*'
+        r'<tr>\s*'
+        r'<th>Finish Date</th>\s*'
+        r'<td>Ongoing</td>\s*'
+        r'</tr>\s*'
+    ]
+    match(response, 200, patterns)
+
+
+def test_supplier_contract_add_rate_script(client, sess):
+    sess.execute(
+        "INSERT INTO market_role (code, description) "
+        "VALUES ('X', 'Supplier')")
+    sess.execute(
+        "INSERT INTO participant (code, name) "
+        "VALUES ('FUSE', 'Fusion')")
+    sess.execute(
+        "INSERT INTO party (market_role_id, participant_id, name, "
+        "valid_from, valid_to, dno_code) "
+        "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)")
+    sess.execute(
+        "INSERT INTO contract (name, charge_script, properties, "
+        "state, market_role_id, party_id, start_rate_script_id, "
+        "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
+        "2, 2, null, null)")
+    sess.execute(
+        "INSERT INTO rate_script (contract_id, start_date, finish_date, "
+        "script) VALUES (2, '2000-01-03', null, '{}')")
+    sess.execute(
+        "UPDATE contract set start_rate_script_id = 2, "
+        "finish_rate_script_id = 2 where id = 2;")
+    sess.commit()
+
+    data = {
+        'start_year': "2020",
+        'start_month': "02",
+        'start_day': "06",
+        'start_hour': "01",
+        'start_minute': "00",
+        'script': "{}"
+    }
+    response = client.post('/supplier_contracts/2/add_rate_script', data=data)
+
+    match(response, 303, [r'/supplier_rate_scripts/3'])
+
+    contract = Contract.get_supplier_by_id(sess, 2)
+
+    start_rate_script = contract.start_rate_script
+    finish_rate_script = contract.finish_rate_script
+
+    assert start_rate_script.start_date == utc_datetime(2000, 1, 3)
+    assert finish_rate_script.finish_date is None

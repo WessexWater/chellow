@@ -224,7 +224,7 @@
             'properties': """
 {
     "enabled": true,
-    "urls": ["http://127.0.0.1:8080/nationalgrid/sf_bsuos.xls"]}
+    "urls": ["http://localhost:8080/nationalgrid/sf_bsuos.xls"]}
 """},
         'status_code': 303},
     {
@@ -273,7 +273,7 @@
             'properties': """
 {
             "enabled": true,
-            "url": "http://127.0.0.1:8080/elexonportal/"}
+            "url": "http://localhost:8080/elexonportal/"}
 """},
         'status_code': 303},
     {
@@ -7530,7 +7530,7 @@ def virtual_bill(ds):
             'name': 'system_price',
             'properties': """{
   "enabled": true,
-  "url": "http://127.0.0.1:8080/elexonportal/",
+  "url": "http://localhost:8080/elexonportal/",
   "limit": true}
 """},
         'status_code': 303
@@ -14007,7 +14007,7 @@ def virtual_bill(ds):
             'properties': """
 {
   "enabled": true,
-  "url": "http://127.0.0.1:8080/nationalgrid/england-and-wales.ics"}
+  "url": "http://localhost:8080/nationalgrid/england-and-wales.ics"}
 """},
         'status_code': 303},
     {
@@ -14037,7 +14037,7 @@ def virtual_bill(ds):
             'properties': """
 {
             "enabled": true,
-            "url": "http://127.0.0.1:8080/elexonportal/"}
+            "url": "http://localhost:8080/elexonportal/"}
 """},
         'status_code': 303},
     {
@@ -20941,7 +20941,7 @@ def virtual_bill(ds):
             'name': 'g_cv',
             'properties': """{
   "enabled": true,
-  "url": "http://127.0.0.1:8080/nationalgrid/cv.csv"}
+  "url": "http://localhost:8080/nationalgrid/cv.csv"}
 """},
         'status_code': 303
     },
@@ -21921,66 +21921,5 @@ def virtual_bill(ds):
         'name': "DTC meter types",
         'path': '/dtc_meter_types',
         'status_code': 200
-    },
-
-    {
-
-        'name': "Supplier batch with MPAN cores",
-        'path': '/reports/111?batch_id=7&mpan_cores=22+1065+3921+534',
-        'status_code': 303
-    },
-    {
-        'name': "Supplier batch with MPAN cores",
-        'path': '/downloads',
-        'tries': {},
-        'regexes': [
-            r"00033_FINISHED_adminexamplecom_bill_check_batch_07-002\.csv"
-        ],
-        'status_code': 200
-    },
-    {
-        'name': "Supplier batch with MPAN cores",
-        'path': '/downloads/'
-        '00033_FINISHED_adminexamplecom_bill_check_batch_07-002.csv',
-        'status_code': 200
-    },
-
-    {
-        'name': "Error message if bill id invalid in bill check",
-        'path': '/reports/111?bill_id=0',
-        'status_code': 404
-    },
-
-    {
-        'name': "Supplier contract with more than one rate script",
-        'path': '/supplier_contracts/10/add_rate_script',
-        'method': 'post',
-        'data': {
-            'start_year': "2020",
-            'start_month': "02",
-            'start_day': "06",
-            'start_hour': "01",
-            'start_minute': "00",
-            'script': "{}"
-        },
-        'status_code': 303,
-        'regexes': [
-            r'/supplier_rate_scripts/53'
-        ],
-    },
-    {
-        'name': "Supplier contract",
-        'path': '/supplier_contracts/10',
-        'status_code': 200,
-        'regexes': [
-            r'<tr>\s*'
-            r'<th>Start Date</th>\s*'
-            r'<td>2000-01-03 00:00</td>\s*'
-            r'</tr>\s*'
-            r'<tr>\s*'
-            r'<th>Finish Date</th>\s*'
-            r'<td>Ongoing</td>\s*'
-            r'</tr>\s*'
-        ],
     },
 ]
