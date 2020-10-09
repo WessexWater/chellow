@@ -1,9 +1,12 @@
-from decimal import Decimal
-import decimal
 import csv
-from chellow.utils import utc_datetime_now, utc_datetime, HH
-from xlrd import open_workbook
+import decimal
+from decimal import Decimal
+
+from chellow.utils import HH, utc_datetime, utc_datetime_now
+
 from werkzeug.exceptions import BadRequest
+
+from xlrd import open_workbook
 
 
 def get_value(row, title_row, name, required=True):
@@ -143,13 +146,15 @@ def _parse_row(row, row_index, datemode, title_row):
         if v is not None and v != [None]:
             bd[k] = v
 
+    kwh = Decimal('0.00') if aahedc_kwh is None else aahedc_kwh
     net_gbp = Decimal('0.00')
     net_gbp += sum(v for k, v in bd.items() if k.endswith('-gbp'))
     vat_gbp = Decimal('0.00')
     reference = issue_date.strftime('%Y%m%dT%H%M') + '_' + str(row_index + 1)
 
     return {
-        'bill_type_code': 'N', 'kwh': aahedc_kwh,
+        'bill_type_code': 'N',
+        'kwh': kwh,
         'vat': Decimal('0.00'),
         'net': net_gbp,
         'gross': net_gbp + vat_gbp,
