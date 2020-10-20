@@ -9,6 +9,12 @@ from utils import match
 from werkzeug.exceptions import BadRequest
 
 
+def test_dtc_meter_types(client):
+    response = client.get('/dtc_meter_types')
+
+    match(response, 200, [])
+
+
 def test_supply_edit_post(mocker):
     """ When inserting an era that fails, make sure rollback is called.
     """
