@@ -1,25 +1,31 @@
 from collections import defaultdict
 from datetime import datetime as Datetime
-from pytz import utc, timezone
-from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, cast, Float
-from sqlalchemy.sql.expression import null, false
-from sqlalchemy.orm import joinedload, aliased
-from math import log10
-from werkzeug.exceptions import BadRequest
-from chellow.models import (
-    RateScript, Channel, Era, Tpr, MeasurementRequirement, RegisterRead, Bill,
-    BillType, ReadType, SiteEra, Supply, Source, HhDatum, Contract,
-    ClockInterval, Mtc, Llfc, hh_before, hh_after, Ssc)
-from chellow.utils import (
-    HH, hh_format, hh_max, hh_range, hh_min, utc_datetime, utc_datetime_now,
-    to_tz, to_ct, loads, PropDict, YEAR, ct_datetime, ct_datetime_now, to_utc,
-    c_months_u)
-import chellow.utils
-import chellow.bank_holidays
-from itertools import combinations, count
-from types import MappingProxyType
 from functools import lru_cache
+from itertools import combinations, count
+from math import log10
+from types import MappingProxyType
+
+import chellow.bank_holidays
+import chellow.utils
+from chellow.models import (
+    Bill, BillType, Channel, ClockInterval, Contract, Era, HhDatum, Llfc,
+    MeasurementRequirement, Mtc, Party, RateScript, ReadType, RegisterRead,
+    SiteEra, Source, Ssc, Supply, Tpr, hh_after, hh_before)
+from chellow.utils import (
+    HH, PropDict, YEAR, c_months_u, ct_datetime, ct_datetime_now, hh_format,
+    hh_max, hh_min, hh_range, loads, to_ct, to_tz, to_utc, utc_datetime,
+    utc_datetime_now)
+
+from dateutil.relativedelta import relativedelta
+
+from pytz import timezone, utc
+
+from sqlalchemy import Float, cast, or_
+from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.sql.expression import false, null
+
+from werkzeug.exceptions import BadRequest
+
 from zish import dumps
 
 
@@ -405,6 +411,9 @@ class DataSource():
         self.era_map_dc_contracts = self.era_map.get('dc_contracts', {})
         self.era_map_mop_contracts = self.era_map.get('mop_contracts', {})
         self.era_map_cops = self.era_map.get('cops', {})
+        self.era_map_mpan_cores = self.era_map.get('mpan_cores', {})
+        self.era_map_dnos = self.era_map.get('dnos', {})
+        self.era_map_gsp_groups = self.era_map.get('gsp_groups', {})
 
     def contract_func(self, contract, func_name):
         return contract_func(self.caches, contract, func_name)
@@ -703,18 +712,33 @@ class SupplySource(DataSource):
         self.supply = era.supply
         self.supply_name = self.supply.name
         self.source_code = self.supply.source.code
-        self.dno = self.supply.dno
-        self.dno_code = self.dno.dno_code
         self.era = era
+
         if self.supply.generator_type is None:
             self.generator_type_code = None
         else:
             self.generator_type_code = self.supply.generator_type.code
 
+        if era.supply.gsp_group.code in self.era_map_gsp_groups:
+            self.gsp_group_code = self.era_map_gsp_groups[
+                era.supply.gsp_group.code]
+        else:
+            self.gsp_group_code = era.supply.gsp_group.code
+
+        if self.supply.dno.dno_code in self.era_map_dnos:
+            self.dno_code = self.era_map_dnos[self.supply.dno.dno_code]
+            self.dno = Party.get_dno_by_code(sess, self.dno_code)
+        else:
+            self.dno = self.supply.dno
+            self.dno_code = self.dno.dno_code
+
         era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
         self.is_import = is_import
         if is_import:
-            self.mpan_core = era.imp_mpan_core
+            if era.imp_mpan_core in self.era_map_mpan_cores:
+                self.mpan_core = self.era_map_mpan_cores[era.imp_mpan_core]
+            else:
+                self.mpan_core = era.imp_mpan_core
 
             if era.imp_llfc.code in era_map_llfcs:
                 llfc_code = era_map_llfcs[era.imp_llfc.code]
@@ -734,6 +758,11 @@ class SupplySource(DataSource):
             else:
                 self.supplier_contract = era.imp_supplier_contract
         else:
+            if era.exp_mpan_core in self.era_map_mpan_cores:
+                self.mpan_core = self.era_map_mpan_cores[era.exp_mpan_core]
+            else:
+                self.mpan_core = era.exp_mpan_core
+
             if era.exp_llfc is None:
                 self.mpan_core = llfc_key = "new_export"
                 llfc_key = "new_export"
@@ -810,8 +839,6 @@ class SupplySource(DataSource):
             self.ssc = era.ssc
 
         self.ssc_code = None if self.ssc is None else self.ssc.code
-
-        self.gsp_group_code = self.supply.gsp_group.code
 
         self.measurement_type = era.meter_category
 
