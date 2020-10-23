@@ -21882,38 +21882,4 @@ def virtual_bill(ds):
             r'/g_batches/4'
         ]
     },
-    {
-        'name': "Test gas Engie EDI bill import",
-        'path': '/g_bill_imports',
-        'method': 'post',
-        'data': {
-            'g_batch_id': "4"
-        },
-        'files': {'import_file': 'test/gas/gas.engie.edi'},
-        'status_code': 303,
-        'regexes': [
-            r"/g_bill_imports/3"
-        ]
-    },
-
-    {
-        'name': "View bill import",
-        'path': '/g_bill_imports/3',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"successfully"
-        ]
-    },
-
-    {
-        'name': "View gas bill imported from Engie EDI",
-        'path': '/g_bills/7',
-        'status_code': 200,
-        'regexes': [
-            r'<tr>\s*'
-            r'<td>units</td>\s*'
-            r'<td>771</td>'
-        ]
-    },
 ]

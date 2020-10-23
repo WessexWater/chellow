@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-from setuptools import setup
-import versioneer
-import time
 import sys
-
+import time
 from os import path
+
+from setuptools import setup
+
+import versioneer
+
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -52,22 +54,22 @@ setup(
         ]
     },
     install_requires=[
-        'odio==0.0.16',
+        'odio==0.0.18',
         'pg8000==1.13.2',
         'Flask==1.1.2',
-        'SQLAlchemy==1.3.3',
+        'SQLAlchemy==1.3.20',
         'openpyxl==2.4.8',
-        'python-dateutil==2.4.2',
-        'pytz==2019.1',
-        'ftputil==3.2',
-        'requests==2.20.0',
+        'python-dateutil==2.8.1',
+        'pytz==2020.1',
+        'ftputil==4.0.0',
+        'requests==2.24.0',
         'waitress==1.4.3',
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',
         'pysftp==0.2.9',
-        'pympler==0.7',
-        'psutil==5.6.6',
-        'xlrd==0.9.4',
+        'pympler==0.9',
+        'psutil==5.7.2',
+        'xlrd==1.2.0',
         'zish==0.1.8'
     ],
     data_files=[('config', ['config/chellow.conf'])],

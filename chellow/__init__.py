@@ -208,7 +208,7 @@ def create_app(testing=False):
 
         return {'current_user': g.user, 'global_alerts': global_alerts}
 
-    @app.teardown_appcontext
+    @app.teardown_request
     def shutdown_session(exception=None):
         if getattr(g, 'sess', None) is not None:
             g.sess.close()

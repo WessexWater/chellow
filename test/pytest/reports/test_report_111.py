@@ -14,7 +14,7 @@ def test_ete_error_message_for_invalid_bill_id(client, sess):
     }
     response = client.get('/reports/111', data=data)
 
-    match(response, 404, [])
+    match(response, 404)
 
 
 # HTTP level tests
@@ -36,7 +36,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
     }
     response = client.get('/reports/111', data=data)
 
-    match(response, 303, [])
+    match(response, 303)
 
     expected_args = (
         batch_id,

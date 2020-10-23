@@ -42,7 +42,7 @@ from chellow.models import (
 from chellow.utils import (
     HH, PropDict, c_months_u, csv_make_val, ct_datetime_now, get_file_scripts,
     hh_after, hh_format, hh_max, hh_min, hh_range, parse_mpan_core, req_bool,
-    req_date, req_decimal, req_hh_date, req_int, req_str, req_zish,
+    req_date, req_decimal, req_file, req_hh_date, req_int, req_str, req_zish,
     send_response, to_ct, to_utc, utc_datetime, utc_datetime_now
 )
 
@@ -6034,13 +6034,10 @@ def g_bill_imports_post():
     try:
         g_batch_id = req_int('g_batch_id')
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
-        file_item = request.files["import_file"]
-        f = io.BytesIO(file_item.stream.read())
-        f.seek(0, os.SEEK_END)
-        file_size = f.tell()
-        f.seek(0)
+        file_item = req_file("import_file")
+        file_bytes = file_item.stream.read()
         imp_id = chellow.g_bill_import.start_bill_importer(
-            g.sess, g_batch.id, file_item.filename, file_size, f)
+            g.sess, g_batch.id, file_item.filename, file_bytes)
         return chellow_redirect("/g_bill_imports/" + str(imp_id), 303)
     except BadRequest as e:
         flash(e.description)

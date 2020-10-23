@@ -1,10 +1,13 @@
 import csv
 from decimal import Decimal, InvalidOperation
 from io import StringIO
-from chellow.utils import parse_hh_start
-from zish import loads, ZishLocationException
-from werkzeug.exceptions import BadRequest
 from itertools import count
+
+from chellow.utils import parse_hh_start
+
+from werkzeug.exceptions import BadRequest
+
+from zish import ZishLocationException, loads
 
 
 def get_str(row, idx, name, lineno):
@@ -34,9 +37,9 @@ def get_decimal(row, idx, name, lineno):
 
 
 class Parser():
-    def __init__(self, f):
+    def __init__(self, file_bytes):
         self.csv_reader = csv.reader(
-            StringIO(f.getvalue().decode('utf8', errors='ignore')),
+            StringIO(file_bytes.decode('utf8', errors='ignore')),
             skipinitialspace=True)
         self.titles = ','.join(next(self.csv_reader))
         self._line_number = None

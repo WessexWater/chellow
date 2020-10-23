@@ -1,6 +1,12 @@
-from chellow.models import Era, Mtc, Contract
+from chellow.models import Contract, Era, Mtc
 from chellow.utils import utc_datetime
+
 import pytest
+
+import sqlalchemy.exc
+
+from utils import insert_g_exit_zone
+
 from werkzeug.exceptions import BadRequest
 
 
@@ -164,3 +170,11 @@ def test_Contract_get_next_batch_details__no_suffix(mocker):
     ref, desc = Contract.get_next_batch_details(instance, sess)
     assert ref == batch_reference
     assert desc == batch_description
+
+
+def test_sql_insert_GExitZone(mocker, sess):
+    with pytest.raises(
+            sqlalchemy.exc.ProgrammingError,
+            match='null value in column "g_ldz_id" violates not-null '
+            'constraint'):
+        insert_g_exit_zone(sess)

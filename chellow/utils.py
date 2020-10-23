@@ -80,6 +80,13 @@ def req_decimal(name):
             f"Problem parsing the field {name} as a decimal: {e}.")
 
 
+def req_file(name):
+    try:
+        return request.files[name]
+    except KeyError:
+        raise BadRequest(f"The file {name} is required.")
+
+
 def prev_hh(dt):
     return None if dt is None else dt - HH
 

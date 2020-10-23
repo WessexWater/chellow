@@ -1,14 +1,18 @@
+import collections
+import datetime
+import importlib
 import threading
 import traceback
-import datetime
-import collections
-import pytz
-from werkzeug.exceptions import BadRequest
-import importlib
 from pkgutil import iter_modules
-import chellow
-from chellow.models import Session, GBatch, BillType, GReadType, GUnit, GSupply
 
+import chellow
+from chellow.models import (
+    BillType, GBatch, GReadType, GSupply, GUnit, Session,
+)
+
+import pytz
+
+from werkzeug.exceptions import BadRequest
 
 importer_id = 0
 import_lock = threading.Lock()
@@ -22,14 +26,14 @@ def find_parser_names():
 
 
 class GBillImporter(threading.Thread):
-    def __init__(self, sess, g_batch_id, file_name, file_size, f):
+    def __init__(self, sess, g_batch_id, file_name, file_bytes):
         threading.Thread.__init__(self)
         global importer_id
         self.importer_id = importer_id
         importer_id += 1
 
         self.g_batch_id = g_batch_id
-        if file_size == 0:
+        if len(file_bytes) == 0:
             raise BadRequest("File has zero length")
         imp_mod = None
         parts = file_name.split('.')[::-1]
@@ -47,7 +51,7 @@ class GBillImporter(threading.Thread):
                 "the following: " + find_parser_names() + ".")
 
         self.parser_name = imp_mod[0]
-        self.parser = imp_mod[1].Parser(f)
+        self.parser = imp_mod[1].Parser(file_bytes)
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
@@ -143,9 +147,9 @@ class GBillImporter(threading.Thread):
             return fields
 
 
-def start_bill_importer(sess, batch_id, file_name, file_size, f):
+def start_bill_importer(sess, batch_id, file_name, file_bytes):
     with import_lock:
-        bi = GBillImporter(sess, batch_id, file_name, file_size, f)
+        bi = GBillImporter(sess, batch_id, file_name, file_bytes)
         importers[bi.importer_id] = bi
         bi.start()
 

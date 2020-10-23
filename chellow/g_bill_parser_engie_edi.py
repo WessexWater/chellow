@@ -1,9 +1,10 @@
-from decimal import Decimal
-from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-from chellow.edi_lib import EdiParser, to_decimal, to_date
+from decimal import Decimal
+
+from chellow.edi_lib import parse_edi, to_date, to_decimal
 from chellow.utils import HH
-from io import StringIO
+
+from dateutil.relativedelta import relativedelta
 
 
 READ_TYPE_MAP = {
@@ -55,38 +56,35 @@ UNIT_MAP = {
 
 
 class Parser():
-    def __init__(self, f):
-        self.parser = EdiParser(
-            StringIO(str(f.read(), 'utf-8', errors='ignore')))
+    def __init__(self, file_bytes):
+        self.edi_str = str(file_bytes, 'utf-8', errors='ignore')
         self.line_number = None
 
     def make_raw_bills(self):
         raw_bills = []
         message_type = breakdown = raw_lines = None
-        for self.line_number, code in enumerate(self.parser):
+        for self.line_number, line, code, elements in parse_edi(self.edi_str):
             if code == "ADJ":
-                # seqa = self.parser.elements[0]
-                # seqb = self.parser.elements[1]
-                adjf = self.parser.elements[2]
+                adjf = elements['ADJF']
                 if adjf[0] == 'CV':
                     cv = Decimal(adjf[1]) / Decimal(100000)
 
             if code == "BCD":
-                ivdt = self.parser.elements[0]
+                ivdt = elements['IVDT']
                 issue_date = to_date(ivdt[0])
 
-                invn = self.parser.elements[2]
+                invn = elements['INVN']
                 reference = invn[0]
 
-                btcd = self.parser.elements[5]
+                btcd = elements['BTCD']
                 bill_type_code = btcd[0]
 
-                sumo = self.parser.elements[7]
+                sumo = elements['SUMO']
                 start_date = to_date(sumo[0])
                 finish_date = to_date(sumo[1]) + relativedelta(days=1) - HH
 
             elif code == "MHD":
-                typ = self.parser.elements[1]
+                typ = elements['TYPE']
                 message_type = typ[0]
                 if message_type == "UTLBIL":
                     issue_date = None
@@ -108,48 +106,41 @@ class Parser():
                     )
                     cv = None
             elif code == "CCD":
-                ccde = self.parser.elements[1]
+                ccde = elements['CCDE']
                 consumption_charge_indicator = ccde[0]
 
                 if consumption_charge_indicator == "1":
 
-                    # tmod = self.parser.elements[3]
-
-                    mtnr = self.parser.elements[4]
+                    mtnr = elements['MTNR']
                     msn = mtnr[0]
 
-                    mloc = self.parser.elements[5]
+                    mloc = elements['MLOC']
 
                     # Bug in EDI where MPRN missing in second CCD 1
                     if mprn is None:
                         mprn = mloc[0]
 
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
+                    prdt = elements['PRDT']
+                    pvdt = elements['PVDT']
 
                     pres_read_date = to_date(prdt[0])
                     prev_read_date = to_date(pvdt[0])
 
-                    prrd = self.parser.elements[9]
+                    prrd = elements['PRRD']
                     pres_read_value = Decimal(prrd[0])
                     pres_read_type = READ_TYPE_MAP[prrd[1]]
                     prev_read_value = Decimal(prrd[2])
                     prev_read_type = READ_TYPE_MAP[prrd[3]]
 
-                    # cons = self.parser.elements[10]
-
-                    conb = self.parser.elements[11]
+                    conb = elements['CONB']
                     unit = UNIT_MAP[conb[1]]
                     breakdown['units_consumed'] += \
                         to_decimal(conb) / Decimal('1000')
 
-                    adjf = self.parser.elements[12]
+                    adjf = elements['ADJF']
                     correction_factor = Decimal(adjf[1]) / Decimal(100000)
 
-                    # cona = self.parser.elements[13]
-                    # bpri = self.parser.elements[14]
-
-                    nuct = self.parser.elements[15]
+                    nuct = elements['NUCT']
 
                     kwh += to_decimal(nuct) / Decimal('1000')
 
@@ -169,152 +160,111 @@ class Parser():
 
                 elif consumption_charge_indicator == "2":
                     ccde_supplier_code = ccde[2]
-                    tcod = self.parser.elements[2]
+                    tcod = elements['TCOD']
 
                     tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
 
-                    # tmod = self.parser.elements[3]
+                    mtnr = elements['MTNR']
+                    mloc = elements['MLOC']
+                    prdt = elements['PRDT']
+                    pvdt = elements['PVDT']
+                    prrd = elements['PRRD']
+                    conb = elements['CONB']
+                    adjf = elements['ADJF']
 
-                    mtnr = self.parser.elements[4]
-                    mloc = self.parser.elements[5]
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
-                    # ndrp = self.parser.elements[8]
-                    prrd = self.parser.elements[9]
-                    # cons = self.parser.elements[10]
-                    conb = self.parser.elements[11]
-                    adjf = self.parser.elements[12]
-                    # cona = self.parser.elements[13]
-
-                    bpri = self.parser.elements[14]
+                    bpri = elements['BPRI']
                     rate_key = tpref + '_rate'
                     if rate_key not in breakdown:
                         breakdown[rate_key] = set()
                     rate = Decimal(bpri[0]) / Decimal('10000000')
                     breakdown[rate_key].add(rate)
 
-                    nuct = self.parser.elements[15]
-
-                    # csdt = self.parser.elements[16]
-                    # cedt = self.parser.elements[17]
-                    # cppu = self.parser.elements[18]
+                    nuct = elements['NUCT']
 
                     try:
-                        ctot = self.parser.elements[19]
+                        ctot = elements['CTOT']
                         breakdown[tpref + '_gbp'] += \
                             to_decimal(ctot) / Decimal('100')
 
-                        # tsup = self.parser.elements[20]
-                        # vatc = self.parser.elements[21]
-                        # vatp = self.parser.elements[22]
-                        # msad = self.parser.elements[23]
                         if ccde_supplier_code == 'PPK':
                             key = tpref + '_kwh'
                         elif ccde_supplier_code == 'PPD':
                             key = tpref + '_days'
 
                         breakdown[key] += to_decimal(nuct) / Decimal('1000')
-                    except IndexError:
+                    except KeyError:
                         pass
 
                 elif consumption_charge_indicator == '3':
                     ccde_supplier_code = ccde[2]
-                    tcod = self.parser.elements[2]
+                    tcod = elements['TCOD']
 
                     tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
 
-                    # tmod = self.parser.elements[3]
-
-                    mtnr = self.parser.elements[4]
-                    mloc = self.parser.elements[5]
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
-                    # ndrp = self.parser.elements[8]
-                    prrd = self.parser.elements[9]
-                    # cons = self.parser.elements[10]
-                    conb = self.parser.elements[11]
-                    adjf = self.parser.elements[12]
-                    # cona = self.parser.elements[13]
-
-                    bpri = self.parser.elements[14]
+                    mtnr = elements['MTNR']
+                    mloc = elements['MLOC']
+                    prdt = elements['PRDT']
+                    pvdt = elements['PVDT']
+                    prrd = elements['PRRD']
+                    conb = elements['CONB']
+                    adjf = elements['ADJF']
+                    bpri = elements['BPRI']
                     rate_key = tpref + '_rate'
                     if rate_key not in breakdown:
                         breakdown[rate_key] = set()
                     rate = Decimal(bpri[0]) / Decimal('10000000')
                     breakdown[rate_key].add(rate)
 
-                    nuct = self.parser.elements[15]
-
-                    # csdt = self.parser.elements[16]
-                    # cedt = self.parser.elements[17]
-                    # cppu = self.parser.elements[18]
+                    nuct = elements['NUCT']
 
                     try:
-                        ctot = self.parser.elements[19]
+                        ctot = elements['CTOT']
                         breakdown[tpref + '_gbp'] += \
                             to_decimal(ctot) / Decimal('100')
 
-                        # tsup = self.parser.elements[20]
-                        # vatc = self.parser.elements[21]
-                        # vatp = self.parser.elements[22]
-                        # msad = self.parser.elements[23]
                         if ccde_supplier_code == 'PPK':
                             key = tpref + '_kwh'
                         elif ccde_supplier_code == 'PPD':
                             key = tpref + '_days'
 
                         breakdown[key] += to_decimal(nuct) / Decimal('1000')
-                    except IndexError:
+                    except KeyError:
                         pass
 
                 elif consumption_charge_indicator == "4":
                     ccde_supplier_code = ccde[2]
-                    tcod = self.parser.elements[2]
+                    tcod = elements['TCOD']
 
                     tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
 
-                    # tmod = self.parser.elements[3]
-
-                    mtnr = self.parser.elements[4]
-                    mloc = self.parser.elements[5]
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
-                    # ndrp = self.parser.elements[8]
-                    prrd = self.parser.elements[9]
-                    # cons = self.parser.elements[10]
-                    conb = self.parser.elements[11]
-                    adjf = self.parser.elements[12]
-                    # cona = self.parser.elements[13]
-
-                    bpri = self.parser.elements[14]
+                    mtnr = elements['MTNR']
+                    mloc = elements['MLOC']
+                    prdt = elements['PRDT']
+                    pvdt = elements['PVDT']
+                    prrd = elements['PRRD']
+                    conb = elements['CONB']
+                    adjf = elements['ADJF']
+                    bpri = elements['BPRI']
                     rate_key = tpref + '_rate'
                     if rate_key not in breakdown:
                         breakdown[rate_key] = set()
                     rate = Decimal(bpri[0]) / Decimal('10000000')
                     breakdown[rate_key].add(rate)
 
-                    nuct = self.parser.elements[15]
-
-                    # csdt = self.parser.elements[16]
-                    # cedt = self.parser.elements[17]
-                    # cppu = self.parser.elements[18]
+                    nuct = elements['NUCT']
 
                     try:
-                        ctot = self.parser.elements[19]
+                        ctot = elements['CTOT']
                         breakdown[tpref + '_gbp'] += \
                             to_decimal(ctot) / Decimal('100')
 
-                        # tsup = self.parser.elements[20]
-                        # vatc = self.parser.elements[21]
-                        # vatp = self.parser.elements[22]
-                        # msad = self.parser.elements[23]
                         if ccde_supplier_code == 'PPK':
                             key = tpref + '_kwh'
                         elif ccde_supplier_code == 'PPD':
                             key = tpref + '_days'
 
                         breakdown[key] += to_decimal(nuct) / Decimal('1000')
-                    except IndexError:
+                    except KeyError:
                         pass
 
             elif code == "MTR":
@@ -346,19 +296,19 @@ class Parser():
                     )
 
             elif code == "VAT":
-                vatp = self.parser.elements[4]
+                vatp = elements['VATP']
                 if 'vat_rate' not in breakdown:
                     breakdown['vat_rate'] = set()
                 breakdown['vat_rate'].add(to_decimal(vatp) / Decimal(100000))
 
-                uvla = self.parser.elements[5]
+                uvla = elements['UVLA']
                 net += to_decimal(uvla) / Decimal('100')
-                uvtt = self.parser.elements[6]
+                uvtt = elements['UVTT']
                 vat += to_decimal(uvtt) / Decimal('100')
-                ucsi = self.parser.elements[7]
+                ucsi = elements['UCSI']
                 gross += to_decimal(ucsi) / Decimal('100')
 
             if raw_lines is not None:
-                raw_lines.append(self.parser.line)
+                raw_lines.append(line)
 
         return raw_bills

@@ -1,7 +1,9 @@
-from decimal import Decimal
 from datetime import datetime as Datetime
+from decimal import Decimal
+
+from chellow.utils import to_ct, to_utc
+
 from werkzeug.exceptions import BadRequest
-from chellow.utils import to_utc, to_ct
 
 
 class EdiParser():
@@ -26,6 +28,27 @@ class EdiParser():
         return self.line[:3]
 
 
+def parse_edi(edi_str):
+    line_number = 0
+    for i, raw_line in enumerate(edi_str.splitlines()):
+        if raw_line[-1] != "'":
+            raise BadRequest(
+                f"The parser expects each line to end with a ', but line "
+                f"number {line_number} doesn't: {raw_line}.")
+
+        line = raw_line.strip()
+        line_number += 1
+        code = line[:3]
+
+        els = [el.split(':') for el in line[4:-1].split("+")]
+
+        segment_name = code + els[1][0] if code == 'CCD' else code
+        elem_codes = [m['code'] for m in SEGMENTS[segment_name]['elements']]
+        elements = dict(zip(elem_codes, els))
+
+        yield line_number, line, code, elements
+
+
 def to_decimal(components):
     result = Decimal(components[0])
     if len(components) > 1 and components[-1] == "R":
@@ -42,6 +65,34 @@ def to_int(component):
 
 
 SEGMENTS = {
+    'ADJ': {
+        'description': "ADDITIONAL ADJUSTMENTS",
+        'elements': [
+            {
+                'code': 'SEQA',
+                'description': "First Level Sequence Number",
+                'components': [
+                    ('First Level Sequence Number', 'X'),
+                ]
+            },
+            {
+                'code': 'SEQB',
+                'description': "Second Level Sequence Number",
+                'components': [
+                    ('Second Level Sequence Number', 'X'),
+                ]
+            },
+            {
+                'code': 'ADJF',
+                'description': "Adjustment Factor",
+                'components': [
+                    ('Adjustment Factor Code', 'X'),
+                    ('Adjustment Factor Value', 'X'),
+                    ('Negative Indicator', 'X'),
+                ]
+            },
+        ]
+    },
     'BTL': {
         'description': "BILL TRAILER",
         'elements': [

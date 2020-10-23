@@ -4074,7 +4074,8 @@ class GDn(Base, PersistentClass):
 class GLdz(Base, PersistentClass):
     __tablename__ = 'g_ldz'
     id = Column('id', Integer, primary_key=True)
-    g_dn_id = Column(Integer, ForeignKey('g_dn.id'), index=True)
+    g_dn_id = Column(
+        Integer, ForeignKey('g_dn.id'), index=True, nullable=False)
     code = Column(String, nullable=False, index=True, unique=True)
     g_exit_zones = relationship("GExitZone", backref="g_ldz")
 
@@ -4094,7 +4095,8 @@ class GLdz(Base, PersistentClass):
 class GExitZone(Base, PersistentClass):
     __tablename__ = 'g_exit_zone'
     id = Column('id', Integer, primary_key=True)
-    g_ldz_id = Column(Integer, ForeignKey('g_ldz.id'), index=True)
+    g_ldz_id = Column(
+        Integer, ForeignKey('g_ldz.id'), index=True, nullable=False)
     code = Column(String, nullable=False, index=True, unique=True)
 
     def __init__(self, g_ldz, code):
@@ -4892,6 +4894,11 @@ def db_upgrade_21_to_22(sess, root_path):
         sess.add(ReadType(code, desc))
 
 
+def db_upgrade_22_to_23(sess, root_path):
+    sess.execute("alter table g_ldz alter g_dn_id set not null;")
+    sess.execute("alter table g_exit_zone alter g_ldz_id set not null;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
@@ -4899,7 +4906,7 @@ upgrade_funcs = [
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
     db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20,
-    db_upgrade_20_to_21, db_upgrade_21_to_22]
+    db_upgrade_20_to_21, db_upgrade_21_to_22, db_upgrade_22_to_23]
 
 
 def db_upgrade(root_path):
