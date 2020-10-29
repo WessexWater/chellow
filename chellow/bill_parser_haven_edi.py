@@ -454,7 +454,12 @@ def _process_MTR(elements, headers):
     breakdown = headers['breakdown']
     for bill_el in bill_elements:
         eln_gbp, eln_rate, eln_cons = bill_el.titles
-        breakdown[eln_gbp] = bill_el.gbp
+
+        try:
+            breakdown[eln_gbp] += bill_el.gbp
+        except KeyError:
+            breakdown[eln_gbp] = bill_el.gbp
+
         rate = bill_el.rate
         if eln_rate is not None and rate is not None:
             try:
@@ -466,7 +471,10 @@ def _process_MTR(elements, headers):
 
         cons = bill_el.cons
         if eln_cons is not None and cons is not None:
-            breakdown[eln_cons] = cons
+            try:
+                breakdown[eln_cons] += cons
+            except KeyError:
+                breakdown[eln_cons] = cons
 
     return {
         'kwh': headers['kwh'],

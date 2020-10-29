@@ -133,6 +133,93 @@ def test_process_MTR_UTLBIL(mocker):
     assert bill == expected_bill
 
 
+def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
+    MockSupply = mocker.patch(
+        'chellow.bill_parser_haven_edi.Supply', autospec=True)
+    mock_supply = mocker.Mock()
+    MockSupply.get_by_mpan_core.return_value = mock_supply
+    mock_era = mocker.Mock()
+    mock_era.ssc.code = '0244'
+    gbp = '10.31'
+    cons = '113'
+    mock_supply.find_era_at.return_value = mock_era
+    elements = {}
+    headers = {
+        'sess': mocker.Mock(),
+        'message_type': "UTLBIL",
+        'breakdown': {},
+        'bill_elements': [
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp), rate=Decimal('0.0001'),
+                cons=Decimal(cons), titles=None, desc='Night'),
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp), rate=Decimal('0.0001'),
+                cons=Decimal(cons), titles=None, desc='Night')
+        ],
+        'mpan_core': ["0850"],
+        'kwh': 8,
+        'reference': 'a',
+        'issue_date': 'd',
+        'account': 'acc',
+        'start_date': 'd',
+        'finish_date': 'd',
+        'net': 0,
+        'vat': 0,
+        'gross': 0,
+        'reads': [
+            {
+                'msn': 'hgkh',
+                'mpan': '      ',
+                'coefficient': Decimal('0.00001'),
+                'units': 'kWh',
+                'tpr_code': 'Day',
+                'prev_date': utc_datetime(2020, 3, 31, 22, 30),
+                'prev_value': Decimal('1'),
+                'prev_type_code': 'N',
+                'pres_date': utc_datetime(2020, 3, 1, 23, 30),
+                'pres_value': Decimal('0'),
+                'pres_type_code': 'N'
+            },
+        ],
+        'bill_type_code': 'N',
+    }
+    expected_bill = {
+        'kwh': 8,
+        'reference': 'a',
+        'mpan_core': ['0850'],
+        'issue_date': 'd',
+        'account': 'acc',
+        'start_date': 'd',
+        'finish_date': 'd',
+        'net': 0,
+        'vat': 0,
+        'gross': 0,
+        'breakdown': {
+            '00206-gbp': Decimal(gbp) * 2,
+            '00206-rate': {Decimal('0.0001')},
+            '00206-kwh': Decimal(cons) * 2
+        },
+        'reads': [
+            {
+                'msn': 'hgkh',
+                'mpan': '      ',
+                'coefficient': Decimal('0.00001'),
+                'units': 'kWh',
+                'tpr_code': '00040',
+                'prev_date': utc_datetime(2020, 3, 31, 22, 30),
+                'prev_value': Decimal('1'),
+                'prev_type_code': 'N',
+                'pres_date': utc_datetime(2020, 3, 1, 23, 30),
+                'pres_value': Decimal('0'),
+                'pres_type_code': 'N'
+            }
+        ],
+        'bill_type_code': 'N'
+    }
+    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    assert bill == expected_bill
+
+
 def test_process_MTR_UTLBIL_unmetered(mocker):
     MockSupply = mocker.patch(
         'chellow.bill_parser_haven_edi.Supply', autospec=True)
