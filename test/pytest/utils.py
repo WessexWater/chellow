@@ -354,6 +354,19 @@ def insert_g_read_type(sess, code, description):
     return next(results)[0]
 
 
+def select_g_read_type_id(sess, code='M3'):
+    params = {
+        'code': code,
+    }
+
+    results = sess.execute(
+        "SELECT id from g_read_type where code = :code", params)
+    try:
+        return next(results)[0]
+    except StopIteration:
+        raise Exception(f"There isn't a g_read_type with code {code}.")
+
+
 def insert_g_batch(
         sess, g_contract_id=None, reference="005", description="Autumn"):
     params = {
@@ -400,4 +413,38 @@ def insert_g_bill(
         "(DEFAULT, :g_batch_id, :g_supply_id, :bill_type_id, :reference, "
         ":account, :issue_date, :start_date, :finish_date, :kwh, :net, :vat, "
         ":gross, :raw_lines, :breakdown) RETURNING id", params)
+    return next(results)[0]
+
+
+def insert_g_read(
+        sess, g_bill_id=None, msn="hgjsdehtg", g_unit_code='M3',
+        correction_factor=1, calorific_value=1, prev_date='2020-01-01',
+        prev_value=208, prev_type_code='E', pres_date='2020-01-31 23:30',
+        pres_value=509, pres_type_code='A'):
+
+    g_unit_id = select_g_unit_id(sess, code=g_unit_code)
+    prev_type_id = select_g_read_type_id(sess, code=prev_type_code)
+    pres_type_id = select_g_read_type_id(sess, code=pres_type_code)
+
+    params = {
+        'g_bill_id': g_bill_id,
+        'msn': msn,
+        'g_unit_id': g_unit_id,
+        'correction_factor': correction_factor,
+        'calorific_value': calorific_value,
+        'prev_date': prev_date,
+        'prev_value': prev_value,
+        'prev_type_id': prev_type_id,
+        'pres_date': pres_date,
+        'pres_value': pres_value,
+        'pres_type_id': pres_type_id,
+    }
+
+    results = sess.execute(
+        "INSERT INTO g_register_read (id, g_bill_id, msn, g_unit_id, "
+        "correction_factor, calorific_value, prev_date, prev_value, "
+        "prev_type_id, pres_date, pres_value, pres_type_id) VALUES "
+        "(DEFAULT, :g_bill_id, :msn, :g_unit_id, :correction_factor, "
+        ":calorific_value, :prev_date, :prev_value, :prev_type_id, "
+        ":pres_date, :pres_value, :pres_type_id) RETURNING id", params)
     return next(results)[0]

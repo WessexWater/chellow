@@ -149,6 +149,12 @@ class GReadType(Base, PersistentClass):
         self.description = description
 
     @staticmethod
+    def insert(sess, code, description):
+        g_read_type = GReadType(code, description)
+        sess.add(g_read_type)
+        return g_read_type
+
+    @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
         typ = sess.query(GReadType).filter_by(code=code).first()
@@ -594,8 +600,13 @@ class BillType(Base, PersistentClass):
     def get_by_code(sess, code):
         bill_type = sess.query(BillType).filter(BillType.code == code).first()
         if bill_type is None:
-            raise BadRequest(
-                "The bill type with code " + code + " can't be found.")
+            raise BadRequest(f"The bill type with code {code} can't be found.")
+        return bill_type
+
+    @staticmethod
+    def insert(sess, code, description):
+        bill_type = BillType(code, description)
+        sess.add(bill_type)
         return bill_type
 
     __tablename__ = 'bill_type'
@@ -1340,10 +1351,10 @@ class Site(Base, PersistentClass):
         return supply
 
     def insert_g_supply(
-            self, sess, mprn, supply_name, g_ldz, start_date, finish_date, msn,
-            correction_factor, g_unit, g_contract, account,
+            self, sess, mprn, supply_name, g_exit_zone, start_date,
+            finish_date, msn, correction_factor, g_unit, g_contract, account,
             g_reading_frequency):
-        g_supply = GSupply(mprn, supply_name, g_ldz, '')
+        g_supply = GSupply(mprn, supply_name, g_exit_zone, '')
 
         try:
             sess.add(g_supply)
@@ -3335,8 +3346,7 @@ class GEra(Base, PersistentClass):
         self.g_reading_frequency = g_reading_frequency
 
         if g_contract.start_g_rate_script.start_date > start_date:
-            raise BadRequest(
-                "The contract starts after the era.")
+            raise BadRequest("The contract starts after the era.")
 
         if hh_before(g_contract.finish_g_rate_script.finish_date, finish_date):
             raise BadRequest("The contract finishes before the era.")
@@ -3709,12 +3719,18 @@ class GReadingFrequency(Base, PersistentClass):
         self.description = description
 
     @staticmethod
+    def insert(sess, code, description):
+        g_reading_frequency = GReadingFrequency(code, description)
+        sess.add(g_reading_frequency)
+        return g_reading_frequency
+
+    @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
         freq = sess.query(GReadingFrequency).filter_by(code=code).first()
         if freq is None:
             raise BadRequest(
-                "The Reading Frequency with code " + code + " can't be found.")
+                f"The Reading Frequency with code {code} can't be found.")
         return freq
 
 
@@ -4042,12 +4058,17 @@ class GUnit(Base, PersistentClass):
         self.factor = factor
 
     @staticmethod
+    def insert(sess, code, description, factor):
+        g_unit = GUnit(code, description, factor)
+        sess.add(g_unit)
+        return g_unit
+
+    @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
         typ = sess.query(GUnit).filter_by(code=code).first()
         if typ is None:
-            raise BadRequest(
-                "The gas units with code " + code + " can't be found.")
+            raise BadRequest(f"The gas unit with code {code} can't be found.")
         return typ
 
 
@@ -4061,6 +4082,17 @@ class GDn(Base, PersistentClass):
     def __init__(self, code, name):
         self.code = code
         self.name = name
+
+    def insert_g_ldz(self, sess, code):
+        g_ldz = GLdz(self, code)
+        sess.add(g_ldz)
+        return g_ldz
+
+    @staticmethod
+    def insert(sess, code, name):
+        g_dn = GDn(code, name)
+        sess.add(g_dn)
+        return g_dn
 
     @staticmethod
     def get_by_code(sess, code):
@@ -4082,6 +4114,11 @@ class GLdz(Base, PersistentClass):
     def __init__(self, g_dn, code):
         self.g_dn = g_dn
         self.code = code
+
+    def insert_g_exit_zone(self, sess, code):
+        g_exit_zone = GExitZone(self, code)
+        sess.add(g_exit_zone)
+        return g_exit_zone
 
     @staticmethod
     def get_by_code(sess, code):
@@ -4120,6 +4157,41 @@ def read_file(pth, fname, attr):
         return loads(contents)
     else:
         return {attr: loads(contents)}
+
+
+def insert_g_units(sess):
+    for code, desc, factor_str in (
+            ("MCUF", "Thousands of cubic feet", '28.3'),
+            ("HCUF", "Hundreds of cubic feet", '2.83'),
+            ("TCUF", "Tens of cubic feet", '0.283'),
+            ("OCUF", "One cubic foot", '0.0283'),
+            ("M3", "Cubic metres", '1'),
+            ("HM3", "Hundreds of cubic metres", '100'),
+            ("TM3", "Tens of cubic metres", '10'),
+            ("NM3", "Tenths of cubic metres", '0.1')):
+        GUnit.insert(sess, code, desc, Decimal(factor_str))
+
+
+def insert_g_reading_frequencies(sess):
+    for code, description in (('A', "Annual"), ('M', "Monthly")):
+        GReadingFrequency.insert(sess, code, description)
+
+
+def insert_bill_types(sess):
+    for code, desc in (
+            ("F", "Final"),
+            ("N", "Normal"),
+            ("W", "Withdrawn")):
+        BillType.insert(sess, code, desc)
+
+
+def insert_g_read_types(sess):
+    for code, desc in (
+            ("A", "Actual"),
+            ("C", "Customer"),
+            ("E", "Estimated"),
+            ("S", "Deemed read")):
+        GReadType.insert(sess, code, desc)
 
 
 def db_init(sess, root_path):
@@ -4199,11 +4271,7 @@ def db_init(sess, root_path):
         sess.add(Cop(code, desc))
     sess.commit()
 
-    for code, desc in (
-            ("F", "Final"),
-            ("N", "Normal"),
-            ("W", "Withdrawn")):
-        sess.add(BillType(code, desc))
+    insert_bill_types(sess)
     sess.commit()
 
     dbapi_conn = sess.connection().connection.connection
@@ -4333,24 +4401,10 @@ def db_init(sess, root_path):
             contract.finish_rate_script = scripts[-1]
     sess.commit()
 
-    for code, desc in (
-            ("A", "Actual"),
-            ("C", "Customer"),
-            ("E", "Estimated"),
-            ("S", "Deemed read")):
-        sess.add(GReadType(code, desc))
+    insert_g_read_types(sess)
     sess.commit()
 
-    for code, desc, factor_str in (
-            ("MCUF", "Thousands of cubic feet", '28.3'),
-            ("HCUF", "Hundreds of cubic feet", '2.83'),
-            ("TCUF", "Tens of cubic feet", '0.283'),
-            ("OCUF", "One cubic foot", '0.0283'),
-            ("M3", "Cubic metres", '1'),
-            ("HM3", "Hundreds of cubic metres", '100'),
-            ("TM3", "Tens of cubic metres", '10'),
-            ("NM3", "Tenths of cubic metres", '0.1')):
-        sess.add(GUnit(code, desc, Decimal(factor_str)))
+    insert_g_units(sess)
     sess.commit()
 
     for code, name in (
@@ -4362,7 +4416,7 @@ def db_init(sess, root_path):
             ('SO', "Southern"),
             ('NO', "Northern"),
             ('WW', "Wales & West")):
-        sess.add(GDn(code, name))
+        GDn.insert(sess, code, name)
     sess.commit()
     sess.flush()
 
@@ -4405,11 +4459,9 @@ def db_init(sess, root_path):
     for dn_code, dn in sorted(dns.items()):
         g_dn = GDn.get_by_code(sess, dn_code)
         for ldz_code, exit_zone_codes in sorted(dn.items()):
-            g_ldz = GLdz(g_dn, ldz_code)
-            sess.add(g_ldz)
+            g_ldz = g_dn.insert_g_ldz(sess, ldz_code)
             for exit_zone_code in exit_zone_codes:
-                g_exit_zone = GExitZone(g_ldz, exit_zone_code)
-                sess.add(g_exit_zone)
+                g_ldz.insert_g_exit_zone(sess, exit_zone_code)
     sess.commit()
 
     for code, description in (('A', "Annual"), ('M', "Monthly")):
@@ -4717,8 +4769,7 @@ def db_upgrade_12_to_13(sess, root_path):
         g_ldz = GLdz(ldz_code)
         sess.add(g_ldz)
         for exit_zone_code in exit_zone_codes:
-            g_exit_zone = GExitZone(g_ldz, exit_zone_code)
-            sess.add(g_exit_zone)
+            g_ldz.insert_exit_zone(sess, exit_zone_code)
     sess.flush()
     sess.execute(
         "alter table g_supply "

@@ -1,18 +1,17 @@
 from datetime import datetime as Datetime
+from decimal import Decimal
 from io import BytesIO
 
 import chellow.views
-from chellow.models import Contract
+from chellow.models import (
+    BillType, Contract, GContract, GDn, GReadType, GReadingFrequency, GUnit,
+    Site, insert_bill_types, insert_g_read_types, insert_g_reading_frequencies,
+    insert_g_units)
 from chellow.utils import utc_datetime
 
 from flask import g
 
-from utils import (
-    insert_bill_types, insert_g_batch, insert_g_bill, insert_g_contract,
-    insert_g_dn, insert_g_era, insert_g_exit_zone, insert_g_ldz,
-    insert_g_read_types, insert_g_reading_frequencies, insert_g_supply,
-    insert_g_units, match,
-)
+from utils import match
 
 from werkzeug.exceptions import BadRequest
 
@@ -193,23 +192,36 @@ def test_supplier_contract_add_rate_script(client, sess):
 
 
 def test_g_bill_get(client, sess):
-    g_dn_id = insert_g_dn(sess)
-    g_ldz_id = insert_g_ldz(sess, g_dn_id=g_dn_id)
-    g_exit_zone_id = insert_g_exit_zone(sess, g_ldz_id)
-    g_supply_id = insert_g_supply(sess, g_exit_zone_id=g_exit_zone_id)
-    g_contract_id = insert_g_contract(sess)
-    g_batch_id = insert_g_batch(sess, g_contract_id=g_contract_id)
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_supply = site.insert_g_supply(
+        sess, '87614362', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
     breakdown = {
         'units_consumed': 771
     }
-    g_bill_id = insert_g_bill(
-        sess, g_batch_id=g_batch_id, g_supply_id=g_supply_id,
-        breakdown=breakdown)
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, 'N')
+    g_bill = g_batch.insert_g_bill(
+        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
+        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
+        Decimal('1.20'), Decimal('14.52'), '', breakdown)
 
     sess.commit()
 
-    response = client.get(f'/g_bills/{g_bill_id}')
+    response = client.get(f'/g_bills/{g_bill.id}')
 
     regexes = [
         r'<tr>\s*'
@@ -277,18 +289,23 @@ def test_g_bill_imports_post_full(mocker, app, client, sess):
         "END=288'",
     )
 
-    g_dn_id = insert_g_dn(sess)
-    g_ldz_id = insert_g_ldz(sess, g_dn_id=g_dn_id)
-    g_exit_zone_id = insert_g_exit_zone(sess, g_ldz_id)
-    g_contract_id = insert_g_contract(sess)
-    g_batch_id = insert_g_batch(sess, g_contract_id=g_contract_id)
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     insert_bill_types(sess)
-    g_supply_id = insert_g_supply(
-        sess, mprn='87614362', g_exit_zone_id=g_exit_zone_id)
     insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
     insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    site.insert_g_supply(
+        sess, '87614362', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
     insert_g_read_types(sess)
-    insert_g_era(sess, g_supply_id=g_supply_id, g_contract_id=g_contract_id)
     sess.commit()
 
     file_name = 'gas.engie.edi'
@@ -296,7 +313,7 @@ def test_g_bill_imports_post_full(mocker, app, client, sess):
     f = BytesIO(file_bytes)
 
     data = {
-        'g_batch_id': str(g_batch_id),
+        'g_batch_id': str(g_batch.id),
         'import_file': (f, file_name)
     }
 
@@ -306,15 +323,20 @@ def test_g_bill_imports_post_full(mocker, app, client, sess):
 
     response = client.get('/g_bill_imports/0')
 
-    match(response, 200, r"successfully")
-
+    match(
+        response, 200,
+        r"All the bills have been successfully loaded and attached to the "
+        r"batch.")
+    sess.rollback()
     res = sess.execute("select breakdown from g_bill where id = 2")
     assert '"units_consumed": 771,' in next(res)[0]
 
 
 def test_g_bill_imports_post(mocker, app, client, sess):
-    g_contract_id = insert_g_contract(sess)
-    g_batch_id = insert_g_batch(sess, g_contract_id=g_contract_id)
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2019, 1, 1),
+        utc_datetime(2019, 2, 28, 23, 30), {})
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     sess.commit()
 
     file_name = 'gas.engie.edi'
@@ -322,7 +344,7 @@ def test_g_bill_imports_post(mocker, app, client, sess):
     f = BytesIO(file_bytes)
 
     data = {
-        'g_batch_id': str(g_batch_id),
+        'g_batch_id': str(g_batch.id),
         'import_file': (f, file_name)
     }
 
@@ -334,6 +356,181 @@ def test_g_bill_imports_post(mocker, app, client, sess):
 
     response = client.post('/g_bill_imports', data=data)
     mock_start_importer.assert_called_with(
-        g.sess, g_batch_id, file_name, file_bytes)
+        g.sess, g_batch.id, file_name, file_bytes)
 
     match(response, 303, '/g_bill_imports/3')
+
+
+def test_g_batch_add_post(client, sess):
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2019, 1, 1),
+        utc_datetime(2019, 2, 28, 23, 30), {})
+    sess.commit()
+
+    data = {
+        'reference': 'engie_edi',
+        'description': 'Engie EDI'
+    }
+
+    response = client.post(
+        f'/g_contracts/{g_contract.id}/add_batch', data=data)
+
+    match(response, 303, '/g_batches/1')
+
+
+def g_supply_note_add_get(client, sess):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', 'East of England')
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_supply = site.insert_g_supply(
+        sess, '7y94u5', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    sess.commit()
+
+    response = client.get(f'/g_supplies/{g_supply.id}/notes/add')
+
+    match(response, 200)
+
+
+def g_supply_notes_get(client, sess):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', 'East of England')
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_supply = site.insert_g_supply(
+        sess, '7y94u5', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+
+    response = client.get(f'/g_supplies/{g_supply.id}/notes')
+
+    match(response, 200)
+
+
+def test_g_read_edit_post_delete(sess, client):
+    for r in sess.execute("select * from g_read_type"):
+        print(r)
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', 'East of England')
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_supply = site.insert_g_supply(
+        sess, '7y94u5', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, 'N')
+    g_bill = g_batch.insert_g_bill(
+        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
+        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
+        Decimal('1.20'), Decimal('14.52'), '', {})
+    insert_g_read_types(sess)
+    g_read_type_A = GReadType.get_by_code(sess, 'A')
+    g_read = g_bill.insert_g_read(
+        sess, 'ghu5438gt', g_unit_M3, 1, 37, Decimal(800),
+        utc_datetime(2020, 1, 1), g_read_type_A, Decimal(900),
+        utc_datetime(2020, 1, 31), g_read_type_A)
+    sess.commit()
+
+    data = {
+        'delete': 'Delete',
+    }
+
+    response = client.post(f'/g_reads/{g_read.id}/edit', data=data)
+
+    match(response, 303, f'/g_bills/{g_bill.id}')
+
+
+def test_g_rate_script_edit_post_delete(sess, client):
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2019, 1, 1),
+        utc_datetime(2019, 2, 28, 23, 30), {})
+    g_rate_script = g_contract.insert_g_rate_script(
+        sess, utc_datetime(2019, 2, 1), {})
+    sess.commit()
+
+    data = {
+        'delete': 'Delete',
+    }
+
+    response = client.post(
+        f'/g_rate_scripts/{g_rate_script.id}/edit',
+        data=data)
+
+    match(response, 303, f'/g_contracts/{g_contract.id}')
+
+
+def test_g_read_add_get(sess, client):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', 'East of England')
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    g_supply = site.insert_g_supply(
+        sess, '7y94u5', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, 'N')
+    g_bill = g_batch.insert_g_bill(
+        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
+        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
+        Decimal('1.20'), Decimal('14.52'), '', {})
+    sess.commit()
+
+    response = client.get(f'/g_bills/{g_bill.id}/edit')
+
+    match(response, 200)
+
+
+def test_g_era_post_delete(sess, client):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', 'East of England')
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    g_supply = site.insert_g_supply(
+        sess, '7y94u5', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_era = g_supply.insert_g_era_at(sess, utc_datetime(2018, 3, 1))
+    sess.commit()
+
+    data = {
+        'delete': 'Delete',
+    }
+
+    response = client.post(f'/g_eras/{g_era.id}/edit', data=data)
+
+    match(response, 303, r'/g_supplies/1')
