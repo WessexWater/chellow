@@ -278,12 +278,17 @@ class Snag(Base, PersistentClass):
 
 class GspGroup(Base, PersistentClass):
     @staticmethod
+    def insert(sess, code, description):
+        gsp_group = GspGroup(code, description)
+        sess.add(gsp_group)
+        return gsp_group
+
+    @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
         group = sess.query(GspGroup).filter_by(code=code).first()
         if group is None:
-            raise BadRequest(
-                "The GSP group with code " + code + " can't be found.")
+            raise BadRequest(f"The GSP group with code {code} can't be found.")
         return group
 
     __tablename__ = 'gsp_group'
@@ -291,6 +296,10 @@ class GspGroup(Base, PersistentClass):
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     supplies = relationship('Supply', backref='gsp_group')
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
 
 
 class VoltageLevel(Base, PersistentClass):
@@ -304,6 +313,13 @@ class VoltageLevel(Base, PersistentClass):
     def __init__(self, code, name):
         self.code = code
         self.name = name
+
+    @staticmethod
+    def insert(sess, code, name):
+        voltage_level = VoltageLevel(code, name)
+        sess.add(voltage_level)
+        sess.flush()
+        return voltage_level
 
     @staticmethod
     def get_by_code(sess, code):
@@ -335,6 +351,12 @@ class GeneratorType(Base, PersistentClass):
 
 
 class Source(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, description):
+        source = Source(code, description)
+        sess.add(source)
+        return source
+
     @staticmethod
     def get_by_code(sess, code):
         source = sess.query(Source).filter_by(code=code.strip()).first()
@@ -376,6 +398,11 @@ class ReadType(Base, PersistentClass):
 
 
 class Cop(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, desc):
+        cop = Cop(code, desc)
+        sess.add(cop)
+        return cop
 
     @staticmethod
     def get_by_code(sess, code):
@@ -621,12 +648,17 @@ class BillType(Base, PersistentClass):
 
 class Pc(Base, PersistentClass):
     @staticmethod
+    def insert(sess, code, name, valid_from, valid_to):
+        pc = Pc(code, name, valid_from, valid_to)
+        sess.add(pc)
+        return pc
+
+    @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
         pc = sess.query(Pc).filter_by(code=code).first()
         if pc is None:
-            raise BadRequest(
-                "The PC with code " + code + " can't be found.")
+            raise BadRequest(f"The PC with code {code} can't be found.")
         return pc
 
     __tablename__ = 'pc'
@@ -638,6 +670,12 @@ class Pc(Base, PersistentClass):
     eras = relationship('Era', backref='pc')
     __table_args__ = (
         UniqueConstraint('code', 'valid_from'),)
+
+    def __init__(self, code, name, valid_from, valid_to):
+        self.code = code
+        self.name = name
+        self.valid_from = valid_from
+        self.valid_to = valid_to
 
 
 class Batch(Base, PersistentClass):
@@ -713,8 +751,8 @@ class Party(Base, PersistentClass):
             Party.market_role_id == market_role_id).first()
         if party is None:
             raise BadRequest(
-                "There isn't a party with participant id " + participant_id +
-                " and market role " + market_role_id)
+                f"There isn't a party with participant id {participant_id} "
+                f" and market role {market_role_id}")
         return party
 
     @staticmethod
@@ -725,8 +763,8 @@ class Party(Base, PersistentClass):
             MarketRole.code == market_role_code).first()
         if party is None:
             raise BadRequest(
-                "There isn't a party with participant code " +
-                participant_code + " and market role code " + market_role_code)
+                f"There isn't a party with participant code "
+                f"{participant_code} and market role code {market_role_code}")
         return party
 
     @staticmethod
@@ -737,17 +775,15 @@ class Party(Base, PersistentClass):
             MarketRole.code == market_role_code).first()
         if party is None:
             raise BadRequest(
-                "There isn't a party with participant id " +
-                str(participant_id) + " and market role code " +
-                market_role_code)
+                f"There isn't a party with participant id {participant_id} "
+                f"and market role code {market_role_code}")
         return party
 
     @staticmethod
     def get_dno_by_code(sess, dno_code):
         dno = sess.query(Party).filter_by(dno_code=dno_code).first()
         if dno is None:
-            raise BadRequest(
-                "There is no DNO with the code '" + dno_code + "'.")
+            raise BadRequest(f"There is no DNO with the code '{dno_code}'.")
         return dno
 
     @staticmethod
@@ -755,8 +791,7 @@ class Party(Base, PersistentClass):
         dno = sess.query(Party).filter(
             Party.id == dno_id, Party.dno_code != null()).first()
         if dno is None:
-            raise BadRequest(
-                "There is no DNO with the id '" + str(dno_id) + "'.")
+            raise BadRequest(f"There is no DNO with the id '{dno_id}'.")
         return dno
 
     __tablename__ = 'party'
@@ -775,6 +810,16 @@ class Party(Base, PersistentClass):
     __table_args__ = (
         UniqueConstraint('market_role_id', 'participant_id', 'valid_from'),)
 
+    def __init__(
+            self, participant, market_role, name, valid_from, valid_to,
+            dno_code):
+        self.participant = participant
+        self.market_role = market_role
+        self.name = name
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+        self.dno_code = dno_code
+
     def find_llfc_by_code(self, sess, code, date):
         code = code.zfill(3)
         llfc_query = sess.query(Llfc).filter(
@@ -791,10 +836,23 @@ class Party(Base, PersistentClass):
         llfc = self.find_llfc_by_code(sess, code, date)
         if llfc is None:
             raise BadRequest(
-                "There is no LLFC with the code '" + code +
-                "' associated with the DNO " + self.dno_code +
-                " at the date " + hh_format(date) + ".")
+                f"There is no LLFC with the code '{code}' associated with "
+                f"the DNO {self.dno_code} at the date {hh_format(date)}.")
         return llfc
+
+    def insert_llfc(
+            self, sess, code, description, voltage_level, is_substation,
+            is_import, valid_from, valid_to):
+
+        if self.market_role.code == 'R':
+            llfc = Llfc(
+                self, code, description, voltage_level, is_substation,
+                is_import, valid_from, valid_to)
+            sess.add(llfc)
+            sess.flush()
+            return llfc
+        else:
+            raise BadRequest("This party isn't a DNO.")
 
 
 class Contract(Base, PersistentClass):
@@ -1534,11 +1592,16 @@ class UserRole(Base, PersistentClass):
 class MarketRole(Base, PersistentClass):
 
     @staticmethod
+    def insert(sess, code, description):
+        market_role = MarketRole(code, description)
+        sess.add(market_role)
+        return market_role
+
+    @staticmethod
     def get_by_code(sess, code):
         role = sess.query(MarketRole).filter_by(code=code).first()
         if role is None:
-            raise BadRequest(
-                "A role with code " + code + " cannot be found.")
+            raise BadRequest(f"A role with code {code} cannot be found.")
         return role
 
     __tablename__ = 'market_role'
@@ -1548,14 +1611,25 @@ class MarketRole(Base, PersistentClass):
     contracts = relationship('Contract', backref='market_role')
     parties = relationship('Party', backref='market_role')
 
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
+
 
 class Participant(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, name):
+        participant = Participant(code, name)
+        sess.add(participant)
+        sess.flush()
+        return participant
+
     @staticmethod
     def get_by_code(sess, code):
         participant = sess.query(Participant).filter_by(code=code).first()
         if participant is None:
             raise BadRequest(
-                "There isn't a Participant with code " + code + ".")
+                f"There isn't a Participant with code {code}.")
         return participant
 
     __tablename__ = 'participant'
@@ -1563,6 +1637,16 @@ class Participant(Base, PersistentClass):
     code = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     parties = relationship('Party', backref='participant')
+
+    def __init__(self, code, name):
+        self.code = code
+        self.name = name
+
+    def insert_party(
+            self, sess, market_role, name, valid_from, valid_to, dno_code):
+        party = Party(self, market_role, name, valid_from, valid_to, dno_code)
+        sess.add(party)
+        return party
 
 
 class RateScript(Base, PersistentClass):
@@ -1575,9 +1659,8 @@ class RateScript(Base, PersistentClass):
                 MarketRole.code == market_role_code).one()
         except NoResultFound:
             raise NotFound(
-                "There isn't a rate script with the id " + str(oid) +
-                " attached to a contract with market role code " +
-                market_role_code + ".")
+                f"There isn't a rate script with the id {oid} attached to a "
+                f"contract with market role code {market_role_code}.")
 
     @staticmethod
     def get_dc_by_id(sess, oid):
@@ -1641,8 +1724,17 @@ class Llfc(Base, PersistentClass):
     __table_args__ = (
         UniqueConstraint('dno_id', 'code', 'valid_from'),)
 
+    def __init__(
+            self, dno, code, description, voltage_level, is_substation,
+            is_import, valid_from, valid_to):
+        self.dno = dno
+        self.code = code
+        self.update(
+            description, voltage_level, is_substation, is_import, valid_from,
+            valid_to)
+
     def update(
-            self, sess, description, voltage_level, is_substation, is_import,
+            self, description, voltage_level, is_substation, is_import,
             valid_from, valid_to):
 
         self.description = description
@@ -1654,6 +1746,11 @@ class Llfc(Base, PersistentClass):
 
 
 class MeterType(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, description, valid_from, valid_to):
+        meter_type = MeterType(code, description, valid_from, valid_to)
+        sess.add(meter_type)
+        return meter_type
 
     @staticmethod
     def get_by_code(sess, code):
@@ -1673,8 +1770,21 @@ class MeterType(Base, PersistentClass):
     mtcs = relationship('Mtc', backref='meter_type')
     __table_args__ = (UniqueConstraint('code', 'valid_from'),)
 
+    def __init__(self, code, description, valid_from, valid_to):
+        self.code = code
+        self.description = description
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
 
 class MeterPaymentType(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, description, valid_from, valid_to):
+        meter_payment_type = MeterPaymentType(
+            code, description, valid_from, valid_to)
+        sess.add(meter_payment_type)
+        return meter_payment_type
+
     @staticmethod
     def get_by_code(sess, code):
         meter_payment_type = sess.query(MeterPaymentType).filter(
@@ -1693,8 +1803,26 @@ class MeterPaymentType(Base, PersistentClass):
     mtcs = relationship('Mtc', backref='meter_payment_type')
     __table_args__ = (UniqueConstraint('code', 'valid_from'),)
 
+    def __init__(self, code, description, valid_from, valid_to):
+        self.code = code
+        self.description = description
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
 
 class Mtc(Base, PersistentClass):
+    @staticmethod
+    def insert(
+            sess, dno, code, description, has_related_metering, has_comms,
+            is_hh, meter_type, meter_payment_type, tpr_count, valid_from,
+            valid_to):
+        mtc = Mtc(
+            dno, code, description, has_related_metering, has_comms, is_hh,
+            meter_type, meter_payment_type, tpr_count, valid_from, valid_to)
+        sess.add(mtc)
+        sess.flush()
+        return mtc
+
     @staticmethod
     def has_dno(code):
         num = int(code)
@@ -1711,7 +1839,8 @@ class Mtc(Base, PersistentClass):
         mtc = Mtc.find_by_code(sess, dno, code)
         if mtc is None:
             raise BadRequest(
-                "There isn't an MTC with this code for this DNO.")
+                f"There isn't an MTC with the code {code} for the DNO "
+                f"{dno.dno_code}.")
         return mtc
 
     __tablename__ = 'mtc'
@@ -1731,17 +1860,26 @@ class Mtc(Base, PersistentClass):
     eras = relationship('Era', backref='mtc')
     __table_args__ = (UniqueConstraint('dno_id', 'code', 'valid_from'),)
 
-    def update(
-            self, sess, description, has_related_metering, has_comms, is_hh,
-            meter_type_id, meter_payment_type_id, tpr_count, valid_from,
+    def __init__(
+            self, dno, code, description, has_related_metering, has_comms,
+            is_hh, meter_type, meter_payment_type, tpr_count, valid_from,
             valid_to):
+        self.dno = dno
+        self.code = code
+        self.update(
+            description, has_related_metering, has_comms, is_hh, meter_type,
+            meter_payment_type, tpr_count, valid_from, valid_to)
+
+    def update(
+            self, description, has_related_metering, has_comms, is_hh,
+            meter_type, meter_payment_type, tpr_count, valid_from, valid_to):
 
         self.description = description
         self.has_related_metering = has_related_metering
         self.has_comms = has_comms
         self.is_hh = is_hh
-        self.meter_type_id = meter_type_id
-        self.meter_payment_type_id = meter_payment_type_id
+        self.meter_type = meter_type
+        self.meter_payment_type = meter_payment_type
         self.tpr_count = tpr_count
         self.valid_from = valid_from
         self.valid_to = valid_to
@@ -2418,8 +2556,7 @@ class Supply(Base, PersistentClass):
         supply = Supply.find_by_mpan_core(sess, mpan_core)
         if supply is None:
             raise BadRequest(
-                "The MPAN core " + str(mpan_core) +
-                " is not set up in Chellow.")
+                "The MPAN core {mpan_core} is not set up in Chellow.")
         return supply
 
     @staticmethod
@@ -4194,6 +4331,43 @@ def insert_g_read_types(sess):
         GReadType.insert(sess, code, desc)
 
 
+def insert_cops(sess):
+    for code, desc in (
+            ('1', "CoP 1"),
+            ('2', "CoP 2"),
+            ('3', "CoP 3"),
+            ('4', "CoP 4"),
+            ('5', "CoP 5"),
+            ('6a', "CoP 6a 20 day memory"),
+            ('6b', "CoP 6b 100 day memory"),
+            ('6c', "CoP 6c 250 day memory"),
+            ('6d', "CoP 6d 450 day memory"),
+            ('7', "CoP 7")):
+        Cop.insert(sess, code, desc)
+
+
+def insert_sources(sess):
+    for code, desc in (
+            ('net', "Public distribution system."),
+            ('sub', "Sub meter"),
+            ('gen-net', "Generator connected directly to network."),
+            ('gen', "Generator."),
+            ('3rd-party', "Third party supply."),
+            (
+                '3rd-party-reverse',
+                "Third party supply with import going out of the site."),
+            ):
+        Source.insert(sess, code, desc)
+
+
+def insert_voltage_levels(sess):
+    for code, desc in (
+            ("LV", "Low voltage"),
+            ("HV", "High voltage"),
+            ("EHV", "Extra high voltage")):
+        VoltageLevel.insert(sess, code, desc)
+
+
 def db_init(sess, root_path):
     db_name = config['PGDATABASE']
     log_message("Initializing database.")
@@ -4257,18 +4431,7 @@ def db_init(sess, root_path):
         sess.add(ReadType(code, desc))
     sess.commit()
 
-    for code, desc in (
-            ('1', "CoP 1"),
-            ('2', "CoP 2"),
-            ('3', "CoP 3"),
-            ('4', "CoP 4"),
-            ('5', "CoP 5"),
-            ('6a', "CoP 6a 20 day memory"),
-            ('6b', "CoP 6b 100 day memory"),
-            ('6c', "CoP 6c 250 day memory"),
-            ('6d', "CoP 6d 450 day memory"),
-            ('7', "CoP 7")):
-        sess.add(Cop(code, desc))
+    insert_cops(sess)
     sess.commit()
 
     insert_bill_types(sess)
