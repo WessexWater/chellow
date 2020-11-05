@@ -143,8 +143,8 @@ def hh_rate(sess, caches, contract_id, date):
                     " isn't recognized.")
 
             vals = PropDict(
-                "the rate script " + chellow.utils.url_root + seg +
-                str(rs.id) + " ", loads(rs.script), [])
+                f"the rate script {chellow.utils.url_root}{seg}{rs.id} ",
+                loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals
@@ -1144,39 +1144,35 @@ order by hh_datum.start_date
                                 data, (None, None, None, None, None, None))
                 else:
                     # new style
-                    data = sess.execute(
-                        "select "
-                        "    start_date, "
-                        "    status, "
-                        "    active, "
-                        "    coalesce(reactive_imp, 0) as reactive_imp, "
-                        "    coalesce(reactive_exp, 0) as reactive_exp "
-                        "from crosstab("
-                        "    :sql, "
-                        "    'SELECT unnest(enum_range(NULL::channel_type))') "
-                        "as ct( "
-                        "    start_date timestamp with time zone, "
-                        "    status character varying, "
-                        "    active double precision, "
-                        "    reactive_imp double precision, "
-                        "    reactive_exp double precision); ",
-                        params={
-                            'sql':
-                            "select "
-                            "    hh_datum.start_date, "
-                            "    hh_datum.status, "
-                            "    channel.channel_type, "
-                            "    cast(hh_datum.value as double precision) "
-                            "from hh_datum join channel "
-                            "    on (hh_datum.channel_id = channel.id) "
-                            "where channel.era_id = " + str(hist_era.id) +
-                            "    and channel.imp_related = " +
-                            str(self.is_import) +
-                            "    and hh_datum.start_date >= '" +
-                            chunk_start.strftime("%Y-%m-%d %H:%M") + "+00'"
-                            "    and hh_datum.start_date <= '" +
-                            chunk_finish.strftime("%Y-%m-%d %H:%M") + "+00'"
-                            "    order by 1,3"})
+                    data = iter(sess.execute("""
+select sum(cast(coalesce(kwh.value, 0) as double precision)),
+    max(kwh.status),
+    sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
+    sum(cast(coalesce(reactive_exp.value, 0) as double precision)),
+    hh_datum.start_date
+from hh_datum
+    join channel on (hh_datum.channel_id = channel.id)
+    left join hh_datum as kwh
+        on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
+            and channel.imp_related = :is_import)
+    left join hh_datum as reactive_imp
+        on (hh_datum.id = reactive_imp.id
+            and channel.channel_type = 'REACTIVE_IMP'
+            and channel.imp_related is true)
+    left join hh_datum as reactive_exp
+        on (hh_datum.id = reactive_exp.id
+            and channel.channel_type = 'REACTIVE_EXP'
+            and channel.imp_related is true)
+where channel.era_id = :era_id and hh_datum.start_date >= :start_date
+    and hh_datum.start_date <= :finish_date
+group by hh_datum.start_date
+order by hh_datum.start_date
+""", params={
+                        'era_id': hist_era.id,
+                        'start_date': chunk_start,
+                        'finish_date': chunk_finish,
+                        'is_import': self.is_import}))
+
                     for (
                             hist_start, status, msp_kwh, imp_kvarh,
                             exp_kvarh) in data:

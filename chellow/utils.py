@@ -18,7 +18,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import ZishException, loads
 
-url_root = None
+url_root = ''
 
 HH = relativedelta(minutes=30)
 MONTH = relativedelta(months=1)

@@ -1,29 +1,36 @@
-import os
-from datetime import datetime as Datetime
-import traceback
-from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, true
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-from collections import defaultdict
-from chellow.models import (
-    Session, Contract, Site, Era, SiteEra, Supply, Source, Bill, Mtc, Llfc,
-    MeasurementRequirement, Ssc, Tpr, Pc, Scenario)
-from chellow.computer import SupplySource, contract_func, datum_range
-import chellow.computer
 import csv
-import chellow.dloads
-from io import StringIO
-import threading
-import odio
+import os
 import sys
-from werkzeug.exceptions import BadRequest
+import threading
+import traceback
+from collections import defaultdict
+from datetime import datetime as Datetime
+from io import StringIO
+
+import chellow.computer
+import chellow.dloads
+from chellow.computer import SupplySource, contract_func, datum_range
+from chellow.models import (
+    Bill, Contract, Era, Llfc, MeasurementRequirement, Mtc, Pc, Scenario,
+    Session, Site, SiteEra, Source, Ssc, Supply, Tpr)
 from chellow.utils import (
-    hh_format, HH, hh_max, hh_min, req_int, req_str, req_bool, make_val,
-    utc_datetime_now, to_utc, hh_range, PropDict, parse_hh_start, to_ct,
-    ct_datetime, c_months_c, c_months_u)
-from flask import request, g, flash, make_response, render_template
+    HH, PropDict, c_months_c, c_months_u, ct_datetime, hh_format, hh_max,
+    hh_min, hh_range, make_val, parse_hh_start, req_bool, req_int, req_str,
+    to_ct, to_utc, utc_datetime_now,
+)
 from chellow.views import chellow_redirect
+
+from dateutil.relativedelta import relativedelta
+
+from flask import flash, g, make_response, render_template, request
+
+import odio
+
+from sqlalchemy import or_, true
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
@@ -300,14 +307,10 @@ def _make_site_deltas(
     return site_deltas
 
 
-def _process_site(
-        sess, report_context, forecast_from, start_date, finish_date, site,
-        site_deltas, supply_id, era_maps, now, summary_titles, title_dict,
-        era_rows, site_rows):
-    site_category = None
-    site_sources = set()
+def _make_calcs(
+        sess, site, start_date, finish_date, supply_id, site_deltas,
+        forecast_from, report_context, era_maps):
     site_gen_types = set()
-    site_month_data = defaultdict(int)
     calcs = []
     for era in sess.query(Era).join(SiteEra).join(Pc).filter(
             SiteEra.site == site, SiteEra.is_physical == true(),
@@ -412,7 +415,19 @@ def _process_site(
             False, report_context, era_maps=era_maps, deltas=sup_deltas)
 
         calcs.append((0, None, ss_name, None, ss))
+    return calcs, displaced_era, site_gen_types
 
+
+def _process_site(
+        sess, report_context, forecast_from, start_date, finish_date, site,
+        site_deltas, supply_id, era_maps, now, summary_titles, title_dict,
+        era_rows, site_rows):
+
+    calcs, displaced_era, site_gen_types = _make_calcs(
+        sess, site, start_date, finish_date, supply_id, site_deltas,
+        forecast_from, report_context, era_maps)
+
+    site_month_data = defaultdict(int)
     site_ds = chellow.computer.SiteSource(
         sess, site, start_date, finish_date, forecast_from, report_context,
         displaced_era, deltas=site_deltas)
@@ -434,8 +449,8 @@ def _process_site(
             report_context, disp_supplier_contract, 'displaced_virtual_bill')
         if disp_vb_function is None:
             raise BadRequest(
-                "The supplier contract " + disp_supplier_contract.name +
-                " doesn't have the displaced_virtual_bill() function.")
+                f"The supplier contract {disp_supplier_contract.name} "
+                f" doesn't have the displaced_virtual_bill() function.")
         disp_vb_function(site_ds)
         disp_supplier_bill = site_ds.supplier_bill
 
@@ -464,6 +479,8 @@ def _process_site(
         for k, v in month_data.items():
             site_month_data[k] += v
 
+    site_category = None
+    site_sources = set()
     for i, (
             order, imp_mpan_core, exp_mpan_core, imp_ss,
             exp_ss) in enumerate(sorted(calcs, key=str)):
@@ -604,7 +621,7 @@ def _process_site(
         era_associates = set()
         if mop_contract is not None:
             era_associates.update(
-                {s.site.code for s in era.site_eras if not s.is_physical}
+                {s.site.code for s in sss.era.site_eras if not s.is_physical}
             )
 
             for bill in sess.query(Bill).filter(
