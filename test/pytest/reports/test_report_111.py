@@ -1,9 +1,8 @@
 import chellow.reports.report_111
+from chellow.models import Contract, MarketRole, Participant
+from chellow.utils import utc_datetime
 
-from utils import (
-    insert_batch, insert_contract, insert_participant, insert_party,
-    insert_supplier_market_role, match,
-)
+from utils import match
 
 
 # End to end tests
@@ -20,18 +19,20 @@ def test_ete_error_message_for_invalid_bill_id(client, sess):
 # HTTP level tests
 
 def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
-    market_role_id = insert_supplier_market_role(sess)
-    participant_id = insert_participant(sess)
-    party_id = insert_party(
-        sess, participant_id=participant_id, market_role_id=market_role_id)
-    contract_id = insert_contract(
-        sess, market_role_id=market_role_id, party_id=party_id)
-    batch_id = insert_batch(sess, contract_id)
+    market_role_X = MarketRole.insert(sess, 'X', 'Supplier')
+    participant = Participant.insert(sess, 'hhak', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_X, 'Fusion Ltc', utc_datetime(2000, 1, 1), None,
+        None)
+    supplier_contract = Contract.insert_supplier(
+        sess, 'Fusion Supplier 2000', participant, '', {},
+        utc_datetime(2000, 1, 1), None, {})
+    batch = supplier_contract.insert_batch(sess, '005', 'batch 5')
     sess.commit()
     MockThread = mocker.patch('chellow.reports.report_111.threading.Thread')
 
     data = {
-        'batch_id': str(batch_id),
+        'batch_id': str(batch.id),
         'mpan_cores': "22 1065 3921 534",
     }
     response = client.get('/reports/111', data=data)
@@ -39,7 +40,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
     match(response, 303)
 
     expected_args = (
-        batch_id,
+        batch.id,
         None,
         None,
         None,

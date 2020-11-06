@@ -5,8 +5,6 @@ import pytest
 
 import sqlalchemy.exc
 
-from utils import insert_g_exit_zone
-
 from werkzeug.exceptions import BadRequest
 
 
@@ -177,7 +175,9 @@ def test_sql_insert_GExitZone(mocker, sess):
             sqlalchemy.exc.ProgrammingError,
             match='null value in column "g_ldz_id" violates not-null '
             'constraint'):
-        insert_g_exit_zone(sess)
+        sess.execute(
+            "INSERT INTO g_exit_zone (id, code, g_ldz_id) VALUES "
+            "(DEFAULT, 'E1', null)")
 
 
 def test_Supply_get_by_MPAN_core(sess):
