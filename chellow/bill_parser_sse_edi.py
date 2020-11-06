@@ -1,10 +1,13 @@
-from decimal import Decimal
 from collections import defaultdict
-from chellow.edi_lib import EdiParser, to_decimal
-from chellow.utils import to_ct, to_utc, ct_datetime, parse_mpan_core, HH
-from werkzeug.exceptions import BadRequest
-from io import StringIO
 from datetime import datetime as Datetime
+from decimal import Decimal
+from io import StringIO
+
+from chellow.edi_lib import EdiParser, to_decimal
+from chellow.models import Era, Session
+from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
+
+from werkzeug.exceptions import BadRequest
 
 
 read_type_map = {
@@ -154,6 +157,7 @@ class Parser():
     def make_raw_bills(self):
         raw_bills = []
         breakdown = None
+
         for self.line_number, code in enumerate(self.parser):
             if code == "BCD":
                 ivdt = self.parser.elements[0]
@@ -378,6 +382,15 @@ class Parser():
                             to_decimal(ctot) / Decimal('100')
             elif code == "MTR":
                 if message_type == "UTLBIL":
+
+                    if mpan_core is None:
+                        sess = Session()
+                        era = sess.query(Era).filter(
+                            Era.imp_supplier_account == account).first()
+                        if era is not None:
+                            mpan_core = era.imp_mpan_core
+                        sess.close()
+
                     raw_bill = {
                         'bill_type_code': bill_type_code, 'account': account,
                         'mpan_core': mpan_core, 'reference': reference,
