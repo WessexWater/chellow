@@ -2556,7 +2556,7 @@ class Supply(Base, PersistentClass):
         supply = Supply.find_by_mpan_core(sess, mpan_core)
         if supply is None:
             raise BadRequest(
-                "The MPAN core {mpan_core} is not set up in Chellow.")
+                f"The MPAN core {mpan_core} is not set up in Chellow.")
         return supply
 
     @staticmethod

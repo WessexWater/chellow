@@ -1,4 +1,4 @@
-from chellow.models import Contract, Era, Mtc
+from chellow.models import Contract, Era, Mtc, Supply
 from chellow.utils import utc_datetime
 
 import pytest
@@ -178,3 +178,13 @@ def test_sql_insert_GExitZone(mocker, sess):
             match='null value in column "g_ldz_id" violates not-null '
             'constraint'):
         insert_g_exit_zone(sess)
+
+
+def test_Supply_get_by_MPAN_core(sess):
+    mpan_core = '22 1737 1873 221'
+
+    with pytest.raises(
+            BadRequest,
+            match=f"The MPAN core {mpan_core} is not set up in Chellow."):
+
+        Supply.get_by_mpan_core(sess, mpan_core)
