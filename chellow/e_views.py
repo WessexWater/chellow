@@ -76,9 +76,9 @@ def get_era_bundles(sess, supply):
             joinedload(Bill.batch).joinedload(Batch.contract).
             joinedload(Contract.party).joinedload(Party.market_role),
             joinedload(Bill.bill_type))
-        if era.finish_date is not None and era != eras[-1]:
+        if era.finish_date is not None and era != eras[0]:
             bills = bills.filter(Bill.start_date <= era.finish_date)
-        if era != eras[0]:
+        if era != eras[-1]:
             bills = bills.filter(Bill.start_date >= era.start_date)
 
         num_outer_cols = 0
