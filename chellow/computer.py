@@ -1069,126 +1069,13 @@ class SupplySource(DataSource):
 
                 hist_map.update(hhd)
             elif hist_measurement_type == 'hh':
-                has_exp_active = False
-                has_imp_related_reactive = False
-                has_exp_related_reactive = False
-                for channel in hist_era.channels:
-                    if not channel.imp_related \
-                            and channel.channel_type == 'ACTIVE':
-                        has_exp_active = True
-                    if channel.imp_related and channel.channel_type in (
-                            'REACTIVE_IMP', 'REACTIVE_EXP'):
-                        has_imp_related_reactive = True
-                    if not channel.imp_related and channel.channel_type in (
-                            'REACTIVE_IMP', 'REACTIVE_EXP'):
-                        has_exp_related_reactive = True
+                full_channels, hhd = _init_hh_data(
+                    sess, caches, hist_era, chunk_start, chunk_finish,
+                    is_import)
+                if not full_channels:
+                    full_channels = False
+                hist_map.update(hhd)
 
-                if has_exp_active and not has_exp_related_reactive \
-                        and has_imp_related_reactive:
-                    #  old style
-                    self.full_channels = False
-                    data = iter(sess.execute("""
-select sum(cast(coalesce(kwh.value, 0) as double precision)),
-    sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
-    max(kwh.status),
-    sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
-    sum(cast(coalesce(reactive_exp.value, 0) as double precision)),
-    hh_datum.start_date
-from hh_datum
-    join channel on (hh_datum.channel_id = channel.id)
-    left join hh_datum as kwh
-        on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
-            and channel.imp_related = :is_import)
-    left join hh_datum as anti_kwh
-        on (hh_datum.id = anti_kwh.id and channel.channel_type = 'ACTIVE'
-            and channel.imp_related != :is_import)
-    left join hh_datum as reactive_imp
-        on (hh_datum.id = reactive_imp.id
-            and channel.channel_type = 'REACTIVE_IMP'
-            and channel.imp_related is true)
-    left join hh_datum as reactive_exp
-        on (hh_datum.id = reactive_exp.id
-            and channel.channel_type = 'REACTIVE_EXP'
-            and channel.imp_related is true)
-where channel.era_id = :era_id and hh_datum.start_date >= :start_date
-    and hh_datum.start_date <= :finish_date
-group by hh_datum.start_date
-order by hh_datum.start_date
-""", params={
-                        'era_id': hist_era.id,
-                        'start_date': chunk_start,
-                        'finish_date': chunk_finish,
-                        'is_import': self.is_import}))
-                    (
-                        msp_kwh, anti_msp_kwh, status, imp_kvarh, exp_kvarh,
-                        hist_start) = next(
-                            data, (None, None, None, None, None, None))
-
-                    for hh_date in hh_range(
-                            self.caches, chunk_start, chunk_finish):
-                        if hh_date == hist_start:
-                            hist_map[hh_date] = {
-                                'status': status,
-                                'imp-msp-kvarh': imp_kvarh,
-                                'imp-msp-kvar': imp_kvarh * 2,
-                                'exp-msp-kvarh': exp_kvarh,
-                                'exp-msp-kvar': exp_kvarh * 2,
-                                'msp-kw': msp_kwh * 2,
-                                'msp-kwh': msp_kwh,
-                                'anti-msp-kwh': anti_msp_kwh,
-                                'hist-kwh': msp_kwh,
-                            }
-                            (
-                                msp_kwh, anti_msp_kwh, status, imp_kvarh,
-                                exp_kvarh, hist_start) = next(
-                                data, (None, None, None, None, None, None))
-                else:
-                    # new style
-                    data = iter(sess.execute("""
-select sum(cast(coalesce(kwh.value, 0) as double precision)),
-    max(kwh.status),
-    sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
-    sum(cast(coalesce(reactive_exp.value, 0) as double precision)),
-    hh_datum.start_date
-from hh_datum
-    join channel on (hh_datum.channel_id = channel.id)
-    left join hh_datum as kwh
-        on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
-            and channel.imp_related = :is_import)
-    left join hh_datum as reactive_imp
-        on (hh_datum.id = reactive_imp.id
-            and channel.channel_type = 'REACTIVE_IMP'
-            and channel.imp_related is true)
-    left join hh_datum as reactive_exp
-        on (hh_datum.id = reactive_exp.id
-            and channel.channel_type = 'REACTIVE_EXP'
-            and channel.imp_related is true)
-where channel.era_id = :era_id and hh_datum.start_date >= :start_date
-    and hh_datum.start_date <= :finish_date
-group by hh_datum.start_date
-order by hh_datum.start_date
-""", params={
-                        'era_id': hist_era.id,
-                        'start_date': chunk_start,
-                        'finish_date': chunk_finish,
-                        'is_import': self.is_import}))
-
-                    for (
-                            hist_start, status, msp_kwh, imp_kvarh,
-                            exp_kvarh) in data:
-
-                        datum = {
-                            'imp-msp-kvarh': imp_kvarh,
-                            'imp-msp-kvar': imp_kvarh * 2,
-                            'exp-msp-kvarh': exp_kvarh,
-                            'exp-msp-kvar': exp_kvarh * 2}
-                        if msp_kwh is not None:
-                            datum['status'] = status
-                            datum['hist-kwh'] = msp_kwh
-                            datum['msp-kwh'] = msp_kwh
-                            datum['msp-kw'] = msp_kwh * 2
-
-                        hist_map[hist_start] = datum
             else:
                 raise BadRequest("gen type not recognized")
 
@@ -1497,3 +1384,130 @@ def _make_reads(forwards, prev_reads, pres_reads):
             else:
                 yield pres_read
                 pres_read = next(pres_reads, None)
+
+
+def _init_hh_data(
+        sess, caches, hist_era, chunk_start, chunk_finish, is_import):
+    hhd = {}
+    full_channels = True
+    has_exp_active = False
+    has_imp_related_reactive = False
+    has_exp_related_reactive = False
+    for channel in hist_era.channels:
+        if not channel.imp_related \
+                and channel.channel_type == 'ACTIVE':
+            has_exp_active = True
+        if channel.imp_related and channel.channel_type in (
+                'REACTIVE_IMP', 'REACTIVE_EXP'):
+            has_imp_related_reactive = True
+        if not channel.imp_related and channel.channel_type in (
+                'REACTIVE_IMP', 'REACTIVE_EXP'):
+            has_exp_related_reactive = True
+
+    if has_exp_active and not has_exp_related_reactive \
+            and has_imp_related_reactive:
+        #  old style
+        full_channels = False
+        data = iter(sess.execute("""
+select sum(cast(coalesce(kwh.value, 0) as double precision)),
+sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
+max(kwh.status),
+sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
+sum(cast(coalesce(reactive_exp.value, 0) as double precision)),
+hh_datum.start_date
+from hh_datum
+join channel on (hh_datum.channel_id = channel.id)
+left join hh_datum as kwh
+on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
+and channel.imp_related = :is_import)
+left join hh_datum as anti_kwh
+on (hh_datum.id = anti_kwh.id and channel.channel_type = 'ACTIVE'
+and channel.imp_related != :is_import)
+left join hh_datum as reactive_imp
+on (hh_datum.id = reactive_imp.id
+and channel.channel_type = 'REACTIVE_IMP'
+and channel.imp_related is true)
+left join hh_datum as reactive_exp
+on (hh_datum.id = reactive_exp.id
+and channel.channel_type = 'REACTIVE_EXP'
+and channel.imp_related is true)
+where channel.era_id = :era_id and hh_datum.start_date >= :start_date
+and hh_datum.start_date <= :finish_date
+group by hh_datum.start_date
+order by hh_datum.start_date
+""", params={
+            'era_id': hist_era.id,
+            'start_date': chunk_start,
+            'finish_date': chunk_finish,
+            'is_import': is_import}))
+        (
+            msp_kwh, anti_msp_kwh, status, imp_kvarh, exp_kvarh,
+            hist_start) = next(data, (None, None, None, None, None, None))
+
+        for hh_date in hh_range(caches, chunk_start, chunk_finish):
+            if hh_date == hist_start:
+                hhd[hh_date] = {
+                    'status': status,
+                    'imp-msp-kvarh': imp_kvarh,
+                    'imp-msp-kvar': imp_kvarh * 2,
+                    'exp-msp-kvarh': exp_kvarh,
+                    'exp-msp-kvar': exp_kvarh * 2,
+                    'msp-kw': msp_kwh * 2,
+                    'msp-kwh': msp_kwh,
+                    'anti-msp-kwh': anti_msp_kwh,
+                    'hist-kwh': msp_kwh,
+                }
+                (
+                    msp_kwh, anti_msp_kwh, status, imp_kvarh, exp_kvarh,
+                    hist_start) = next(
+                        data, (None, None, None, None, None, None))
+    else:
+        # new style
+        print("doing new style")
+        data = iter(sess.execute("""
+select hh_datum.start_date,
+max(kwh.status),
+sum(cast(coalesce(kwh.value, 0) as double precision)),
+sum(cast(coalesce(reactive_imp.value, 0) as double precision)),
+sum(cast(coalesce(reactive_exp.value, 0) as double precision))
+from hh_datum
+join channel on (hh_datum.channel_id = channel.id)
+left join hh_datum as kwh
+on (hh_datum.id = kwh.id and channel.channel_type = 'ACTIVE'
+and channel.imp_related = :is_import)
+left join hh_datum as reactive_imp
+on (hh_datum.id = reactive_imp.id
+and channel.channel_type = 'REACTIVE_IMP'
+and channel.imp_related is true)
+left join hh_datum as reactive_exp
+on (hh_datum.id = reactive_exp.id
+and channel.channel_type = 'REACTIVE_EXP'
+and channel.imp_related is true)
+where channel.era_id = :era_id and hh_datum.start_date >= :start_date
+and hh_datum.start_date <= :finish_date
+group by hh_datum.start_date
+order by hh_datum.start_date
+""", params={
+            'era_id': hist_era.id,
+            'start_date': chunk_start,
+            'finish_date': chunk_finish,
+            'is_import': is_import}))
+
+        for (
+                hist_start, status, msp_kwh, imp_kvarh,
+                exp_kvarh) in data:
+
+            datum = {
+                'imp-msp-kvarh': imp_kvarh,
+                'imp-msp-kvar': imp_kvarh * 2,
+                'exp-msp-kvarh': exp_kvarh,
+                'exp-msp-kvar': exp_kvarh * 2
+            }
+            if msp_kwh is not None:
+                datum['status'] = status
+                datum['hist-kwh'] = msp_kwh
+                datum['msp-kwh'] = msp_kwh
+                datum['msp-kw'] = msp_kwh * 2
+
+            hhd[hist_start] = datum
+    return full_channels, hhd
