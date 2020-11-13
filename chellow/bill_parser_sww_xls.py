@@ -9,23 +9,18 @@ from werkzeug.exceptions import BadRequest
 from xlrd import open_workbook
 
 
-def get_value(row, title_row, name, required=True):
+def get_value(row, title_row, name):
     try:
         idx = title_row.index(name)
     except ValueError:
-        if required:
-            raise BadRequest(
-                "The title '" + name + "', can't be found in the title row " +
-                str(title_row) + " .")
-        else:
-            return None
+        return None
 
     try:
         val = row[idx].value
     except IndexError:
         raise BadRequest(
-            "For the name '" + name + "', the index is " + str(idx) +
-            " which is beyond the end of the row. ")
+            f"For the name '{name}', the index is {idx} which is beyond the "
+            f"end of the row.")
 
     if isinstance(val, str):
         return val.strip()
@@ -33,8 +28,8 @@ def get_value(row, title_row, name, required=True):
         return val
 
 
-def get_dec(row, title_row, name, required=True):
-    val = get_value(row, title_row, name, required=required)
+def get_dec(row, title_row, name):
+    val = get_value(row, title_row, name)
 
     try:
         return val if val is None else Decimal(str(val))
@@ -42,8 +37,8 @@ def get_dec(row, title_row, name, required=True):
         return None
 
 
-def get_rate(row, title_row, name, required=True):
-    raw = get_dec(row, title_row, name, required=required)
+def get_rate(row, title_row, name):
+    raw = get_dec(row, title_row, name)
     return None if raw is None else [raw / Decimal('100')]
 
 
@@ -62,6 +57,14 @@ def _parse_row(row, row_index, datemode, title_row):
     aahedc_kwh = get_dec(row, titles, 'LVY-AAHEDC-ALL USE KWH')
 
     vals = [
+        (
+            'cap-mech-ob-kwh',
+            get_dec(row, titles, 'LVY-CMLOB-ALL USE KWH')),
+        ('cap-mech-ob-rate', get_dec(row, titles, 'LVY-CMLOB-ALL RATE P/KWH')),
+        ('cap-mech-ob-gbp', get_dec(row, titles, 'LVY-CMLOB-ALL COST GBP')),
+        ('cap-mech-op-kwh', get_dec(row, titles, 'LVY-CMLOP-ALL USE KWH')),
+        ('cap-mech-op-rate', get_dec(row, titles, 'LVY-CMLOP-ALL RATE P/KWH')),
+        ('cap-mech-op-gbp', get_dec(row, titles, 'LVY-CMLOP-ALL COST GBP')),
         ('duos-fixed-days', get_dec(row, titles, 'DUOS-STND-SITE USE DAY')),
         (
             'duos-availability-kva-days',
@@ -115,18 +118,9 @@ def _parse_row(row, row_index, datemode, title_row):
         ('ro-kwh', get_dec(row, titles, 'LVY-RO-ALL USE KWH')),
         ('ro-rate', get_rate(row, titles, 'LVY-RO-ALL RATE P/KWH')),
         ('ro-gbp', get_dec(row, titles, 'LVY-RO-ALL COST GBP')),
-        (
-            'summer-kwh',
-            get_dec(row, titles, 'NRG-UNIT-SUMMER USE KWH', required=False)
-        ),
-        (
-            'summer-rate',
-            get_rate(row, titles, 'NRG-UNIT-SUMMER RATE P/KWH', required=False)
-        ),
-        (
-            'summer-gbp',
-            get_dec(row, titles, 'NRG-UNIT-SUMMER COST GBP', required=False)
-        ),
+        ('summer-kwh', get_dec(row, titles, 'NRG-UNIT-SUMMER USE KWH')),
+        ('summer-rate', get_rate(row, titles, 'NRG-UNIT-SUMMER RATE P/KWH')),
+        ('summer-gbp', get_dec(row, titles, 'NRG-UNIT-SUMMER COST GBP')),
         ('winter-kwh', get_dec(row, titles, 'NRG-UNIT-WINTER USE KWH')),
         ('winter-rate', get_rate(row, titles, 'NRG-UNIT-WINTER RATE P/KWH')),
         ('winter-gbp', get_dec(row, titles, 'NRG-UNIT-WINTER COST GBP')),
