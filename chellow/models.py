@@ -1595,6 +1595,7 @@ class MarketRole(Base, PersistentClass):
     def insert(sess, code, description):
         market_role = MarketRole(code, description)
         sess.add(market_role)
+        sess.flush()
         return market_role
 
     @staticmethod

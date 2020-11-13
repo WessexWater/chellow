@@ -21563,38 +21563,4 @@ def virtual_bill(ds):
         ],
         'status_code': 303
     },
-
-    {
-        'name': "General import channel snag unignore",
-        'path': '/general_imports',
-        'method': 'post',
-        'files': {
-            'import_file': 'test/electricity/gi_channel_snag_ignore.csv'
-        },
-        'status_code': 303,
-        'regexes': [
-            r"/general_imports/31"
-        ]
-    },
-    {
-        'path': '/general_imports/31',
-        'tries': {},
-
-        # Check good error message
-        'regexes': [
-            r"The file has been imported successfully\."
-        ],
-        'status_code': 200
-    },
-    {
-        'name': "Check it's been un-ignored.",
-        'path': '/channel_snags/3',
-        'regexes': [
-            r'<th>Ignored\?</th>\s*'
-            r'<td>\s*'
-            r'Not ignored\s*'
-            r'</td>\s*'
-        ],
-        'status_code': 200
-    },
 ]

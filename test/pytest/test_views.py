@@ -4,9 +4,11 @@ from io import BytesIO
 
 import chellow.views
 from chellow.models import (
-    BillType, Contract, GContract, GDn, GReadType, GReadingFrequency, GUnit,
-    Site, insert_bill_types, insert_g_read_types, insert_g_reading_frequencies,
-    insert_g_units)
+    BillType, Contract, Cop, GContract, GDn, GReadType, GReadingFrequency,
+    GUnit, GspGroup, MarketRole, MeterPaymentType, MeterType, Mtc, Participant,
+    Pc, Site, Snag, Source, VoltageLevel, insert_bill_types, insert_cops,
+    insert_g_read_types, insert_g_reading_frequencies, insert_g_units,
+    insert_sources, insert_voltage_levels)
 from chellow.utils import utc_datetime
 
 from flask import g
@@ -534,3 +536,187 @@ def test_g_era_post_delete(sess, client):
     response = client.post(f'/g_eras/{g_era.id}/edit', data=data)
 
     match(response, 303, r'/g_supplies/1')
+
+
+def test_general_import_post_full(sess, client):
+    """General import of channel snag unignore and check the import that's
+    been created.
+    """
+    site = Site.insert(sess, 'CI017', 'Water Works')
+
+    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
+        None)
+    bank_holiday_rate_script = {
+        'bank_holidays': []
+    }
+    Contract.insert_non_core(
+        sess, 'bank_holidays', '', {}, utc_datetime(2000, 1, 1), None,
+        bank_holiday_rate_script)
+    market_role_X = MarketRole.insert(sess, 'X', 'Supplier')
+    market_role_M = MarketRole.insert(sess, 'M', 'Mop')
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    market_role_R = MarketRole.insert(sess, 'R', 'Distributor')
+    participant.insert_party(
+        sess, market_role_M, 'Fusion Mop Ltd', utc_datetime(2000, 1, 1), None,
+        None)
+    participant.insert_party(
+        sess, market_role_X, 'Fusion Ltc', utc_datetime(2000, 1, 1), None,
+        None)
+    participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None,
+        None)
+    mop_contract = Contract.insert_mop(
+        sess, 'Fusion', participant, '', {}, utc_datetime(2000, 1, 1), None,
+        {})
+    dc_contract = Contract.insert_hhdc(
+        sess, 'Fusion DC 2000', participant, '', {}, utc_datetime(2000, 1, 1),
+        None, {})
+    pc = Pc.insert(sess, '00', 'hh', utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, '5')
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, 'Fusion Supplier 2000', participant, '', {},
+        utc_datetime(2000, 1, 1), None, {})
+    dno = participant.insert_party(
+        sess, market_role_R, 'WPD', utc_datetime(2000, 1, 1), None, '22')
+    meter_type = MeterType.insert(
+        sess, 'C5', 'COP 1-5', utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, 'CR', 'Credit', utc_datetime(1996, 1, 1), None)
+    Mtc.insert(
+        sess, None, '845', 'HH COP5 And Above With Comms', False, False, True,
+        meter_type, meter_payment_type, 0, utc_datetime(1996, 1, 1), None)
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, 'HV')
+    dno.insert_llfc(
+        sess, '510', 'PC 5-8 & HH HV', voltage_level, False, True,
+        utc_datetime(1996, 1, 1), None)
+    dno.insert_llfc(
+        sess, '521', 'Export (HV)', voltage_level, False, False,
+        utc_datetime(1996, 1, 1), None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, 'net')
+    gsp_group = GspGroup.insert(sess, '_L', 'South Western')
+    supply = site.insert_e_supply(
+        sess, source, None, "Bob", utc_datetime(2000, 1, 1),
+        utc_datetime(2020, 1, 1), gsp_group, mop_contract, '773', dc_contract,
+        'ghyy3', 'hgjeyhuw', pc, '845', cop, None, {}, '22 0470 7514 535',
+        '510', imp_supplier_contract, '7748', 361, None, None, None, None,
+        None)
+    era = supply.eras[0]
+    channel = era.insert_channel(sess, False, 'ACTIVE')
+    channel.add_snag(
+        sess, 'Missing', utc_datetime(2003, 8, 2, 23, 30),
+        utc_datetime(2004, 7, 6, 22, 30))
+    snag = sess.query(Snag).order_by(Snag.start_date).first()
+    snag.set_is_ignored(True)
+    sess.commit()
+
+    file_items = [
+        "insert", "channel_snag_unignore", "22 0470 7514 535", "FALSE",
+        "Active", "Missing", "2003-08-03 00:00", "2004-07-06 23:30"
+    ]
+    file_name = 'gi_channel_snag_ignore.csv'
+    file_bytes = ','.join(file_items).encode('utf8')
+    f = BytesIO(file_bytes)
+
+    data = {
+        'import_file': (f, file_name)
+    }
+
+    response = client.post('/general_imports', data=data)
+
+    match(response, 303, '/general_imports/0')
+
+    response = client.get('/general_imports/0')
+
+    match(response, 200, r"The file has been imported successfully\.")
+    sess.rollback()
+
+    assert not snag.is_ignored
+
+
+def test_channel_snag_get(sess, client):
+    site = Site.insert(sess, 'CI017', 'Water Works')
+
+    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
+        None)
+    bank_holiday_rate_script = {
+        'bank_holidays': []
+    }
+    Contract.insert_non_core(
+        sess, 'bank_holidays', '', {}, utc_datetime(2000, 1, 1), None,
+        bank_holiday_rate_script)
+    market_role_X = MarketRole.insert(sess, 'X', 'Supplier')
+    market_role_M = MarketRole.insert(sess, 'M', 'Mop')
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    market_role_R = MarketRole.insert(sess, 'R', 'Distributor')
+    participant.insert_party(
+        sess, market_role_M, 'Fusion Mop Ltd', utc_datetime(2000, 1, 1), None,
+        None)
+    participant.insert_party(
+        sess, market_role_X, 'Fusion Ltc', utc_datetime(2000, 1, 1), None,
+        None)
+    participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None,
+        None)
+    mop_contract = Contract.insert_mop(
+        sess, 'Fusion', participant, '', {}, utc_datetime(2000, 1, 1), None,
+        {})
+    dc_contract = Contract.insert_hhdc(
+        sess, 'Fusion DC 2000', participant, '', {}, utc_datetime(2000, 1, 1),
+        None, {})
+    pc = Pc.insert(sess, '00', 'hh', utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, '5')
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, 'Fusion Supplier 2000', participant, '', {},
+        utc_datetime(2000, 1, 1), None, {})
+    dno = participant.insert_party(
+        sess, market_role_R, 'WPD', utc_datetime(2000, 1, 1), None, '22')
+    meter_type = MeterType.insert(
+        sess, 'C5', 'COP 1-5', utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, 'CR', 'Credit', utc_datetime(1996, 1, 1), None)
+    Mtc.insert(
+        sess, None, '845', 'HH COP5 And Above With Comms', False, False, True,
+        meter_type, meter_payment_type, 0, utc_datetime(1996, 1, 1), None)
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, 'HV')
+    dno.insert_llfc(
+        sess, '510', 'PC 5-8 & HH HV', voltage_level, False, True,
+        utc_datetime(1996, 1, 1), None)
+    dno.insert_llfc(
+        sess, '521', 'Export (HV)', voltage_level, False, False,
+        utc_datetime(1996, 1, 1), None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, 'net')
+    gsp_group = GspGroup.insert(sess, '_L', 'South Western')
+    supply = site.insert_e_supply(
+        sess, source, None, "Bob", utc_datetime(2000, 1, 1),
+        utc_datetime(2020, 1, 1), gsp_group, mop_contract, '773', dc_contract,
+        'ghyy3', 'hgjeyhuw', pc, '845', cop, None, {}, '22 0470 7514 535',
+        '510', imp_supplier_contract, '7748', 361, None, None, None, None,
+        None)
+    era = supply.eras[0]
+    channel = era.insert_channel(sess, False, 'ACTIVE')
+    channel.add_snag(
+        sess, 'Missing', utc_datetime(2003, 8, 2, 23, 30),
+        utc_datetime(2004, 7, 6, 22, 30))
+    sess.commit()
+
+    regex = [
+        r'<th>Ignored\?</th>\s*'
+        r'<td>\s*'
+        r'Not ignored\s*'
+        r'</td>\s*'
+    ]
+    response = client.get('/channel_snags/1')
+
+    match(response, 200, ''.join(regex))
