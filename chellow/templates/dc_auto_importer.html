@@ -42,31 +42,32 @@
 </div>
 <!-- End Layer Section -->
 
-<!-- Layer Section -->
-<div class="layer-section">
+	<!-- Layer Section -->
+	<div class="layer-section">
     <!-- Section Header -->
     <div class="section-header">
-        <h2>Import Now</h2>
+			<h2>Import Now</h2>
     </div>
     <!-- End Section Header -->
     <!-- Section Content -->
     <div class="section-content">
-        <div class="section-data">
-            <div class="standardForm">
-                {% if not task.is_locked() %}
-					<form method="post">
-						<fieldset>
-							<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
-							<input type="submit" value="Import" name="now">
-						</fieldset>
-					</form>
-				{% endif %}
-            </div>
-        </div>
+			<div class="section-data">
+				<form method="post">
+					<fieldset>
+						<input type="hidden" name="dc_contract_id"
+								value="{{contract.id}}">
+						<input type="submit" value="Import" name="now"
+							{% if task.is_locked() %}
+								disabled
+							{% endif %}
+						>
+					</fieldset>
+				</form>
+			</div>
     </div>
     <!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
+	</div>
+	<!-- End Layer Section -->
 
 <!-- Layer Section -->
 <div class="layer-section">
