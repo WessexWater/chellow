@@ -21546,21 +21546,4 @@ def virtual_bill(ds):
             r'67.8,-67.8,,'
         ]
     },
-    {
-        'name': "Try adding a DC rate script.",
-        'path': '/dc_contracts/8/add_rate_script',
-        'method': 'post',
-        'data': {
-            'start_year': "2010",
-            'start_month': "05",
-            'start_day': "01",
-            'start_hour': "01",
-            'start_minute': "00",
-            'insert': "Insert"
-        },
-        'regexes': [
-            r"/dc_rate_scripts/52"
-        ],
-        'status_code': 303
-    },
 ]

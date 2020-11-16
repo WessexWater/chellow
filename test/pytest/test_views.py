@@ -720,3 +720,28 @@ def test_channel_snag_get(sess, client):
     response = client.get('/channel_snags/1')
 
     match(response, 200, ''.join(regex))
+
+
+def test_dc_rate_script_add_post(sess, client):
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None,
+        None)
+    dc_contract = Contract.insert_hhdc(
+        sess, 'Fusion DC 2000', participant, '', {}, utc_datetime(2000, 1, 1),
+        None, {})
+    sess.commit()
+
+    data = {
+        'start_year': "2010",
+        'start_month': "05",
+        'start_day': "01",
+        'start_hour': "01",
+        'start_minute': "00",
+        'insert': "Insert"
+    }
+    response = client.post(
+        f'/dc_contracts/{dc_contract.id}/add_rate_script', data=data)
+
+    match(response, 303, r"/dc_rate_scripts/3")
