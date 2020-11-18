@@ -1,21 +1,28 @@
-from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_, cast, Float
-from sqlalchemy.sql.expression import null
-from werkzeug.exceptions import BadRequest
 from collections import defaultdict
-from chellow.models import (
-    GEra, GRegisterRead, GBill, BillType, GReadType, get_non_core_contract_id,
-    GRateScript)
-from chellow.utils import (
-    HH, hh_max, get_file_rates, hh_min, hh_range, to_ct, utc_datetime_now,
-    utc_datetime, PropDict, hh_before, hh_after)
-from chellow.computer import hh_rate
-from types import MappingProxyType
 from datetime import timedelta
-from zish import loads, dumps
-import chellow.bank_holidays
+from itertools import combinations, count
 from math import floor, log10
-from itertools import count, combinations
+from types import MappingProxyType
+
+import chellow.bank_holidays
+from chellow.computer import hh_rate
+from chellow.models import (
+    BillType, Contract, GBill, GEra, GRateScript, GReadType, GRegisterRead,
+    get_non_core_contract_id
+)
+from chellow.utils import (
+    HH, PropDict, get_file_rates, hh_after, hh_before, hh_max, hh_min,
+    hh_range, to_ct, utc_datetime, utc_datetime_now
+)
+
+from dateutil.relativedelta import relativedelta
+
+from sqlalchemy import Float, cast, or_
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
+from zish import dumps, loads
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):
@@ -132,6 +139,8 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             d_cache = d_cache_years[start_date] = {}
 
         datum_list = []
+        bank_holidays_id = Contract.get_non_core_by_name(
+            sess, 'bank_holidays').id
         for dt in hh_range(caches, start_date, finish_date):
             hist_date = dt - relativedelta(years=years_back)
             ct_dt = to_ct(dt)
@@ -142,9 +151,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
             utc_decimal_hour = dt.hour + dt.minute / 60
             ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
-            bhs = hh_rate(
-                sess, caches, chellow.bank_holidays.get_db_id(),
-                dt)['bank_holidays']
+            bhs = hh_rate(sess, caches, bank_holidays_id, dt)['bank_holidays']
 
             bank_holidays = [b[5:] for b in bhs]
             utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays

@@ -1,25 +1,18 @@
+import atexit
 import collections
 import threading
 import traceback
+
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
-    HH, hh_format, utc_datetime_now, utc_datetime, utc_datetime_parse)
+    HH, hh_format, utc_datetime, utc_datetime_now, utc_datetime_parse,
+)
+
 from dateutil.relativedelta import relativedelta
-import atexit
-import functools
+
 import requests
+
 from zish import loads
-
-
-@functools.lru_cache()
-def get_db_id():
-    sess = None
-    try:
-        sess = Session()
-        return Contract.get_non_core_by_name(sess, 'bank_holidays').id
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'

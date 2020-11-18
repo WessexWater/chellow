@@ -319,6 +319,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
         yb_datum_cache = cache_level(datum_cache, years_back)
 
         datum_list = []
+        bh_cont = Contract.get_non_core_by_name(sess, 'bank_holidays')
         for dt in hh_range(caches, start_date, finish_date):
             try:
                 datum = yb_datum_cache[dt]
@@ -332,9 +333,7 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                 utc_decimal_hour = dt.hour + dt.minute / 60
                 ct_decimal_hour = ct_dt.hour + ct_dt.minute / 60
 
-                bhs = hh_rate(
-                    sess, caches, chellow.bank_holidays.get_db_id(),
-                    dt)['bank_holidays']
+                bhs = hh_rate(sess, caches, bh_cont.id, dt)['bank_holidays']
 
                 bank_holidays = [b[5:] for b in bhs]
                 utc_is_bank_holiday = dt.strftime("%m-%d") in bank_holidays

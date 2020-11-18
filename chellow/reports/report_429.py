@@ -1,21 +1,25 @@
-from collections import defaultdict, OrderedDict
-from datetime import datetime as Datetime
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-import traceback
-import sys
-import os
-import threading
 import csv
-from chellow.models import Session, GBatch, GBill, GEra, Site, SiteGEra
-import chellow.dloads
-from werkzeug.exceptions import BadRequest
-from chellow.utils import hh_min, hh_max, csv_make_val, req_int, to_utc
-import chellow.g_engine
-from flask import request, g
-from chellow.views import chellow_redirect
+import os
+import sys
+import threading
+import traceback
+from collections import OrderedDict, defaultdict
+from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
+
+import chellow.dloads
+import chellow.g_engine
+from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra
+from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(g_batch_id, g_bill_id, user):
@@ -44,8 +48,8 @@ def content(g_batch_id, g_bill_id, user):
             report_context, g_contract, 'virtual_bill')
         if vbf is None:
             raise BadRequest(
-                'The contract ' + g_contract.name +
-                " doesn't have a function virtual_bill.")
+                f"The contract {g_contract.name} doesn't have a function "
+                f"virtual_bill.")
 
         header_titles = [
             'batch', 'bill_reference', 'bill_type', 'bill_start_date',
@@ -92,6 +96,7 @@ def content(g_batch_id, g_bill_id, user):
 def _process_g_bill_ids(
         sess, report_context, g_bill_ids, forecast_date, bill_titles, vbf,
         titles, csv_writer):
+
     g_bill_id = list(sorted(g_bill_ids))[0]
     g_bill_ids.remove(g_bill_id)
     g_bill = sess.query(GBill).filter(GBill.id == g_bill_id).one()
