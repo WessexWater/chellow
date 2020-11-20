@@ -1,19 +1,27 @@
-import xlrd
-from dateutil.relativedelta import relativedelta
-from datetime import datetime as Datetime
-import traceback
-import threading
-import collections
-from chellow.models import (
-    RateScript, Contract, Session, get_non_core_contract_id)
-from chellow.utils import hh_format, utc_datetime_now, to_utc, to_ct, HH
-from werkzeug.exceptions import BadRequest
 import atexit
-import requests
-from zish import loads, dumps
+import collections
+import threading
+import traceback
+from datetime import datetime as Datetime
 from decimal import Decimal
+
+from chellow.models import (
+    Contract, RateScript, Session, get_non_core_contract_id,
+)
+from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
+
+from dateutil.relativedelta import relativedelta
+
+import requests
+
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
+import xlrd
+
+from zish import dumps, loads
 
 
 def hh(data_source, run='RF'):
@@ -40,26 +48,31 @@ def hh(data_source, run='RF'):
             rates = data_source.hh_rate(db_id, h_start)['rates_gbp_per_mwh']
 
             try:
-                bsuos_prices = rates[key_format(h_start)]
+                bsuos_price_dict = rates[key_format(h_start)]
+                bsuos_price = _find_price(run, bsuos_price_dict)
             except KeyError:
-                bsuos_prices = sorted(rates.items())[-1][1]
-
-            try:
-                bsuos_price = bsuos_prices[run]
-            except KeyError:
-                try:
-                    bsuos_price = bsuos_prices['RF']
-                except KeyError:
-                    try:
-                        bsuos_price = bsuos_prices['SF']
-                    except KeyError:
-                        bsuos_price = bsuos_prices['II']
+                ds = rates.values()
+                bsuos_price = sum(_find_price(run, d) for d in ds) / len(ds)
 
             h['bsuos-rate'] = bsuos_rate = bsuos_cache[h_start] = float(
                 bsuos_price) / 1000
 
         h['bsuos-kwh'] = h['nbp-kwh']
         h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
+
+
+def _find_price(run, prices):
+    try:
+        price = prices[run]
+    except KeyError:
+        try:
+            price = prices['RF']
+        except KeyError:
+            try:
+                price = prices['SF']
+            except KeyError:
+                price = prices['II']
+    return price
 
 
 def key_format(dt):
