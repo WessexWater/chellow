@@ -5155,7 +5155,6 @@ def site_gen_graph_get(site_id):
 
     days = []
     month_points = []
-    x = 0
     max_scls = {'pos': 10, 'neg': 1}
     supply_ids = list(
         s.id for s in g.sess.query(Supply).join(Era).join(SiteEra).
@@ -5178,7 +5177,7 @@ def site_gen_graph_get(site_id):
         source_code, sup_id) = next(
             rs, (None, None, None, None, None, None, None))
 
-    for hh_date in hh_range(cache, start_date, finish_date):
+    for x, hh_date in enumerate(hh_range(cache, start_date, finish_date)):
         hh_date_ct = to_ct(hh_date)
         rvals = dict((n, {'pos': 0, 'neg': 0}) for n in graph_names)
 
@@ -5196,7 +5195,15 @@ def site_gen_graph_get(site_id):
                 month_points.append(
                     {'x': x, 'text': hh_date_ct.strftime("%B")})
 
+        is_complete = None
+
         while hhd_start_date == hh_date:
+            if is_complete is None:
+                is_complete = True
+
+            if status != 'A':
+                is_complete = False
+
             to_adds = []
             if imp_related and source_code in ('net', 'gen-net'):
                 to_adds.append(('imp', 'pos'))
@@ -5249,13 +5256,19 @@ def site_gen_graph_get(site_id):
             pos_val = max(val, 0)
             neg_val = abs(min(val, 0))
             for gval, prefix in ((pos_val, 'pos'), (neg_val, 'neg')):
-                graph[prefix + '_hhs'].append(
-                    {
-                        'colour': 'blue', 'x': x, 'start_date': hh_date,
-                        'value': gval, 'running_total': 0})
-                max_scls[prefix] = max(max_scls[prefix], int(gval))
+                hh_dict = {
+                    'x': x, 'start_date': hh_date, 'value': gval,
+                    'running_total': 0
+                }
+                if is_complete is True:
+                    hh_dict['colour'] = 'blue'
+                    hh_dict['background_colour'] = 'white'
+                else:
+                    hh_dict['colour'] = 'black'
+                    hh_dict['background_colour'] = 'grey'
 
-        x += 1
+                graph[prefix + '_hhs'].append(hh_dict)
+                max_scls[prefix] = max(max_scls[prefix], int(gval))
 
     max_height = 80
     scl_factor = max_height / max_scls['pos']
@@ -5278,12 +5291,12 @@ def site_gen_graph_get(site_id):
     for graph_name in graph_names:
         graph = graphs[graph_name]
         graph['y'] = y
-        graph['height'] = sum(
-            max_scls[p] * scl_factor for p in ('pos', 'neg')) + 100
+        graph['height_pos'] = max_scls['pos'] * scl_factor
+        graph['height_neg'] = max_scls['neg'] * scl_factor
+        graph['height'] = graph['height_pos'] + graph['height_neg'] + 100
         y += graph['height']
 
         x_axis_px = max_scls['pos'] * scl_factor
-        graph['x_axis'] = x_axis_px
         graph['title'] = graph_titles[graph_name]
         for tick in graph['ticks']:
             tick['y'] = x_axis_px

@@ -62,6 +62,21 @@
 								{% endfor %}
 
 								<g transform="translate(230, 0)">
+									{% for hh in graph.pos_hhs %}
+										<rect
+											x="{{hh.x}}px" y="0px" width="1px"
+											height="{{graph.height_pos}}px"
+											fill="{{hh.background_colour}}"/>
+									{%- endfor %}
+
+									{% for hh in graph.neg_hhs %}
+										<rect
+											x="{{hh.x}}px" y="{{graph.height_pos}}px" width="1px"
+											height="{{graph.height_neg}}px"
+											fill="{{hh.background_colour}}">
+										</rect>
+									{%- endfor %}
+
 									<text x="-80" y="0">kW</text>
 
 									{% for scale_line in graph.scale_lines %}
@@ -86,8 +101,8 @@
 
 									{% for hh in graph.pos_hhs %}
 										<rect
-										x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
-										height="{{hh.height}}px" fill="{{hh.colour}}">
+											x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
+											height="{{hh.height}}px" fill="{{hh.colour}}">
 										<title>{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
 										</rect>
 									{%- endfor %}
@@ -114,6 +129,13 @@
 											{{month_point.text}}
 										</text>
 									{%- endfor %}
+
+									{% if graph_name == 'used' %}
+										<text x="0px" y="{{graph.height - 30}}px">
+											Poor data is denoted by a grey background and black
+											foreground.
+										</text>
+									{% endif %}
 								</g>
 							</g>
 						{%- endfor %}
