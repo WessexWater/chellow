@@ -745,3 +745,55 @@ def test_dc_rate_script_add_post(sess, client):
         f'/dc_contracts/{dc_contract.id}/add_rate_script', data=data)
 
     match(response, 303, r"/dc_rate_scripts/3")
+
+
+def test_g_bill_add_post(sess, client):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    mprn = "750278673"
+    site.insert_g_supply(
+        sess, mprn, 'main', g_exit_zone, utc_datetime(2018, 1, 1), None,
+        'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    insert_bill_types(sess)
+    sess.commit()
+
+    data = {
+        'bill_type_id': "2",
+        'mprn': mprn,
+        'reference': "765988",
+        'account': "1",
+        'issue_year': "2017",
+        'issue_month': "02",
+        'issue_day': "03",
+        'issue_hour': "00",
+        'issue_minute': "00",
+        'start_year': "2017",
+        'start_month': "03",
+        'start_day': "01",
+        'start_hour': "00",
+        'start_minute': "00",
+        'finish_year': "2017",
+        'finish_month': "04",
+        'finish_day': "01",
+        'finish_hour': "00",
+        'finish_minute': "30",
+        'kwh': "0.00",
+        'net': "0.00",
+        'vat': "0.00",
+        'gross': "0.00",
+        'breakdown': '{}'
+    }
+
+    response = client.post(f'/g_batches/{g_batch.id}/add_bill', data=data)
+
+    match(response, 303, r'/g_bills/1')

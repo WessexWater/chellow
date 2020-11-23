@@ -21473,39 +21473,4 @@ def virtual_bill(ds):
             r"the batch\."
         ]
     },
-
-    {
-        'name': "Gas batch check. Bills with different LDZs",
-        'path': '/g_batches/2/add_bill',
-        'method': 'post',
-        'data': {
-            'bill_type_id': "2",
-            'mprn': "750278673",
-            'reference': "765988",
-            'account': "1",
-            'issue_year': "2017",
-            'issue_month': "02",
-            'issue_day': "03",
-            'issue_hour': "00",
-            'issue_minute': "00",
-            'start_year': "2017",
-            'start_month': "03",
-            'start_day': "01",
-            'start_hour': "00",
-            'start_minute': "00",
-            'finish_year': "2017",
-            'finish_month': "04",
-            'finish_day': "01",
-            'finish_hour': "00",
-            'finish_minute': "30",
-            'kwh': "0.00",
-            'net': "0.00",
-            'vat': "0.00",
-            'gross': "0.00",
-            'breakdown': '{}'},
-        'status_code': 303,
-        'regexes': [
-            r"/g_bills/5"
-        ]
-    },
 ]
