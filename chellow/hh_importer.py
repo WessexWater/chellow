@@ -1,22 +1,31 @@
+import atexit
+import ftplib
+import importlib
+import os
+import tempfile
 import threading
 import traceback
 from collections import defaultdict, deque
-import tempfile
-import ftplib
-import os
-from chellow.models import Contract, MarketRole, Session, HhDatum, Era
-from io import TextIOWrapper
-from werkzeug.exceptions import BadRequest
-import importlib
-import atexit
-import paramiko
-import pysftp
-from chellow.utils import (
-    utc_datetime_now, utc_datetime, HH, hh_format, hh_min, hh_max)
 from datetime import timedelta as Timedelta
-from sqlalchemy import or_, null
+from io import TextIOWrapper
+
+from chellow.models import Contract, Era, HhDatum, MarketRole, Session
+from chellow.utils import (
+    HH, hh_format, hh_max, hh_min, utc_datetime, utc_datetime_now,
+)
+
+
 import jinja2
+
+import paramiko
+
+import pysftp
+
 import requests
+
+from sqlalchemy import null, or_
+
+from werkzeug.exceptions import BadRequest
 
 
 processes = defaultdict(list)
@@ -403,9 +412,7 @@ class HhImportTask(threading.Thread):
                 if mpan_core is None:
                     continue
 
-                self.log(
-                    "Looking at MPAN core {mpan_core}.".format(
-                        mpan_core=mpan_core))
+                self.log(f"Looking at MPAN core {mpan_core}.")
 
                 vals = {
                     'chunk_start': chunk_start,
@@ -415,23 +422,23 @@ class HhImportTask(threading.Thread):
                     url = url_template.render(vals)
                 except jinja2.exceptions.UndefinedError as e:
                     raise BadRequest(
-                        "Problem rendering the URL template: " +
-                        url_template_str + ". The problem is: " + str(e) +
-                        ". This can be fixed by " +
-                        "editing the properties of this contract.")
+                        f"Problem rendering the URL template: "
+                        f"{url_template_str}. The problem is: {e}. This can "
+                        f"be fixed by editing the properties of this "
+                        f"contract.")
 
-                self.log("Retrieving data from {url}.".format(url=url))
-                res = requests.get(url)
+                self.log(f"Retrieving data from {url}.")
+                res = requests.get(url, timeout=120)
                 res.raise_for_status()
-                result = requests.get(url).json()
+                result = requests.get(url, timeout=120).json()
                 if isinstance(result, dict):
                     result_data = result['DataPoints']
                 elif isinstance(result, list):
                     result_data = result
                 else:
                     raise BadRequest(
-                        "Expecting a JSON object at the top level, but "
-                        "instead got " + str(result))
+                        f"Expecting a JSON object at the top level, but "
+                        f"instead got {result}")
                 raw_data = []
                 for jdatum in result_data:
                     raw_data.append(
@@ -463,7 +470,7 @@ def startup():
         for proc in procs:
             if proc.isAlive():
                 raise BadRequest(
-                    "Can't start hh importer, there are still some " +
+                    "Can't start hh importer, there are still some "
                     "hh imports running.")
 
     sess = None
