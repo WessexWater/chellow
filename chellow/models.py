@@ -129,9 +129,7 @@ class PersistentClass():
     def get_by_id(cls, sess, oid):
         obj = sess.query(cls).get(oid)
         if obj is None:
-            raise NotFound(
-                "There isn't a " + str(cls.__name__) + " with the id " +
-                str(oid))
+            raise NotFound(f"There isn't a {cls.__name__} with the id {oid}")
         return obj
 
     def _eq_(self, other):
