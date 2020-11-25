@@ -937,3 +937,122 @@ def test_mop_batch_upload_file_post(sess, client):
     batch_file = BatchFile.get_by_id(sess, 1)
 
     assert batch_file.data == file_bytes
+
+
+def test_g_bill_edit_post(sess, client):
+    site = Site.insert(sess, '22488', 'Water Works')
+    g_dn = GDn.insert(sess, 'EE', "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
+    g_contract = GContract.insert(
+        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_supply = site.insert_g_supply(
+        sess, '87614362', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
+        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
+        g_reading_frequency_M)
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+
+    breakdown = {
+        'units_consumed': 771
+    }
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, 'N')
+    g_bill = g_batch.insert_g_bill(
+        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
+        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
+        Decimal('1.20'), Decimal('14.52'), '', breakdown)
+
+    sess.commit()
+
+    data = {
+        'bill_type_id': '3',
+        'reference': '8899900012',
+        'account': 'college_rooms',
+        'issue_year': '2015',
+        'issue_month': '11',
+        'issue_day': '01',
+        'issue_hour': '00',
+        'issue_minute': '00',
+        'start_year': '2015',
+        'start_month': '09',
+        'start_day': '01',
+        'start_hour': '01',
+        'start_minute': '00',
+        'finish_year': '2015',
+        'finish_month': '09',
+        'finish_day': '30',
+        'finish_hour': '01',
+        'finish_minute': '00',
+        'kwh': '4500901',
+        'net_gbp': '6972.33',
+        'vat_gbp': '1003.89',
+        'gross_gbp': '7976.22',
+        'raw_lines': 'reference,mprn,bill_type,account,issue_date,'
+        'start_date,finish_date,kwh,net_gbp,vat_gbp,gross_gbp,'
+        'breakdown,msn,unit,correction_factor,'
+        'calorific_value,prev_date,prev_value,prev_type,pres_date,'
+        'prev_value,pres_type\n'
+        '8899900012,750278673,N,college_rooms,2015-11-01 00:00,'
+        '2015-09-01 00:00,2015-09-30 00:00,4500901,6972.33,1003.89,'
+        '7976.22,{"gas_rate": 0.019448, "gas_gbp": 8936.13,'
+        '"ccl_gbp": 275.32, "vat_0500pc": 0.3, "vat_1500pc": 49.12, '
+        '"vat_1750pc": 55.7, "vat_2000pc": 801},hwo8tt,HCUF,FALSE,,'
+        '39.300811,2015-09-01 00:00,567822,A,2015-10-01 00:00,'
+        '575652,A',
+        'breakdown': '{"ccl_gbp": 275.32, "gas_gbp": 8936.13, '
+        '"gas_rate": 0.019448, "vat_0500pc": 0.3, "vat_1500pc": 49.12,'
+        '"vat_1750pc": 55.7, "vat_2000pc": 801}'
+    }
+
+    response = client.post(f'/g_bills/{g_bill.id}/edit', data=data)
+
+    match(response, 303)
+
+    {
+        'name': "Edit gas bill",
+        'path': '/g_bills/3/edit',
+        'method': 'post',
+        'data': {
+            'bill_type_id': '3',
+            'reference': '8899900012',
+            'account': 'college_rooms',
+            'issue_year': '2015',
+            'issue_month': '11',
+            'issue_day': '01',
+            'issue_hour': '00',
+            'issue_minute': '00',
+            'start_year': '2015',
+            'start_month': '09',
+            'start_day': '01',
+            'start_hour': '01',
+            'start_minute': '00',
+            'finish_year': '2015',
+            'finish_month': '09',
+            'finish_day': '30',
+            'finish_hour': '01',
+            'finish_minute': '00',
+            'kwh': '4500901',
+            'net_gbp': '6972.33',
+            'vat_gbp': '1003.89',
+            'gross_gbp': '7976.22',
+            'raw_lines': 'reference,mprn,bill_type,account,issue_date,'
+                'start_date,finish_date,kwh,net_gbp,vat_gbp,gross_gbp,'
+                'breakdown,msn,unit,correction_factor,'
+                'calorific_value,prev_date,prev_value,prev_type,pres_date,'
+                'prev_value,pres_type\n'
+                '8899900012,750278673,N,college_rooms,2015-11-01 00:00,'
+                '2015-09-01 00:00,2015-09-30 00:00,4500901,6972.33,1003.89,'
+                '7976.22,{"gas_rate": 0.019448, "gas_gbp": 8936.13,'
+                '"ccl_gbp": 275.32, "vat_0500pc": 0.3, "vat_1500pc": 49.12, '
+                '"vat_1750pc": 55.7, "vat_2000pc": 801},hwo8tt,HCUF,FALSE,,'
+                '39.300811,2015-09-01 00:00,567822,A,2015-10-01 00:00,'
+                '575652,A',
+            'breakdown': '{"ccl_gbp": 275.32, "gas_gbp": 8936.13, '
+                '"gas_rate": 0.019448, "vat_0500pc": 0.3, "vat_1500pc": 49.12,'
+                '"vat_1750pc": 55.7, "vat_2000pc": 801}'},
+        'status_code': 303},
