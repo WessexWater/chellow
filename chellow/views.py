@@ -5237,7 +5237,10 @@ def site_gen_graph_get(site_id):
                     {
                         'colour': graph['supplies'][sup_id]['colour'],
                         'running_total': grvals[polarity],
-                        'value': hhd_value, 'x': x, 'start_date': hh_date})
+                        'value': hhd_value, 'x': x, 'start_date': hh_date,
+                        'background_colour': 'white'
+                    }
+                )
                 grvals[polarity] += hhd_value
                 max_scls[polarity] = max(
                     max_scls[polarity], int(grvals[polarity]))
