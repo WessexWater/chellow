@@ -1,17 +1,20 @@
+import csv
+import os
+import sys
+import threading
 import traceback
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-from chellow.models import GSupply, GEra, Site, SiteGEra, Session
-from chellow.utils import hh_format, hh_range, req_int, req_date, csv_make_val
+
 import chellow.computer
 from chellow.computer import contract_func
-import csv
-from flask import g
-import threading
-from chellow.views import chellow_redirect
-import sys
-import os
 from chellow.g_engine import GDataSource
+from chellow.models import GEra, GSupply, Session, Site, SiteGEra
+from chellow.utils import csv_make_val, hh_format, hh_range, req_date, req_int
+from chellow.views import chellow_redirect
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
 
 
 def content(g_supply_id, start_date, finish_date, user):

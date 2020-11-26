@@ -21125,37 +21125,4 @@ def virtual_bill(ds):
             r'</table:table-row>'
         ]
     },
-
-    {
-        'name': "Gas virtual bill by HH",
-        'path': '/reports/g_virtual_bills_hh?g_supply_id=1&start_year=2018&'
-        'start_month=02&start_day=01&start_hour=00&start_minute=00&'
-        'finish_year=2018&finish_month=02&finish_day=01&finish_hour=00&'
-        'finish_minute=30&compression=False',
-        'status_code': 303
-    },
-    {
-        'path': '/downloads',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r'00028_FINISHED_adminexamplecom_'
-            r'g_supply_virtual_bills_hh_1\.csv'
-        ]
-    },
-    {
-        'path': '/downloads/'
-        '00028_FINISHED_adminexamplecom_g_supply_virtual_bills_hh_1.csv',
-        'status_code': 200,
-        'regexes': [
-            r'MPRN,Site Code,Site Name,Account,HH Start,,,units_consumed,'
-            r'correction_factor,unit_code,unit_factor,calorific_value,kwh,'
-            r'gas_rate,gas_gbp,ccl_rate,standing_rate,standing_gbp,net_gbp,'
-            r'vat_gbp,gross_gbp,problem\s*'
-            r'750278673,CH017,Parbola,ghoIIl,2018-02-01 00:00,,,'
-            r'5.26209677\d*,1.02264,M3,1.0,39.3,58.7451012096\d*,'
-            r'0.019548,1.14834923\d*,0.00198,,,1.264664538841\d*,0,'
-            r'1.2646645388\d*,'
-        ]
-    },
 ]
