@@ -1,23 +1,30 @@
 import os
+import sys
+import threading
 import traceback
-from sqlalchemy import or_, true
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-from chellow.models import (
-    Session, GContract, Site, GEra, SiteGEra, GSupply, GBill)
-from chellow.computer import contract_func
-from chellow.g_engine import GDataSource
+
 import chellow.computer
 import chellow.dloads
-import threading
-import odio
-import sys
-from werkzeug.exceptions import BadRequest
+from chellow.computer import contract_func
+from chellow.g_engine import GDataSource
+from chellow.models import (
+    GBill, GContract, GEra, GSupply, Session, Site, SiteGEra,
+)
 from chellow.utils import (
-    hh_format, hh_max, hh_min, req_int, req_bool, make_val, ct_datetime_now,
-    c_months_u)
-from flask import request, g
+    c_months_u, ct_datetime_now, hh_format, hh_max, hh_min, make_val, req_bool,
+    req_int,
+)
 from chellow.views import chellow_redirect
+
+from flask import g, request
+
+import odio
+
+from sqlalchemy import or_, true
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
 
 
 CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
@@ -34,8 +41,9 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
 
 def content(
         site_id, g_supply_id, user, compression, finish_year, finish_month,
-        months):
-    now = ct_datetime_now()
+        months, now=None):
+    if now is None:
+        now = ct_datetime_now()
     report_context = {}
     sess = None
     month_list = list(
