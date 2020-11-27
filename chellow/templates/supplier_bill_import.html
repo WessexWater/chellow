@@ -71,14 +71,29 @@
 									<td>{{bill.account}}</td>
 									<td>{{bill.reference}}</td>
 									<td>{{bill.bill_type_code}}</td>
-									<td>{{bill.issue_date|hh_format}}</td>
-									<td>{{bill.start_date|hh_format}}</td>
-									<td>{{bill.finish_date|hh_format}}</td>
+									<td>
+										{% if 'issue_date' in bill %}
+											{{bill.issue_date|hh_format}}
+										{% endif %}
+									</td>
+									<td>
+										{% if 'start_date' in bill %}
+											{{bill.start_date|hh_format}}
+										{% endif %}
+									</td>
+									<td>
+										{% if 'finish_date' in bill %}
+											{{bill.finish_date|hh_format}}</td>
+										{% endif %}
 									<td>{{bill.kwh}}</td>
 									<td>{{bill.net}}</td>
 									<td>{{bill.vat}}</td>
 									<td>{{bill.gross}}</td>
-									<td><pre>{{bill.breakdown|dumps}}</pre></td>
+									<td>
+										{% if 'breakdown' in bill %}
+											<pre>{{bill.breakdown|dumps}}</pre>
+										{% endif %}
+									</td>
 									<td>{{bill.reads}}</td>
 								</tr>
 							{% endfor %}

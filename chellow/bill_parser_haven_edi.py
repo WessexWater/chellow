@@ -274,8 +274,7 @@ def _to_decimal(components, divisor=None):
         result = Decimal(comp_0)
     except InvalidOperation as e:
         raise BadRequest(
-            "Can't parse '" + str(comp_0) + "' of " + str(components) +
-            " as a decimal:" + str(e))
+            f"Can't parse '{comp_0}' of {components} as a decimal: {e}")
 
     if len(components) > 1 and components[-1] == "R":
         result *= Decimal("-1")
@@ -305,49 +304,52 @@ class Parser():
         for self.line_number, code in enumerate(self.parser):
             elements = _find_elements(code, self.parser.elements)
             line = self.parser.line
-            try:
-                bill = _process_segment(code, elements, line, headers)
-            except BadRequest as e:
-                raise BadRequest(
-                    f"Can't parse the line number {self.line_number} "
-                    f"{line} : {e.description}")
-
+            bill = _process_segment(
+                code, elements, line, headers, self.line_number)
             if bill is not None:
                 raw_bills.append(bill)
         sess.close()
         return raw_bills
 
 
-def _process_segment(code, elements, line, headers):
-    if 'breakdown' in headers:
-        headers['breakdown']['raw-lines'].append(line)
+def _process_segment(code, elements, line, headers, line_number):
+    try:
+        if 'breakdown' in headers:
+            headers['breakdown']['raw-lines'].append(line)
 
-    if code == "BCD":
-        headers['issue_date'] = _to_date(elements['IVDT'][0])
-        headers['reference'] = elements['INVN'][0]
-        headers['bill_type_code'] = elements['BTCD'][0]
+        if code == "BCD":
+            headers['issue_date'] = _to_date(elements['IVDT'][0])
+            headers['reference'] = elements['INVN'][0]
+            headers['bill_type_code'] = elements['BTCD'][0]
 
-        sumo = elements['SUMO']
-        headers['start_date'] = _to_date(sumo[0])
-        headers['finish_date'] = _to_date(sumo[1]) + relativedelta(days=1) - HH
+            sumo = elements['SUMO']
+            headers['start_date'] = _to_date(sumo[0])
+            headers['finish_date'] = _to_date(sumo[1]) + relativedelta(
+                days=1) - HH
 
-    elif code == "BTL":
-        _process_BTL(elements, headers)
+        elif code == "BTL":
+            _process_BTL(elements, headers)
 
-    elif code == "MHD":
-        _process_MHD(elements, headers)
+        elif code == "MHD":
+            _process_MHD(elements, headers)
 
-    elif code == "CCD":
-        _process_CCD(elements, headers)
+        elif code == "CCD":
+            _process_CCD(elements, headers)
 
-    elif code == 'CLO':
-        _process_CLO(elements, headers)
+        elif code == 'CLO':
+            _process_CLO(elements, headers)
 
-    elif code == "MTR":
-        return _process_MTR(elements, headers)
+        elif code == "MTR":
+            return _process_MTR(elements, headers)
 
-    elif code == "MAN":
-        _process_MAN(elements, headers)
+        elif code == "MAN":
+            _process_MAN(elements, headers)
+
+    except BadRequest as e:
+        return {
+            'error': f"Can't parse the line number {line_number} {line} "
+            f": {e.description}"
+        }
 
 
 def _process_BTL(elements, headers):
@@ -379,7 +381,11 @@ def _process_MTR(elements, headers):
         return
 
     sess = headers['sess']
-    mpan_core = headers['mpan_core']
+    try:
+        mpan_core = headers['mpan_core']
+    except KeyError:
+        raise BadRequest("The mpan_core can't be found for this bill.")
+
     start_date = headers['start_date']
     reads = headers['reads']
     supply = Supply.get_by_mpan_core(sess, mpan_core)
@@ -525,8 +531,8 @@ def _process_CCD(elements, headers):
             eln_gbp, eln_rate, eln_cons = TMOD_MAP[tmod_1]
         except KeyError:
             raise BadRequest(
-                "Can't find the Tariff Modifer Code 1 " + tmod_1 +
-                " in the TMOD_MAP.")
+                f"Can't find the Tariff Modifer Code 1 {tmod_1} "
+                f"in the TMOD_MAP.")
 
         '''
         m = elements['MLOC'][0]
@@ -576,13 +582,13 @@ def _process_CCD_1(elements, headers):
         pres_read_type = READ_TYPE_MAP[prrd[1]]
     except KeyError as e:
         raise BadRequest(
-            "The present register read type isn't recognized " + str(e))
+            f"The present register read type isn't recognized {e}")
 
     try:
         prev_read_type = READ_TYPE_MAP[prrd[3]]
     except KeyError as e:
         raise BadRequest(
-            "The previous register read type isn't recognized " + str(e))
+            f"The previous register read type isn't recognized {e}")
 
     coefficient = Decimal(elements['ADJF'][1]) / Decimal(100000)
     pres_reading_value = Decimal(prrd[0])
@@ -624,8 +630,7 @@ def _process_CCD_2(elements, headers):
         titles = TMOD_MAP[tmod_1]
     except KeyError:
         raise BadRequest(
-            "Can't find the Tariff Modifier Code 1 " + tmod_1 +
-            " in the TMOD_MAP.")
+            f"Can't find the Tariff Modifier Code 1 {tmod_1} in the TMOD_MAP.")
 
     '''
     m = elements['MLOC'][0]
@@ -660,7 +665,7 @@ def _process_CCD_3(elements, headers):
         titles = TMOD_MAP[tmod_1]
     except KeyError:
         raise BadRequest(
-            "Can't find the Tariff Code Modifier 1 {tmod_1} in the TMOD_MAP.")
+            f"Can't find the Tariff Code Modifier 1 {tmod_1} in the TMOD_MAP.")
 
     if len(tcod) == 2:
         desc = tcod[1]

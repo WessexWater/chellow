@@ -1,15 +1,18 @@
+import collections
+import importlib
 import threading
 import traceback
-import collections
-from werkzeug.exceptions import BadRequest
-import importlib
+from io import BytesIO
 from pkgutil import iter_modules
-from chellow.models import (
-    Session, Supply, BatchFile, BillType, Tpr, ReadType, Batch)
+
 import chellow
 import chellow.bill_parser_engie_xls
+from chellow.models import (
+    Batch, BatchFile, BillType, ReadType, Session, Supply, Tpr,
+)
 from chellow.utils import keydefaultdict, utc_datetime_now
-from io import BytesIO
+
+from werkzeug.exceptions import BadRequest
 
 
 import_id = 0
@@ -41,7 +44,7 @@ class BillImport(threading.Thread):
     def _log(self, msg):
         with import_lock:
             self.log.appendleft(
-                utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + ' - ' + msg)
+                f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {msg}")
 
     def status(self):
         if self.isAlive():
@@ -61,14 +64,6 @@ class BillImport(threading.Thread):
         try:
             sess = Session()
             batch = Batch.get_by_id(sess, self.batch_id)
-            raw_bills = []
-            for bf in sess.query(BatchFile).filter(
-                    BatchFile.batch == batch).order_by(
-                    BatchFile.upload_timestamp):
-
-                self.parser = _process_batch_file(sess, bf, self._log)
-                raw_bills.extend(self.parser.make_raw_bills())
-                self._log(f"Successfully parsed the file {bf.filename}")
 
             bill_types = keydefaultdict(
                 lambda k: BillType.get_by_code(sess, k))
@@ -79,35 +74,49 @@ class BillImport(threading.Thread):
             read_types = keydefaultdict(
                 lambda k: ReadType.get_by_code(sess, k))
 
-            self._log(
-                "Successfully parsed all the files, and now the raw bills "
-                "will be inserted.")
-            for self.bill_num, raw_bill in enumerate(raw_bills):
-                try:
-                    mpan_core = raw_bill['mpan_core']
-                    supply = Supply.get_by_mpan_core(sess, mpan_core)
-                    with sess.begin_nested():
-                        bill = batch.insert_bill(
-                            sess, raw_bill['account'], raw_bill['reference'],
-                            raw_bill['issue_date'], raw_bill['start_date'],
-                            raw_bill['finish_date'], raw_bill['kwh'],
-                            raw_bill['net'], raw_bill['vat'],
-                            raw_bill['gross'],
-                            bill_types[raw_bill['bill_type_code']],
-                            raw_bill['breakdown'], supply)
-                        for raw_read in raw_bill['reads']:
-                            bill.insert_read(
-                                sess, tprs[raw_read['tpr_code']],
-                                raw_read['coefficient'], raw_read['units'],
-                                raw_read['msn'], raw_read['mpan'],
-                                raw_read['prev_date'], raw_read['prev_value'],
-                                read_types[raw_read['prev_type_code']],
-                                raw_read['pres_date'], raw_read['pres_value'],
-                                read_types[raw_read['pres_type_code']])
-                        self.successful_bills.append(raw_bill)
-                except BadRequest as e:
-                    raw_bill['error'] = str(e.description)
-                    self.failed_bills.append(raw_bill)
+            for bf in sess.query(BatchFile).filter(
+                    BatchFile.batch == batch).order_by(
+                    BatchFile.upload_timestamp):
+
+                self.parser = _process_batch_file(sess, bf, self._log)
+                for self.bill_num, raw_bill in enumerate(
+                        self.parser.make_raw_bills()):
+
+                    if 'error' in raw_bill:
+                        self.failed_bills.append(raw_bill)
+                    else:
+                        try:
+                            mpan_core = raw_bill['mpan_core']
+                            supply = Supply.get_by_mpan_core(sess, mpan_core)
+                            with sess.begin_nested():
+                                bill = batch.insert_bill(
+                                    sess, raw_bill['account'],
+                                    raw_bill['reference'],
+                                    raw_bill['issue_date'],
+                                    raw_bill['start_date'],
+                                    raw_bill['finish_date'],
+                                    raw_bill['kwh'],
+                                    raw_bill['net'],
+                                    raw_bill['vat'],
+                                    raw_bill['gross'],
+                                    bill_types[raw_bill['bill_type_code']],
+                                    raw_bill['breakdown'], supply)
+                                for raw_read in raw_bill['reads']:
+                                    bill.insert_read(
+                                        sess, tprs[raw_read['tpr_code']],
+                                        raw_read['coefficient'],
+                                        raw_read['units'],
+                                        raw_read['msn'], raw_read['mpan'],
+                                        raw_read['prev_date'],
+                                        raw_read['prev_value'],
+                                        read_types[raw_read['prev_type_code']],
+                                        raw_read['pres_date'],
+                                        raw_read['pres_value'],
+                                        read_types[raw_read['pres_type_code']])
+                                self.successful_bills.append(raw_bill)
+                        except BadRequest as e:
+                            raw_bill['error'] = str(e.description)
+                            self.failed_bills.append(raw_bill)
 
             if len(self.failed_bills) == 0:
                 sess.commit()
@@ -117,16 +126,16 @@ class BillImport(threading.Thread):
             else:
                 sess.rollback()
                 self._log(
-                    "The import has finished, but there were " +
-                    str(len(self.failed_bills)) + " failures, and so the "
-                    "whole import has been rolled back.")
+                    f"The import has finished, but there were "
+                    f"{len(self.failed_bills)} failures, and so the "
+                    f"whole import has been rolled back.")
 
         except BadRequest as e:
             sess.rollback()
-            self._log("Problem: " + e.description)
+            self._log(f"Problem: {e.description}")
         except BaseException:
             sess.rollback()
-            self._log("I've encountered a problem: " + traceback.format_exc())
+            self._log(f"I've encountered a problem: {traceback.format_exc()}")
         finally:
             if sess is not None:
                 sess.close()

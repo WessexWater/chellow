@@ -1,4 +1,3 @@
-
 import chellow.models
 from chellow import create_app
 from chellow.models import (
@@ -6,6 +5,8 @@ from chellow.models import (
 )
 
 from flask.testing import FlaskClient
+
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 import pg8000
 
@@ -96,3 +97,11 @@ def client(app, sess):
 @pytest.fixture
 def runner(app):
     return app.test_cli_runner()
+
+
+@pytest.fixture
+def jinja2_env():
+    return Environment(
+        loader=PackageLoader('../chellow/', 'templates'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )

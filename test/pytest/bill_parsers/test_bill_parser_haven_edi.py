@@ -1,7 +1,10 @@
 from decimal import Decimal
+from io import BytesIO
 
 import chellow.bill_parser_haven_edi
 from chellow.utils import utc_datetime
+
+from werkzeug.exceptions import BadRequest
 
 
 def test_process_BTL_zeroes(mocker):
@@ -410,3 +413,32 @@ def test_process_CLO(mocker):
         'account': '',
     }
     assert headers == expected_headers
+
+
+def test_process_segment_error(mocker):
+    mocker.patch(
+        "chellow.bill_parser_haven_edi._process_BTL", side_effect=BadRequest())
+
+    code = 'BTL'
+    elements = []
+    line = ''
+    headers = {}
+    line_number = 13
+
+    bill = chellow.bill_parser_haven_edi._process_segment(
+        code, elements, line, headers, line_number)
+
+    assert bill == {
+        'error': "Can't parse the line number 13  : The browser (or proxy) "
+        "sent a request that this server could not understand."
+    }
+
+
+def test_Parser(mocker, sess):
+    file_lines = [
+        "MHD=2+UTLBIL:3'",
+        "MTR=6'",
+    ]
+    f = BytesIO(b'\n'.join(n.encode('utf8') for n in file_lines))
+    parser = chellow.bill_parser_haven_edi.Parser(f)
+    parser.make_raw_bills()
