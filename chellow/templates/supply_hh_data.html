@@ -95,54 +95,60 @@
 							{{hh_line.timestamp|hh_format}}
 						</td>
 					{% if hh_line.import_active %}
-						<td>{{hh_line.import_active.value}}</td>
-						<td>{{hh_line.import_active.status}}</td>
-						<td>{{hh_line.import_active.last_modified|hh_format}}</td>
+						{% set hh = hh_line.import_active %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
 						<td></td>
 					{% endif %}
 					{% if hh_line.import_reactive_imp %}
-						<td>{{hh_line.import_reactive_imp.value}}</td>
-						<td>{{hh_line.import_reactive_imp.status}}</td>
-						<td>{{hh_line.import_reactive_imp.last_modified|hh_format}}</td>
+						{% set hh = hh_line.import_reactive_imp %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
 						<td></td>
 					{% endif %}
 					{% if hh_line.import_reactive_exp %}
-						<td>{{hh_line.import_reactive_exp.value}}</td>
-						<td>{{hh_line.import_reactive_exp.status}}</td>
-						<td>{{hh_line.import_reactive_exp.last_modified|hh_format}}</td>
+						{% set hh = hh_line.import_reactive_exp %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
 						<td></td>
 					{% endif %}
 					{% if hh_line.export_active %}
-						<td>{{hh_line.export_active.value}}</td>
-						<td>{{hh_line.export_active.status}}</td>
-						<td>{{hh_line.export_active.last_modified|hh_format}}</td>
+						{% set hh = hh_line.export_active %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
 						<td></td>
 					{% endif %}
 					{% if hh_line.export_reactive_imp %}
-						<td>{{hh_line.export_reactive_imp.value}}</td>
-						<td>{{hh_line.export_reactive_imp.status}}</td>
-						<td>{{hh_line.export_reactive_imp.last_modified|hh_format}}</td>
+						{% set hh = hh_line.export_reactive_imp %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
 						<td></td>
 					{% endif %}
 					{% if hh_line.export_reactive_exp %}
-						<td>{{hh_line.export_reactive_exp.value}}</td>
-						<td>{{hh_line.export_reactive_exp.status}}</td>
-						<td>{{hh_line.export_reactive_exp.last_modified|hh_format}}</td>
+						{% set hh = hh_line.export_reactive_exp %}
+						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td>{{hh.status}}</td>
+						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
 						<td></td>
 						<td></td>
