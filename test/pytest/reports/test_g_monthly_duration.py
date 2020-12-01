@@ -153,7 +153,6 @@ def virtual_bill(ds):
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[1].rows)
-    print(table)
 
     expected = [
         [

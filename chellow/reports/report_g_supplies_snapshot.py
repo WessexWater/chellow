@@ -1,21 +1,27 @@
-import traceback
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-from chellow.models import Session, GEra, GSupply
-from chellow.utils import hh_format, req_date, req_int
-import chellow.dloads
-import sys
-import os
-import threading
-from flask import g, request
 import csv
+import os
+import sys
+import threading
+import traceback
+
+import chellow.dloads
+from chellow.models import GEra, GSupply, Session
+from chellow.utils import hh_format, req_date, req_int
 from chellow.views import chellow_redirect
 
+from flask import g, request
 
-def content(running_name, finished_name, date, g_supply_id):
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+
+def content(date, g_supply_id, user):
     sess = None
     try:
+        running_name, finished_name = chellow.dloads.make_names(
+            'g_supplies_snapshot.csv', user)
+
         sess = Session()
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
@@ -39,6 +45,7 @@ def content(running_name, finished_name, date, g_supply_id):
             g_eras = g_eras.filter(GEra.g_supply == g_supply)
 
         for g_era, g_supply in g_eras:
+            print("found g_era")
             site_codes = []
             site_names = []
             for site_g_era in g_era.site_g_eras:
@@ -83,9 +90,6 @@ def do_get(session):
     else:
         g_supply_id = None
 
-    running_name, finished_name = chellow.dloads.make_names(
-        'g_supplies_snapshot.csv', user)
-
-    args = (running_name, finished_name, date, g_supply_id)
+    args = (date, g_supply_id, user)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
