@@ -4341,7 +4341,7 @@ def dc_auto_importer_post(contract_id):
 @views.route('/non_core_contracts/<int:contract_id>/auto_importer')
 def non_core_auto_importer_get(contract_id):
     contract = Contract.get_non_core_by_id(g.sess, contract_id)
-    importer = import_module('chellow.' + contract.name).get_importer()
+    importer = import_module(f'chellow.{contract.name}').get_importer()
     return render_template(
         'non_core_auto_importer.html', importer=importer, contract=contract)
 
@@ -4351,10 +4351,10 @@ def non_core_auto_importer_get(contract_id):
 def non_core_auto_importer_post(contract_id):
     try:
         contract = Contract.get_non_core_by_id(g.sess, contract_id)
-        importer = import_module('chellow.' + contract.name).get_importer()
+        importer = import_module(f'chellow.{contract.name}').get_importer()
         importer.go()
         return chellow_redirect(
-            '/non_core_contracts/' + str(contract.id) + '/auto_importer', 303)
+            f'/non_core_contracts/{contract.id}/auto_importer', 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)

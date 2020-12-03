@@ -132,7 +132,6 @@ def fetch_cvs(sess, log_f):
     log_f(f"Received {res.status_code} {res.reason}")
 
     month_cv = defaultdict(dict)
-    print(res.text)
     cf = csv.reader(res.text.splitlines())
     row = next(cf)  # Skip title row
     last_date = utc_datetime(1900, 1, 1)

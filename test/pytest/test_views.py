@@ -1013,46 +1013,58 @@ def test_g_bill_edit_post(sess, client):
 
     match(response, 303)
 
-    {
-        'name': "Edit gas bill",
-        'path': '/g_bills/3/edit',
-        'method': 'post',
-        'data': {
-            'bill_type_id': '3',
-            'reference': '8899900012',
-            'account': 'college_rooms',
-            'issue_year': '2015',
-            'issue_month': '11',
-            'issue_day': '01',
-            'issue_hour': '00',
-            'issue_minute': '00',
-            'start_year': '2015',
-            'start_month': '09',
-            'start_day': '01',
-            'start_hour': '01',
-            'start_minute': '00',
-            'finish_year': '2015',
-            'finish_month': '09',
-            'finish_day': '30',
-            'finish_hour': '01',
-            'finish_minute': '00',
-            'kwh': '4500901',
-            'net_gbp': '6972.33',
-            'vat_gbp': '1003.89',
-            'gross_gbp': '7976.22',
-            'raw_lines': 'reference,mprn,bill_type,account,issue_date,'
-                'start_date,finish_date,kwh,net_gbp,vat_gbp,gross_gbp,'
-                'breakdown,msn,unit,correction_factor,'
-                'calorific_value,prev_date,prev_value,prev_type,pres_date,'
-                'prev_value,pres_type\n'
-                '8899900012,750278673,N,college_rooms,2015-11-01 00:00,'
-                '2015-09-01 00:00,2015-09-30 00:00,4500901,6972.33,1003.89,'
-                '7976.22,{"gas_rate": 0.019448, "gas_gbp": 8936.13,'
-                '"ccl_gbp": 275.32, "vat_0500pc": 0.3, "vat_1500pc": 49.12, '
-                '"vat_1750pc": 55.7, "vat_2000pc": 801},hwo8tt,HCUF,FALSE,,'
-                '39.300811,2015-09-01 00:00,567822,A,2015-10-01 00:00,'
-                '575652,A',
-            'breakdown': '{"ccl_gbp": 275.32, "gas_gbp": 8936.13, '
-                '"gas_rate": 0.019448, "vat_0500pc": 0.3, "vat_1500pc": 49.12,'
-                '"vat_1750pc": 55.7, "vat_2000pc": 801}'},
-        'status_code': 303},
+
+def test_non_core_auto_importer_get(sess, client):
+    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_non_core(
+        sess, 'bank_holidays', '', {}, utc_datetime(2000, 1, 1), None, {})
+    sess.commit()
+
+    response = client.get(f'/non_core_contracts/{contract.id}/auto_importer')
+
+    match(response, 200)
+
+
+def test_non_core_auto_importer_post(mocker, sess, client):
+    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_non_core(
+        sess, 'bank_holidays', '', {}, utc_datetime(2000, 1, 1), None, {})
+    sess.commit()
+
+    mocker.patch('chellow.views.import_module')
+
+    response = client.post(f'/non_core_contracts/{contract.id}/auto_importer')
+
+    match(response, 303)
+
+
+def test_non_core_contract_edit_post(sess, client):
+    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_non_core(
+        sess, 'g_cv', '', {}, utc_datetime(2000, 1, 1), None, {})
+    sess.commit()
+
+    data = {
+        'name': 'g_cv',
+        'properties': """{
+"enabled": true,
+"url": "http://localhost:8080/nationalgrid/cv.csv"}
+"""
+    }
+
+    response = client.post(
+        f'/non_core_contracts/{contract.id}/edit', data=data)
+
+    match(response, 303)

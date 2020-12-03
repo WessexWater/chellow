@@ -20932,37 +20932,4 @@ def virtual_bill(ds):
             r"The 'local_rates' must be a list."
         ]
     },
-
-    {
-        'name': "Gas CV auto-importer",
-        'path': '/non_core_contracts/4/edit',
-        'method': 'post',
-        'data': {
-            'name': 'g_cv',
-            'properties': """{
-  "enabled": true,
-  "url": "http://localhost:8080/nationalgrid/cv.csv"}
-"""},
-        'status_code': 303
-    },
-
-    {
-        'name': "Do an 'import now'",
-        'path': '/non_core_contracts/4/auto_importer',
-        'method': 'post',
-        'regexes': [
-            r'/non_core_contracts/4/auto_importer'
-        ],
-        'status_code': 303
-    },
-
-    {
-        'name': "Gas CV",
-        'path': '/non_core_contracts/4/auto_importer',
-        'tries': {'max': 40, 'period': 1},
-        'regexes': [
-            r"Added new rate script\."
-        ],
-        'status_code': 200
-    },
 ]
