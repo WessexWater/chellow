@@ -1,4 +1,4 @@
-from chellow.models import Contract, Era, Mtc, Supply
+from chellow.models import Contract, Era, Mtc, Scenario, Supply
 from chellow.utils import utc_datetime
 
 import pytest
@@ -188,3 +188,16 @@ def test_Supply_get_by_MPAN_core(sess):
             match=f"The MPAN core {mpan_core} is not set up in Chellow."):
 
         Supply.get_by_mpan_core(sess, mpan_core)
+
+
+def test_Scenario_init(sess):
+    name = "scenario_bau"
+    properties = {
+      "local_rates": {},
+      "scenario_start_year": 2015,
+      "scenario_start_month": 6,
+      "scenario_duration": 1
+    }
+
+    with pytest.raises(BadRequest, match="The 'local_rates' must be a list."):
+        Scenario(name, properties)

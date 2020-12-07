@@ -20889,47 +20889,4 @@ def virtual_bill(ds):
             r'Lowri Beck'
         ]
     },
-
-    {
-        'name': "Malformed scenario properties",
-        'path': '/scenarios/1/edit',
-        'method': 'post',
-        'data': {
-            'name': "scenario_bau",
-            'properties': """
-{
-  "local_rates": {},
-  "scenario_start_year": 2015,
-  "scenario_start_month": 6,
-  "scenario_duration": 1}""", },
-        'regexes': [
-            r"/scenarios/1"
-        ],
-        'status_code': 303
-    },
-
-    {
-        'name': "Malformed scenario properties",
-        'path': '/reports/247?site_id=1&scenario_id=1&compression=False',
-        'status_code': 303
-    },
-    {
-        'path': '/downloads',
-        'tries': {},
-        'status_code': 200,
-        'regexes': [
-            r"00025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_"
-            r"months_site_CI004\.ods"
-        ]
-    },
-    {
-        'path': '/downloads/'
-        '00025_FINISHED_adminexamplecom_scenario_bau_20150601_0000_for_1_'
-        'months_site_CI004.ods',
-        'status_code': 200,
-
-        'regexes': [
-            r"The 'local_rates' must be a list."
-        ]
-    },
 ]

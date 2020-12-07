@@ -49,16 +49,6 @@ def make_bill_row(titles, bill):
     return [bill.get(t) for t in titles]
 
 
-def get_map_list(properties, name):
-    lst = properties.get(name, [])
-    if not isinstance(lst, list):
-        raise BadRequest("The '" + name + "' must be a list.")
-    for v in lst:
-        if not isinstance(v, dict):
-            raise BadRequest("The values in " + name + " must be maps.")
-    return lst
-
-
 def _make_site_deltas(
         sess, report_context, site, scenario_hh, forecast_from, supply_id):
     site_scenario_hh = scenario_hh.get(site.code, {})
@@ -770,7 +760,7 @@ def content(
         site_rows = []
         era_rows = []
 
-        for rate_script in get_map_list(scenario_props, 'local_rates'):
+        for rate_script in scenario_props['local_rates']:
             contract_id = rate_script['contract_id']
             try:
                 cont_cache = rate_cache[contract_id]
@@ -781,17 +771,17 @@ def content(
                 rate_script_start = rate_script['start_date']
             except KeyError:
                 raise BadRequest(
-                    "Problem in the scenario properties. Can't find the " +
-                    "'start_date' key of the contract " + str(contract_id) +
-                    " in the 'local_rates' map.")
+                    f"Problem in the scenario properties. Can't find the "
+                    f"'start_date' key of the contract {contract_id} in "
+                    f"the 'local_rates' map.")
 
             try:
                 rate_script_start = rate_script['start_date']
             except KeyError:
                 raise BadRequest(
-                    "Problem in the scenario properties. Can't find the " +
-                    "'start_date' key of the contract " + str(contract_id) +
-                    " in the 'local_rates' map.")
+                    f"Problem in the scenario properties. Can't find the "
+                    f"'start_date' key of the contract {contract_id} in "
+                    f"the 'local_rates' map.")
 
             props = PropDict('scenario properties', rate_script['script'])
             for dt in hh_range(
@@ -799,7 +789,7 @@ def content(
                     rate_script['finish_date']):
                 cont_cache[dt] = props
 
-        for rate_script in get_map_list(scenario_props, 'industry_rates'):
+        for rate_script in scenario_props['industry_rates']:
             contract_name = rate_script['contract_name']
             try:
                 cont_cache = ind_cont[contract_name]
@@ -809,8 +799,8 @@ def content(
             rfinish = rate_script['finish_date']
             if rfinish is None:
                 raise BadRequest(
-                    "For the industry rate " + contract_name + " the "
-                    "finish_date can't be null.")
+                    f"For the industry rate {contract_name} the finish_date "
+                    f"can't be null.")
             for dt in hh_range(
                     report_context, rate_script['start_date'], rfinish):
                 cont_cache[dt] = PropDict(
@@ -858,9 +848,8 @@ def content(
                     report_context, cont, 'virtual_bill_titles')
                 if title_func is None:
                     raise Exception(
-                        "For the contract " + cont.name +
-                        " there doesn't seem to be a "
-                        "'virtual_bill_titles' function.")
+                        f"For the contract {cont.name} there doesn't seem to "
+                        f"be a 'virtual_bill_titles' function.")
                 for title in title_func():
                     if title not in titles:
                         titles.append(title)

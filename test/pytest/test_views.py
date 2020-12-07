@@ -6,8 +6,8 @@ import chellow.views
 from chellow.models import (
     BatchFile, BillType, Contract, Cop, GContract, GDn, GReadType,
     GReadingFrequency, GUnit, GspGroup, MarketRole, MeterPaymentType,
-    MeterType, Mtc, Participant, Pc, Site, Snag, Source, VoltageLevel,
-    insert_bill_types, insert_cops, insert_g_read_types,
+    MeterType, Mtc, Participant, Pc, Scenario, Site, Snag, Source,
+    VoltageLevel, insert_bill_types, insert_cops, insert_g_read_types,
     insert_g_reading_frequencies, insert_g_units, insert_sources,
     insert_voltage_levels)
 from chellow.utils import utc_datetime
@@ -1068,3 +1068,28 @@ def test_non_core_contract_edit_post(sess, client):
         f'/non_core_contracts/{contract.id}/edit', data=data)
 
     match(response, 303)
+
+
+def test_scenario_edit_post(sess, client):
+    props = {
+        "scenario_start_year": 2010,
+        "scenario_start_month": 5,
+        "scenario_duration": 2
+    }
+    scenario = Scenario.insert(sess, 'scenario 1', props)
+    sess.commit()
+
+    data = {
+        'name': "scenario_bau",
+        'properties': """
+{
+  "local_rates": [],
+  "scenario_start_year": 2015,
+  "scenario_start_month": 6,
+  "scenario_duration": 1
+}"""
+    }
+
+    response = client.post(f'/scenarios/{scenario.id}/edit', data=data)
+
+    match(response, 303, r"/scenarios/1")

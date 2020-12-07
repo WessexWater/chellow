@@ -3289,7 +3289,7 @@ class Scenario(Base, PersistentClass):
         scenario = Scenario.find_by_name(sess, name)
         if scenario is None:
             raise NotFound(
-                "There isn't a scenario with the name '" + name + "'.")
+                f"There isn't a scenario with the name '{name}'.")
         return scenario
 
     @staticmethod
@@ -3315,10 +3315,18 @@ class Scenario(Base, PersistentClass):
         for required in (
                 'scenario_start_year', 'scenario_start_month',
                 'scenario_duration'):
-            if required not in self.properties:
+            if required not in properties:
                 raise BadRequest(
-                    "The field '" + required + "' is required in the "
-                    "scenario properties")
+                    f"The field '{required}' is required in the scenario "
+                    f"properties")
+
+        for name in ('local_rates', 'industry_rates'):
+            lst = properties.get(name, [])
+            if not isinstance(lst, list):
+                raise BadRequest(f"The '{name}' must be a list.")
+            for v in lst:
+                if not isinstance(v, dict):
+                    raise BadRequest(f"The values in {name} must be maps.")
 
     def delete(self, sess):
         sess.delete(self)
