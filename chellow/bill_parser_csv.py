@@ -1,26 +1,30 @@
-from decimal import Decimal
 import csv
-from dateutil.relativedelta import relativedelta
-from chellow.utils import (
-    HH, validate_hh_start, utc_datetime_parse, loads, parse_mpan_core)
-from werkzeug.exceptions import BadRequest
+from decimal import Decimal
 from io import StringIO
+
+from chellow.utils import (
+    HH, ct_datetime_parse, loads, parse_mpan_core, to_utc, validate_hh_start,
+)
+
+from dateutil.relativedelta import relativedelta
+
+from werkzeug.exceptions import BadRequest
 
 
 def parse_date(row, idx, is_finish=False):
     date_str = row[idx].strip()
     try:
         if len(date_str) == 10:
-            dt = utc_datetime_parse(date_str, "%Y-%m-%d")
+            dt = to_utc(ct_datetime_parse(date_str, "%Y-%m-%d"))
             if is_finish:
                 dt = dt + relativedelta(days=1) - HH
         else:
-            dt = utc_datetime_parse(date_str, "%Y-%m-%d %H:%M")
+            dt = to_utc(ct_datetime_parse(date_str, "%Y-%m-%d %H:%M"))
         return validate_hh_start(dt)
     except ValueError as e:
         raise BadRequest(
-            "Difficulty parsing a date in the row {row} at position "
-            "{idx}: {e}".format(row=row, idx=idx, e=e))
+            f"Difficulty parsing a date in the row {row} at position "
+            f"{idx}: {e}")
 
 
 class Parser():
@@ -66,8 +70,8 @@ class Parser():
                         raise BadRequest(str(e))
             else:
                 raise BadRequest(
-                    "For the line, " + str(self.vals) +
-                    " there isn't a 'breakdown' field on the end.")
+                    f"For the line, {self.vals} there isn't a 'breakdown' "
+                    f"field on the end.")
 
             while self.vals[-1] == '' and len(self.vals) > 12:
                 del self.vals[-1]
@@ -109,12 +113,10 @@ class Parser():
             return dec
         except IndexError:
             raise BadRequest(
-                "The field '" + dec_name +
-                "' can't be found. It's expected at position " +
-                str(dec_index) + " in the list of fields.")
+                f"The field '{dec_name}' can't be found. It's expected at "
+                f"position {dec_index} in the list of fields.")
         except ValueError:
             raise BadRequest(
-                "The " + dec_name + " field '" + dec_str +
-                "' cannot be parsed as a number. The " + dec_name +
-                " field is the " + str(dec_index) + " field of " +
-                str(self.vals) + ".")
+                f"The {dec_name} field '{dec_str}' cannot be parsed as a "
+                f"number. The {dec_name} field is the {dec_index} field of "
+                f"{self.vals}.")

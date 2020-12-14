@@ -146,9 +146,8 @@ def parse_hh_start(start_date_str):
         return validate_hh_start(dt)
     except ValueError as e:
         raise BadRequest(
-            "Can't parse the date: " + start_date_str + ". It needs to be of "
-            "the form yyyy-mm-dd hh:MM with an optional Z on the end. "
-            + str(e))
+            f"Can't parse the date: {start_date_str}. It needs to be of the "
+            f"form yyyy-mm-dd hh:MM with an optional Z on the end. {e}")
 
 
 def parse_mpan_core(mcore):
@@ -517,6 +516,10 @@ def ct_datetime_now():
 
 def utc_datetime_parse(date_str, format_str):
     return Datetime.strptime(date_str, format_str).replace(tzinfo=utc)
+
+
+def ct_datetime_parse(date_str, format_str):
+    return to_ct(Datetime.strptime(date_str, format_str))
 
 
 def u_months_u(
