@@ -1462,7 +1462,6 @@ order by hh_datum.start_date
                         data, (None, None, None, None, None, None))
     else:
         # new style
-        print("doing new style")
         data = iter(sess.execute("""
 select hh_datum.start_date,
 max(kwh.status),

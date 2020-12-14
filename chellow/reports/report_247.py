@@ -760,7 +760,7 @@ def content(
         site_rows = []
         era_rows = []
 
-        for rate_script in scenario_props['local_rates']:
+        for rate_script in scenario_props.get('local_rates', []):
             contract_id = rate_script['contract_id']
             try:
                 cont_cache = rate_cache[contract_id]
@@ -789,7 +789,7 @@ def content(
                     rate_script['finish_date']):
                 cont_cache[dt] = props
 
-        for rate_script in scenario_props['industry_rates']:
+        for rate_script in scenario_props.get('industry_rates', []):
             contract_name = rate_script['contract_name']
             try:
                 cont_cache = ind_cont[contract_name]
