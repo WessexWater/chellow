@@ -132,7 +132,38 @@ tmod_map = {
     '248A': '00248',
     '239A': '00239',
     'EA1E': 'kVA',
-    'MDM2': 'kVA'}
+    'MDM2': 'kVA'
+}
+
+WRONG_TPRS = {
+    '20 0000 5855 970',
+    '20 0000 6048 528',
+    '20 0002 1909 377',
+    '20 0002 2254 214',
+    '20 0002 2326 515',
+    '20 0002 2371 155',
+    '20 0002 5282 171',
+    '20 0002 5476 287',
+    '20 0002 6228 157',
+    '20 0002 6308 157',
+    '20 0002 6419 768',
+    '20 0002 6440 184',
+    '20 0002 6467 511',
+    '22 0001 3834 361',
+    '22 0001 4442 321',
+    '22 0002 1394 727',
+    '22 0002 1401 756',
+    '22 0002 1427 578',
+    '22 0002 1442 103',
+    '22 0002 1502 222',
+    '22 0002 1528 986',
+    '22 0002 1540 176',
+    '22 0002 1589 599',
+    '22 0002 1823 142',
+    '22 0002 1829 376',
+    '22 0002 1839 541',
+    '22 0002 1878 160'
+}
 
 
 def to_ct_date(component):
@@ -212,9 +243,10 @@ class Parser():
                     mloc = self.parser.elements[5]
 
                     mpan = mloc[0]
+                    mpan_core = ' '.join(
+                        [mpan[:2], mpan[2:6], mpan[6:10], mpan[10:13]])
                     mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + \
-                        mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + \
-                        mpan[6:10] + ' ' + mpan[10:13]
+                        mpan[18:] + ' ' + mpan_core
 
                     prrd = self.parser.elements[9]
                     pres_read_type = read_type_map[prrd[1]]
@@ -244,6 +276,25 @@ class Parser():
                         units = 'kWh'
                         kwh += to_decimal(cons) / Decimal('1000')
 
+                    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
+                            ct_datetime(2020, 4, 1, 23, 30)):
+                        pres_read_date = to_utc(
+                            ct_datetime(2020, 4, 1, 22, 30))
+                        reads.append(
+                            {
+                                'msn': 'Separator Read', 'mpan': mpan,
+                                'coefficient': coefficient, 'units': units,
+                                'tpr_code': tpr_code,
+                                'prev_date': to_utc(
+                                    ct_datetime(2020, 4, 1, 23)),
+                                'prev_value': 0,
+                                'prev_type_code': 'N',
+                                'pres_date': to_utc(
+                                    ct_datetime(2020, 4, 1, 23)),
+                                'pres_value': 0,
+                                'pres_type_code': 'N'
+                            }
+                        )
                     reads.append(
                         {
                             'msn': msn, 'mpan': mpan,
@@ -253,7 +304,10 @@ class Parser():
                             'prev_type_code': prev_read_type,
                             'pres_date': pres_read_date,
                             'pres_value': pres_reading_value,
-                            'pres_type_code': pres_read_type})
+                            'pres_type_code': pres_read_type
+                        }
+                    )
+
                 elif consumption_charge_indicator == "2":
                     # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
@@ -261,9 +315,10 @@ class Parser():
                     mloc = self.parser.elements[5]
 
                     mpan = mloc[0]
+                    mpan_core = ' '.join(
+                        [mpan[:2], mpan[2:6], mpan[6:10], mpan[10:13]])
                     mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + \
-                        mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + \
-                        mpan[6:10] + ' ' + mpan[10:13]
+                        mpan[18:] + ' ' + mpan_core
 
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
@@ -316,6 +371,26 @@ class Parser():
                     breakdown[prefix + 'gbp'] += \
                         to_decimal(ctot) / Decimal('100')
 
+                    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
+                            ct_datetime(2020, 4, 1, 23, 30)):
+                        pres_read_date = to_utc(
+                            ct_datetime(2020, 4, 1, 22, 30))
+                        reads.append(
+                            {
+                                'msn': 'Separator Read', 'mpan': mpan,
+                                'coefficient': coefficient, 'units': units,
+                                'tpr_code': tpr,
+                                'prev_date': to_utc(
+                                    ct_datetime(2020, 4, 1, 23)),
+                                'prev_value': 0,
+                                'prev_type_code': 'N',
+                                'pres_date': to_utc(
+                                    ct_datetime(2020, 4, 1, 23)),
+                                'pres_value': 0,
+                                'pres_type_code': 'N'
+                            }
+                        )
+
                     reads.append(
                         {
                             'msn': msn, 'mpan': mpan,
@@ -325,7 +400,10 @@ class Parser():
                             'prev_type_code': prev_read_type,
                             'pres_date': pres_read_date,
                             'pres_value': pres_reading_value,
-                            'pres_type_code': pres_read_type})
+                            'pres_type_code': pres_read_type
+                        }
+                    )
+
                 elif consumption_charge_indicator == '3':
                     # tcod = self.parser.elements[2]
                     tmod = self.parser.elements[3]
