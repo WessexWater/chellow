@@ -151,7 +151,8 @@ class HhImportTask(threading.Thread):
                 elif protocol == 'sftp':
                     found_new = self.sftp_handler(sess, properties, contract)
                 elif protocol == 'https':
-                    found_new = self.https_handler(sess, properties, contract)
+                    found_new = https_handler(
+                        sess, self.log, properties, contract)
                 else:
                     self.log("Protocol '" + protocol + "' not recognized.")
             else:
@@ -388,71 +389,72 @@ class HhImportTask(threading.Thread):
             self.log("Finished loading '" + fpath)
             return True
 
-    def https_handler(self, sess, properties, contract):
-        url_template_str = properties['url_template']
-        url_values = properties.get('url_values', {})
-        download_days = properties['download_days']
-        now = utc_datetime_now()
-        window_finish = utc_datetime(now.year, now.month, now.day) - HH
-        window_start = utc_datetime(
-            now.year, now.month, now.day) - Timedelta(days=download_days)
-        self.log("Window start: " + hh_format(window_start))
-        self.log("Window finish: " + hh_format(window_finish))
-        env = jinja2.Environment(
-            autoescape=True, undefined=jinja2.StrictUndefined)
-        url_template = env.from_string(url_template_str)
-        for era in sess.query(Era).filter(
-                Era.dc_contract == contract,
-                Era.start_date <= window_finish, or_(
-                    Era.finish_date == null(),
-                    Era.finish_date >= window_start)).distinct():
-            chunk_start = hh_max(era.start_date, window_start)
-            chunk_finish = hh_min(era.finish_date, window_finish)
-            for mpan_core in (era.imp_mpan_core, era.exp_mpan_core):
-                if mpan_core is None:
-                    continue
 
-                self.log(f"Looking at MPAN core {mpan_core}.")
+def https_handler(sess, log_f, properties, contract):
+    url_template_str = properties['url_template']
+    url_values = properties.get('url_values', {})
+    download_days = properties['download_days']
+    now = utc_datetime_now()
+    window_finish = utc_datetime(now.year, now.month, now.day) - HH
+    window_start = utc_datetime(
+        now.year, now.month, now.day) - Timedelta(days=download_days)
+    log_f("Window start: " + hh_format(window_start))
+    log_f("Window finish: " + hh_format(window_finish))
+    env = jinja2.Environment(
+        autoescape=True, undefined=jinja2.StrictUndefined)
+    url_template = env.from_string(url_template_str)
+    for era in sess.query(Era).filter(
+            Era.dc_contract == contract,
+            Era.start_date <= window_finish, or_(
+                Era.finish_date == null(),
+                Era.finish_date >= window_start)).distinct():
+        chunk_start = hh_max(era.start_date, window_start)
+        chunk_finish = hh_min(era.finish_date, window_finish)
+        for mpan_core in (era.imp_mpan_core, era.exp_mpan_core):
+            if mpan_core is None:
+                continue
 
-                vals = {
-                    'chunk_start': chunk_start,
-                    'chunk_finish': chunk_finish}
-                vals.update(url_values.get(mpan_core, {}))
-                try:
-                    url = url_template.render(vals)
-                except jinja2.exceptions.UndefinedError as e:
-                    raise BadRequest(
-                        f"Problem rendering the URL template: "
-                        f"{url_template_str}. The problem is: {e}. This can "
-                        f"be fixed by editing the properties of this "
-                        f"contract.")
+            log_f(f"Looking at MPAN core {mpan_core}.")
 
-                self.log(f"Retrieving data from {url}.")
-                res = requests.get(url, timeout=120)
-                res.raise_for_status()
-                result = requests.get(url, timeout=120).json()
-                if isinstance(result, dict):
-                    result_data = result['DataPoints']
-                elif isinstance(result, list):
-                    result_data = result
-                else:
-                    raise BadRequest(
-                        f"Expecting a JSON object at the top level, but "
-                        f"instead got {result}")
-                raw_data = []
-                for jdatum in result_data:
-                    raw_data.append(
-                        dict(
-                            mpan_core=mpan_core,
-                            start_date=utc_datetime(1, 1, 1) + Timedelta(
-                                seconds=jdatum['Time'] / 10000000),
-                            channel_type='ACTIVE',
-                            value=jdatum['Value'],
-                            status='A'))
-                HhDatum.insert(sess, raw_data, contract)
-                sess.commit()
-        self.log("Finished loading.")
-        return False
+            vals = {
+                'chunk_start': chunk_start,
+                'chunk_finish': chunk_finish
+            }
+            vals.update(url_values.get(mpan_core, {}))
+            try:
+                url = url_template.render(vals)
+            except jinja2.exceptions.UndefinedError as e:
+                raise BadRequest(
+                    f"Problem rendering the URL template: {url_template_str}. "
+                    f"The problem is: {e}. This can be fixed by editing the "
+                    f"properties of this contract.")
+
+            log_f(f"Retrieving data from {url}.")
+            res = requests.get(url, timeout=120)
+            res.raise_for_status()
+            result = requests.get(url, timeout=120).json()
+            if isinstance(result, dict):
+                result_data = result['DataPoints']
+            elif isinstance(result, list):
+                result_data = result
+            else:
+                raise BadRequest(
+                    f"Expecting a JSON object at the top level, but "
+                    f"instead got {result}")
+            raw_data = []
+            for jdatum in result_data:
+                raw_data.append(
+                    dict(
+                        mpan_core=mpan_core,
+                        start_date=utc_datetime(1, 1, 1) + Timedelta(
+                            seconds=jdatum['Time'] / 10000000),
+                        channel_type='ACTIVE',
+                        value=jdatum['Value'],
+                        status='A'))
+            HhDatum.insert(sess, raw_data, contract)
+            sess.commit()
+    log_f("Finished loading.")
+    return False
 
 
 def get_hh_import_task(contract):

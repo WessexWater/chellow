@@ -20809,84 +20809,8 @@ def virtual_bill(supply_source):
         'method': 'post',
         'data': {
             'imp_related': "true",
-            'channel_type': "ACTIVE"},
-        'status_code': 303},
-    {
-        'name': "Test DC HTTPS auto importer: set up contract",
-        'path': '/dc_contracts/9/edit',
-        'method': 'post',
-        'data': {
-            'party_id': "1179",  # UKDC
-            'name': "Dynamat data",
-            'charge_script': """
-def virtual_bill_titles():
-    return ['net-gbp', 'problem']
-
-def virtual_bill(ds):
-    bill = ds.dc_bill
-    for hh in ds.hh_data:
-        if hh['utc-is-month-end']:
-            bill['net-gbp'] += 7
-""",
-            'properties': """
-{
-  "enabled": true,
-  "protocol": "https",
-  "download_days": 8,
-  "url_template":
-  "http://localhost:8080/hh_api?from={{chunk_start.strftime('%d/%m/%Y')}}&to={{chunk_finish.strftime('%d/%m/%Y')}}",
-  "url_values": {
-    "22 7907 4116 080": {
-      "api_key": "768234ht"}}}
-"""},
-        'status_code': 303},
-
-    {
-        'name': "Test DC HTTPS auto importer: import now",
-        'path': '/dc_contracts/9/auto_importer',
-        'method': 'post',
-        'regexes': [
-            r'/dc_contracts/9/auto_importer'],
-        'status_code': 303},
-
-    {
-        'name': "Test DC HTTPS auto importer: check that it completed",
-        'path': '/dc_contracts/9/auto_importer',
-        'tries': {},
-        'regexes': [
-            r"Finished loading"]},
-
-    {
-        'name': "Add NHH DC contract",
-        'path': '/dc_contracts/add',
-        'method': 'post',
-        'data': {
-            'party_id': "817",  # NHH LBSL
-            'name': "NHH DC contract",
-            'start_year': "2000",
-            'start_month': "01",
-            'start_day': "03",
-            'start_hour': "00",
-            'start_minute': "00",
-            'has_finished': "false"},
-        'status_code': 303,
-        'regexes': [
-            r"/dc_contracts/18"
-        ]
-    },
-    {
-        'name': "View NHH DC contract",
-        'path': '/dc_contracts/18',
-        'status_code': 200
-    },
-
-    {
-        'name': "NHH DC contract error on updating",
-        'path': '/dc_contracts/18/edit',
-        'method': 'post',
-        'status_code': 400,
-        'regexes': [
-            r'Lowri Beck'
-        ]
+            'channel_type': "ACTIVE"
+        },
+        'status_code': 303
     },
 ]

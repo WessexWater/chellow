@@ -2,6 +2,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
+import chellow.hh_importer
 import chellow.views
 from chellow.models import (
     BatchFile, BillType, Contract, Cop, GContract, GDn, GReadType,
@@ -1093,3 +1094,142 @@ def test_scenario_edit_post(sess, client):
     response = client.post(f'/scenarios/{scenario.id}/edit', data=data)
 
     match(response, 303, r"/scenarios/1")
+
+
+def test_dc_contract_edit_post_error(sess, client):
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_hhdc(
+        sess, 'Lowri Beck', participant, '', {}, utc_datetime(2000, 1, 1),
+        None, {})
+    sess.commit()
+
+    data = {
+    }
+
+    response = client.post(f'/dc_contracts/{contract.id}/edit', data=data)
+
+    match(response, 400, r"Lowri Beck")
+
+
+def test_dc_contract_get(sess, client):
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_hhdc(
+        sess, 'Lowri Beck', participant, '', {}, utc_datetime(2000, 1, 1),
+        None, {})
+    sess.commit()
+
+    response = client.get(f'/dc_contracts/{contract.id}')
+
+    match(response, 200)
+
+
+def test_dc_contracts_add_post(sess, client):
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    market_role_C = MarketRole.insert(sess, 'C', 'HH Dc')
+    party = participant.insert_party(
+        sess, market_role_C, 'Fusion DC', utc_datetime(2000, 1, 1), None, None)
+
+    sess.commit()
+
+    data = {
+        'party_id': str(party.id),
+        'name': "NHH DC contract",
+        'start_year': "2000",
+        'start_month': "01",
+        'start_day': "03",
+        'start_hour': "00",
+        'start_minute': "00",
+        'has_finished': "false"
+    }
+    response = client.post('/dc_contracts/add', data=data)
+
+    match(response, 303, r'/dc_contracts/2')
+
+    # The post has the effect of starting the new importer thread. This line
+    # is to stop the thread.
+    chellow.hh_importer.shutdown()
+
+
+def test_dc_auto_importer_get(sess, client):
+    market_role_C = MarketRole.insert(sess, 'C', 'DC')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_C, 'DC Ltd.', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_hhdc(
+        sess, 'DC 2000', participant, '', {}, utc_datetime(2000, 1, 1), None,
+        {})
+    sess.commit()
+
+    response = client.get(f'/dc_contracts/{contract.id}/auto_importer')
+
+    match(response, 200)
+
+
+def test_dc_auto_importer_post(mocker, sess, client):
+    market_role_C = MarketRole.insert(sess, 'C', 'DC')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    participant.insert_party(
+        sess, market_role_C, 'DC Ltd.', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_hhdc(
+        sess, 'DC 2000', participant, '', {}, utc_datetime(2000, 1, 1), None,
+        {})
+    sess.commit()
+
+    mocker.patch('chellow.views.chellow.hh_importer')
+
+    response = client.post(f'/dc_contracts/{contract.id}/auto_importer')
+
+    match(response, 303)
+
+
+def test_dc_contract_edit_post(sess, client):
+    market_role_C = MarketRole.insert(sess, 'C', 'DC')
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    party = participant.insert_party(
+        sess, market_role_C, 'DC Ltd.', utc_datetime(2000, 1, 1), None,
+        None)
+    contract = Contract.insert_hhdc(
+        sess, 'DC 2000', participant, '', {}, utc_datetime(2000, 1, 1), None,
+        {})
+    sess.commit()
+
+    data = {
+        'party_id': str(party.id),
+        'name': "Dynamat data",
+        'charge_script': """
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    bill = ds.dc_bill
+    for hh in ds.hh_data:
+        if hh['utc-is-month-end']:
+            bill['net-gbp'] += 7
+""",
+        'properties': """{
+  "enabled": true,
+  "protocol": "https",
+  "download_days": 8,
+  "url_template":
+  "http://localhost:8080/hh_api?from={{chunk_start.strftime('%d/%m/%Y')}}&to={{chunk_finish.strftime('%d/%m/%Y')}}",
+  "url_values": {
+    "22 7907 4116 080": {
+      "api_key": "768234ht"
+    }
+  }
+}
+"""}
+
+    response = client.post(f'/dc_contracts/{contract.id}/edit', data=data)
+
+    match(response, 303)

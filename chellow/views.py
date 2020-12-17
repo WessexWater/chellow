@@ -1039,10 +1039,10 @@ def dc_contracts_add_post():
                 {})
         else:
             raise BadRequest(
-                "The market role " + market_role_code + " must be C or D.")
+                f"The market role {market_role_code} must be C or D.")
         g.sess.commit()
         chellow.hh_importer.startup_contract(contract.id)
-        return chellow_redirect('/dc_contracts/' + str(contract.id), 303)
+        return chellow_redirect(f'/dc_contracts/{contract.id}', 303)
     except BadRequest as e:
         flash(e.description)
         initial_date = utc_datetime_now()
@@ -4330,7 +4330,7 @@ def dc_auto_importer_post(contract_id):
         task = chellow.hh_importer.get_hh_import_task(contract)
         task.go()
         return chellow_redirect(
-            '/dc_contracts/' + str(contract.id) + '/auto_importer', 303)
+            f'/dc_contracts/{contract.id}/auto_importer', 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(

@@ -3058,12 +3058,11 @@ class HhDatum(Base, PersistentClass):
                             channel_type, str(datum['value']),
                             datum['status']])
                     if contract is None:
-                        msg = "There is no channel for the datum (" + \
-                            datum_str + ")."
+                        msg = f"There is no channel for the datum " \
+                            f"({datum_str})."
                     else:
-                        msg = "There is no channel under the contract " + \
-                            contract.name + " for the datum (" + datum_str + \
-                            ")."
+                        msg = f"There is no channel under the contract " \
+                            f"{contract.name} for the datum ({datum_str})."
                     raise BadRequest(msg)
 
                 era_finish_date = channel.era.finish_date
