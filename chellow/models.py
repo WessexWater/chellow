@@ -2116,8 +2116,7 @@ class Era(Base, PersistentClass):
             dc_contract, dc_account, msn, pc, mtc, cop, ssc, properties,
             imp_mpan_core, imp_llfc_code, imp_supplier_contract,
             imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-            exp_supplier_contract, exp_supplier_account, exp_sc,
-            do_check=None):
+            exp_supplier_contract, exp_supplier_account, exp_sc):
 
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
@@ -2201,7 +2200,11 @@ class Era(Base, PersistentClass):
                     polarity + " supplier contract.")
             if supplier_contract.start_date() > start_date:
                 raise BadRequest(
-                    "The supplier contract starts after the era.")
+                    f"For the era {self.id} the {polarity} supplier contract "
+                    f"{supplier_contract.id} "
+                    f"starts at {hh_format(supplier_contract.start_date())} "
+                    f"which is after the start of the era at "
+                    f"{hh_format(start_date)}.")
 
             if hh_before(supplier_contract.finish_date(), finish_date):
                 raise BadRequest("""The supplier contract finishes

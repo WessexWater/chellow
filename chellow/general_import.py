@@ -1,21 +1,27 @@
-import threading
-import traceback
 import csv
 import datetime
+import threading
+import traceback
 from decimal import Decimal
-from sqlalchemy import or_, null
-from sqlalchemy.sql.expression import false
-from chellow.utils import (
-    parse_hh_start, parse_mpan_core, parse_bool, parse_channel_type,
-    parse_pc_code)
+
 from chellow.models import (
-    Site, Era, Supply, HhDatum, Source, GeneratorType, GspGroup, Contract, Pc,
-    Cop, Ssc, Snag, Channel, Mtc, BillType, Tpr, ReadType, Participant, Bill,
-    RegisterRead, UserRole, Party, User, VoltageLevel, Llfc, MarketRole,
-    MeterType, MeterPaymentType, Session, GContract, GSupply, GUnit, GExitZone,
-    GReadType, GReadingFrequency)
+    Bill, BillType, Channel, Contract, Cop, Era, GContract, GExitZone,
+    GReadType, GReadingFrequency, GSupply, GUnit, GeneratorType, GspGroup,
+    HhDatum, Llfc, MarketRole, MeterPaymentType, MeterType, Mtc, Participant,
+    Party, Pc, ReadType, RegisterRead, Session, Site, Snag, Source, Ssc,
+    Supply, Tpr, User, UserRole, VoltageLevel,
+)
+from chellow.utils import (
+    parse_bool, parse_channel_type, parse_hh_start, parse_mpan_core,
+    parse_pc_code,
+)
+
+from sqlalchemy import null, or_
+from sqlalchemy.sql.expression import false
+
 from werkzeug.exceptions import BadRequest
-from zish import loads, ZishException
+
+from zish import ZishException, loads
 
 
 process_id = 0
@@ -228,9 +234,8 @@ def general_import_era(sess, action, vals, args):
             start_date = parse_hh_start(start_date_str)
         existing_era = sess.query(Era).filter(
             Era.supply == supply,
-            or_(
-                Era.finish_date == null(),
-                Era.finish_date > start_date)).order_by(Era.start_date).first()
+            or_(Era.finish_date == null(), Era.finish_date >= start_date)
+            ).order_by(Era.start_date).first()
         if existing_era is None:
             raise BadRequest("The start date is after end of the supply.")
 
