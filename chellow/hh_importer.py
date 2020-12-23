@@ -390,11 +390,12 @@ class HhImportTask(threading.Thread):
             return True
 
 
-def https_handler(sess, log_f, properties, contract):
+def https_handler(sess, log_f, properties, contract, now=None):
     url_template_str = properties['url_template']
     url_values = properties.get('url_values', {})
     download_days = properties['download_days']
-    now = utc_datetime_now()
+    if now is None:
+        now = utc_datetime_now()
     window_finish = utc_datetime(now.year, now.month, now.day) - HH
     window_start = utc_datetime(
         now.year, now.month, now.day) - Timedelta(days=download_days)

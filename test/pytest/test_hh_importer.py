@@ -103,7 +103,9 @@ def test_https_handler(mocker, sess):
         }
     }
 
-    https_handler(sess, log_f, properties, dc_contract)
+    now = utc_datetime(2020, 12, 22)
+
+    https_handler(sess, log_f, properties, dc_contract, now=now)
     expected_log = [
         'Window start: 2020-12-14 00:00',
         'Window finish: 2020-12-21 23:30',

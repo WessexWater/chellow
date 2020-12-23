@@ -20802,15 +20802,4 @@ def virtual_bill(supply_source):
         },
         'status_code': 303
     },
-
-    {
-        'name': "Test DC HTTPS auto importer: Add ACTIVE channel",
-        'path': '/eras/20/add_channel',
-        'method': 'post',
-        'data': {
-            'imp_related': "true",
-            'channel_type': "ACTIVE"
-        },
-        'status_code': 303
-    },
 ]
