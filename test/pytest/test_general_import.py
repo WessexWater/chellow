@@ -1,7 +1,10 @@
-import chellow.general_import
-import chellow.models
 from decimal import Decimal
-from chellow.utils import utc_datetime, hh_format
+
+import chellow.general_import
+from chellow.models import (
+    MarketRole, Participant, VoltageLevel, insert_voltage_levels
+)
+from chellow.utils import ct_datetime, hh_format, to_utc, utc_datetime
 
 
 def test_general_import_g_batch(mocker):
@@ -115,3 +118,24 @@ def test_general_import_era_update(mocker):
     ]
     args = []
     chellow.general_import.general_import_era(sess, action, vals, args)
+
+
+def test_general_import_llfc(sess):
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    market_role_R = MarketRole.insert(sess, 'R', 'Distributor')
+    dno = participant.insert_party(
+        sess, market_role_R, 'WPD', utc_datetime(2000, 1, 1), None, '10')
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, 'HV')
+    dno.insert_llfc(
+        sess, '328', 'PC 5-8 & HH HV', voltage_level, False, True,
+        to_utc(ct_datetime(2020, 4, 1)), None)
+    sess.commit()
+
+    action = 'update'
+    vals = [
+        '10', '328', '2020-04-01 00:00', 'Reserved EHV 33kV - Import', 'HV',
+        'False', 'True', ''
+    ]
+    args = []
+    chellow.general_import.general_import_llfc(sess, action, vals, args)

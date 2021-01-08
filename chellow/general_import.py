@@ -36,7 +36,7 @@ CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
 def add_arg(args, name, values, index):
     if index >= len(values):
         raise BadRequest(
-            "Another field called " + name + " needs to be added on the end.")
+            f"Another field called {name} needs to be added on the end.")
 
     value = values[index].strip()
     args.append((name, value))
@@ -1176,8 +1176,8 @@ def general_import_llfc(sess, action, vals, args):
                 "Can't find an LLFC for this DNO, code and 'valid from' date.")
 
         llfc.update(
-            sess, llfc_description, vl, is_substation, is_import,
-            llfc.valid_from, valid_to)
+            llfc_description, vl, is_substation, is_import, llfc.valid_from,
+            valid_to)
         sess.flush()
 
     elif action == 'delete':
