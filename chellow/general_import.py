@@ -1142,9 +1142,8 @@ def general_import_llfc(sess, action, vals, args):
 
         if existing_llfc is None:
             llfc = Llfc(
-                dno_id=dno.id, code=llfc_code, description=llfc_description,
-                voltage_level_id=vl.id, is_substation=is_substation,
-                is_import=is_import, valid_from=valid_from, valid_to=valid_to)
+                dno, llfc_code, llfc_description, vl, is_substation,
+                is_import, valid_from, valid_to)
             sess.add(llfc)
             sess.flush()
         else:

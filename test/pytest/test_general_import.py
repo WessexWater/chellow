@@ -120,7 +120,24 @@ def test_general_import_era_update(mocker):
     chellow.general_import.general_import_era(sess, action, vals, args)
 
 
-def test_general_import_llfc(sess):
+def test_general_import_llfc_insert(sess):
+    participant = Participant.insert(sess, 'CALB', 'AK Industries')
+    market_role_R = MarketRole.insert(sess, 'R', 'Distributor')
+    participant.insert_party(
+        sess, market_role_R, 'WPD', utc_datetime(2000, 1, 1), None, '27')
+    insert_voltage_levels(sess)
+    sess.commit()
+
+    action = 'insert'
+    vals = [
+        '27', 'A1A', 'LV:LV A Agg Band 0', 'LV', 'False', 'True',
+        '2020-10-21 00:00', ''
+    ]
+    args = []
+    chellow.general_import.general_import_llfc(sess, action, vals, args)
+
+
+def test_general_import_llfc_update(sess):
     participant = Participant.insert(sess, 'CALB', 'AK Industries')
     market_role_R = MarketRole.insert(sess, 'R', 'Distributor')
     dno = participant.insert_party(
