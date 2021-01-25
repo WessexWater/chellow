@@ -401,7 +401,7 @@ def general_import_era(sess, action, vals, args):
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = existing_era.exp_supplier_contract
                 else:
-                    exp_supplier_contract = Contract.get_supplier(
+                    exp_supplier_contract = Contract.get_supplier_by_name(
                         sess, exp_supplier_contract_name)
 
                 exp_supplier_account = add_arg(

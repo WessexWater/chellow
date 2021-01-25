@@ -2224,9 +2224,8 @@ class Era(Base, PersistentClass):
 
             if llfc.is_import != ('imp' == polarity):
                 raise BadRequest(
-                    "The " + polarity + " line loss factor " + llfc.code +
-                    " is actually an " +
-                    ("imp" if llfc.is_import else "exp") + " one.")
+                    f"The {polarity} line loss factor {llfc.code} is actually "
+                    "an " + ("imp" if llfc.is_import else "exp") + " one.")
             vl = llfc.voltage_level
             if voltage_level is None:
                 voltage_level = vl
