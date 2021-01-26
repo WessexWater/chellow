@@ -1476,11 +1476,11 @@ and channel.imp_related = :is_import)
 left join hh_datum as reactive_imp
 on (hh_datum.id = reactive_imp.id
 and channel.channel_type = 'REACTIVE_IMP'
-and channel.imp_related is true)
+and channel.imp_related = :is_import)
 left join hh_datum as reactive_exp
 on (hh_datum.id = reactive_exp.id
 and channel.channel_type = 'REACTIVE_EXP'
-and channel.imp_related is true)
+and channel.imp_related = :is_import)
 where channel.era_id = :era_id and hh_datum.start_date >= :start_date
 and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
