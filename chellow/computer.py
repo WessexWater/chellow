@@ -1071,8 +1071,9 @@ class SupplySource(DataSource):
                 full_channels, hhd = _init_hh_data(
                     sess, caches, hist_era, chunk_start, chunk_finish,
                     is_import)
+                print("full chan", full_channels)
                 if not full_channels:
-                    full_channels = False
+                    self.full_channels = False
                 hist_map.update(hhd)
 
             else:
