@@ -149,7 +149,7 @@ def create_app(testing=False):
 
             if role_code == "viewer" and (
                     method in ("GET", "HEAD") or path in (
-                        '/reports/169', '/reports/187')):
+                        '/reports/169', '/reports/187', '/reports/247')):
                 return
             elif role_code == "editor":
                 return

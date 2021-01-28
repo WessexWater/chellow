@@ -922,7 +922,7 @@ def content(
             ef.close()
 
 
-def do_get(sess):
+def do_post(sess):
 
     base_name = []
     now = utc_datetime_now()

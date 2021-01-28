@@ -62,7 +62,7 @@ def test_with_scenario(mocker, sess, client):
         'compression': False,
     }
 
-    response = client.get('/reports/247', data=data)
+    response = client.post('/reports/247', data=data)
 
     match(response, 303)
 
