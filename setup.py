@@ -54,7 +54,7 @@ setup(
         ]
     },
     install_requires=[
-        'odio==0.0.18',
+        'odio==0.0.22',
         'pg8000==1.13.2',
         'Flask==1.1.2',
         'SQLAlchemy==1.3.20',
