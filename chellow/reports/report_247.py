@@ -430,6 +430,9 @@ def _process_site(
                 'used-3rd-party', 'billed-import-net'):
             for xname in ('kwh', 'gbp'):
                 month_data[sname + '-' + xname] = 0
+        month_data['billed-supplier-import-net-gbp'] = None
+        month_data['billed-dc-import-net-gbp'] = None
+        month_data['billed-mop-import-net-gbp'] = None
 
         month_data['used-kwh'] = month_data['displaced-kwh'] = sum(
             hh['msp-kwh'] for hh in site_ds.hh_data)
@@ -453,8 +456,7 @@ def _process_site(
                 disp_supplier_contract.name + \
                 ' does not contain the net-gbp key.'
 
-        month_data['used-gbp'] = month_data['displaced-gbp'] = \
-            site_ds.supplier_bill['net-gbp']
+        month_data['used-gbp'] = month_data['displaced-gbp'] = gbp
 
         out = [
             now, None, disp_supplier_contract.name, None, None,
@@ -467,7 +469,8 @@ def _process_site(
 
         era_rows.append([make_val(v) for v in out])
         for k, v in month_data.items():
-            site_month_data[k] += v
+            if v is not None:
+                site_month_data[k] += v
 
     site_category = None
     site_sources = set()
@@ -489,6 +492,9 @@ def _process_site(
                 'used-3rd-party', 'billed-import-net'):
             for sname in ('kwh', 'gbp'):
                 month_data[name + '-' + sname] = 0
+        month_data['billed-supplier-import-net-gbp'] = 0
+        month_data['billed-dc-import-net-gbp'] = 0
+        month_data['billed-mop-import-net-gbp'] = 0
 
         if imp_ss is not None:
             imp_supplier_contract = imp_ss.supplier_contract
@@ -497,7 +503,7 @@ def _process_site(
                     report_context, imp_supplier_contract, 'virtual_bill')
                 if import_vb_function is None:
                     raise BadRequest(
-                        "The supplier contract " + imp_supplier_contract.name +
+                        f"The supplier contract {imp_supplier_contract.name} "
                         " doesn't have the virtual_bill() function.")
                 import_vb_function(imp_ss)
 
@@ -509,10 +515,10 @@ def _process_site(
             except KeyError:
                 gbp = 0
                 imp_supplier_bill['problem'] += \
-                    'For the supply ' + imp_ss.mpan_core + \
-                    ' the virtual bill ' + str(imp_supplier_bill) + \
-                    ' from the contract ' + imp_supplier_contract.name + \
-                    ' does not contain the net-gbp key.'
+                    f'For the supply {imp_ss.mpan_core} the virtual bill ' + \
+                    f'{imp_supplier_bill} from the contract ' + \
+                    f'{imp_supplier_contract.name} does not contain the ' + \
+                    'net-gbp key.'
 
             if source_code in ('net', 'gen-net'):
                 month_data['import-net-gbp'] += gbp
@@ -618,20 +624,31 @@ def _process_site(
                     Bill.supply == supply,
                     Bill.start_date <= sss.finish_date,
                     Bill.finish_date >= sss.start_date):
+                bill_role_code = bill.batch.contract.market_role.code
                 bill_start = bill.start_date
                 bill_finish = bill.finish_date
                 bill_duration = (
-                    bill_finish - bill_start).total_seconds() + \
-                    (30 * 60)
+                    bill_finish - bill_start).total_seconds() + (30 * 60)
                 overlap_duration = (
                     min(bill_finish, sss.finish_date) -
                     max(bill_start, sss.start_date)
                     ).total_seconds() + (30 * 60)
-                overlap_proportion = overlap_duration / bill_duration
+                proportion = overlap_duration / bill_duration
                 month_data['billed-import-net-kwh'] += \
-                    overlap_proportion * float(bill.kwh)
-                month_data['billed-import-net-gbp'] += \
-                    overlap_proportion * float(bill.net)
+                    proportion * float(bill.kwh)
+                bill_prop_gbp = proportion * float(bill.net)
+                month_data['billed-import-net-gbp'] += bill_prop_gbp
+                if bill_role_code == 'X':
+                    month_data['billed-supplier-import-net-gbp'] += \
+                        bill_prop_gbp
+                elif bill_role_code == 'C':
+                    month_data['billed-dc-import-net-gbp'] += \
+                        bill_prop_gbp
+                elif bill_role_code == 'M':
+                    month_data['billed-mop-import-net-gbp'] += \
+                        bill_prop_gbp
+                else:
+                    raise BadRequest("Role code not recognized.")
 
         if imp_ss is None:
             imp_supplier_contract_name = None
@@ -826,7 +843,10 @@ def content(
             'import-net-gbp', 'export-net-gbp', 'import-gen-gbp',
             'export-gen-gbp', 'import-3rd-party-gbp', 'export-3rd-party-gbp',
             'displaced-gbp', 'used-gbp', 'used-3rd-party-gbp',
-            'billed-import-net-kwh', 'billed-import-net-gbp']
+            'billed-import-net-kwh', 'billed-import-net-gbp',
+            'billed-supplier-import-net-gbp', 'billed-dc-import-net-gbp',
+            'billed-mop-import-net-gbp'
+        ]
 
         title_dict = {}
         for cont_type, con_attr in (

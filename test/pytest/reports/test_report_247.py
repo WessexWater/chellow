@@ -481,13 +481,15 @@ def virtual_bill(ds):
             'import-net-gbp', 'export-net-gbp', 'import-gen-gbp',
             'export-gen-gbp', 'import-3rd-party-gbp', 'export-3rd-party-gbp',
             'displaced-gbp', 'used-gbp', 'used-3rd-party-gbp',
-            'billed-import-net-kwh', 'billed-import-net-gbp'
+            'billed-import-net-kwh', 'billed-import-net-gbp',
+            'billed-supplier-import-net-gbp', 'billed-dc-import-net-gbp',
+            'billed-mop-import-net-gbp'
         ],
         [
             Datetime(2020, 1, 1, 0, 0), 'CI017', 'Water Works', '',
             Datetime(2009, 7, 31, 23, 30), 'hh', 'net', '', 0.0, 0.0, 0.0, 0.0,
             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-            0.0, 0.0, 0.0
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0
         ]
     ]
 
