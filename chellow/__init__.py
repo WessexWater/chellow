@@ -3,10 +3,13 @@ from datetime import datetime as Datetime
 
 from flask import Flask, Response, g, make_response, render_template, request
 
+from sqlalchemy import select
+
 from werkzeug.exceptions import NotFound
 
 from zish import dumps
 
+import chellow.api
 import chellow.bank_holidays
 import chellow.bmarketidx
 import chellow.bsuos
@@ -27,6 +30,7 @@ from chellow.models import (
     db_upgrade,
     start_sqlalchemy,
 )
+from chellow.proxy import MsProxy
 from chellow.utils import to_ct, utc_datetime_now
 
 
@@ -43,11 +47,15 @@ TEMPLATE_FORMATS = {
 
 def create_app(testing=False):
     app = Flask("chellow", instance_relative_config=True)
+    app.wsgi_app = MsProxy(app.wsgi_app)
     app.secret_key = os.urandom(24)
     start_sqlalchemy()
 
     app.register_blueprint(chellow.views.views)
     chellow.utils.root_path = app.root_path
+
+    api = chellow.api.api
+    api.init_app(app, endpoint="/api/v1")
 
     if not testing:
         db_upgrade(app.root_path)
@@ -63,23 +71,20 @@ def create_app(testing=False):
 
     @app.before_first_request
     def before_first_request():
+        chellow.utils.url_root = request.url_root
+
+        sess = None
         try:
-            scheme = request.headers["X-Forwarded-Proto"]
-        except KeyError:
             sess = Session()
-            try:
-                config_contract = Contract.get_non_core_by_name(sess, "configuration")
-                props = config_contract.make_properties()
-                scheme = props.get("redirect_scheme", "http")
-            finally:
+            configuration = sess.execute(
+                select(Contract).where(Contract.name == "configuration")
+            ).scalar_one()
+            props = configuration.make_properties()
+            api_props = props.get("api", {})
+            api.description = api_props.get("description", "Access Chellow data")
+        finally:
+            if sess is not None:
                 sess.close()
-
-        try:
-            host = request.headers["X-Forwarded-Host"]
-        except KeyError:
-            host = request.host
-
-        chellow.utils.url_root = f"{scheme}://{host}/"
 
     @app.before_request
     def before_request():
