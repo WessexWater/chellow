@@ -58,13 +58,13 @@ def _parse_row(row, row_index, datemode, title_row):
 
     vals = [
         (
-            'cap-mech-ob-kwh',
+            'capmechob-kwh',
             get_dec(row, titles, 'LVY-CMLOB-ALL USE KWH')),
-        ('cap-mech-ob-rate', get_dec(row, titles, 'LVY-CMLOB-ALL RATE P/KWH')),
-        ('cap-mech-ob-gbp', get_dec(row, titles, 'LVY-CMLOB-ALL COST GBP')),
-        ('cap-mech-op-kwh', get_dec(row, titles, 'LVY-CMLOP-ALL USE KWH')),
-        ('cap-mech-op-rate', get_dec(row, titles, 'LVY-CMLOP-ALL RATE P/KWH')),
-        ('cap-mech-op-gbp', get_dec(row, titles, 'LVY-CMLOP-ALL COST GBP')),
+        ('capmechob-rate', get_dec(row, titles, 'LVY-CMLOB-ALL RATE P/KWH')),
+        ('capmechob-gbp', get_dec(row, titles, 'LVY-CMLOB-ALL COST GBP')),
+        ('capmechop-kwh', get_dec(row, titles, 'LVY-CMLOP-ALL USE KWH')),
+        ('capmechop-rate', get_dec(row, titles, 'LVY-CMLOP-ALL RATE P/KWH')),
+        ('capmechop-gbp', get_dec(row, titles, 'LVY-CMLOP-ALL COST GBP')),
         ('duos-fixed-days', get_dec(row, titles, 'DUOS-STND-SITE USE DAY')),
         (
             'duos-availability-kva-days',
