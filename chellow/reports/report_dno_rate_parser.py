@@ -1,18 +1,23 @@
-import traceback
-import chellow.dloads
 import os
-import threading
-from flask import g, request
-from chellow.views import chellow_redirect
-from decimal import Decimal, InvalidOperation
-import openpyxl
-from itertools import chain
-from werkzeug.exceptions import BadRequest
-from chellow.utils import req_int
-from chellow.models import Session, GspGroup
-from zish import dumps
-from io import BytesIO
 import re
+import threading
+import traceback
+from decimal import Decimal, InvalidOperation
+from io import BytesIO
+from itertools import chain
+
+import chellow.dloads
+from chellow.models import GspGroup, Session
+from chellow.utils import req_int
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
+import openpyxl
+
+from werkzeug.exceptions import BadRequest
+
+from zish import dumps
 
 
 def get_value(row, idx):
@@ -38,8 +43,7 @@ def get_rate(row, idx):
             return round(Decimal(val) / Decimal('100'), 5)
         except InvalidOperation as e:
             raise BadRequest(
-                "Can't parse the decimal '" + str(val) + "' " + str(e) +
-                ".") from e
+                f"Can't parse the decimal '{val}' {e}.") from e
 
 
 def get_rag_rate(row, idx):
@@ -149,7 +153,7 @@ def col_match(row, pattern, repeats=1):
                     repeats -= 1
 
     raise BadRequest(
-        "Pattern '" + pattern + "' not found in row " +
+        f"Pattern '{pattern}' not found in row " +
         ', '.join(str(cell.value) for cell in row))
 
 
@@ -308,7 +312,7 @@ def content(user, file_name, file_like, gsp_group_id):
 
         if not file_name.endswith('.xlsx'):
             raise BadRequest(
-                "The file extension for " + file_name + " isn't recognized.")
+                f"The file extension for {file_name} isn't recognized.")
 
         book = openpyxl.load_workbook(
             file_like, data_only=True, read_only=True)
