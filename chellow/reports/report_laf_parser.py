@@ -1,17 +1,21 @@
-import traceback
-import chellow.dloads
+import csv
 import os
 import threading
-from flask import g, request
-from chellow.views import chellow_redirect
-from chellow.models import Session
-from zish import dumps
-from io import StringIO
+import traceback
 from collections import OrderedDict
-import csv
 from datetime import datetime as Datetime, timedelta as Timedelta
-from chellow.utils import to_ct, to_utc
 from decimal import Decimal
+from io import BytesIO, StringIO
+from zipfile import ZipFile
+
+import chellow.dloads
+from chellow.models import Session
+from chellow.utils import to_ct, to_utc
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
+from zish import dumps
 
 
 def content(user, file_name, file_like):
@@ -27,7 +31,12 @@ def content(user, file_name, file_like):
         llfc_code = line_dt = start_date_str = None
         tp_cand = {}
         llfc_data = OrderedDict()
-        for vals in csv.reader(file_like, delimiter='|'):
+        zip_file = ZipFile(file_like)
+        name_list = zip_file.namelist()
+        if len(name_list) != 1:
+            raise Exception("The zip archive must contain exactly one file.")
+        csv_file = StringIO(zip_file.read(name_list[0]).decode('utf-8'))
+        for vals in csv.reader(csv_file, delimiter='|'):
             code = vals[0]
 
             if code in ('LLF', 'ZPT'):
@@ -127,6 +136,6 @@ def do_post(session):
     user = g.user
     file_item = request.files["laf_file"]
 
-    args = user, file_item.filename, StringIO(file_item.read().decode('utf-8'))
+    args = user, file_item.filename, BytesIO(file_item.read())
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
