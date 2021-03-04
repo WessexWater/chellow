@@ -980,7 +980,7 @@ class Contract(Base, PersistentClass):
             start_date, finish_date, rate_script):
         party = Party.get_by_participant_id_role_code(
             sess, participant.id, role_code)
-        contract = Contract(name, party, charge_script, properties, '{}')
+        contract = Contract(name, party, charge_script, properties, {})
         sess.add(contract)
         sess.flush()
         rscript = contract.insert_rate_script(sess, start_date, rate_script)
@@ -5207,6 +5207,12 @@ def db_upgrade_22_to_23(sess, root_path):
     sess.execute("alter table g_exit_zone alter g_ldz_id set not null;")
 
 
+def db_upgrade_23_to_24(sess, root_path):
+    Contract.insert_non_core(
+        sess, 'bmarketidx', '', {}, utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 1), {})
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1, db_upgrade_1_to_2, db_upgrade_2_to_3, db_upgrade_3_to_4,
     db_upgrade_4_to_5, db_upgrade_5_to_6, db_upgrade_6_to_7, db_upgrade_7_to_8,
@@ -5214,7 +5220,8 @@ upgrade_funcs = [
     db_upgrade_11_to_12, db_upgrade_12_to_13, db_upgrade_13_to_14,
     db_upgrade_14_to_15, db_upgrade_15_to_16, db_upgrade_16_to_17,
     db_upgrade_17_to_18, db_upgrade_18_to_19, db_upgrade_19_to_20,
-    db_upgrade_20_to_21, db_upgrade_21_to_22, db_upgrade_22_to_23]
+    db_upgrade_20_to_21, db_upgrade_21_to_22, db_upgrade_22_to_23,
+    db_upgrade_23_to_24]
 
 
 def db_upgrade(root_path):

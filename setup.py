@@ -62,7 +62,7 @@ setup(
         'python-dateutil==2.8.1',
         'pytz==2020.1',
         'ftputil==4.0.0',
-        'requests==2.24.0',
+        'requests==2.25.1',
         'waitress==1.4.3',
         'pep3143daemon==0.0.6',
         'pip>=9.0.1',

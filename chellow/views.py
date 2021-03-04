@@ -37,9 +37,9 @@ from chellow.models import (
     GReadType, GReadingFrequency, GRegisterRead, GSupply, GUnit, GeneratorType,
     GspGroup, HhDatum, Llfc, METER_TYPES, MarketRole, MeasurementRequirement,
     MeterPaymentType, MeterType, Mtc, Participant, Party, Pc, RateScript,
-    ReadType, RegisterRead, Report, ReportRun, ReportRunRow, Scenario, Session,
-    Site, SiteEra, SiteGEra, Snag, Source, Ssc, Supply, Tpr, User, UserRole,
-    VoltageLevel, db_upgrade
+    ReadType, RegisterRead, Report, ReportRun, ReportRunRow, Scenario, Site,
+    SiteEra, SiteGEra, Snag, Source, Ssc, Supply, Tpr, User, UserRole,
+    VoltageLevel
 )
 from chellow.utils import (
     HH, PropDict, c_months_u, csv_make_val, ct_datetime_now, get_file_scripts,
@@ -70,80 +70,6 @@ from zish import dumps, loads
 
 app = Flask('chellow', instance_relative_config=True)
 app.secret_key = os.urandom(24)
-
-
-@app.before_first_request
-def before_first_request():
-    db_upgrade(app.root_path)
-    chellow.rcrc.startup()
-    chellow.bsuos.startup()
-    chellow.system_price.startup()
-    chellow.hh_importer.startup()
-    chellow.tlms.startup()
-    chellow.bank_holidays.startup()
-    chellow.dloads.startup(app.instance_path)
-    chellow.g_cv.startup()
-    chellow.utils.root_path = app.root_path
-
-    try:
-        scheme = request.headers['X-Forwarded-Proto']
-    except KeyError:
-        sess = Session()
-        try:
-            config_contract = Contract.get_non_core_by_name(
-                sess, 'configuration')
-            props = config_contract.make_properties()
-            scheme = props.get('redirect_scheme', 'http')
-        finally:
-            sess.close()
-
-    try:
-        host = request.headers['X-Forwarded-Host']
-    except KeyError:
-        host = request.host
-
-    chellow.utils.url_root = scheme + '://' + host + '/'
-
-
-@app.before_request
-def before_request():
-    g.sess = Session()
-
-    print(
-        ' '.join(
-            '-' if v is None else v for v in (
-                request.remote_addr, str(request.user_agent),
-                request.remote_user,
-                '[' + Datetime.now().strftime('%d/%b/%Y:%H:%M:%S') + ']',
-                '"' + request.method + ' ' + request.path + ' ' +
-                request.environ.get('SERVER_PROTOCOL') + '"', None, None)))
-
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    if getattr(g, 'sess', None) is not None:
-        g.sess.close()
-
-
-@app.context_processor
-def chellow_context_processor():
-    global_alerts = []
-    for task in chellow.hh_importer.tasks.values():
-        if task.is_error:
-            try:
-                contract = Contract.get_by_id(g.sess, task.contract_id)
-                global_alerts.append(
-                    "There's a problem with the automatic HH data importer "
-                    "for contract '" + str(contract.name) + "'.")
-            except NotFound:
-                pass
-
-    for importer in (
-            chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer):
-        if importer is not None and importer.global_alert is not None:
-            global_alerts.append(importer.global_alert)
-
-    return {'current_user': g.user, 'global_alerts': global_alerts}
 
 
 TEMPLATE_FORMATS = {

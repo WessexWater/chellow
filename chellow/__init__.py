@@ -2,6 +2,7 @@ import os
 from datetime import datetime as Datetime
 
 import chellow.bank_holidays
+import chellow.bmarketidx
 import chellow.bsuos
 import chellow.dloads
 import chellow.g_cv
@@ -47,6 +48,7 @@ def create_app(testing=False):
         chellow.bank_holidays.startup()
         chellow.dloads.startup(app.instance_path)
         chellow.g_cv.startup()
+        chellow.bmarketidx.startup()
 
     @app.before_first_request
     def before_first_request():
@@ -202,7 +204,8 @@ def create_app(testing=False):
                     pass
 
         for importer in (
-                chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer):
+                chellow.bsuos.bsuos_importer, chellow.g_cv.g_cv_importer,
+                chellow.bmarketidx.bmarketidx_importer):
             if importer is not None and importer.global_alert is not None:
                 global_alerts.append(importer.global_alert)
 
