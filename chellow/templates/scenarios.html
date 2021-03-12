@@ -36,9 +36,14 @@
 							<tr>
 								<td>{{scenario.name}}</td>
 								<td>
-									<a href="/reports/247?scenario_id={{scenario.id}}">
-										Run
-									</a>
+									<form action="/reports/247" method="post">
+										<fieldset>
+											<input
+												type="hidden" name="scenario_id"
+												value="{{scenario.id}}">
+											<input type="submit" value="Run">
+										</fieldset>	
+									</form>
 								<td>
 									<a href="/scenarios/{{scenario.id}}">
 										View
