@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from datetime import datetime as Datetime
 from functools import lru_cache
 from itertools import combinations, count
@@ -842,6 +842,7 @@ class SupplySource(DataSource):
         self.measurement_type = era.meter_category
 
         self.consumption_info = ''
+        self.normal_reads = set()
         hist_map = {}
 
         if self.years_back == 0:
@@ -915,9 +916,11 @@ class SupplySource(DataSource):
                             }
 
             elif self.bill is None and hist_measurement_type in ('nhh', 'amr'):
-                self.consumption_info += _no_bill_nhh(
+                pairs, self.normal_reads = _no_bill_nhh(
                     sess, caches, self.supply, chunk_start, chunk_finish,
                     hist_map, forecast_date)
+                self.consumption_info += dumps(pairs)
+
             elif self.bill is not None and hist_measurement_type in (
                     'nhh', 'amr'):
                 hhd = {}
@@ -985,10 +988,10 @@ class SupplySource(DataSource):
 
                         if tpr_code not in tpr_codes:
                             self._add_problem(
-                                "The TPR " + str(tpr_code) +
-                                " from the register read does not match any " +
-                                "of the TPRs (" + ', '.join(tpr_codes) +
-                                ") associated with the MPAN.")
+                                f"The TPR {tpr_code} from the register read "
+                                f"does not match any of the TPRs ("
+                                f"{', '.join(tpr_codes)}) associated with the "
+                                f"MPAN.")
 
                         if present_date > bill.finish_date:
                             self._add_problem(
@@ -1002,7 +1005,7 @@ class SupplySource(DataSource):
 
                         kwh = advance * coefficient
                         self.consumption_info += "dumb nhh kwh for " + \
-                            tpr_code + " is " + str(kwh) + "\n"
+                            f"{tpr_code} is {kwh}\n"
 
                         kws[tpr_code] += kwh
 
@@ -1061,17 +1064,16 @@ class SupplySource(DataSource):
                                         hhd_datum['status'] = h['status']
                         elif kwh > 0:
                             self._add_problem(
-                                "For the TPR code " + tpr_code +
-                                " the bill says that there are " + str(kwh) +
-                                " kWh, but the time of the TPR doesn't cover "
-                                "the time between the register reads.")
+                                f"For the TPR code {tpr_code} the bill says "
+                                f"that there are {kwh} kWh, but the time of "
+                                f"the TPR doesn't cover the time between the "
+                                f"register reads.")
 
                 hist_map.update(hhd)
             elif hist_measurement_type == 'hh':
                 full_channels, hhd = _init_hh_data(
                     sess, caches, hist_era, chunk_start, chunk_finish,
                     is_import)
-                print("full chan", full_channels)
                 if not full_channels:
                     self.full_channels = False
                 hist_map.update(hhd)
@@ -1167,6 +1169,9 @@ class SupplySource(DataSource):
                 yield ds
 
 
+Read = namedtuple('Read', 'date msn type reads')
+
+
 def _find_pair(sess, caches, is_forwards, read_list):
     if len(read_list) < 2:
         return
@@ -1199,9 +1204,15 @@ def _find_pair(sess, caches, is_forwards, read_list):
 
             tprs[tpr_code] = kwh / num_hh if num_hh > 0 else 0
 
+        pair_reads = set()
+        for r in back, front:
+            desc = tuple([f"{k}: {v}" for k, v in r['reads'].items()])
+            pair_reads.add(Read(r['date'], r['msn'], r['read_type'], desc))
+
         return {
+            'reads': pair_reads,
             'start-date': back_date,
-            'tprs': tprs
+            'tprs': tprs,
         }
 
 
@@ -1288,8 +1299,10 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
 
         if is_prev:
             dt = r.previous_date
+            read_type = r.previous_type
         else:
             dt = r.present_date
+            read_type = r.present_type
 
         bill = sess.query(Bill).join(BillType).filter(
             Bill.supply == supply, Bill.reads.any(),
@@ -1325,7 +1338,11 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             coeffs[tpr_code] = coeff if era_coeff is None else era_coeff
 
         yield {
-            'date': dt, 'reads': reads, 'coefficients': coeffs, 'msn': r.msn
+            'date': dt,
+            'reads': reads,
+            'coefficients': coeffs,
+            'msn': r.msn,
+            'read_type': read_type.code
         }
 
 
@@ -1333,6 +1350,7 @@ def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
     read_list = []
     pairs = []
     read_keys = set()
+    normal_reads = set()
 
     for is_forwards in (False, True):
         prev_reads = iter(
@@ -1352,20 +1370,21 @@ def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
             pair = _find_pair(sess, caches, is_forwards, read_list)
             if pair is not None:
                 pairs.append(pair)
+                normal_reads = normal_reads | pair['reads']
                 if not is_forwards or (
                         is_forwards and read_list[-1]['date'] > finish):
                     break
 
-    consumption_info = 'read list - \n' + dumps(read_list) + "\n"
     hhs = _find_hhs(caches, sess, pairs, start, finish)
     _set_status(hhs, read_list, forecast_date)
     hist_map.update(hhs)
-    return consumption_info + 'pairs - \n' + dumps(pairs)
+    return pairs, normal_reads
 
 
 def _make_reads(forwards, prev_reads, pres_reads):
     prev_read = next(prev_reads, None)
     pres_read = next(pres_reads, None)
+
     while prev_read is not None or pres_read is not None:
 
         if prev_read is None:

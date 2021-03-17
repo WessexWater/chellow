@@ -14,12 +14,14 @@ def test_find_pair(mocker):
     first_read = {
         'date': utc_datetime(2010, 1, 1),
         'reads': {},
-        'msn': 'kh'
+        'msn': 'kh',
+        'read_type': 'N'
     }
     second_read = {
         'date': utc_datetime(2010, 2, 1),
         'reads': {},
-        'msn': 'kh'
+        'msn': 'kh',
+        'read_type': 'N'
     }
     read_list = [first_read, second_read]
     pair = chellow.computer._find_pair(sess, caches, is_forwards, read_list)

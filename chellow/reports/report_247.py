@@ -37,12 +37,13 @@ CATEGORY_ORDER = {None: 0, 'unmetered': 1, 'nhh': 2, 'amr': 3, 'hh': 4}
 meter_order = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3}
 
 
-def write_spreadsheet(fl, compressed, site_rows, era_rows):
+def write_spreadsheet(fl, compressed, site_rows, era_rows, read_rows):
     fl.seek(0)
     fl.truncate()
     with odio.create_spreadsheet(fl, '1.2', compressed=compressed) as f:
         f.append_table("Site Level", site_rows)
         f.append_table("Era Level", era_rows)
+        f.append_table("Normal Reads", read_rows)
 
 
 def make_bill_row(titles, bill):
@@ -474,6 +475,7 @@ def _process_site(
 
     site_category = None
     site_sources = set()
+    normal_reads = set()
     for i, (
             order, imp_mpan_core, exp_mpan_core, imp_ss,
             exp_ss) in enumerate(sorted(calcs, key=str)):
@@ -683,6 +685,8 @@ def _process_site(
         else:
             out += [None] + make_bill_row(
                 title_dict['imp-supplier'], imp_supplier_bill)
+            for n in imp_ss.normal_reads:
+                normal_reads.add((imp_mpan_core, n))
         if exp_ss is not None:
             out += [None] + make_bill_row(
                 title_dict['exp-supplier'], exp_supplier_bill)
@@ -701,6 +705,7 @@ def _process_site(
 
     site_rows.append([make_val(v) for v in site_row])
     sess.rollback()
+    return normal_reads
 
 
 def content(
@@ -897,6 +902,9 @@ def content(
 
         sites = sites.all()
         deltas = {}
+        normal_reads = set()
+        normal_read_rows = []
+
         for site in sites:
             deltas[site.id] = _make_site_deltas(
                 sess, report_context, site, scenario_hh, forecast_from,
@@ -912,22 +920,32 @@ def content(
                     sf = [(month_start, month_finish)]
 
                 for start, finish in sf:
-                    _process_site(
+                    normal_reads = normal_reads | _process_site(
                         sess, report_context, forecast_from, start, finish,
                         site, deltas[site.id], supply_id, era_maps, now,
                         summary_titles, title_dict, era_rows, site_rows)
 
-            write_spreadsheet(rf, compression, site_rows, era_rows)
+            normal_read_rows = [
+                ['mpan_core', 'date', 'msn', 'type', 'registers']
+            ]
+            for mpan_core, r in sorted(list(normal_reads)):
+                row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
+                normal_read_rows.append(row)
+
+            write_spreadsheet(
+                rf, compression, site_rows, era_rows, normal_read_rows)
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + '\n')
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(rf, compression, site_rows, era_rows)
+        write_spreadsheet(
+            rf, compression, site_rows, era_rows, normal_read_rows)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + '\n')
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(rf, compression, site_rows, era_rows)
+        write_spreadsheet(
+            rf, compression, site_rows, era_rows, normal_read_rows)
     finally:
         if sess is not None:
             sess.close()
