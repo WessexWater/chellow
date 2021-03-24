@@ -94,5 +94,31 @@
 				</table>
 			</div>
 		</div>
+		<div class="section-header">
+			<h2>Voltage Level Parser</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/reports/dno_vl_parser">
+						<fieldset>
+							<input type="hidden" name="dno_id" value="{{dno.id}}">
+							<input
+									type="file" name="dno_file" size="45"
+									value="{{request.values.import_file}}">
+							<input type="submit" value="Parse">
+						</fieldset>
+					</form>
+					<p>
+						This gadget takes a DNO rate spreadsheet for the current financial
+						year and outputs a general import file that updates the LLFC
+						voltage levels and substation flag to make Chellow match the DNO
+						spreadsheet.
+					</p>
+				</div>
+			</div>
+		</div>
 	</div>
 {% endblock %}

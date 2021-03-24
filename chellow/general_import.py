@@ -12,7 +12,7 @@ from chellow.models import (
     Supply, Tpr, User, UserRole, VoltageLevel,
 )
 from chellow.utils import (
-    parse_bool, parse_channel_type, parse_hh_start, parse_mpan_core,
+    hh_format, parse_bool, parse_channel_type, parse_hh_start, parse_mpan_core,
     parse_pc_code,
 )
 
@@ -1157,22 +1157,44 @@ def general_import_llfc(sess, action, vals, args):
         llfc_code = add_arg(args, 'llfc', vals, 1)
         valid_from_str = add_arg(args, 'valid_from', vals, 2)
         valid_from = parse_hh_start(valid_from_str)
-        llfc_description = add_arg(args, 'llfc_description', vals, 3)
-        vl_code = add_arg(args, 'voltage_level', vals, 4)
-        vl = VoltageLevel.get_by_code(sess, vl_code.upper())
-        is_substation_str = add_arg(args, 'is_substation', vals, 5)
-        is_substation = parse_bool(is_substation_str)
-        is_import_str = add_arg(args, 'is_import', vals, 6)
-        is_import = parse_bool(is_import_str)
-        valid_to_str = add_arg(args, 'valid_to', vals, 7)
-        valid_to = parse_hh_start(valid_to_str)
 
         llfc = sess.query(Llfc).filter(
             Llfc.dno == dno, Llfc.code == llfc_code,
             Llfc.valid_from == valid_from).first()
         if llfc is None:
             raise BadRequest(
-                "Can't find an LLFC for this DNO, code and 'valid from' date.")
+                f"Can't find an LLFC for the DNO {dno_code} and 'valid from' "
+                f"date {hh_format(valid_from)}.")
+
+        llfc_description_str = add_arg(args, 'llfc_description', vals, 3)
+        if llfc_description_str == NO_CHANGE:
+            llfc_description = llfc.description
+        else:
+            llfc_description = llfc_description_str
+
+        vl_code_str = add_arg(args, 'voltage_level', vals, 4)
+        if vl_code_str == NO_CHANGE:
+            vl = llfc.voltage_level
+        else:
+            vl = VoltageLevel.get_by_code(sess, vl_code_str.upper())
+
+        is_substation_str = add_arg(args, 'is_substation', vals, 5)
+        if is_substation_str == NO_CHANGE:
+            is_substation = llfc.is_substation
+        else:
+            is_substation = parse_bool(is_substation_str)
+
+        is_import_str = add_arg(args, 'is_import', vals, 6)
+        if is_import_str == NO_CHANGE:
+            is_import = llfc.is_import
+        else:
+            is_import = parse_bool(is_import_str)
+
+        valid_to_str = add_arg(args, 'valid_to', vals, 7)
+        if valid_to_str == NO_CHANGE:
+            valid_to = llfc.valid_to
+        else:
+            valid_to = parse_hh_start(valid_to_str)
 
         llfc.update(
             llfc_description, vl, is_substation, is_import, llfc.valid_from,

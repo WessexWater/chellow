@@ -179,7 +179,7 @@ def parse_bool(bool_str):
         return False
     else:
         raise BadRequest(
-            "A boolean must be 'true' or 'false', but got '" + bool_str + "'.")
+            f"A boolean must be 'true' or 'false', but got '{bool_str}'.")
 
 
 def hh_format(dt, ongoing_str='ongoing', with_hh=False):

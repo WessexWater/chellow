@@ -1,22 +1,25 @@
-import traceback
-from dateutil.relativedelta import relativedelta
-from sqlalchemy.sql import func
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-from chellow.models import (
-    Session, Era, Supply, RegisterRead, Bill, ReadType, Batch, SiteEra,
-    MeasurementRequirement, GeneratorType, Mtc)
-from chellow.utils import (
-    HH, hh_format, CHANNEL_TYPES, req_date, req_int, req_str, parse_mpan_core,
-    hh_min, csv_make_val)
-import chellow.dloads
-import sys
-import os
-import threading
-from flask import g, request
 import csv
+import os
+import sys
+import threading
+import traceback
+
+import chellow.dloads
+from chellow.models import (
+    Batch, Bill, Era, GeneratorType, MeasurementRequirement, Mtc, ReadType,
+    RegisterRead, Session, SiteEra, Supply)
+from chellow.utils import (
+    CHANNEL_TYPES, HH, csv_make_val, hh_format, hh_min, parse_mpan_core,
+    req_date, req_int, req_str)
 from chellow.views import chellow_redirect
+
+from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import func, null
 
 
 def content(running_name, finished_name, date, supply_id, mpan_cores):
@@ -29,19 +32,20 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             'Date', 'Import MPAN Core', 'Export MPAN Core', 'Physical Site Id',
             'Physical Site Name', 'Other Site Ids', 'Other Site Names',
             'Supply Id', 'Source', 'Generator Type', 'GSP Group', 'DNO Name',
-            'Voltage Level', 'Metering Type', 'Mandatory HH', 'PC', 'MTC',
-            'CoP', 'SSC Code', 'SSC Description', 'Number Of Registers',
-            'MOP Contract', 'Mop Account', 'DC Contract', 'DC Account',
-            'Meter Serial Number', 'Meter Installation Date',
-            'Latest Normal Meter Read Date', 'Latest Normal Meter Read Type',
-            'Latest DC Bill Date', 'Latest MOP Bill Date', 'Supply Start Date',
-            'Supply Finish Date', 'Properties', 'Import ACTIVE?',
-            'Import REACTIVE_IMPORT?', 'Import REACTIVE_EXPORT?',
-            'Export ACTIVE?', 'Export REACTIVE_IMPORT?',
-            'Export REACTIVE_EXPORT?', 'Import Agreed Supply Capacity (kVA)',
-            'Import LLFC Code', 'Import LLFC Description',
-            'Import Supplier Contract', 'Import Supplier Account',
-            'Import Mandatory kW', 'Latest Import Supplier Bill Date',
+            'Voltage Level', 'Is Substations', 'Metering Type', 'Mandatory HH',
+            'PC', 'MTC', 'CoP', 'SSC Code', 'SSC Description',
+            'Number Of Registers', 'MOP Contract', 'Mop Account',
+            'DC Contract', 'DC Account', 'Meter Serial Number',
+            'Meter Installation Date', 'Latest Normal Meter Read Date',
+            'Latest Normal Meter Read Type', 'Latest DC Bill Date',
+            'Latest MOP Bill Date', 'Supply Start Date', 'Supply Finish Date',
+            'Properties', 'Import ACTIVE?', 'Import REACTIVE_IMPORT?',
+            'Import REACTIVE_EXPORT?', 'Export ACTIVE?',
+            'Export REACTIVE_IMPORT?', 'Export REACTIVE_EXPORT?',
+            'Import Agreed Supply Capacity (kVA)', 'Import LLFC Code',
+            'Import LLFC Description', 'Import Supplier Contract',
+            'Import Supplier Account', 'Import Mandatory kW',
+            'Latest Import Supplier Bill Date',
             'Export Agreed Supply Capacity (kVA)', 'Export LLFC Code',
             'Export LLFC Description', 'Export Supplier Contract',
             'Export Supplier Account', 'Export Mandatory kW',
@@ -110,8 +114,10 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
 
             if era.imp_mpan_core is None:
                 voltage_level_code = era.exp_llfc.voltage_level.code
+                is_substation = era.exp_llfc.is_substation
             else:
                 voltage_level_code = era.imp_llfc.voltage_level.code
+                is_substation = era.imp_llfc.is_substation
 
             if generator_type is None:
                 generator_type_str = ''
@@ -306,7 +312,8 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 physical_site.name, ', '.join(site_codes),
                 ', '.join(site_names), supply.id, supply.source.code,
                 generator_type_str, supply.gsp_group.code, supply.dno.dno_code,
-                voltage_level_code, metering_type, mandatory_hh, era.pc.code,
+                voltage_level_code, is_substation, metering_type, mandatory_hh,
+                era.pc.code,
                 era.mtc.code, era.cop.code, ssc_code, ssc_description,
                 num_registers, mop_contract_name, mop_account,
                 dc_contract_name, dc_account, era.msn, meter_installation_date,
