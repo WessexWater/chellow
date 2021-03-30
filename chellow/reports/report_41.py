@@ -1,26 +1,30 @@
-from datetime import datetime as Datetime
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
+import csv
+import os
+import sys
+import threading
 import traceback
-from chellow.models import Era, Supply, Source, Pc, Site, SiteEra, Session
+from datetime import datetime as Datetime
+
+import chellow.computer
+import chellow.dloads
 import chellow.duos
 import chellow.triad
-import chellow.computer
+from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
 from chellow.utils import (
-    HH, hh_format, req_int, utc_datetime, reduce_bill_hhs, csv_make_val)
-from flask import request, g
-import chellow.dloads
-import csv
-import sys
-import os
+    HH, csv_make_val, ct_datetime, hh_format, reduce_bill_hhs, req_int, to_utc
+)
 from chellow.views import chellow_redirect
-import threading
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
 
 
-def _make_eras(sess, year_start, year_finish, supply_id):
+def _make_eras(sess, nov_start, year_finish, supply_id):
     eras = sess.query(Era).join(Supply).join(Source).join(Pc).filter(
         Era.start_date <= year_finish, or_(
-            Era.finish_date == null(), Era.finish_date >= year_start),
+            Era.finish_date == null(), Era.finish_date >= nov_start),
         Source.code.in_(('net', 'gen-net')),
         Pc.code == '00').order_by(Supply.id)
 
@@ -40,9 +44,9 @@ def content(year, supply_id, user):
         f = open(running_name, mode='w', newline='')
         writer = csv.writer(f, lineterminator='\n')
 
-        march_start = utc_datetime(year, 3, 1)
-        march_finish = utc_datetime(year, 4, 1) - HH
-        financial_year_start = utc_datetime(year - 1, 4, 1)
+        march_start = to_utc(ct_datetime(year, 3, 1))
+        march_finish = to_utc(ct_datetime(year, 4, 1)) - HH
+        nov_start = to_utc(ct_datetime(year - 1, 11, 1))
 
         scalar_names = {
             'triad-actual-gsp-kw', 'triad-actual-gbp', 'triad-estimate-gsp-kw',
@@ -107,7 +111,7 @@ def content(year, supply_id, user):
                 "Export GSP kW", "Export Rate GBP / kW", "Export GBP"))
 
         forecast_date = chellow.computer.forecast_date()
-        eras = _make_eras(sess, financial_year_start, march_finish, supply_id)
+        eras = _make_eras(sess, nov_start, march_finish, supply_id)
 
         for era in eras:
             site = sess.query(Site).join(SiteEra).filter(
