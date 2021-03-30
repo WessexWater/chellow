@@ -2217,11 +2217,12 @@ class Era(Base, PersistentClass):
             llfc_code = locs[polarity + '_llfc_code']
             llfc = self.supply.dno.get_llfc_by_code(
                 sess, llfc_code, start_date)
-            if hh_before(llfc.valid_to, finish_date):
+            if finish_date is not None and hh_before(
+                    llfc.valid_to, finish_date):
                 raise BadRequest(
-                    "The " + polarity + " line loss factor " + llfc_code +
-                    " is only valid until " + hh_format(llfc.valid_to) +
-                    " but the era ends at " + hh_format(finish_date) + ".")
+                    f"The {polarity} line loss factor {llfc_code} is only "
+                    f"valid until {hh_format(llfc.valid_to)} but the era ends "
+                    f"at {hh_format(finish_date)}.")
 
             if llfc.is_import != ('imp' == polarity):
                 raise BadRequest(
