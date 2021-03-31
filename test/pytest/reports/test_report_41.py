@@ -45,7 +45,7 @@ def test_eras(mocker):
             'JOIN pc ON pc.id = era.pc_id \n'
             'WHERE era.start_date <= :start_date_1 AND '
             '(era.finish_date IS NULL OR era.finish_date >= :finish_date_1) '
-            'AND source.code IN (:code_1, :code_2) AND pc.code = :code_3 '
+            'AND source.code IN ([POSTCOMPILE_code_1]) AND pc.code = :code_2 '
             'ORDER BY supply.id'
         )
     )

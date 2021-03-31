@@ -1496,7 +1496,8 @@ class Site(Base, PersistentClass):
             for supply in sups:
                 if supply not in group_supplies:
                     group_supplies.append(supply)
-                    for site in sess.query(Site).join(SiteEra, Era).filter(
+                    for site in sess.query(Site).join(SiteEra).join(
+                            Era).filter(
                             Era.supply_id == supply.id,
                             Era.start_date <= finish,
                             or_(

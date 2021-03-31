@@ -66,30 +66,32 @@ def client(app, sess):
     app.test_client_class = CustomClient
 
     with app.test_client() as client:
-        sess.execute("INSERT INTO user_role (code) VALUES ('editor')")
+        with app.app_context():
+            sess.execute("INSERT INTO user_role (code) VALUES ('editor')")
 
-        sess.execute(
-            "INSERT INTO market_role (code, description) "
-            "VALUES ('Z', 'Non-core Role')")
-        sess.execute(
-            "INSERT INTO participant (code, name) "
-            "VALUES ('NEUT', 'Neutral')")
-        sess.execute(
-            "INSERT INTO party (market_role_id, participant_id, name, "
-            "valid_from, valid_to, dno_code) "
-            "VALUES (1, 1, 'Neutral Party', '2000-01-01', null, null)")
-        sess.execute(
-            "INSERT INTO contract (name, charge_script, properties, "
-            "state, market_role_id, party_id, start_rate_script_id, "
-            "finish_rate_script_id) VALUES ('configuration', '{}', '{}', "
-            "'{}', 1, 1, null, null)")
-        sess.execute(
-            "INSERT INTO rate_script (contract_id, start_date, finish_date, "
-            "script) VALUES (1, '2020-01-01', '2020-01-31', '{}')")
-        sess.execute(
-            "UPDATE contract set start_rate_script_id = 1, "
-            "finish_rate_script_id = 1 where id = 1;")
-        sess.commit()
+            sess.execute(
+                "INSERT INTO market_role (code, description) "
+                "VALUES ('Z', 'Non-core Role')")
+            sess.execute(
+                "INSERT INTO participant (code, name) "
+                "VALUES ('NEUT', 'Neutral')")
+            sess.execute(
+                "INSERT INTO party (market_role_id, participant_id, name, "
+                "valid_from, valid_to, dno_code) "
+                "VALUES (1, 1, 'Neutral Party', '2000-01-01', null, null)")
+            sess.execute(
+                "INSERT INTO contract (name, charge_script, properties, "
+                "state, market_role_id, party_id, start_rate_script_id, "
+                "finish_rate_script_id) VALUES ('configuration', '{}', '{}', "
+                "'{}', 1, 1, null, null)")
+            sess.execute(
+                "INSERT INTO rate_script "
+                "(contract_id, start_date, finish_date, "
+                "script) VALUES (1, '2020-01-01', '2020-01-31', '{}')")
+            sess.execute(
+                "UPDATE contract set start_rate_script_id = 1, "
+                "finish_rate_script_id = 1 where id = 1;")
+            sess.commit()
 
         yield client
 

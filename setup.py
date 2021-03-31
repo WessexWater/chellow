@@ -55,9 +55,10 @@ setup(
     },
     install_requires=[
         'odio==0.0.22',
-        'pg8000==1.13.2',
+        'pg8000==1.19.0',
         'Flask==1.1.2',
-        'SQLAlchemy==1.3.20',
+        'werkzeug==1.0.1',
+        'SQLAlchemy==1.4.4',
         'openpyxl==2.4.8',
         'python-dateutil==2.8.1',
         'pytz==2020.1',
