@@ -1,16 +1,21 @@
-import traceback
 import csv
-from sqlalchemy.sql.expression import null
-from werkzeug.exceptions import BadRequest
-import requests
-from itertools import chain
-from chellow.models import Contract, Era, Supply, Source, Session, Party
-from chellow.views import chellow_redirect
-import chellow.dloads
-import sys
 import os
+import sys
 import threading
+import traceback
+from itertools import chain
+
+import chellow.dloads
+from chellow.models import Contract, Era, Party, Session, Source, Supply
+from chellow.views import chellow_redirect
+
 from flask import g
+
+import requests
+
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(user):
@@ -30,16 +35,16 @@ def content(user):
             ecoes_props = props[ECOES_KEY]
         except KeyError:
             raise BadRequest(
-                "The property " + ECOES_KEY +
-                " cannot be found in the configuration properties.")
+                f"The property {ECOES_KEY} cannot be found in the "
+                f"configuration properties.")
 
         for key in ('user_name', 'password', 'prefix'):
             try:
                 ecoes_props[key]
             except KeyError:
                 raise BadRequest(
-                    "The property " + key + " cannot be found in the " +
-                    "'ecoes' section of the configuration properties.")
+                    f"The property {key} cannot be found in the 'ecoes' "
+                    f"section of the configuration properties.")
 
         proxies = props.get('proxies', {})
         s = requests.Session()
@@ -52,13 +57,13 @@ def content(user):
 
         mpans = [
             v for (v,) in chain(
-                sess.query(Era.imp_mpan_core).join(Supply, Source).
+                sess.query(Era.imp_mpan_core).join(Supply).join(Source).
                 join(Supply.dno).filter(
                     Party.dno_code.notin_(('88', '99')),
                     Era.finish_date == null(), Source.code != '3rd-party',
                     Era.imp_mpan_core != null()).distinct().order_by(
                     Era.imp_mpan_core),
-                sess.query(Era.exp_mpan_core).join(Supply, Source)
+                sess.query(Era.exp_mpan_core).join(Supply).join(Source)
                 .join(Supply.dno).filter(
                     Party.dno_code.notin_(('88', '99')),
                     Era.finish_date == null(), Source.code != '3rd-party',
@@ -113,8 +118,7 @@ def content(user):
                     st = "de-energised"
                 else:
                     st = "energised"
-                problem += "In ECOES (as " + st + ") but not current " + \
-                    "in Chellow. "
+                problem += f"In ECOES (as {st}) but not current in Chellow. "
 
             if current_chell:
                 mpans.remove(mpan_spaces)
