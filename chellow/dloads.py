@@ -1,11 +1,12 @@
-import traceback
-from chellow.utils import utc_datetime_now
+import atexit
 import collections
-import threading
 import os
 import os.path
+import threading
 import time
-import atexit
+import traceback
+
+from chellow.utils import utc_datetime_now
 
 
 download_id = 0

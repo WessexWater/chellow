@@ -1,19 +1,25 @@
-import traceback
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-from chellow.models import (
-    Session, Contract, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
-from chellow.utils import (
-    hh_min, hh_max, req_date, req_int, csv_make_val, c_months_u, to_ct)
-from chellow.computer import contract_func, SupplySource
-from chellow.views import chellow_redirect
-import chellow.computer
-import chellow.dloads
-from werkzeug.exceptions import BadRequest
 import csv
 import os
 import threading
+import traceback
+
+import chellow.computer
+import chellow.dloads
+from chellow.computer import SupplySource, contract_func
+from chellow.models import (
+    Contract, Era, MeasurementRequirement, Session, Site, SiteEra, Ssc, Tpr,
+)
+from chellow.utils import (
+    c_months_u, csv_make_val, hh_max, hh_min, req_date, req_int, to_ct
+)
+from chellow.views import chellow_redirect
+
 from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
 
 
 def create_csv(f, sess, start_date, finish_date, contract_id):

@@ -1,18 +1,22 @@
-import traceback
-import zipfile
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
-from chellow.models import Session, Supply, Era, HhDatum, Channel
+import csv
 import os
 import threading
-import chellow.dloads
-from chellow.utils import (
-    hh_range, req_bool, req_int, req_str, parse_mpan_core, to_ct, to_utc,
-    ct_datetime)
-from flask import request, g
-from chellow.views import chellow_redirect
+import traceback
+import zipfile
 from io import StringIO
-import csv
+
+import chellow.dloads
+from chellow.models import Channel, Era, HhDatum, Session, Supply
+from chellow.utils import (
+    ct_datetime, hh_range, parse_mpan_core, req_bool, req_int, req_str, to_ct,
+    to_utc
+)
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
 
 
 def content(

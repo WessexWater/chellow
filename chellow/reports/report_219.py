@@ -1,16 +1,21 @@
-from sqlalchemy import or_, and_
-from sqlalchemy.orm import joinedload
-import traceback
-from chellow.models import (
-    RegisterRead, Bill, Supply, Era, Session, Batch, BillType)
-from chellow.utils import csv_make_val, c_months_u, req_int
-from flask import request, g
-import chellow.dloads
 import csv
 import os
-from werkzeug.exceptions import BadRequest
 import threading
+import traceback
+
+import chellow.dloads
+from chellow.models import (
+    Batch, Bill, BillType, Era, RegisterRead, Session, Supply
+)
+from chellow.utils import c_months_u, csv_make_val, req_int
 from chellow.views import chellow_redirect
+
+from flask import g, request
+
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import joinedload
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(year, month, months, supply_id, user):

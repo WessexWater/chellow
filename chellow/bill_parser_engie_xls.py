@@ -1,12 +1,17 @@
-from decimal import Decimal
+import csv
 import decimal
 from datetime import datetime as Datetime
-import csv
-from chellow.utils import parse_mpan_core, HH, to_utc, to_ct
+from decimal import Decimal
 from itertools import count
-from xlrd import xldate_as_tuple, open_workbook
+
+from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
+
 from dateutil.relativedelta import relativedelta
+
 from werkzeug.exceptions import BadRequest
+
+from xlrd import open_workbook, xldate_as_tuple
+
 
 ELEM_MAP = {
     None: None,

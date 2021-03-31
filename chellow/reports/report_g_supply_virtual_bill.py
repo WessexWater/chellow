@@ -1,18 +1,23 @@
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-import traceback
-from chellow.models import Session, GSupply, GEra, Site, SiteGEra
-from chellow.utils import (
-    hh_min, hh_max, hh_format, req_int, req_date, csv_make_val)
-from chellow.views import chellow_redirect
-from chellow.computer import forecast_date
-from werkzeug.exceptions import BadRequest
-from chellow.g_engine import GDataSource, g_contract_func
 import csv
 import os
-from flask import g
 import threading
+import traceback
+
 import chellow.dloads
+from chellow.computer import forecast_date
+from chellow.g_engine import GDataSource, g_contract_func
+from chellow.models import GEra, GSupply, Session, Site, SiteGEra
+from chellow.utils import (
+    csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
+)
+from chellow.views import chellow_redirect
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(g_supply_id, file_name, start_date, finish_date, user):

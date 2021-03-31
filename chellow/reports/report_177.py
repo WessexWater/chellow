@@ -1,20 +1,26 @@
 import os
+import threading
+import time
 import traceback
 from datetime import datetime as Datetime
+
+import chellow.computer
+import chellow.dloads
+from chellow.models import (
+    Bill, Channel, Era, HhDatum, Session, Site, SiteEra, Supply
+)
+from chellow.utils import HH, hh_format, hh_max, hh_min, req_int
+from chellow.views import chellow_redirect
+
 from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
 import pytz
-from sqlalchemy import or_, cast, Float, func
+
+from sqlalchemy import Float, cast, func, or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
-import time
-from chellow.models import (
-    Session, Era, Supply, Site, SiteEra, HhDatum, Channel, Bill)
-from chellow.utils import HH, hh_format, hh_min, hh_max, req_int
-import chellow.computer
-import threading
-import chellow.dloads
-from flask import g, request
-from chellow.views import chellow_redirect
 
 
 def content(year, month, months, supply_id, user):

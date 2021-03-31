@@ -1,11 +1,16 @@
+from datetime import datetime as Datetime, timedelta as Timedelta
+
+from chellow.models import Channel, Era, HhDatum
+from chellow.utils import (
+    HH, ct_datetime, get_file_rates, hh_format, to_ct, to_utc, utc_datetime
+)
+
 from dateutil.relativedelta import relativedelta
+
 from sqlalchemy import func
 from sqlalchemy.sql.expression import true
-from chellow.utils import (
-    hh_format, HH, utc_datetime, get_file_rates, to_ct, to_utc, ct_datetime)
+
 from werkzeug.exceptions import BadRequest
-from chellow.models import HhDatum, Channel, Era
-from datetime import datetime as Datetime, timedelta as Timedelta
 
 
 BANDS = ('red', 'amber', 'green')

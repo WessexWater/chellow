@@ -1,18 +1,21 @@
-from datetime import datetime as Datetime
-import datetime
-import pytz
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-import traceback
-from chellow.models import Snag, Site, Session
-from chellow.views import chellow_redirect
-import chellow.dloads
 import csv
-from flask import g
-import threading
-import sys
 import os
+import sys
+import threading
+import traceback
+from datetime import datetime as Datetime, timedelta as Timedelta
+
+import chellow.dloads
+from chellow.models import Session, Site, Snag
 from chellow.utils import hh_format
+from chellow.views import chellow_redirect
+
+from flask import g
+
+import pytz
+
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
 
 
 def content(user):
@@ -39,7 +42,7 @@ def content(user):
             snag_finish = snag.finish_date
             if snag_finish is None:
                 duration = now - snag_start
-                age_of_snag = datetime.timedelta(0)
+                age_of_snag = Timedelta(0)
             else:
                 duration = snag_finish - snag_start
                 age_of_snag = now - snag_finish

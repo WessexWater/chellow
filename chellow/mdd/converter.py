@@ -1,9 +1,10 @@
 import csv
-import shutil
 import os
+import shutil
 import sys
-from chellow.utils import ct_datetime, to_utc
 from datetime import timedelta as Timedelta
+
+from chellow.utils import ct_datetime, to_utc
 
 
 mdd_ver = None

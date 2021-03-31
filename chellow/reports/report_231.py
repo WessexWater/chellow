@@ -1,16 +1,20 @@
+import csv
+import os
+import sys
+import threading
 import traceback
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
+from datetime import datetime as Datetime
+
 import chellow.computer
 from chellow.models import Contract, Era, Session
-from chellow.utils import hh_format, req_date, req_int, hh_min, hh_max
-import csv
-import sys
-import os
+from chellow.utils import hh_format, hh_max, hh_min, req_date, req_int
 from chellow.views import chellow_redirect
-import threading
+
 from flask import g
-from datetime import datetime as Datetime
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
+
 from werkzeug.exceptions import BadRequest
 
 

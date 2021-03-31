@@ -1,18 +1,23 @@
+import os
+import threading
 import traceback
+import zipfile
+from datetime import datetime as Datetime
+
+import chellow.dloads
+from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.utils import (
+    hh_format, hh_range, parse_mpan_core, req_bool, req_date, req_int, req_str,
+    to_ct
+)
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from chellow.models import Supply, Era, Session, Site, SiteEra
-from chellow.utils import (
-    req_date, hh_format, req_str, req_int, parse_mpan_core, req_bool, hh_range,
-    to_ct)
-import zipfile
-import threading
-import os
-import chellow.dloads
-from flask import request, g
+
 from werkzeug.exceptions import BadRequest
-from chellow.views import chellow_redirect
-from datetime import datetime as Datetime
 
 
 def csv_str(row):

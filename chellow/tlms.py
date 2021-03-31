@@ -1,19 +1,26 @@
+import atexit
+import collections
 import csv
 import threading
-import collections
 import traceback
-from dateutil.relativedelta import relativedelta
-import requests
-from chellow.models import (
-    Session, Contract, RateScript, get_non_core_contract_id)
-from chellow.utils import HH, hh_format, utc_datetime_now, to_utc, to_ct
-from werkzeug.exceptions import BadRequest
-import atexit
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
+
+from chellow.models import (
+    Contract, RateScript, Session, get_non_core_contract_id
+)
+from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
+
+from dateutil.relativedelta import relativedelta
+
+import requests
+
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
-from zish import loads, dumps
+
+from werkzeug.exceptions import BadRequest
+
+from zish import dumps, loads
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'

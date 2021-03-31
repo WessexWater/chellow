@@ -1,7 +1,8 @@
 from decimal import Decimal
+from io import StringIO
+
 from chellow.edi_lib import EdiParser, to_date, to_decimal
 from chellow.utils import hh_after, parse_mpan_core
-from io import StringIO
 
 read_type_map = {
     '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'

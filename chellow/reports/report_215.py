@@ -1,17 +1,21 @@
+import csv
+import os
+import sys
+import threading
 import traceback
+from datetime import datetime
+
+import chellow.dloads
+from chellow.models import Era, Session, Site, SiteEra, Source, Supply
+from chellow.utils import hh_after, hh_before, prev_hh, req_int
+from chellow.views import chellow_redirect
+
+from flask import g, request
+
+import pytz
+
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
-from datetime import datetime
-import pytz
-from chellow.utils import prev_hh, hh_after, hh_before, req_int
-from chellow.views import chellow_redirect
-from chellow.models import Supply, Source, Era, Site, SiteEra, Session
-from flask import request, g
-import chellow.dloads
-import csv
-import sys
-import os
-import threading
 
 
 def content(year, supply_id, user):

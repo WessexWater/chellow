@@ -1,17 +1,23 @@
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-import traceback
-from chellow.models import (
-    Session, Supply, Era, Site, SiteEra, Tpr, MeasurementRequirement, Ssc)
-from chellow.utils import (
-    hh_min, hh_max, hh_format, req_int, req_date, csv_make_val)
-from chellow.views import chellow_redirect
-import chellow.computer
-from werkzeug.exceptions import BadRequest
 import csv
 import os
-from flask import g
 import threading
+import traceback
+
+import chellow.computer
+from chellow.models import (
+    Era, MeasurementRequirement, Session, Site, SiteEra, Ssc, Supply, Tpr
+)
+from chellow.utils import (
+    csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
+)
+from chellow.views import chellow_redirect
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(supply_id, file_name, start_date, finish_date, user):

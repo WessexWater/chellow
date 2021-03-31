@@ -1,11 +1,14 @@
-from decimal import Decimal, InvalidOperation
-from dateutil.relativedelta import relativedelta
 from collections import defaultdict
-from chellow.edi_lib import EdiParser, SEGMENTS
-from chellow.utils import HH, to_utc, to_ct
-from io import StringIO
-from werkzeug.exceptions import BadRequest
 from datetime import datetime as Datetime
+from decimal import Decimal, InvalidOperation
+from io import StringIO
+
+from chellow.edi_lib import EdiParser, SEGMENTS
+from chellow.utils import HH, to_ct, to_utc
+
+from dateutil.relativedelta import relativedelta
+
+from werkzeug.exceptions import BadRequest
 
 
 read_type_map = {

@@ -1,6 +1,8 @@
 import decimal
 import itertools
-from chellow.utils import parse_mpan_core, HH, utc_datetime
+
+from chellow.utils import HH, parse_mpan_core, utc_datetime
+
 from werkzeug.exceptions import BadRequest
 
 

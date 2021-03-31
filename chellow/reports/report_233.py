@@ -1,16 +1,21 @@
-from dateutil.relativedelta import relativedelta
-from sqlalchemy.sql.expression import true
-import traceback
-from chellow.models import (
-    Contract, Snag, Channel, Era, Supply, SiteEra, Site, Session)
-from chellow.utils import req_int, csv_make_val, utc_datetime_now, hh_before
-from chellow.views import chellow_redirect
-import chellow.dloads
 import csv
-from flask import g
-import threading
-import sys
 import os
+import sys
+import threading
+import traceback
+
+import chellow.dloads
+from chellow.models import (
+    Channel, Contract, Era, Session, Site, SiteEra, Snag, Supply
+)
+from chellow.utils import csv_make_val, hh_before, req_int, utc_datetime_now
+from chellow.views import chellow_redirect
+
+from dateutil.relativedelta import relativedelta
+
+from flask import g
+
+from sqlalchemy.sql.expression import true
 
 
 def content(contract_id, days_hidden, user):

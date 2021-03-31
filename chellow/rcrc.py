@@ -1,16 +1,22 @@
-import threading
-import csv
-import collections
-import traceback
-import requests
-from dateutil.relativedelta import relativedelta
-from chellow.models import (
-    Contract, RateScript, get_non_core_contract_id, Session)
-from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
-from werkzeug.exceptions import BadRequest
 import atexit
-from zish import loads
+import collections
+import csv
+import threading
+import traceback
 from decimal import Decimal
+
+from chellow.models import (
+    Contract, RateScript, Session, get_non_core_contract_id
+)
+from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
+
+from dateutil.relativedelta import relativedelta
+
+import requests
+
+from werkzeug.exceptions import BadRequest
+
+from zish import loads
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'

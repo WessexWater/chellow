@@ -1,19 +1,24 @@
-from dateutil.relativedelta import relativedelta
+import csv
+import os
+import sys
+import threading
 import traceback
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
+
+import chellow.dloads
 from chellow.computer import contract_func, forecast_date
 from chellow.g_engine import GDataSource
-from chellow.models import Session, GContract, GEra, Site, SiteGEra
-import chellow.dloads
-import csv
+from chellow.models import GContract, GEra, Session, Site, SiteGEra
 from chellow.utils import (
-    HH, hh_format, req_date, req_int, make_val, hh_max, hh_min, utc_datetime)
-import sys
-import os
-import threading
-from flask import g
+    HH, hh_format, hh_max, hh_min, make_val, req_date, req_int, utc_datetime)
 from chellow.views import chellow_redirect
+
+from dateutil.relativedelta import relativedelta
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
 from werkzeug.exceptions import BadRequest
 
 

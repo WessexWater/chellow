@@ -1,19 +1,23 @@
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
+import csv
+import os
+import threading
 import traceback
-from chellow.utils import (
-    HH, csv_make_val, req_int, ct_datetime, reduce_bill_hhs, to_utc,
-    c_months_u)
-from chellow.models import Site, SiteEra, Era, Supply, Source, Session, Pc
+
 import chellow.computer
+import chellow.dloads
 import chellow.duos
 import chellow.triad
-from flask import request, g
-import csv
-import chellow.dloads
-import os
+from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
+from chellow.utils import (
+    HH, c_months_u, csv_make_val, ct_datetime, reduce_bill_hhs, req_int, to_utc
+)
 from chellow.views import chellow_redirect
-import threading
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
+
 from werkzeug.exceptions import BadRequest
 
 

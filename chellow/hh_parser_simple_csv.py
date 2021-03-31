@@ -1,9 +1,12 @@
 import csv
-from decimal import Decimal
-from datetime import datetime as Datetime
 import itertools
+from datetime import datetime as Datetime
+from decimal import Decimal
+
 from chellow.utils import (
-    parse_channel_type, parse_mpan_core, validate_hh_start, to_utc)
+    parse_channel_type, parse_mpan_core, to_utc, validate_hh_start
+)
+
 from werkzeug.exceptions import BadRequest
 
 

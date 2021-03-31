@@ -1,7 +1,8 @@
-from decimal import Decimal
 import datetime
-from chellow.utils import validate_hh_start, parse_mpan_core
+from decimal import Decimal
 from io import StringIO
+
+from chellow.utils import parse_mpan_core, validate_hh_start
 
 
 def parse_date(date_string):

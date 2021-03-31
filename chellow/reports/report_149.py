@@ -1,22 +1,28 @@
-import traceback
-from datetime import datetime as Datetime
-from sqlalchemy import or_, func, Float, cast
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-from chellow.models import (
-    HhDatum, Channel, Era, Session, Supply, RegisterRead, Bill, BillType,
-    ReadType, SiteEra, Mtc, Llfc)
-from chellow.utils import (
-    hh_min, hh_max, hh_format, HH, req_hh_date, req_int, to_utc)
-import chellow.computer
-import chellow.duos
-import chellow.dloads
+import csv
 import os
 import threading
+import traceback
+from datetime import datetime as Datetime
 from itertools import chain
-from flask import request, g
+
+import chellow.computer
+import chellow.dloads
+import chellow.duos
+from chellow.models import (
+    Bill, BillType, Channel, Era, HhDatum, Llfc, Mtc, ReadType, RegisterRead,
+    Session, SiteEra, Supply
+)
+from chellow.utils import (
+    HH, hh_format, hh_max, hh_min, req_hh_date, req_int, to_utc
+)
 from chellow.views import chellow_redirect
-import csv
+
+from flask import g, request
+
+from sqlalchemy import Float, cast, func, or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
 from werkzeug.exceptions import BadRequest
 
 

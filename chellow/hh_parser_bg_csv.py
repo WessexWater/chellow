@@ -1,8 +1,10 @@
 import csv
-import itertools
 import decimal
+import itertools
 from datetime import timedelta
+
 from chellow.utils import parse_mpan_core, utc_datetime
+
 from werkzeug.exceptions import BadRequest
 
 

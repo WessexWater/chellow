@@ -1,18 +1,23 @@
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
-from sqlalchemy.orm import joinedload
-import traceback
-from chellow.models import Session, Contract, Era
-import chellow.computer
-from chellow.utils import (
-    hh_min, hh_max, hh_format, req_int, csv_make_val, c_months_u)
-from werkzeug.exceptions import BadRequest
-import os
-from flask import g
-import threading
-from chellow.views import chellow_redirect
 import csv
+import os
+import threading
+import traceback
+
+import chellow.computer
 import chellow.dloads
+from chellow.models import Contract, Era, Session
+from chellow.utils import (
+    c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
+)
+from chellow.views import chellow_redirect
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
 
 
 def content(contract_id, end_year, end_month, months, user):

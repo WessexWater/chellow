@@ -1,13 +1,15 @@
-import traceback
-from chellow.utils import req_int, req_str, to_ct, c_months_u
-from chellow.models import Site, Session
-import chellow.dloads
 import csv
-from flask import g
-import threading
-import sys
 import os
+import sys
+import threading
+import traceback
+
+import chellow.dloads
+from chellow.models import Session, Site
+from chellow.utils import c_months_u, req_int, req_str, to_ct
 from chellow.views import chellow_redirect
+
+from flask import g
 
 
 def content(start_date, finish_date, site_id, typ, user):
