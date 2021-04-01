@@ -146,11 +146,8 @@ def content(user):
                     problem += "Can't parse the MTC. "
 
                 chellow_llfc = llfc.code
-                try:
-                    if int(ecoes['llfc']) != int(chellow_llfc):
-                        problem += "The LLFCs don't match. "
-                except ValueError:
-                    problem += "Can't parse the LLFC. "
+                if ecoes['llfc'].zfill(3) != chellow_llfc:
+                    problem += "The LLFCs don't match. "
 
                 chellow_ssc = era.ssc
                 if chellow_ssc is None:
