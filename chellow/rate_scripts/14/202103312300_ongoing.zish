@@ -32,7 +32,7 @@
       }
     ],
     "tariffs": {
-      "001,004,632,002,003,005,006,030_01,02,05,06,07,08": {
+      "001,004,632,002,003,005,006,030_00,01,02": {
         "amber-gbp-per-kwh": 0.01903,
         "description": "Domestic Aggregated",
         "excess-gbp-per-kva-per-day": 0.00000,
@@ -42,7 +42,7 @@
         "green-gbp-per-kwh": 0.01169,
         "red-gbp-per-kwh": 0.07704
       },
-      "007,010,021,019,633,322,323_03,04,05,06,07,08": {
+      "007,010,021,019,633,322,323,008,009,013,014,107,108,109,011,012,110,111,112,020,022,025,026,027_00,03,04,05,06,07,08": {
         "amber-gbp-per-kwh": 0.02013,
         "description": "Non-Domestic Aggregated",
         "excess-gbp-per-kva-per-day": 0.00000,
@@ -88,7 +88,7 @@
         "green-gbp-per-kwh": 0.02030,
         "red-gbp-per-kwh": 0.16609
       },
-      "127,129_00": {
+      "127,129,121,124,132_00": {
         "amber-gbp-per-kwh": 0.01700,
         "description": "LV Site Specific",
         "excess-gbp-per-kva-per-day": 0.07880,
@@ -194,7 +194,7 @@
         "green-gbp-per-kwh": -0.00014,
         "red-gbp-per-kwh": -0.01976
       },
-      "625_00": {
+      "625_00,08": {
         "amber-gbp-per-kwh": -0.00566,
         "description": "LV Generation Aggregated",
         "excess-gbp-per-kva-per-day": 0.00000,
@@ -1110,6 +1110,26 @@
         "gbp-per-kva-per-day": 0.00050,
         "gbp-per-kwh": null
       },
+      "HST_00": {
+        "amber-gbp-per-kwh": 0.00205,
+        "description": "HV Site Specific Storage Import",
+        "excess-gbp-per-kva-per-day": 0.06800,
+        "gbp-per-kva-per-day": 0.05160,
+        "gbp-per-kvarh": 0.00056,
+        "gbp-per-mpan-per-day": 0.89740,
+        "green-gbp-per-kwh": 0.00008,
+        "red-gbp-per-kwh": 0.01454
+      },
+      "LST_00": {
+        "amber-gbp-per-kwh": 0.00610,
+        "description": "LV Site Specific Storage Import",
+        "excess-gbp-per-kva-per-day": 0.07880,
+        "gbp-per-kva-per-day": 0.04350,
+        "gbp-per-kvarh": 0.00199,
+        "gbp-per-mpan-per-day": 0.12610,
+        "green-gbp-per-kwh": 0.00052,
+        "red-gbp-per-kwh": 0.04808
+      },
       "New Export 1": {
         "excess-gbp-per-kva-per-day": 0.00050,
         "gbp-per-day": 5.49300,
@@ -1523,6 +1543,16 @@
         "gbp-per-day": 0.07520,
         "gbp-per-kva-per-day": 0.00710,
         "gbp-per-kwh": null
+      },
+      "SST_00": {
+        "amber-gbp-per-kwh": 0.00422,
+        "description": "LV Sub Site Specific Storage Import",
+        "excess-gbp-per-kva-per-day": 0.06730,
+        "gbp-per-kva-per-day": 0.04870,
+        "gbp-per-kvarh": 0.00127,
+        "gbp-per-mpan-per-day": 0.09880,
+        "green-gbp-per-kwh": 0.00022,
+        "red-gbp-per-kwh": 0.03047
       }
     }
   }
