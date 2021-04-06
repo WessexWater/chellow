@@ -4,11 +4,15 @@ import threading
 import traceback
 from decimal import Decimal
 
-from chellow.models import (
-    Contract, RateScript, Session, get_non_core_contract_id
-)
+from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
 from chellow.utils import (
-    HH, c_months_u, ct_datetime, hh_format, to_ct, to_utc, utc_datetime_now
+    HH,
+    c_months_u,
+    ct_datetime,
+    hh_format,
+    to_ct,
+    to_utc,
+    utc_datetime_now,
 )
 
 import requests
@@ -18,19 +22,19 @@ from werkzeug.exceptions import BadRequest
 from zish import loads
 
 
-def hh(data_source, provider='APXMIDP'):
+def hh(data_source, provider="APXMIDP"):
     try:
-        cache = data_source.caches['bmarketidx']
+        cache = data_source.caches["bmarketidx"]
     except KeyError:
-        cache = data_source.caches['bmarketidx'] = {}
+        cache = data_source.caches["bmarketidx"] = {}
 
     for hh in data_source.hh_data:
         try:
-            hh['bmarketidx-rate'] = cache[hh['start-date']][provider]
+            hh["bmarketidx-rate"] = cache[hh["start-date"]][provider]
         except KeyError:
-            h_start = hh['start-date']
-            db_id = get_non_core_contract_id('bmarketidx')
-            rates = data_source.hh_rate(db_id, h_start)['rates']
+            h_start = hh["start-date"]
+            db_id = get_non_core_contract_id("bmarketidx")
+            rates = data_source.hh_rate(db_id, h_start)["rates"]
 
             try:
                 idxs = cache[h_start]
@@ -45,7 +49,8 @@ def hh(data_source, provider='APXMIDP'):
                 except KeyError:
                     raise BadRequest(
                         f"For the bmarketidx rate script at "
-                        f"{hh_format(h_start)} the rate cannot be found.")
+                        f"{hh_format(h_start)} the rate cannot be found."
+                    )
 
             try:
                 idx = rate[provider]
@@ -56,9 +61,10 @@ def hh(data_source, provider='APXMIDP'):
                     raise BadRequest(
                         f"For the bmarketidx rate script at "
                         f"{hh_format(h_start)} a rate cannot be found for the "
-                        f"provider {provider}.")
+                        f"provider {provider}."
+                    )
 
-            hh['bmarketidx-rate'] = idxs[provider] = float(idx)
+            hh["bmarketidx-rate"] = idxs[provider] = float(idx)
 
 
 bmarketidx_importer = None
@@ -89,7 +95,8 @@ class BmarketidxImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+        )
 
     def run(self):
         while not self.stopped.isSet():
@@ -98,30 +105,41 @@ class BmarketidxImporter(threading.Thread):
                 try:
                     sess = Session()
                     self.log("Starting to check bmarketidx.")
-                    contract = Contract.get_non_core_by_name(
-                        sess, 'bmarketidx')
-                    latest_rs = sess.query(RateScript).filter(
-                        RateScript.contract_id == contract.id).order_by(
-                        RateScript.start_date.desc()).first()
+                    contract = Contract.get_non_core_by_name(sess, "bmarketidx")
+                    latest_rs = (
+                        sess.query(RateScript)
+                        .filter(RateScript.contract_id == contract.id)
+                        .order_by(RateScript.start_date.desc())
+                        .first()
+                    )
                     start_ct = to_ct(latest_rs.start_date)
 
                     months = list(
                         c_months_u(
                             start_year=start_ct.year,
-                            start_month=start_ct.month, months=2))
+                            start_month=start_ct.month,
+                            months=2,
+                        )
+                    )
                     month_start, month_finish = months[1]
 
                     now = utc_datetime_now()
                     if now > month_finish:
                         _process_month(
-                            self.log, sess, contract, latest_rs, month_start,
-                            month_finish)
+                            self.log,
+                            sess,
+                            contract,
+                            latest_rs,
+                            month_start,
+                            month_finish,
+                        )
 
                 except BaseException:
                     self.log(f"Outer problem {traceback.format_exc()}")
                     sess.rollback()
-                    self.global_alert = "There's a problem with the " \
-                        "bmarketidx automatic importer."
+                    self.global_alert = (
+                        "There's a problem with the " "bmarketidx automatic importer."
+                    )
                 finally:
                     self.lock.release()
                     self.log("Finished checking bmarketidx rates.")
@@ -132,40 +150,39 @@ class BmarketidxImporter(threading.Thread):
             self.going.clear()
 
 
-def _process_month(
-        log_f, sess, contract, latest_rs, month_start, month_finish):
+def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
     latest_rs_id = latest_rs.id
     log_f(
         f"Checking to see if data is available from {hh_format(month_start)} "
-        f"to {hh_format(month_finish)} on BMRS.")
+        f"to {hh_format(month_finish)} on BMRS."
+    )
     rates = {}
     month_finish_ct = to_ct(month_finish)
     for d in range(month_finish_ct.day):
-        day_ct = ct_datetime(
-            month_finish_ct.year, month_finish_ct.month, d + 1)
+        day_ct = ct_datetime(month_finish_ct.year, month_finish_ct.month, d + 1)
         params = {
-            'q': f'ajax/alldata/MID/Date,SP,Provider,Price,Volume/NULL/'
+            "q": f"ajax/alldata/MID/Date,SP,Provider,Price,Volume/NULL/"
             f'{day_ct.strftime("%Y-%m-%d")}/ALL'
         }
         r = requests.get(
-            "https://www.bmreports.com/bmrs/", params=params, timeout=60,
-            verify=False)
+            "https://www.bmreports.com/bmrs/", params=params, timeout=60, verify=False
+        )
         res = r.json()
-        for h in res['arr']:
-            dt = to_utc(day_ct + (int(h['settlementPeriod']) - 1) * HH)
+        for h in res["arr"]:
+            dt = to_utc(day_ct + (int(h["settlementPeriod"]) - 1) * HH)
             try:
                 rate = rates[dt]
             except KeyError:
                 rate = rates[dt] = {}
-            rate[h['DataProviderId']] = Decimal(h['MarketIndexPrice']) / \
-                Decimal(1000)
+            rate[h["DataProviderId"]] = Decimal(h["MarketIndexPrice"]) / Decimal(1000)
 
     if month_finish in rates:
         log_f("The whole month's data is there.")
-        script = {'rates': rates}
+        script = {"rates": rates}
         rs = RateScript.get_by_id(sess, latest_rs_id)
         contract.update_rate_script(
-            sess, rs, rs.start_date, month_finish, loads(rs.script))
+            sess, rs, rs.start_date, month_finish, loads(rs.script)
+        )
         contract.insert_rate_script(sess, month_start, script)
         sess.commit()
         log_f(f"Added a new rate script starting at {hh_format(month_start)}.")

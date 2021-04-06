@@ -240,6 +240,18 @@
 											<label>SSC</label>
 											{{input_text('ssc_code')}}
 										</div>
+										<div class="col-sm-4">
+											<label>Energisation Status</label>
+											<select name="energisation_status_id">
+												{% for energisation_status in energisation_statuses %}
+													{{input_option(
+														'energisation_status_id', energisation_status.id,
+													 	energisation_status.code + ' - ' +
+													 	energisation_status.description,
+													 	initial=default_energisation_status.id)}}
+												{% endfor %}
+											</select>
+										</div>
 									</div>
 									<div class="row">
 										<div class="col-sm-4">

@@ -5,14 +5,49 @@ import traceback
 from decimal import Decimal
 
 from chellow.models import (
-    Bill, BillType, Channel, Contract, Cop, Era, GContract, GExitZone,
-    GReadType, GReadingFrequency, GSupply, GUnit, GeneratorType, GspGroup,
-    HhDatum, Llfc, MarketRole, MeterPaymentType, MeterType, Mtc, Participant,
-    Party, Pc, ReadType, RegisterRead, Session, Site, Snag, Source, Ssc,
-    Supply, Tpr, User, UserRole, VoltageLevel,
+    Bill,
+    BillType,
+    Channel,
+    Contract,
+    Cop,
+    EnergisationStatus,
+    Era,
+    GContract,
+    GExitZone,
+    GReadType,
+    GReadingFrequency,
+    GSupply,
+    GUnit,
+    GeneratorType,
+    GspGroup,
+    HhDatum,
+    Llfc,
+    MarketRole,
+    MeterPaymentType,
+    MeterType,
+    Mtc,
+    Participant,
+    Party,
+    Pc,
+    ReadType,
+    RegisterRead,
+    Session,
+    Site,
+    Snag,
+    Source,
+    Ssc,
+    Supply,
+    Tpr,
+    User,
+    UserRole,
+    VoltageLevel,
 )
 from chellow.utils import (
-    hh_format, parse_bool, parse_channel_type, parse_hh_start, parse_mpan_core,
+    hh_format,
+    parse_bool,
+    parse_channel_type,
+    parse_hh_start,
+    parse_mpan_core,
     parse_pc_code,
 )
 
@@ -30,27 +65,26 @@ processes = {}
 
 NO_CHANGE = "{no change}"
 
-CHANNEL_TYPES = ('ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP')
+CHANNEL_TYPES = ("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP")
 
 
 def add_arg(args, name, values, index):
     if index >= len(values):
-        raise BadRequest(
-            f"Another field called {name} needs to be added on the end.")
+        raise BadRequest(f"Another field called {name} needs to be added on the end.")
 
     value = values[index].strip()
     args.append((name, value))
     return value
 
 
-ALLOWED_ACTIONS = ('insert', 'update', 'delete')
+ALLOWED_ACTIONS = ("insert", "update", "delete")
 
 
 def general_import_era(sess, action, vals, args):
-    if action == 'update':
-        mpan_core = add_arg(args, 'mpan_core', vals, 0)
+    if action == "update":
+        mpan_core = add_arg(args, "mpan_core", vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
-        date_str = add_arg(args, 'date', vals, 1)
+        date_str = add_arg(args, "date", vals, 1)
         dt = parse_hh_start(date_str)
         era = supply.find_era_at(sess, dt)
         if era is None:
@@ -108,8 +142,7 @@ def general_import_era(sess, action, vals, args):
             mtc = Mtc.get_by_code(sess, supply.dno, mtc_code)
 
         cop_code = add_arg(args, "CoP", vals, 11)
-        cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(
-            sess, cop_code)
+        cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(sess, cop_code)
 
         ssc_code = add_arg(args, "SSC", vals, 12)
         if ssc_code == NO_CHANGE:
@@ -140,8 +173,7 @@ def general_import_era(sess, action, vals, args):
             if imp_llfc_code == NO_CHANGE:
                 imp_llfc_code = era.imp_llfc.code
 
-            imp_sc_str = add_arg(
-                args, "Import Agreed Supply Capacity", vals, 16)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 16)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = era.imp_sc
             else:
@@ -149,19 +181,22 @@ def general_import_era(sess, action, vals, args):
                     imp_sc = int(imp_sc_str)
                 except ValueError as e:
                     raise BadRequest(
-                        "The import agreed supply capacity " +
-                        "must be an integer. " + str(e))
+                        "The import agreed supply capacity "
+                        + "must be an integer. "
+                        + str(e)
+                    )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 17)
+                args, "Import Supplier Contract", vals, 17
+            )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = era.imp_supplier_contract
             else:
-                imp_supplier_contract = Contract. get_supplier_by_name(
-                    sess, imp_supplier_contract_name)
+                imp_supplier_contract = Contract.get_supplier_by_name(
+                    sess, imp_supplier_contract_name
+                )
 
-            imp_supplier_account = add_arg(
-                args, "Import Supplier Account", vals, 18)
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 18)
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = era.imp_supplier_account
 
@@ -182,8 +217,7 @@ def general_import_era(sess, action, vals, args):
                 if exp_llfc_code == NO_CHANGE:
                     exp_llfc_code = era.exp_llfc.code
 
-                exp_sc_str = add_arg(
-                    args, "Export Agreed Supply Capacity", vals, 21)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 21)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = era.exp_sc
                 else:
@@ -191,28 +225,53 @@ def general_import_era(sess, action, vals, args):
                         exp_sc = int(exp_sc_str)
                     except ValueError as e:
                         raise BadRequest(
-                            "The export supply capacity " +
-                            "must be an integer. " + str(e))
+                            "The export supply capacity "
+                            + "must be an integer. "
+                            + str(e)
+                        )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 22)
+                    args, "Export Supplier Contract", vals, 22
+                )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = era.exp_supplier_contract
                 else:
-                    exp_supplier_contract = Contract .get_supplier_by_name(
-                        sess, exp_supplier_contract_name)
+                    exp_supplier_contract = Contract.get_supplier_by_name(
+                        sess, exp_supplier_contract_name
+                    )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 23)
+                    args, "Export Supplier Account", vals, 23
+                )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = era.exp_supplier_account
 
         supply.update_era(
-            sess, era, start_date, finish_date, mop_contract, mop_account,
-            dc_contract, dc_account, msn, pc, mtc, cop, ssc, properties,
-            imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-            exp_supplier_contract, exp_supplier_account, exp_sc)
+            sess,
+            era,
+            start_date,
+            finish_date,
+            mop_contract,
+            mop_account,
+            dc_contract,
+            dc_account,
+            msn,
+            pc,
+            mtc,
+            cop,
+            ssc,
+            properties,
+            imp_mpan_core,
+            imp_llfc_code,
+            imp_supplier_contract,
+            imp_supplier_account,
+            imp_sc,
+            exp_mpan_core,
+            exp_llfc_code,
+            exp_supplier_contract,
+            exp_supplier_account,
+            exp_sc,
+        )
     elif action == "delete":
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
@@ -232,10 +291,15 @@ def general_import_era(sess, action, vals, args):
             start_date = None
         else:
             start_date = parse_hh_start(start_date_str)
-        existing_era = sess.query(Era).filter(
-            Era.supply == supply,
-            or_(Era.finish_date == null(), Era.finish_date >= start_date)
-            ).order_by(Era.start_date).first()
+        existing_era = (
+            sess.query(Era)
+            .filter(
+                Era.supply == supply,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            )
+            .order_by(Era.start_date)
+            .first()
+        )
         if existing_era is None:
             raise BadRequest("The start date is after end of the supply.")
 
@@ -302,6 +366,12 @@ def general_import_era(sess, action, vals, args):
         else:
             ssc = None
 
+        es_code = add_arg(args, "Energisation Status", vals, 12)
+        if es_code == NO_CHANGE:
+            energisation_status = existing_era.energisation_status
+        else:
+            energisation_status = EnergisationStatus.get_by_code(sess, es_code)
+
         properties_str = add_arg(args, "Properties", vals, 12)
         if properties_str == NO_CHANGE:
             properties = loads(existing_era.properties)
@@ -321,14 +391,11 @@ def general_import_era(sess, action, vals, args):
         imp_supplier_contract_name = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(
-                args, "Import Line Loss Factor Class", vals, 14)
-            if imp_llfc_code == NO_CHANGE and \
-                    existing_era.imp_llfc is not None:
+            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class", vals, 14)
+            if imp_llfc_code == NO_CHANGE and existing_era.imp_llfc is not None:
                 imp_llfc_code = existing_era.imp_llfc.code
 
-            imp_sc_str = add_arg(
-                args, "Import Agreed Supply Capacity", vals, 15)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 15)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = existing_era.imp_sc
             else:
@@ -337,30 +404,34 @@ def general_import_era(sess, action, vals, args):
                 except ValueError as e:
                     raise BadRequest(
                         "The import agreed supply capacity "
-                        "must be an integer. " + str(e))
+                        "must be an integer. " + str(e)
+                    )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier " + "Contract", vals, 16)
+                args, "Import Supplier " + "Contract", vals, 16
+            )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = existing_era.imp_supplier_contract
             else:
                 imp_supplier_contract = Contract.get_supplier_by_name(
-                    sess, imp_supplier_contract_name)
+                    sess, imp_supplier_contract_name
+                )
 
             imp_supplier_account = add_arg(
-                args, "Import Supplier Account " + "Reference", vals, 17)
+                args, "Import Supplier Account " + "Reference", vals, 17
+            )
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = existing_era.imp_supplier_account
             else:
                 imp_supplier_account = add_arg(
-                    args, "Import Supplier Account " + "Reference", vals, 17)
+                    args, "Import Supplier Account " + "Reference", vals, 17
+                )
 
             for i, ctype in enumerate(CHANNEL_TYPES):
                 field_name = "Import " + ctype + "?"
                 has_chan_str = add_arg(args, field_name, vals, i + 18)
                 if has_chan_str == NO_CHANGE:
-                    if existing_era.find_channel(sess, True, ctype) is not \
-                            None:
+                    if existing_era.find_channel(sess, True, ctype) is not None:
                         channel_set.add((True, ctype))
                 elif parse_bool(has_chan_str):
                     channel_set.add((True, ctype))
@@ -380,12 +451,10 @@ def general_import_era(sess, action, vals, args):
 
             if exp_mpan_core is not None:
                 exp_llfc_code = add_arg(args, "Export LLFC", vals, 22)
-                if exp_llfc_code == NO_CHANGE and \
-                        existing_era.exp_llfc is not None:
+                if exp_llfc_code == NO_CHANGE and existing_era.exp_llfc is not None:
                     exp_llfc_code = existing_era.exp_llfc.code
 
-                exp_sc_str = add_arg(
-                    args, "Export Agreed Supply Capacity", vals, 23)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 23)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = existing_era.exp_sc
                 else:
@@ -393,19 +462,22 @@ def general_import_era(sess, action, vals, args):
                         exp_sc = int(exp_sc_str)
                     except ValueError as e:
                         raise BadRequest(
-                            "The export supply capacity must be an integer. " +
-                            str(e))
+                            "The export supply capacity must be an integer. " + str(e)
+                        )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 24)
+                    args, "Export Supplier Contract", vals, 24
+                )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = existing_era.exp_supplier_contract
                 else:
                     exp_supplier_contract = Contract.get_supplier_by_name(
-                        sess, exp_supplier_contract_name)
+                        sess, exp_supplier_contract_name
+                    )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 25)
+                    args, "Export Supplier Account", vals, 25
+                )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = existing_era.exp_supplier_account
 
@@ -413,18 +485,40 @@ def general_import_era(sess, action, vals, args):
                     field_name = "Export " + ctype + "?"
                     has_chan_str = add_arg(args, field_name, vals, i + 26)
                     if has_chan_str == NO_CHANGE:
-                        if existing_era.find_channel(sess, False, ctype) is \
-                                not None:
+                        if existing_era.find_channel(sess, False, ctype) is not None:
                             channel_set.add((False, ctype))
                     elif parse_bool(has_chan_str):
                         channel_set.add((False, ctype))
 
         supply.insert_era(
-            sess, physical_site, logical_sites, start_date, None, mop_contract,
-            mop_account, dc_contract, dc_account, msn, pc, mtc, cop, ssc,
-            properties, imp_mpan_core, imp_llfc_code, imp_supplier_contract,
-            imp_supplier_account, imp_sc, exp_mpan_core, exp_llfc_code,
-            exp_supplier_contract, exp_supplier_account, exp_sc, channel_set)
+            sess,
+            physical_site,
+            logical_sites,
+            start_date,
+            None,
+            mop_contract,
+            mop_account,
+            dc_contract,
+            dc_account,
+            msn,
+            pc,
+            mtc,
+            cop,
+            ssc,
+            energisation_status,
+            properties,
+            imp_mpan_core,
+            imp_llfc_code,
+            imp_supplier_contract,
+            imp_supplier_account,
+            imp_sc,
+            exp_mpan_core,
+            exp_llfc_code,
+            exp_supplier_contract,
+            exp_supplier_account,
+            exp_sc,
+            channel_set,
+        )
 
 
 def general_import_g_supply(sess, action, vals, args):
@@ -452,12 +546,23 @@ def general_import_g_supply(sess, action, vals, args):
         account = add_arg(args, "Account", vals, 10)
         g_reading_frequency_code = add_arg(args, "Reading Frequency", vals, 11)
         g_reading_frequency = GReadingFrequency.get_by_code(
-            sess, g_reading_frequency_code)
+            sess, g_reading_frequency_code
+        )
 
         site.insert_g_supply(
-            sess, mprn, supply_name, g_exit_zone, start_date, finish_date, msn,
-            correction_factor, g_unit, g_contract, account,
-            g_reading_frequency)
+            sess,
+            mprn,
+            supply_name,
+            g_exit_zone,
+            start_date,
+            finish_date,
+            msn,
+            correction_factor,
+            g_unit,
+            g_contract,
+            account,
+            g_reading_frequency,
+        )
         sess.flush()
     elif action == "update":
         existing_mprn = add_arg(args, "Existing MPRN", vals, 0)
@@ -510,8 +615,13 @@ def general_import_party(sess, action, vals, args):
         dno_code_str = add_arg(args, "DNO Code", vals, 5)
         dno_code = None if len(dno_code_str) == 0 else dno_code_str
         party = Party(
-            market_role=market_role, participant=participant, name=name,
-            valid_from=valid_from, valid_to=valid_to, dno_code=dno_code)
+            market_role=market_role,
+            participant=participant,
+            name=name,
+            valid_from=valid_from,
+            valid_to=valid_to,
+            dno_code=dno_code,
+        )
         sess.add(party)
         sess.flush()
 
@@ -519,7 +629,8 @@ def general_import_party(sess, action, vals, args):
         market_role_code = add_arg(args, "Market Role Code", vals, 0)
         participant_code = add_arg(args, "Participant Code", vals, 1)
         party = Party.get_by_participant_code_role_code(
-            sess, participant_code, market_role_code)
+            sess, participant_code, market_role_code
+        )
         name = add_arg(args, "Name", vals, 2)
         party.name = name
         valid_from_str = add_arg(args, "Valid From", vals, 3)
@@ -541,8 +652,8 @@ def general_import_meter_type(sess, action, vals, args):
         valid_to_str = add_arg(args, "Valid To", vals, 3)
         valid_to = parse_hh_start(valid_to_str)
         mtc = MeterType(
-            code=code, description=description, valid_from=valid_from,
-            valid_to=valid_to)
+            code=code, description=description, valid_from=valid_from, valid_to=valid_to
+        )
         sess.add(mtc)
         sess.flush()
 
@@ -563,14 +674,13 @@ def general_import_meter_type(sess, action, vals, args):
 def general_import_mtc(sess, action, vals, args):
     if action == "insert":
         dno_code = add_arg(args, "DNO Code", vals, 0)
-        if dno_code == '':
+        if dno_code == "":
             dno = None
         else:
             dno = Party.get_dno_by_code(sess, dno_code)
         code = add_arg(args, "Code", vals, 1)
         description = add_arg(args, "Description", vals, 2)
-        has_related_metering_str = add_arg(
-            args, "Has Related Metering?", vals, 3)
+        has_related_metering_str = add_arg(args, "Has Related Metering?", vals, 3)
         has_related_metering = parse_bool(has_related_metering_str)
         has_comms_str = add_arg(args, "Has Comms?", vals, 4)
         has_comms = parse_bool(has_comms_str)
@@ -578,10 +688,8 @@ def general_import_mtc(sess, action, vals, args):
         is_hh = parse_bool(is_hh_str)
         meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
         meter_type = MeterType.get_by_code(sess, meter_type_code)
-        meter_payment_type_code = add_arg(
-            args, "Meter Payment Type Code", vals, 7)
-        meter_payment_type = MeterPaymentType.get_by_code(
-            sess, meter_payment_type_code)
+        meter_payment_type_code = add_arg(args, "Meter Payment Type Code", vals, 7)
+        meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
         tpr_count_str = add_arg(args, "TPR Count", vals, 8)
         tpr_count = int(tpr_count_str)
         valid_from_str = add_arg(args, "Valid From", vals, 9)
@@ -590,28 +698,37 @@ def general_import_mtc(sess, action, vals, args):
         valid_to = parse_hh_start(valid_to_str)
 
         mtc_query = sess.query(Mtc).filter(
-            Mtc.dno == dno, Mtc.code == code, or_(
-                Mtc.valid_to == null(), Mtc.valid_to >= valid_from))
+            Mtc.dno == dno,
+            Mtc.code == code,
+            or_(Mtc.valid_to == null(), Mtc.valid_to >= valid_from),
+        )
         if valid_to is not None:
             mtc_query = mtc_query.filter(Mtc.valid_from <= valid_to)
         existing_mtc = mtc_query.first()
         if existing_mtc is None:
             mtc = Mtc(
-                dno=dno, code=code, description=description,
-                has_related_metering=has_related_metering, has_comms=has_comms,
-                is_hh=is_hh, meter_type=meter_type,
-                meter_payment_type=meter_payment_type, tpr_count=tpr_count,
-                valid_from=valid_from, valid_to=valid_to)
+                dno=dno,
+                code=code,
+                description=description,
+                has_related_metering=has_related_metering,
+                has_comms=has_comms,
+                is_hh=is_hh,
+                meter_type=meter_type,
+                meter_payment_type=meter_payment_type,
+                tpr_count=tpr_count,
+                valid_from=valid_from,
+                valid_to=valid_to,
+            )
             sess.add(mtc)
             sess.flush()
         else:
             raise BadRequest(
-                "There's already a MTC with this DNO and code for this "
-                "period.")
+                "There's already a MTC with this DNO and code for this " "period."
+            )
 
     elif action == "update":
         dno_code = add_arg(args, "DNO Code", vals, 0)
-        if dno_code == '':
+        if dno_code == "":
             dno = None
         else:
             dno = Party.get_dno_by_code(sess, dno_code)
@@ -620,8 +737,7 @@ def general_import_mtc(sess, action, vals, args):
 
         description = add_arg(args, "Description", vals, 2)
         mtc.description = description
-        has_related_metering_str = add_arg(
-            args, "Has Related Metering?", vals, 3)
+        has_related_metering_str = add_arg(args, "Has Related Metering?", vals, 3)
         has_related_metering = parse_bool(has_related_metering_str)
         mtc.has_related_metering = has_related_metering
         has_comms_str = add_arg(args, "Has Comms?", vals, 4)
@@ -633,13 +749,10 @@ def general_import_mtc(sess, action, vals, args):
         meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
         meter_type = MeterType.get_by_code(sess, meter_type_code)
         mtc.meter_type = meter_type
-        meter_payment_type_code = add_arg(
-            args, "Meter Payment Type Code", vals, 7)
-        meter_payment_type = MeterPaymentType.get_by_code(
-            sess, meter_payment_type_code)
+        meter_payment_type_code = add_arg(args, "Meter Payment Type Code", vals, 7)
+        meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
         mtc.meter_payment_type = meter_payment_type
-        tpr_count_str = add_arg(
-            args, "TPR Count", vals, 8)
+        tpr_count_str = add_arg(args, "TPR Count", vals, 8)
         tpr_count = int(tpr_count_str)
         mtc.tpr_count = tpr_count
         valid_from_str = add_arg(args, "Valid From", vals, 9)
@@ -705,8 +818,7 @@ def general_import_bill(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise BadRequest(
-                "The role name must be one of dc, supplier or mop.")
+            raise BadRequest("The role name must be one of dc, supplier or mop.")
 
         batch_reference = add_arg(args, "Batch Reference", vals, 2)
 
@@ -736,8 +848,20 @@ def general_import_bill(sess, action, vals, args):
         kwh = Decimal(kwh_str)
 
         bill = batch.insert_bill(
-            sess, account, reference, issue_date, start_date, finish_date,
-            kwh, net, vat, gross, typ, breakdown, supply)
+            sess,
+            account,
+            reference,
+            issue_date,
+            start_date,
+            finish_date,
+            kwh,
+            net,
+            vat,
+            gross,
+            typ,
+            breakdown,
+            supply,
+        )
 
         for i in range(15, len(vals), 11):
             msn = add_arg(args, "Meter Serial Number", vals, i)
@@ -767,8 +891,19 @@ def general_import_bill(sess, action, vals, args):
             pres_type_str = add_arg(args, "Present Type", vals, i + 10)
             pres_type = ReadType.get_by_code(sess, pres_type_str)
             bill.insert_read(
-                sess, tpr, coefficient, units, msn, mpan_str, prev_date,
-                prev_value, prev_type, pres_date, pres_value, pres_type)
+                sess,
+                tpr,
+                coefficient,
+                units,
+                msn,
+                mpan_str,
+                prev_date,
+                prev_value,
+                prev_type,
+                pres_date,
+                pres_value,
+                pres_type,
+            )
 
     elif action == "update":
         bill_id_str = add_arg(args, "Bill Id", vals, 0)
@@ -826,8 +961,18 @@ def general_import_bill(sess, action, vals, args):
             breakdown = bill.breakdown
 
         bill.update(
-            account, reference, issue_date, start_date, finish_date, kwh, net,
-            vat, gross, bill_type, breakdown)
+            account,
+            reference,
+            issue_date,
+            start_date,
+            finish_date,
+            kwh,
+            net,
+            vat,
+            gross,
+            bill_type,
+            breakdown,
+        )
 
 
 def general_import_g_bill(sess, action, vals, args):
@@ -866,19 +1011,29 @@ def general_import_g_bill(sess, action, vals, args):
         kwh = Decimal(kwh_str)
 
         g_bill = g_batch.insert_g_bill(
-            sess, g_supply, bill_type, reference, account, issue_date,
-            start_date, finish_date, kwh, net_gbp, vat_gbp, gross_gbp,
-            '', breakdown)
+            sess,
+            g_supply,
+            bill_type,
+            reference,
+            account,
+            issue_date,
+            start_date,
+            finish_date,
+            kwh,
+            net_gbp,
+            vat_gbp,
+            gross_gbp,
+            "",
+            breakdown,
+        )
 
         for i in range(14, len(vals), 10):
             msn = add_arg(args, "Meter Serial Number", vals, i)
             g_unit_code = add_arg(args, "Unit", vals, i + 1)
             g_unit = GUnit.get_by_code(sess, g_unit_code)
-            correction_factor_str = add_arg(
-                args, "Correction Factor", vals, i + 2)
+            correction_factor_str = add_arg(args, "Correction Factor", vals, i + 2)
             correction_factor = Decimal(correction_factor_str)
-            calorific_value_str = add_arg(
-                args, "Calorific Value", vals, i + 3)
+            calorific_value_str = add_arg(args, "Calorific Value", vals, i + 3)
             calorific_value = Decimal(calorific_value_str)
 
             prev_date_str = add_arg(args, "Previous Date", vals, i + 4)
@@ -898,9 +1053,18 @@ def general_import_g_bill(sess, action, vals, args):
             pres_type = GReadType.get_by_code(sess, pres_type_str)
 
             g_bill.insert_g_read(
-                sess, msn, g_unit, correction_factor, calorific_value,
-                prev_value, prev_date, prev_type, pres_value, pres_date,
-                pres_type)
+                sess,
+                msn,
+                g_unit,
+                correction_factor,
+                calorific_value,
+                prev_value,
+                prev_date,
+                prev_type,
+                pres_value,
+                pres_date,
+                pres_type,
+            )
 
 
 def general_import_register_read(sess, action, vals, args):
@@ -969,8 +1133,18 @@ def general_import_register_read(sess, action, vals, args):
             pres_type = ReadType.get_by_code(sess, pres_type_code)
 
         read.update(
-            tpr, coefficient, units, msn, mpan_str, prev_date, prev_value,
-            prev_type, pres_date, pres_value, pres_type)
+            tpr,
+            coefficient,
+            units,
+            msn,
+            mpan_str,
+            prev_date,
+            prev_value,
+            prev_type,
+            pres_date,
+            pres_value,
+            pres_type,
+        )
 
 
 def general_import_supply(sess, action, vals, args):
@@ -981,7 +1155,7 @@ def general_import_supply(sess, action, vals, args):
         source = Source.get_by_code(sess, source_code)
         gen_type_code = add_arg(args, "Generator Type", vals, 2)
         gen_type = None
-        if source.code == 'gen' or source.code == 'gen-net':
+        if source.code == "gen" or source.code == "gen-net":
             gen_type = GeneratorType.get_by_code(sess, gen_type_code)
 
         supply_name = add_arg(args, "Supply Name", vals, 3)
@@ -1031,20 +1205,21 @@ def general_import_supply(sess, action, vals, args):
             imp_sc = None
         else:
             imp_llfc_code = add_arg(args, "Import LLFC", vals, 18)
-            imp_sc_str = add_arg(
-                args, "Import Agreed Supply Capacity", vals, 19)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 19)
             try:
                 imp_sc = int(imp_sc_str)
             except ValueError as e:
                 raise BadRequest(
-                    "The import supply capacity must be an integer." + str(e))
+                    "The import supply capacity must be an integer." + str(e)
+                )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 20)
-            imp_supplier_account = add_arg(
-                args, "Import Supplier Account", vals, 21)
+                args, "Import Supplier Contract", vals, 20
+            )
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 21)
             imp_supplier_contract = Contract.get_supplier_by_name(
-                sess, imp_supplier_contract_name)
+                sess, imp_supplier_contract_name
+            )
 
         exp_supplier_contract = None
         exp_sc = None
@@ -1060,28 +1235,55 @@ def general_import_supply(sess, action, vals, args):
 
             if exp_mpan_core is not None:
                 exp_llfc_code = add_arg(args, "Export LLFC", vals, 23)
-                exp_sc_str = add_arg(
-                    args, "Export Agreed Supply Capacity", vals, 24)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 24)
                 try:
                     exp_sc = int(exp_sc_str)
                 except ValueError as e:
                     raise BadRequest(
-                        "The export agreed supply capacity " +
-                        "must be an integer." + str(e))
+                        "The export agreed supply capacity "
+                        + "must be an integer."
+                        + str(e)
+                    )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 25)
+                    args, "Export Supplier Contract", vals, 25
+                )
                 exp_supplier_contract = Contract.get_supplier_by_name(
-                    sess, exp_supplier_contract_name)
+                    sess, exp_supplier_contract_name
+                )
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 26)
+                    args, "Export Supplier Account", vals, 26
+                )
 
         supply = site.insert_e_supply(
-            sess, source, gen_type, supply_name, start_date, finish_date,
-            gsp_group, mop_contract, mop_account, dc_contract, dc_account, msn,
-            pc, mtc_code, cop, ssc, properties, imp_mpan_core, imp_llfc_code,
-            imp_supplier_contract, imp_supplier_account, imp_sc, exp_mpan_core,
-            exp_llfc_code, exp_supplier_contract, exp_supplier_account, exp_sc)
+            sess,
+            source,
+            gen_type,
+            supply_name,
+            start_date,
+            finish_date,
+            gsp_group,
+            mop_contract,
+            mop_account,
+            dc_contract,
+            dc_account,
+            msn,
+            pc,
+            mtc_code,
+            cop,
+            ssc,
+            properties,
+            imp_mpan_core,
+            imp_llfc_code,
+            imp_supplier_contract,
+            imp_supplier_account,
+            imp_sc,
+            exp_mpan_core,
+            exp_llfc_code,
+            exp_supplier_contract,
+            exp_supplier_account,
+            exp_sc,
+        )
         sess.flush()
 
     elif action == "update":
@@ -1117,95 +1319,109 @@ def general_import_supply(sess, action, vals, args):
 
 
 def general_import_llfc(sess, action, vals, args):
-    if action == 'insert':
-        dno_code = add_arg(args, 'dno', vals, 0)
+    if action == "insert":
+        dno_code = add_arg(args, "dno", vals, 0)
         dno = Party.get_dno_by_code(sess, dno_code)
-        llfc_code = add_arg(args, 'llfc', vals, 1)
-        llfc_description = add_arg(args, 'llfc_description', vals, 2)
-        vl_code = add_arg(args, 'voltage_level', vals, 3)
+        llfc_code = add_arg(args, "llfc", vals, 1)
+        llfc_description = add_arg(args, "llfc_description", vals, 2)
+        vl_code = add_arg(args, "voltage_level", vals, 3)
         vl = VoltageLevel.get_by_code(sess, vl_code.upper())
-        is_substation_str = add_arg(args, 'is_substation', vals, 4)
+        is_substation_str = add_arg(args, "is_substation", vals, 4)
         is_substation = parse_bool(is_substation_str)
-        is_import_str = add_arg(args, 'is_import', vals, 5)
+        is_import_str = add_arg(args, "is_import", vals, 5)
         is_import = parse_bool(is_import_str)
-        valid_from_str = add_arg(args, 'valid_from', vals, 6)
+        valid_from_str = add_arg(args, "valid_from", vals, 6)
         valid_from = parse_hh_start(valid_from_str)
-        valid_to_str = add_arg(args, 'valid_to', vals, 7)
+        valid_to_str = add_arg(args, "valid_to", vals, 7)
         valid_to = parse_hh_start(valid_to_str)
 
         llfc_query = sess.query(Llfc).filter(
-            Llfc.dno == dno, Llfc.code == llfc_code, or_(
-                Llfc.valid_to == null(), Llfc.valid_to >= valid_from))
+            Llfc.dno == dno,
+            Llfc.code == llfc_code,
+            or_(Llfc.valid_to == null(), Llfc.valid_to >= valid_from),
+        )
         if valid_to is not None:
             llfc_query = llfc_query.filter(Llfc.valid_from <= valid_to)
         existing_llfc = llfc_query.first()
 
         if existing_llfc is None:
             llfc = Llfc(
-                dno, llfc_code, llfc_description, vl, is_substation,
-                is_import, valid_from, valid_to)
+                dno,
+                llfc_code,
+                llfc_description,
+                vl,
+                is_substation,
+                is_import,
+                valid_from,
+                valid_to,
+            )
             sess.add(llfc)
             sess.flush()
         else:
             raise BadRequest(
-                "There's already a LLFC with this DNO and code for this "
-                "period.")
+                "There's already a LLFC with this DNO and code for this " "period."
+            )
 
-    elif action == 'update':
-        dno_code = add_arg(args, 'dno', vals, 0)
+    elif action == "update":
+        dno_code = add_arg(args, "dno", vals, 0)
         dno = Party.get_dno_by_code(sess, dno_code)
-        llfc_code = add_arg(args, 'llfc', vals, 1)
-        valid_from_str = add_arg(args, 'valid_from', vals, 2)
+        llfc_code = add_arg(args, "llfc", vals, 1)
+        valid_from_str = add_arg(args, "valid_from", vals, 2)
         valid_from = parse_hh_start(valid_from_str)
 
-        llfc = sess.query(Llfc).filter(
-            Llfc.dno == dno, Llfc.code == llfc_code,
-            Llfc.valid_from == valid_from).first()
+        llfc = (
+            sess.query(Llfc)
+            .filter(
+                Llfc.dno == dno, Llfc.code == llfc_code, Llfc.valid_from == valid_from
+            )
+            .first()
+        )
         if llfc is None:
             raise BadRequest(
                 f"Can't find an LLFC for the DNO {dno_code} and 'valid from' "
-                f"date {hh_format(valid_from)}.")
+                f"date {hh_format(valid_from)}."
+            )
 
-        llfc_description_str = add_arg(args, 'llfc_description', vals, 3)
+        llfc_description_str = add_arg(args, "llfc_description", vals, 3)
         if llfc_description_str == NO_CHANGE:
             llfc_description = llfc.description
         else:
             llfc_description = llfc_description_str
 
-        vl_code_str = add_arg(args, 'voltage_level', vals, 4)
+        vl_code_str = add_arg(args, "voltage_level", vals, 4)
         if vl_code_str == NO_CHANGE:
             vl = llfc.voltage_level
         else:
             vl = VoltageLevel.get_by_code(sess, vl_code_str.upper())
 
-        is_substation_str = add_arg(args, 'is_substation', vals, 5)
+        is_substation_str = add_arg(args, "is_substation", vals, 5)
         if is_substation_str == NO_CHANGE:
             is_substation = llfc.is_substation
         else:
             is_substation = parse_bool(is_substation_str)
 
-        is_import_str = add_arg(args, 'is_import', vals, 6)
+        is_import_str = add_arg(args, "is_import", vals, 6)
         if is_import_str == NO_CHANGE:
             is_import = llfc.is_import
         else:
             is_import = parse_bool(is_import_str)
 
-        valid_to_str = add_arg(args, 'valid_to', vals, 7)
+        valid_to_str = add_arg(args, "valid_to", vals, 7)
         if valid_to_str == NO_CHANGE:
             valid_to = llfc.valid_to
         else:
             valid_to = parse_hh_start(valid_to_str)
 
         llfc.update(
-            llfc_description, vl, is_substation, is_import, llfc.valid_from,
-            valid_to)
+            llfc_description, vl, is_substation, is_import, llfc.valid_from, valid_to
+        )
         sess.flush()
 
-    elif action == 'delete':
-        dno_code = add_arg(args, 'dno_code', vals, 0)
+    elif action == "delete":
+        dno_code = add_arg(args, "dno_code", vals, 0)
         dno = Party.get_dno_by_code(sess, dno_code)
-        llfc_code = add_arg(args, 'llfc', vals, 1)
-        date_str = add_arg(args, 'date', vals, 2)
+        llfc_code = add_arg(args, "llfc", vals, 1)
+        date_str = add_arg(args, "date", vals, 2)
         date = parse_hh_start(date_str)
 
         llfc = dno.get_llfc_by_code(sess, llfc_code, date)
@@ -1216,34 +1432,34 @@ def general_import_llfc(sess, action, vals, args):
 
 
 def general_import_site_era(sess, action, vals, args):
-    site_code = add_arg(args, 'site_code', vals, 0)
+    site_code = add_arg(args, "site_code", vals, 0)
     site = Site.get_by_code(sess, site_code)
-    mpan_core = add_arg(args, 'mpan_core', vals, 1)
-    start_date_str = add_arg(args, 'generation_start_date', vals, 2)
+    mpan_core = add_arg(args, "mpan_core", vals, 1)
+    start_date_str = add_arg(args, "generation_start_date", vals, 2)
     start_date = datetime.datetime(start_date_str)
     era = Era.get_by_core_date(mpan_core, start_date)
-    if action == 'insert':
-        is_location_str = add_arg(args, 'is_location', vals, 3)
+    if action == "insert":
+        is_location_str = add_arg(args, "is_location", vals, 3)
         is_location = bool(is_location_str)
         era.attach_site(site, is_location)
         sess.flush()
 
 
 def general_import_channel(sess, action, vals, args):
-    mpan_core_raw = add_arg(args, 'MPAN Core', vals, 0)
+    mpan_core_raw = add_arg(args, "MPAN Core", vals, 0)
     mpan_core = parse_mpan_core(mpan_core_raw)
     supply = Supply.find_by_mpan_core(sess, mpan_core)
-    dt_raw = add_arg(args, 'Date', vals, 1)
+    dt_raw = add_arg(args, "Date", vals, 1)
     dt = parse_hh_start(dt_raw)
     era = supply.find_era_at(sess, dt)
-    import_related_str = add_arg(args, 'Import Related?', vals, 2)
+    import_related_str = add_arg(args, "Import Related?", vals, 2)
     import_related = parse_bool(import_related_str)
-    channel_type_raw = add_arg(args, 'Channel Type', vals, 3)
+    channel_type_raw = add_arg(args, "Channel Type", vals, 3)
     channel_type = parse_channel_type(channel_type_raw)
 
-    if action == 'insert':
+    if action == "insert":
         era.insert_channel(sess, import_related, channel_type)
-    elif action == 'delete':
+    elif action == "delete":
         era.delete_channel(sess, import_related, channel_type)
 
 
@@ -1258,15 +1474,12 @@ def general_import_user(sess, action, vals, args):
         party = None
         if len(participant_code.strip()) > 0:
             market_role_code = add_arg(args, "market_role_code", vals, 5)
-        party = Party.get_by_participant_role(
-            participant_code, market_role_code)
+        party = Party.get_by_participant_role(participant_code, market_role_code)
         if len(password) == 0:
             if len(digest) == 0:
-                raise BadRequest(
-                    "The password and digest fields can't both be blank.")
+                raise BadRequest("The password and digest fields can't both be blank.")
         elif len(digest) > 0:
-            raise BadRequest(
-                "The password and digest fields can't both be filled.")
+            raise BadRequest("The password and digest fields can't both be filled.")
         else:
             digest = User.digest(password)
 
@@ -1304,8 +1517,7 @@ def general_import_batch(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise BadRequest(
-                "The role name must be one of dc, supplier or mop.")
+            raise BadRequest("The role name must be one of dc, supplier or mop.")
 
         reference = add_arg(args, "Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
@@ -1321,8 +1533,7 @@ def general_import_batch(sess, action, vals, args):
         elif role_name == "mop":
             contract = Contract.get_mop_by_name(sess, contract_name)
         else:
-            raise BadRequest(
-                "The role name must be one of dc, supplier or mop.")
+            raise BadRequest("The role name must be one of dc, supplier or mop.")
 
         old_reference = add_arg(args, "Old Reference", vals, 2)
         batch = contract.get_batch(sess, sess, old_reference)
@@ -1342,15 +1553,16 @@ def general_import_site_snag_ignore(sess, action, vals, args):
         finish_date = parse_hh_start(finish_date_str)
 
         for snag in sess.query(Snag).filter(
-                Snag.site_id == site.id, Snag.description == description,
-                Snag.is_ignored != false(), Snag.start_date <= finish_date,
-                or_(Snag.finish_date == null(),
-                    Snag.finish_date >= start_date)):
+            Snag.site_id == site.id,
+            Snag.description == description,
+            Snag.is_ignored != false(),
+            Snag.start_date <= finish_date,
+            or_(Snag.finish_date == null(), Snag.finish_date >= start_date),
+        ):
             snag.set_is_ignored(True)
 
     elif action == "update":
-        raise BadRequest(
-            "The 'update' action isn't supported for site snags.")
+        raise BadRequest("The 'update' action isn't supported for site snags.")
 
 
 def general_import_channel_snag_ignore(sess, action, vals, args):
@@ -1377,16 +1589,22 @@ def _channel_snag_update(sess, action, vals, args, ignore):
         finish_date = parse_hh_start(finish_str)
 
         for era in supply.find_eras(sess, start_date, finish_date):
-            channel = sess.query(Channel).filter(
-                Channel.era == era, Channel.imp_related == imp_related,
-                Channel.channel_type == channel_type).first()
+            channel = (
+                sess.query(Channel)
+                .filter(
+                    Channel.era == era,
+                    Channel.imp_related == imp_related,
+                    Channel.channel_type == channel_type,
+                )
+                .first()
+            )
             if channel is not None:
                 snag_query = sess.query(Snag).filter(
-                    Snag.channel == channel, Snag.is_ignored == (not ignore),
-                    Snag.description == description, or_(
-                        Snag.finish_date == null(),
-                        Snag.finish_date >= start_date
-                    ))
+                    Snag.channel == channel,
+                    Snag.is_ignored == (not ignore),
+                    Snag.description == description,
+                    or_(Snag.finish_date == null(), Snag.finish_date >= start_date),
+                )
 
             if finish_date is not None:
                 snag_query = snag_query.filter(Snag.start_date <= finish_date)
@@ -1395,16 +1613,15 @@ def _channel_snag_update(sess, action, vals, args, ignore):
                 snag.set_is_ignored(ignore)
 
     elif action == "update":
-        raise BadRequest(
-            "The action 'update' isn't supported for channel snags.")
+        raise BadRequest("The action 'update' isn't supported for channel snags.")
 
 
-PREFIX = 'general_import_'
+PREFIX = "general_import_"
 
 typ_funcs = {}
 for k in tuple(globals().keys()):
     if k.startswith(PREFIX):
-        typ_funcs[k[len(PREFIX):]] = globals()[k]
+        typ_funcs[k[len(PREFIX) :]] = globals()[k]
 
 
 class GeneralImporter(threading.Thread):
@@ -1418,11 +1635,9 @@ class GeneralImporter(threading.Thread):
         self.hh_data = []
 
     def get_fields(self):
-        fields = {
-            'line_number': self.line_number,
-            'error_message': self.error_message}
+        fields = {"line_number": self.line_number, "error_message": self.error_message}
         if self.error_message is not None:
-            fields['csv_line'] = self.args
+            fields["csv_line"] = self.args
         return fields
 
     def run(self):
@@ -1435,43 +1650,45 @@ class GeneralImporter(threading.Thread):
                 self.args = []
                 self.line_number = idx + 1
 
-                if len(line) > 0 and line[0].startswith('#'):
+                if len(line) > 0 and line[0].startswith("#"):
                     continue
 
                 if len(line) < 2:
                     raise BadRequest(
-                        "There must be an 'action' field " +
-                        "followed by a 'type' field.")
+                        "There must be an 'action' field "
+                        + "followed by a 'type' field."
+                    )
 
-                action = add_arg(self.args, 'action', line, 0).lower()
+                action = add_arg(self.args, "action", line, 0).lower()
                 if action not in ALLOWED_ACTIONS:
                     raise BadRequest(
-                        "The 'action' field must be one of " +
-                        str(ALLOWED_ACTIONS))
-                typ = add_arg(self.args, 'type', line, 1).lower()
+                        "The 'action' field must be one of " + str(ALLOWED_ACTIONS)
+                    )
+                typ = add_arg(self.args, "type", line, 1).lower()
                 vals = line[2:]
-                if typ == 'hh_datum':
+                if typ == "hh_datum":
                     if action == "insert":
                         hh_data.append(
                             {
-                                'mpan_core': parse_mpan_core(
-                                    add_arg(self.args, "MPAN Core", vals, 0)),
-                                'start_date': parse_hh_start(
-                                    add_arg(self.args, "Start Date", vals, 1)),
-                                'channel_type': parse_channel_type(
-                                    add_arg(
-                                        self.args, "Channel Type", vals, 2)),
-                                'value': Decimal(
-                                    add_arg(self.args, "Value", vals, 3)),
-                                'status': add_arg(
-                                    self.args, "Status", vals, 4)})
+                                "mpan_core": parse_mpan_core(
+                                    add_arg(self.args, "MPAN Core", vals, 0)
+                                ),
+                                "start_date": parse_hh_start(
+                                    add_arg(self.args, "Start Date", vals, 1)
+                                ),
+                                "channel_type": parse_channel_type(
+                                    add_arg(self.args, "Channel Type", vals, 2)
+                                ),
+                                "value": Decimal(add_arg(self.args, "Value", vals, 3)),
+                                "status": add_arg(self.args, "Status", vals, 4),
+                            }
+                        )
                 else:
                     try:
                         typ_func = typ_funcs[typ]
                         typ_func(sess, action, vals, self.args)
                     except KeyError:
-                        raise BadRequest(
-                            "The type " + typ + " is not recognized.")
+                        raise BadRequest("The type " + typ + " is not recognized.")
 
             HhDatum.insert(sess, hh_data)
             sess.commit()

@@ -6,9 +6,7 @@ import traceback
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
-from chellow.models import (
-    Contract, RateScript, Session, get_non_core_contract_id
-)
+from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
 from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
 from dateutil.relativedelta import relativedelta
@@ -23,31 +21,31 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 
-ELEXON_PORTAL_SCRIPTING_KEY_KEY = 'elexonportal_scripting_key'
+ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
 
-RUNS = ['DF', 'RF', 'R3', 'R2', 'R1', 'SF', 'II']
+RUNS = ["DF", "RF", "R3", "R2", "R1", "SF", "II"]
 
 
 def key_format(dt):
     return dt.strftime("%d %H:%M")
 
 
-def hh(data_source, run='DF'):
+def hh(data_source, run="DF"):
     gsp_group_code = data_source.gsp_group_code
-    use_runs = RUNS[RUNS.index(run):]
+    use_runs = RUNS[RUNS.index(run) :]
 
     try:
-        cache = data_source.caches['tlms']
+        cache = data_source.caches["tlms"]
     except KeyError:
-        cache = data_source.caches['tlms'] = {}
+        cache = data_source.caches["tlms"] = {}
 
     for h in data_source.hh_data:
         try:
-            h['tlm'] = tlm = cache[h['start-date']][gsp_group_code][run]
+            h["tlm"] = tlm = cache[h["start-date"]][gsp_group_code][run]
         except KeyError:
-            h_start = h['start-date']
-            db_id = get_non_core_contract_id('tlms')
-            rates = data_source.hh_rate(db_id, h_start)['tlms']
+            h_start = h["start-date"]
+            db_id = get_non_core_contract_id("tlms")
+            rates = data_source.hh_rate(db_id, h_start)["tlms"]
 
             key = key_format(h_start)
             try:
@@ -63,18 +61,17 @@ def hh(data_source, run='DF'):
             tlm = None
             for use_run in use_runs:
                 try:
-                    h['tlm'] = tlm = float(gsp_rate[use_run]['off_taking'])
+                    h["tlm"] = tlm = float(gsp_rate[use_run]["off_taking"])
                 except KeyError:
                     pass
 
             if tlm is None:
-                h['tlm'] = tlm = float(
-                    sorted(gsp_rate.items())[-1][1]['off_taking'])
+                h["tlm"] = tlm = float(sorted(gsp_rate.items())[-1][1]["off_taking"])
 
             try:
-                rates_cache = cache[h['start-date']]
+                rates_cache = cache[h["start-date"]]
             except KeyError:
-                rates_cache = cache[h['start-date']] = {}
+                rates_cache = cache[h["start-date"]] = {}
 
             try:
                 gsp_cache = rates_cache[gsp_group_code]
@@ -83,7 +80,7 @@ def hh(data_source, run='DF'):
 
             gsp_cache[run] = tlm
 
-        h['nbp-kwh'] = h['gsp-kwh'] * tlm
+        h["nbp-kwh"] = h["gsp-kwh"] * tlm
 
 
 tlm_importer = None
@@ -96,8 +93,8 @@ class TlmImporter(threading.Thread):
         self.messages = collections.deque(maxlen=100)
         self.stopped = threading.Event()
         self.going = threading.Event()
-        self.PROXY_HOST_KEY = 'proxy.host'
-        self.PROXY_PORT_KEY = 'proxy.port'
+        self.PROXY_HOST_KEY = "proxy.host"
+        self.PROXY_PORT_KEY = "proxy.port"
 
     def stop(self):
         self.stopped.set()
@@ -116,7 +113,8 @@ class TlmImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+        )
 
     def run(self):
         while not self.stopped.isSet():
@@ -144,32 +142,33 @@ def _import_tlms(log_func):
     try:
         sess = Session()
         log_func("Starting to check TLMs.")
-        contract = Contract.get_non_core_by_name(sess, 'tlms')
+        contract = Contract.get_non_core_by_name(sess, "tlms")
         contract_props = contract.make_properties()
-        if contract_props.get('enabled', False):
+        if contract_props.get("enabled", False):
 
-            config = Contract.get_non_core_by_name(sess, 'configuration')
+            config = Contract.get_non_core_by_name(sess, "configuration")
             props = config.make_properties()
             scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
             if scripting_key is None:
                 raise BadRequest(
-                    "The property " + ELEXON_PORTAL_SCRIPTING_KEY_KEY +
-                    " cannot be found in the configuration properties.")
+                    "The property "
+                    + ELEXON_PORTAL_SCRIPTING_KEY_KEY
+                    + " cannot be found in the configuration properties."
+                )
 
-            url_str = ''.join(
-                (
-                    contract_props['url'],
-                    'file/download/TLM_FILE?key=', scripting_key))
+            url_str = "".join(
+                (contract_props["url"], "file/download/TLM_FILE?key=", scripting_key)
+            )
 
             r = requests.get(url_str)
             parser = csv.reader(
-                (x.decode() for x in r.iter_lines()),
-                delimiter=',', quotechar='"')
+                (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
+            )
             log_func("Opened " + url_str + ".")
 
             next(parser, None)
             for i, values in enumerate(parser):
-                if values[3] == '':
+                if values[3] == "":
                     for zone in GSP_GROUP_LOOKUP.keys():
                         values[3] = zone
                         _process_line(cache, sess, contract, log_func, values)
@@ -180,7 +179,8 @@ def _import_tlms(log_func):
         else:
             log_func(
                 "The importer is disabled. Set 'enabled' to "
-                "'true' in the properties to enable it.")
+                "'true' in the properties to enable it."
+            )
 
     except BadRequest as e:
         log_func("Problem: " + e.description)
@@ -195,27 +195,27 @@ def _import_tlms(log_func):
 
 
 GSP_GROUP_LOOKUP = {
-    '1': '_A',
-    '2': '_B',
-    '3': '_C',
-    '4': '_D',
-    '5': '_E',
-    '6': '_F',
-    '7': '_G',
-    '8': '_H',
-    '9': '_J',
-    '10': '_K',
-    '11': '_L',
-    '12': '_M',
-    '13': '_N',
-    '14': '_P'
+    "1": "_A",
+    "2": "_B",
+    "3": "_C",
+    "4": "_D",
+    "5": "_E",
+    "6": "_F",
+    "7": "_G",
+    "8": "_H",
+    "9": "_J",
+    "10": "_K",
+    "11": "_L",
+    "12": "_M",
+    "13": "_N",
+    "14": "_P",
 }
 
 
 def _process_line(cache, sess, contract, log_func, values):
     hh_date_ct = to_ct(Datetime.strptime(values[0], "%d/%m/%Y"))
     hh_date = to_utc(hh_date_ct)
-    hh_date += relativedelta(minutes=30*(int(values[2]) - 1))
+    hh_date += relativedelta(minutes=30 * (int(values[2]) - 1))
     run = values[1]
     gsp_group_code = GSP_GROUP_LOOKUP[values[3]]
     off_taking_str = values[4]
@@ -224,8 +224,13 @@ def _process_line(cache, sess, contract, log_func, values):
         off_taking = Decimal(off_taking_str)
     except InvalidOperation as e:
         raise BadRequest(
-            "Problem parsing 'off-taking' field '" + off_taking_str +
-            "' in the row " + str(values) + ". " + str(e))
+            "Problem parsing 'off-taking' field '"
+            + off_taking_str
+            + "' in the row "
+            + str(values)
+            + ". "
+            + str(e)
+        )
 
     delivering = Decimal(values[5])
 
@@ -238,39 +243,56 @@ def _process_line(cache, sess, contract, log_func, values):
         except KeyError:
             yr_cache = cache[hh_date.year] = {}
 
-        rs = sess.query(RateScript).filter(
-            RateScript.contract == contract,
-            RateScript.start_date <= hh_date, or_(
-                RateScript.finish_date == null(),
-                RateScript.finish_date >= hh_date)).first()
+        rs = (
+            sess.query(RateScript)
+            .filter(
+                RateScript.contract == contract,
+                RateScript.start_date <= hh_date,
+                or_(
+                    RateScript.finish_date == null(), RateScript.finish_date >= hh_date
+                ),
+            )
+            .first()
+        )
         while rs is None:
             log_func("There's no rate script at " + hh_format(hh_date) + ".")
-            latest_rs = sess.query(RateScript).filter(
-                RateScript.contract == contract).order_by(
-                RateScript.start_date.desc()).first()
+            latest_rs = (
+                sess.query(RateScript)
+                .filter(RateScript.contract == contract)
+                .order_by(RateScript.start_date.desc())
+                .first()
+            )
             contract.update_rate_script(
-                sess, latest_rs, latest_rs.start_date,
+                sess,
+                latest_rs,
+                latest_rs.start_date,
                 latest_rs.start_date + relativedelta(months=2) - HH,
-                loads(latest_rs.script))
+                loads(latest_rs.script),
+            )
             new_rs_start = latest_rs.start_date + relativedelta(months=1)
             contract.insert_rate_script(sess, new_rs_start, {})
             sess.commit()
-            log_func(
-                "Added a rate script starting at " + hh_format(new_rs_start) +
-                ".")
+            log_func("Added a rate script starting at " + hh_format(new_rs_start) + ".")
 
-            rs = sess.query(RateScript).filter(
-                RateScript.contract == contract,
-                RateScript.start_date <= hh_date, or_(
-                    RateScript.finish_date == null(),
-                    RateScript.finish_date >= hh_date)).first()
+            rs = (
+                sess.query(RateScript)
+                .filter(
+                    RateScript.contract == contract,
+                    RateScript.start_date <= hh_date,
+                    or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= hh_date,
+                    ),
+                )
+                .first()
+            )
 
         rates = loads(rs.script)
 
         try:
-            rts = rates['tlms']
+            rts = rates["tlms"]
         except KeyError:
-            rts = rates['tlms'] = {}
+            rts = rates["tlms"] = {}
 
         yr_cache[hh_date.month] = rs, rates, rts
         sess.rollback()
@@ -287,13 +309,17 @@ def _process_line(cache, sess, contract, log_func, values):
         group = existing[gsp_group_code] = {}
 
     if run not in group:
-        group[run] = {
-            'off_taking': off_taking,
-            'delivering': delivering}
+        group[run] = {"off_taking": off_taking, "delivering": delivering}
 
         log_func(
-            "Found rate at " + hh_format(hh_date) + " for GSP Group " +
-            gsp_group_code + " and run " + run + ".")
+            "Found rate at "
+            + hh_format(hh_date)
+            + " for GSP Group "
+            + gsp_group_code
+            + " and run "
+            + run
+            + "."
+        )
 
 
 def get_importer():

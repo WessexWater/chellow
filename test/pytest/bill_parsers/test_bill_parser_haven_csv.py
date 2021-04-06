@@ -29,7 +29,7 @@ def test_to_date():
 
 
 def test_process_READING_unknown_unit():
-    units = 'BOB'
+    units = "BOB"
     row = [
         0,
         0,
@@ -42,14 +42,14 @@ def test_process_READING_unknown_unit():
         0,
         0,
         0,
-        '20200401',  # 11
+        "20200401",  # 11
         0,
-        'E',
-        '20200430',
+        "E",
+        "20200430",
         0,
-        'E',
+        "E",
         0,
-        units
+        units,
     ]
     headers = {}
 
@@ -70,17 +70,15 @@ def test_process_READING_success():
         0,
         0,
         0,
-        '20200401',  # 11
+        "20200401",  # 11
         0,
-        'E',
-        '20200430',
+        "E",
+        "20200430",
         0,
-        'E',
+        "E",
         0,
-        'KWH'
+        "KWH",
     ]
-    headers = {
-        'reads': []
-    }
+    headers = {"reads": []}
 
     chellow.bill_parser_haven_csv._process_READING(row, headers)

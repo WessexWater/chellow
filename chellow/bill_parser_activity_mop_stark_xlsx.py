@@ -23,8 +23,12 @@ def get_value(row, idx):
         return row[idx].value
     except IndexError:
         raise BadRequest(
-            "For the row " + str(row) + ", the index is " + str(idx) +
-            " which is beyond the end of the row. ")
+            "For the row "
+            + str(row)
+            + ", the index is "
+            + str(idx)
+            + " which is beyond the end of the row. "
+        )
 
 
 def get_str(row, idx):
@@ -42,7 +46,7 @@ def get_int(row, idx):
     return int(get_value(row, idx))
 
 
-class Parser():
+class Parser:
     def __init__(self, f):
         self.book = open_workbook(file_contents=f.read())
         self.sheet = self.book.sheet_by_index(1)
@@ -75,7 +79,7 @@ class Parser():
             for row_index in range(11, self.sheet.nrows):
                 row = self.sheet.row(row_index)
                 val = get_value(row, 1)
-                if val is None or val == '':
+                if val is None or val == "":
                     break
 
                 self._set_last_line(row_index, val)
@@ -83,56 +87,63 @@ class Parser():
 
                 start_date = finish_date = get_date(row, 5, self.book.datemode)
                 activity_name_raw = get_str(row, 6)
-                activity_name = activity_name_raw.lower().replace(' ', '_')
+                activity_name = activity_name_raw.lower().replace(" ", "_")
 
                 net_dec = get_dec(row, 8)
                 if net_dec is None:
                     raise BadRequest(
-                        "Can't find a decimal at column I, expecting the net "
-                        "GBP.")
+                        "Can't find a decimal at column I, expecting the net " "GBP."
+                    )
                 net = round(net_dec, 2)
 
                 vat_dec = get_dec(row, 9)
                 if vat_dec is None:
                     raise BadRequest(
-                        "Can't find a decimal at column J, expecting the VAT "
-                        "GBP.")
+                        "Can't find a decimal at column J, expecting the VAT " "GBP."
+                    )
 
                 vat = round(vat_dec, 2)
 
                 gross_dec = get_dec(row, 10)
                 if gross_dec is None:
                     raise BadRequest(
-                        "Can't find a decimal at column K, expecting the "
-                        "gross GBP.")
+                        "Can't find a decimal at column K, expecting the " "gross GBP."
+                    )
 
                 gross = round(gross_dec, 2)
 
                 breakdown = {
-                    'raw-lines': [str(title_row)],
-                    'activity-name': [activity_name], 'activity-gbp': net
+                    "raw-lines": [str(title_row)],
+                    "activity-name": [activity_name],
+                    "activity-gbp": net,
                 }
 
                 bills.append(
                     {
-                        'bill_type_code': 'N', 'kwh': Decimal(0), 'vat': vat,
-                        'net': net, 'gross': gross, 'reads': [],
-                        'breakdown': breakdown, 'account': mpan_core,
-                        'issue_date': issue_date, 'start_date': start_date,
-                        'finish_date': finish_date, 'mpan_core': mpan_core,
-                        'reference': '_'.join(
+                        "bill_type_code": "N",
+                        "kwh": Decimal(0),
+                        "vat": vat,
+                        "net": net,
+                        "gross": gross,
+                        "reads": [],
+                        "breakdown": breakdown,
+                        "account": mpan_core,
+                        "issue_date": issue_date,
+                        "start_date": start_date,
+                        "finish_date": finish_date,
+                        "mpan_core": mpan_core,
+                        "reference": "_".join(
                             (
-                                start_date.strftime('%Y%m%d'),
-                                finish_date.strftime('%Y%m%d'),
-                                issue_date.strftime('%Y%m%d'),
-                                mpan_core
+                                start_date.strftime("%Y%m%d"),
+                                finish_date.strftime("%Y%m%d"),
+                                issue_date.strftime("%Y%m%d"),
+                                mpan_core,
                             )
-                        )
+                        ),
                     }
                 )
         except BadRequest as e:
-            raise BadRequest(
-                "Row number: " + str(row_index) + " " + e.description)
+            raise BadRequest("Row number: " + str(row_index) + " " + e.description)
         finally:
             if sess is not None:
                 sess.close()

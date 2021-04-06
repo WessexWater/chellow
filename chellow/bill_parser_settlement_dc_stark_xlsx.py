@@ -28,8 +28,12 @@ def get_value(row, idx):
         return row[idx].value
     except IndexError:
         raise BadRequest(
-            "For the row " + str(row) + ", the index is " + str(idx) +
-            " which is beyond the end of the row. ")
+            "For the row "
+            + str(row)
+            + ", the index is "
+            + str(idx)
+            + " which is beyond the end of the row. "
+        )
 
 
 def get_str(row, idx):
@@ -47,7 +51,7 @@ def get_int(row, idx):
     return int(get_value(row, idx))
 
 
-class Parser():
+class Parser:
     def __init__(self, f):
         self.book = open_workbook(file_contents=f.read())
         self.sheet = self.book.sheet_by_index(0)
@@ -75,20 +79,19 @@ class Parser():
             bills = []
             title_row = self.sheet.row(10)
             issue_date_str = get_str(self.sheet.row(6), 0)
-            issue_date = Datetime.strptime(
-                issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
+            issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
             for row_index in range(11, self.sheet.nrows):
                 row = self.sheet.row(row_index)
                 val = get_value(row, 1)
-                if val is None or val == '':
+                if val is None or val == "":
                     break
 
                 self._set_last_line(row_index, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
                 start_date = get_start_date(row, 3, self.book.datemode)
                 finish_date = get_start_date(
-                    row, 4, self.book.datemode) + relativedelta(
-                    hours=23, minutes=30)
+                    row, 4, self.book.datemode
+                ) + relativedelta(hours=23, minutes=30)
 
                 net = round(get_dec(row, 31), 2)
 
@@ -108,52 +111,59 @@ class Parser():
                 annual_visits = get_int(row, 27)
                 annual_rate = get_dec(row, 28)
                 annual_gbp = get_dec(row, 29)
-                annual_date = hh_format(
-                    get_start_date(row, 30, self.book.datemode))
+                annual_date = hh_format(get_start_date(row, 30, self.book.datemode))
 
                 if cop_3_meters > 0:
-                    cop = '3'
+                    cop = "3"
                     mpan_rate = cop_3_rate
                     mpan_gbp = cop_3_gbp
                 else:
-                    cop = '5'
+                    cop = "5"
                     mpan_rate = cop_5_rate
                     mpan_gbp = cop_5_gbp
 
                 breakdown = {
-                    'raw_lines': [str(title_row)], 'cop': [cop],
-                    'settlement-status': ['settlement'],
-                    'mpan-rate': [mpan_rate], 'mpan-gbp': mpan_gbp,
-                    'ad-hoc-visits': ad_hoc_visits,
-                    'ad-hoc-rate': [ad_hoc_rate],
-                    'ad-hoc-gbp': ad_hoc_gbp,
-                    'annual-visits-count': annual_visits,
-                    'annual-visits-rate': [annual_rate],
-                    'annual-visits-gbp': annual_gbp,
-                    'annual-visits-date': [annual_date]
+                    "raw_lines": [str(title_row)],
+                    "cop": [cop],
+                    "settlement-status": ["settlement"],
+                    "mpan-rate": [mpan_rate],
+                    "mpan-gbp": mpan_gbp,
+                    "ad-hoc-visits": ad_hoc_visits,
+                    "ad-hoc-rate": [ad_hoc_rate],
+                    "ad-hoc-gbp": ad_hoc_gbp,
+                    "annual-visits-count": annual_visits,
+                    "annual-visits-rate": [annual_rate],
+                    "annual-visits-gbp": annual_gbp,
+                    "annual-visits-date": [annual_date],
                 }
 
                 bills.append(
                     {
-                        'bill_type_code': 'N', 'kwh': Decimal(0),
-                        'vat': Decimal('0.00'), 'net': net, 'gross': net,
-                        'reads': [], 'breakdown': breakdown,
-                        'account': mpan_core, 'issue_date': issue_date,
-                        'start_date': start_date, 'finish_date': finish_date,
-                        'mpan_core': mpan_core, 'reference': '_'.join(
+                        "bill_type_code": "N",
+                        "kwh": Decimal(0),
+                        "vat": Decimal("0.00"),
+                        "net": net,
+                        "gross": net,
+                        "reads": [],
+                        "breakdown": breakdown,
+                        "account": mpan_core,
+                        "issue_date": issue_date,
+                        "start_date": start_date,
+                        "finish_date": finish_date,
+                        "mpan_core": mpan_core,
+                        "reference": "_".join(
                             (
-                                start_date.strftime('%Y%m%d'),
-                                finish_date.strftime('%Y%m%d'),
-                                issue_date.strftime('%Y%m%d'),
-                                mpan_core
+                                start_date.strftime("%Y%m%d"),
+                                finish_date.strftime("%Y%m%d"),
+                                issue_date.strftime("%Y%m%d"),
+                                mpan_core,
                             )
-                        )
+                        ),
                     }
                 )
                 sess.rollback()
         except BadRequest as e:
-            raise BadRequest(
-                "Row number: " + str(row_index) + " " + e.description)
+            raise BadRequest("Row number: " + str(row_index) + " " + e.description)
         finally:
             if sess is not None:
                 sess.close()

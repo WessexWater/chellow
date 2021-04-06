@@ -24,10 +24,7 @@ def content(user, file_name, file_like):
         sess = Session()
         tps = {}
         llfc_tp = {}
-        block = {
-            'llfc_tp': llfc_tp,
-            'tps': tps
-        }
+        block = {"llfc_tp": llfc_tp, "tps": tps}
         llfc_code = line_dt = start_date_str = None
         tp_cand = {}
         llfc_data = OrderedDict()
@@ -35,11 +32,11 @@ def content(user, file_name, file_like):
         name_list = zip_file.namelist()
         if len(name_list) != 1:
             raise Exception("The zip archive must contain exactly one file.")
-        csv_file = StringIO(zip_file.read(name_list[0]).decode('utf-8'))
-        for vals in csv.reader(csv_file, delimiter='|'):
+        csv_file = StringIO(zip_file.read(name_list[0]).decode("utf-8"))
+        for vals in csv.reader(csv_file, delimiter="|"):
             code = vals[0]
 
-            if code in ('LLF', 'ZPT'):
+            if code in ("LLF", "ZPT"):
                 if llfc_code is not None:
 
                     # Compress days
@@ -49,13 +46,13 @@ def content(user, file_name, file_like):
                         prev_laf = None
                         for slot, laf in slots.items():
                             if laf == prev_laf:
-                                day[-1]['slot_finish'] = slot
+                                day[-1]["slot_finish"] = slot
                             else:
                                 day.append(
                                     {
-                                        'slot_start': slot,
-                                        'slot_finish': slot,
-                                        'laf': laf
+                                        "slot_start": slot,
+                                        "slot_finish": slot,
+                                        "laf": laf,
                                     }
                                 )
                             prev_laf = laf
@@ -63,12 +60,12 @@ def content(user, file_name, file_like):
                     prev_day = last_block = None
                     for dt, day in days.items():
                         if day == prev_day:
-                            last_block['finish_date'] = dt
+                            last_block["finish_date"] = dt
                         else:
                             last_block = tp_cand[dt] = {
-                                'start_date': dt,
-                                'finish_date': dt,
-                                'slots': day
+                                "start_date": dt,
+                                "finish_date": dt,
+                                "slots": day,
                             }
                         prev_day = day
 
@@ -84,16 +81,16 @@ def content(user, file_name, file_like):
                         llfc_tp[llfc_code] = tp_id
 
                     tp_cand = {}
-                if code == 'LLF':
+                if code == "LLF":
                     llfc_code = vals[1]
 
-            elif code == 'SDT':
+            elif code == "SDT":
                 line_dt = vals[1]
                 if start_date_str is None:
                     start_date_str = line_dt
                 llfc_data[line_dt] = OrderedDict()
 
-            elif code == 'SPL':
+            elif code == "SPL":
                 slot, laf = vals[1:]
                 llfc_data[line_dt][slot] = laf
 
@@ -103,23 +100,27 @@ def content(user, file_name, file_like):
 
         finish_date_raw = Datetime.strptime(line_dt, "%Y%m%d")
         finish_date_ct = to_ct(finish_date_raw)
-        finish_date_ct += Timedelta(minutes=30*(int(slot) - 1))
+        finish_date_ct += Timedelta(minutes=30 * (int(slot) - 1))
         finish_date = to_utc(finish_date_ct)
 
         running_name, finished_name = chellow.dloads.make_names(
-            start_date.strftime('%Y%m%d%H%M') + '_' +
-            finish_date.strftime('%Y%m%d%H%M') + '.zish', user)
-        f = open(running_name, mode='w')
+            start_date.strftime("%Y%m%d%H%M")
+            + "_"
+            + finish_date.strftime("%Y%m%d%H%M")
+            + ".zish",
+            user,
+        )
+        f = open(running_name, mode="w")
 
-        llfc_tp = dict((k.zfill(3), v) for k, v in block['llfc_tp'].items())
-        block['llfc_tp'] = llfc_tp
+        llfc_tp = dict((k.zfill(3), v) for k, v in block["llfc_tp"].items())
+        block["llfc_tp"] = llfc_tp
 
-        for tp in block['tps'].values():
+        for tp in block["tps"].values():
             for date_block in tp.values():
-                for slot in date_block['slots']:
-                    slot['laf'] = Decimal(slot['laf'])
-                    slot['slot_start'] = int(slot['slot_start'])
-                    slot['slot_finish'] = int(slot['slot_finish'])
+                for slot in date_block["slots"]:
+                    slot["laf"] = Decimal(slot["laf"])
+                    slot["slot_start"] = int(slot["slot_start"])
+                    slot["slot_finish"] = int(slot["slot_finish"])
 
         f.write(dumps(block))
     except BaseException:

@@ -20,25 +20,33 @@ def test_to_llfcs_lines(mocker):
 
 def test_make_row(mocker):
     llfc = mocker.Mock()
-    llfc.code = '651'
+    llfc.code = "651"
     voltage_level = mocker.Mock()
     llfc.voltage_level = voltage_level
-    voltage_level.code = 'LV'
+    voltage_level.code = "LV"
     llfc.is_substation = False
     llfc.valid_from = to_utc(ct_datetime(2020, 4, 1))
     dno = mocker.Mock()
     llfc.dno = dno
-    dno.dno_code = '22'
+    dno.dno_code = "22"
 
     ss_llfc = {
-        'voltage_level': 'HV',
-        'is_substation': False,
+        "voltage_level": "HV",
+        "is_substation": False,
     }
 
     actual = _make_row(llfc, ss_llfc)
 
     expected = (
-        'update', 'llfc', '22', '651', '2020-04-01 00:00', '{no change}',
-        'HV', '{no change}', '{no change}', '{no change}'
+        "update",
+        "llfc",
+        "22",
+        "651",
+        "2020-04-01 00:00",
+        "{no change}",
+        "HV",
+        "{no change}",
+        "{no change}",
+        "{no change}",
     )
     assert actual == expected

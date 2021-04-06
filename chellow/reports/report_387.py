@@ -25,54 +25,65 @@ def content(supply_id, start_date, finish_date, user):
 
         prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(
-            'supply_virtual_bills_hh_' + str(supply_id) + '.csv', user)
-        f = open(running_name, mode='w', newline='')
-        w = csv.writer(f, lineterminator='\n')
+            "supply_virtual_bills_hh_" + str(supply_id) + ".csv", user
+        )
+        f = open(running_name, mode="w", newline="")
+        w = csv.writer(f, lineterminator="\n")
 
         for hh_start in hh_range(caches, start_date, finish_date):
-            era = sess.query(Era).filter(
-                Era.supply == supply, Era.start_date <= hh_start,
-                or_(
-                    Era.finish_date == null(),
-                    Era.finish_date >= hh_start)).one()
+            era = (
+                sess.query(Era)
+                .filter(
+                    Era.supply == supply,
+                    Era.start_date <= hh_start,
+                    or_(Era.finish_date == null(), Era.finish_date >= hh_start),
+                )
+                .one()
+            )
 
-            site = sess.query(Site).join(SiteEra).filter(
-                SiteEra.era == era, SiteEra.is_physical == true()).one()
+            site = (
+                sess.query(Site)
+                .join(SiteEra)
+                .filter(SiteEra.era == era, SiteEra.is_physical == true())
+                .one()
+            )
 
             ds = chellow.computer.SupplySource(
-                sess, hh_start, hh_start, forecast_date, era, True, caches)
+                sess, hh_start, hh_start, forecast_date, era, True, caches
+            )
 
-            titles = [
-                'MPAN Core', 'Site Code', 'Site Name', 'Account', 'HH Start',
-                '']
+            titles = ["MPAN Core", "Site Code", "Site Name", "Account", "HH Start", ""]
 
             output_line = [
-                ds.mpan_core, site.code, site.name, ds.supplier_account,
-                hh_format(ds.start_date), '']
+                ds.mpan_core,
+                site.code,
+                site.name,
+                ds.supplier_account,
+                hh_format(ds.start_date),
+                "",
+            ]
 
-            mop_titles = ds.contract_func(
-                era.mop_contract, 'virtual_bill_titles')()
-            titles.extend(['mop-' + t for t in mop_titles])
+            mop_titles = ds.contract_func(era.mop_contract, "virtual_bill_titles")()
+            titles.extend(["mop-" + t for t in mop_titles])
 
-            ds.contract_func(era.mop_contract, 'virtual_bill')(ds)
+            ds.contract_func(era.mop_contract, "virtual_bill")(ds)
             bill = ds.mop_bill
             for title in mop_titles:
-                output_line.append(csv_make_val(bill.get(title, '')))
+                output_line.append(csv_make_val(bill.get(title, "")))
                 if title in bill:
                     del bill[title]
             for k in sorted(bill.keys()):
                 output_line.extend([k, csv_make_val(bill[k])])
 
-            output_line.append('')
-            dc_titles = ds.contract_func(
-                era.dc_contract, 'virtual_bill_titles')()
-            titles.append('')
-            titles.extend(['dc-' + t for t in dc_titles])
+            output_line.append("")
+            dc_titles = ds.contract_func(era.dc_contract, "virtual_bill_titles")()
+            titles.append("")
+            titles.extend(["dc-" + t for t in dc_titles])
 
-            ds.contract_func(era.dc_contract, 'virtual_bill')(ds)
+            ds.contract_func(era.dc_contract, "virtual_bill")(ds)
             bill = ds.dc_bill
             for title in dc_titles:
-                output_line.append(csv_make_val(bill.get(title, '')))
+                output_line.append(csv_make_val(bill.get(title, "")))
                 if title in bill:
                     del bill[title]
 
@@ -81,16 +92,15 @@ def content(supply_id, start_date, finish_date, user):
 
             if era.imp_supplier_contract is not None:
                 contract = era.imp_supplier_contract
-                output_line.append('')
-                supplier_titles = ds.contract_func(
-                    contract, 'virtual_bill_titles')()
-                titles.append('')
-                titles.extend(['imp-supplier-' + t for t in supplier_titles])
+                output_line.append("")
+                supplier_titles = ds.contract_func(contract, "virtual_bill_titles")()
+                titles.append("")
+                titles.extend(["imp-supplier-" + t for t in supplier_titles])
 
-                ds.contract_func(contract, 'virtual_bill')(ds)
+                ds.contract_func(contract, "virtual_bill")(ds)
                 bill = ds.supplier_bill
                 for title in supplier_titles:
-                    output_line.append(csv_make_val(bill.get(title, '')))
+                    output_line.append(csv_make_val(bill.get(title, "")))
                     if title in bill:
                         del bill[title]
 
@@ -100,18 +110,17 @@ def content(supply_id, start_date, finish_date, user):
             if era.exp_supplier_contract is not None:
                 contract = era.exp_supplier_contract
                 ds = chellow.computer.SupplySource(
-                    sess, hh_start, hh_start, forecast_date, era, False,
-                    caches)
-                output_line.append('')
-                supplier_titles = ds.contract_func(
-                    contract, 'virtual_bill_titles')()
-                titles.append('')
-                titles.extend(['exp-supplier-' + t for t in supplier_titles])
+                    sess, hh_start, hh_start, forecast_date, era, False, caches
+                )
+                output_line.append("")
+                supplier_titles = ds.contract_func(contract, "virtual_bill_titles")()
+                titles.append("")
+                titles.extend(["exp-supplier-" + t for t in supplier_titles])
 
-                ds.contract_func(contract, 'virtual_bill')(ds)
+                ds.contract_func(contract, "virtual_bill")(ds)
                 bill = ds.supplier_bill
                 for title in supplier_titles:
-                    output_line.append(csv_make_val(bill.get(title, '')))
+                    output_line.append(csv_make_val(bill.get(title, "")))
                     if title in bill:
                         del bill[title]
 
@@ -135,9 +144,9 @@ def content(supply_id, start_date, finish_date, user):
 
 
 def do_get(sess):
-    supply_id = req_int('supply_id')
-    start_date = req_date('start')
-    finish_date = req_date('finish')
+    supply_id = req_int("supply_id")
+    start_date = req_date("start")
+    finish_date = req_date("finish")
 
     args = supply_id, start_date, finish_date, g.user
     threading.Thread(target=content, args=args).start()

@@ -23,9 +23,10 @@ def content(year, supply_id, user):
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
-            'crc_special_events.csv', user)
-        f = open(running_name, mode='w', newline='')
-        writer = csv.writer(f, lineterminator='\n')
+            "crc_special_events.csv", user
+        )
+        f = open(running_name, mode="w", newline="")
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(("MPAN Core", "Site Id", "Site Name", "Date", "Event"))
 
         year_start = datetime(year, 4, 1, tzinfo=pytz.utc)
@@ -42,24 +43,35 @@ def content(year, supply_id, user):
                     mpan_cores.append(era.exp_mpan_core)
 
             for mpan_core in mpan_cores:
-                events.append(
-                    {'date': date, 'code': code, 'mpan-core': mpan_core})
+                events.append({"date": date, "code": code, "mpan-core": mpan_core})
 
         if supply_id is None:
-            supplies = sess.query(Supply).join(Source).join(Era).filter(
-                Source.code.in_(('net', 'gen-net', 'gen')),
-                Era.start_date <= year_finish, or_(
-                    Era.finish_date == null(),
-                    Era.finish_date >= year_start)).distinct()
+            supplies = (
+                sess.query(Supply)
+                .join(Source)
+                .join(Era)
+                .filter(
+                    Source.code.in_(("net", "gen-net", "gen")),
+                    Era.start_date <= year_finish,
+                    or_(Era.finish_date == null(), Era.finish_date >= year_start),
+                )
+                .distinct()
+            )
         else:
             supply = Supply.get_by_id(supply_id)
             supplies = sess.query(Supply).filter(Supply.id == supply.id)
 
         for supply in supplies:
-            eras = sess.query(Era).filter(
-                Era.supply == supply, Era.start_date <= year_finish,
-                or_(Era.finish_date == null(), Era.finish_date >= year_start)
-                ).order_by(Era.start_date).all()
+            eras = (
+                sess.query(Era)
+                .filter(
+                    Era.supply == supply,
+                    Era.start_date <= year_finish,
+                    or_(Era.finish_date == null(), Era.finish_date >= year_start),
+                )
+                .order_by(Era.start_date)
+                .all()
+            )
             events = []
             first_era = eras[0]
             first_era_start = first_era.start_date
@@ -76,8 +88,7 @@ def content(year, supply_id, user):
                 if era.msn != prev_era.msn:
                     add_event(events, era.start_date, "Meter Change", era)
                 if era.pc.code != prev_era.pc.code:
-                    add_event(
-                        events, era.start_date, "Change Of Profile Class", era)
+                    add_event(events, era.start_date, "Change Of Profile Class", era)
 
                 if era.mop_contract_id != prev_era.mop_contract_id:
                     add_event(events, era.start_date, "Change Of MOP", era)
@@ -99,30 +110,42 @@ def content(year, supply_id, user):
                         prev_sup = prev_era.exp_supplier_contract
 
                     if cur_sup is None and prev_sup is not None:
-                        add_event(
-                            events, era.start_date, "End of supply", mpan_core)
+                        add_event(events, era.start_date, "End of supply", mpan_core)
                     elif cur_sup is not None and prev_sup is None:
                         add_event(
-                            events, era.start_date, "Start of supply", None,
-                            mpan_core)
-                    elif cur_sup is not None and \
-                            prev_sup is not None and cur_sup != prev_sup:
+                            events, era.start_date, "Start of supply", None, mpan_core
+                        )
+                    elif (
+                        cur_sup is not None
+                        and prev_sup is not None
+                        and cur_sup != prev_sup
+                    ):
                         add_event(
-                            events, era.start_date, "Change Of Supplier", None,
-                            mpan_core)
+                            events,
+                            era.start_date,
+                            "Change Of Supplier",
+                            None,
+                            mpan_core,
+                        )
 
                 prev_era = era
 
             if len(events) > 0:
-                site = sess.query(Site).join(SiteEra).filter(
-                    SiteEra.is_physical == true(),
-                    SiteEra.era == last_era).one()
+                site = (
+                    sess.query(Site)
+                    .join(SiteEra)
+                    .filter(SiteEra.is_physical == true(), SiteEra.era == last_era)
+                    .one()
+                )
 
                 for event in events:
                     vals = [
-                        event['mpan-core'], site.code, site.name,
-                        event['date'].strftime("%Y-%m-%d %H:%M"),
-                        event['code']]
+                        event["mpan-core"],
+                        site.code,
+                        site.name,
+                        event["date"].strftime("%Y-%m-%d %H:%M"),
+                        event["code"],
+                    ]
                     writer.writerow(vals)
 
             # Avoid a long-running transaction
@@ -140,8 +163,8 @@ def content(year, supply_id, user):
 
 
 def do_get(sess):
-    year = req_int('year')
-    supply_id = req_int('supply_id') if 'supply_id' in request.values else None
+    year = req_int("year")
+    supply_id = req_int("supply_id") if "supply_id" in request.values else None
 
     threading.Thread(target=content, args=(year, supply_id, g.user)).start()
     return chellow_redirect("/downloads", 303)

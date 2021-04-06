@@ -18,7 +18,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import ZishException, loads
 
-url_root = ''
+url_root = ""
 
 HH = relativedelta(minutes=30)
 MONTH = relativedelta(months=1)
@@ -34,7 +34,7 @@ def req_str(name):
 
 def req_bool(name):
     try:
-        return request.values[name] == 'true'
+        return request.values[name] == "true"
     except KeyError:
         return False
 
@@ -43,8 +43,7 @@ def req_int(name):
     try:
         return int(req_str(name))
     except ValueError as e:
-        raise BadRequest(
-            f"Problem parsing the field {name} as an integer: {e}")
+        raise BadRequest(f"Problem parsing the field {name} as an integer: {e}")
 
 
 def req_zish(name):
@@ -54,17 +53,17 @@ def req_zish(name):
         raise BadRequest(f"Problem parsing the field {name} as Zish: {e}")
 
 
-def req_date(prefix, resolution='minute'):
-    year = req_int(prefix + '_year')
-    month = req_int(prefix + '_month')
-    day = req_int(prefix + '_day')
+def req_date(prefix, resolution="minute"):
+    year = req_int(prefix + "_year")
+    month = req_int(prefix + "_month")
+    day = req_int(prefix + "_day")
 
     try:
-        if resolution == 'day':
+        if resolution == "day":
             d = ct_datetime(year, month, day)
-        elif resolution == 'minute':
-            hour = req_int(prefix + '_hour')
-            minute = req_int(prefix + '_minute')
+        elif resolution == "minute":
+            hour = req_int(prefix + "_hour")
+            minute = req_int(prefix + "_minute")
             d = ct_datetime(year, month, day, hour, minute)
     except ValueError as e:
         raise BadRequest(f"Problem parsing the date {prefix}: {e}.")
@@ -76,8 +75,7 @@ def req_decimal(name):
     try:
         return Decimal(req_str(name))
     except InvalidOperation as e:
-        raise BadRequest(
-            f"Problem parsing the field {name} as a decimal: {e}.")
+        raise BadRequest(f"Problem parsing the field {name} as a decimal: {e}.")
 
 
 def req_file(name):
@@ -124,8 +122,8 @@ def req_hh_date(prefix):
 def validate_hh_start(dt):
     if dt.minute not in [0, 30] or dt.second != 0 or dt.microsecond != 0:
         raise BadRequest(
-            "The half-hour must start exactly on the hour or half past "
-            "the hour.")
+            "The half-hour must start exactly on the hour or half past " "the hour."
+        )
     return dt
 
 
@@ -139,7 +137,7 @@ def parse_hh_start(start_date_str):
         day = int(start_date_str[8:10])
         hour = int(start_date_str[11:13])
         minute = int(start_date_str[14:16])
-        if start_date_str[-1] == 'Z':
+        if start_date_str[-1] == "Z":
             dt = utc_datetime(year, month, day, hour, minute)
         else:
             dt = to_utc(ct_datetime(year, month, day, hour, minute))
@@ -147,42 +145,42 @@ def parse_hh_start(start_date_str):
     except ValueError as e:
         raise BadRequest(
             f"Can't parse the date: {start_date_str}. It needs to be of the "
-            f"form yyyy-mm-dd hh:MM with an optional Z on the end. {e}")
+            f"form yyyy-mm-dd hh:MM with an optional Z on the end. {e}"
+        )
 
 
 def parse_mpan_core(mcore):
-    mcore = mcore.strip().replace(' ', '')
+    mcore = mcore.strip().replace(" ", "")
     if len(mcore) != 13:
         raise BadRequest(
-            "The MPAN core '" + mcore + "' must contain exactly 13 digits.")
+            "The MPAN core '" + mcore + "' must contain exactly 13 digits."
+        )
 
     for char in mcore:
-        if char not in '0123456789':
-            raise BadRequest(
-                "Each character of an MPAN must be a digit.")
+        if char not in "0123456789":
+            raise BadRequest("Each character of an MPAN must be a digit.")
 
     ps = [3, 5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 43]
     cd = sum(p * int(d) for p, d in zip(ps, mcore[:-1])) % 11 % 10
     if cd != int(mcore[-1]):
         raise BadRequest(
-            "The MPAN core " + mcore +
-            " is not valid. It fails the checksum test.")
+            "The MPAN core " + mcore + " is not valid. It fails the checksum test."
+        )
 
-    return ' '.join([mcore[:2], mcore[2:6], mcore[6:10], mcore[10:]])
+    return " ".join([mcore[:2], mcore[2:6], mcore[6:10], mcore[10:]])
 
 
 def parse_bool(bool_str):
     val = bool_str.strip().lower()
-    if val == 'true':
+    if val == "true":
         return True
-    elif val == 'false':
+    elif val == "false":
         return False
     else:
-        raise BadRequest(
-            f"A boolean must be 'true' or 'false', but got '{bool_str}'.")
+        raise BadRequest(f"A boolean must be 'true' or 'false', but got '{bool_str}'.")
 
 
-def hh_format(dt, ongoing_str='ongoing', with_hh=False):
+def hh_format(dt, ongoing_str="ongoing", with_hh=False):
     if dt is None:
         return (ongoing_str, ongoing_str) if with_hh else ongoing_str
     else:
@@ -205,15 +203,19 @@ def hh_format(dt, ongoing_str='ongoing', with_hh=False):
             return dt_str
 
 
-CHANNEL_TYPES = 'ACTIVE', 'REACTIVE_IMP', 'REACTIVE_EXP'
+CHANNEL_TYPES = "ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP"
 
 
 def parse_channel_type(channel_type):
     tp = channel_type.upper()
     if tp not in CHANNEL_TYPES:
         raise BadRequest(
-            "The given channel type is '" + str(channel_type) +
-            "' but it should be one of " + str(CHANNEL_TYPES) + ".")
+            "The given channel type is '"
+            + str(channel_type)
+            + "' but it should be one of "
+            + str(CHANNEL_TYPES)
+            + "."
+        )
     return tp
 
 
@@ -222,26 +224,35 @@ def parse_pc_code(code):
 
 
 def send_response(
-        content, args=None, status=200, content_type='text/csv; charset=utf-8',
-        file_name=None):
+    content,
+    args=None,
+    status=200,
+    content_type="text/csv; charset=utf-8",
+    file_name=None,
+):
     headers = {}
     if args is None:
         args = ()
 
     if file_name is not None:
-        headers['Content-Disposition'] = 'attachment; filename="' + \
-            file_name + '"'
+        headers["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
 
     return Response(
-        content(*args), status=status, content_type=content_type,
-        headers=headers)
+        content(*args), status=status, content_type=content_type, headers=headers
+    )
 
 
 FORMATS = {
-    'year': '%Y', 'month': '%m', 'day': '%d', 'hour': '%H',
-    'minute': '%M', 'full': '%Y-%m-%d %H:%M', 'date': '%Y-%m-%d'}
+    "year": "%Y",
+    "month": "%m",
+    "day": "%d",
+    "hour": "%H",
+    "minute": "%M",
+    "full": "%Y-%m-%d %H:%M",
+    "date": "%Y-%m-%d",
+}
 
-prefix = '''
+prefix = """
 {%- macro input_date(prefix, initial=None, resolution='minute') -%}
   {% if prefix != None %}
     {% set year_field = prefix + '_year' %}
@@ -366,10 +377,10 @@ prefix = '''
                     {%- if initial == True %} checked{% endif -%}
                     {%- endif -%}>
 {%- endmacro -%}
-'''
+"""
 
 
-def hh_format_filter(dt, modifier='full'):
+def hh_format_filter(dt, modifier="full"):
     return "Ongoing" if dt is None else dt.strftime(FORMATS[modifier])
 
 
@@ -379,13 +390,13 @@ def now_if_none(dt):
 
 env = Environment(autoescape=True)
 
-env.filters['hh_format'] = hh_format_filter
-env.filters['now_if_none'] = now_if_none
+env.filters["hh_format"] = hh_format_filter
+env.filters["now_if_none"] = now_if_none
 
 template_cache = {}
 
 
-def render(template, vals, status_code=200, content_type='text/html'):
+def render(template, vals, status_code=200, content_type="text/html"):
     if len(template_cache) > 10000:
         template_cache.clear()
     templ_str = prefix + template
@@ -395,35 +406,35 @@ def render(template, vals, status_code=200, content_type='text/html'):
         templ = env.from_string(templ_str)
         template_cache[templ_str] = templ
 
-    vals['request'] = request
+    vals["request"] = request
 
     headers = {
-        'mimetype': content_type,
-        'Date': int(round(time.time() * 1000)),
-        'Cache-Control': 'no-cache'}
+        "mimetype": content_type,
+        "Date": int(round(time.time() * 1000)),
+        "Cache-Control": "no-cache",
+    }
 
     try:
         template_str = templ.render(vals)
     except BaseException:
-        raise BadRequest(
-            "Problem rendering template: " + traceback.format_exc())
+        raise BadRequest("Problem rendering template: " + traceback.format_exc())
 
     return Response(template_str, status_code, headers)
 
 
 def hh_range(caches, start_date, finish_date):
     try:
-        return caches['utils']['hh_range'][start_date][finish_date]
+        return caches["utils"]["hh_range"][start_date][finish_date]
     except KeyError:
         try:
-            utils_cache = caches['utils']
+            utils_cache = caches["utils"]
         except KeyError:
-            utils_cache = caches['utils'] = {}
+            utils_cache = caches["utils"] = {}
 
         try:
-            ranges_cache = utils_cache['hh_range']
+            ranges_cache = utils_cache["hh_range"]
         except KeyError:
-            ranges_cache = utils_cache['hh_range'] = {}
+            ranges_cache = utils_cache["hh_range"] = {}
 
         try:
             range_start_cache = ranges_cache[start_date]
@@ -431,9 +442,9 @@ def hh_range(caches, start_date, finish_date):
             range_start_cache = ranges_cache[start_date] = {}
 
         try:
-            datetime_cache = utils_cache['datetime']
+            datetime_cache = utils_cache["datetime"]
         except KeyError:
-            datetime_cache = utils_cache['datetime'] = {}
+            datetime_cache = utils_cache["datetime"] = {}
 
         rg = []
         dt = start_date
@@ -475,7 +486,7 @@ class keydefaultdict(defaultdict):
             return ret
 
 
-ct = timezone('Europe/London')
+ct = timezone("Europe/London")
 root_path = None
 
 
@@ -523,12 +534,13 @@ def ct_datetime_parse(date_str, format_str):
 
 
 def u_months_u(
-        start_year=None, start_month=None, finish_year=None, finish_month=None,
-        months=1):
+    start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
+):
 
     if start_year is None:
         start = utc_datetime(finish_year, finish_month) - relativedelta(
-            months=months - 1)
+            months=months - 1
+        )
     else:
         start = utc_datetime(start_year, start_month)
 
@@ -547,25 +559,34 @@ def u_months_u(
 
 
 def c_months_u(
-        start_year=None, start_month=None, finish_year=None, finish_month=None,
-        months=1):
+    start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
+):
 
     for c_m_start_c, c_m_finish_c in c_months_c(
-            start_year=start_year, start_month=start_month,
-            finish_year=finish_year, finish_month=finish_month, months=months):
+        start_year=start_year,
+        start_month=start_month,
+        finish_year=finish_year,
+        finish_month=finish_month,
+        months=months,
+    ):
         yield to_utc(c_m_start_c), to_utc(c_m_finish_c)
 
 
 def c_months_c(
-        start_year=None, start_month=None, finish_year=None, finish_month=None,
-        months=1):
+    start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
+):
 
     for u_m_start_u, u_m_finish_u in u_months_u(
-            start_year=start_year, start_month=start_month,
-            finish_year=finish_year, finish_month=finish_month, months=months):
+        start_year=start_year,
+        start_month=start_month,
+        finish_year=finish_year,
+        finish_month=finish_month,
+        months=months,
+    ):
         c_m_start_c = ct_datetime(u_m_start_u.year, u_m_start_u.month)
         c_m_finish_c = ct_datetime(
-            u_m_finish_u.year, u_m_finish_u.month, u_m_finish_u.day, 23, 30)
+            u_m_finish_u.year, u_m_finish_u.month, u_m_finish_u.day, 23, 30
+        )
 
         yield c_m_start_c, c_m_finish_c
 
@@ -576,13 +597,13 @@ def csv_make_val(v):
             return csv_make_val(next(iter(v)))
         elif 1 < len(v) < 4:
             vals = set(str(csv_make_val(val)) for val in v)
-            return ' | '.join(sorted(vals))
+            return " | ".join(sorted(vals))
         else:
-            return ''
+            return ""
     elif isinstance(v, Datetime):
         return hh_format(v)
     elif v is None:
-        return ''
+        return ""
     else:
         return v
 
@@ -593,7 +614,7 @@ def make_val(v):
             return make_val(next(iter(v)))
         elif 1 < len(v) < 4:
             vals = set(str(csv_make_val(val)) for val in v)
-            return ' | '.join(sorted(vals))
+            return " | ".join(sorted(vals))
         else:
             return None
     elif isinstance(v, Datetime):
@@ -604,12 +625,12 @@ def make_val(v):
 
 def get_file_script_latest(caches, contract_name):
     try:
-        return caches['contract_names'][contract_name]['rs_latest']
+        return caches["contract_names"][contract_name]["rs_latest"]
     except KeyError:
         try:
-            contract_names = caches['contract_names']
+            contract_names = caches["contract_names"]
         except KeyError:
-            contract_names = caches['contract_names'] = {}
+            contract_names = caches["contract_names"] = {}
 
         try:
             cont_cache = contract_names[contract_name]
@@ -617,21 +638,21 @@ def get_file_script_latest(caches, contract_name):
             cont_cache = contract_names[contract_name] = {}
 
         try:
-            cont = cont_cache['rs_latest']
+            cont = cont_cache["rs_latest"]
         except KeyError:
             cont = list(get_file_scripts(contract_name))[-1]
-            cont_cache['rs_latest'] = cont
+            cont_cache["rs_latest"] = cont
             return cont
 
 
 def get_file_script(caches, contract_name, date):
     try:
-        return caches['contract_names'][contract_name]['rs'][date]
+        return caches["contract_names"][contract_name]["rs"][date]
     except KeyError:
         try:
-            contract_names = caches['contract_names']
+            contract_names = caches["contract_names"]
         except KeyError:
-            contract_names = caches['contract_names'] = {}
+            contract_names = caches["contract_names"] = {}
 
         try:
             cont_cache = contract_names[contract_name]
@@ -639,9 +660,9 @@ def get_file_script(caches, contract_name, date):
             cont_cache = contract_names[contract_name] = {}
 
         try:
-            cont = cont_cache['rs']
+            cont = cont_cache["rs"]
         except KeyError:
-            cont = cont_cache['rs'] = {}
+            cont = cont_cache["rs"] = {}
 
         scripts = get_file_scripts(contract_name)
         for i, (start_date, finish_date, script_str) in enumerate(scripts):
@@ -654,11 +675,16 @@ def get_file_script(caches, contract_name, date):
                     rs = start_date, sfinish, loads(script_str)
                 except ZishException as e:
                     raise BadRequest(
-                        "In the rate script " + url_root +
-                        'industry_contracts/' + contract_name +
-                        '/rate_scripts/' +
-                        start_date.strftime("%Y%m%d%H%M") +
-                        " there's the problem " + str(e) + ".")
+                        "In the rate script "
+                        + url_root
+                        + "industry_contracts/"
+                        + contract_name
+                        + "/rate_scripts/"
+                        + start_date.strftime("%Y%m%d%H%M")
+                        + " there's the problem "
+                        + str(e)
+                        + "."
+                    )
 
                 begin_date = hh_max(date - YEAR, start_date)
                 end_date = hh_min(date + YEAR, sfinish)
@@ -681,28 +707,29 @@ def get_file_script(caches, contract_name, date):
 
 
 def get_file_scripts(contract_name):
-    rscripts_path = os.path.join(root_path, 'rate_scripts', contract_name)
+    rscripts_path = os.path.join(root_path, "rate_scripts", contract_name)
 
     rscripts = []
     for rscript_fname in sorted(os.listdir(rscripts_path)):
-        if not rscript_fname.endswith('.zish'):
+        if not rscript_fname.endswith(".zish"):
             continue
         try:
-            start_str, finish_str = \
-                rscript_fname.split('.')[0].split('_')
+            start_str, finish_str = rscript_fname.split(".")[0].split("_")
         except ValueError:
             raise Exception(
-                "The rate script " + rscript_fname +
-                " in the directory " + rscripts_path +
-                " should consist of two dates separated by an " +
-                "underscore.")
+                "The rate script "
+                + rscript_fname
+                + " in the directory "
+                + rscripts_path
+                + " should consist of two dates separated by an "
+                + "underscore."
+            )
         start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-        if finish_str == 'ongoing':
+        if finish_str == "ongoing":
             finish_date = None
         else:
-            finish_date = to_utc(
-                Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-        with open(os.path.join(rscripts_path, rscript_fname), 'r') as f:
+            finish_date = to_utc(Datetime.strptime(finish_str, "%Y%m%d%H%M"))
+        with open(os.path.join(rscripts_path, rscript_fname), "r") as f:
             script = f.read()
         rscripts.append((start_date, finish_date, script))
     return tuple(rscripts)
@@ -712,8 +739,11 @@ class PropDict(Mapping):
     def __init__(self, location, rate_dict, parent_keys=None):
         if not isinstance(rate_dict, Mapping):
             raise Exception(
-                "The rate_dict must be a mapping, but got a " +
-                str(type(rate_dict)) + " with value " + str(rate_dict))
+                "The rate_dict must be a mapping, but got a "
+                + str(type(rate_dict))
+                + " with value "
+                + str(rate_dict)
+            )
         self._location = location
         self._parent_keys = [] if parent_keys is None else parent_keys
         storage = {}
@@ -726,9 +756,10 @@ class PropDict(Mapping):
                     for i, val in enumerate(tuple(v)):
                         if isinstance(val, Mapping):
                             v[i] = PropDict(
-                                location, val,
-                                self._parent_keys +
-                                ['<list item ' + str(i) + '>'])
+                                location,
+                                val,
+                                self._parent_keys + ["<list item " + str(i) + ">"],
+                            )
         self._storage = storage
 
     def __getitem__(self, key):
@@ -736,12 +767,16 @@ class PropDict(Mapping):
             return self._storage[key]
         except KeyError:
             try:
-                return self._storage['*']
+                return self._storage["*"]
             except KeyError:
                 raise KeyError(
-                    "Can't find the the key " +
-                    str(self._parent_keys + [key]) + " or the wildcard " +
-                    str(self._parent_keys + ['*']) + " in " + self._location)
+                    "Can't find the the key "
+                    + str(self._parent_keys + [key])
+                    + " or the wildcard "
+                    + str(self._parent_keys + ["*"])
+                    + " in "
+                    + self._location
+                )
 
     def __iter__(self):
         return iter(self._storage)
@@ -752,12 +787,12 @@ class PropDict(Mapping):
 
 def get_file_rates(cache, contract_name, dt):
     try:
-        return cache['contract_names'][contract_name][dt]
+        return cache["contract_names"][contract_name][dt]
     except KeyError:
         try:
-            contract_names = cache['contract_names']
+            contract_names = cache["contract_names"]
         except KeyError:
-            contract_names = cache['contract_names'] = {}
+            contract_names = cache["contract_names"] = {}
 
         try:
             cont = contract_names[contract_name]
@@ -775,12 +810,12 @@ def get_file_rates(cache, contract_name, dt):
                 l_start, l_finish, l_script = l_rs
                 new_year = l_finish.year
                 rs = get_file_script(
-                    cache, contract_name, utc_datetime(new_year, dt.month, 7))
+                    cache, contract_name, utc_datetime(new_year, dt.month, 7)
+                )
                 if rs is None:
                     new_year -= 1
 
-                new_dt = utc_datetime(
-                    new_year, dt.month, 1, dt.hour, dt.minute)
+                new_dt = utc_datetime(new_year, dt.month, 1, dt.hour, dt.minute)
 
                 for i in range(7):
                     if new_dt.weekday() == dt_weekday:
@@ -800,34 +835,47 @@ def get_file_rates(cache, contract_name, dt):
                 hist_date = dt
 
             try:
-                props = cont['props']
+                props = cont["props"]
             except KeyError:
-                props = cont['props'] = {}
+                props = cont["props"] = {}
 
             try:
                 rscript = props[rs_start]
             except KeyError:
                 try:
-                    script['hist_dates'] = {}
+                    script["hist_dates"] = {}
                     rscript = PropDict(
-                        " in the rate script " + url_root +
-                        'industry_contracts/' + contract_name +
-                        '/rate_scripts/' + rs_start.strftime("%Y%m%d%H%M") +
-                        ".", script)
+                        " in the rate script "
+                        + url_root
+                        + "industry_contracts/"
+                        + contract_name
+                        + "/rate_scripts/"
+                        + rs_start.strftime("%Y%m%d%H%M")
+                        + ".",
+                        script,
+                    )
                 except ZishException as e:
                     raise BadRequest(
-                        "Problem parsing rate script for contract " +
-                        contract_name + " starting at " + hh_format(rs_start) +
-                        ": " + str(e))
+                        "Problem parsing rate script for contract "
+                        + contract_name
+                        + " starting at "
+                        + hh_format(rs_start)
+                        + ": "
+                        + str(e)
+                    )
                 except BadRequest as e:
                     raise BadRequest(
-                        "Problem with rate script for contract " +
-                        contract_name + " starting at " + hh_format(rs_start) +
-                        ": " + e.description)
+                        "Problem with rate script for contract "
+                        + contract_name
+                        + " starting at "
+                        + hh_format(rs_start)
+                        + ": "
+                        + e.description
+                    )
 
                 props[rs_start] = rscript
 
-            rscript['hist_dates']._storage[dt] = hist_date
+            rscript["hist_dates"]._storage[dt] = hist_date
 
             cont[dt] = rscript
             return rscript

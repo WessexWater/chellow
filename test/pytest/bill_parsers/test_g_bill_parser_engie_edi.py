@@ -13,7 +13,7 @@ def test_Parser(mocker):
         "MTR=6'",
         "END=288'",
     )
-    edi_bytes = '\n'.join(edi_lines).encode('utf8')
+    edi_bytes = "\n".join(edi_lines).encode("utf8")
 
     parser = chellow.g_bill_parser_engie_edi.Parser(edi_bytes)
     parser.make_raw_bills()

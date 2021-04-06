@@ -9,7 +9,8 @@ def match(response, status_code, *patterns):
 
     for regex in patterns:
         assert re.search(
-            regex, response_str, flags=re.MULTILINE + re.DOTALL), response_str
+            regex, response_str, flags=re.MULTILINE + re.DOTALL
+        ), response_str
 
 
 def match_tables(table_1, table_2):

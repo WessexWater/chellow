@@ -6,7 +6,10 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 
 from chellow.models import (
-    Contract, RateScript, Session, get_non_core_contract_id,
+    Contract,
+    RateScript,
+    Session,
+    get_non_core_contract_id,
 )
 from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
@@ -24,14 +27,14 @@ import xlrd
 from zish import dumps, loads
 
 
-def hh(data_source, run='RF'):
+def hh(data_source, run="RF"):
     try:
-        bsuos_cache = data_source.caches['bsuos'][run]
+        bsuos_cache = data_source.caches["bsuos"][run]
     except KeyError:
         try:
-            top_cache = data_source.caches['bsuos']
+            top_cache = data_source.caches["bsuos"]
         except KeyError:
-            top_cache = data_source.caches['bsuos'] = {}
+            top_cache = data_source.caches["bsuos"] = {}
 
         try:
             bsuos_cache = top_cache[run]
@@ -40,12 +43,12 @@ def hh(data_source, run='RF'):
 
     for h in data_source.hh_data:
         try:
-            h['bsuos-rate'] = bsuos_rate = bsuos_cache[h['start-date']]
+            h["bsuos-rate"] = bsuos_rate = bsuos_cache[h["start-date"]]
         except KeyError:
-            h_start = h['start-date']
-            db_id = get_non_core_contract_id('bsuos')
+            h_start = h["start-date"]
+            db_id = get_non_core_contract_id("bsuos")
 
-            rates = data_source.hh_rate(db_id, h_start)['rates_gbp_per_mwh']
+            rates = data_source.hh_rate(db_id, h_start)["rates_gbp_per_mwh"]
 
             try:
                 bsuos_price_dict = rates[key_format(h_start)]
@@ -54,11 +57,12 @@ def hh(data_source, run='RF'):
                 ds = rates.values()
                 bsuos_price = sum(_find_price(run, d) for d in ds) / len(ds)
 
-            h['bsuos-rate'] = bsuos_rate = bsuos_cache[h_start] = float(
-                bsuos_price) / 1000
+            h["bsuos-rate"] = bsuos_rate = bsuos_cache[h_start] = (
+                float(bsuos_price) / 1000
+            )
 
-        h['bsuos-kwh'] = h['nbp-kwh']
-        h['bsuos-gbp'] = h['nbp-kwh'] * bsuos_rate
+        h["bsuos-kwh"] = h["nbp-kwh"]
+        h["bsuos-gbp"] = h["nbp-kwh"] * bsuos_rate
 
 
 def _find_price(run, prices):
@@ -66,12 +70,12 @@ def _find_price(run, prices):
         price = prices[run]
     except KeyError:
         try:
-            price = prices['RF']
+            price = prices["RF"]
         except KeyError:
             try:
-                price = prices['SF']
+                price = prices["SF"]
             except KeyError:
-                price = prices['II']
+                price = prices["II"]
     return price
 
 
@@ -97,8 +101,8 @@ class BsuosImporter(threading.Thread):
         self.messages = collections.deque(maxlen=500)
         self.stopped = threading.Event()
         self.going = threading.Event()
-        self.PROXY_HOST_KEY = 'proxy.host'
-        self.PROXY_PORT_KEY = 'proxy.port'
+        self.PROXY_HOST_KEY = "proxy.host"
+        self.PROXY_PORT_KEY = "proxy.port"
 
     def stop(self):
         self.stopped.set()
@@ -117,7 +121,8 @@ class BsuosImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+        )
 
     def run(self):
         while not self.stopped.isSet():
@@ -126,27 +131,28 @@ class BsuosImporter(threading.Thread):
                 try:
                     sess = Session()
                     self.log("Starting to check BSUoS rates.")
-                    contract = Contract.get_non_core_by_name(sess, 'bsuos')
+                    contract = Contract.get_non_core_by_name(sess, "bsuos")
                     props = contract.make_properties()
-                    if props.get('enabled', False):
-                        urls = set(props.get('urls', []))
-                        if props.get('discover_urls', False):
+                    if props.get("enabled", False):
+                        urls = set(props.get("urls", []))
+                        if props.get("discover_urls", False):
                             urls.update(_discover_urls(self.log))
 
                         url_list = sorted(urls)
-                        self.log(
-                            "List of URLs to process: " + str(url_list))
+                        self.log("List of URLs to process: " + str(url_list))
                         for url in url_list:
                             self.process_url(sess, url, contract)
                     else:
                         self.log(
                             "The automatic importer is disabled. To "
                             "enable it, edit the contract properties to "
-                            "set 'enabled' to True.")
+                            "set 'enabled' to True."
+                        )
                 except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
-                    self.global_alert = \
+                    self.global_alert = (
                         "There's a problem with the BSUoS automatic importer."
+                    )
                     sess.rollback()
                 finally:
                     if sess is not None:
@@ -170,19 +176,18 @@ class BsuosImporter(threading.Thread):
 
             raw_date_val = row[0].value
             if isinstance(raw_date_val, float):
-                raw_date = Datetime(
-                    *xlrd.xldate_as_tuple(raw_date_val, book.datemode))
+                raw_date = Datetime(*xlrd.xldate_as_tuple(raw_date_val, book.datemode))
             elif isinstance(raw_date_val, str):
                 separator = raw_date_val[2]
                 fmat = separator.join(("%d", "%m", "%Y"))
                 raw_date = Datetime.strptime(raw_date_val, fmat)
             else:
                 raise BadRequest(
-                    "Type of date field " + str(raw_date_val) +
-                    " not recognized.")
+                    "Type of date field " + str(raw_date_val) + " not recognized."
+                )
 
             hh_date_ct = to_ct(raw_date)
-            hh_date_ct += relativedelta(minutes=30*(int(row[1].value) - 1))
+            hh_date_ct += relativedelta(minutes=30 * (int(row[1].value) - 1))
             hh_date = to_utc(hh_date_ct)
             price = Decimal(str(row[2].value))
             run = row[5].value
@@ -197,41 +202,60 @@ class BsuosImporter(threading.Thread):
                 except KeyError:
                     yr_cache = cache[hh_date.year] = {}
 
-                rs = sess.query(RateScript).filter(
-                    RateScript.contract == contract,
-                    RateScript.start_date <= hh_date, or_(
-                        RateScript.finish_date == null(),
-                        RateScript.finish_date >= hh_date)).first()
+                rs = (
+                    sess.query(RateScript)
+                    .filter(
+                        RateScript.contract == contract,
+                        RateScript.start_date <= hh_date,
+                        or_(
+                            RateScript.finish_date == null(),
+                            RateScript.finish_date >= hh_date,
+                        ),
+                    )
+                    .first()
+                )
                 while rs is None:
-                    self.log(
-                        "There's no rate script at " + hh_format(hh_date) +
-                        ".")
-                    latest_rs = sess.query(RateScript).filter(
-                        RateScript.contract == contract).order_by(
-                        RateScript.start_date.desc()).first()
+                    self.log("There's no rate script at " + hh_format(hh_date) + ".")
+                    latest_rs = (
+                        sess.query(RateScript)
+                        .filter(RateScript.contract == contract)
+                        .order_by(RateScript.start_date.desc())
+                        .first()
+                    )
                     contract.update_rate_script(
-                        sess, latest_rs, latest_rs.start_date,
+                        sess,
+                        latest_rs,
+                        latest_rs.start_date,
                         latest_rs.start_date + relativedelta(months=2) - HH,
-                        loads(latest_rs.script))
-                    new_rs_start = latest_rs.start_date + relativedelta(
-                        months=1)
+                        loads(latest_rs.script),
+                    )
+                    new_rs_start = latest_rs.start_date + relativedelta(months=1)
                     contract.insert_rate_script(sess, new_rs_start, {})
                     sess.commit()
                     self.log(
-                        "Added a rate script starting at " +
-                        hh_format(new_rs_start) + ".")
+                        "Added a rate script starting at "
+                        + hh_format(new_rs_start)
+                        + "."
+                    )
 
-                    rs = sess.query(RateScript).filter(
-                        RateScript.contract == contract,
-                        RateScript.start_date <= hh_date, or_(
-                            RateScript.finish_date == null(),
-                            RateScript.finish_date >= hh_date)).first()
+                    rs = (
+                        sess.query(RateScript)
+                        .filter(
+                            RateScript.contract == contract,
+                            RateScript.start_date <= hh_date,
+                            or_(
+                                RateScript.finish_date == null(),
+                                RateScript.finish_date >= hh_date,
+                            ),
+                        )
+                        .first()
+                    )
 
                 rates = loads(rs.script)
                 try:
-                    rts = rates['rates_gbp_per_mwh']
+                    rts = rates["rates_gbp_per_mwh"]
                 except KeyError:
-                    rts = rates['rates_gbp_per_mwh'] = {}
+                    rts = rates["rates_gbp_per_mwh"] = {}
                 yr_cache[hh_date.month] = rs, rates, rts
 
             key = key_format(hh_date)
@@ -243,27 +267,28 @@ class BsuosImporter(threading.Thread):
             if run not in existing:
                 existing[run] = price
                 self.log(
-                    "Added rate at " + hh_format(hh_date) + " for run " + run +
-                    ".")
+                    "Added rate at " + hh_format(hh_date) + " for run " + run + "."
+                )
 
         _save_cache(sess, cache)
         book = sheet = None
 
 
 def _discover_urls(logger):
-    host = 'https://www.nationalgrideso.com'
+    host = "https://www.nationalgrideso.com"
     page = host + "/charging/balancing-services-use-system-bsuos-charges"
     logger("Searching for URLs on " + page)
     urls = set()
     res = requests.get(page)
     src = res.text
     for pref in (
-            '" title="Current II BSUoS Data"',
-            '" title="Current RF BSUoS Data"',
-            '" title="Current SF BSUoS Data"'):
+        '" title="Current II BSUoS Data"',
+        '" title="Current RF BSUoS Data"',
+        '" title="Current SF BSUoS Data"',
+    ):
         pidx = src.find(pref)
-        aidx = src.rfind('<', 0, pidx)
-        urls.add(host + src[aidx+9:pidx])
+        aidx = src.rfind("<", 0, pidx)
+        urls.add(host + src[aidx + 9 : pidx])
     return urls
 
 

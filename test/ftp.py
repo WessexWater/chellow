@@ -10,8 +10,7 @@ def main():
 
     # Define a new user having full r/w permissions and a read-only
     # anonymous user
-    authorizer.add_user(
-        'chellow', 'HixaNfUBOf*u', os.path.join('test', 'ftp'))
+    authorizer.add_user("chellow", "HixaNfUBOf*u", os.path.join("test", "ftp"))
 
     # Instantiate FTP handler class
     handler = FTPHandler
@@ -20,7 +19,7 @@ def main():
     # Define a customized banner (string returned when client connects)
     handler.banner = "pyftpdlib based ftpd ready."
 
-    server = FTPServer(('127.0.0.1', 2121), handler)
+    server = FTPServer(("127.0.0.1", 2121), handler)
 
     # set a limit for connections
     server.max_cons = 256
@@ -29,5 +28,6 @@ def main():
     # start ftp server
     server.serve_forever()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

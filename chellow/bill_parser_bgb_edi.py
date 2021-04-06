@@ -4,15 +4,12 @@ from io import StringIO
 from chellow.edi_lib import EdiParser, to_date, to_decimal
 from chellow.utils import hh_after, parse_mpan_core
 
-read_type_map = {
-    '00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'
-}
+read_type_map = {"00": "N", "01": "E", "02": "E", "04": "C", "06": "X", "07": "N"}
 
 
-class Parser():
+class Parser:
     def __init__(self, f):
-        self.parser = EdiParser(
-            StringIO(str(f.read(), 'utf-8', errors='ignore')))
+        self.parser = EdiParser(StringIO(str(f.read(), "utf-8", errors="ignore")))
         self.line_number = None
 
     def make_raw_bills(self):
@@ -49,8 +46,11 @@ class Parser():
                 ccde = self.parser.elements[1]
                 consumption_charge_indicator = ccde[0]
                 charge_type = ccde[2]
-                if consumption_charge_indicator != "5" and \
-                        charge_type in ["7", "8", "9"]:
+                if consumption_charge_indicator != "5" and charge_type in [
+                    "7",
+                    "8",
+                    "9",
+                ]:
                     prev_read_date = to_date(self.parser.elements[7][0])
                 if hh_after(start_date, prev_read_date):
                     start_date = prev_read_date
@@ -71,26 +71,36 @@ class Parser():
                     msn = mtnr[0]
                     tpr_code = tmod[0].zfill(5)
                     read = {
-                        'msn': msn, 'mpan': mloc[0],
-                        'coefficient': coefficient, 'units': 'kWh',
-                        'tpr_code': tpr_code, 'prev_date': prev_read_date,
-                        'prev_value': prev_read_value,
-                        'prev_type_code': prev_read_type,
-                        'pres_date': register_finish_date,
-                        'pres_value': pres_read_value,
-                        'pres_type_code': pres_read_type
+                        "msn": msn,
+                        "mpan": mloc[0],
+                        "coefficient": coefficient,
+                        "units": "kWh",
+                        "tpr_code": tpr_code,
+                        "prev_date": prev_read_date,
+                        "prev_value": prev_read_value,
+                        "prev_type_code": prev_read_type,
+                        "pres_date": register_finish_date,
+                        "pres_value": pres_read_value,
+                        "pres_type_code": pres_read_type,
                     }
                     reads.append(read)
 
             elif code == "MTR":
                 if message_type == "UTLBIL":
                     raw_bill = {
-                        'bill_type_code': bill_type_code, 'account': account,
-                        'mpan_core': mpan_core, 'reference': reference,
-                        'issue_date': issue_date, 'start_date': start_date,
-                        'finish_date': finish_date, 'kwh': Decimal(0),
-                        'net': net, 'vat': vat, 'gross': Decimal('0.00'),
-                        'breakdown': {}, 'reads': reads
+                        "bill_type_code": bill_type_code,
+                        "account": account,
+                        "mpan_core": mpan_core,
+                        "reference": reference,
+                        "issue_date": issue_date,
+                        "start_date": start_date,
+                        "finish_date": finish_date,
+                        "kwh": Decimal(0),
+                        "net": net,
+                        "vat": vat,
+                        "gross": Decimal("0.00"),
+                        "breakdown": {},
+                        "reads": reads,
                     }
                     raw_bills.append(raw_bill)
 
@@ -100,13 +110,12 @@ class Parser():
                 # mtc_code = madn[4]
                 # llfc_code = madn[5]
 
-                mpan_core = parse_mpan_core(
-                    madn[0] + " " + madn[1] + madn[2])
+                mpan_core = parse_mpan_core(madn[0] + " " + madn[1] + madn[2])
 
             elif code == "VAT":
                 uvla = self.parser.elements[5]
-                net = Decimal('0.00') + to_decimal(uvla)
+                net = Decimal("0.00") + to_decimal(uvla)
                 uvtt = self.parser.elements[6]
-                vat = Decimal('0.00') + to_decimal(uvtt)
+                vat = Decimal("0.00") + to_decimal(uvtt)
 
         return raw_bills

@@ -3,9 +3,19 @@ from io import StringIO
 
 import chellow.reports.report_429
 from chellow.models import (
-    BillType, Contract, GContract, GDn, GReadingFrequency, GUnit, MarketRole,
-    Participant, Site, insert_bill_types, insert_g_reading_frequencies,
-    insert_g_units)
+    BillType,
+    Contract,
+    GContract,
+    GDn,
+    GReadingFrequency,
+    GUnit,
+    MarketRole,
+    Participant,
+    Site,
+    insert_bill_types,
+    insert_g_reading_frequencies,
+    insert_g_units,
+)
 from chellow.utils import utc_datetime
 
 from utils import match
@@ -29,7 +39,7 @@ def test_process_g_bill_ids(mocker):
     g_bill.start_date = forecast_date
     g_bill.finish_date = forecast_date
 
-    MockGBill = mocker.patch('chellow.reports.report_429.GBill', autospec=True)
+    MockGBill = mocker.patch("chellow.reports.report_429.GBill", autospec=True)
     MockGBill.g_supply = mocker.Mock()
     MockGBill.start_date = forecast_date
     MockGBill.finish_date = forecast_date
@@ -44,43 +54,51 @@ def test_process_g_bill_ids(mocker):
     csv_writer = mocker.Mock()
 
     chellow.reports.report_429._process_g_bill_ids(
-        sess, report_context, g_bill_ids, forecast_date, bill_titles, vbf,
-        titles, csv_writer)
+        sess,
+        report_context,
+        g_bill_ids,
+        forecast_date,
+        bill_titles,
+        vbf,
+        titles,
+        csv_writer,
+    )
 
     find_g_era_at.assert_not_called()
 
 
 def test_batch(mocker, sess, client):
-    site = Site.insert(sess, '22488', 'Water Works')
-    g_dn = GDn.insert(sess, 'EE', "East of England")
-    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
-    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
     insert_g_units(sess)
-    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
-    participant = Participant.insert(sess, 'CALB', 'AK Industries')
-    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant.insert_party(
-        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
-        None)
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
     g_cv_rate_script = {
-        'cvs': {
-            'EA': {
-                1: {
-                    "applicable_at": utc_datetime(2020, 10, 3),
-                    "cv": 39.2000
-                },
+        "cvs": {
+            "EA": {
+                1: {"applicable_at": utc_datetime(2020, 10, 3), "cv": 39.2000},
             }
         }
     }
     Contract.insert_non_core(
-        sess, 'g_cv', '', {}, utc_datetime(2000, 1, 1), None,
-        g_cv_rate_script)
-    bank_holiday_rate_script = {
-        'bank_holidays': []
-    }
+        sess, "g_cv", "", {}, utc_datetime(2000, 1, 1), None, g_cv_rate_script
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess, 'bank_holidays', '', {}, utc_datetime(2000, 1, 1), None,
-        bank_holiday_rate_script)
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
     charge_script = """
 import chellow.g_ccl
 from chellow.g_engine import g_rates
@@ -133,39 +151,64 @@ def virtual_bill(ds):
     ds.bill = reduce_bill_hhs(ds.bill_hhs)
 """
     g_contract_rate_script = {
-        'gas_rate': 0.1,
-        'standing_rate': 0.1,
+        "gas_rate": 0.1,
+        "standing_rate": 0.1,
     }
     g_contract = GContract.insert(
-        sess, 'Fusion 2020', charge_script, {}, utc_datetime(2000, 1, 1),
-        None, g_contract_rate_script)
+        sess,
+        "Fusion 2020",
+        charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        g_contract_rate_script,
+    )
     insert_g_reading_frequencies(sess)
-    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     g_supply = site.insert_g_supply(
-        sess, '87614362', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
-        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
-        g_reading_frequency_M)
+        sess,
+        "87614362",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
-    breakdown = {
-        'units_consumed': 771
-    }
+    breakdown = {"units_consumed": 771}
     insert_bill_types(sess)
-    bill_type_n = BillType.get_by_code(sess, 'N')
+    bill_type_n = BillType.get_by_code(sess, "N")
     g_bill = g_batch.insert_g_bill(
-        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
-        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
-        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
-        Decimal('1.20'), Decimal('14.52'), '', breakdown)
+        sess,
+        g_supply,
+        bill_type_n,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        breakdown,
+    )
     sess.commit()
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch('chellow.reports.report_429.open', return_value=mock_file)
+    mocker.patch("chellow.reports.report_429.open", return_value=mock_file)
     mocker.patch(
-        'chellow.reports.report_429.chellow.dloads.make_names',
-        return_value=('a', 'b'))
-    mocker.patch('chellow.reports.report_429.os.rename')
+        "chellow.reports.report_429.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_429.os.rename")
 
     user = mocker.Mock()
     chellow.reports.report_429.content(g_batch.id, g_bill.id, user)
@@ -189,80 +232,97 @@ def virtual_bill(ds):
         "b1,55h883,N,2020-01-01 00:00,2020-01-31 23:30,87614362,main,22488,"
         "Water Works,2020-01-01 00:00,2020-01-31 23:30,1,771,0,,1.0,,M3,,1.0"
         ",,39.2,45,0.0,,0.1,,0.0,,,0.00339,,0.1,,0.1,,12.40,0.1,12.3,1.20,0,"
-        "1.2,14.52,0.1,14.42,,"
+        "1.2,14.52,0.1,14.42,,",
     ]
-    expected_str = '\r\n'.join(expected) + '\r\n'
+    expected_str = "\r\n".join(expected) + "\r\n"
 
     assert actual == expected_str
 
 
 def test_batch_http(mocker, sess, client):
     g_contract = GContract.insert(
-        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     sess.commit()
 
-    data = {
-        'g_batch_id': g_batch.id
-    }
+    data = {"g_batch_id": g_batch.id}
 
     mock_Thread = mocker.patch(
-        'chellow.reports.report_429.threading.Thread', autospec=True)
-    response = client.get('/reports/429', data=data)
+        "chellow.reports.report_429.threading.Thread", autospec=True
+    )
+    response = client.get("/reports/429", data=data)
 
     match(response, 303)
 
     user = None
     args = (g_batch.id, None, user)
-    mock_Thread.assert_called_with(
-        target=chellow.reports.report_429.content, args=args)
+    mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)
 
 
 def test_bill_http(mocker, sess, client):
-    site = Site.insert(sess, '22488', 'Water Works')
-    g_dn = GDn.insert(sess, 'EE', "East of England")
-    g_ldz = g_dn.insert_g_ldz(sess, 'EA')
-    g_exit_zone = g_ldz.insert_g_exit_zone(sess, 'EA1')
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
     insert_g_units(sess)
-    g_unit_M3 = GUnit.get_by_code(sess, 'M3')
-    participant = Participant.insert(sess, 'CALB', 'AK Industries')
-    market_role_Z = MarketRole.get_by_code(sess, 'Z')
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant.insert_party(
-        sess, market_role_Z, 'None core', utc_datetime(2000, 1, 1), None,
-        None)
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
     g_contract = GContract.insert(
-        sess, 'Fusion 2020', '', {}, utc_datetime(2000, 1, 1), None, {})
+        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
     insert_g_reading_frequencies(sess)
-    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, 'M')
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     g_supply = site.insert_g_supply(
-        sess, '87614362', 'main', g_exit_zone, utc_datetime(2018, 1, 1),
-        None, 'hgeu8rhg', 1, g_unit_M3, g_contract, 'd7gthekrg',
-        g_reading_frequency_M)
+        sess,
+        "87614362",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
-    breakdown = {
-        'units_consumed': 771
-    }
+    breakdown = {"units_consumed": 771}
     insert_bill_types(sess)
-    bill_type_n = BillType.get_by_code(sess, 'N')
+    bill_type_n = BillType.get_by_code(sess, "N")
     g_bill = g_batch.insert_g_bill(
-        sess, g_supply, bill_type_n, '55h883', 'dhgh883',
-        utc_datetime(2019, 4, 3), utc_datetime(2020, 1, 1),
-        utc_datetime(2020, 1, 31, 23, 30), Decimal('45'), Decimal('12.40'),
-        Decimal('1.20'), Decimal('14.52'), '', breakdown)
+        sess,
+        g_supply,
+        bill_type_n,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        breakdown,
+    )
     sess.commit()
 
-    data = {
-        'g_bill_id': g_bill.id
-    }
+    data = {"g_bill_id": g_bill.id}
 
     mock_Thread = mocker.patch(
-        'chellow.reports.report_429.threading.Thread', autospec=True)
-    response = client.get('/reports/429', data=data)
+        "chellow.reports.report_429.threading.Thread", autospec=True
+    )
+    response = client.get("/reports/429", data=data)
 
     match(response, 303)
 
     user = None
     args = (None, g_bill.id, user)
-    mock_Thread.assert_called_with(
-        target=chellow.reports.report_429.content, args=args)
+    mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)

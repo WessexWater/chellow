@@ -23,7 +23,7 @@ def startup(instance_path):
     file_deleter = FileDeleter()
     file_deleter.start()
 
-    download_path = os.path.join(instance_path, 'downloads')
+    download_path = os.path.join(instance_path, "downloads")
 
     if not os.path.exists(download_path):
         os.makedirs(download_path)
@@ -36,7 +36,7 @@ def startup(instance_path):
 def make_names(base, user):
     global download_id
 
-    base = base.replace('/', '').replace(' ', '')
+    base = base.replace("/", "").replace(" ", "")
     try:
         lock.acquire()
         if len(os.listdir(download_path)) == 0:
@@ -47,16 +47,15 @@ def make_names(base, user):
         lock.release()
 
     if user is None:
-        uname = ''
+        uname = ""
     else:
-        if hasattr(user, 'proxy_username'):
+        if hasattr(user, "proxy_username"):
             un = user.proxy_username
         else:
             un = user.email_address
-        uname = un.replace('@', '').replace('.', '').replace('\\', '')
+        uname = un.replace("@", "").replace(".", "").replace("\\", "")
 
-    names = tuple(
-        '_'.join((serial, v, uname, base)) for v in ('RUNNING', 'FINISHED'))
+    names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
     return tuple(os.path.join(download_path, name) for name in names)
 
 
@@ -136,7 +135,8 @@ class FileDeleter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+        )
         if len(self.messages) > 100:
             self.messages.pop()
 

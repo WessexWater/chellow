@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Energisation Statuses
+{% endblock %}
+
+{% block nav %}
+	&raquo; Energisation Statuses
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Energisation Statuses</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for energisation_status in energisation_statuses %}
+							<tr>
+								<td>
+									<a
+											href="/energisation_statuses/{{energisation_status.id}}"
+											>{{energisation_status.code}}</a>
+								</td>
+								<td>{{energisation_status.description}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

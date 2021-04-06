@@ -15,7 +15,7 @@ from sqlalchemy import null, or_, true
 from sqlalchemy.orm import joinedload
 
 
-METER_ORDER = {'hh': 0, 'amr': 1, 'nhh': 2, 'unmetered': 3, '': 4}
+METER_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3, "": 4}
 
 
 def content(start_date, finish_date, site_id, user):
@@ -23,18 +23,30 @@ def content(start_date, finish_date, site_id, user):
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
-            'sites_duration.csv', user)
-        f = open(running_name, mode='w', newline='')
-        writer = csv.writer(f, lineterminator='\n')
+            "sites_duration.csv", user
+        )
+        f = open(running_name, mode="w", newline="")
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(
             (
-                "Site Id", "Site Name", "Associated Site Ids", "Sources",
-                "Generator Types", "From", "To", "Imported kWh",
-                "Displaced kWh", "Exported kWh", "Used kWh", "Parasitic kWh",
-                "Generated kWh", "Meter Type"))
+                "Site Id",
+                "Site Name",
+                "Associated Site Ids",
+                "Sources",
+                "Generator Types",
+                "From",
+                "To",
+                "Imported kWh",
+                "Displaced kWh",
+                "Exported kWh",
+                "Used kWh",
+                "Parasitic kWh",
+                "Generated kWh",
+                "Meter Type",
+            )
+        )
 
-        streams = (
-            'imp_net', 'displaced', 'exp_net', 'used', 'exp_gen', 'imp_gen')
+        streams = ("imp_net", "displaced", "exp_net", "used", "exp_gen", "imp_gen")
 
         sites = sess.query(Site).order_by(Site.code)
         if site_id is not None:
@@ -44,23 +56,30 @@ def content(start_date, finish_date, site_id, user):
         finish_date_str = hh_format(finish_date)
 
         for site in sites:
-            assoc = ' '.join(
-                s.code for s in site.find_linked_sites(
-                    sess, start_date, finish_date))
+            assoc = " ".join(
+                s.code for s in site.find_linked_sites(sess, start_date, finish_date)
+            )
 
             totals = dict((stream, 0) for stream in streams)
 
-            metering_type = ''
+            metering_type = ""
             source_codes = set()
             gen_types = set()
-            for era in sess.query(Era).join(SiteEra).filter(
-                    SiteEra.is_physical == true(), SiteEra.site == site,
-                    Era.start_date <= finish_date, or_(
-                        Era.finish_date == null(),
-                        Era.finish_date >= start_date)).distinct().options(
-                            joinedload(Era.supply).joinedload(Supply.source),
-                            joinedload(Era.supply).
-                            joinedload(Supply.generator_type)):
+            for era in (
+                sess.query(Era)
+                .join(SiteEra)
+                .filter(
+                    SiteEra.is_physical == true(),
+                    SiteEra.site == site,
+                    Era.start_date <= finish_date,
+                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                )
+                .distinct()
+                .options(
+                    joinedload(Era.supply).joinedload(Supply.source),
+                    joinedload(Era.supply).joinedload(Supply.generator_type),
+                )
+            ):
                 supply = era.supply
                 source_codes.add(supply.source.code)
                 gen_type = supply.generator_type
@@ -70,9 +89,9 @@ def content(start_date, finish_date, site_id, user):
                 if METER_ORDER[era_meter_type] < METER_ORDER[metering_type]:
                     metering_type = era_meter_type
 
-            assoc_str = ','.join(sorted(assoc))
-            sources_str = ','.join(sorted(source_codes))
-            generators_str = ','.join(sorted(gen_types))
+            assoc_str = ",".join(sorted(assoc))
+            sources_str = ",".join(sorted(source_codes))
+            generators_str = ",".join(sorted(gen_types))
 
             for hh in site.hh_data(sess, start_date, finish_date):
                 for stream in streams:
@@ -80,11 +99,22 @@ def content(start_date, finish_date, site_id, user):
 
             writer.writerow(
                 (
-                    site.code, site.name, assoc_str, sources_str,
-                    generators_str, start_date_str, finish_date_str,
-                    totals['imp_net'], totals['displaced'], totals['exp_net'],
-                    totals['used'], totals['exp_gen'], totals['imp_gen'],
-                    metering_type))
+                    site.code,
+                    site.name,
+                    assoc_str,
+                    sources_str,
+                    generators_str,
+                    start_date_str,
+                    finish_date_str,
+                    totals["imp_net"],
+                    totals["displaced"],
+                    totals["exp_net"],
+                    totals["used"],
+                    totals["exp_gen"],
+                    totals["imp_gen"],
+                    metering_type,
+                )
+            )
 
             # Prevent long-running transaction
             sess.rollback()
@@ -101,9 +131,9 @@ def content(start_date, finish_date, site_id, user):
 
 
 def do_get(sess):
-    start_date = req_date('start')
-    finish_date = req_date('finish')
-    site_id = req_int('site_id') if 'site_id' in request.values else None
+    start_date = req_date("start")
+    finish_date = req_date("finish")
+    site_id = req_int("site_id") if "site_id" in request.values else None
     args = (start_date, finish_date, site_id, g.user)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

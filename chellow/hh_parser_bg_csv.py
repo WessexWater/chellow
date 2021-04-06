@@ -12,7 +12,7 @@ def create_parser(reader, mpan_map):
     return HhParserBglobal(reader, mpan_map)
 
 
-class HhParserBglobal():
+class HhParserBglobal:
     def __init__(self, reader, mpan_map):
         self.shredder = zip(itertools.count(1), csv.reader(reader))
         self.line_number, self.values = next(self.shredder)
@@ -38,27 +38,30 @@ class HhParserBglobal():
                     except KeyError:
                         raise BadRequest(
                             "There doesn't seem to be an MPAN Core at the "
-                            "beginning of this line. ")
+                            "beginning of this line. "
+                        )
                     self.core = self.mpan_map.get(self.core, self.core)
                     self.core = parse_mpan_core(self.core)
                 elif self.col_idx == 2:
-                    day, month, year = map(
-                        int, self.values[self.col_idx].split('/'))
+                    day, month, year = map(int, self.values[self.col_idx].split("/"))
                     self.date = utc_datetime(year, month, day)
                 elif 2 < self.col_idx < len(self.values):
                     hh_value = self.values[self.col_idx].strip()
                     mins = 30 * (self.col_idx - 3)
                     if len(hh_value) > 0:
                         datum = {
-                            'mpan_core': self.core, 'channel_type': 'ACTIVE',
-                            'start_date': self.date + timedelta(minutes=mins),
-                            'value': decimal.Decimal(hh_value), 'status': 'A'}
+                            "mpan_core": self.core,
+                            "channel_type": "ACTIVE",
+                            "start_date": self.date + timedelta(minutes=mins),
+                            "value": decimal.Decimal(hh_value),
+                            "status": "A",
+                        }
 
                 self.col_idx += 1
         except BadRequest as e:
-            e.description = ''.join(
-                "Problem at line number: ", str(self.line_number), ": ",
-                e.description)
+            e.description = "".join(
+                "Problem at line number: ", str(self.line_number), ": ", e.description
+            )
             raise e
         return datum
 

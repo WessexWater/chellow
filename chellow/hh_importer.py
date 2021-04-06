@@ -11,7 +11,12 @@ from io import TextIOWrapper
 
 from chellow.models import Contract, Era, HhDatum, MarketRole, Session
 from chellow.utils import (
-    HH, hh_format, hh_max, hh_min, utc_datetime, utc_datetime_now,
+    HH,
+    hh_format,
+    hh_max,
+    hh_min,
+    utc_datetime,
+    utc_datetime_now,
 )
 
 
@@ -31,15 +36,14 @@ from werkzeug.exceptions import BadRequest
 processes = defaultdict(list)
 tasks = {}
 
-extensions = ['.df2', '.simple.csv', '.bg.csv']
+extensions = [".df2", ".simple.csv", ".bg.csv"]
 
 
 class HhDataImportProcess(threading.Thread):
-
-    def __init__(
-            self, dc_contract_id, process_id, istream, file_name, file_size):
+    def __init__(self, dc_contract_id, process_id, istream, file_name, file_size):
         super(HhDataImportProcess, self).__init__(
-            name="HH Manual Import: contract " + str(dc_contract_id))
+            name="HH Manual Import: contract " + str(dc_contract_id)
+        )
 
         self.messages = []
         self.istream = istream
@@ -52,9 +56,11 @@ class HhDataImportProcess(threading.Thread):
         self.conv_ext = [ext for ext in extensions if file_name.endswith(ext)]
         if len(self.conv_ext) == 0:
             raise BadRequest(
-                "The extension of the filename '" + file_name +
-                "' is not one of the recognized extensions; " +
-                str(extensions))
+                "The extension of the filename '"
+                + file_name
+                + "' is not one of the recognized extensions; "
+                + str(extensions)
+            )
         self.converter = None
 
     def run(self):
@@ -64,11 +70,11 @@ class HhDataImportProcess(threading.Thread):
             contract = Contract.get_dc_by_id(sess, self.dc_contract_id)
             sess.rollback()
             properties = contract.make_properties()
-            mpan_map = properties.get('mpan_map', {})
+            mpan_map = properties.get("mpan_map", {})
             parser_module = importlib.import_module(
-                'chellow.hh_parser_' + self.conv_ext[0][1:].replace('.', '_'))
-            self.converter = parser_module.create_parser(
-                self.istream, mpan_map)
+                "chellow.hh_parser_" + self.conv_ext[0][1:].replace(".", "_")
+            )
+            self.converter = parser_module.create_parser(self.istream, mpan_map)
             sess.rollback()
             HhDatum.insert(sess, self.converter, contract)
             sess.commit()
@@ -81,8 +87,9 @@ class HhDataImportProcess(threading.Thread):
                 sess.close()
 
     def get_status(self):
-        return "No converter." \
-            if self.converter is None else self.converter.get_status()
+        return (
+            "No converter." if self.converter is None else self.converter.get_status()
+        )
 
 
 def get_hh_import_processes(contract_id):
@@ -92,18 +99,17 @@ def get_hh_import_processes(contract_id):
 def start_hh_import_process(dc_contract_id, istream, file_name, file_size):
     contract_processes = get_hh_import_processes(dc_contract_id)
     id = len(contract_processes)
-    process = HhDataImportProcess(
-        dc_contract_id, id, istream, file_name, file_size)
+    process = HhDataImportProcess(dc_contract_id, id, istream, file_name, file_size)
     contract_processes.append(process)
     process.start()
     return process
 
 
 class HhImportTask(threading.Thread):
-
     def __init__(self, contract_id):
         super(HhImportTask, self).__init__(
-            name="HH Automatic Import: contract " + str(contract_id))
+            name="HH Automatic Import: contract " + str(contract_id)
+        )
         self.lock = threading.RLock()
         self.messages = deque()
         self.contract_id = contract_id
@@ -128,13 +134,15 @@ class HhImportTask(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message)
+            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+        )
         if len(self.messages) > 100:
             self.messages.pop()
 
     def get_status(self):
-        return 'No importer.' \
-            if self.importer is None else str(self.importer.get_status())
+        return (
+            "No importer." if self.importer is None else str(self.importer.get_status())
+        )
 
     def import_file(self, sess):
         found_new = False
@@ -146,19 +154,19 @@ class HhImportTask(threading.Thread):
             if enabled:
                 protocol = properties["protocol"]
                 self.log("Protocol is " + protocol)
-                if protocol == 'ftp':
+                if protocol == "ftp":
                     found_new = self.ftp_handler(sess, properties, contract)
-                elif protocol == 'sftp':
+                elif protocol == "sftp":
                     found_new = self.sftp_handler(sess, properties, contract)
-                elif protocol == 'https':
-                    found_new = https_handler(
-                        sess, self.log, properties, contract)
+                elif protocol == "https":
+                    found_new = https_handler(sess, self.log, properties, contract)
                 else:
                     self.log("Protocol '" + protocol + "' not recognized.")
             else:
                 self.log(
-                    "Importer is disabled. To enable it, set " +
-                    "the 'enabled' property to 'True'.")
+                    "Importer is disabled. To enable it, set "
+                    + "the 'enabled' property to 'True'."
+                )
             self.is_error = False
         except BadRequest as e:
             self.log("Problem " + str(e))
@@ -200,18 +208,17 @@ class HhImportTask(threading.Thread):
         except KeyError:
             port = None
         file_type = properties["file_type"]
-        directories = properties['directories']
+        directories = properties["directories"]
         state = contract.make_state()
 
         try:
-            last_import_keys = state['last_import_keys']
+            last_import_keys = state["last_import_keys"]
         except KeyError:
             last_import_keys = {}
-            state['last_import_keys'] = last_import_keys
+            state["last_import_keys"] = last_import_keys
 
         sess.rollback()
-        self.log(
-            "Connecting to ftp server at " + host_name + ":" + str(port) + ".")
+        self.log("Connecting to ftp server at " + host_name + ":" + str(port) + ".")
         ftp = ftplib.FTP()
         if port is None:
             ftp.connect(host=host_name, timeout=120)
@@ -224,13 +231,11 @@ class HhImportTask(threading.Thread):
         file = None
 
         for directory in directories:
-            self.log(
-                "Checking the directory '" +
-                directory + "'.")
+            self.log("Checking the directory '" + directory + "'.")
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
-                last_import_key = last_import_keys[directory] = ''
+                last_import_key = last_import_keys[directory] = ""
 
             dir_path = home_path + "/" + directory
             ftp.cwd(dir_path)
@@ -243,7 +248,7 @@ class HhImportTask(threading.Thread):
                 except ftplib.error_perm:
                     pass
 
-                key = ftp.sendcmd("MDTM " + fpath).split()[1] + '_' + fname
+                key = ftp.sendcmd("MDTM " + fpath).split()[1] + "_" + fname
                 if key > last_import_key:
                     files.append((key, fpath))
 
@@ -259,9 +264,7 @@ class HhImportTask(threading.Thread):
             return False
         else:
             key, fpath = file
-            self.log(
-                "Attempting to download " + fpath +
-                " with key " + key + ".")
+            self.log("Attempting to download " + fpath + " with key " + key + ".")
             f = tempfile.TemporaryFile()
             ftp.retrbinary("RETR " + fpath, f.write)
             self.log("File downloaded successfully.")
@@ -272,11 +275,10 @@ class HhImportTask(threading.Thread):
             fsize = f.tell()
             f.seek(0)
             self.log("File size is " + str(fsize) + " bytes.")
-            self.log(
-                "Treating files as type " + file_type)
+            self.log("Treating files as type " + file_type)
             self.importer = HhDataImportProcess(
-                self.contract_id, 0, TextIOWrapper(f, 'utf8'),
-                fpath + file_type, fsize)
+                self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
+            )
 
             self.importer.run()
             for message in self.importer.messages:
@@ -300,35 +302,32 @@ class HhImportTask(threading.Thread):
         except KeyError:
             port = None
         file_type = properties["file_type"]
-        directories = properties['directories']
+        directories = properties["directories"]
         state = contract.make_state()
 
         try:
-            last_import_keys = state['last_import_keys']
+            last_import_keys = state["last_import_keys"]
         except KeyError:
-            last_import_keys = state['last_import_keys'] = {}
+            last_import_keys = state["last_import_keys"] = {}
 
         sess.rollback()
-        self.log(
-            "Connecting to sftp server at " + host_name + ":" +
-            str(port) + ".")
+        self.log("Connecting to sftp server at " + host_name + ":" + str(port) + ".")
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
         ftp = pysftp.Connection(
-            host_name, username=user_name, password=password, cnopts=cnopts)
+            host_name, username=user_name, password=password, cnopts=cnopts
+        )
         ftp.timeout = 120
         home_path = ftp.pwd
 
         f = None
 
         for directory in directories:
-            self.log(
-                "Checking the directory '" +
-                directory + "'.")
+            self.log("Checking the directory '" + directory + "'.")
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
-                last_import_key = last_import_keys[directory] = ''
+                last_import_key = last_import_keys[directory] = ""
 
             dir_path = home_path + "/" + directory
             ftp.cwd(dir_path)
@@ -341,7 +340,7 @@ class HhImportTask(threading.Thread):
                 except paramiko.SFTPError:
                     pass
 
-                key = str(attr.st_mtime) + '_' + attr.filename
+                key = str(attr.st_mtime) + "_" + attr.filename
                 if key > last_import_key:
                     files.append((key, fpath))
 
@@ -357,8 +356,7 @@ class HhImportTask(threading.Thread):
             return False
         else:
             key, fpath = f
-            self.log(
-                "Attempting to download " + fpath + " with key " + key + ".")
+            self.log("Attempting to download " + fpath + " with key " + key + ".")
             f = tempfile.TemporaryFile()
             ftp.getfo(fpath, f)
             self.log("File downloaded successfully.")
@@ -371,8 +369,8 @@ class HhImportTask(threading.Thread):
             self.log("File size is " + str(fsize) + " bytes.")
             self.log("Treating files as type " + file_type)
             self.importer = HhDataImportProcess(
-                self.contract_id, 0, TextIOWrapper(f, 'utf8'),
-                fpath + file_type, fsize)
+                self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
+            )
 
             self.importer.run()
             messages = self.importer.messages
@@ -391,24 +389,28 @@ class HhImportTask(threading.Thread):
 
 
 def https_handler(sess, log_f, properties, contract, now=None):
-    url_template_str = properties['url_template']
-    url_values = properties.get('url_values', {})
-    download_days = properties['download_days']
+    url_template_str = properties["url_template"]
+    url_values = properties.get("url_values", {})
+    download_days = properties["download_days"]
     if now is None:
         now = utc_datetime_now()
     window_finish = utc_datetime(now.year, now.month, now.day) - HH
-    window_start = utc_datetime(
-        now.year, now.month, now.day) - Timedelta(days=download_days)
+    window_start = utc_datetime(now.year, now.month, now.day) - Timedelta(
+        days=download_days
+    )
     log_f("Window start: " + hh_format(window_start))
     log_f("Window finish: " + hh_format(window_finish))
-    env = jinja2.Environment(
-        autoescape=True, undefined=jinja2.StrictUndefined)
+    env = jinja2.Environment(autoescape=True, undefined=jinja2.StrictUndefined)
     url_template = env.from_string(url_template_str)
-    for era in sess.query(Era).filter(
+    for era in (
+        sess.query(Era)
+        .filter(
             Era.dc_contract == contract,
-            Era.start_date <= window_finish, or_(
-                Era.finish_date == null(),
-                Era.finish_date >= window_start)).distinct():
+            Era.start_date <= window_finish,
+            or_(Era.finish_date == null(), Era.finish_date >= window_start),
+        )
+        .distinct()
+    ):
         chunk_start = hh_max(era.start_date, window_start)
         chunk_finish = hh_min(era.finish_date, window_finish)
         for mpan_core in (era.imp_mpan_core, era.exp_mpan_core):
@@ -417,10 +419,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
 
             log_f(f"Looking at MPAN core {mpan_core}.")
 
-            vals = {
-                'chunk_start': chunk_start,
-                'chunk_finish': chunk_finish
-            }
+            vals = {"chunk_start": chunk_start, "chunk_finish": chunk_finish}
             vals.update(url_values.get(mpan_core, {}))
             try:
                 url = url_template.render(vals)
@@ -428,30 +427,34 @@ def https_handler(sess, log_f, properties, contract, now=None):
                 raise BadRequest(
                     f"Problem rendering the URL template: {url_template_str}. "
                     f"The problem is: {e}. This can be fixed by editing the "
-                    f"properties of this contract.")
+                    f"properties of this contract."
+                )
 
             log_f(f"Retrieving data from {url}.")
             res = requests.get(url, timeout=120)
             res.raise_for_status()
             result = requests.get(url, timeout=120).json()
             if isinstance(result, dict):
-                result_data = result['DataPoints']
+                result_data = result["DataPoints"]
             elif isinstance(result, list):
                 result_data = result
             else:
                 raise BadRequest(
                     f"Expecting a JSON object at the top level, but "
-                    f"instead got {result}")
+                    f"instead got {result}"
+                )
             raw_data = []
             for jdatum in result_data:
                 raw_data.append(
                     dict(
                         mpan_core=mpan_core,
-                        start_date=utc_datetime(1, 1, 1) + Timedelta(
-                            seconds=jdatum['Time'] / 10000000),
-                        channel_type='ACTIVE',
-                        value=jdatum['Value'],
-                        status='A'))
+                        start_date=utc_datetime(1, 1, 1)
+                        + Timedelta(seconds=jdatum["Time"] / 10000000),
+                        channel_type="ACTIVE",
+                        value=jdatum["Value"],
+                        status="A",
+                    )
+                )
             HhDatum.insert(sess, raw_data, contract)
             sess.commit()
     log_f("Finished loading.")
@@ -474,13 +477,18 @@ def startup():
             if proc.isAlive():
                 raise BadRequest(
                     "Can't start hh importer, there are still some "
-                    "hh imports running.")
+                    "hh imports running."
+                )
 
     sess = None
     try:
         sess = Session()
-        for contract in sess.query(Contract).join(MarketRole).filter(
-                MarketRole.code == 'C').order_by(Contract.id):
+        for contract in (
+            sess.query(Contract)
+            .join(MarketRole)
+            .filter(MarketRole.code == "C")
+            .order_by(Contract.id)
+        ):
             startup_contract(contract.id)
     finally:
         if sess is not None:

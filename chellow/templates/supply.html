@@ -142,6 +142,9 @@
                     <th rowspan="2">From</th>
                     <th rowspan="2">To</th>
                     <th rowspan="2">Sites</th>
+                    <th rowspan="2">
+											<a title="Energisation Status">ES</a>
+										</th>
                     <th rowspan="2"><a title="Profile Class">PC</a></th>
                     <th rowspan="2"><a title="Meter Serial Number">MSN</a></th>
                     <th rowspan="2"><a title="Meter Timeswitch Class">MTC</a></th>
@@ -195,6 +198,12 @@
                         {%- endfor -%}
                         )
                         {% endif %}
+                    </td>
+                    <td rowspan="4">
+											<a
+													href="/energisation_statuses/{{era.energisation_status.id}}"
+													title="{{era.energisation_status.description}}"
+											>{{era.energisation_status.code}}</a>
                     </td>
                     <td rowspan="4">
                         <a href="/pcs/{{era.pc.id}}"

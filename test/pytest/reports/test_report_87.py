@@ -4,7 +4,7 @@ import chellow.computer
 from io import StringIO
 
 
-class Sess():
+class Sess:
     def __init__(self, *results):
         self.it = iter(results)
 
@@ -40,22 +40,27 @@ def test_summertime(mocker):
     user.email_address = "sfreud"
 
     mock_c_months_u = mocker.patch(
-        'chellow.reports.report_87.c_months_u', autospec=True)
+        "chellow.reports.report_87.c_months_u", autospec=True
+    )
 
-    MockEra = mocker.patch('chellow.reports.report_87.Era', autospec=True)
+    MockEra = mocker.patch("chellow.reports.report_87.Era", autospec=True)
     MockEra.finish_date = finish_date
     MockEra.start_date = start_date
 
     mocker.patch(
-        'chellow.reports.report_87.contract_func', autospec=True,
-        return_value=lambda: ['standing_gbp'])
+        "chellow.reports.report_87.contract_func",
+        autospec=True,
+        return_value=lambda: ["standing_gbp"],
+    )
 
     f = StringIO()
     sess = Sess([], [])
 
-    chellow.reports.report_87.create_csv(
-        f, sess, start_date, finish_date, contract_id)
+    chellow.reports.report_87.create_csv(f, sess, start_date, finish_date, contract_id)
 
     mock_c_months_u.assert_called_with(
-        start_year=start_date_ct.year, start_month=start_date_ct.month,
-        finish_year=finish_date_ct.year, finish_month=finish_date_ct.month)
+        start_year=start_date_ct.year,
+        start_month=start_date_ct.month,
+        finish_year=finish_date_ct.year,
+        finish_month=finish_date_ct.month,
+    )

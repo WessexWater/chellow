@@ -9,9 +9,9 @@ def parse_date(date_string):
     return validate_hh_start(datetime.datetime.strptime(date_string, "%Y%m%d"))
 
 
-class Parser():
+class Parser:
     def __init__(self, f):
-        self.f = StringIO(str(f.read(), 'utf-8', errors='ignore'))
+        self.f = StringIO(str(f.read(), "utf-8", errors="ignore"))
         self.line_number = None
 
     def make_raw_bills(self):
@@ -37,12 +37,19 @@ class Parser():
                 finish_date = parse_date(line[74:82])
             elif record_type == "1500":
                 raw_bill = {
-                    'bill_type_code': 'N', 'mpan_core': mpan_core,
-                    'account': account, 'reference': reference,
-                    'issue_date': start_date, 'start_date': start_date,
-                    'finish_date': finish_date, 'kwh': Decimal('0.00'),
-                    'net': net, 'vat': vat, 'gross': Decimal('0.00'),
-                    'breakdown': {}, 'reads': []
+                    "bill_type_code": "N",
+                    "mpan_core": mpan_core,
+                    "account": account,
+                    "reference": reference,
+                    "issue_date": start_date,
+                    "start_date": start_date,
+                    "finish_date": finish_date,
+                    "kwh": Decimal("0.00"),
+                    "net": net,
+                    "vat": vat,
+                    "gross": Decimal("0.00"),
+                    "breakdown": {},
+                    "reads": [],
                 }
                 raw_bills.append(raw_bill)
 

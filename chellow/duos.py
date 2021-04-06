@@ -2,7 +2,13 @@ from datetime import datetime as Datetime, timedelta as Timedelta
 
 from chellow.models import Channel, Era, HhDatum
 from chellow.utils import (
-    HH, ct_datetime, get_file_rates, hh_format, to_ct, to_utc, utc_datetime
+    HH,
+    ct_datetime,
+    get_file_rates,
+    hh_format,
+    to_ct,
+    to_utc,
+    utc_datetime,
 )
 
 from dateutil.relativedelta import relativedelta
@@ -13,66 +19,68 @@ from sqlalchemy.sql.expression import true
 from werkzeug.exceptions import BadRequest
 
 
-BANDS = ('red', 'amber', 'green')
+BANDS = ("red", "amber", "green")
 
 KEYS = dict(
     (
-        band, {
-            'kwh': 'duos-' + band + '-kwh',
-            'tariff-rate': band + '-gbp-per-kwh',
-            'bill-rate': 'duos-' + band + '-rate',
-            'gbp': 'duos-' + band + '-gbp'}) for band in BANDS)
+        band,
+        {
+            "kwh": "duos-" + band + "-kwh",
+            "tariff-rate": band + "-gbp-per-kwh",
+            "bill-rate": "duos-" + band + "-rate",
+            "gbp": "duos-" + band + "-gbp",
+        },
+    )
+    for band in BANDS
+)
 
-VL_LOOKUP = {
-    'HV': {True: 'hv', False: 'hv'},
-    'LV': {True: 'lv-sub', False: 'lv-net'}}
+VL_LOOKUP = {"HV": {True: "hv", False: "hv"}, "LV": {True: "lv-sub", False: "lv-net"}}
 
 
 def datum_beginning_22(ds, hh):
-    rs = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
+    rs = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])
     try:
-        tariff = rs['tariffs'][ds.llfc_code]
-        lafs = rs['lafs'][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
+        tariff = rs["tariffs"][ds.llfc_code]
+        lafs = rs["lafs"][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
     except KeyError as e:
         raise BadRequest(str(e))
 
     if ds.is_import:
         try:
-            day_rate = float(tariff['day-gbp-per-kwh'])
+            day_rate = float(tariff["day-gbp-per-kwh"])
         except KeyError as e:
             raise BadRequest(str(e))
 
-        night_rate = float(tariff['night-gbp-per-kwh'])
-        if 6 < hh['ct-decimal-hour'] <= 23:
-            hh['duos-day-kwh'] = hh['msp-kwh']
-            hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
+        night_rate = float(tariff["night-gbp-per-kwh"])
+        if 6 < hh["ct-decimal-hour"] <= 23:
+            hh["duos-day-kwh"] = hh["msp-kwh"]
+            hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
         else:
-            hh['duos-night-kwh'] = hh['msp-kwh']
-            hh['duos-night-gbp'] = hh['msp-kwh'] * night_rate
+            hh["duos-night-kwh"] = hh["msp-kwh"]
+            hh["duos-night-gbp"] = hh["msp-kwh"] * night_rate
 
-    if 23 < hh['ct-decimal-hour'] <= 6:
-        slot_name = 'night'
-    elif hh['ct-day-of-week'] < 5 and (
-            hh['ct-month'] > 10 or hh['ct-month'] < 3):
-        if 15.5 < hh['ct-decimal-hour'] < 18:
-            slot_name = 'winter-weekday-peak'
-        elif 6 < hh['ct-decimal-hour'] < 15:
-            slot_name = 'winter-weekday-day'
+    if 23 < hh["ct-decimal-hour"] <= 6:
+        slot_name = "night"
+    elif hh["ct-day-of-week"] < 5 and (hh["ct-month"] > 10 or hh["ct-month"] < 3):
+        if 15.5 < hh["ct-decimal-hour"] < 18:
+            slot_name = "winter-weekday-peak"
+        elif 6 < hh["ct-decimal-hour"] < 15:
+            slot_name = "winter-weekday-day"
         else:
-            slot_name = 'other'
+            slot_name = "other"
     else:
-        slot_name = 'other'
+        slot_name = "other"
 
     try:
-        hh['laf'] = float(lafs[slot_name])
+        hh["laf"] = float(lafs[slot_name])
     except KeyError as e:
         raise BadRequest(str(e))
 
-    hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+    hh["gsp-kwh"] = hh["laf"] * hh["msp-kwh"]
+    hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
-    if hh['ct-is-month-end']:
-        month_to = hh['start-date']
+    if hh["ct-is-month-end"]:
+        month_to = hh["start-date"]
         month_from = month_to - relativedelta(months=1) + HH
         days_in_month = 0
         md_kva = 0
@@ -80,143 +88,160 @@ def datum_beginning_22(ds, hh):
         month_kwh = 0
         for dsc in ds.get_data_sources(month_from, month_to):
             for h in dsc.hh_data:
-                if h['ct-decimal-hour'] == 0:
+                if h["ct-decimal-hour"] == 0:
                     days_in_month += 1
-                md_kva = max(
-                    md_kva,
-                    (h['msp-kw'] ** 2 + h['imp-msp-kvar'] ** 2) ** 0.5)
-                month_imp_kvarh += h['imp-msp-kvarh']
-                month_kwh += h['msp-kwh']
+                md_kva = max(md_kva, (h["msp-kw"] ** 2 + h["imp-msp-kvar"] ** 2) ** 0.5)
+                month_imp_kvarh += h["imp-msp-kvarh"]
+                month_kwh += h["msp-kwh"]
 
-        tariff = get_file_rates(
-            ds.caches, ds.dno_code, hh['start-date'])['tariffs'][ds.llfc_code]
+        tariff = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])["tariffs"][
+            ds.llfc_code
+        ]
         try:
-            reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
+            reactive_rate = float(tariff["reactive-gbp-per-kvarh"])
         except KeyError as e:
             raise BadRequest(str(e))
-        hh['duos-reactive-rate'] = reactive_rate
+        hh["duos-reactive-rate"] = reactive_rate
 
         if not ds.is_displaced:
-            hh['duos-availability-kva'] = ds.sc
-            hh['duos-excess-availability-kva'] = max(md_kva - ds.sc, 0)
-            for prefix in ['', 'excess-']:
-                tariff_key = prefix + 'gbp-per-kva-per-day'
+            hh["duos-availability-kva"] = ds.sc
+            hh["duos-excess-availability-kva"] = max(md_kva - ds.sc, 0)
+            for prefix in ["", "excess-"]:
+                tariff_key = prefix + "gbp-per-kva-per-day"
                 if tariff_key in tariff:
-                    rate_key = 'duos-' + prefix + 'availability-rate'
+                    rate_key = "duos-" + prefix + "availability-rate"
                     hh[rate_key] = float(tariff[tariff_key])
-                    hh['duos-' + prefix + 'availability-days'] = days_in_month
-                    hh['duos-' + prefix + 'availability-gbp'] = \
-                        hh[rate_key] * \
-                        hh['duos-' + prefix + 'availability-kva'] * \
-                        hh['duos-' + prefix + 'availability-days']
+                    hh["duos-" + prefix + "availability-days"] = days_in_month
+                    hh["duos-" + prefix + "availability-gbp"] = (
+                        hh[rate_key]
+                        * hh["duos-" + prefix + "availability-kva"]
+                        * hh["duos-" + prefix + "availability-days"]
+                    )
 
-        hh['duos-reactive-gbp'] = max(0, month_imp_kvarh - month_kwh / 2) \
-            * reactive_rate
+        hh["duos-reactive-gbp"] = (
+            max(0, month_imp_kvarh - month_kwh / 2) * reactive_rate
+        )
 
 
 def datum_beginning_20(ds, hh):
     tariff = None
-    for k, tf in get_file_rates(
-            ds.caches, ds.dno_code, hh['start-date'])['tariffs'].items():
-        if ds.llfc_code in [cd.strip() for cd in k.split(',')]:
+    for k, tf in get_file_rates(ds.caches, ds.dno_code, hh["start-date"])[
+        "tariffs"
+    ].items():
+        if ds.llfc_code in [cd.strip() for cd in k.split(",")]:
             tariff = tf
 
     if tariff is None:
         raise BadRequest(
-            "The tariff for the LLFC " + ds.llfc_code +
-            " cannot be found for the DNO 20 at " +
-            hh_format(hh['start-date']) + ".")
+            "The tariff for the LLFC "
+            + ds.llfc_code
+            + " cannot be found for the DNO 20 at "
+            + hh_format(hh["start-date"])
+            + "."
+        )
 
-    lafs = get_file_rates(
-        ds.caches, ds.dno_code,
-        hh['start-date'])['lafs'][ds.voltage_level_code.lower()]
+    lafs = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])["lafs"][
+        ds.voltage_level_code.lower()
+    ]
 
     try:
-        day_rate = float(tariff['day-gbp-per-kwh'])
+        day_rate = float(tariff["day-gbp-per-kwh"])
     except KeyError as e:
         raise BadRequest(str(e))
 
-    if 'night-gbp-per-kwh' in tariff:
-        night_rate = float(tariff['night-gbp-per-kwh'])
-        if 0 < hh['ct-decimal-hour'] <= 7:
-            hh['duos-night-kwh'] = hh['msp-kwh']
-            hh['duos-night-gbp'] = hh['msp-kwh'] * night_rate
+    if "night-gbp-per-kwh" in tariff:
+        night_rate = float(tariff["night-gbp-per-kwh"])
+        if 0 < hh["ct-decimal-hour"] <= 7:
+            hh["duos-night-kwh"] = hh["msp-kwh"]
+            hh["duos-night-gbp"] = hh["msp-kwh"] * night_rate
         else:
-            hh['duos-day-kwh'] = hh['msp-kwh']
-            hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
+            hh["duos-day-kwh"] = hh["msp-kwh"]
+            hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
     else:
-        hh['duos-day-kwh'] = hh['msp-kwh']
-        hh['duos-day-gbp'] = hh['msp-kwh'] * day_rate
+        hh["duos-day-kwh"] = hh["msp-kwh"]
+        hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
 
-    if 0 < hh['ct-decimal-hour'] <= 7:
-        slot_name = 'night'
-    elif hh['ct-day-of-week'] < 5 and \
-            16 < hh['ct-decimal-hour'] <= 19 and \
-            (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-        slot_name = 'peak'
-    elif 7 > hh['ct-day-of-week'] > 1 and (
-            7 < hh['ct-decimal-hour'] < 15 or
-            18.5 < hh['ct-decimal-hour'] < 19) and \
-            (hh['ct-month'] > 11 or hh['ct-month'] < 4):
-        slot_name = 'winter-weekday'
+    if 0 < hh["ct-decimal-hour"] <= 7:
+        slot_name = "night"
+    elif (
+        hh["ct-day-of-week"] < 5
+        and 16 < hh["ct-decimal-hour"] <= 19
+        and (hh["ct-month"] > 10 or hh["ct-month"] < 3)
+    ):
+        slot_name = "peak"
+    elif (
+        7 > hh["ct-day-of-week"] > 1
+        and (7 < hh["ct-decimal-hour"] < 15 or 18.5 < hh["ct-decimal-hour"] < 19)
+        and (hh["ct-month"] > 11 or hh["ct-month"] < 4)
+    ):
+        slot_name = "winter-weekday"
     else:
-        slot_name = 'other'
-    hh['laf'] = float(lafs[slot_name])
-    hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+        slot_name = "other"
+    hh["laf"] = float(lafs[slot_name])
+    hh["gsp-kwh"] = hh["laf"] * hh["msp-kwh"]
+    hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
-    if hh['ct-is-month-end']:
+    if hh["ct-is-month-end"]:
         tariff = None
-        for k, tf in get_file_rates(
-                ds.caches, ds.dno_code, hh['start-date'])['tariffs'].items():
-            if ds.llfc_code in map(str.strip, k.split(',')):
+        for k, tf in get_file_rates(ds.caches, ds.dno_code, hh["start-date"])[
+            "tariffs"
+        ].items():
+            if ds.llfc_code in map(str.strip, k.split(",")):
                 tariff = tf
                 break
         if tariff is None:
             raise BadRequest(
-                "The tariff for the LLFC " + ds.llfc_code +
-                " cannot be found for the DNO 20 at " +
-                hh_format(hh['start-date']) + ".")
+                "The tariff for the LLFC "
+                + ds.llfc_code
+                + " cannot be found for the DNO 20 at "
+                + hh_format(hh["start-date"])
+                + "."
+            )
         if not ds.is_displaced:
             year_md_kva_095 = year_md_095(ds, ds.finish_date)
 
-            hh['duos-excess-availability-kva'] = max(
-                year_md_kva_095 - ds.sc, 0)
+            hh["duos-excess-availability-kva"] = max(year_md_kva_095 - ds.sc, 0)
             billed_avail = max(ds.sc, year_md_kva_095)
-            hh['duos-availability-kva'] = ds.sc
+            hh["duos-availability-kva"] = ds.sc
 
             for threshold, block in [
-                    (15, 15), (100, 5), (250, 10), (500, 25), (1000, 50),
-                    (None, 100)]:
+                (15, 15),
+                (100, 5),
+                (250, 10),
+                (500, 25),
+                (1000, 50),
+                (None, 100),
+            ]:
                 if threshold is None or billed_avail < threshold:
                     if billed_avail % block > 0:
                         billed_avail = (int(billed_avail / block) + 1) * block
                     break
             try:
                 le_200_avail_rate = float(
-                    tariff['capacity-<=200-gbp-per-kva-per-month'])
+                    tariff["capacity-<=200-gbp-per-kva-per-month"]
+                )
             except KeyError as e:
                 raise BadRequest(str(e))
 
-            hh['duos-availability-gbp'] = min(200, billed_avail) * \
-                le_200_avail_rate
+            hh["duos-availability-gbp"] = min(200, billed_avail) * le_200_avail_rate
 
             if billed_avail > 200:
                 try:
                     gt_200_avail_rate = float(
-                        tariff['capacity->200-gbp-per-kva-per-month'])
+                        tariff["capacity->200-gbp-per-kva-per-month"]
+                    )
                 except KeyError as e:
                     raise BadRequest(str(e))
 
-                hh['duos-availability-gbp'] += (billed_avail - 200) * \
-                    gt_200_avail_rate
+                hh["duos-availability-gbp"] += (billed_avail - 200) * gt_200_avail_rate
 
         try:
-            if 'fixed-gbp-per-month' in tariff:
-                hh['duos-standing-gbp'] = float(tariff['fixed-gbp-per-month'])
+            if "fixed-gbp-per-month" in tariff:
+                hh["duos-standing-gbp"] = float(tariff["fixed-gbp-per-month"])
             else:
-                hh['duos-standing-gbp'] = float(
-                    tariff['fixed-gbp-per-day']) * hh['utc-day']
+                hh["duos-standing-gbp"] = (
+                    float(tariff["fixed-gbp-per-day"]) * hh["utc-day"]
+                )
         except KeyError as e:
             raise BadRequest(str(e))
 
@@ -236,23 +261,36 @@ def year_md_095_supply(ds, finish):
 
     while not month_finish > finish:
         month_start = month_finish - relativedelta(months=1) + HH
-        month_kwh_result = sess.query(
-            func.sum(HhDatum.value),
-            func.max(HhDatum.value)).join(Channel).join(Era).filter(
-            Era.supply == supply, HhDatum.start_date >= month_start,
-            HhDatum.start_date <= month_finish,
-            Channel.channel_type == 'ACTIVE',
-            Channel.imp_related == true()).one()
+        month_kwh_result = (
+            sess.query(func.sum(HhDatum.value), func.max(HhDatum.value))
+            .join(Channel)
+            .join(Era)
+            .filter(
+                Era.supply == supply,
+                HhDatum.start_date >= month_start,
+                HhDatum.start_date <= month_finish,
+                Channel.channel_type == "ACTIVE",
+                Channel.imp_related == true(),
+            )
+            .one()
+        )
 
         if month_kwh_result[0] is not None:
             month_md_kw = float(month_kwh_result[1]) * 2
             month_kwh = float(month_kwh_result[0])
-            month_kvarh = sess.query(
-                func.sum(HhDatum.value)).join(Channel).join(Era).filter(
-                Era.supply == supply, HhDatum.start_date >= month_start,
-                HhDatum.start_date <= month_finish,
-                Channel.channel_type == 'REACTIVE_IMP',
-                Channel.imp_related == true()).one()[0]
+            month_kvarh = (
+                sess.query(func.sum(HhDatum.value))
+                .join(Channel)
+                .join(Era)
+                .filter(
+                    Era.supply == supply,
+                    HhDatum.start_date >= month_start,
+                    HhDatum.start_date <= month_finish,
+                    Channel.channel_type == "REACTIVE_IMP",
+                    Channel.imp_related == true(),
+                )
+                .one()[0]
+            )
             if month_kvarh is None:
                 pf = 0.95
             else:
@@ -273,18 +311,18 @@ def year_md_095_site(data_source, finish, pw):
 
     while not month_finish > finish:
         month_start = month_finish - relativedelta(months=1) + HH
-        month_data = {'start': month_start, 'finish': month_finish}
+        month_data = {"start": month_start, "finish": month_finish}
         data_source.sum_md(month_data, pw)
-        if month_data['sum-kwh'] is None:
+        if month_data["sum-kwh"] is None:
             month_md_kw = 0
             month_kwh = 0
         else:
-            month_md_kw = month_data['md-kw']
-            month_kwh = month_data['sum-kwh']
+            month_md_kw = month_data["md-kw"]
+            month_kwh = month_data["sum-kwh"]
 
         data_source.sum_md(month_data, pw, False)
-        if month_data['sum-kvarh'] is not None:
-            month_kvarh = month_data['sum-kvarh']
+        if month_data["sum-kvarh"] is not None:
+            month_kvarh = month_data["sum-kvarh"]
 
         if month_kvarh == 0:
             month_kva = month_md_kw / 0.95
@@ -296,84 +334,84 @@ def year_md_095_site(data_source, finish, pw):
             month_kva = month_md_kw / pf
         md_kva = max(md_kva, month_kva)
         month_finish += relativedelta(months=1)
-    return md_kva, ''
+    return md_kva, ""
 
 
 def datum_beginning_14(ds, hh):
-    rates = get_file_rates(ds.caches, ds.dno_code, hh['start-date'])
+    rates = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])
     try:
-        tariff = rates['tariffs'][ds.llfc_code]
+        tariff = rates["tariffs"][ds.llfc_code]
     except KeyError as e:
         raise BadRequest(str(e))
 
-    if 0 < hh['ct-decimal-hour'] <= 7:
-        hh['duos-night-kwh'] = hh['msp-kwh']
-        hh['duos-night-gbp'] = hh['msp-kwh'] * float(
-            tariff['night-gbp-per-kwh'])
+    if 0 < hh["ct-decimal-hour"] <= 7:
+        hh["duos-night-kwh"] = hh["msp-kwh"]
+        hh["duos-night-gbp"] = hh["msp-kwh"] * float(tariff["night-gbp-per-kwh"])
     else:
-        hh['duos-day-kwh'] = hh['msp-kwh']
-        hh['duos-day-gbp'] = hh['msp-kwh'] * float(tariff['day-gbp-per-kwh'])
+        hh["duos-day-kwh"] = hh["msp-kwh"]
+        hh["duos-day-gbp"] = hh["msp-kwh"] * float(tariff["day-gbp-per-kwh"])
 
-    if 0 < hh['ct-decimal-hour'] <= 7:
-        slot = 'night'
-    elif hh['ct-day-of-week'] < 5 and hh['ct-decimal-hour'] > 15.5 and \
-            hh['ct-decimal-hour'] < 19 and (
-                hh['ct-month'] > 11 or hh['ct-month'] < 4):
-        slot = 'winter-weekday-peak'
-    elif hh['ct-day-of-week'] < 5 and (
-            7 <= hh['ct-decimal-hour'] < 16 or
-            18 < hh['ct-decimal-hour'] < 20) and \
-            (hh['ct-month'] > 11 or hh['ct-month'] < 4):
-        slot = 'winter-weekday-day'
+    if 0 < hh["ct-decimal-hour"] <= 7:
+        slot = "night"
+    elif (
+        hh["ct-day-of-week"] < 5
+        and hh["ct-decimal-hour"] > 15.5
+        and hh["ct-decimal-hour"] < 19
+        and (hh["ct-month"] > 11 or hh["ct-month"] < 4)
+    ):
+        slot = "winter-weekday-peak"
+    elif (
+        hh["ct-day-of-week"] < 5
+        and (7 <= hh["ct-decimal-hour"] < 16 or 18 < hh["ct-decimal-hour"] < 20)
+        and (hh["ct-month"] > 11 or hh["ct-month"] < 4)
+    ):
+        slot = "winter-weekday-day"
     else:
-        slot = 'other'
+        slot = "other"
 
-    hh['laf'] = float(rates['lafs'][ds.voltage_level_code.lower()][slot])
-    hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+    hh["laf"] = float(rates["lafs"][ds.voltage_level_code.lower()][slot])
+    hh["gsp-kwh"] = hh["msp-kwh"] * hh["laf"]
+    hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
-    if hh['utc-decimal-hour'] == 0:
-        hh['duos-standing-gbp'] = float(tariff['fixed-gbp-per-day'])
+    if hh["utc-decimal-hour"] == 0:
+        hh["duos-standing-gbp"] = float(tariff["fixed-gbp-per-day"])
 
-    if hh['ct-is-month-end']:
-        month_to = hh['start-date']
+    if hh["ct-is-month-end"]:
+        month_to = hh["start-date"]
         month_from = month_to - relativedelta(months=1) + HH
         availability = ds.sc
-        reactive_rate = float(tariff['reactive-gbp-per-kvarh'])
-        hh['duos-reactive-rate'] = reactive_rate
+        reactive_rate = float(tariff["reactive-gbp-per-kvarh"])
+        hh["duos-reactive-rate"] = reactive_rate
         imp_msp_kvarh = 0
         msp_kwh = 0
         md_kva = 0
         for dsc in ds.get_data_sources(month_from, month_to):
             for h in dsc.hh_data:
-                imp_msp_kvarh += h['imp-msp-kvarh']
-                msp_kwh += h['msp-kwh']
+                imp_msp_kvarh += h["imp-msp-kvarh"]
+                msp_kwh += h["msp-kwh"]
                 md_kva = max(
-                    md_kva, (
-                        h['msp-kw'] ** 2 + (
-                            h['imp-msp-kvar'] + h['exp-msp-kvar']) ** 2) **
-                    0.5)
-        hh['duos-reactive-gbp'] = max(
-            0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate
+                    md_kva,
+                    (h["msp-kw"] ** 2 + (h["imp-msp-kvar"] + h["exp-msp-kvar"]) ** 2)
+                    ** 0.5,
+                )
+        hh["duos-reactive-gbp"] = max(0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate
         if not ds.is_displaced:
-            availability_rate = float(
-                tariff['availability-gbp-per-kva-per-day'])
-            hh['duos-availability-rate'] = availability_rate
+            availability_rate = float(tariff["availability-gbp-per-kva-per-day"])
+            hh["duos-availability-rate"] = availability_rate
             billed_avail = max(availability, md_kva)
-            hh['duos-availability-gbp'] = availability_rate * billed_avail
-            hh['duos-availability-agreed-kva'] = ds.sc
-            hh['duos-availability-billed-kva'] = billed_avail
+            hh["duos-availability-gbp"] = availability_rate * billed_avail
+            hh["duos-availability-agreed-kva"] = ds.sc
+            hh["duos-availability-billed-kva"] = billed_avail
 
 
 def datum_2010_04_01(ds, hh):
-    start_date = hh['start-date']
-    dno_cache = ds.caches['dno'][ds.dno_code]
+    start_date = hh["start-date"]
+    dno_cache = ds.caches["dno"][ds.dno_code]
 
-    if not ds.full_channels and not (
-            hh['msp-kwh'] > 0 and hh['anti-msp-kwh'] == 0):
+    if not ds.full_channels and not (hh["msp-kwh"] > 0 and hh["anti-msp-kwh"] == 0):
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
-        imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
+        imp_msp_kvarh, exp_msp_kvarh = hh["imp-msp-kvarh"], hh["exp-msp-kvarh"]
 
     try:
         gsp_group_cache = dno_cache[ds.gsp_group_code]
@@ -381,12 +419,12 @@ def datum_2010_04_01(ds, hh):
         gsp_group_cache = dno_cache[ds.gsp_group_code] = {}
 
     try:
-        tariff = gsp_group_cache['tariffs'][ds.llfc_code][start_date]
+        tariff = gsp_group_cache["tariffs"][ds.llfc_code][start_date]
     except KeyError:
         try:
-            tariff_cache = gsp_group_cache['tariffs']
+            tariff_cache = gsp_group_cache["tariffs"]
         except KeyError:
-            tariff_cache = gsp_group_cache['tariffs'] = {}
+            tariff_cache = gsp_group_cache["tariffs"] = {}
 
         try:
             tariffs = tariff_cache[ds.llfc_code]
@@ -398,71 +436,75 @@ def datum_2010_04_01(ds, hh):
         except KeyError:
             tariff = None
             try:
-                tariff_list = get_file_rates(
-                    ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['tariffs']
+                tariff_list = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                    ds.gsp_group_code
+                ]["tariffs"]
             except KeyError as e:
                 raise BadRequest(str(e))
 
             for llfcs_pcs, tf in tariff_list.items():
-                key = llfcs_pcs.split('_')
-                llfcs = [v.strip() for v in key[0].split(',')]
+                key = llfcs_pcs.split("_")
+                llfcs = [v.strip() for v in key[0].split(",")]
                 if len(key) == 2:
-                    pcs = [v.strip() for v in key[1].split(',')]
+                    pcs = [v.strip() for v in key[1].split(",")]
                 else:
                     pcs = None
 
-                if ds.llfc_code in llfcs and (
-                        pcs is None or ds.pc_code in pcs):
+                if ds.llfc_code in llfcs and (pcs is None or ds.pc_code in pcs):
                     tariff = tf
                     break
 
             if tariff is None:
                 raise BadRequest(
-                    "For the DNO " + ds.dno_code + " and timestamp " +
-                    hh_format(start_date) + " and GSP group " +
-                    ds.gsp_group_code + ", the LLFC '" + ds.llfc_code +
-                    "' can't be found in the 'tariffs' section.")
+                    "For the DNO "
+                    + ds.dno_code
+                    + " and timestamp "
+                    + hh_format(start_date)
+                    + " and GSP group "
+                    + ds.gsp_group_code
+                    + ", the LLFC '"
+                    + ds.llfc_code
+                    + "' can't be found in the 'tariffs' section."
+                )
 
             tariffs[start_date] = tariff
 
     try:
-        band = gsp_group_cache['bands'][start_date]
+        band = gsp_group_cache["bands"][start_date]
     except KeyError:
         try:
-            bands_cache = gsp_group_cache['bands']
+            bands_cache = gsp_group_cache["bands"]
         except KeyError:
-            bands_cache = gsp_group_cache['bands'] = {}
+            bands_cache = gsp_group_cache["bands"] = {}
 
         try:
             band = bands_cache[start_date]
         except KeyError:
-            band = 'green'
-            ct_hr = hh['ct-decimal-hour']
-            weekend = hh['ct-day-of-week'] > 4
+            band = "green"
+            ct_hr = hh["ct-decimal-hour"]
+            weekend = hh["ct-day-of-week"] > 4
             try:
-                slots = get_file_rates(
-                    ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['bands']
+                slots = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                    ds.gsp_group_code
+                ]["bands"]
             except KeyError as e:
                 raise BadRequest(str(e))
 
             for slot in slots:
-                slot_weekend = slot['weekend'] == 1
-                if slot_weekend == weekend and \
-                        slot['start'] <= ct_hr < slot['finish']:
-                    band = slot['band']
+                slot_weekend = slot["weekend"] == 1
+                if slot_weekend == weekend and slot["start"] <= ct_hr < slot["finish"]:
+                    band = slot["band"]
                     break
 
             bands_cache[start_date] = band
 
     try:
-        laf = dno_cache['lafs'][ds.llfc_code][start_date]
+        laf = dno_cache["lafs"][ds.llfc_code][start_date]
     except KeyError:
         try:
-            laf_cache = dno_cache['lafs']
+            laf_cache = dno_cache["lafs"]
         except KeyError:
-            laf_cache = dno_cache['lafs'] = {}
+            laf_cache = dno_cache["lafs"] = {}
 
         try:
             laf_cache_llfc = laf_cache[ds.llfc_code]
@@ -472,12 +514,12 @@ def datum_2010_04_01(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            rs = get_file_rates(ds.caches, 'lafs_' + ds.dno_code, start_date)
-            hist_date = rs['hist_dates'][start_date]
+            rs = get_file_rates(ds.caches, "lafs_" + ds.dno_code, start_date)
+            hist_date = rs["hist_dates"][start_date]
             try:
-                hist_map_llfcs = rs._storage['hist_map']
+                hist_map_llfcs = rs._storage["hist_map"]
             except KeyError:
-                hist_map_llfcs = rs._storage['hist_map'] = {}
+                hist_map_llfcs = rs._storage["hist_map"] = {}
 
             try:
                 hist_map = hist_map_llfcs[ds.llfc_code]
@@ -488,101 +530,99 @@ def datum_2010_04_01(ds, hh):
                 laf = hist_map[hist_date]
             except KeyError:
                 try:
-                    tp_id = rs['llfc_tp'][ds.llfc_code]
+                    tp_id = rs["llfc_tp"][ds.llfc_code]
                 except KeyError as e:
                     raise BadRequest(str(e))
 
-                for chunk in rs['tps'][tp_id].values():
-                    chunk_start_raw = Datetime.strptime(
-                        chunk['start_date'], "%Y%m%d")
-                    chunk_finish_raw = Datetime.strptime(
-                        chunk['finish_date'], "%Y%m%d")
+                for chunk in rs["tps"][tp_id].values():
+                    chunk_start_raw = Datetime.strptime(chunk["start_date"], "%Y%m%d")
+                    chunk_finish_raw = Datetime.strptime(chunk["finish_date"], "%Y%m%d")
                     day_start_raw = chunk_start_raw
                     while day_start_raw <= chunk_finish_raw:
                         day_start_ct = to_ct(day_start_raw)
                         day_start = to_utc(day_start_ct)
-                        for slot in chunk['slots']:
-                            for i in range(
-                                    slot['slot_start'] - 1,
-                                    slot['slot_finish']):
-                                dt = day_start + Timedelta(minutes=30*i)
-                                hist_map[dt] = float(slot['laf'])
+                        for slot in chunk["slots"]:
+                            for i in range(slot["slot_start"] - 1, slot["slot_finish"]):
+                                dt = day_start + Timedelta(minutes=30 * i)
+                                hist_map[dt] = float(slot["laf"])
 
                         day_start_raw += Timedelta(days=1)
 
                 laf = hist_map[hist_date]
             laf_cache_llfc[start_date] = laf
 
-    hh['laf'] = laf
-    hh['gsp-kwh'] = laf * hh['msp-kwh']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+    hh["laf"] = laf
+    hh["gsp-kwh"] = laf * hh["msp-kwh"]
+    hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     kvarh = max(
-        max(imp_msp_kvarh, exp_msp_kvarh) -
-        (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
+        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95 ** -2 - 1) ** 0.5 * hh["msp-kwh"], 0
+    )
 
-    hh['duos-reactive-kvarh'] = kvarh
+    hh["duos-reactive-kvarh"] = kvarh
 
-    duos_reactive_rate = tariff['gbp-per-kvarh']
+    duos_reactive_rate = tariff["gbp-per-kvarh"]
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
-            hh['duos-reactive-rate'] = duos_reactive_rate
-            hh['duos-reactive-gbp'] = kvarh * duos_reactive_rate
+            hh["duos-reactive-rate"] = duos_reactive_rate
+            hh["duos-reactive-gbp"] = kvarh * duos_reactive_rate
 
-    rate = float(tariff[KEYS[band]['tariff-rate']])
-    hh[KEYS[band]['bill-rate']] = rate
-    hh[KEYS[band]['kwh']] = hh['msp-kwh']
-    hh[KEYS[band]['gbp']] = rate * hh['msp-kwh']
+    rate = float(tariff[KEYS[band]["tariff-rate"]])
+    hh[KEYS[band]["bill-rate"]] = rate
+    hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
+    hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
 
-    if hh['ct-decimal-hour'] == 23.5 and not ds.is_displaced:
-        hh['duos-fixed-days'] = 1
-        rate = float(tariff['gbp-per-mpan-per-day'])
-        hh['duos-fixed-rate'] = rate
-        hh['duos-fixed-gbp'] = rate
+    if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
+        hh["duos-fixed-days"] = 1
+        rate = float(tariff["gbp-per-mpan-per-day"])
+        hh["duos-fixed-rate"] = rate
+        hh["duos-fixed-gbp"] = rate
 
-        hh['duos-availability-days'] = 1
+        hh["duos-availability-days"] = 1
         kva = ds.sc
-        hh['duos-availability-kva'] = kva
-        rate = float(tariff['gbp-per-kva-per-day'])
-        hh['duos-availability-rate'] = rate
-        hh['duos-availability-gbp'] = rate * kva
+        hh["duos-availability-kva"] = kva
+        rate = float(tariff["gbp-per-kva-per-day"])
+        hh["duos-availability-rate"] = rate
+        hh["duos-availability-gbp"] = rate * kva
 
-    if hh['ct-is-month-end'] and not ds.is_displaced:
+    if hh["ct-is-month-end"] and not ds.is_displaced:
         month_to = start_date
-        month_from = to_utc(ct_datetime(hh['ct-year'], hh['ct-month'], 1))
+        month_from = to_utc(ct_datetime(hh["ct-year"], hh["ct-month"], 1))
         md_kva = 0
         days_in_month = 0
         for dsc in ds.get_data_sources(month_from, month_to):
             for datum in dsc.hh_data:
                 md_kva = max(
-                    md_kva, (
-                        datum['msp-kw'] ** 2 + max(
-                            datum['imp-msp-kvar'], datum['exp-msp-kvar']) **
-                        2) ** 0.5)
-                if datum['ct-decimal-hour'] == 0:
+                    md_kva,
+                    (
+                        datum["msp-kw"] ** 2
+                        + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
+                    )
+                    ** 0.5,
+                )
+                if datum["ct-decimal-hour"] == 0:
                     days_in_month += 1
 
         excess_kva = max(md_kva - ds.sc, 0)
 
-        if 'excess-gbp-per-kva-per-day' in tariff and excess_kva != 0:
-            rate = float(tariff['excess-gbp-per-kva-per-day'])
-            hh['duos-excess-availability-kva'] = excess_kva
-            rate = float(tariff['excess-gbp-per-kva-per-day'])
-            hh['duos-excess-availability-rate'] = rate
-            hh['duos-excess-availability-days'] = days_in_month
-            hh['duos-excess-availability-gbp'] = rate * excess_kva * \
-                days_in_month
+        if "excess-gbp-per-kva-per-day" in tariff and excess_kva != 0:
+            rate = float(tariff["excess-gbp-per-kva-per-day"])
+            hh["duos-excess-availability-kva"] = excess_kva
+            rate = float(tariff["excess-gbp-per-kva-per-day"])
+            hh["duos-excess-availability-rate"] = rate
+            hh["duos-excess-availability-days"] = days_in_month
+            hh["duos-excess-availability-gbp"] = rate * excess_kva * days_in_month
 
 
 def datum_2012_02_23(ds, hh):
-    start_date = hh['start-date']
-    dno_cache = ds.caches['dno'][ds.dno_code]
+    start_date = hh["start-date"]
+    dno_cache = ds.caches["dno"][ds.dno_code]
 
-    if not ds.full_channels and hh['msp-kwh'] == 0:
+    if not ds.full_channels and hh["msp-kwh"] == 0:
         imp_msp_kvarh, exp_msp_kvarh = 0, 0
     else:
-        imp_msp_kvarh, exp_msp_kvarh = hh['imp-msp-kvarh'], hh['exp-msp-kvarh']
+        imp_msp_kvarh, exp_msp_kvarh = hh["imp-msp-kvarh"], hh["exp-msp-kvarh"]
 
     try:
         gsp_group_cache = dno_cache[ds.gsp_group_code]
@@ -590,13 +630,12 @@ def datum_2012_02_23(ds, hh):
         gsp_group_cache = dno_cache[ds.gsp_group_code] = {}
 
     try:
-        tariff = gsp_group_cache['tariffs'][ds.pc_code][ds.llfc_code][
-            start_date]
+        tariff = gsp_group_cache["tariffs"][ds.pc_code][ds.llfc_code][start_date]
     except KeyError:
         try:
-            tariffs_cache = gsp_group_cache['tariffs']
+            tariffs_cache = gsp_group_cache["tariffs"]
         except KeyError:
-            tariffs_cache = gsp_group_cache['tariffs'] = {}
+            tariffs_cache = gsp_group_cache["tariffs"] = {}
 
         try:
             pc_cache = tariffs_cache[ds.pc_code]
@@ -613,72 +652,77 @@ def datum_2012_02_23(ds, hh):
         except KeyError:
             tariff = None
             try:
-                tariff_list = get_file_rates(
-                    ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['tariffs']
+                tariff_list = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                    ds.gsp_group_code
+                ]["tariffs"]
             except KeyError as e:
                 raise BadRequest(str(e))
 
             for llfcs_pcs, tf in tariff_list.items():
-                key = llfcs_pcs.split('_')
-                llfcs = [v.strip() for v in key[0].split(',')]
+                key = llfcs_pcs.split("_")
+                llfcs = [v.strip() for v in key[0].split(",")]
                 if len(key) == 2:
-                    pcs = [v.strip() for v in key[1].split(',')]
+                    pcs = [v.strip() for v in key[1].split(",")]
                 else:
                     pcs = None
 
-                if ds.llfc_code in llfcs and (
-                        pcs is None or ds.pc_code in pcs):
+                if ds.llfc_code in llfcs and (pcs is None or ds.pc_code in pcs):
                     tariff = tf
                     break
 
             if tariff is None:
                 raise BadRequest(
-                    "For the DNO " + ds.dno_code + " and timestamp " +
-                    hh_format(start_date) + " and GSP group " +
-                    ds.gsp_group_code + ", the LLFC '" + ds.llfc_code +
-                    " with PC " + ds.pc_code +
-                    "' can't be found in the 'tariffs' section.")
+                    "For the DNO "
+                    + ds.dno_code
+                    + " and timestamp "
+                    + hh_format(start_date)
+                    + " and GSP group "
+                    + ds.gsp_group_code
+                    + ", the LLFC '"
+                    + ds.llfc_code
+                    + " with PC "
+                    + ds.pc_code
+                    + "' can't be found in the 'tariffs' section."
+                )
 
             tariffs[start_date] = tariff
 
     try:
-        band = gsp_group_cache['bands'][start_date]
+        band = gsp_group_cache["bands"][start_date]
     except KeyError:
         try:
-            bands_cache = gsp_group_cache['bands']
+            bands_cache = gsp_group_cache["bands"]
         except KeyError:
-            bands_cache = gsp_group_cache['bands'] = {}
+            bands_cache = gsp_group_cache["bands"] = {}
 
         try:
             band = bands_cache[start_date]
         except KeyError:
-            band = 'green'
-            ct_hr = hh['ct-decimal-hour']
-            weekend = hh['ct-day-of-week'] > 4
+            band = "green"
+            ct_hr = hh["ct-decimal-hour"]
+            weekend = hh["ct-day-of-week"] > 4
             try:
-                slots = get_file_rates(
-                    ds.caches, ds.dno_code,
-                    start_date)[ds.gsp_group_code]['bands']
+                slots = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                    ds.gsp_group_code
+                ]["bands"]
             except KeyError as e:
                 raise BadRequest(str(e))
 
             for slot in slots:
-                slot_weekend = slot['weekend'] == 1
-                if slot_weekend == weekend and \
-                        slot['start'] <= ct_hr < slot['finish']:
-                    band = slot['band']
+                slot_weekend = slot["weekend"] == 1
+                if slot_weekend == weekend and slot["start"] <= ct_hr < slot["finish"]:
+                    band = slot["band"]
                     break
 
             bands_cache[start_date] = band
 
     try:
-        laf = dno_cache['lafs'][ds.llfc_code][start_date]
+        laf = dno_cache["lafs"][ds.llfc_code][start_date]
     except KeyError:
         try:
-            laf_cache = dno_cache['lafs']
+            laf_cache = dno_cache["lafs"]
         except KeyError:
-            laf_cache = dno_cache['lafs'] = {}
+            laf_cache = dno_cache["lafs"] = {}
 
         try:
             laf_cache_llfc = laf_cache[ds.llfc_code]
@@ -688,12 +732,12 @@ def datum_2012_02_23(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            rs = get_file_rates(ds.caches, 'lafs_' + ds.dno_code, start_date)
-            hist_date = rs['hist_dates'][start_date]
+            rs = get_file_rates(ds.caches, "lafs_" + ds.dno_code, start_date)
+            hist_date = rs["hist_dates"][start_date]
             try:
-                hist_map_llfcs = rs._storage['hist_map']
+                hist_map_llfcs = rs._storage["hist_map"]
             except KeyError:
-                hist_map_llfcs = rs._storage['hist_map'] = {}
+                hist_map_llfcs = rs._storage["hist_map"] = {}
 
             try:
                 hist_map = hist_map_llfcs[ds.llfc_code]
@@ -704,91 +748,89 @@ def datum_2012_02_23(ds, hh):
                 laf = hist_map[hist_date]
             except KeyError:
                 try:
-                    tp_id = rs['llfc_tp'][ds.llfc_code]
+                    tp_id = rs["llfc_tp"][ds.llfc_code]
                 except KeyError as e:
                     raise BadRequest(str(e))
 
-                for chunk in rs['tps'][tp_id].values():
-                    chunk_start_raw = Datetime.strptime(
-                        chunk['start_date'], "%Y%m%d")
-                    chunk_finish_raw = Datetime.strptime(
-                        chunk['finish_date'], "%Y%m%d")
+                for chunk in rs["tps"][tp_id].values():
+                    chunk_start_raw = Datetime.strptime(chunk["start_date"], "%Y%m%d")
+                    chunk_finish_raw = Datetime.strptime(chunk["finish_date"], "%Y%m%d")
                     day_start_raw = chunk_start_raw
                     while day_start_raw <= chunk_finish_raw:
                         day_start_ct = to_ct(day_start_raw)
                         day_start = to_utc(day_start_ct)
-                        for slot in chunk['slots']:
-                            for i in range(
-                                    slot['slot_start'] - 1,
-                                    slot['slot_finish']):
-                                dt = day_start + Timedelta(minutes=30*i)
-                                hist_map[dt] = float(slot['laf'])
+                        for slot in chunk["slots"]:
+                            for i in range(slot["slot_start"] - 1, slot["slot_finish"]):
+                                dt = day_start + Timedelta(minutes=30 * i)
+                                hist_map[dt] = float(slot["laf"])
 
                         day_start_raw += Timedelta(days=1)
 
                 laf = hist_map[hist_date]
             laf_cache_llfc[start_date] = laf
 
-    hh['laf'] = laf
-    hh['gsp-kwh'] = laf * hh['msp-kwh']
-    hh['gsp-kw'] = hh['gsp-kwh'] * 2
+    hh["laf"] = laf
+    hh["gsp-kwh"] = laf * hh["msp-kwh"]
+    hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     kvarh = max(
-        max(imp_msp_kvarh, exp_msp_kvarh) -
-        (0.95 ** -2 - 1) ** 0.5 * hh['msp-kwh'], 0)
+        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95 ** -2 - 1) ** 0.5 * hh["msp-kwh"], 0
+    )
 
-    hh['duos-reactive-kvarh'] = kvarh
+    hh["duos-reactive-kvarh"] = kvarh
 
-    duos_reactive_rate = tariff['gbp-per-kvarh']
+    duos_reactive_rate = tariff["gbp-per-kvarh"]
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
-            hh['duos-reactive-rate'] = duos_reactive_rate
-            hh['duos-reactive-gbp'] = kvarh * duos_reactive_rate
+            hh["duos-reactive-rate"] = duos_reactive_rate
+            hh["duos-reactive-gbp"] = kvarh * duos_reactive_rate
 
-    rate = float(tariff[KEYS[band]['tariff-rate']])
-    hh[KEYS[band]['bill-rate']] = rate
-    hh[KEYS[band]['kwh']] = hh['msp-kwh']
-    hh[KEYS[band]['gbp']] = rate * hh['msp-kwh']
+    rate = float(tariff[KEYS[band]["tariff-rate"]])
+    hh[KEYS[band]["bill-rate"]] = rate
+    hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
+    hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
 
-    if hh['ct-decimal-hour'] == 23.5 and not ds.is_displaced:
-        hh['duos-fixed-days'] = 1
-        rate = float(tariff['gbp-per-mpan-per-day'])
-        hh['duos-fixed-rate'] = rate
-        hh['duos-fixed-gbp'] = rate
+    if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
+        hh["duos-fixed-days"] = 1
+        rate = float(tariff["gbp-per-mpan-per-day"])
+        hh["duos-fixed-rate"] = rate
+        hh["duos-fixed-gbp"] = rate
 
-        hh['duos-availability-days'] = 1
+        hh["duos-availability-days"] = 1
         kva = ds.sc
-        hh['duos-availability-kva'] = kva
-        rate = float(tariff['gbp-per-kva-per-day'])
-        hh['duos-availability-rate'] = rate
-        hh['duos-availability-gbp'] = rate * kva
+        hh["duos-availability-kva"] = kva
+        rate = float(tariff["gbp-per-kva-per-day"])
+        hh["duos-availability-rate"] = rate
+        hh["duos-availability-gbp"] = rate * kva
 
-    if hh['ct-is-month-end'] and not ds.is_displaced:
+    if hh["ct-is-month-end"] and not ds.is_displaced:
         month_to = start_date
-        month_from = to_utc(ct_datetime(hh['ct-year'], hh['ct-month'], 1))
+        month_from = to_utc(ct_datetime(hh["ct-year"], hh["ct-month"], 1))
         md_kva = 0
         days_in_month = 0
         for dsc in ds.get_data_sources(month_from, month_to):
             for datum in dsc.hh_data:
                 md_kva = max(
-                    md_kva, (
-                        datum['msp-kw'] ** 2 + max(
-                            datum['imp-msp-kvar'], datum['exp-msp-kvar']) **
-                        2) ** 0.5)
-                if datum['ct-decimal-hour'] == 0:
+                    md_kva,
+                    (
+                        datum["msp-kw"] ** 2
+                        + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
+                    )
+                    ** 0.5,
+                )
+                if datum["ct-decimal-hour"] == 0:
                     days_in_month += 1
 
         excess_kva = max(md_kva - ds.sc, 0)
 
-        if 'excess-gbp-per-kva-per-day' in tariff and excess_kva != 0:
-            rate = float(tariff['excess-gbp-per-kva-per-day'])
-            hh['duos-excess-availability-kva'] = excess_kva
-            rate = float(tariff['excess-gbp-per-kva-per-day'])
-            hh['duos-excess-availability-rate'] = rate
-            hh['duos-excess-availability-days'] = days_in_month
-            hh['duos-excess-availability-gbp'] = rate * excess_kva * \
-                days_in_month
+        if "excess-gbp-per-kva-per-day" in tariff and excess_kva != 0:
+            rate = float(tariff["excess-gbp-per-kva-per-day"])
+            hh["duos-excess-availability-kva"] = excess_kva
+            rate = float(tariff["excess-gbp-per-kva-per-day"])
+            hh["duos-excess-availability-rate"] = rate
+            hh["duos-excess-availability-days"] = days_in_month
+            hh["duos-excess-availability-gbp"] = rate * excess_kva * days_in_month
 
 
 CUTOFF_DATE_1 = utc_datetime(2010, 3, 31, 23, 0)
@@ -797,12 +839,12 @@ CUTOFF_DATE_2 = utc_datetime(2012, 2, 23, 0, 0)
 
 def duos_vb(ds):
     try:
-        data_func_cache = ds.caches['dno'][ds.dno_code]['data_funcs']
+        data_func_cache = ds.caches["dno"][ds.dno_code]["data_funcs"]
     except KeyError:
         try:
-            dno_caches = ds.caches['dno']
+            dno_caches = ds.caches["dno"]
         except KeyError:
-            dno_caches = ds.caches['dno'] = {}
+            dno_caches = ds.caches["dno"] = {}
 
         try:
             dno_cache = dno_caches[ds.dno_code]
@@ -810,27 +852,27 @@ def duos_vb(ds):
             dno_cache = dno_caches[ds.dno_code] = {}
 
         try:
-            data_func_cache = dno_cache['data_funcs']
+            data_func_cache = dno_cache["data_funcs"]
         except KeyError:
-            data_func_cache = dno_cache['data_funcs'] = {}
+            data_func_cache = dno_cache["data_funcs"] = {}
 
     for hh in ds.hh_data:
         try:
-            data_func_cache[hh['start-date']](ds, hh)
+            data_func_cache[hh["start-date"]](ds, hh)
         except KeyError:
-            if hh['start-date'] < CUTOFF_DATE_1:
-                if ds.dno_code == '14':
+            if hh["start-date"] < CUTOFF_DATE_1:
+                if ds.dno_code == "14":
                     data_func = datum_beginning_14
-                elif ds.dno_code == '20':
+                elif ds.dno_code == "20":
                     data_func = datum_beginning_20
-                elif ds.dno_code in ('22', '99'):
+                elif ds.dno_code in ("22", "99"):
                     data_func = datum_beginning_22
                 else:
-                    raise Exception('Not recognized')
-            elif hh['start-date'] < CUTOFF_DATE_2:
+                    raise Exception("Not recognized")
+            elif hh["start-date"] < CUTOFF_DATE_2:
                 data_func = datum_2010_04_01
             else:
                 data_func = datum_2012_02_23
 
-            data_func_cache[hh['start-date']] = data_func
+            data_func_cache[hh["start-date"]] = data_func
             data_func(ds, hh)

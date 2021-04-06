@@ -27,40 +27,54 @@ def content(g_supply_id, start_date, finish_date, user):
 
         prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(
-            'g_supply_virtual_bills_hh_' + str(g_supply_id) + '.csv', user)
-        f = open(running_name, mode='w', newline='')
-        w = csv.writer(f, lineterminator='\n')
+            "g_supply_virtual_bills_hh_" + str(g_supply_id) + ".csv", user
+        )
+        f = open(running_name, mode="w", newline="")
+        w = csv.writer(f, lineterminator="\n")
 
         for hh_start in hh_range(caches, start_date, finish_date):
-            g_era = sess.query(GEra).filter(
-                GEra.g_supply == g_supply, GEra.start_date <= hh_start, or_(
-                    GEra.finish_date == null(),
-                    GEra.finish_date >= hh_start)).one()
+            g_era = (
+                sess.query(GEra)
+                .filter(
+                    GEra.g_supply == g_supply,
+                    GEra.start_date <= hh_start,
+                    or_(GEra.finish_date == null(), GEra.finish_date >= hh_start),
+                )
+                .one()
+            )
 
-            site = sess.query(Site).join(SiteGEra).filter(
-                SiteGEra.g_era == g_era, SiteGEra.is_physical == true()).one()
+            site = (
+                sess.query(Site)
+                .join(SiteGEra)
+                .filter(SiteGEra.g_era == g_era, SiteGEra.is_physical == true())
+                .one()
+            )
 
             ds = GDataSource(
-                sess, hh_start, hh_start, forecast_date, g_era, caches, None)
+                sess, hh_start, hh_start, forecast_date, g_era, caches, None
+            )
 
-            titles = [
-                'MPRN', 'Site Code', 'Site Name', 'Account', 'HH Start', '']
+            titles = ["MPRN", "Site Code", "Site Name", "Account", "HH Start", ""]
 
             output_line = [
-                ds.mprn, site.code, site.name, ds.account,
-                hh_format(ds.start_date), '']
+                ds.mprn,
+                site.code,
+                site.name,
+                ds.account,
+                hh_format(ds.start_date),
+                "",
+            ]
 
             contract = g_era.g_contract
-            output_line.append('')
-            contract_titles = contract_func(
-                caches, contract, 'virtual_bill_titles')()
-            titles.append('')
+            output_line.append("")
+            contract_titles = contract_func(caches, contract, "virtual_bill_titles")()
+            titles.append("")
             titles.extend(contract_titles)
 
-            contract_func(caches, contract, 'virtual_bill')(ds)
+            contract_func(caches, contract, "virtual_bill")(ds)
             bill = ds.bill
             for title in contract_titles:
-                output_line.append(csv_make_val(bill.get(title, '')))
+                output_line.append(csv_make_val(bill.get(title, "")))
                 if title in bill:
                     del bill[title]
 
@@ -84,9 +98,9 @@ def content(g_supply_id, start_date, finish_date, user):
 
 
 def do_get(sess):
-    g_supply_id = req_int('g_supply_id')
-    start_date = req_date('start')
-    finish_date = req_date('finish')
+    g_supply_id = req_int("g_supply_id")
+    start_date = req_date("start")
+    finish_date = req_date("finish")
 
     args = g_supply_id, start_date, finish_date, g.user
     threading.Thread(target=content, args=args).start()

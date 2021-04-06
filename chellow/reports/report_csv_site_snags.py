@@ -22,22 +22,32 @@ def content(user):
     sess = f = writer = None
     try:
         sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(
-            'site_snags.csv', user)
-        f = open(running_name, mode='w', newline='')
-        writer = csv.writer(f, lineterminator='\n')
+        running_name, finished_name = chellow.dloads.make_names("site_snags.csv", user)
+        f = open(running_name, mode="w", newline="")
+        writer = csv.writer(f, lineterminator="\n")
         writer.writerow(
             (
-                'Chellow Id', 'Site Code', 'Site Name', 'Snag Description',
-                'Start Date', 'Finish Date', 'Days Since Snag Finished',
-                'Duration Of Snag (Days)', 'Is Ignored?'))
+                "Chellow Id",
+                "Site Code",
+                "Site Name",
+                "Snag Description",
+                "Start Date",
+                "Finish Date",
+                "Days Since Snag Finished",
+                "Duration Of Snag (Days)",
+                "Is Ignored?",
+            )
+        )
 
         now = Datetime.now(pytz.utc)
 
-        for snag in sess.query(Snag).join(Site).filter(
-                Snag.site != null()).order_by(
-                Site.code, Snag.description, Snag.start_date,
-                Snag.id).options(joinedload(Snag.site)):
+        for snag in (
+            sess.query(Snag)
+            .join(Site)
+            .filter(Snag.site != null())
+            .order_by(Site.code, Snag.description, Snag.start_date, Snag.id)
+            .options(joinedload(Snag.site))
+        ):
             snag_start = snag.start_date
             snag_finish = snag.finish_date
             if snag_finish is None:
@@ -49,12 +59,17 @@ def content(user):
 
             writer.writerow(
                 (
-                    str(snag.id), snag.site.code, snag.site.name,
-                    snag.description, hh_format(snag_start),
+                    str(snag.id),
+                    snag.site.code,
+                    snag.site.name,
+                    snag.description,
+                    hh_format(snag_start),
                     hh_format(snag_finish),
                     str(age_of_snag.days + age_of_snag.seconds / (3600 * 24)),
                     str(duration.days + duration.seconds / (3600 * 24)),
-                    str(snag.is_ignored)))
+                    str(snag.is_ignored),
+                )
+            )
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

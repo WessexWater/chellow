@@ -271,6 +271,22 @@
 
 								<div class="row">
 									<div class="col-sm-2">
+										<label class="aligned">Energisation Status</label>
+									</div>								
+									<div class="col-sm-4">
+										<select name="energisation_status_id">
+											{% for energisation_status in energisation_statuses %}
+												{{input_option(
+													'energisation_status_id', energisation_status.id,
+													energisation_status.description,
+													era.energisation_status.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="col-sm-2">
 										<label class="aligned">Properties</label>
 									</div>								
 									<div class="col-sm-4">
