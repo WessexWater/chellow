@@ -55,7 +55,7 @@ setup(
     },
     install_requires=[
         'odio==0.0.22',
-        'pg8000==1.19.0',
+        'pg8000==1.19.1',
         'Flask==1.1.2',
         'werkzeug==1.0.1',
         'SQLAlchemy==1.4.4',
