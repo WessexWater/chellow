@@ -4684,10 +4684,13 @@ def csv_supplies_snapshot_get():
 
 
 @views.route('/csv_supplies_duration')
-def csv_supplies_duration_get():
-    last_month = utc_datetime_now() - relativedelta(months=1)
-    last_month_start = utc_datetime(last_month.year, last_month.month)
-    last_month_finish = last_month_start + relativedelta(months=1) - HH
+def csv_supplies_duration_get(ct_now=None):
+    ct_now = ct_datetime_now() if ct_now is None else ct_now
+    ct_last = ct_now - relativedelta(months=1)
+    months = list(
+        c_months_u(start_year=ct_last.year, start_month=ct_last.month))
+    last_month_start = months[0][0]
+    last_month_finish = months[0][1]
     return render_template(
         'csv_supplies_duration.html', last_month_start=last_month_start,
         last_month_finish=last_month_finish)

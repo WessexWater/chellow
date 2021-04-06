@@ -11,7 +11,7 @@ from chellow.models import (
     VoltageLevel, insert_bill_types, insert_cops, insert_g_read_types,
     insert_g_reading_frequencies, insert_g_units, insert_sources,
     insert_voltage_levels)
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 from flask import g
 
@@ -1305,3 +1305,15 @@ def test_add_channel_post(sess, client):
     }
     response = client.post(f'/eras/{era.id}/add_channel', data=data)
     match(response, 303)
+
+
+def test_csv_supplies_duration_get(mocker):
+    mock_render_template = mocker.patch(
+        "chellow.views.render_template", autospec=True)
+    ct_now = ct_datetime(2021, 4, 5)
+    chellow.views.csv_supplies_duration_get(ct_now)
+    last_month_start = to_utc(ct_datetime(2021, 3, 1))
+    last_month_finish = to_utc(ct_datetime(2021, 3, 31, 23, 30))
+    mock_render_template.assert_called_with(
+        'csv_supplies_duration.html',
+        last_month_start=last_month_start, last_month_finish=last_month_finish)
