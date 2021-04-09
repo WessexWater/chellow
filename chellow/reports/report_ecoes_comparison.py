@@ -14,7 +14,7 @@ import requests
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import null
+from sqlalchemy.sql.expression import null, or_
 
 from werkzeug.exceptions import BadRequest
 
@@ -196,15 +196,21 @@ def content(user):
             if ecoes_disconnected and current_chell:
                 problem += "Disconnected in ECOES, but current in Chellow. "
             elif not ecoes_disconnected and not current_chell:
-                problem += f"In ECOES (as {ecoes_es}) but not current in Chellow. "
+                problem += f"In ECOES (as {ecoes_es}) but disconnected in Chellow. "
 
             if current_chell:
                 mpans.remove(mpan_spaces)
-                supply = Supply.get_by_mpan_core(sess, mpan_spaces)
                 era = sess.execute(
                     select(Era)
-                    .filter(Era.supply == supply, Era.finish_date == null())
+                    .filter(
+                        Era.finish_date == null(),
+                        or_(
+                            Era.imp_mpan_core == mpan_spaces,
+                            Era.exp_mpan_core == mpan_spaces,
+                        ),
+                    )
                     .options(
+                        joinedload(Era.supply).joinedload(Supply.gsp_group),
                         joinedload(Era.mop_contract)
                         .joinedload(Contract.party)
                         .joinedload(Party.participant),
@@ -225,6 +231,7 @@ def content(user):
                         joinedload(Era.energisation_status),
                     )
                 ).scalar()
+
                 if era.imp_mpan_core == mpan_spaces:
                     supplier_contract = era.imp_supplier_contract
                     llfc = era.imp_llfc
@@ -294,7 +301,7 @@ def content(user):
                 if chellow_mop != ecoes["mop"]:
                     problem += "The MOP codes don't match. "
 
-                chellow_gsp_group = supply.gsp_group.code
+                chellow_gsp_group = era.supply.gsp_group.code
                 if chellow_gsp_group != ecoes["gsp-group"]:
                     problem += "The GSP group codes don't match. "
 
