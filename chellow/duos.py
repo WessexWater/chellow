@@ -672,17 +672,9 @@ def datum_2012_02_23(ds, hh):
 
             if tariff is None:
                 raise BadRequest(
-                    "For the DNO "
-                    + ds.dno_code
-                    + " and timestamp "
-                    + hh_format(start_date)
-                    + " and GSP group "
-                    + ds.gsp_group_code
-                    + ", the LLFC '"
-                    + ds.llfc_code
-                    + " with PC "
-                    + ds.pc_code
-                    + "' can't be found in the 'tariffs' section."
+                    f"For the DNO {ds.dno_code} and timestamp {hh_format(start_date)} "
+                    f"and GSP group {ds.gsp_group_code}, the LLFC {ds.llfc_code} "
+                    f"with PC {ds.pc_code} can't be found in the 'tariffs' section."
                 )
 
             tariffs[start_date] = tariff
