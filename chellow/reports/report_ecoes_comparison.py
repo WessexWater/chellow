@@ -40,7 +40,7 @@ def content(user):
                 f"properties."
             )
 
-        for key in ("user_name", "password", "prefix"):
+        for key in ("user_name", "password", "prefix", "ignore_mpan_cores"):
             try:
                 ecoes_props[key]
             except KeyError:
@@ -48,6 +48,8 @@ def content(user):
                     f"The property {key} cannot be found in the 'ecoes' section of "
                     f"the configuration properties."
                 )
+
+        ignore_mpan_cores = ecoes_props["ignore_mpan_cores"]
 
         proxies = props.get("proxies", {})
         s = requests.Session()
@@ -73,6 +75,7 @@ def content(user):
                     Party.dno_code.notin_(("88", "99")),
                     Era.finish_date == null(),
                     Source.code != "3rd-party",
+                    Era.imp_mpan_core.notin_(ignore_mpan_cores),
                     Era.imp_mpan_core != null(),
                 )
                 .distinct()
@@ -91,6 +94,7 @@ def content(user):
                     Era.finish_date == null(),
                     Source.code != "3rd-party",
                     Era.exp_mpan_core != null(),
+                    Era.exp_mpan_core.notin_(ignore_mpan_cores),
                 )
                 .distinct()
                 .order_by(Era.exp_mpan_core)
@@ -184,6 +188,9 @@ def content(user):
                     ecoes["mpan-core"][-3:],
                 )
             )
+            if mpan_spaces in ignore_mpan_cores:
+                continue
+
             try:
                 ecoes_es = ecoes["energisation-status"]
             except KeyError as e:
