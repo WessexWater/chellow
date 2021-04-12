@@ -1,3 +1,5 @@
+from dateutil.relativedelta import relativedelta
+
 import chellow.computer
 import chellow.duos
 from chellow.utils import (
@@ -11,8 +13,6 @@ from chellow.utils import (
     to_ct,
     to_utc,
 )
-
-from dateutil.relativedelta import relativedelta
 
 
 def hh(ds, rate_period="monthly", est_kw=None):

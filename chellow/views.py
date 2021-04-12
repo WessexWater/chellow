@@ -17,6 +17,35 @@ from operator import itemgetter
 from random import choice
 from xml.dom import Node
 
+from dateutil.relativedelta import relativedelta
+
+from flask import (
+    Blueprint,
+    Flask,
+    Response,
+    current_app,
+    flash,
+    g,
+    jsonify,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    send_file,
+)
+
+import psutil
+
+from pympler import muppy, summary
+
+from sqlalchemy import Float, case, cast, false, func, not_, null, or_, text, true
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
+
+from werkzeug.exceptions import BadRequest, NotFound
+
+from zish import dumps, loads
+
 import chellow.bank_holidays
 import chellow.bill_importer
 import chellow.bsuos
@@ -114,35 +143,6 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-
-from dateutil.relativedelta import relativedelta
-
-from flask import (
-    Blueprint,
-    Flask,
-    Response,
-    current_app,
-    flash,
-    g,
-    jsonify,
-    make_response,
-    redirect,
-    render_template,
-    request,
-    send_file,
-)
-
-import psutil
-
-from pympler import muppy, summary
-
-from sqlalchemy import Float, case, cast, false, func, not_, null, or_, text, true
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
-
-from werkzeug.exceptions import BadRequest, NotFound
-
-from zish import dumps, loads
 
 
 app = Flask("chellow", instance_relative_config=True)

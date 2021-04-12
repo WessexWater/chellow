@@ -2,11 +2,11 @@ import csv
 import decimal
 from decimal import Decimal
 
-from chellow.utils import HH, utc_datetime, utc_datetime_now
-
 from werkzeug.exceptions import BadRequest
 
 from xlrd import open_workbook
+
+from chellow.utils import HH, utc_datetime, utc_datetime_now
 
 
 def get_value(row, title_row, name):

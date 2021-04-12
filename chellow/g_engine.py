@@ -4,6 +4,15 @@ from itertools import combinations, count
 from math import floor, log10
 from types import MappingProxyType
 
+from dateutil.relativedelta import relativedelta
+
+from sqlalchemy import Float, cast, or_
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
+from zish import dumps, loads
+
 import chellow.bank_holidays
 from chellow.computer import hh_rate
 from chellow.models import (
@@ -29,15 +38,6 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-
-from dateutil.relativedelta import relativedelta
-
-from sqlalchemy import Float, cast, or_
-from sqlalchemy.sql.expression import null
-
-from werkzeug.exceptions import BadRequest
-
-from zish import dumps, loads
 
 
 def get_times(sess, caches, start_date, finish_date, forecast_date):

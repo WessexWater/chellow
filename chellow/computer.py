@@ -5,6 +5,18 @@ from itertools import combinations, count
 from math import log10
 from types import MappingProxyType
 
+from dateutil.relativedelta import relativedelta
+
+from pytz import timezone, utc
+
+from sqlalchemy import Float, cast, or_
+from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.sql.expression import false, null
+
+from werkzeug.exceptions import BadRequest
+
+from zish import dumps
+
 import chellow.bank_holidays
 import chellow.utils
 from chellow.models import (
@@ -48,18 +60,6 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-
-from dateutil.relativedelta import relativedelta
-
-from pytz import timezone, utc
-
-from sqlalchemy import Float, cast, or_
-from sqlalchemy.orm import aliased, joinedload
-from sqlalchemy.sql.expression import false, null
-
-from werkzeug.exceptions import BadRequest
-
-from zish import dumps
 
 
 cons_types = ["construction", "commissioning", "operation"]

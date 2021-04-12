@@ -1,6 +1,12 @@
 import os
 from datetime import datetime as Datetime
 
+from flask import Flask, Response, g, make_response, render_template, request
+
+from werkzeug.exceptions import NotFound
+
+from zish import dumps
+
 import chellow.bank_holidays
 import chellow.bmarketidx
 import chellow.bsuos
@@ -12,6 +18,7 @@ import chellow.system_price
 import chellow.tlms
 import chellow.utils
 import chellow.views
+from chellow._version import get_versions
 from chellow.models import (
     Contract,
     Session,
@@ -21,14 +28,6 @@ from chellow.models import (
     start_sqlalchemy,
 )
 from chellow.utils import to_ct, utc_datetime_now
-
-from flask import Flask, Response, g, make_response, render_template, request
-
-from werkzeug.exceptions import NotFound
-
-from zish import dumps
-
-from ._version import get_versions
 
 
 TEMPLATE_FORMATS = {

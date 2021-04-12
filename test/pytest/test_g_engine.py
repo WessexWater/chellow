@@ -1,5 +1,5 @@
-from chellow.utils import utc_datetime
 import chellow.g_engine
+from chellow.utils import utc_datetime
 
 
 def test_find_hhs_pairs_before_after_chunk_finish(mocker):

@@ -1,10 +1,10 @@
 from decimal import Decimal
 from io import BytesIO
 
+from werkzeug.exceptions import BadRequest
+
 import chellow.bill_parser_haven_edi
 from chellow.utils import utc_datetime
-
-from werkzeug.exceptions import BadRequest
 
 
 def test_process_BTL_zeroes(mocker):

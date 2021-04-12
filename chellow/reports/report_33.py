@@ -4,6 +4,14 @@ import sys
 import threading
 import traceback
 
+from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import func, null
+
 import chellow.dloads
 from chellow.models import (
     Batch,
@@ -30,14 +38,6 @@ from chellow.utils import (
     req_str,
 )
 from chellow.views import chellow_redirect
-
-from dateutil.relativedelta import relativedelta
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import func, null
 
 
 def content(running_name, finished_name, date, supply_id, mpan_cores):

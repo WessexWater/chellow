@@ -6,6 +6,17 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
+from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
+import pytz
+
+from sqlalchemy import func, or_
+from sqlalchemy.sql.expression import null, true
+
+from zish import dumps
+
 import chellow.dloads
 from chellow.models import (
     Bill,
@@ -23,17 +34,6 @@ from chellow.models import (
 )
 from chellow.utils import HH, hh_format, hh_max, hh_min, req_int
 from chellow.views import chellow_redirect
-
-from dateutil.relativedelta import relativedelta
-
-from flask import g, request
-
-import pytz
-
-from sqlalchemy import func, or_
-from sqlalchemy.sql.expression import null, true
-
-from zish import dumps
 
 
 def content(year, supply_id, user):

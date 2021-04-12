@@ -2,14 +2,14 @@ import decimal
 from datetime import datetime as Datetime
 from decimal import Decimal
 
-from chellow.models import Session
-from chellow.utils import hh_format, parse_mpan_core, to_ct, to_utc
-
 from dateutil.relativedelta import relativedelta
 
 from werkzeug.exceptions import BadRequest
 
 from xlrd import open_workbook, xldate_as_tuple
+
+from chellow.models import Session
+from chellow.utils import hh_format, parse_mpan_core, to_ct, to_utc
 
 
 def get_ct_date(row, name, datemode):

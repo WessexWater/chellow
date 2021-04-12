@@ -8,6 +8,18 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
 
+from dateutil.relativedelta import relativedelta
+
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.orm import joinedload, subqueryload
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
+
+from zish import ZishLocationException, loads
+
 import chellow.computer
 import chellow.dloads
 from chellow.models import (
@@ -39,18 +51,6 @@ from chellow.utils import (
     to_utc,
 )
 from chellow.views import chellow_redirect
-
-from dateutil.relativedelta import relativedelta
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.orm import joinedload, subqueryload
-from sqlalchemy.sql.expression import null, true
-
-from werkzeug.exceptions import BadRequest
-
-from zish import ZishLocationException, loads
 
 
 def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):

@@ -1,6 +1,6 @@
-import chellow.bill_importer
-
 from flask import g, render_template
+
+import chellow.bill_importer
 
 
 def test_status(mocker):

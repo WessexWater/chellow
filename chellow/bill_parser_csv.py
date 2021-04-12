@@ -2,6 +2,10 @@ import csv
 from decimal import Decimal
 from io import StringIO
 
+from dateutil.relativedelta import relativedelta
+
+from werkzeug.exceptions import BadRequest
+
 from chellow.utils import (
     HH,
     ct_datetime_parse,
@@ -10,10 +14,6 @@ from chellow.utils import (
     to_utc,
     validate_hh_start,
 )
-
-from dateutil.relativedelta import relativedelta
-
-from werkzeug.exceptions import BadRequest
 
 
 def parse_date(row, idx, is_finish=False):

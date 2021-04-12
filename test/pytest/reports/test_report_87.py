@@ -1,7 +1,8 @@
-from chellow.utils import ct_datetime, to_utc
-import chellow.reports.report_87
-import chellow.computer
 from io import StringIO
+
+import chellow.computer
+import chellow.reports.report_87
+from chellow.utils import ct_datetime, to_utc
 
 
 class Sess:

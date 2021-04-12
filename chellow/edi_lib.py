@@ -1,9 +1,9 @@
 from datetime import datetime as Datetime
 from decimal import Decimal
 
-from chellow.utils import to_ct, to_utc
-
 from werkzeug.exceptions import BadRequest
+
+from chellow.utils import to_ct, to_utc
 
 
 class EdiParser:

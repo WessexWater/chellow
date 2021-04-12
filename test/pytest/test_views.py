@@ -2,6 +2,10 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
+from flask import g
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.hh_importer
 import chellow.views
 from chellow.models import (
@@ -38,11 +42,7 @@ from chellow.models import (
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
-from flask import g
-
-from utils import match
-
-from werkzeug.exceptions import BadRequest
+from .utils import match
 
 
 def test_dtc_meter_types(client):

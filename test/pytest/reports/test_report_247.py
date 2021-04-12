@@ -1,6 +1,12 @@
 from datetime import datetime as Datetime
 from io import BytesIO
 
+import odio
+
+from utils import match
+
+from zish import loads
+
 from chellow.models import (
     Contract,
     Cop,
@@ -23,12 +29,6 @@ from chellow.models import (
 )
 from chellow.reports.report_247 import _make_calcs, _make_site_deltas, content
 from chellow.utils import utc_datetime
-
-import odio
-
-from utils import match
-
-from zish import loads
 
 
 def test_with_scenario(mocker, sess, client):

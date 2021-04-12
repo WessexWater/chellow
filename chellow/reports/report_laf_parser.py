@@ -8,14 +8,14 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 from zipfile import ZipFile
 
+from flask import g, request
+
+from zish import dumps
+
 import chellow.dloads
 from chellow.models import Session
 from chellow.utils import to_ct, to_utc
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from zish import dumps
 
 
 def content(user, file_name, file_like):

@@ -1,8 +1,8 @@
+from utils import match
+
 import chellow.reports.report_111
 from chellow.models import Contract, MarketRole, Participant
 from chellow.utils import utc_datetime
-
-from utils import match
 
 
 # End to end tests

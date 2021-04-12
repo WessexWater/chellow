@@ -7,6 +7,18 @@ from collections import defaultdict
 from datetime import datetime as Datetime
 from io import StringIO
 
+from dateutil.relativedelta import relativedelta
+
+from flask import flash, g, make_response, render_template, request
+
+import odio
+
+from sqlalchemy import or_, true
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 import chellow.dloads
 from chellow.computer import SupplySource, contract_func, datum_range
@@ -47,18 +59,6 @@ from chellow.utils import (
     utc_datetime_now,
 )
 from chellow.views import chellow_redirect
-
-from dateutil.relativedelta import relativedelta
-
-from flask import flash, g, make_response, render_template, request
-
-import odio
-
-from sqlalchemy import or_, true
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import null
-
-from werkzeug.exceptions import BadRequest
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}

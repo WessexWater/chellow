@@ -1,10 +1,10 @@
 from collections import defaultdict
 from decimal import Decimal
 
+from dateutil.relativedelta import relativedelta
+
 from chellow.edi_lib import parse_edi, to_date, to_decimal
 from chellow.utils import HH
-
-from dateutil.relativedelta import relativedelta
 
 
 READ_TYPE_MAP = {"00": "A", "01": "E"}

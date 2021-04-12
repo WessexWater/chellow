@@ -4,6 +4,13 @@ import threading
 import traceback
 from decimal import Decimal
 
+from sqlalchemy import null, or_
+from sqlalchemy.sql.expression import false
+
+from werkzeug.exceptions import BadRequest
+
+from zish import ZishException, loads
+
 from chellow.models import (
     Bill,
     BillType,
@@ -50,13 +57,6 @@ from chellow.utils import (
     parse_mpan_core,
     parse_pc_code,
 )
-
-from sqlalchemy import null, or_
-from sqlalchemy.sql.expression import false
-
-from werkzeug.exceptions import BadRequest
-
-from zish import ZishException, loads
 
 
 process_id = 0

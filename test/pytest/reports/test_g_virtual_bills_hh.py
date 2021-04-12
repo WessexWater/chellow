@@ -2,6 +2,7 @@ import csv
 from decimal import Decimal
 from io import StringIO
 
+
 import chellow.reports.report_g_virtual_bills_hh
 from chellow.models import (
     BillType,
@@ -21,7 +22,7 @@ from chellow.models import (
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
-from utils import match_tables
+from ..utils import match_tables
 
 
 def test_supply(mocker, sess, client):

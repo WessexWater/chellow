@@ -6,9 +6,6 @@ import traceback
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
-from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
-
 from dateutil.relativedelta import relativedelta
 
 import requests
@@ -19,6 +16,9 @@ from sqlalchemy.sql.expression import null
 from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
+
+from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"

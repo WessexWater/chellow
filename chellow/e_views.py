@@ -1,6 +1,11 @@
 from collections import defaultdict
 from itertools import chain
 
+from sqlalchemy import false, true
+from sqlalchemy.orm import joinedload
+
+from werkzeug.exceptions import BadRequest
+
 from chellow.models import (
     Batch,
     Bill,
@@ -15,11 +20,6 @@ from chellow.models import (
     Supply,
     Tpr,
 )
-
-from sqlalchemy import false, true
-from sqlalchemy.orm import joinedload
-
-from werkzeug.exceptions import BadRequest
 
 
 def get_era_bundles(sess, supply):

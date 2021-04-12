@@ -5,14 +5,6 @@ import traceback
 from datetime import datetime as Datetime
 from decimal import Decimal
 
-from chellow.models import (
-    Contract,
-    RateScript,
-    Session,
-    get_non_core_contract_id,
-)
-from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
-
 from dateutil.relativedelta import relativedelta
 
 import requests
@@ -25,6 +17,14 @@ from werkzeug.exceptions import BadRequest
 import xlrd
 
 from zish import dumps, loads
+
+from chellow.models import (
+    Contract,
+    RateScript,
+    Session,
+    get_non_core_contract_id,
+)
+from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
 
 def hh(data_source, run="RF"):

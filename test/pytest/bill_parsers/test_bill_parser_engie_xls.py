@@ -1,9 +1,13 @@
-from chellow.utils import utc_datetime
-import chellow.bill_parser_engie_xls
-import xlrd.sheet
-import pytest
-from werkzeug.exceptions import BadRequest
 from decimal import Decimal
+
+import pytest
+
+from werkzeug.exceptions import BadRequest
+
+import xlrd.sheet
+
+import chellow.bill_parser_engie_xls
+from chellow.utils import utc_datetime
 
 
 def test_parse_row(mocker):

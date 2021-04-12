@@ -3,6 +3,16 @@ import sys
 import threading
 import traceback
 
+from flask import g, request
+
+import odio
+
+from sqlalchemy import or_, true
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 import chellow.dloads
 from chellow.computer import contract_func
@@ -27,16 +37,6 @@ from chellow.utils import (
     req_int,
 )
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-import odio
-
-from sqlalchemy import or_, true
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import null
-
-from werkzeug.exceptions import BadRequest
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}

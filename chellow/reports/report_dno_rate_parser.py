@@ -6,11 +6,6 @@ from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from itertools import chain
 
-import chellow.dloads
-from chellow.models import GspGroup, Session
-from chellow.utils import req_int
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 import openpyxl
@@ -18,6 +13,11 @@ import openpyxl
 from werkzeug.exceptions import BadRequest
 
 from zish import dumps
+
+import chellow.dloads
+from chellow.models import GspGroup, Session
+from chellow.utils import req_int
+from chellow.views import chellow_redirect
 
 
 def get_value(row, idx):

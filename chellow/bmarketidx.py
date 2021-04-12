@@ -4,6 +4,12 @@ import threading
 import traceback
 from decimal import Decimal
 
+import requests
+
+from werkzeug.exceptions import BadRequest
+
+from zish import loads
+
 from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
 from chellow.utils import (
     HH,
@@ -14,12 +20,6 @@ from chellow.utils import (
     to_utc,
     utc_datetime_now,
 )
-
-import requests
-
-from werkzeug.exceptions import BadRequest
-
-from zish import loads
 
 
 def hh(data_source, provider="APXMIDP"):

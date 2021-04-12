@@ -6,16 +6,16 @@ import traceback
 import zipfile
 from io import StringIO
 
-import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Supply
-from chellow.utils import ct_datetime, hh_format, req_date, req_int, to_ct, to_utc
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
+
+import chellow.dloads
+from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.utils import ct_datetime, hh_format, req_date, req_int, to_ct, to_utc
+from chellow.views import chellow_redirect
 
 
 def none_content(site_id, start_date, finish_date, user, file_name):

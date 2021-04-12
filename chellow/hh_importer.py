@@ -9,17 +9,6 @@ from collections import defaultdict, deque
 from datetime import timedelta as Timedelta
 from io import TextIOWrapper
 
-from chellow.models import Contract, Era, HhDatum, MarketRole, Session
-from chellow.utils import (
-    HH,
-    hh_format,
-    hh_max,
-    hh_min,
-    utc_datetime,
-    utc_datetime_now,
-)
-
-
 import jinja2
 
 import paramiko
@@ -31,6 +20,16 @@ import requests
 from sqlalchemy import null, or_
 
 from werkzeug.exceptions import BadRequest
+
+from chellow.models import Contract, Era, HhDatum, MarketRole, Session
+from chellow.utils import (
+    HH,
+    hh_format,
+    hh_max,
+    hh_min,
+    utc_datetime,
+    utc_datetime_now,
+)
 
 
 processes = defaultdict(list)

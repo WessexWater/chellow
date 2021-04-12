@@ -4,16 +4,16 @@ import sys
 import threading
 import traceback
 
-import chellow.dloads
-from chellow.models import GEra, GSupply, Session
-from chellow.utils import hh_format, req_date, req_int
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
+
+import chellow.dloads
+from chellow.models import GEra, GSupply, Session
+from chellow.utils import hh_format, req_date, req_int
+from chellow.views import chellow_redirect
 
 
 def content(date, g_supply_id, user):

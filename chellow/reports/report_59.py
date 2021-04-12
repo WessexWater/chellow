@@ -4,15 +4,15 @@ import sys
 import threading
 import traceback
 
-import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Supply
-from chellow.utils import hh_format, req_date, req_int
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 from sqlalchemy import null, or_, true
 from sqlalchemy.orm import joinedload
+
+import chellow.dloads
+from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.utils import hh_format, req_date, req_int
+from chellow.views import chellow_redirect
 
 
 METER_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3, "": 4}

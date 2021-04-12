@@ -1,3 +1,9 @@
+import pytest
+
+import sqlalchemy.exc
+
+from werkzeug.exceptions import BadRequest
+
 from chellow.models import (
     Contract,
     Cop,
@@ -21,12 +27,6 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.utils import utc_datetime
-
-import pytest
-
-import sqlalchemy.exc
-
-from werkzeug.exceptions import BadRequest
 
 
 def test_Era_update(mocker):

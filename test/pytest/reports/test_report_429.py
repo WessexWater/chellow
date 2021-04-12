@@ -1,6 +1,8 @@
 from decimal import Decimal
 from io import StringIO
 
+from utils import match
+
 import chellow.reports.report_429
 from chellow.models import (
     BillType,
@@ -17,8 +19,6 @@ from chellow.models import (
     insert_g_units,
 )
 from chellow.utils import utc_datetime
-
-from utils import match
 
 
 def test_process_g_bill_ids(mocker):

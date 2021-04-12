@@ -4,11 +4,6 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
-import chellow.computer
-from chellow.models import Era, Session, Site, SiteEra, Supply
-from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
-from chellow.views import chellow_redirect
-
 from dateutil.relativedelta import relativedelta
 
 from flask import g
@@ -18,6 +13,11 @@ import pytz
 from sqlalchemy.sql.expression import null, or_, true
 
 from werkzeug.exceptions import BadRequest
+
+import chellow.computer
+from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
+from chellow.views import chellow_redirect
 
 
 def content(

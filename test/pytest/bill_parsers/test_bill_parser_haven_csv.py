@@ -1,7 +1,9 @@
-import chellow.bill_parser_haven_csv
 import pytest
+
 from werkzeug.exceptions import BadRequest
-from chellow.utils import to_utc, ct_datetime
+
+import chellow.bill_parser_haven_csv
+from chellow.utils import ct_datetime, to_utc
 
 
 def test_process_line_unknown_code(mocker):

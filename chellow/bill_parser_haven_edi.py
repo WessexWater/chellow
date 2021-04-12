@@ -3,13 +3,13 @@ from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 from io import StringIO
 
-from chellow.edi_lib import EdiParser, SEGMENTS
-from chellow.models import Session, Ssc, Supply
-from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
-
 from dateutil.relativedelta import relativedelta
 
 from werkzeug.exceptions import BadRequest
+
+from chellow.edi_lib import EdiParser, SEGMENTS
+from chellow.models import Session, Ssc, Supply
+from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
 
 READ_TYPE_MAP = {

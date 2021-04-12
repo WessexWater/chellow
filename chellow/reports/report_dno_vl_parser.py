@@ -7,11 +7,6 @@ import traceback
 from decimal import Decimal
 from io import BytesIO
 
-import chellow.dloads
-from chellow.models import Llfc, Party, Session
-from chellow.utils import ct_datetime, ct_datetime_now, hh_format, req_int, to_utc
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 import openpyxl
@@ -19,6 +14,11 @@ import openpyxl
 from sqlalchemy import null, or_
 
 from werkzeug.exceptions import BadRequest
+
+import chellow.dloads
+from chellow.models import Llfc, Party, Session
+from chellow.utils import ct_datetime, ct_datetime_now, hh_format, req_int, to_utc
+from chellow.views import chellow_redirect
 
 
 LV_NET = ("LV", False)

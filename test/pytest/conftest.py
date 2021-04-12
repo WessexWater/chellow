@@ -1,7 +1,3 @@
-import chellow.models
-from chellow import create_app
-from chellow.models import Session, stop_sqlalchemy
-
 from flask.testing import FlaskClient
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -11,6 +7,10 @@ import pg8000
 import pytest
 
 from requests.auth import _basic_auth_str
+
+import chellow.models
+from chellow import create_app
+from chellow.models import Session, stop_sqlalchemy
 
 
 def fresh_db():

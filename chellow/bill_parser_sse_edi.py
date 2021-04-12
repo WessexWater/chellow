@@ -3,11 +3,11 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import StringIO
 
+from werkzeug.exceptions import BadRequest
+
 from chellow.edi_lib import EdiParser, to_decimal
 from chellow.models import Era, Session
 from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
-
-from werkzeug.exceptions import BadRequest
 
 
 read_type_map = {

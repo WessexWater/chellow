@@ -1,5 +1,5 @@
-import chellow.bill_parser_csv
 import chellow
+import chellow.bill_parser_csv
 
 
 def test_bill_parser_csv():

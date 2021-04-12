@@ -5,6 +5,14 @@ import traceback
 from datetime import datetime as Datetime
 from itertools import chain
 
+from flask import g, request
+
+from sqlalchemy import Float, cast, func, or_
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 import chellow.dloads
 import chellow.duos
@@ -24,14 +32,6 @@ from chellow.models import (
 )
 from chellow.utils import HH, hh_format, hh_max, hh_min, req_hh_date, req_int, to_utc
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from sqlalchemy import Float, cast, func, or_
-from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import null
-
-from werkzeug.exceptions import BadRequest
 
 
 NORMAL_READ_TYPES = "C", "N", "N3"

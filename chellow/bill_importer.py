@@ -5,6 +5,8 @@ import traceback
 from io import BytesIO
 from pkgutil import iter_modules
 
+from werkzeug.exceptions import BadRequest
+
 import chellow
 import chellow.bill_parser_engie_xls
 from chellow.models import (
@@ -17,8 +19,6 @@ from chellow.models import (
     Tpr,
 )
 from chellow.utils import keydefaultdict, utc_datetime_now
-
-from werkzeug.exceptions import BadRequest
 
 
 import_id = 0

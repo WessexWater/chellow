@@ -4,17 +4,17 @@ import sys
 import threading
 import traceback
 
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
 import chellow.computer
 from chellow.computer import contract_func
 from chellow.g_engine import GDataSource
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_format, hh_range, req_date, req_int
 from chellow.views import chellow_redirect
-
-from flask import g
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
 
 
 def content(g_supply_id, start_date, finish_date, user):

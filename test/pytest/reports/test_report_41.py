@@ -1,7 +1,7 @@
+from sqlalchemy.orm.session import Session
+
 import chellow.reports.report_41
 from chellow.utils import utc_datetime
-
-from sqlalchemy.orm.session import Session
 
 
 def test_eras(mocker):

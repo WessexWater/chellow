@@ -4,10 +4,6 @@ import sys
 import threading
 import traceback
 
-import chellow.dloads
-from chellow.models import Contract, Era, Mtc, Party, Session, Source, Supply
-from chellow.views import chellow_redirect
-
 from flask import g
 
 import requests
@@ -17,6 +13,10 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, or_
 
 from werkzeug.exceptions import BadRequest
+
+import chellow.dloads
+from chellow.models import Contract, Era, Mtc, Party, Session, Source, Supply
+from chellow.views import chellow_redirect
 
 
 def content(user):

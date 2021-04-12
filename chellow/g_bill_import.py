@@ -5,6 +5,10 @@ import threading
 import traceback
 from pkgutil import iter_modules
 
+import pytz
+
+from werkzeug.exceptions import BadRequest
+
 import chellow
 from chellow.models import (
     BillType,
@@ -15,9 +19,6 @@ from chellow.models import (
     Session,
 )
 
-import pytz
-
-from werkzeug.exceptions import BadRequest
 
 importer_id = 0
 import_lock = threading.Lock()

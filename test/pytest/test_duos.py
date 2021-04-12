@@ -1,7 +1,8 @@
-import chellow.duos
-from chellow.utils import ct_datetime, to_utc
 import os
 from collections import defaultdict
+
+import chellow.duos
+from chellow.utils import ct_datetime, to_utc
 
 
 def test_duos_availability_from_to(mocker):

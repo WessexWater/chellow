@@ -3,6 +3,13 @@ import os
 import threading
 import traceback
 
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 import chellow.dloads
 import chellow.duos
@@ -18,13 +25,6 @@ from chellow.utils import (
     to_utc,
 )
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
-
-from werkzeug.exceptions import BadRequest
 
 
 def _make_sites(sess, year_start, year_finish, site_id, source_codes):

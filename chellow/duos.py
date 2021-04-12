@@ -1,5 +1,12 @@
 from datetime import datetime as Datetime, timedelta as Timedelta
 
+from dateutil.relativedelta import relativedelta
+
+from sqlalchemy import func
+from sqlalchemy.sql.expression import true
+
+from werkzeug.exceptions import BadRequest
+
 from chellow.models import Channel, Era, HhDatum
 from chellow.utils import (
     HH,
@@ -10,13 +17,6 @@ from chellow.utils import (
     to_utc,
     utc_datetime,
 )
-
-from dateutil.relativedelta import relativedelta
-
-from sqlalchemy import func
-from sqlalchemy.sql.expression import true
-
-from werkzeug.exceptions import BadRequest
 
 
 BANDS = ("red", "amber", "green")

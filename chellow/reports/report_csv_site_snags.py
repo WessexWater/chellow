@@ -5,17 +5,17 @@ import threading
 import traceback
 from datetime import datetime as Datetime, timedelta as Timedelta
 
-import chellow.dloads
-from chellow.models import Session, Site, Snag
-from chellow.utils import hh_format
-from chellow.views import chellow_redirect
-
 from flask import g
 
 import pytz
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
+
+import chellow.dloads
+from chellow.models import Session, Site, Snag
+from chellow.utils import hh_format
+from chellow.views import chellow_redirect
 
 
 def content(user):

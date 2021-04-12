@@ -12,21 +12,6 @@ from functools import lru_cache
 from hashlib import pbkdf2_hmac
 from itertools import takewhile
 
-from chellow.utils import (
-    HH,
-    hh_after,
-    hh_before,
-    hh_format,
-    hh_range,
-    next_hh,
-    parse_mpan_core,
-    prev_hh,
-    to_ct,
-    to_utc,
-    utc_datetime,
-    utc_datetime_now,
-)
-
 from dateutil.relativedelta import relativedelta
 
 from sqlalchemy import (
@@ -59,6 +44,21 @@ from sqlalchemy.sql.expression import false, true
 from werkzeug.exceptions import BadRequest, NotFound
 
 from zish import ZishException, dumps, loads
+
+from chellow.utils import (
+    HH,
+    hh_after,
+    hh_before,
+    hh_format,
+    hh_range,
+    next_hh,
+    parse_mpan_core,
+    prev_hh,
+    to_ct,
+    to_utc,
+    utc_datetime,
+    utc_datetime_now,
+)
 
 
 config = {

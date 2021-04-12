@@ -2,6 +2,8 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
+import odio
+
 import chellow.reports.report_g_monthly_duration
 from chellow.models import (
     BillType,
@@ -20,8 +22,6 @@ from chellow.models import (
     insert_g_units,
 )
 from chellow.utils import utc_datetime
-
-import odio
 
 
 def test_supply(mocker, sess, client):

@@ -5,11 +5,11 @@ import sys
 import time
 from os import environ
 
-from chellow import create_app
-
 from pep3143daemon import DaemonContext, PidFile
 
 import waitress
+
+from chellow import create_app
 
 app = create_app()
 

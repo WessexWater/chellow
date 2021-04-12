@@ -1,13 +1,12 @@
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
-from chellow.models import Session
-from chellow.utils import ct_datetime, parse_mpan_core, to_utc
-
-
 from werkzeug.exceptions import BadRequest
 
 from xlrd import open_workbook, xldate_as_tuple
+
+from chellow.models import Session
+from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
 
 def get_date_ct(row, name, datemode):

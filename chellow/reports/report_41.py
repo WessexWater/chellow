@@ -5,6 +5,11 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
 import chellow.computer
 import chellow.dloads
 import chellow.duos
@@ -20,11 +25,6 @@ from chellow.utils import (
     to_utc,
 )
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
 
 
 def _make_eras(sess, nov_start, year_finish, supply_id):

@@ -3,11 +3,11 @@ from decimal import Decimal, InvalidOperation
 from io import StringIO
 from itertools import count
 
-from chellow.utils import parse_hh_start
-
 from werkzeug.exceptions import BadRequest
 
 from zish import ZishLocationException, loads
+
+from chellow.utils import parse_hh_start
 
 
 def get_str(row, idx, name, lineno):

@@ -4,15 +4,15 @@ import sys
 import threading
 import traceback
 
-import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Source, Supply
-from chellow.utils import req_date, req_int, write_row
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 from sqlalchemy import null, or_, true
 from sqlalchemy.orm import joinedload
+
+import chellow.dloads
+from chellow.models import Era, Session, Site, SiteEra, Source, Supply
+from chellow.utils import req_date, req_int, write_row
+from chellow.views import chellow_redirect
 
 
 TYPE_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}

@@ -4,6 +4,13 @@ import traceback
 import zipfile
 from datetime import datetime as Datetime
 
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.dloads
 from chellow.models import Era, Session, Site, SiteEra, Supply
 from chellow.utils import (
@@ -17,13 +24,6 @@ from chellow.utils import (
     to_ct,
 )
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-
-from werkzeug.exceptions import BadRequest
 
 
 def csv_str(row):

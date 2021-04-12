@@ -3,6 +3,13 @@ import os
 import threading
 import traceback
 
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 import chellow.dloads
 from chellow.computer import SupplySource, contract_func
@@ -26,13 +33,6 @@ from chellow.utils import (
     to_ct,
 )
 from chellow.views import chellow_redirect
-
-from flask import g
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-
-from werkzeug.exceptions import BadRequest
 
 
 def create_csv(f, sess, start_date, finish_date, contract_id):

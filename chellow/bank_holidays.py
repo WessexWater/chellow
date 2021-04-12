@@ -3,6 +3,12 @@ import collections
 import threading
 import traceback
 
+from dateutil.relativedelta import relativedelta
+
+import requests
+
+from zish import loads
+
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     HH,
@@ -11,12 +17,6 @@ from chellow.utils import (
     utc_datetime_now,
     utc_datetime_parse,
 )
-
-from dateutil.relativedelta import relativedelta
-
-import requests
-
-from zish import loads
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"

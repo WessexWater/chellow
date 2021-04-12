@@ -3,6 +3,13 @@ import os
 import threading
 import traceback
 
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.computer
 from chellow.models import (
     Era,
@@ -16,13 +23,6 @@ from chellow.models import (
 )
 from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
 from chellow.views import chellow_redirect
-
-from flask import g
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-
-from werkzeug.exceptions import BadRequest
 
 
 def content(supply_id, file_name, start_date, finish_date, user):

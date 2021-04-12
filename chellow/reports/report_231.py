@@ -5,17 +5,17 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
-import chellow.computer
-from chellow.models import Contract, Era, Session
-from chellow.utils import hh_format, hh_max, hh_min, req_date, req_int
-from chellow.views import chellow_redirect
-
 from flask import g
 
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
+
+import chellow.computer
+from chellow.models import Contract, Era, Session
+from chellow.utils import hh_format, hh_max, hh_min, req_date, req_int
+from chellow.views import chellow_redirect
 
 
 def make_val(v):

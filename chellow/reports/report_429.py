@@ -8,18 +8,18 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
 
-import chellow.dloads
-import chellow.g_engine
-from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra
-from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
-from chellow.views import chellow_redirect
-
 from flask import g, request
 
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
+
+import chellow.dloads
+import chellow.g_engine
+from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra
+from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
+from chellow.views import chellow_redirect
 
 
 def content(g_batch_id, g_bill_id, user):

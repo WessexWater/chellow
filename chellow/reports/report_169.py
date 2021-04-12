@@ -5,6 +5,11 @@ import traceback
 import zipfile
 from io import StringIO
 
+from flask import g, request
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null
+
 import chellow.dloads
 from chellow.models import Channel, Era, HhDatum, Session, Supply
 from chellow.utils import (
@@ -18,11 +23,6 @@ from chellow.utils import (
     to_utc,
 )
 from chellow.views import chellow_redirect
-
-from flask import g, request
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null
 
 
 def content(

@@ -5,9 +5,6 @@ import threading
 import traceback
 from decimal import Decimal
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
-from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
-
 from dateutil.relativedelta import relativedelta
 
 import requests
@@ -15,6 +12,9 @@ import requests
 from werkzeug.exceptions import BadRequest
 
 from zish import loads
+
+from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.utils import HH, hh_format, utc_datetime_now, utc_datetime_parse
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"

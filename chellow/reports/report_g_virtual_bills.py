@@ -4,6 +4,15 @@ import sys
 import threading
 import traceback
 
+from dateutil.relativedelta import relativedelta
+
+from flask import g
+
+from sqlalchemy import or_
+from sqlalchemy.sql.expression import null, true
+
+from werkzeug.exceptions import BadRequest
+
 import chellow.dloads
 from chellow.computer import contract_func, forecast_date
 from chellow.g_engine import GDataSource
@@ -19,15 +28,6 @@ from chellow.utils import (
     utc_datetime,
 )
 from chellow.views import chellow_redirect
-
-from dateutil.relativedelta import relativedelta
-
-from flask import g
-
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
-
-from werkzeug.exceptions import BadRequest
 
 
 def content(start_date, finish_date, g_contract_id, user):

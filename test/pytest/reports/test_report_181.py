@@ -1,6 +1,6 @@
-from chellow.utils import ct_datetime, to_utc, utc_datetime
-import chellow.reports.report_181
 import chellow.computer
+import chellow.reports.report_181
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_write_sites(mocker):

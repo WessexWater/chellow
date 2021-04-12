@@ -1,7 +1,9 @@
-import chellow.bill_parser_sww_xls
-import xlrd.sheet
-from chellow.utils import utc_datetime
 from decimal import Decimal
+
+import xlrd.sheet
+
+import chellow.bill_parser_sww_xls
+from chellow.utils import utc_datetime
 
 
 def test_parse_row(mocker):

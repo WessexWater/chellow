@@ -6,6 +6,12 @@ from collections import defaultdict, deque
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal
 
+from dateutil.relativedelta import relativedelta
+
+import requests
+
+from zish import loads
+
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     c_months_u,
@@ -15,12 +21,6 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-
-from dateutil.relativedelta import relativedelta
-
-import requests
-
-from zish import loads
 
 
 def param_format(dt):

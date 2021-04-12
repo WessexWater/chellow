@@ -1,9 +1,12 @@
-import chellow.bill_parser_engie_edi
-from io import BytesIO
-from chellow.utils import to_utc, ct_datetime, utc_datetime
-import pytest
-from werkzeug.exceptions import BadRequest
 from decimal import Decimal
+from io import BytesIO
+
+import pytest
+
+from werkzeug.exceptions import BadRequest
+
+import chellow.bill_parser_engie_edi
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_to_decimal():
