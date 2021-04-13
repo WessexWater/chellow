@@ -236,6 +236,7 @@ def content(user):
                         joinedload(Era.mtc).joinedload(Mtc.meter_type),
                         joinedload(Era.ssc),
                         joinedload(Era.energisation_status),
+                        joinedload(Era.channels),
                     )
                 ).scalar()
 
@@ -323,7 +324,7 @@ def content(user):
                 if chellow_meter_type != ecoes["meter-type"]:
                     problem += (
                         "The meter types don't match. See "
-                        "http://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
+                        "https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
                     )
             else:
                 chellow_pc = ""

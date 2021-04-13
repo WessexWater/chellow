@@ -4,6 +4,8 @@ from io import BytesIO
 
 from flask import g
 
+from utils import match
+
 from werkzeug.exceptions import BadRequest
 
 import chellow.hh_importer
@@ -41,8 +43,6 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
-
-from .utils import match
 
 
 def test_dtc_meter_types(client):
