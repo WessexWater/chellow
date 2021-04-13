@@ -1007,7 +1007,7 @@ def site_edit_post(site_id):
             mop_contract_id = req_int("mop_contract_id")
             mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
             mop_account = req_str("mop_account")
-            dc_contract_id = req_str("dc_contract_id")
+            dc_contract_id = req_int("dc_contract_id")
             dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
             dc_account = req_str("dc_account")
             msn = req_str("msn")
@@ -1022,6 +1022,10 @@ def site_edit_post(site_id):
                 ssc = Ssc.get_by_code(g.sess, ssc_code)
             else:
                 ssc = None
+            energisation_status_id = req_int("energisation_status_id")
+            energisation_status = EnergisationStatus.get_by_id(
+                g.sess, energisation_status_id
+            )
             properties = req_zish("properties")
             start_date = req_date("start")
             if "generator_type_id" in request.form:
@@ -1093,6 +1097,7 @@ def site_edit_post(site_id):
                 mtc_code,
                 cop,
                 ssc,
+                energisation_status,
                 properties,
                 imp_mpan_core,
                 imp_llfc_code,
