@@ -32,6 +32,7 @@ def content(user):
             "vat_gbp",
             "gross_gbp",
             "kwh",
+            "min_start_date",
         )
         writer.writerow(titles)
 
@@ -41,13 +42,21 @@ def content(user):
             .order_by(Batch.contract_id, Batch.reference)
         ):
 
-            (num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh) = (
+            (
+                num_bills,
+                sum_net_gbp,
+                sum_vat_gbp,
+                sum_gross_gbp,
+                sum_kwh,
+                min_start_date,
+            ) = (
                 sess.query(
                     func.count(Bill.id),
                     func.sum(Bill.net),
                     func.sum(Bill.vat),
                     func.sum(Bill.gross),
                     func.sum(Bill.kwh),
+                    func.min(Bill.start_date),
                 )
                 .filter(Bill.batch == batch)
                 .one()
@@ -66,6 +75,7 @@ def content(user):
                 "vat_gbp": sum_vat_gbp,
                 "gross_gbp": sum_gross_gbp,
                 "kwh": sum_kwh,
+                "min_start_date": min_start_date,
             }
 
             writer.writerow(csv_make_val(vals[t]) for t in titles)
@@ -79,13 +89,21 @@ def content(user):
             .order_by(GBatch.g_contract_id, GBatch.reference)
         ):
 
-            (num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh) = (
+            (
+                num_bills,
+                sum_net_gbp,
+                sum_vat_gbp,
+                sum_gross_gbp,
+                sum_kwh,
+                min_start_date,
+            ) = (
                 sess.query(
                     func.count(GBill.id),
                     func.sum(GBill.net),
                     func.sum(GBill.vat),
                     func.sum(GBill.gross),
                     func.sum(GBill.kwh),
+                    func.min(GBill.start_date),
                 )
                 .filter(GBill.g_batch == g_batch)
                 .one()
@@ -104,6 +122,7 @@ def content(user):
                 "vat_gbp": sum_vat_gbp,
                 "gross_gbp": sum_gross_gbp,
                 "kwh": sum_kwh,
+                "min_start_date": min_start_date,
             }
 
             writer.writerow(csv_make_val(vals[t]) for t in titles)
