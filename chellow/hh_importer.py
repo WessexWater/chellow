@@ -145,6 +145,7 @@ class HhImportTask(threading.Thread):
 
     def import_file(self, sess):
         found_new = False
+        self.wait_seconds = 30 * 60
 
         try:
             contract = Contract.get_dc_by_id(sess, self.contract_id)
@@ -160,11 +161,12 @@ class HhImportTask(threading.Thread):
                 elif protocol == "https":
                     found_new = https_handler(sess, self.log, properties, contract)
                 else:
-                    self.log("Protocol '" + protocol + "' not recognized.")
+                    self.log(f"Protocol '{protocol}' not recognized.")
+                self.wait_seconds = properties.get("check_minutes", 30) * 60
             else:
                 self.log(
-                    "Importer is disabled. To enable it, set "
-                    + "the 'enabled' property to 'True'."
+                    "Importer is disabled. To enable it, set the 'enabled' property "
+                    "to 'True'."
                 )
             self.is_error = False
         except BadRequest as e:
@@ -195,7 +197,7 @@ class HhImportTask(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             self.import_now()
-            self.going.wait(30 * 60)
+            self.going.wait(self.wait_seconds)
             self.going.clear()
 
     def ftp_handler(self, sess, properties, contract):
