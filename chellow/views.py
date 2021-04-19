@@ -1624,7 +1624,8 @@ def supplier_contract_edit_post(contract_id):
         else:
             parties = (
                 g.sess.query(Party)
-                .join(MarketRole, Participant)
+                .join(MarketRole)
+                .join(Participant)
                 .filter(MarketRole.code == "X")
                 .order_by(Participant.code)
                 .all()

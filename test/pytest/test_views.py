@@ -1895,3 +1895,30 @@ def test_site_edit_post(sess, client):
     }
     response = client.post(f"/sites/{site.id}/edit", data=data)
     match(response, 303)
+
+
+def test_supplier_contract_edit_post_missing_properties(sess, client):
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    sess.commit()
+
+    data = {
+        "party_id": party.id,
+        "name": "Fusion Ltd",
+        "charge_script": "if",
+    }
+    response = client.post(f"/supplier_contracts/{contract.id}/edit", data=data)
+    match(response, 400, "field properties is")
