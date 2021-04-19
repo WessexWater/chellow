@@ -56,7 +56,7 @@ setup(
         "pg8000==1.19.2",
         "Flask==1.1.2",
         "werkzeug==1.0.1",
-        "SQLAlchemy==1.4.4",
+        "SQLAlchemy==1.4.9",
         "openpyxl==2.4.8",
         "python-dateutil==2.8.1",
         "pytz==2020.1",
