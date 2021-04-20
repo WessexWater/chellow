@@ -170,11 +170,11 @@ class HhImportTask(threading.Thread):
                 )
             self.is_error = False
         except BadRequest as e:
-            self.log("Problem " + str(e))
+            self.log(f"Problem {e}")
             sess.rollback()
             self.is_error = True
         except Exception:
-            self.log("Unknown Exception " + traceback.format_exc())
+            self.log(f"Unknown Exception {traceback.format_exc()}")
             sess.rollback()
             self.is_error = True
         return found_new
@@ -187,7 +187,7 @@ class HhImportTask(threading.Thread):
                 while self.import_file(sess):
                     pass
             except Exception:
-                self.log("Outer Exception " + traceback.format_exc())
+                self.log(f"Outer Exception {traceback.format_exc()}")
                 self.is_error = True
             finally:
                 if sess is not None:
@@ -399,8 +399,8 @@ def https_handler(sess, log_f, properties, contract, now=None):
     window_start = utc_datetime(now.year, now.month, now.day) - Timedelta(
         days=download_days
     )
-    log_f("Window start: " + hh_format(window_start))
-    log_f("Window finish: " + hh_format(window_finish))
+    log_f(f"Window start: {hh_format(window_start)}")
+    log_f(f"Window finish: {hh_format(window_finish)}")
     env = jinja2.Environment(autoescape=True, undefined=jinja2.StrictUndefined)
     url_template = env.from_string(url_template_str)
     for era in (
@@ -432,6 +432,8 @@ def https_handler(sess, log_f, properties, contract, now=None):
                 )
 
             log_f(f"Retrieving data from {url}.")
+
+            sess.rollback()  # Avoid long transactions
             res = requests.get(url, timeout=120)
             res.raise_for_status()
             result = requests.get(url, timeout=120).json()
@@ -441,8 +443,8 @@ def https_handler(sess, log_f, properties, contract, now=None):
                 result_data = result
             else:
                 raise BadRequest(
-                    f"Expecting a JSON object at the top level, but "
-                    f"instead got {result}"
+                    f"Expecting a JSON object at the top level, but instead got "
+                    f"{result}"
                 )
             raw_data = []
             for jdatum in result_data:
