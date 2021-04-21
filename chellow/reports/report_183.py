@@ -14,11 +14,19 @@ from sqlalchemy.sql.expression import null, true
 
 import chellow.dloads
 from chellow.models import Era, Session, Site, SiteEra, Supply
-from chellow.utils import ct_datetime, hh_format, req_date, req_int, to_ct, to_utc
+from chellow.utils import (
+    ct_datetime,
+    hh_format,
+    req_date,
+    req_int,
+    req_str,
+    to_ct,
+    to_utc,
+)
 from chellow.views import chellow_redirect
 
 
-def none_content(site_id, start_date, finish_date, user, file_name):
+def none_content(site_codes, typ, start_date, finish_date, user, file_name):
     sess = zf = None
     try:
         sess = Session()
@@ -33,6 +41,9 @@ def none_content(site_id, start_date, finish_date, user, file_name):
                 Era.start_date <= finish_date,
             )
         )
+        if site_codes is not None:
+            sites = sites.filter(Site.code.in_(site_codes))
+
         zf = zipfile.ZipFile(running_name, "w")
 
         start_date_str = hh_format(start_date)
@@ -92,17 +103,14 @@ def none_content(site_id, start_date, finish_date, user, file_name):
                         gen_types_str,
                         start_date_str,
                         finish_date_str,
-                        "used",
+                        typ,
                         ct_start_date.strftime("%Y-%m-%d"),
                     ]
-                used_gen_kwh = hh["imp_gen"] - hh["exp_net"] - hh["exp_gen"]
-                used_3p_kwh = hh["imp_3p"] - hh["exp_3p"]
-                used_kwh = hh["imp_net"] + used_gen_kwh + used_3p_kwh
-                row.append(str(round(used_kwh, 2)))
+                row.append(str(round(hh[typ], 2)))
             if row is not None:
                 writer.writerow(row)
             zf.writestr(
-                site.code + "_" + finish_date.strftime("%Y%m%d%M%H") + ".csv",
+                f"{site.code}_{finish_date.strftime('%Y%m%d%M%H')}.csv",
                 buf.getvalue(),
             )
 
@@ -206,7 +214,7 @@ def site_content(site_id, start_date, finish_date, user, file_name):
             os.rename(running_name, finished_name)
 
 
-def do_get(sess):
+def do_post(sess):
     start_date = req_date("start", "day")
     finish_year = req_int("finish_year")
     finish_month = req_int("finish_month")
@@ -217,12 +225,18 @@ def do_get(sess):
     finish_date_str = finish_date_ct.strftime("%Y%m%d%H%M")
     if "site_id" in request.values:
         site_id = req_int("site_id")
-        file_name = "sites_hh_data_" + str(site_id) + "_" + finish_date_str + ".csv"
+        file_name = f"sites_hh_data_{site_id}_{finish_date_str}.csv"
+        args = site_id, start_date, finish_date, g.user, file_name
+        threading.Thread(target=site_content, args=args).start()
+        return chellow_redirect("/downloads", 303)
     else:
-        site_id = None
-        file_name = "supplies_hh_data_" + finish_date_str + ".zip"
+        typ = req_str("type")
+        site_codes_str = req_str("site_codes")
+        site_codes = site_codes_str.splitlines()
+        if len(site_codes) == 0:
+            site_codes = None
 
-    content = none_content if site_id is None else site_content
-    args = (site_id, start_date, finish_date, g.user, file_name)
-    threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+        file_name = f"sites_hh_data_{finish_date_str}_filter.zip"
+        args = site_codes, typ, start_date, finish_date, g.user, file_name
+        threading.Thread(target=none_content, args=args).start()
+        return chellow_redirect("/downloads", 303)
