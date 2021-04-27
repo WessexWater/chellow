@@ -79,7 +79,10 @@ lec_cats = list(
 @lru_cache()
 def get_times(start_date, finish_date, forecast_date):
     if start_date > finish_date:
-        raise BadRequest("The start date is after the finish date.")
+        raise Exception(
+            "The start date {hh_format(start_date)} is after the finish date "
+            "{hh_format(finish_date)}."
+        )
     hist_start = start_date
     hist_finish = finish_date
     years_back = 0
@@ -490,6 +493,11 @@ class DataSource:
         self.forecast_date = forecast_date
         self.start_date = start_date
         self.finish_date = finish_date
+        if self.start_date > self.finish_date:
+            raise Exception(
+                "The start date {hh_format(start_date)} is after the finish date "
+                "{hh_format(finish_date)}."
+            )
         self.deltas = deltas
         times = get_times(start_date, finish_date, forecast_date)
         self.years_back = times["years-back"]
