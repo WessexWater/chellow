@@ -175,9 +175,13 @@ def create_app(testing=False):
             role = g.user.user_role
             role_code = role.code
 
-            if role_code == "viewer" and (
-                method in ("GET", "HEAD")
-                or path in ("/reports/169", "/reports/187", "/reports/247")
+            if (
+                role_code == "viewer"
+                and (
+                    method in ("GET", "HEAD")
+                    or path in ("/reports/169", "/reports/187", "/reports/247")
+                )
+                and path not in ("/system",)
             ):
                 return
             elif role_code == "editor":
