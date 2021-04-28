@@ -35,6 +35,70 @@ from chellow.utils import (
 from chellow.views import chellow_redirect
 
 
+def _process_era(
+    sess,
+    caches,
+    vb_func,
+    forecast_date,
+    bill_titles,
+    contract,
+    period_start,
+    period_finish,
+    era,
+):
+    chunk_start = hh_max(period_start, era.start_date)
+    chunk_finish = hh_min(period_finish, era.finish_date)
+
+    polarities = []
+    if era.imp_supplier_contract == contract:
+        polarities.append(True)
+    if era.exp_supplier_contract == contract:
+        polarities.append(False)
+    for polarity in polarities:
+        vals = []
+        data_source = SupplySource(
+            sess,
+            chunk_start,
+            chunk_finish,
+            forecast_date,
+            era,
+            polarity,
+            caches,
+        )
+
+        site = (
+            sess.query(Site)
+            .join(SiteEra)
+            .filter(SiteEra.era == era, SiteEra.is_physical == true())
+            .one()
+        )
+
+        vals = [
+            data_source.mpan_core,
+            site.code,
+            site.name,
+            data_source.supplier_account,
+            data_source.start_date,
+            data_source.finish_date,
+        ]
+
+        vb_func(data_source)
+        bill = data_source.supplier_bill
+        for title in bill_titles:
+            if title in bill:
+                val = bill[title]
+                del bill[title]
+            else:
+                val = ""
+            vals.append(val)
+
+        for k in sorted(bill.keys()):
+            vals.append(k)
+            vals.append(str(bill[k]))
+
+        return vals
+
+
 def create_csv(f, sess, start_date, finish_date, contract_id):
     caches = {}
     writer = csv.writer(f, lineterminator="\n")
@@ -81,7 +145,6 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
 
         for era in (
             sess.query(Era)
-            .distinct()
             .filter(
                 or_(
                     Era.imp_supplier_contract == contract,
@@ -90,58 +153,26 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
                 Era.start_date <= period_finish,
                 or_(Era.finish_date == null(), Era.finish_date >= period_start),
             )
+            .order_by(Era.imp_mpan_core)
         ):
-
-            chunk_start = hh_max(period_start, era.start_date)
-            chunk_finish = hh_min(period_finish, era.finish_date)
-
-            polarities = []
-            if era.imp_supplier_contract == contract:
-                polarities.append(True)
-            if era.exp_supplier_contract == contract:
-                polarities.append(False)
-            for polarity in polarities:
-                vals = []
-                data_source = SupplySource(
+            try:
+                vals = _process_era(
                     sess,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    era,
-                    polarity,
                     caches,
+                    vb_func,
+                    forecast_date,
+                    bill_titles,
+                    contract,
+                    period_start,
+                    period_finish,
+                    era,
                 )
-
-                site = (
-                    sess.query(Site)
-                    .join(SiteEra)
-                    .filter(SiteEra.era == era, SiteEra.is_physical == true())
-                    .one()
-                )
-
-                vals = [
-                    data_source.mpan_core,
-                    site.code,
-                    site.name,
-                    data_source.supplier_account,
-                    data_source.start_date,
-                    data_source.finish_date,
-                ]
-
-                vb_func(data_source)
-                bill = data_source.supplier_bill
-                for title in bill_titles:
-                    if title in bill:
-                        val = bill[title]
-                        del bill[title]
-                    else:
-                        val = ""
-                    vals.append(val)
-
-                for k in sorted(bill.keys()):
-                    vals.append(k)
-                    vals.append(str(bill[k]))
                 writer.writerow(csv_make_val(v) for v in vals)
+            except BadRequest as e:
+                raise BadRequest(
+                    f"Problem with {chellow.utils.url_root}eras/{era.id}/edit "
+                    f"{e.description}"
+                )
 
 
 def content(start_date, finish_date, contract_id, user):
