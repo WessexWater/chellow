@@ -694,7 +694,7 @@ def _process_supply(
             site_name,
             covered_start,
             covered_finish,
-            covered_bills.keys(),
+            " | ".join(sorted([str(k) for k in covered_bills.keys()])),
             metered_kwh,
         ]
 
