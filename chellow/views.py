@@ -38,7 +38,19 @@ import psutil
 
 from pympler import muppy, summary
 
-from sqlalchemy import Float, case, cast, false, func, not_, null, or_, text, true
+from sqlalchemy import (
+    Float,
+    case,
+    cast,
+    false,
+    func,
+    not_,
+    null,
+    or_,
+    select,
+    text,
+    true,
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
@@ -2147,8 +2159,8 @@ def supply_months_get(supply_id):
                 Channel.imp_related == is_import,
             )
         ]
-        for kwh, kvarh, hh_date in (
-            g.sess.query(
+        s = (
+            select(
                 cast(
                     func.max(
                         case(
@@ -2156,7 +2168,7 @@ def supply_months_get(supply_id):
                         )
                     ),
                     Float,
-                ),
+                ).label("max_active"),
                 cast(
                     func.max(
                         case(
@@ -2172,7 +2184,7 @@ def supply_months_get(supply_id):
                         )
                     ),
                     Float,
-                ),
+                ).label("max_reactive"),
                 HhDatum.start_date,
             )
             .join(Channel, HhDatum.channel_id == Channel.id)
@@ -2182,7 +2194,8 @@ def supply_months_get(supply_id):
                 HhDatum.start_date <= month_finish,
             )
             .group_by(HhDatum.start_date)
-        ):
+        )
+        for kwh, kvarh, hh_date in g.sess.execute(s):
 
             kvah = (kwh ** 2 + kvarh ** 2) ** 0.5
             if kvah > md_kvah:
