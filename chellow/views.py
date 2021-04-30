@@ -8137,3 +8137,11 @@ def g_batch_csv_get(g_batch_id):
     output.headers["Content-Disposition"] = disp
     output.headers["Content-type"] = "text/csv"
     return output
+
+
+@views.route("/asset_comparison")
+def asset_comparison_get():
+    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config_contract.make_properties()
+    description = props.get("asset_comparison", "")
+    return render_template("asset_comparison.html", description=description)
