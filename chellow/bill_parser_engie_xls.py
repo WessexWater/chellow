@@ -38,6 +38,9 @@ ELEM_MAP = {
     },
     "Meter - UK Electricity - DUoS": {
         None: None,
+        "DUoS Unit Rate 3": {
+            None: ("duos-green-gbp", "duos-green-rate", "duos-green-kwh")
+        },
         "DUoS Unit Charge 3": {
             None: ("duos-green-gbp", "duos-green-rate", "duos-green-kwh")
         },
@@ -340,7 +343,9 @@ def _parse_row(row, row_index, datemode, title_row):
             _bd_add(bd, "fit-gbp", amount)
         elif description.startswith("FiT Reconciliation "):
             _bd_add(bd, "fit-gbp", amount)
-        elif description.startswith("CfD FiT Rec - "):
+        elif description.startswith("CfD FiT Rec - ") or description.startswith(
+            "CfD FiT Reconciliation"
+        ):
             _bd_add(bd, "cfd-fit-gbp", amount)
         elif description.startswith("Flex"):
             _bd_add(bd, "reconciliation-gbp", amount)
@@ -360,7 +365,7 @@ def _parse_row(row, row_index, datemode, title_row):
                     _bd_add(bd, elem_k, elem_v)
         else:
             raise BadRequest(
-                "For the path " + str(path) + " the parser can't work out the element."
+                f"For the path {path} the parser can't work out the element."
             )
 
     reference = str(bill_number) + "_" + str(row_index + 1)
