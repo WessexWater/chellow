@@ -73,17 +73,18 @@ def mpan_bit(
             sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
         )
 
-        chellow.duos.duos_vb(supply_source)
-        for hh in supply_source.hh_data:
-            gsp_kwh += hh["gsp-kwh"]
-            hh_msp_kwh = hh["msp-kwh"]
-            msp_kwh += hh_msp_kwh
-            if hh["status"] != "A":
-                num_bad += 1
-                non_actual += hh_msp_kwh
-            if hh_msp_kwh > md:
-                md = hh_msp_kwh
-                date_at_md = hh["start-date"]
+        if era.energisation_status.code == "E":
+            chellow.duos.duos_vb(supply_source)
+            for hh in supply_source.hh_data:
+                gsp_kwh += hh["gsp-kwh"]
+                hh_msp_kwh = hh["msp-kwh"]
+                msp_kwh += hh_msp_kwh
+                if hh["status"] != "A":
+                    num_bad += 1
+                    non_actual += hh_msp_kwh
+                if hh_msp_kwh > md:
+                    md = hh_msp_kwh
+                    date_at_md = hh["start-date"]
 
     if date_at_md is not None:
         kvarh_at_md = (
@@ -150,6 +151,7 @@ def content(supply_id, start_date, finish_date, user):
                 "MTC",
                 "CoP",
                 "SSC",
+                "Energisation Status",
                 "Properties",
                 "MOP Contract",
                 "MOP Account",
@@ -209,6 +211,7 @@ def content(supply_id, start_date, finish_date, user):
                 joinedload(Era.imp_supplier_contract),
                 joinedload(Era.exp_supplier_contract),
                 joinedload(Era.ssc),
+                joinedload(Era.energisation_status),
                 joinedload(Era.site_eras),
             )
         )
@@ -283,7 +286,7 @@ def content(supply_id, start_date, finish_date, user):
                     .first()
                 )
                 if prime_bill.id == read.bill.id:
-                    prime_reads.add(str(rdate) + "_" + read.msn)
+                    prime_reads.add(f"{rdate}_{read.msn}")
 
             supply_type = era.meter_category
 
@@ -308,6 +311,7 @@ def content(supply_id, start_date, finish_date, user):
                     era.mtc.code,
                     era.cop.code,
                     ssc_code,
+                    era.energisation_status.code,
                     era.properties,
                     era.mop_contract.name,
                     era.mop_account,
