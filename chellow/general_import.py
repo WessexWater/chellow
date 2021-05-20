@@ -152,13 +152,19 @@ def general_import_era(sess, action, vals, args):
         else:
             ssc = Ssc.get_by_code(sess, ssc_code)
 
-        properties = add_arg(args, "Properties", vals, 13)
+        es_code = add_arg(args, "Energisation Status", vals, 13)
+        if es_code == NO_CHANGE:
+            es = era.energisation_status
+        else:
+            es = EnergisationStatus.get_by_code(sess, es_code)
+
+        properties = add_arg(args, "Properties", vals, 14)
         if properties == NO_CHANGE:
             properties = loads(era.properties)
         else:
             properties = loads(properties)
 
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 14)
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 15)
         imp_llfc_code = None
         imp_sc = None
         imp_supplier_contract = None
@@ -169,11 +175,11 @@ def general_import_era(sess, action, vals, args):
             imp_mpan_core = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(args, "Import LLFC", vals, 15)
+            imp_llfc_code = add_arg(args, "Import LLFC", vals, 16)
             if imp_llfc_code == NO_CHANGE:
                 imp_llfc_code = era.imp_llfc.code
 
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 16)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 17)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = era.imp_sc
             else:
@@ -181,13 +187,11 @@ def general_import_era(sess, action, vals, args):
                     imp_sc = int(imp_sc_str)
                 except ValueError as e:
                     raise BadRequest(
-                        "The import agreed supply capacity "
-                        + "must be an integer. "
-                        + str(e)
+                        f"The import agreed supply capacity must be an integer. {e}"
                     )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 17
+                args, "Import Supplier Contract", vals, 18
             )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = era.imp_supplier_contract
@@ -196,7 +200,7 @@ def general_import_era(sess, action, vals, args):
                     sess, imp_supplier_contract_name
                 )
 
-            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 18)
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 19)
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = era.imp_supplier_account
 
@@ -205,19 +209,19 @@ def general_import_era(sess, action, vals, args):
         exp_supplier_contract = None
         exp_supplier_account = None
         exp_sc = None
-        if len(vals) > 19:
-            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 19)
+        if len(vals) > 20:
+            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 20)
             if exp_mpan_core == NO_CHANGE:
                 exp_mpan_core = era.exp_mpan_core
             elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 20)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 21)
                 if exp_llfc_code == NO_CHANGE:
                     exp_llfc_code = era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 21)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 22)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = era.exp_sc
                 else:
@@ -225,13 +229,11 @@ def general_import_era(sess, action, vals, args):
                         exp_sc = int(exp_sc_str)
                     except ValueError as e:
                         raise BadRequest(
-                            "The export supply capacity "
-                            + "must be an integer. "
-                            + str(e)
+                            f"The export supply capacity must be an integer. {e}"
                         )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 22
+                    args, "Export Supplier Contract", vals, 23
                 )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = era.exp_supplier_contract
@@ -241,7 +243,7 @@ def general_import_era(sess, action, vals, args):
                     )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 23
+                    args, "Export Supplier Account", vals, 24
                 )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = era.exp_supplier_account
@@ -260,6 +262,7 @@ def general_import_era(sess, action, vals, args):
             mtc,
             cop,
             ssc,
+            es,
             properties,
             imp_mpan_core,
             imp_llfc_code,
@@ -372,13 +375,13 @@ def general_import_era(sess, action, vals, args):
         else:
             energisation_status = EnergisationStatus.get_by_code(sess, es_code)
 
-        properties_str = add_arg(args, "Properties", vals, 12)
+        properties_str = add_arg(args, "Properties", vals, 13)
         if properties_str == NO_CHANGE:
             properties = loads(existing_era.properties)
         else:
             properties = loads(properties_str)
 
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 13)
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 14)
         if imp_mpan_core == NO_CHANGE:
             imp_mpan_core = existing_era.imp_mpan_core
         elif len(imp_mpan_core) == 0:
@@ -391,11 +394,11 @@ def general_import_era(sess, action, vals, args):
         imp_supplier_contract_name = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class", vals, 14)
+            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class", vals, 15)
             if imp_llfc_code == NO_CHANGE and existing_era.imp_llfc is not None:
                 imp_llfc_code = existing_era.imp_llfc.code
 
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 15)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 16)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = existing_era.imp_sc
             else:
@@ -403,12 +406,11 @@ def general_import_era(sess, action, vals, args):
                     imp_sc = int(imp_sc_str)
                 except ValueError as e:
                     raise BadRequest(
-                        "The import agreed supply capacity "
-                        "must be an integer. " + str(e)
+                        f"The import agreed supply capacity must be an integer. {e}"
                     )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier " + "Contract", vals, 16
+                args, "Import Supplier " + "Contract", vals, 17
             )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = existing_era.imp_supplier_contract
@@ -418,18 +420,14 @@ def general_import_era(sess, action, vals, args):
                 )
 
             imp_supplier_account = add_arg(
-                args, "Import Supplier Account " + "Reference", vals, 17
+                args, "Import Supplier Account " + "Reference", vals, 18
             )
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = existing_era.imp_supplier_account
-            else:
-                imp_supplier_account = add_arg(
-                    args, "Import Supplier Account " + "Reference", vals, 17
-                )
 
             for i, ctype in enumerate(CHANNEL_TYPES):
-                field_name = "Import " + ctype + "?"
-                has_chan_str = add_arg(args, field_name, vals, i + 18)
+                field_name = f"Import {ctype}?"
+                has_chan_str = add_arg(args, field_name, vals, i + 19)
                 if has_chan_str == NO_CHANGE:
                     if existing_era.find_channel(sess, True, ctype) is not None:
                         channel_set.add((True, ctype))
@@ -442,19 +440,19 @@ def general_import_era(sess, action, vals, args):
         exp_supplier_account = None
         exp_sc = None
 
-        if len(vals) > 21:
-            exp_mpan_core = add_arg(args, "Export MPAN", vals, 21)
+        if len(vals) > 22:
+            exp_mpan_core = add_arg(args, "Export MPAN", vals, 22)
             if exp_mpan_core == NO_CHANGE:
                 exp_mpan_core = existing_era.exp_mpan_core
             elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 22)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 23)
                 if exp_llfc_code == NO_CHANGE and existing_era.exp_llfc is not None:
                     exp_llfc_code = existing_era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 23)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 24)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = existing_era.exp_sc
                 else:
@@ -462,11 +460,11 @@ def general_import_era(sess, action, vals, args):
                         exp_sc = int(exp_sc_str)
                     except ValueError as e:
                         raise BadRequest(
-                            "The export supply capacity must be an integer. " + str(e)
+                            f"The export supply capacity must be an integer. {e}"
                         )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 24
+                    args, "Export Supplier Contract", vals, 25
                 )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = existing_era.exp_supplier_contract
@@ -476,14 +474,14 @@ def general_import_era(sess, action, vals, args):
                     )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 25
+                    args, "Export Supplier Account", vals, 26
                 )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = existing_era.exp_supplier_account
 
                 for i, ctype in enumerate(CHANNEL_TYPES):
-                    field_name = "Export " + ctype + "?"
-                    has_chan_str = add_arg(args, field_name, vals, i + 26)
+                    field_name = f"Export {ctype}?"
+                    has_chan_str = add_arg(args, field_name, vals, i + 27)
                     if has_chan_str == NO_CHANGE:
                         if existing_era.find_channel(sess, False, ctype) is not None:
                             channel_set.add((False, ctype))
