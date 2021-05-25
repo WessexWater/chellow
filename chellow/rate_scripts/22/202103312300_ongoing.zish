@@ -47,7 +47,7 @@
       }
     ],
     "tariffs": {
-      "001,002,003,110,203,210,L41,L42,L43,L44_00,03,04,05,06,07,08": {
+      "001,002,003,110,203,210,L41,L42,L43,L44,N12,N22,N32,L52,L62,L72,L82,N13,N23,N33,L53,L63,L73,L83,N14,N24,N34,L54,L64,L74,L84,N10,N20,N30,L50,L60,L70,L80_00,03,04,05,06,07,08": {
         "amber-gbp-per-kwh": 0.01998,
         "description": "Non-Domestic Aggregated",
         "excess-gbp-per-kva-per-day": 0.00000,
@@ -1353,7 +1353,7 @@
         "gbp-per-kva-per-day": 0.00050,
         "gbp-per-kwh": null
       },
-      "510_00": {
+      "510,H02,H03,H04,H00_00": {
         "amber-gbp-per-kwh": 0.01484,
         "description": "HV Site Specific",
         "excess-gbp-per-kva-per-day": 0.06740,
@@ -1379,7 +1379,7 @@
         "gbp-per-kva-per-day": 0.00050,
         "gbp-per-kwh": -0.00006
       },
-      "540_00": {
+      "540,S02,S03,S04,S00_00": {
         "amber-gbp-per-kwh": 0.01584,
         "description": "LV Sub Site Specific",
         "excess-gbp-per-kva-per-day": 0.06880,
@@ -1409,7 +1409,7 @@
         "green-gbp-per-kwh": -0.00043,
         "red-gbp-per-kwh": -0.07668
       },
-      "570_00": {
+      "570,L02,L03,L04,L00_00": {
         "amber-gbp-per-kwh": 0.01728,
         "description": "LV Site Specific",
         "excess-gbp-per-kva-per-day": 0.08320,
