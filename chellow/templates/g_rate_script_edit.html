@@ -72,7 +72,8 @@
 							<div class="section-data">
 								Script
 								<br>
-								{{ input_textarea('script', g_rate_script.script, 40, 80) }}
+								{{ input_textarea(
+									'script', g_rate_script.script, 40, 80, show_pos=True) }}
 								<br>
 								<input type="submit" value="Update">
 								<input type="reset" value="Reset">
