@@ -40,7 +40,13 @@ def content(user):
                 f"properties."
             )
 
-        for key in ("user_name", "password", "prefix", "ignore_mpan_cores"):
+        for key in (
+            "user_name",
+            "password",
+            "prefix",
+            "ignore_mpan_cores",
+            "ignore_mpan_cores_msn",
+        ):
             try:
                 ecoes_props[key]
             except KeyError:
@@ -50,6 +56,7 @@ def content(user):
                 )
 
         ignore_mpan_cores = ecoes_props["ignore_mpan_cores"]
+        ignore_mpan_cores_msn = ecoes_props["ignore_mpan_cores_msn"]
 
         proxies = props.get("proxies", {})
         s = requests.Session()
@@ -316,8 +323,13 @@ def content(user):
                 chellow_msn = era.msn
                 if chellow_msn is None:
                     chellow_msn = ""
-                if chellow_msn != ecoes["msn"]:
-                    problem += "The meter serial numbers don't match. "
+
+                if mpan_spaces in ignore_mpan_cores_msn:
+                    if ecoes["msn"] not in chellow_msn:
+                        problem += "The meter serial numbers don't match. "
+                else:
+                    if chellow_msn != ecoes["msn"]:
+                        problem += "The meter serial numbers don't match. "
 
                 chellow_meter_type = _meter_type(era)
 
