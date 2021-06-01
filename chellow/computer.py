@@ -523,7 +523,7 @@ class DataSource:
         for em_start, em in sorted(self.era_maps.items()):
             if em_start <= start_date:
                 era_map = em
-                break
+
         self.era_map = PropDict("scenario properties", era_map)
         self.era_map_llfcs = self.era_map.get("llfcs", {})
         self.era_map_pcs = self.era_map.get("pcs", {})
