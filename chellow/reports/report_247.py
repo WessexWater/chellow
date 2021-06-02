@@ -728,13 +728,9 @@ def _process_site(
                 gbp = exp_supplier_bill["net-gbp"]
             except KeyError:
                 exp_supplier_bill["problem"] += (
-                    "For the supply "
-                    + imp_ss.mpan_core
-                    + " the virtual bill "
-                    + str(imp_supplier_bill)
-                    + " from the contract "
-                    + imp_supplier_contract.name
-                    + " does not contain the net-gbp key."
+                    f"For the supply {imp_ss.mpan_core} the virtual bill "
+                    f"{imp_supplier_bill} from the contract "
+                    f"{imp_supplier_contract.name} does not contain the net-gbp key."
                 )
 
             if source_code in ("net", "gen-net"):
@@ -800,6 +796,9 @@ def _process_site(
                 Bill.start_date <= finish_date,
                 Bill.finish_date >= start_date,
             ):
+                if bill.id in bill_ids:
+                    continue
+
                 bill_ids.add(bill.id)
                 bill_role_code = bill.batch.contract.market_role.code
                 bill_start = bill.start_date
