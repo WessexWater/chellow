@@ -127,8 +127,8 @@ def str_to_hr(hr_str):
 
 def val_to_slots(val):
     slots = []
-    time_str = None if val is None else val.strip()
-    if time_str not in (None, "", "[Start] - [End]"):
+    time_str = None if val is None else str(val).strip()
+    if time_str not in (None, "", "[Start] - [End]", "0"):
         for t_str in time_str.splitlines():
             for sep in ("-", "to"):
                 if sep in t_str:
