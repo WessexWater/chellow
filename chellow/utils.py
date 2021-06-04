@@ -3,7 +3,7 @@ import time
 import traceback
 from collections import defaultdict
 from collections.abc import Mapping, Set
-from datetime import datetime as Datetime, timedelta as Timedelta
+from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
 from dateutil.relativedelta import relativedelta
@@ -805,6 +805,16 @@ def get_file_rates(cache, contract_name, dt):
             rs = get_file_script(cache, contract_name, dt)
 
             if rs is None:
+                l_start, l_finish, l_script = get_file_script_latest(
+                    cache, contract_name
+                )
+                rs = get_file_script(cache, contract_name, l_start)
+                hist_date = l_start
+            else:
+                hist_date = dt
+            rs_start, rs_finish, script = rs
+            """
+            if rs is None:
                 dt_weekday = dt.weekday()
                 l_rs = get_file_script_latest(cache, contract_name)
                 l_start, l_finish, l_script = l_rs
@@ -833,6 +843,7 @@ def get_file_rates(cache, contract_name, dt):
             else:
                 rs_start, rs_finish, script = rs
                 hist_date = dt
+            """
 
             try:
                 props = cont["props"]
@@ -845,32 +856,20 @@ def get_file_rates(cache, contract_name, dt):
                 try:
                     script["hist_dates"] = {}
                     rscript = PropDict(
-                        " in the rate script "
-                        + url_root
-                        + "industry_contracts/"
-                        + contract_name
-                        + "/rate_scripts/"
-                        + rs_start.strftime("%Y%m%d%H%M")
-                        + ".",
+                        f" in the rate script {url_root} industry_contracts/"
+                        f"{contract_name}/rate_scripts/"
+                        f"{rs_start.strftime('%Y%m%d%H%M')}.",
                         script,
                     )
                 except ZishException as e:
                     raise BadRequest(
-                        "Problem parsing rate script for contract "
-                        + contract_name
-                        + " starting at "
-                        + hh_format(rs_start)
-                        + ": "
-                        + str(e)
+                        f"Problem parsing rate script for contract {contract_name} "
+                        f"starting at {hh_format(rs_start)}: {e}"
                     )
                 except BadRequest as e:
                     raise BadRequest(
-                        "Problem with rate script for contract "
-                        + contract_name
-                        + " starting at "
-                        + hh_format(rs_start)
-                        + ": "
-                        + e.description
+                        f"Problem with rate script for contract {contract_name} "
+                        f"starting at {hh_format(rs_start)}: {e.description}"
                     )
 
                 props[rs_start] = rscript

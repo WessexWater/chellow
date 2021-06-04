@@ -1,4 +1,5 @@
 from collections import defaultdict, namedtuple
+from copy import deepcopy
 from datetime import datetime as Datetime
 from functools import lru_cache
 from itertools import combinations, count
@@ -192,7 +193,7 @@ def hh_rate(sess, caches, contract_id, date):
                 seg = "non_core_rate_scripts/"
             else:
                 raise Exception(
-                    "The market role code " + market_role_code + " isn't recognized."
+                    f"The market role code {market_role_code} isn't recognized."
                 )
 
             vals = PropDict(
@@ -320,10 +321,8 @@ def _tpr_dict(sess, caches, tpr_code):
                     cis = tprs[tpr_code]
                 except KeyError:
                     raise BadRequest(
-                        "Can't find the TPR "
-                        + tpr_code
-                        + " in the rate script of the 'teleswitch' supplier "
-                        "contract."
+                        f"Can't find the TPR {tpr_code} in the rate script of the "
+                        f"'teleswitch' supplier contract."
                     )
         else:
             cis = [
@@ -518,7 +517,7 @@ class DataSource:
         self.mop_bill_hhs = {}
         self.dc_bill_hhs = {}
 
-        self.era_maps = {} if era_maps is None else era_maps
+        self.era_maps = {} if era_maps is None else deepcopy(era_maps)
         era_map = {}
         for em_start, em in sorted(self.era_maps.items()):
             if em_start <= start_date:
@@ -591,9 +590,10 @@ class SiteSource(DataSource):
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
 
-            if era.imp_llfc.code in self.era_map_llfcs:
-                self.llfc_code = self.era_map_llfcs[era.imp_llfc.code]
-                self.llfc = self.dno.get_llfc_by_code(sess, self.llfc_code)
+            era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
+            if era.imp_llfc.code in era_map_llfcs:
+                self.llfc_code = era_map_llfcs[era.imp_llfc.code]
+                self.llfc = self.dno.get_llfc_by_code(sess, self.llfc_code, start_date)
             else:
                 self.llfc = era.imp_llfc
                 self.llfc_code = self.llfc.code

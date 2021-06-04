@@ -1756,7 +1756,7 @@
         "green-gbp-per-kwh": 0.00018,
         "red-gbp-per-kwh": 0.01887
       }
-    }
+    },
     "residual": {
       "lv-net": [
         {

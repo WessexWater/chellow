@@ -546,6 +546,7 @@ def _process_site(
         forecast_from,
         report_context,
         displaced_era,
+        era_maps=era_maps,
         deltas=site_deltas,
     )
 
@@ -1256,22 +1257,25 @@ def content(
                     sf = [(month_start, month_finish)]
 
                 for start, finish in sf:
-                    normal_reads = normal_reads | _process_site(
-                        sess,
-                        report_context,
-                        forecast_from,
-                        start,
-                        finish,
-                        site,
-                        deltas[site.id],
-                        supply_id,
-                        era_maps,
-                        now,
-                        summary_titles,
-                        title_dict,
-                        era_rows,
-                        site_rows,
-                    )
+                    try:
+                        normal_reads = normal_reads | _process_site(
+                            sess,
+                            report_context,
+                            forecast_from,
+                            start,
+                            finish,
+                            site,
+                            deltas[site.id],
+                            supply_id,
+                            era_maps,
+                            now,
+                            summary_titles,
+                            title_dict,
+                            era_rows,
+                            site_rows,
+                        )
+                    except BadRequest as e:
+                        raise BadRequest(f"Site Code {site.code}: {e.description}")
 
             normal_read_rows = [["mpan_core", "date", "msn", "type", "registers"]]
             for mpan_core, r in sorted(list(normal_reads)):
