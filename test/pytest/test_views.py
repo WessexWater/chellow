@@ -2044,10 +2044,10 @@ def test_supply_months_get(sess, client):
     )
     sess.commit()
 
-    data = {
+    query_string = {
         "is_import": "true",
         "year": "2021",
         "years": "1",
     }
-    response = client.get(f"/supplies/{supply.id}/months", data=data)
+    response = client.get(f"/supplies/{supply.id}/months", query_string=query_string)
     match(response, 200)

@@ -444,7 +444,7 @@ def _parse_MTC_Meter_Type(sess, csv_reader):
 
 
 def content(fin, user):
-    sess = None
+    sess = f = w = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
@@ -454,6 +454,7 @@ def content(fin, user):
         w = csv.writer(f, lineterminator="\n")
 
         zip_file = ZipFile(fin)
+
         for zname in zip_file.namelist():
             csv_file = StringIO(zip_file.read(zname).decode("utf-8"))
             csv_reader = iter(csv.reader(csv_file))
@@ -463,14 +464,14 @@ def content(fin, user):
             if zname.startswith("Line_Loss_Factor_Class"):
                 rows = _parse_Line_Loss_Factor_Class(sess, csv_reader)
 
+            elif zname.startswith("Market_Participant_Role"):
+                rows = _parse_Market_Participant_Role(sess, csv_reader)
+
             elif zname.startswith("Market_Participant"):
                 rows = _parse_Market_Participant(sess, csv_reader)
 
             elif zname.startswith("Market_Role"):
                 rows = _parse_Market_Role(sess, csv_reader)
-
-            elif zname.startswith("Market_Participant_Role"):
-                rows = _parse_Market_Participant_Role(sess, csv_reader)
 
             elif zname.startswith("Meter_Timeswitch_Class"):
                 rows = _parse_Meter_Timeswitch_Class(sess, csv_reader)
@@ -483,8 +484,12 @@ def content(fin, user):
 
             w.writerows(rows)
 
-    except BaseException:
-        w.writerow([traceback.format_exc()])
+    except BaseException as e:
+        if w is None:
+            raise e
+        else:
+            w.writerow([traceback.format_exc()])
+
     finally:
         if sess is not None:
             sess.close()

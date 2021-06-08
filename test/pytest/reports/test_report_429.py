@@ -246,12 +246,12 @@ def test_batch_http(mocker, sess, client):
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     sess.commit()
 
-    data = {"g_batch_id": g_batch.id}
+    query_string = {"g_batch_id": g_batch.id}
 
     mock_Thread = mocker.patch(
         "chellow.reports.report_429.threading.Thread", autospec=True
     )
-    response = client.get("/reports/429", data=data)
+    response = client.get("/reports/429", query_string=query_string)
 
     match(response, 303)
 
@@ -314,12 +314,12 @@ def test_bill_http(mocker, sess, client):
     )
     sess.commit()
 
-    data = {"g_bill_id": g_bill.id}
+    query_string = {"g_bill_id": g_bill.id}
 
     mock_Thread = mocker.patch(
         "chellow.reports.report_429.threading.Thread", autospec=True
     )
-    response = client.get("/reports/429", data=data)
+    response = client.get("/reports/429", query_string=query_string)
 
     match(response, 303)
 

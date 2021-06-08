@@ -9,10 +9,10 @@ from chellow.utils import utc_datetime
 
 
 def test_ete_error_message_for_invalid_bill_id(client, sess):
-    data = {
+    query_string = {
         "bill_id": "0",
     }
-    response = client.get("/reports/111", data=data)
+    response = client.get("/reports/111", query_string=query_string)
 
     match(response, 404)
 
@@ -40,11 +40,11 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
     sess.commit()
     MockThread = mocker.patch("chellow.reports.report_111.threading.Thread")
 
-    data = {
+    query_string = {
         "batch_id": str(batch.id),
         "mpan_cores": "22 1065 3921 534",
     }
-    response = client.get("/reports/111", data=data)
+    response = client.get("/reports/111", query_string=query_string)
 
     match(response, 303)
 
