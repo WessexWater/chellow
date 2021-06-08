@@ -324,12 +324,11 @@ def content(user):
                 if chellow_msn is None:
                     chellow_msn = ""
 
-                if mpan_spaces in ignore_mpan_cores_msn:
-                    if ecoes["msn"] not in chellow_msn:
-                        problem += "The meter serial numbers don't match. "
-                else:
-                    if chellow_msn != ecoes["msn"]:
-                        problem += "The meter serial numbers don't match. "
+                if (
+                    mpan_spaces not in ignore_mpan_cores_msn
+                    and chellow_msn != ecoes["msn"]
+                ):
+                    problem += "The meter serial numbers don't match. "
 
                 chellow_meter_type = _meter_type(era)
 
