@@ -1648,13 +1648,15 @@ class GeneralImporter(threading.Thread):
                 self.args = []
                 self.line_number = idx + 1
 
+                if len(line) == 0:
+                    continue
+
                 if len(line) > 0 and line[0].startswith("#"):
                     continue
 
                 if len(line) < 2:
                     raise BadRequest(
-                        "There must be an 'action' field "
-                        + "followed by a 'type' field."
+                        "There must be an 'action' field followed by a 'type' field."
                     )
 
                 action = add_arg(self.args, "action", line, 0).lower()
