@@ -254,6 +254,10 @@ def content(
 
 
 def do_get(sess):
+    return do_post(sess)
+
+
+def do_post(sess):
     batch_id = bill_id = contract_id = start_date = finish_date = None
     if "mpan_cores" in request.values:
         mpan_cores = req_str("mpan_cores").splitlines()
@@ -297,7 +301,6 @@ def do_get(sess):
         mpan_cores,
         fname_additional,
     )
-    print(args)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
 
