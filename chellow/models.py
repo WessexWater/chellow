@@ -2266,7 +2266,7 @@ class MeterType(Base, PersistentClass):
     def get_by_code(sess, code):
         meter_type = sess.query(MeterType).filter(MeterType.code == code).first()
         if meter_type is None:
-            raise Exception("Can't find the meter type with code " + code + ".")
+            raise Exception(f"Can't find the meter type with code {code}.")
         return meter_type
 
     __tablename__ = "meter_type"
@@ -2298,7 +2298,7 @@ class MeterPaymentType(Base, PersistentClass):
             sess.query(MeterPaymentType).filter(MeterPaymentType.code == code).first()
         )
         if meter_payment_type is None:
-            raise Exception("Can't find the meter payment type with code " + code + ".")
+            raise Exception(f"Can't find the meter payment type with code {code}.")
         return meter_payment_type
 
     __tablename__ = "meter_payment_type"
@@ -2366,8 +2366,7 @@ class Mtc(Base, PersistentClass):
         mtc = Mtc.find_by_code(sess, dno, code)
         if mtc is None:
             raise BadRequest(
-                f"There isn't an MTC with the code {code} for the DNO "
-                f"{dno.dno_code}."
+                f"There isn't an MTC with the code {code} for the DNO {dno.dno_code}."
             )
         return mtc
 
@@ -5879,12 +5878,9 @@ def db_init(sess, root_path):
                     start_str, finish_str = rscript_fname.split(".")[0].split("_")
                 except ValueError:
                     raise Exception(
-                        "The rate script "
-                        + rscript_fname
-                        + " in the directory "
-                        + rscripts_path
-                        + " should consist of two dates separated by an "
-                        + "underscore."
+                        f"The rate script {rscript_fname} in the directory "
+                        f"{rscripts_path} should consist of two dates separated by an "
+                        f"underscore."
                     )
                 start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
                 if finish_str == "ongoing":
@@ -5900,12 +5896,8 @@ def db_init(sess, root_path):
                     rparams.update(read_file(rscripts_path, rscript_fname, "script"))
                 except ZishException as e:
                     raise Exception(
-                        "Contract name "
-                        + contract_name
-                        + " rscript fname "
-                        + rscript_fname
-                        + ": "
-                        + str(e)
+                        f"Contract name {contract_name} rscript fname {rscript_fname} "
+                        f": {e}"
                     )
                 sess.add(RateScript(**rparams))
                 sess.flush()
@@ -5972,10 +5964,8 @@ def db_init(sess, root_path):
     sess.commit()
     sess.flush()
 
-    sess.execute(
-        "alter database " + db_name + " set default_transaction_deferrable = on"
-    )
-    sess.execute("alter database " + db_name + " SET DateStyle TO 'ISO, YMD'")
+    sess.execute(f"alter database {db_name} set default_transaction_deferrable = on")
+    sess.execute(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'")
     sess.commit()
     sess.close()
     engine.dispose()
@@ -5984,10 +5974,8 @@ def db_init(sess, root_path):
     isolation_level = sess.execute("show transaction isolation level").scalar()
     if isolation_level != "serializable":
         raise Exception(
-            "The transaction isolation level for database "
-            + db_name
-            + " should be 'serializable' but in fact "
-            "it's " + isolation_level + "."
+            f"The transaction isolation level for database {db_name} should be "
+            f"'serializable' but in fact it's {isolation_level}."
         )
 
     sess.execute("create extension tablefunc")
@@ -6522,6 +6510,35 @@ def db_upgrade_24_to_25(sess, root_path):
     sess.execute("alter table era alter energisation_status_id set not null;")
 
 
+def db_upgrade_25_to_26(sess, root_path):
+    for mtc_id, mtc_meter_type_id in sess.execute(
+        "select id, meter_type_id from mtc order by id"
+    ):
+        meter_type_code = sess.execute(
+            "select code from meter_type where id = :id",
+            params={"id": mtc_meter_type_id},
+        ).scalar()
+        new_meter_type_id = sess.execute(
+            "select id from meter_type where code = :code order by id desc",
+            params={"code": meter_type_code},
+        ).first()[0]
+        sess.execute(
+            "update mtc set meter_type_id = :meter_type_id where id = :id",
+            params={"id": mtc_id, "meter_type_id": new_meter_type_id},
+        )
+
+    meter_type_codes = set()
+    for (meter_type_code,) in sess.execute("select code from meter_type"):
+        meter_type_codes.add(meter_type_code)
+
+    for code in meter_type_codes:
+        code_id = sess.execute(
+            "select id from meter_type where code = :code order by id",
+            params={"code": code},
+        ).first()[0]
+        sess.execute("delete from meter_type where id = :id", params={"id": code_id})
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1,
     db_upgrade_1_to_2,
@@ -6548,6 +6565,7 @@ upgrade_funcs = [
     db_upgrade_22_to_23,
     db_upgrade_23_to_24,
     db_upgrade_24_to_25,
+    db_upgrade_25_to_26,
 ]
 
 
