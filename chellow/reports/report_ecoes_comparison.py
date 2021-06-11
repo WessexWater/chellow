@@ -247,96 +247,97 @@ def content(user):
                     )
                 ).scalar()
 
-                if era.imp_mpan_core == mpan_spaces:
-                    supplier_contract = era.imp_supplier_contract
-                    llfc = era.imp_llfc
-                else:
-                    supplier_contract = era.exp_supplier_contract
-                    llfc = era.exp_llfc
-
-                chellow_pc = era.pc.code
-                try:
-                    if int(ecoes["pc"]) != int(chellow_pc):
-                        problem += "The PCs don't match. "
-                except ValueError:
-                    problem += "Can't parse the PC. "
-
-                chellow_mtc = era.mtc.code
-                try:
-                    if int(ecoes["mtc"]) != int(chellow_mtc):
-                        problem += "The MTCs don't match. "
-                except ValueError:
-                    problem += "Can't parse the MTC. "
-
-                chellow_llfc = llfc.code
-                if ecoes["llfc"].zfill(3) != chellow_llfc:
-                    problem += "The LLFCs don't match. "
-
-                chellow_ssc = era.ssc
-                if chellow_ssc is None:
-                    chellow_ssc = ""
-                    chellow_ssc_int = None
-                else:
-                    chellow_ssc = chellow_ssc.code
-                    chellow_ssc_int = int(chellow_ssc)
-
-                if len(ecoes["ssc"]) > 0:
-                    ecoes_ssc_int = int(ecoes["ssc"])
-                else:
-                    ecoes_ssc_int = None
-
-                if ecoes_ssc_int != chellow_ssc_int and not (
-                    ecoes_ssc_int is None and chellow_ssc_int is None
-                ):
-                    problem += "The SSCs don't match. "
-
                 chellow_es = era.energisation_status.code
                 if ecoes_es != chellow_es:
                     problem += "The energisation statuses don't match. "
 
-                chellow_supplier = supplier_contract.party.participant.code
-                if chellow_supplier != ecoes["supplier"]:
-                    problem += "The supplier codes don't match. "
+                if not (ecoes_es == "D" and chellow_es == "D"):
+                    if era.imp_mpan_core == mpan_spaces:
+                        supplier_contract = era.imp_supplier_contract
+                        llfc = era.imp_llfc
+                    else:
+                        supplier_contract = era.exp_supplier_contract
+                        llfc = era.exp_llfc
 
-                dc_contract = era.dc_contract
-                if dc_contract is None:
-                    chellow_dc = ""
-                else:
-                    chellow_dc = dc_contract.party.participant.code
+                    chellow_pc = era.pc.code
+                    try:
+                        if int(ecoes["pc"]) != int(chellow_pc):
+                            problem += "The PCs don't match. "
+                    except ValueError:
+                        problem += "Can't parse the PC. "
 
-                if chellow_dc != ecoes["dc"]:
-                    problem += "The DC codes don't match. "
+                    chellow_mtc = era.mtc.code
+                    try:
+                        if int(ecoes["mtc"]) != int(chellow_mtc):
+                            problem += "The MTCs don't match. "
+                    except ValueError:
+                        problem += "Can't parse the MTC. "
 
-                mop_contract = era.mop_contract
-                if mop_contract is None:
-                    chellow_mop = ""
-                else:
-                    chellow_mop = mop_contract.party.participant.code
+                    chellow_llfc = llfc.code
+                    if ecoes["llfc"].zfill(3) != chellow_llfc:
+                        problem += "The LLFCs don't match. "
 
-                if chellow_mop != ecoes["mop"]:
-                    problem += "The MOP codes don't match. "
+                    chellow_ssc = era.ssc
+                    if chellow_ssc is None:
+                        chellow_ssc = ""
+                        chellow_ssc_int = None
+                    else:
+                        chellow_ssc = chellow_ssc.code
+                        chellow_ssc_int = int(chellow_ssc)
 
-                chellow_gsp_group = era.supply.gsp_group.code
-                if chellow_gsp_group != ecoes["gsp-group"]:
-                    problem += "The GSP group codes don't match. "
+                    if len(ecoes["ssc"]) > 0:
+                        ecoes_ssc_int = int(ecoes["ssc"])
+                    else:
+                        ecoes_ssc_int = None
 
-                chellow_msn = era.msn
-                if chellow_msn is None:
-                    chellow_msn = ""
+                    if ecoes_ssc_int != chellow_ssc_int and not (
+                        ecoes_ssc_int is None and chellow_ssc_int is None
+                    ):
+                        problem += "The SSCs don't match. "
 
-                if (
-                    mpan_spaces not in ignore_mpan_cores_msn
-                    and chellow_msn != ecoes["msn"]
-                ):
-                    problem += "The meter serial numbers don't match. "
+                    chellow_supplier = supplier_contract.party.participant.code
+                    if chellow_supplier != ecoes["supplier"]:
+                        problem += "The supplier codes don't match. "
 
-                chellow_meter_type = _meter_type(era)
+                    dc_contract = era.dc_contract
+                    if dc_contract is None:
+                        chellow_dc = ""
+                    else:
+                        chellow_dc = dc_contract.party.participant.code
 
-                if chellow_meter_type != ecoes["meter-type"]:
-                    problem += (
-                        "The meter types don't match. See "
-                        "https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
-                    )
+                    if chellow_dc != ecoes["dc"]:
+                        problem += "The DC codes don't match. "
+
+                    mop_contract = era.mop_contract
+                    if mop_contract is None:
+                        chellow_mop = ""
+                    else:
+                        chellow_mop = mop_contract.party.participant.code
+
+                    if chellow_mop != ecoes["mop"]:
+                        problem += "The MOP codes don't match. "
+
+                    chellow_gsp_group = era.supply.gsp_group.code
+                    if chellow_gsp_group != ecoes["gsp-group"]:
+                        problem += "The GSP group codes don't match. "
+
+                    chellow_msn = era.msn
+                    if chellow_msn is None:
+                        chellow_msn = ""
+
+                    if (
+                        mpan_spaces not in ignore_mpan_cores_msn
+                        and chellow_msn != ecoes["msn"]
+                    ):
+                        problem += "The meter serial numbers don't match. "
+
+                    chellow_meter_type = _meter_type(era)
+
+                    if chellow_meter_type != ecoes["meter-type"]:
+                        problem += (
+                            "The meter types don't match. See "
+                            "https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
+                        )
             else:
                 chellow_pc = ""
                 chellow_mtc = ""
