@@ -355,11 +355,8 @@ def _process_supply(
 
             if not msn_match:
                 virtual_bill["problem"] += (
-                    "The MSN "
-                    + read_msn
-                    + " of the register read "
-                    + str(read.id)
-                    + " doesn't match the MSN of the era."
+                    f"The MSN {read_msn} of the register read {read.id} doesn't match "
+                    f"the MSN of the era."
                 )
 
             for dt, typ in [
@@ -369,12 +366,9 @@ def _process_supply(
                 key = str(dt) + "-" + read.msn
                 try:
                     if typ != read_dict[key]:
-                        virtual_bill["problem"] += (
-                            " Reads taken "
-                            + "on "
-                            + str(dt)
-                            + " have differing read types."
-                        )
+                        virtual_bill[
+                            "problem"
+                        ] += f" Reads taken on {dt} have differing read types."
                 except KeyError:
                     read_dict[key] = typ
 
@@ -471,16 +465,9 @@ def _process_supply(
                         covered_bdown[k] = v
                     except TypeError as detail:
                         raise BadRequest(
-                            "For key "
-                            + str(k)
-                            + " in "
-                            + str([b.id for b in covered_bills.values()])
-                            + " the value "
-                            + str(v)
-                            + " can't be added to the existing value "
-                            + str(covered_bdown[k])
-                            + ". "
-                            + str(detail)
+                            f"For key {k} in {[b.id for b in covered_bills.values()]} "
+                            f"the value {v} can't be added to the existing value "
+                            f"{covered_bdown[k]}. {detail}"
                         )
 
                     if k.endswith("-gbp"):
@@ -542,16 +529,9 @@ def _process_supply(
                 era.imp_supplier_contract,
                 era.exp_supplier_contract,
             ):
-                virtual_bill["problem"] += "".join(
-                    (
-                        "From ",
-                        hh_format(chunk_start),
-                        " to ",
-                        hh_format(chunk_finish),
-                        " the contract of ",
-                        "the era doesn't match the contract of the ",
-                        "bill.",
-                    )
+                virtual_bill["problem"] += (
+                    f"From {hh_format(chunk_start)} to {hh_format(chunk_finish)} "
+                    f"the contract of the era doesn't match the contract of the bill."
                 )
                 continue
 
@@ -618,14 +598,7 @@ def _process_supply(
                 except KeyError:
                     virtual_bill[k] = v
                 except TypeError as detail:
-                    raise BadRequest(
-                        "For key "
-                        + str(k)
-                        + " and value "
-                        + str(v)
-                        + ". "
-                        + str(detail)
-                    )
+                    raise BadRequest(f"For key {k} and value {v}. {detail}")
 
             for dt, bl in vb_hhs.items():
                 for k, v in bl.items():

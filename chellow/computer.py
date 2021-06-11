@@ -8,8 +8,6 @@ from types import MappingProxyType
 
 from dateutil.relativedelta import relativedelta
 
-from pytz import timezone, utc
-
 from sqlalchemy import Float, cast, or_
 from sqlalchemy.orm import aliased, joinedload
 from sqlalchemy.sql.expression import false, null
@@ -56,7 +54,6 @@ from chellow.utils import (
     hh_range,
     loads,
     to_ct,
-    to_tz,
     to_utc,
     utc_datetime,
     utc_datetime_now,
@@ -1202,7 +1199,6 @@ class SupplySource(DataSource):
 
                     prev_type_alias = aliased(ReadType)
                     pres_type_alias = aliased(ReadType)
-                    ct_tz = timezone("Europe/London")
                     for bill in bills.values():
                         kws = defaultdict(int)
                         for (
@@ -1258,16 +1254,14 @@ class SupplySource(DataSource):
 
                             kwh = advance * coefficient
                             self.consumption_info += (
-                                f"dumb nhh kwh for {tpr_code} is {kwh}\n"
+                                f"dumb nhh kwh for {tpr_code} from "
+                                f"{hh_format(chunk_start)} to "
+                                f"{hh_format(chunk_finish)} is {kwh}\n"
                             )
 
                             kws[tpr_code] += kwh
 
                         for tpr_code, kwh in kws.items():
-                            tpr_dict = _tpr_dict(sess, self.caches, tpr_code)
-                            days_of_week = tpr_dict["days-of-week"]
-
-                            tz = utc if tpr_dict["is-gmt"] else ct_tz
 
                             if (
                                 present_type in ACTUAL_READ_TYPES
@@ -1277,36 +1271,12 @@ class SupplySource(DataSource):
                             else:
                                 status = "E"
 
-                            year_delta = relativedelta(years=self.years_back)
                             hh_part = {}
                             for hh_date in hh_range(
                                 self.caches, bill.start_date, bill.finish_date
                             ):
-                                dt = to_tz(tz, hh_date) + year_delta
-                                decimal_hour = dt.hour + dt.minute / 60
-                                fractional_month = dt.month * 100 + dt.day
-                                for ci in days_of_week[dt.weekday()]:
-
-                                    if (
-                                        (
-                                            ci["start-hour"] < ci["end-hour"]
-                                            and ci["start-hour"]
-                                            <= decimal_hour
-                                            < ci["end-hour"]
-                                        )
-                                        or (
-                                            ci["start-hour"] >= ci["end-hour"]
-                                            and (
-                                                ci["start-hour"] <= decimal_hour
-                                                or decimal_hour < ci["end-hour"]
-                                            )
-                                        )
-                                    ) and ci["start-month"] <= fractional_month <= ci[
-                                        "end-month"
-                                    ]:
-
-                                        hh_part[hh_date] = {"status": status}
-                                        break
+                                if is_tpr(sess, self.caches, tpr_code, hh_date):
+                                    hh_part[hh_date] = {"status": status}
 
                             num_hh = len(hh_part)
                             if num_hh > 0:
