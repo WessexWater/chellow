@@ -31,6 +31,8 @@ from chellow.utils import (
     req_date,
     req_int,
     to_ct,
+    utc_datetime,
+    utc_datetime_now,
 )
 from chellow.views import chellow_redirect
 
@@ -103,7 +105,8 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
     caches = {}
     writer = csv.writer(f, lineterminator="\n")
     contract = Contract.get_supplier_by_id(sess, contract_id)
-    forecast_date = chellow.computer.forecast_date()
+    now = utc_datetime_now()
+    forecast_date = utc_datetime(now.year, now.month, 1)
 
     start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
 
