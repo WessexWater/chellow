@@ -17,8 +17,6 @@ from chellow.utils import (
     hh_range,
     req_date,
     req_int,
-    utc_datetime,
-    utc_datetime_now,
 )
 from chellow.views import chellow_redirect
 
@@ -29,8 +27,7 @@ def content(supply_id, start_date, finish_date, user):
         sess = Session()
         supply = Supply.get_by_id(sess, supply_id)
 
-        now = utc_datetime_now()
-        forecast_date = utc_datetime(now.year, now.month, 1)
+        forecast_date = chellow.computer.forecast_date()
 
         prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(
