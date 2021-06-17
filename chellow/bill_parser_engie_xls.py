@@ -195,11 +195,8 @@ def get_value(row, name):
         val = row[idx].value
     except IndexError:
         raise BadRequest(
-            "For the name '"
-            + name
-            + "', the index is "
-            + str(idx)
-            + " which is beyond the end of the row. "
+            f"For the name '{name}', the index is {idx} which is beyond the end of "
+            f"the row. "
         )
     if isinstance(val, str):
         return val.strip()
@@ -226,12 +223,7 @@ def _bd_add(bd, el_name, val):
             bd[el_name] += val
         except TypeError as e:
             raise BadRequest(
-                "Problem with element name "
-                + el_name
-                + " and value '"
-                + str(val)
-                + "': "
-                + str(e)
+                f"Problem with element name {el_name} and value '{val}': {e}"
             )
 
 
@@ -297,7 +289,7 @@ def _parse_row(row, row_index, datemode, title_row):
     amount = get_dec(row, "Amount")
     product_item_name = get_value(row, "Product Item Name")
     rate_name = get_value(row, "Rate Name")
-    if product_item_name == "Renewables Obligation (RO)":
+    if product_item_name == "Renewables Obligation (RO)" and usage is not None:
         bill["kwh"] += round(usage, 2)
     description = get_value(row, "Description")
     product_class = get_value(row, "Product Item Class")
@@ -411,7 +403,5 @@ class Parser:
             try:
                 bills.append(_parse_row(row, row_index, datemode, title_row))
             except BadRequest as e:
-                raise BadRequest(
-                    "On row " + str(row_index + 1) + ": " + str(e.description)
-                )
+                raise BadRequest(f"On row {row_index + 1}: {e.description}")
         return bills
