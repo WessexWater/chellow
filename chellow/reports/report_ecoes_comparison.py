@@ -16,10 +16,11 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 from chellow.models import Contract, Era, Mtc, Party, Session, Source, Supply
+from chellow.utils import req_bool
 from chellow.views import chellow_redirect
 
 
-def content(user):
+def content(user, show_ignored):
     sess = None
     try:
         sess = Session()
@@ -44,7 +45,7 @@ def content(user):
             "user_name",
             "password",
             "prefix",
-            "ignore_mpan_cores",
+            "exclude_mpan_cores",
             "ignore_mpan_cores_msn",
         ):
             try:
@@ -55,7 +56,7 @@ def content(user):
                     f"the configuration properties."
                 )
 
-        ignore_mpan_cores = ecoes_props["ignore_mpan_cores"]
+        exclude_mpan_cores = ecoes_props["exclude_mpan_cores"]
         ignore_mpan_cores_msn = ecoes_props["ignore_mpan_cores_msn"]
 
         proxies = props.get("proxies", {})
@@ -82,7 +83,7 @@ def content(user):
                     Party.dno_code.notin_(("88", "99")),
                     Era.finish_date == null(),
                     Source.code != "3rd-party",
-                    Era.imp_mpan_core.notin_(ignore_mpan_cores),
+                    Era.imp_mpan_core.notin_(exclude_mpan_cores),
                     Era.imp_mpan_core != null(),
                 )
                 .distinct()
@@ -101,7 +102,7 @@ def content(user):
                     Era.finish_date == null(),
                     Source.code != "3rd-party",
                     Era.exp_mpan_core != null(),
-                    Era.exp_mpan_core.notin_(ignore_mpan_cores),
+                    Era.exp_mpan_core.notin_(exclude_mpan_cores),
                 )
                 .distinct()
                 .order_by(Era.exp_mpan_core)
@@ -140,6 +141,7 @@ def content(user):
             "Chellow MSN",
             "ECOES Meter Type",
             "Chellow Meter Type",
+            "Ignored",
             "Problem",
         )
         writer.writerow(titles)
@@ -149,6 +151,7 @@ def content(user):
 
         for values in parser:
             problem = ""
+            ignore = True
 
             ecoes_titles = [
                 "mpan-core",
@@ -195,7 +198,7 @@ def content(user):
                     ecoes["mpan-core"][-3:],
                 )
             )
-            if mpan_spaces in ignore_mpan_cores:
+            if mpan_spaces in exclude_mpan_cores:
                 continue
 
             try:
@@ -209,8 +212,10 @@ def content(user):
 
             if ecoes_disconnected and current_chell:
                 problem += "Disconnected in ECOES, but current in Chellow. "
+                ignore = False
             elif not ecoes_disconnected and not current_chell:
                 problem += f"In ECOES (as {ecoes_es}) but disconnected in Chellow. "
+                ignore = False
 
             if current_chell:
                 mpans.remove(mpan_spaces)
@@ -250,6 +255,7 @@ def content(user):
                 chellow_es = era.energisation_status.code
                 if ecoes_es != chellow_es:
                     problem += "The energisation statuses don't match. "
+                    ignore = False
 
                 if not (ecoes_es == "D" and chellow_es == "D"):
                     if era.imp_mpan_core == mpan_spaces:
@@ -263,19 +269,24 @@ def content(user):
                     try:
                         if int(ecoes["pc"]) != int(chellow_pc):
                             problem += "The PCs don't match. "
+                            ignore = False
                     except ValueError:
                         problem += "Can't parse the PC. "
+                        ignore = False
 
                     chellow_mtc = era.mtc.code
                     try:
                         if int(ecoes["mtc"]) != int(chellow_mtc):
                             problem += "The MTCs don't match. "
+                            ignore = False
                     except ValueError:
                         problem += "Can't parse the MTC. "
+                        ignore = False
 
                     chellow_llfc = llfc.code
                     if ecoes["llfc"].zfill(3) != chellow_llfc:
                         problem += "The LLFCs don't match. "
+                        ignore = False
 
                     chellow_ssc = era.ssc
                     if chellow_ssc is None:
@@ -294,10 +305,12 @@ def content(user):
                         ecoes_ssc_int is None and chellow_ssc_int is None
                     ):
                         problem += "The SSCs don't match. "
+                        ignore = False
 
                     chellow_supplier = supplier_contract.party.participant.code
                     if chellow_supplier != ecoes["supplier"]:
                         problem += "The supplier codes don't match. "
+                        ignore = False
 
                     dc_contract = era.dc_contract
                     if dc_contract is None:
@@ -307,6 +320,7 @@ def content(user):
 
                     if chellow_dc != ecoes["dc"]:
                         problem += "The DC codes don't match. "
+                        ignore = False
 
                     mop_contract = era.mop_contract
                     if mop_contract is None:
@@ -316,20 +330,26 @@ def content(user):
 
                     if chellow_mop != ecoes["mop"]:
                         problem += "The MOP codes don't match. "
+                        ignore = False
 
                     chellow_gsp_group = era.supply.gsp_group.code
                     if chellow_gsp_group != ecoes["gsp-group"]:
                         problem += "The GSP group codes don't match. "
+                        ignore = False
 
                     chellow_msn = era.msn
                     if chellow_msn is None:
                         chellow_msn = ""
 
-                    if (
-                        mpan_spaces not in ignore_mpan_cores_msn
-                        and chellow_msn != ecoes["msn"]
-                    ):
+                    if chellow_msn != ecoes["msn"]:
                         problem += "The meter serial numbers don't match. "
+                        if mpan_spaces not in ignore_mpan_cores_msn:
+                            ignore = False
+                    elif mpan_spaces in ignore_mpan_cores_msn:
+                        problem += (
+                            "This MPAN core is in mpan_cores_ignore and yet "
+                            "the meter serial numbers do match. "
+                        )
 
                     chellow_meter_type = _meter_type(era)
 
@@ -338,6 +358,7 @@ def content(user):
                             "The meter types don't match. See "
                             "https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
                         )
+                        ignore = False
             else:
                 chellow_pc = ""
                 chellow_mtc = ""
@@ -351,7 +372,7 @@ def content(user):
                 chellow_msn = ""
                 chellow_meter_type = ""
 
-            if len(problem) > 0:
+            if len(problem) > 0 and not (not show_ignored and ignore):
                 writer.writerow(
                     [
                         mpan_spaces,
@@ -378,6 +399,7 @@ def content(user):
                         chellow_msn,
                         ecoes["meter-type"],
                         chellow_meter_type,
+                        ignore,
                         problem,
                     ]
                 )
@@ -439,6 +461,7 @@ def content(user):
                     msn,
                     "",
                     meter_type,
+                    False,
                     "In Chellow, but not in ECOES.",
                 ]
             )
@@ -470,5 +493,6 @@ def _meter_type(era):
 
 
 def do_get(sess):
-    threading.Thread(target=content, args=(g.user,)).start()
+    show_ignored = req_bool("show_ignored")
+    threading.Thread(target=content, args=(g.user, show_ignored)).start()
     return chellow_redirect("/downloads", 303)

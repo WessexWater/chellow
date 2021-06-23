@@ -5864,6 +5864,11 @@ def csv_supplies_monthly_duration_get():
     return render_template("csv_supplies_monthly_duration.html", init=init)
 
 
+@views.route("/ecoes_comparison")
+def ecoes_comparison_get():
+    return render_template("ecoes_comparison.html")
+
+
 @views.route("/csv_bills")
 def csv_bills_get():
     init = Datetime.utcnow()

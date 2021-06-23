@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; ECOES Comparison
+{% endblock %}
+
+{% block nav %}
+	&raquo; ECOES Comparison
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Download</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto ">
+					<form action="/reports/ecoes_comparison">
+						<fieldset>
+							Show ignored
+							{{input_checkbox('show_ignored')}}
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}
