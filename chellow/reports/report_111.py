@@ -742,7 +742,9 @@ def _process_supply(
         report_run_values["batch_id"] = bill.batch.id
         report_run_values["supply_id"] = supply.id
         report_run_values["site_id"] = None if site_code is None else site.id
-        report_run.insert_row(sess, "", report_run_titles, report_run_values)
+        report_run.insert_row(
+            sess, "", report_run_titles, report_run_values, {"is_checked": False}
+        )
 
         for bill in sess.query(Bill).filter(
             Bill.supply == supply,
@@ -818,7 +820,7 @@ def _process_supply(
         vals["supply_id"] = supply.id
         vals["site_id"] = None if site_code is None else site.id
 
-        report_run.insert_row(sess, "", titles, vals)
+        report_run.insert_row(sess, "", titles, vals, {"is_checked": False})
 
     # Avoid long-running transactions
     sess.commit()

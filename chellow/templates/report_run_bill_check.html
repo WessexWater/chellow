@@ -101,7 +101,6 @@
 							</tbody>
 						</table>
 					{% endif %}
-					{% if rows|length > 0 %}
 						<table class="etheling etheling_sticky">
 							<caption>Elements</caption>
 							<thead>
@@ -120,14 +119,26 @@
 									{% endfor %}
 								</tr>
 								<tr>
-									<td>Order rows</td>
+									<td rowspan="2">Order rows</td>
 									{% for elname, diff in elements  %}
 										<td>
-											{% if elname == element %}
-												Order
+											{% if elname == element and not hide_checked %}
+												Order (show checked)
 											{% else %}
-												<a href="/report_runs/{{run.id}}?element={{elname}}"
-													>Order</a>
+												<a href="/report_runs/{{run.id}}?element={{elname}}&amp;hide_checked=false"
+													>Order (show checked)</a>
+											{% endif %}
+										</td>
+									{% endfor %}
+								</tr>
+								<tr>
+									{% for elname, diff in elements  %}
+										<td>
+											{% if elname == element and hide_checked %}
+												Order (hide checked)
+											{% else %}
+												<a href="/report_runs/{{run.id}}?element={{elname}}&amp;hide_checked=true"
+													>Order (hide checked)</a>
 											{% endif %}
 										</td>
 									{% endfor %}
@@ -196,7 +207,6 @@
 								{% endfor %}
 							</tbody>
 						</table>
-					{% endif %}
 				</div>
 				
 			</div>

@@ -14,6 +14,7 @@
 	<!-- Layer Section -->
 	<div class="layer-section">
 		{% set values = row.data['values'] %}
+		{% set properties = row.data.get('properties', {}) %}
 		{% if row.report_run.name == 'bill_check' %}
 			<!-- Section Header -->
 			<div class="section-header">
@@ -30,6 +31,7 @@
 								<th colspan="8">Bill</th>
 								<th colspan="2">MPAN Core</th>
 								<th colspan="2">Site</th>
+								<th rowspan="2">Checking</th>
 							</tr>
 							<tr>
 								<th>Reference</th>
@@ -86,6 +88,21 @@
 									{% endif %}
 								</td>
 								<td>{{values['site-name']}}</td>
+								<td>
+									<form action="/report_run_rows/{{row.id}}" method="post">
+										<fieldset>
+											{{input_textarea(
+												'note', properties.note, 5, 40,
+												placeholder='Notes on checking go here...')}}
+											<br>
+											<br>
+											<label>Checked?
+												{{input_checkbox('is_checked', properties.is_checked)}}
+											</label>
+											<input type="submit" name="update" value="Update">
+										</fieldset>
+									</form>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -161,7 +178,7 @@
 							<tbody>
 								<tr>
 									{% for v in table['values'] %}
-										<td>{{v}}</th>
+										<td>{{v}}</td>
 									{% endfor %}
 								</tr>
 							</tbody>
@@ -170,9 +187,17 @@
 				</div>
 			{% endfor %}
 
-			<h3>Raw</h3>
-
-			<pre>{{raw_data}}</pre>
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Raw</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<pre>{{raw_data}}</pre>
+				</div>
+			</div>
 
 		{% else %}
 			<!-- Section Header -->
@@ -195,8 +220,9 @@
 					</table>
 				</div>
 			</div>
+			<!-- End Section Content -->
 		{% endif %}
-		<!-- End Section Content -->
+
 	</div>
 	<!-- End Layer Section -->
 {% endblock %}

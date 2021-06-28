@@ -53,6 +53,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.attributes import flag_modified
 
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -3684,11 +3685,19 @@ def report_run_get(run_id):
         else:
             element = "net"
 
+        hide_checked = req_bool("hide_checked")
+
         order_by = f"difference-{element}-gbp"
+        q = g.sess.query(ReportRunRow).filter(ReportRunRow.report_run == run)
+        if hide_checked:
+            q = q.filter(
+                ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
+            )
+
         rows = (
-            g.sess.query(ReportRunRow)
-            .filter(ReportRunRow.report_run == run)
-            .order_by(func.abs(ReportRunRow.data["values"][order_by].as_float()).desc())
+            q.order_by(
+                func.abs(ReportRunRow.data["values"][order_by].as_float()).desc()
+            )
             .limit(200)
             .all()
         )
@@ -3699,6 +3708,7 @@ def report_run_get(run_id):
             summary=summary,
             elements=elements,
             element=element,
+            hide_checked=hide_checked,
         )
 
     else:
@@ -3814,6 +3824,25 @@ def report_run_row_get(row_id):
         return render_template(
             "report_run_row.html", row=row, raw_data=raw_data, tables=tables
         )
+
+
+@views.route("/report_run_rows/<int:row_id>", methods=["POST"])
+def report_run_row_post(row_id):
+    row = g.sess.query(ReportRunRow).filter(ReportRunRow.id == row_id).one()
+
+    if row.report_run.name == "bill_check":
+        is_checked = req_bool("is_checked")
+        note = req_str("note")
+
+        properties = row.data.get("properties", {})
+        properties["is_checked"] = is_checked
+        properties["note"] = note
+        row.data["properties"] = properties
+        flag_modified(row, "data")
+        g.sess.commit()
+        flash("Update successful")
+
+    return chellow_redirect(f"/report_run_rows/{row_id}", 303)
 
 
 @views.route("/channel_snags")

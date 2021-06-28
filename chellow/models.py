@@ -5562,8 +5562,8 @@ class ReportRun(Base, PersistentClass):
     def update(self, state):
         self.state = state
 
-    def insert_row(self, sess, tab, titles, values):
-        vals = {"titles": titles, "values": values}
+    def insert_row(self, sess, tab, titles, values, properties):
+        vals = {"titles": titles, "values": values, "properties": properties}
         row = ReportRunRow(self, tab, vals)
         sess.add(row)
 
