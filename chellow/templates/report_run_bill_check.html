@@ -161,6 +161,7 @@
 										<th rowspan="2">{{title}}</th>
 									{% endfor %}
 									<th colspan="{{elements|length}}">Difference GBP</th>
+									<th rowspan="2">Note</th>
 								</tr>
 								<tr>
 									{% for elem, diff in elements %}
@@ -171,6 +172,7 @@
 							<tbody>
 								{% for row in rows %}
 									{% set values = row.data['values'] %}
+									{% set properties = row.data.get('properties', {}) %}
 									<tr>
 										<td><a href="/report_run_rows/{{row.id}}">View</a></td>
 										{% for title in titles %}
@@ -203,6 +205,9 @@
 												{% endif %}
 											</td>
 										{% endfor %}
+										<td>
+											{{ properties.get('note', '') }}
+										</td>
 									</tr>
 								{% endfor %}
 							</tbody>

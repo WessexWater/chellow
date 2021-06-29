@@ -85,12 +85,8 @@ def find_elements(bill):
         return set(k[:-4] for k in keys)
     except ZishLocationException as e:
         raise BadRequest(
-            "Can't parse the breakdown for bill id "
-            + str(bill.id)
-            + " attached to batch id "
-            + str(bill.batch.id)
-            + ": "
-            + str(e)
+            f"Can't parse the breakdown for bill id {bill.id} attached to batch id "
+            f"{bill.batch.id}: {e}"
         )
 
 
@@ -110,7 +106,7 @@ def content(
 
     try:
         running_name, finished_name = chellow.dloads.make_names(
-            "bill_check_" + fname_additional + ".csv", user
+            f"bill_check_{fname_additional}.csv", user
         )
         tmp_file = open(running_name, mode="w", newline="")
         writer = csv.writer(tmp_file, lineterminator="\n")
@@ -164,9 +160,7 @@ def content(
         vbf = chellow.computer.contract_func(caches, contract, "virtual_bill")
         if vbf is None:
             raise BadRequest(
-                "The contract "
-                + contract.name
-                + " doesn't have a function virtual_bill."
+                f"The contract {contract.name} doesn't have a function virtual_bill."
             )
 
         virtual_bill_titles_func = chellow.computer.contract_func(
@@ -174,9 +168,8 @@ def content(
         )
         if virtual_bill_titles_func is None:
             raise BadRequest(
-                "The contract "
-                + contract.name
-                + " doesn't have a function virtual_bill_titles."
+                f"The contract {contract.name} doesn't have a function "
+                f"virtual_bill_titles."
             )
         virtual_bill_titles = virtual_bill_titles_func()
 
@@ -234,7 +227,7 @@ def content(
         if supply_id is None:
             prefix = "Problem: "
         else:
-            prefix = "Problem with supply " + str(supply_id) + ":"
+            prefix = f"Problem with supply {supply_id}:"
         tmp_file.write(prefix + e.description)
     except BaseException:
         if report_run is not None:
@@ -242,7 +235,7 @@ def content(
         if supply_id is None:
             prefix = "Problem: "
         else:
-            prefix = "Problem with supply " + str(supply_id) + ":"
+            prefix = f"Problem with supply {supply_id}:"
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
         tmp_file.write(prefix + msg)
@@ -655,63 +648,63 @@ def _process_supply(
                 if bill.batch == cbill.batch:
                     bill = cbill
 
-        values = [
-            bill.batch.reference,
-            bill.reference,
-            bill.bill_type.code,
-            bill.kwh,
-            bill.net,
-            bill.vat,
-            bill_start,
-            bill_finish,
-            imp_mpan_core,
-            exp_mpan_core,
-            site_code,
-            site_name,
-            covered_start,
-            covered_finish,
-            " | ".join(sorted([str(k) for k in covered_bills.keys()])),
-            metered_kwh,
-        ]
+        values = {
+            "batch": bill.batch.reference,
+            "bill-reference": bill.reference,
+            "bill-type": bill.bill_type.code,
+            "bill-kwh": bill.kwh,
+            "bill-net-gbp": bill.net,
+            "bill-vat-gbp": bill.vat,
+            "bill-start-date": bill_start,
+            "bill-finish-date": bill_finish,
+            "imp-mpan-core": imp_mpan_core,
+            "exp-mpan-core": exp_mpan_core,
+            "site-code": site_code,
+            "site-name": site_name,
+            "covered-from": covered_start,
+            "covered-to": covered_finish,
+            "covered-bills": sorted(covered_bills.keys()),
+            "metered-kwh": metered_kwh,
+        }
 
         for title in virtual_bill_titles:
             try:
                 cov_val = covered_bdown[title]
-                values.append(cov_val)
                 del covered_bdown[title]
             except KeyError:
                 cov_val = None
-                values.append("")
+
+            values[f"covered-{title}"] = cov_val
 
             try:
                 virt_val = virtual_bill[title]
-                values.append(virt_val)
                 del virtual_bill[title]
             except KeyError:
-                virt_val = 0
-                values.append("")
+                virt_val = None
+
+            values[f"virtual-{title}"] = virt_val
 
             if title.endswith("-gbp"):
                 if isinstance(virt_val, (int, float, Decimal)):
                     if isinstance(cov_val, (int, float, Decimal)):
-                        values.append(float(cov_val) - float(virt_val))
+                        diff_val = float(cov_val) - float(virt_val)
                     else:
-                        values.append(0 - float(virt_val))
+                        diff_val = 0 - float(virt_val)
                 else:
-                    values.append(0)
+                    diff_val = 0
 
-        report_run_values = {}
+                values[f"difference-{title}"] = diff_val
+
         report_run_titles = list(titles)
         for title in sorted(virtual_bill.keys()):
             virt_val = virtual_bill[title]
-            virt_title = "virtual-" + title
-            values += [virt_title, virt_val]
-            report_run_values[virt_title] = virt_val
+            virt_title = f"virtual-{title}"
+            values[virt_title] = virt_val
             report_run_titles.append(virt_title)
             if title in covered_bdown:
-                cov_title = "covered-" + title
+                cov_title = f"covered-{title}"
                 cov_val = covered_bdown[title]
-                report_run_values[cov_title] = cov_val
+                values[cov_title] = cov_val
                 report_run_titles.append(cov_title)
                 if title.endswith("-gbp"):
                     if isinstance(virt_val, (int, float, Decimal)):
@@ -722,28 +715,38 @@ def _process_supply(
                     else:
                         diff_val = 0
 
-                    report_run_values[f"difference-{title}"] = diff_val
+                    values[f"difference-{title}"] = diff_val
 
                     t = "difference-tpr-gbp"
                     try:
-                        report_run_values[t] += diff_val
+                        values[t] += diff_val
                     except KeyError:
-                        report_run_values[t] = diff_val
+                        values[t] = diff_val
                         report_run_titles.append(t)
+
+        csv_row = []
+        for t in titles:
+            v = values[t]
+            if t == "covered-bills":
+                val = " | ".join(str(b) for b in v)
             else:
-                cov_title, cov_val = "", ""
+                val = csv_make_val(v)
 
-            values += [cov_title, cov_val]
+            csv_row.append(val)
 
-        writer.writerow([csv_make_val(v) for v in values])
+        for t in report_run_titles:
+            if t not in titles:
+                csv_row.append(t)
+                csv_row.append(values[t])
 
-        report_run_values.update(dict(zip(titles, values)))
-        report_run_values["bill_id"] = bill.id
-        report_run_values["batch_id"] = bill.batch.id
-        report_run_values["supply_id"] = supply.id
-        report_run_values["site_id"] = None if site_code is None else site.id
+        writer.writerow(csv_row)
+
+        values["bill_id"] = bill.id
+        values["batch_id"] = bill.batch.id
+        values["supply_id"] = supply.id
+        values["site_id"] = None if site_code is None else site.id
         report_run.insert_row(
-            sess, "", report_run_titles, report_run_values, {"is_checked": False}
+            sess, "", report_run_titles, values, {"is_checked": False}
         )
 
         for bill in sess.query(Bill).filter(
