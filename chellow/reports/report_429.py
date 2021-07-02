@@ -140,11 +140,8 @@ def _process_g_bill_ids(
             for era in g_supply.find_g_eras(sess, g_read.prev_date, g_read.pres_date)
         ):
             problem += (
-                "The MSN "
-                + g_read.msn
-                + " of the register read "
-                + str(g_read.id)
-                + " doesn't match the MSN of all the relevant eras."
+                f"The MSN {g_read.msn} of the register read {g_read.id} doesn't match "
+                f"the MSN of all the relevant eras."
             )
 
         for dt, typ in [
@@ -154,7 +151,7 @@ def _process_g_bill_ids(
             typ_set = read_dict[str(dt) + "-" + g_read.msn]
             typ_set.add(typ)
             if len(typ_set) > 1:
-                problem += " Reads taken on " + str(dt) + " have differing read types."
+                problem += f" Reads taken on {dt} have differing read types."
 
     vals = {
         "covered_vat_gbp": Decimal("0.00"),
@@ -242,14 +239,8 @@ def _process_g_bill_ids(
                         vals[k] = v
                     except TypeError:
                         raise BadRequest(
-                            "Problem with bill "
-                            + str(g_bill.id)
-                            + " and key "
-                            + str(k)
-                            + " and value "
-                            + str(v)
-                            + " for existing "
-                            + str(vals[k])
+                            f"Problem with bill {g_bill.id} and key {k} and value {v} "
+                            f"for existing {vals[k]}"
                         )
 
             if title in (
@@ -312,9 +303,7 @@ def _process_g_bill_ids(
             except KeyError:
                 vals[vk] = v
             except TypeError as detail:
-                raise BadRequest(
-                    "For key " + str(vk) + " and value " + str(v) + ". " + str(detail)
-                )
+                raise BadRequest(f"For key {vk} and value {v}. {detail}")
 
     if g_bill.id not in covered_bills.keys():
         g_bill = covered_bills[sorted(covered_bills.keys())[0]]
@@ -330,7 +319,10 @@ def _process_g_bill_ids(
     vals["site_name"] = site.name
 
     for k, v in vals.items():
-        vals[k] = csv_make_val(v)
+        if k == "covered_bill_ids":
+            vals[k] = " | ".join(str(b) for b in v)
+        else:
+            vals[k] = csv_make_val(v)
 
     for i, title in enumerate(titles):
         if title.startswith("difference_"):
