@@ -67,10 +67,17 @@ def to_llfcs(row, idx):
             if len(v) > 0:
                 if "-" in v:
                     start, finish = v.split("-")
-                    for i in range(int(start), int(finish) + 1):
-                        llfcs.append(str(i))
+                    m = re.search(r"\d", start)
+                    s = m.start()
+                    m = re.search(r"\d", finish)
+                    f = m.start()
+
+                    for i in range(int(start[s:]), int(finish[f:]) + 1):
+                        suff = str(i).zfill(3 - s)
+                        llfcs.append(f"{start[:s]}{suff}")
                 else:
                     llfcs.append(v)
+
     elif isinstance(val, Decimal):
         llfcs.append(str(int(val)))
     elif isinstance(val, float):
