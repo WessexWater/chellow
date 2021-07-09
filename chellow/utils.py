@@ -54,16 +54,16 @@ def req_zish(name):
 
 
 def req_date(prefix, resolution="minute"):
-    year = req_int(prefix + "_year")
-    month = req_int(prefix + "_month")
-    day = req_int(prefix + "_day")
+    year = req_int(f"{prefix}_year")
+    month = req_int(f"{prefix}_month")
+    day = req_int(f"{prefix}_day")
 
     try:
         if resolution == "day":
             d = ct_datetime(year, month, day)
         elif resolution == "minute":
-            hour = req_int(prefix + "_hour")
-            minute = req_int(prefix + "_minute")
+            hour = req_int(f"{prefix}_hour")
+            minute = req_int(f"{prefix}_minute")
             d = ct_datetime(year, month, day, hour, minute)
     except ValueError as e:
         raise BadRequest(f"Problem parsing the date {prefix}: {e}.")
@@ -122,7 +122,7 @@ def req_hh_date(prefix):
 def validate_hh_start(dt):
     if dt.minute not in [0, 30] or dt.second != 0 or dt.microsecond != 0:
         raise BadRequest(
-            "The half-hour must start exactly on the hour or half past " "the hour."
+            "The half-hour must start exactly on the hour or half past the hour."
         )
     return dt
 
@@ -152,9 +152,7 @@ def parse_hh_start(start_date_str):
 def parse_mpan_core(mcore):
     mcore = mcore.strip().replace(" ", "")
     if len(mcore) != 13:
-        raise BadRequest(
-            "The MPAN core '" + mcore + "' must contain exactly 13 digits."
-        )
+        raise BadRequest(f"The MPAN core '{mcore}' must contain exactly 13 digits.")
 
     for char in mcore:
         if char not in "0123456789":
@@ -164,7 +162,7 @@ def parse_mpan_core(mcore):
     cd = sum(p * int(d) for p, d in zip(ps, mcore[:-1])) % 11 % 10
     if cd != int(mcore[-1]):
         raise BadRequest(
-            "The MPAN core " + mcore + " is not valid. It fails the checksum test."
+            f"The MPAN core {mcore} is not valid. It fails the checksum test."
         )
 
     return " ".join([mcore[:2], mcore[2:6], mcore[6:10], mcore[10:]])
@@ -210,11 +208,8 @@ def parse_channel_type(channel_type):
     tp = channel_type.upper()
     if tp not in CHANNEL_TYPES:
         raise BadRequest(
-            "The given channel type is '"
-            + str(channel_type)
-            + "' but it should be one of "
-            + str(CHANNEL_TYPES)
-            + "."
+            f"The given channel type is '{channel_type}' but it should be one of "
+            f"{CHANNEL_TYPES}."
         )
     return tp
 
@@ -235,7 +230,7 @@ def send_response(
         args = ()
 
     if file_name is not None:
-        headers["Content-Disposition"] = 'attachment; filename="' + file_name + '"'
+        headers["Content-Disposition"] = f'attachment; filename="{file_name}"'
 
     return Response(
         content(*args), status=status, content_type=content_type, headers=headers
@@ -417,7 +412,7 @@ def render(template, vals, status_code=200, content_type="text/html"):
     try:
         template_str = templ.render(vals)
     except BaseException:
-        raise BadRequest("Problem rendering template: " + traceback.format_exc())
+        raise BadRequest(f"Problem rendering template: {traceback.format_exc()}")
 
     return Response(template_str, status_code, headers)
 
@@ -675,15 +670,9 @@ def get_file_script(caches, contract_name, date):
                     rs = start_date, sfinish, loads(script_str)
                 except ZishException as e:
                     raise BadRequest(
-                        "In the rate script "
-                        + url_root
-                        + "industry_contracts/"
-                        + contract_name
-                        + "/rate_scripts/"
-                        + start_date.strftime("%Y%m%d%H%M")
-                        + " there's the problem "
-                        + str(e)
-                        + "."
+                        f"In the rate script {url_root}industry_contracts/"
+                        f"{contract_name}/rate_scripts/"
+                        f"{start_date.strftime('%Y%m%d%H%M')} there's the problem {e}."
                     )
 
                 begin_date = hh_max(date - YEAR, start_date)
@@ -717,12 +706,8 @@ def get_file_scripts(contract_name):
             start_str, finish_str = rscript_fname.split(".")[0].split("_")
         except ValueError:
             raise Exception(
-                "The rate script "
-                + rscript_fname
-                + " in the directory "
-                + rscripts_path
-                + " should consist of two dates separated by an "
-                + "underscore."
+                f"The rate script {rscript_fname} in the directory {rscripts_path} "
+                f" should consist of two dates separated by an underscore."
             )
         start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
         if finish_str == "ongoing":
@@ -739,10 +724,8 @@ class PropDict(Mapping):
     def __init__(self, location, rate_dict, parent_keys=None):
         if not isinstance(rate_dict, Mapping):
             raise Exception(
-                "The rate_dict must be a mapping, but got a "
-                + str(type(rate_dict))
-                + " with value "
-                + str(rate_dict)
+                f"The rate_dict must be a mapping, but got a {type(rate_dict)} with "
+                f"value {rate_dict}"
             )
         self._location = location
         self._parent_keys = [] if parent_keys is None else parent_keys
@@ -770,12 +753,8 @@ class PropDict(Mapping):
                 return self._storage["*"]
             except KeyError:
                 raise KeyError(
-                    "Can't find the the key "
-                    + str(self._parent_keys + [key])
-                    + " or the wildcard "
-                    + str(self._parent_keys + ["*"])
-                    + " in "
-                    + self._location
+                    f"Can't find the the key {self._parent_keys + [key]} or the "
+                    f"wildcard {self._parent_keys + ['*']} in {self._location}"
                 )
 
     def __iter__(self):
