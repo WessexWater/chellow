@@ -45,7 +45,6 @@ from chellow.utils import (
     HH,
     PropDict,
     YEAR,
-    c_months_u,
     ct_datetime,
     ct_datetime_now,
     hh_format,
@@ -229,11 +228,6 @@ def displaced_era(
             "The start and end dates of a displaced period must be within the "
             "same month"
         )
-    t = get_times(start_date, finish_date, forecast_date)
-    hs = to_ct(t["history-start"])
-    month_start, month_finish = next(
-        c_months_u(start_year=hs.year, start_month=hs.month)
-    )
     has_displaced = False
     eras = {}
     for site_era in (
@@ -243,8 +237,8 @@ def displaced_era(
         .join(Source)
         .filter(
             SiteEra.site == site,
-            Era.start_date <= month_finish,
-            or_(Era.finish_date == null(), Era.finish_date >= month_start),
+            Era.start_date <= finish_date,
+            or_(Era.finish_date == null(), Era.finish_date >= start_date),
         )
         .options(
             joinedload(SiteEra.era).joinedload(Era.supply).joinedload(Supply.source)
