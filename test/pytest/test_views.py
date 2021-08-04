@@ -51,7 +51,7 @@ def test_dtc_meter_types(client):
     match(response, 200)
 
 
-def test_supply_edit_post(mocker, app):
+def test_supply_edit_post_rollback(mocker, app):
     """When inserting an era that fails, make sure rollback is called."""
     supply_id = 1
     with app.app_context():
@@ -80,6 +80,166 @@ def test_supply_edit_post(mocker, app):
 
             chellow.views.supply_edit_post(supply_id)
             g.sess.rollback.assert_called_once_with()
+
+
+def test_supply_edit_post_fail(client, sess):
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = Contract.insert_hhdc(
+        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    Mtc.insert(
+        sess,
+        None,
+        "845",
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    dno.insert_llfc(
+        sess,
+        "521",
+        "Export (HV)",
+        voltage_level,
+        False,
+        False,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    """
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2020, 1, 1),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        None,
+        energisation_status,
+        {},
+        "22 0470 7514 535",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    """
+    sess.commit()
+
+    data = {
+        "source_id": str(source.id),
+        "name": "Bob",
+        "start_date_year": "2000",
+        "start_date_month": "01",
+        "start_date_day": "01",
+        "start_date_hour": "00",
+        "start_date_minute": "00",
+        "insert_electricity": "Insert Electricity",
+        "mop_contract_id": str(mop_contract.id),
+        "dc_contract_id": str(dc_contract.id),
+        "pc_id": str(pc.id),
+        "cop_id": str(cop.id),
+        "imp_supplier_contract_id": str(imp_supplier_contract.id),
+        "energisation_status_id": str(energisation_status.id),
+        "gsp_group_id": str(gsp_group.id),
+    }
+    response = client.post(f"/sites/{site.id}/edit", data=data)
+
+    patterns = [
+        r'<select name="energisation_status_id">\s*'
+        r'<option value="2">D - De-Energised</option>\s*'
+        r'<option value="1" selected>E - Energised</option>\s*'
+        r"</select>"
+    ]
+    match(response, 400, *patterns)
 
 
 class Sess:

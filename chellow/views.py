@@ -1157,11 +1157,11 @@ def site_edit_post(site_id):
                 g_reading_frequency,
             )
             g.sess.commit()
-            return chellow_redirect("/g_supplies/" + str(g_supply.id), 303)
+            return chellow_redirect(f"/g_supplies/{g_supply.id}", 303)
         else:
             raise BadRequest(
-                "The request must contain one of the following parameter "
-                "names: delete, update, insert_electricity, insert_gas."
+                "The request must contain one of the following parameter names: "
+                "delete, update, insert_electricity, insert_gas."
             )
 
     except BadRequest as e:
@@ -1170,6 +1170,10 @@ def site_edit_post(site_id):
         sources = g.sess.query(Source).order_by(Source.code)
         generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
+        energisation_statuses = g.sess.query(EnergisationStatus).order_by(
+            EnergisationStatus.code
+        )
+        default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
         eras = (
             g.sess.query(Era)
             .join(SiteEra)
@@ -1209,6 +1213,8 @@ def site_edit_post(site_id):
                 sources=sources,
                 generator_types=generator_types,
                 gsp_groups=gsp_groups,
+                energisation_statuses=energisation_statuses,
+                default_energisation_status=default_energisation_status,
                 eras=eras,
                 mop_contracts=mop_contracts,
                 dc_contracts=dc_contracts,
