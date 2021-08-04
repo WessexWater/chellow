@@ -21,7 +21,7 @@ from chellow.views import chellow_redirect
 
 
 def content(user, show_ignored):
-    sess = None
+    sess = f = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
@@ -82,10 +82,11 @@ def content(user, show_ignored):
             show_ignored,
         )
 
-    except BaseException:
+    except BaseException as e:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         f.write(msg)
+        raise e
     finally:
         if sess is not None:
             sess.close()

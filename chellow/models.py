@@ -1148,8 +1148,8 @@ class Contract(Base, PersistentClass):
         cont = Contract.find_by_role_code_id(sess, role_code, oid)
         if cont is None:
             raise NotFound(
-                f"There isn't a contract with the role code '{role_code}' "
-                f"and id '{oid}'."
+                f"There isn't a contract with the role code '{role_code}' and id "
+                f"'{oid}'."
             )
         return cont
 
@@ -1167,8 +1167,8 @@ class Contract(Base, PersistentClass):
         cont = Contract.find_by_role_code_name(sess, role_code, name)
         if cont is None:
             raise BadRequest(
-                f"There isn't a contract with the role code '{role_code}' "
-                f"and name '{name}'."
+                f"There isn't a contract with the role code '{role_code}' and name "
+                f"'{name}'."
             )
         return cont
 

@@ -1061,6 +1061,7 @@ def content(
         rf = open(running_name, "wb")
         site_rows = []
         era_rows = []
+        normal_read_rows = []
 
         for rate_script in scenario_props.get("local_rates", []):
             contract_id = rate_script["contract_id"]
@@ -1073,18 +1074,16 @@ def content(
                 rate_script_start = rate_script["start_date"]
             except KeyError:
                 raise BadRequest(
-                    f"Problem in the scenario properties. Can't find the "
-                    f"'start_date' key of the contract {contract_id} in "
-                    f"the 'local_rates' map."
+                    f"Problem in the scenario properties. Can't find the 'start_date' "
+                    f"key of the contract {contract_id} in the 'local_rates' map."
                 )
 
             try:
                 rate_script_start = rate_script["start_date"]
             except KeyError:
                 raise BadRequest(
-                    f"Problem in the scenario properties. Can't find the "
-                    f"'start_date' key of the contract {contract_id} in "
-                    f"the 'local_rates' map."
+                    f"Problem in the scenario properties. Can't find the 'start_date' "
+                    f"key of the contract {contract_id} in the 'local_rates' map."
                 )
 
             props = PropDict("scenario properties", rate_script["script"])
@@ -1103,8 +1102,8 @@ def content(
             rfinish = rate_script["finish_date"]
             if rfinish is None:
                 raise BadRequest(
-                    f"For the industry rate {contract_name} the finish_date "
-                    f"can't be null."
+                    f"For the industry rate {contract_name} the finish_date can't be "
+                    f"null."
                 )
             for dt in hh_range(report_context, rate_script["start_date"], rfinish):
                 cont_cache[dt] = PropDict("scenario properties", rate_script["script"])
@@ -1239,7 +1238,6 @@ def content(
         sites = sites.all()
         deltas = {}
         normal_reads = set()
-        normal_read_rows = []
 
         for site in sites:
             deltas[site.id] = _make_site_deltas(
