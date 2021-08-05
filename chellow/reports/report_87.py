@@ -174,6 +174,8 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
                     f"{e.description}"
                 )
 
+            sess.rollback()  # Avoid long-running transaction
+
 
 def content(start_date, finish_date, contract_id, user):
     sess = f = None
