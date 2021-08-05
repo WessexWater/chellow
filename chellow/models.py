@@ -1029,7 +1029,7 @@ class Party(Base, PersistentClass):
         code = code.zfill(3)
         llfc_query = sess.query(Llfc).filter(Llfc.dno == self, Llfc.code == code)
         if date is None:
-            llfc_query = llfc_query.filter(Llfc.valid_from == null())
+            llfc_query = llfc_query.filter(Llfc.valid_to == null())
         else:
             llfc_query = llfc_query.filter(
                 Llfc.valid_from <= date,
@@ -1041,8 +1041,8 @@ class Party(Base, PersistentClass):
         llfc = self.find_llfc_by_code(sess, code, date)
         if llfc is None:
             raise BadRequest(
-                f"There is no LLFC with the code '{code}' associated with "
-                f"the DNO {self.dno_code} at the date {hh_format(date)}."
+                f"There is no LLFC with the code '{code}' associated with the DNO "
+                f"{self.dno_code} at the date {hh_format(date)}."
             )
         return llfc
 
@@ -2169,11 +2169,8 @@ class RateScript(Base, PersistentClass):
             )
         except NoResultFound:
             raise NotFound(
-                "There isn't a rate script with the id "
-                + str(oid)
-                + " attached to a contract with market role codes "
-                + str(roles)
-                + "."
+                f"There isn't a rate script with the id {oid} attached to a contract "
+                f"with market role codes {roles}."
             )
 
     @staticmethod
@@ -2224,6 +2221,7 @@ class Llfc(Base, PersistentClass):
     is_import = Column(Boolean, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
+    lafs = relationship("Laf", backref="llfc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
     def __init__(
@@ -2253,6 +2251,33 @@ class Llfc(Base, PersistentClass):
         self.is_import = is_import
         self.valid_from = valid_from
         self.valid_to = valid_to
+
+    def insert_laf(self, sess, timestamp, value):
+        laf = Laf(self, timestamp, value)
+        sess.add(laf)
+        sess.flush()
+
+
+class Laf(Base, PersistentClass):
+    __tablename__ = "laf"
+    id = Column(Integer, primary_key=True)
+    llfc_id = Column(Integer, ForeignKey("llfc.id"), nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    value = Column(Numeric, nullable=False)
+    __table_args__ = (UniqueConstraint("llfc_id", "timestamp"),)
+
+    def __init__(
+        self,
+        llfc,
+        timestamp,
+        value,
+    ):
+        self.llfc = llfc
+        self.timestamp = timestamp
+        self.update(value)
+
+    def update(self, value):
+        self.value = value
 
 
 class MeterType(Base, PersistentClass):

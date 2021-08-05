@@ -1,19 +1,16 @@
-from datetime import datetime as Datetime, timedelta as Timedelta
-
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import func
+from sqlalchemy import Float, cast, func, select
 from sqlalchemy.sql.expression import true
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.models import Channel, Era, HhDatum
+from chellow.models import Channel, Era, HhDatum, Laf, Llfc, Party
 from chellow.utils import (
     HH,
     ct_datetime,
     get_file_rates,
     hh_format,
-    to_ct,
     to_utc,
     utc_datetime,
 )
@@ -25,10 +22,10 @@ KEYS = dict(
     (
         band,
         {
-            "kwh": "duos-" + band + "-kwh",
-            "tariff-rate": band + "-gbp-per-kwh",
-            "bill-rate": "duos-" + band + "-rate",
-            "gbp": "duos-" + band + "-gbp",
+            "kwh": f"duos-{band}-kwh",
+            "tariff-rate": f"{band}-gbp-per-kwh",
+            "bill-rate": f"duos-{band}-rate",
+            "gbp": f"duos-{band}-gbp",
         },
     )
     for band in BANDS
@@ -460,15 +457,9 @@ def datum_2010_04_01(ds, hh):
 
             if tariff is None:
                 raise BadRequest(
-                    "For the DNO "
-                    + ds.dno_code
-                    + " and timestamp "
-                    + hh_format(start_date)
-                    + " and GSP group "
-                    + ds.gsp_group_code
-                    + ", the LLFC '"
-                    + ds.llfc_code
-                    + "' can't be found in the 'tariffs' section."
+                    f"For the DNO {ds.dno_code} and timestamp {hh_format(start_date)} "
+                    f"and GSP group {ds.gsp_group_code}, the LLFC '{ds.llfc_code}' "
+                    f"can't be found in the 'tariffs' section."
                 )
 
             tariffs[start_date] = tariff
@@ -518,42 +509,21 @@ def datum_2010_04_01(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            rs = get_file_rates(ds.caches, "lafs_" + ds.dno_code, start_date)
-            hist_date = rs["hist_dates"][start_date]
-            try:
-                hist_map_llfcs = rs._storage["hist_map"]
-            except KeyError:
-                hist_map_llfcs = rs._storage["hist_map"] = {}
-
-            try:
-                hist_map = hist_map_llfcs[ds.llfc_code]
-            except KeyError:
-                hist_map = hist_map_llfcs[ds.llfc_code] = {}
-
-            try:
-                laf = hist_map[hist_date]
-            except KeyError:
-                try:
-                    tp_id = rs["llfc_tp"][ds.llfc_code]
-                except KeyError as e:
-                    raise BadRequest(str(e))
-
-                for chunk in rs["tps"][tp_id].values():
-                    chunk_start_raw = Datetime.strptime(chunk["start_date"], "%Y%m%d")
-                    chunk_finish_raw = Datetime.strptime(chunk["finish_date"], "%Y%m%d")
-                    day_start_raw = chunk_start_raw
-                    while day_start_raw <= chunk_finish_raw:
-                        day_start_ct = to_ct(day_start_raw)
-                        day_start = to_utc(day_start_ct)
-                        for slot in chunk["slots"]:
-                            for i in range(slot["slot_start"] - 1, slot["slot_finish"]):
-                                dt = day_start + Timedelta(minutes=30 * i)
-                                hist_map[dt] = float(slot["laf"])
-
-                        day_start_raw += Timedelta(days=1)
-
-                laf = hist_map[hist_date]
-            laf_cache_llfc[start_date] = laf
+            laf = laf_cache_llfc[start_date] = ds.sess.execute(
+                select(cast(Laf.value, Float))
+                .join(Llfc)
+                .join(Party)
+                .where(
+                    Party.dno_code == ds.dno_code,
+                    Llfc.code == ds.llfc_code,
+                    Laf.timestamp == start_date,
+                )
+            ).scalar_one_or_none()
+            if laf is None:
+                raise BadRequest(
+                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
+                    f"timestamp {hh_format(start_date)}"
+                )
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
@@ -728,42 +698,21 @@ def datum_2012_02_23(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            rs = get_file_rates(ds.caches, "lafs_" + ds.dno_code, start_date)
-            hist_date = rs["hist_dates"][start_date]
-            try:
-                hist_map_llfcs = rs._storage["hist_map"]
-            except KeyError:
-                hist_map_llfcs = rs._storage["hist_map"] = {}
-
-            try:
-                hist_map = hist_map_llfcs[ds.llfc_code]
-            except KeyError:
-                hist_map = hist_map_llfcs[ds.llfc_code] = {}
-
-            try:
-                laf = hist_map[hist_date]
-            except KeyError:
-                try:
-                    tp_id = rs["llfc_tp"][ds.llfc_code]
-                except KeyError as e:
-                    raise BadRequest(str(e))
-
-                for chunk in rs["tps"][tp_id].values():
-                    chunk_start_raw = Datetime.strptime(chunk["start_date"], "%Y%m%d")
-                    chunk_finish_raw = Datetime.strptime(chunk["finish_date"], "%Y%m%d")
-                    day_start_raw = chunk_start_raw
-                    while day_start_raw <= chunk_finish_raw:
-                        day_start_ct = to_ct(day_start_raw)
-                        day_start = to_utc(day_start_ct)
-                        for slot in chunk["slots"]:
-                            for i in range(slot["slot_start"] - 1, slot["slot_finish"]):
-                                dt = day_start + Timedelta(minutes=30 * i)
-                                hist_map[dt] = float(slot["laf"])
-
-                        day_start_raw += Timedelta(days=1)
-
-                laf = hist_map[hist_date]
-            laf_cache_llfc[start_date] = laf
+            laf = laf_cache_llfc[start_date] = ds.sess.execute(
+                select(cast(Laf.value, Float))
+                .join(Llfc)
+                .join(Party)
+                .where(
+                    Party.dno_code == ds.dno_code,
+                    Llfc.code == ds.llfc_code,
+                    Laf.timestamp == start_date,
+                )
+            ).scalar_one_or_none()
+            if laf is None:
+                raise BadRequest(
+                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
+                    f"timestamp {hh_format(start_date)}"
+                )
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]

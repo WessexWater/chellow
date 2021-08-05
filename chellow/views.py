@@ -11,7 +11,7 @@ import types
 from collections import OrderedDict, defaultdict
 from datetime import datetime as Datetime
 from importlib import import_module
-from io import DEFAULT_BUFFER_SIZE, StringIO
+from io import BytesIO, DEFAULT_BUFFER_SIZE, StringIO
 from itertools import chain, islice
 from operator import itemgetter
 from random import choice
@@ -69,6 +69,7 @@ import chellow.g_bill_import
 import chellow.g_cv
 import chellow.general_import
 import chellow.hh_importer
+import chellow.laf_import
 import chellow.rcrc
 import chellow.system_price
 import chellow.tlms
@@ -100,6 +101,7 @@ from chellow.models import (
     GeneratorType,
     GspGroup,
     HhDatum,
+    Laf,
     Llfc,
     METER_TYPES,
     MarketRole,
@@ -801,6 +803,78 @@ def general_import_get(import_id):
     except BadRequest as e:
         flash(e.description)
         return render_template("general_import.html", process_id=import_id)
+
+
+@views.route("/laf_imports")
+def laf_imports_get():
+    return render_template(
+        "laf_imports.html",
+        process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+    )
+
+
+@views.route("/laf_imports", methods=["POST"])
+def laf_imports_post():
+    try:
+        zips = []
+        for file_item in request.files.values():
+            file_name = file_item.filename
+            if not file_name.endswith(".zip"):
+                raise BadRequest("The files should have the extension '.zip'.")
+            f = BytesIO(file_item.stream.read())
+            f.seek(0)
+            zips.append(f)
+
+        proc_id = chellow.laf_import.start_process(zips)
+        return chellow_redirect(f"/laf_imports/{proc_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template(
+            "laf_imports.html",
+            process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+        )
+
+
+@views.route("/laf_imports/<int:import_id>")
+def laf_import_get(import_id):
+    try:
+        proc = chellow.laf_import.get_process(import_id)
+        fields = proc.get_fields()
+        fields["is_alive"] = proc.isAlive()
+        fields["process_id"] = import_id
+        return render_template("laf_import.html", **fields)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template("laf_import.html", process_id=import_id)
+
+
+@views.route("/lafs")
+def lafs_get():
+    llfc_id = req_int("llfc_id")
+    year = req_int("year")
+    month = req_int("month")
+
+    llfc = Llfc.get_by_id(g.sess, llfc_id)
+    dno = llfc.dno
+
+    start_date, finish_date = next(
+        c_months_u(start_year=year, start_month=month, months=1)
+    )
+    lafs = (
+        g.sess.execute(
+            select(Laf)
+            .where(
+                Laf.llfc == llfc,
+                Laf.timestamp >= start_date,
+                Laf.timestamp <= finish_date,
+            )
+            .order_by(Laf.timestamp)
+        )
+        .scalars()
+        .all()
+    )
+
+    return render_template("lafs.html", dno=dno, llfc=llfc, lafs=lafs)
 
 
 @views.route("/edi_viewer")
@@ -3380,7 +3454,7 @@ def hh_datum_edit_post(datum_id):
                 ],
             )
             g.sess.commit()
-            return chellow_redirect("/channels/" + str(channel_id), 303)
+            return chellow_redirect(f"/channels/{channel_id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(render_template("hh_datum_edit.html", hh=hh), 400)
@@ -6321,7 +6395,9 @@ def llfcs_get():
 @views.route("/llfcs/<int:llfc_id>")
 def llfc_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
-    return render_template("llfc.html", llfc=llfc)
+
+    now = ct_datetime_now()
+    return render_template("llfc.html", llfc=llfc, now=now)
 
 
 @views.route("/llfcs/<int:llfc_id>/edit")

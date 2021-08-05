@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+	DNOs &raquo; {{dno.dno_code}} &raquo; LLFCs &raquo; {{llfc.code}} &raquo; LAFs
+{% endblock %}
+
+{% block nav %}
+	<a href="/dnos">DNOs</a> &raquo;
+	<a href="/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo;
+	<a href="/llfcs?dno_id={{dno.id}}">LLFCs</a> &raquo;
+  <a href="/llfcs/{{llfc.id}}">{{llfc.code}}</a> &raquo;
+	LAFs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Show data</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<form action="/lafs">
+					<fieldset>
+						<input type="hidden" name="llfc_id" value="{{llfc.id}}">
+						<label>Month</label>
+						{{input_date(None, None, 'month')}}
+						<input type="submit" value="Show">
+					</fieldset>
+				</form>
+			</div>
+			<div class="section-data">
+				<table class="etheling etheling_sticky">
+						<caption>LAFs</caption>
+					<thead>
+						<tr>
+							<th>Timestamp</th>
+							<th>Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for laf in lafs %}
+							<tr>
+								<td style="white-space: nowrap">{{laf.timestamp|hh_format}}</td>
+								<td>{{laf.value}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->                                      
+{% endblock %}

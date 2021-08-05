@@ -1,16 +1,38 @@
-import os
 from collections import defaultdict
 
 import chellow.duos
-from chellow.utils import ct_datetime, to_utc
+from chellow.models import MarketRole, Participant, VoltageLevel, insert_voltage_levels
+from chellow.utils import ct_datetime, hh_range, to_utc
 
 
-def test_duos_availability_from_to(mocker):
-    mocker.patch("chellow.utils.root_path", "chellow")
-    mocker.patch("chellow.utils.url_root", "chellow")
-    print(os.getcwd())
+def test_duos_availability_from_to(mocker, sess):
+    caches = {"dno": {"22": {}}}
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        to_utc(ct_datetime(1996, 1, 1)),
+        None,
+    )
+
     month_from = to_utc(ct_datetime(2019, 2, 1))
     month_to = to_utc(ct_datetime(2019, 2, 28, 23, 30))
+
+    for hh in hh_range(caches, month_from, month_to):
+        llfc.insert_laf(sess, hh, 1)
+
+    sess.commit()
+
     ds = mocker.Mock()
     ds.dno_code = "22"
     ds.gsp_group_code = "_L"
@@ -20,7 +42,8 @@ def test_duos_availability_from_to(mocker):
     ds.supplier_bill = defaultdict(int)
     ds.supplier_rate_sets = defaultdict(set)
     ds.get_data_sources = mocker.Mock(return_value=[])
-    ds.caches = {"dno": {"22": {}}}
+    ds.caches = caches
+    ds.sess = sess
 
     hh = {
         "start-date": ct_datetime(2019, 2, 28, 23, 30),
