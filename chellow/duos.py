@@ -703,21 +703,26 @@ def datum_2012_02_23(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            laf = laf_cache_llfc[start_date] = ds.sess.execute(
-                select(cast(Laf.value, Float))
-                .join(Llfc)
-                .join(Party)
-                .where(
-                    Party.dno_code == ds.dno_code,
-                    Llfc.code == ds.llfc_code,
-                    Laf.timestamp == start_date,
-                )
-            ).scalar_one_or_none()
-            if laf is None:
-                raise BadRequest(
-                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
-                    f"timestamp {hh_format(start_date)}"
-                )
+            dno_code = ds.dno_code
+            if dno_code == "99":
+                laf = 1
+            else:
+                laf = ds.sess.execute(
+                    select(cast(Laf.value, Float))
+                    .join(Llfc)
+                    .join(Party)
+                    .where(
+                        Party.dno_code == ds.dno_code,
+                        Llfc.code == ds.llfc_code,
+                        Laf.timestamp == start_date,
+                    )
+                ).scalar_one_or_none()
+                if laf is None:
+                    raise BadRequest(
+                        f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
+                        f"timestamp {hh_format(start_date)}"
+                    )
+            laf_cache_llfc[start_date] = laf
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
