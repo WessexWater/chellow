@@ -517,7 +517,7 @@ def datum_2010_04_01(ds, hh):
 
                 m_start, m_finish = next(
                     c_months_u(
-                        start_year=hh["ct_year"], start_month=hh["ct_month"], months=1
+                        start_year=hh["ct-year"], start_month=hh["ct-month"], months=1
                     )
                 )
                 for (laf,) in ds.sess.execute(
@@ -721,7 +721,7 @@ def datum_2012_02_23(ds, hh):
 
                 m_start, m_finish = next(
                     c_months_u(
-                        start_year=hh["ct_year"], start_month=hh["ct_month"], months=1
+                        start_year=hh["ct-year"], start_month=hh["ct-month"], months=1
                     )
                 )
                 for (laf,) in ds.sess.execute(
