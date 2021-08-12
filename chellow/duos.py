@@ -1,6 +1,6 @@
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import Float, cast, func, select
+from sqlalchemy import func, select
 from sqlalchemy.sql.expression import true
 
 from werkzeug.exceptions import BadRequest
@@ -8,6 +8,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Channel, Era, HhDatum, Laf, Llfc, Party
 from chellow.utils import (
     HH,
+    c_months_u,
     ct_datetime,
     get_file_rates,
     hh_format,
@@ -511,24 +512,34 @@ def datum_2010_04_01(ds, hh):
         except KeyError:
             dno_code = ds.dno_code
             if dno_code == "99":
-                laf = 1
+                laf_cache_llfc[start_date] = 1
             else:
-                laf = ds.sess.execute(
-                    select(cast(Laf.value, Float))
+
+                m_start, m_finish = next(
+                    c_months_u(
+                        start_year=hh["ct_year"], start_month=hh["ct_month"], months=1
+                    )
+                )
+                for (laf,) in ds.sess.execute(
+                    select(Laf.value)
                     .join(Llfc)
                     .join(Party)
                     .where(
                         Party.dno_code == ds.dno_code,
                         Llfc.code == ds.llfc_code,
-                        Laf.timestamp == start_date,
+                        Laf.timestamp >= m_start,
+                        Laf.timestamp <= m_finish,
                     )
-                ).scalar_one_or_none()
-                if laf is None:
-                    raise BadRequest(
-                        f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
-                        f"timestamp {hh_format(start_date)}"
-                    )
-            laf_cache_llfc[start_date] = laf
+                ):
+                    laf_cache_llfc[laf.timestamp] = float(laf.value)
+
+            try:
+                laf = laf_cache_llfc[start_date]
+            except KeyError:
+                raise BadRequest(
+                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
+                    f"timestamp {hh_format(start_date)}"
+                )
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
@@ -705,24 +716,34 @@ def datum_2012_02_23(ds, hh):
         except KeyError:
             dno_code = ds.dno_code
             if dno_code == "99":
-                laf = 1
+                laf_cache_llfc[start_date] = 1
             else:
-                laf = ds.sess.execute(
-                    select(cast(Laf.value, Float))
+
+                m_start, m_finish = next(
+                    c_months_u(
+                        start_year=hh["ct_year"], start_month=hh["ct_month"], months=1
+                    )
+                )
+                for (laf,) in ds.sess.execute(
+                    select(Laf.value)
                     .join(Llfc)
                     .join(Party)
                     .where(
                         Party.dno_code == ds.dno_code,
                         Llfc.code == ds.llfc_code,
-                        Laf.timestamp == start_date,
+                        Laf.timestamp >= m_start,
+                        Laf.timestamp <= m_finish,
                     )
-                ).scalar_one_or_none()
-                if laf is None:
-                    raise BadRequest(
-                        f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
-                        f"timestamp {hh_format(start_date)}"
-                    )
-            laf_cache_llfc[start_date] = laf
+                ):
+                    laf_cache_llfc[laf.timestamp] = float(laf.value)
+
+            try:
+                laf = laf_cache_llfc[start_date]
+            except KeyError:
+                raise BadRequest(
+                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
+                    f"timestamp {hh_format(start_date)}"
+                )
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
