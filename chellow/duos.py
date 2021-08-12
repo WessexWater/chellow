@@ -521,7 +521,7 @@ def datum_2010_04_01(ds, hh):
                     )
                 )
                 for (laf,) in ds.sess.execute(
-                    select(Laf.value)
+                    select(Laf)
                     .join(Llfc)
                     .join(Party)
                     .where(
@@ -725,7 +725,7 @@ def datum_2012_02_23(ds, hh):
                     )
                 )
                 for (laf,) in ds.sess.execute(
-                    select(Laf.value)
+                    select(Laf)
                     .join(Llfc)
                     .join(Party)
                     .where(
