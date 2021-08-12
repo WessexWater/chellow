@@ -807,9 +807,12 @@ def general_import_get(import_id):
 
 @views.route("/laf_imports")
 def laf_imports_get():
+    conf = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = conf.make_properties()
     return render_template(
         "laf_imports.html",
         process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+        properties=props.get("laf_importer", {}),
     )
 
 

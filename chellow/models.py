@@ -1092,11 +1092,8 @@ class Contract(Base, PersistentClass):
         )
         if cont is None:
             raise NotFound(
-                "There isn't a contract with the role codes '"
-                + str(role_codes)
-                + "' and id '"
-                + str(oid)
-                + "'."
+                f"There isn't a contract with the role codes '{role_codes}' and id '"
+                f"{oid}'."
             )
         return cont
 
@@ -1111,11 +1108,8 @@ class Contract(Base, PersistentClass):
         )
         if cont is None:
             raise BadRequest(
-                "There isn't a contract with the role codes '"
-                + str(role_codes)
-                + "' and name '"
-                + name
-                + "'."
+                f"There isn't a contract with the role codes '{role_codes}' and name '"
+                f"{name}'."
             )
         return cont
 

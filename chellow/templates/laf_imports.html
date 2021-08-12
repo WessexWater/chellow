@@ -28,12 +28,18 @@
 							<input type="submit" value="Import">
 						</fieldset>
 					</form>
+
+					<ul>
+						{% for participant, timestamp in properties.items() %}
+							<li>{{participant}}: {{timestamp|hh_format}}</li>
+						{% endfor %}
+					</ul>
 					
 					{% if process_ids %}
 						<ul>
 							{% for id in process_ids %}
 								<li>
-									<a href="/general_imports/{{id}}">{{id}}</a>
+									<a href="/laf_imports/{{id}}">{{id}}</a>
 								</li>
 							{% endfor %}
 						</ul>

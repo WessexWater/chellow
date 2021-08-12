@@ -11,7 +11,7 @@ from sqlalchemy import text
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.models import Party, Session
+from chellow.models import Contract, Party, Session
 from chellow.utils import hh_after, to_ct, to_utc
 
 
@@ -113,7 +113,6 @@ DO UPDATE SET (llfc_id, timestamp, value) =
             params={"llfc_ids": llfc_ids, "timestamps": timestamps, "values": values},
         )
         sess.commit()
-    sess.commit()
 
 
 UTC_DATETIME_MIN = to_utc(Datetime.min)
@@ -172,5 +171,17 @@ def laf_days(sess, progress, csv_file):
             values.append(Decimal(value))
 
         elif code == "ZPT":
+            earliest_list = sorted(timestamp_cache.keys())
+            if len(earliest_list) > 0:
+                conf = Contract.get_non_core_by_name(sess, "configuration")
+                props = conf.make_properties()
+                try:
+                    laf_importer = props["laf_importer"]
+                except KeyError:
+                    laf_importer = props["laf_importer"] = {}
+
+                laf_importer[dno.participant.code] = min(earliest_list)
+                conf.update_properties(props)
+                sess.commit()
             if len(llfc_ids) > 0:
                 yield llfc_ids, timestamps, values
