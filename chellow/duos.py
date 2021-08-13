@@ -715,7 +715,7 @@ def datum_2012_02_23(ds, hh):
             laf = laf_cache_llfc[start_date]
         except KeyError:
             dno_code = ds.dno_code
-            if dno_code == "99":
+            if dno_code in ("88", "99"):
                 laf_cache_llfc[start_date] = 1
             else:
 
