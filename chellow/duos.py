@@ -756,7 +756,7 @@ def datum_2012_02_23(ds, hh):
                         f"timestamp {hh_format(hh['hist-start'])}"
                     )
                 else:
-                    laf_cache_llfc[laf.timestamp] = laf = float(laf.value)
+                    laf_cache_llfc[start_date] = laf = float(laf.value)
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
