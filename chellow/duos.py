@@ -741,7 +741,7 @@ def datum_2012_02_23(ds, hh):
                 laf = laf_cache_llfc[start_date]
             except KeyError:
                 hist_start = hh["hist-start"]
-                d = ds.get_data_sources(hist_start, hist_start)[0]
+                d = next(ds.get_data_sources(hist_start, hist_start))
                 laf = ds.sess.execute(
                     select(Laf)
                     .join(Llfc)

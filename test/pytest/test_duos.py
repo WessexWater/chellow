@@ -98,7 +98,7 @@ def test_lafs_hist(mocker, sess):
     ds.sc = 0
     ds.supplier_bill = defaultdict(int)
     ds.supplier_rate_sets = defaultdict(set)
-    ds.get_data_sources = mocker.Mock(return_value=[ds])
+    ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
     ds.hh_data = []
@@ -153,7 +153,7 @@ def test_lafs_hist_none(mocker, sess):
     ds.sc = 0
     ds.supplier_bill = defaultdict(int)
     ds.supplier_rate_sets = defaultdict(set)
-    ds.get_data_sources = mocker.Mock(return_value=[ds])
+    ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
 
