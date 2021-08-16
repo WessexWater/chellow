@@ -1,8 +1,10 @@
 from collections import defaultdict
 
+import pytest
+
 import chellow.duos
 from chellow.models import MarketRole, Participant, VoltageLevel, insert_voltage_levels
-from chellow.utils import ct_datetime, hh_range, to_utc
+from chellow.utils import BadRequest, ct_datetime, hh_range, to_utc
 
 
 def test_duos_availability_from_to(mocker, sess):
@@ -115,3 +117,56 @@ def test_lafs_hist(mocker, sess):
     chellow.duos.datum_2012_02_23(ds, hh)
 
     assert caches["dno"]["22"]["lafs"]["510"][start_date] == hist_laf
+
+
+def test_lafs_hist_none(mocker, sess):
+    caches = {"dno": {"22": {}}}
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        to_utc(ct_datetime(1996, 1, 1)),
+        None,
+    )
+
+    start_date = to_utc(ct_datetime(2019, 2, 28, 23, 30))
+    hist_date = to_utc(ct_datetime(2018, 2, 28, 23, 30))
+
+    sess.commit()
+
+    ds = mocker.Mock()
+    ds.dno_code = "22"
+    ds.gsp_group_code = "_L"
+    ds.llfc_code = "510"
+    ds.is_displaced = False
+    ds.sc = 0
+    ds.supplier_bill = defaultdict(int)
+    ds.supplier_rate_sets = defaultdict(set)
+    ds.get_data_sources = mocker.Mock(return_value=[])
+    ds.caches = caches
+    ds.sess = sess
+
+    hh = {
+        "hist-start": hist_date,
+        "start-date": start_date,
+        "ct-decimal-hour": 23.5,
+        "ct-is-month-end": True,
+        "ct-day-of-week": 3,
+        "ct-year": 2019,
+        "ct-month": 2,
+        "msp-kwh": 0,
+        "imp-msp-kvarh": 0,
+        "exp-msp-kvarh": 0,
+    }
+    with pytest.raises(BadRequest):
+        chellow.duos.datum_2012_02_23(ds, hh)

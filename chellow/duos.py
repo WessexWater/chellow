@@ -749,11 +749,12 @@ def datum_2012_02_23(ds, hh):
                         Llfc.code == ds.llfc_code,
                         Laf.timestamp == hh["hist-start"],
                     )
-                ).scalar_one()
+                ).scalar_one_or_none()
                 if laf is None:
                     raise BadRequest(
                         f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
-                        f"timestamp {hh_format(hh['hist-start'])}"
+                        f"timestamp {hh_format(start_date)} and "
+                        f"{hh_format(hh['hist-start'])}"
                     )
                 else:
                     laf_cache_llfc[start_date] = laf = float(laf.value)
