@@ -98,9 +98,10 @@ def test_lafs_hist(mocker, sess):
     ds.sc = 0
     ds.supplier_bill = defaultdict(int)
     ds.supplier_rate_sets = defaultdict(set)
-    ds.get_data_sources = mocker.Mock(return_value=[])
+    ds.get_data_sources = mocker.Mock(return_value=[ds])
     ds.caches = caches
     ds.sess = sess
+    ds.hh_data = []
 
     hh = {
         "hist-start": hist_date,
@@ -152,7 +153,7 @@ def test_lafs_hist_none(mocker, sess):
     ds.sc = 0
     ds.supplier_bill = defaultdict(int)
     ds.supplier_rate_sets = defaultdict(set)
-    ds.get_data_sources = mocker.Mock(return_value=[])
+    ds.get_data_sources = mocker.Mock(return_value=[ds])
     ds.caches = caches
     ds.sess = sess
 
@@ -168,5 +169,9 @@ def test_lafs_hist_none(mocker, sess):
         "imp-msp-kvarh": 0,
         "exp-msp-kvarh": 0,
     }
-    with pytest.raises(BadRequest):
+    with pytest.raises(
+        BadRequest,
+        match="Missing LAF for DNO 22 and \\(LLFC 510 and timestamp "
+        "2019-02-28 23:30\\) and \\(LLFC 510 and 2018-02-28 23:30\\)",
+    ):
         chellow.duos.datum_2012_02_23(ds, hh)
