@@ -1,3 +1,0 @@
-"Meter Timeswitch Class ID","Effective From Settlement Date (MTC)","Effective To Settlement Date (MTC)","Meter Timeswitch Class Description","MTC Common Code Indicator","MTC Related Metering System Indicator","Mtc Meter Type ID","MTC Payment Type ID","MTC Communication Indicator","MTC Type Indicator","TPR Count"
-"505","01/04/1996","","Related Unmetered Half Night And Pre-Dawn","T","T","UM","CR","N","N","2"
-"506","01/04/1996","01/04/2010","Unmetered Reserved - Site Specific","T","T","UM","CR","N","X",""
