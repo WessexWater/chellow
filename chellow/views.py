@@ -2569,6 +2569,9 @@ def era_edit_post(era_id):
             return chellow_redirect("/supplies/" + str(era.supply.id), 303)
     except BadRequest as e:
         flash(e.description)
+        energisation_statuses = g.sess.query(EnergisationStatus).order_by(
+            EnergisationStatus.code
+        )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
@@ -2608,6 +2611,7 @@ def era_edit_post(era_id):
                 dc_contracts=dc_contracts,
                 supplier_contracts=supplier_contracts,
                 site_eras=site_eras,
+                energisation_statuses=energisation_statuses,
             ),
             400,
         )
