@@ -91,6 +91,8 @@ def test_lafs_hist(mocker, sess):
     sess.commit()
 
     ds = mocker.Mock()
+    ds.start_date = start_date
+    ds.finish_date = start_date
     ds.dno_code = "22"
     ds.gsp_group_code = "_L"
     ds.llfc_code = "510"
@@ -146,6 +148,8 @@ def test_lafs_hist_none(mocker, sess):
     sess.commit()
 
     ds = mocker.Mock()
+    ds.start_date = start_date
+    ds.finish_date = start_date
     ds.dno_code = "22"
     ds.gsp_group_code = "_L"
     ds.llfc_code = "510"

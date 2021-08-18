@@ -719,11 +719,6 @@ def datum_2012_02_23(ds, hh):
                 laf_cache_llfc[start_date] = 1
             else:
 
-                m_start, m_finish = next(
-                    c_months_u(
-                        start_year=hh["ct-year"], start_month=hh["ct-month"], months=1
-                    )
-                )
                 for (laf,) in ds.sess.execute(
                     select(Laf)
                     .join(Llfc)
@@ -731,8 +726,8 @@ def datum_2012_02_23(ds, hh):
                     .where(
                         Party.dno_code == ds.dno_code,
                         Llfc.code == ds.llfc_code,
-                        Laf.timestamp >= m_start,
-                        Laf.timestamp <= m_finish,
+                        Laf.timestamp >= ds.start_date,
+                        Laf.timestamp <= ds.finish_date,
                     )
                 ):
                     laf_cache_llfc[laf.timestamp] = float(laf.value)
@@ -741,25 +736,24 @@ def datum_2012_02_23(ds, hh):
                 laf = laf_cache_llfc[start_date]
             except KeyError:
                 hist_start = hh["hist-start"]
-                d = next(ds.get_data_sources(hist_start, hist_start))
-                laf = ds.sess.execute(
+                laf_obj = ds.sess.execute(
                     select(Laf)
                     .join(Llfc)
                     .join(Party)
                     .where(
                         Party.dno_code == ds.dno_code,
-                        Llfc.code == d.llfc_code,
+                        Llfc.code == ds.llfc_code,
                         Laf.timestamp == hist_start,
                     )
                 ).scalar_one_or_none()
-                if laf is None:
+                if laf_obj is None:
                     raise BadRequest(
                         f"Missing LAF for DNO {ds.dno_code} and (LLFC {ds.llfc_code} "
                         f"and timestamp {hh_format(start_date)}) and "
-                        f"(LLFC {d.llfc_code} and {hh_format(hist_start)})"
+                        f"(LLFC {ds.llfc_code} and {hh_format(hist_start)})"
                     )
                 else:
-                    laf_cache_llfc[start_date] = laf = float(laf.value)
+                    laf_cache_llfc[start_date] = laf = float(laf_obj.value)
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]

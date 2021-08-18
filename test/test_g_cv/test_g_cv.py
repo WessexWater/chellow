@@ -19,7 +19,7 @@ def test_fetch_cvs(mocker, sess):
     sess.commit()
 
     mock_response = mocker.Mock()
-    with open("test/pytest/test_g_cv/cv.csv") as f:
+    with open("test/test_g_cv/cv.csv") as f:
         mock_response.text = f.read()
 
     mock_requests = mocker.patch("chellow.g_cv.requests")
