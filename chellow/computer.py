@@ -45,6 +45,7 @@ from chellow.utils import (
     HH,
     PropDict,
     YEAR,
+    c_months_u,
     ct_datetime,
     ct_datetime_now,
     hh_format,
@@ -54,14 +55,13 @@ from chellow.utils import (
     loads,
     to_ct,
     to_utc,
-    utc_datetime,
     utc_datetime_now,
 )
 
 
 cons_types = ["construction", "commissioning", "operation"]
 lec_cats = list(
-    (v + "-kwh", "hist-" + v + "-kwh")
+    (f"{v}-kwh", f"hist-{v}-kwh")
     for v in [
         "import-net",
         "export-net",
@@ -818,16 +818,17 @@ class SiteSource(DataSource):
         ):
             yield self
         else:
-            month_start = utc_datetime(start_date.year, start_date.month)
-            while month_start <= finish_date:
-                month_finish = month_start + relativedelta(months=1) - HH
+            start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
+            months = c_months_u(
+                start_year=start_date_ct.year,
+                start_month=start_date.month,
+                finish_year=finish_date_ct.year,
+                finish_month=finish_date_ct.month,
+            )
+            for month_start, month_finish in months:
                 chunk_start = hh_max(month_start, start_date)
                 chunk_finish = hh_min(month_finish, finish_date)
-                if (
-                    self.stream_focus == "gen-used"
-                    and self.era is not None
-                    and (self.deltas is None or len(self.deltas["hhs"]) == 0)
-                ):
+                if self.stream_focus == "gen-used":
                     era = displaced_era(
                         self.sess,
                         self.caches,
@@ -854,7 +855,7 @@ class SiteSource(DataSource):
                 )
                 if self.stream_focus == "3rd-party-used":
                     site_ds.revolve_to_3rd_party_used()
-                month_start += relativedelta(months=1)
+
                 yield site_ds
 
 
