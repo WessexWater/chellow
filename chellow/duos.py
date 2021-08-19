@@ -735,25 +735,30 @@ def datum_2012_02_23(ds, hh):
             try:
                 laf = laf_cache_llfc[start_date]
             except KeyError:
-                hist_start = hh["hist-start"]
-                laf_obj = ds.sess.execute(
-                    select(Laf)
-                    .join(Llfc)
-                    .join(Party)
-                    .where(
-                        Party.dno_code == ds.dno_code,
-                        Llfc.code == ds.llfc_code,
-                        Laf.timestamp == hist_start,
-                    )
-                ).scalar_one_or_none()
-                if laf_obj is None:
+                for cand in (hh["hist-start"], ds.forecast_date):
+                    laf_obj = ds.sess.execute(
+                        select(Laf)
+                        .join(Llfc)
+                        .join(Party)
+                        .where(
+                            Party.dno_code == ds.dno_code,
+                            Llfc.code == ds.llfc_code,
+                            Laf.timestamp == cand,
+                        )
+                    ).scalar_one_or_none()
+                    if laf_obj is not None:
+                        laf_cache_llfc[start_date] = float(laf_obj.value)
+                        break
+
+                try:
+                    laf = laf_cache_llfc[start_date]
+                except KeyError:
                     raise BadRequest(
-                        f"Missing LAF for DNO {ds.dno_code} and (LLFC {ds.llfc_code} "
-                        f"and timestamp {hh_format(start_date)}) and "
-                        f"(LLFC {ds.llfc_code} and {hh_format(hist_start)})"
+                        f"Missing LAF for DNO {ds.dno_code} and LLFC {ds.llfc_code} "
+                        f"and timestamps {hh_format(start_date)}, "
+                        f"{hh_format(hh['hist-start'])} and "
+                        f"{hh_format(ds.forecast_date)}"
                     )
-                else:
-                    laf_cache_llfc[start_date] = laf = float(laf_obj.value)
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
