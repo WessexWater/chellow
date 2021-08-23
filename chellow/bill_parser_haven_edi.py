@@ -149,14 +149,18 @@ class Parser:
     def make_raw_bills(self):
         raw_bills = []
         sess = Session()
-        headers = {"sess": sess}
-        for self.line_number, code in enumerate(self.parser):
-            elements = _find_elements(code, self.parser.elements)
-            line = self.parser.line
-            bill = _process_segment(code, elements, line, headers, self.line_number)
-            if bill is not None:
-                raw_bills.append(bill)
-        sess.close()
+        headers = {"sess": sess, "errors": []}
+        try:
+            for self.line_number, code in enumerate(self.parser):
+                elements = _find_elements(code, self.parser.elements)
+                line = self.parser.line
+                bill = _process_segment(code, elements, line, headers, self.line_number)
+                if bill is not None:
+                    raw_bills.append(bill)
+        finally:
+            if sess is not None:
+                sess.close()
+
         return raw_bills
 
 
@@ -187,16 +191,53 @@ def _process_segment(code, elements, line, headers, line_number):
             _process_CLO(elements, headers)
 
         elif code == "MTR":
-            return _process_MTR(elements, headers)
+            _process_MTR(elements, headers)
 
         elif code == "MAN":
             _process_MAN(elements, headers)
 
     except BadRequest as e:
-        return {
-            "error": f"Can't parse the line number {line_number} {line} "
-            f": {e.description}"
-        }
+        print("error", e)
+        headers["errors"].append(
+            f"Can't parse the line number {line_number} {line}: {e.description}"
+        )
+
+    if code == "MTR":
+        bill = {}
+
+        if "message_type" in headers and headers["message_type"] == "UTLBIL":
+            print("doing message type")
+            print("headers", headers)
+            for k in (
+                "kwh",
+                "reference",
+                "mpan_core",
+                "issue_date",
+                "account",
+                "start_date",
+                "finish_date",
+                "net",
+                "vat",
+                "gross",
+                "breakdown",
+                "bill_type_code",
+                "reads",
+            ):
+                if k in headers:
+                    bill[k] = headers[k]
+                else:
+                    headers["errors"].append(
+                        f"The key {k} is missing from the headers at line number "
+                        f"{line_number}."
+                    )
+
+            if len(headers["errors"]) > 0:
+                bill["error"] = " ".join(headers["errors"])
+            return bill
+
+        elif len(headers["errors"]) > 0:
+            bill["error"] = " ".join(headers["errors"])
+            return bill
 
 
 def _process_BTL(elements, headers):
@@ -264,8 +305,7 @@ def _process_MTR(elements, headers):
             read["tpr_code"] = tpr_map[desc]
         except KeyError:
             raise BadRequest(
-                f"The description {desc} isn't in the SSC_MAP "
-                f"for the SSC {ssc_lookup}."
+                f"The description {desc} isn't in the SSC_MAP for the SSC {ssc_lookup}."
             )
 
     for el in headers["bill_elements"]:
@@ -280,7 +320,7 @@ def _process_MTR(elements, headers):
             cons = el.cons / num_mrs
             for mr in mrs:
                 tpr_code = mr.tpr.code
-                titles = (tpr_code + "-gbp", tpr_code + "-rate", tpr_code + "-kwh")
+                titles = f"{tpr_code}-gbp", f"{tpr_code}-rate", f"{tpr_code}-kwh"
                 bill_elements.append(
                     BillElement(
                         gbp=gbp, rate=el.rate, cons=cons, titles=titles, desc=None
@@ -292,11 +332,11 @@ def _process_MTR(elements, headers):
                     tpr = tpr_map[el.desc]
                 except KeyError:
                     raise BadRequest(
-                        f"The billing element description {el.desc} "
-                        f"isn't in the SSC_MAP for the SSC {ssc_lookup}."
+                        f"The billing element description {el.desc} isn't in the "
+                        f"SSC_MAP for the SSC {ssc_lookup}."
                     )
 
-                titles = (tpr + "-gbp", tpr + "-rate", tpr + "-kwh")
+                titles = f"{tpr}-gbp", f"{tpr}-rate", f"{tpr}-kwh"
             else:
                 titles = el.titles
 
@@ -331,22 +371,6 @@ def _process_MTR(elements, headers):
             except KeyError:
                 breakdown[eln_cons] = cons
 
-    return {
-        "kwh": headers["kwh"],
-        "reference": headers["reference"],
-        "mpan_core": mpan_core,
-        "issue_date": headers["issue_date"],
-        "account": headers["account"],
-        "start_date": start_date,
-        "finish_date": headers["finish_date"],
-        "net": headers["net"],
-        "vat": headers["vat"],
-        "gross": headers["gross"],
-        "breakdown": breakdown,
-        "reads": reads,
-        "bill_type_code": headers["bill_type_code"],
-    }
-
 
 def _process_MHD(elements, headers):
     message_type = elements["TYPE"][0]
@@ -357,6 +381,7 @@ def _process_MHD(elements, headers):
         headers["reads"] = []
         headers["breakdown"] = {"raw-lines": []}
         headers["bill_elements"] = []
+        headers["errors"] = []
         headers["sess"] = sess
     headers["message_type"] = message_type
 
@@ -380,7 +405,7 @@ def _process_CCD(elements, headers):
             eln_gbp, eln_rate, eln_cons = TMOD_MAP[tmod_1]
         except KeyError:
             raise BadRequest(
-                f"Can't find the Tariff Modifer Code 1 {tmod_1} " f"in the TMOD_MAP."
+                f"Can't find the Tariff Modifer Code 1 {tmod_1} in the TMOD_MAP."
             )
 
         """

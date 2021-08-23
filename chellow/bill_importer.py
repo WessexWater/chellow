@@ -134,6 +134,10 @@ class BillImport(threading.Thread):
                                         read_types[raw_read["pres_type_code"]],
                                     )
                                 self.successful_bills.append(raw_bill)
+                        except KeyError as e:
+                            err = raw_bill.get("error", "")
+                            raw_bill["error"] = err + " " + str(e)
+                            self.failed_bills.append(raw_bill)
                         except BadRequest as e:
                             raw_bill["error"] = str(e.description)
                             self.failed_bills.append(raw_bill)

@@ -57,8 +57,9 @@ def test_process_MTR_UTLBIL(mocker):
     cons = "113"
     mock_supply.find_era_at.return_value = mock_era
     elements = {}
+    sess = mocker.Mock()
     headers = {
-        "sess": mocker.Mock(),
+        "sess": sess,
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
@@ -97,7 +98,18 @@ def test_process_MTR_UTLBIL(mocker):
         ],
         "bill_type_code": "N",
     }
-    expected_bill = {
+    expected_headers = {
+        "sess": sess,
+        "message_type": "UTLBIL",
+        "bill_elements": [
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp),
+                rate=Decimal("0.0001"),
+                cons=Decimal(cons),
+                titles=None,
+                desc="Night",
+            )
+        ],
         "kwh": 8,
         "reference": "a",
         "mpan_core": ["0850"],
@@ -130,8 +142,8 @@ def test_process_MTR_UTLBIL(mocker):
         ],
         "bill_type_code": "N",
     }
-    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
-    assert bill == expected_bill
+    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    assert headers == expected_headers
 
 
 def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
@@ -144,8 +156,9 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
     cons = "113"
     mock_supply.find_era_at.return_value = mock_era
     elements = {}
+    sess = mocker.Mock()
     headers = {
-        "sess": mocker.Mock(),
+        "sess": sess,
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
@@ -191,7 +204,25 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
         ],
         "bill_type_code": "N",
     }
-    expected_bill = {
+    expected_headers = {
+        "sess": sess,
+        "message_type": "UTLBIL",
+        "bill_elements": [
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp),
+                rate=Decimal("0.0001"),
+                cons=Decimal(cons),
+                titles=None,
+                desc="Night",
+            ),
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp),
+                rate=Decimal("0.0001"),
+                cons=Decimal(cons),
+                titles=None,
+                desc="Night",
+            ),
+        ],
         "kwh": 8,
         "reference": "a",
         "mpan_core": ["0850"],
@@ -224,8 +255,8 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
         ],
         "bill_type_code": "N",
     }
-    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
-    assert bill == expected_bill
+    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    assert headers == expected_headers
 
 
 def test_process_MTR_UTLBIL_unmetered(mocker):
@@ -243,8 +274,9 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
     cons = "113"
     mock_supply.find_era_at.return_value = mock_era
     elements = {}
+    sess = mocker.Mock()
     headers = {
-        "sess": mocker.Mock(),
+        "sess": sess,
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
@@ -269,7 +301,18 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
         "reads": [],
         "bill_type_code": "N",
     }
-    expected_bill = {
+    expected_headers = {
+        "sess": sess,
+        "message_type": "UTLBIL",
+        "bill_elements": [
+            chellow.bill_parser_haven_edi.BillElement(
+                gbp=Decimal(gbp),
+                rate=Decimal("0.0001"),
+                cons=Decimal(cons),
+                titles=None,
+                desc="Energy Charges",
+            )
+        ],
         "kwh": 8,
         "reference": "a",
         "mpan_core": ["0850"],
@@ -291,8 +334,8 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
         "reads": [],
         "bill_type_code": "N",
     }
-    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
-    assert bill == expected_bill
+    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    assert headers == expected_headers
 
 
 def test_process_MAN(mocker):
@@ -316,6 +359,7 @@ def test_process_MHD(mocker):
     expected_headers = {
         "message_type": message_type,
         "reads": [],
+        "errors": [],
         "bill_elements": [],
         "breakdown": {"raw-lines": []},
         "sess": sess,
@@ -415,22 +459,65 @@ def test_process_CLO(mocker):
 
 
 def test_process_segment_error(mocker):
-    mocker.patch("chellow.bill_parser_haven_edi._process_BTL", side_effect=BadRequest())
+    mocker.patch("chellow.bill_parser_haven_edi._process_MTR", side_effect=BadRequest())
 
-    code = "BTL"
+    code = "MTR"
     elements = []
     line = ""
-    headers = {}
+    account = "a1"
+    bill_type_code = "N"
+    breakdown = {"raw-lines": []}
+    finish_date = utc_datetime(2020, 3, 31, 23, 30)
+    gross = 1
+    kwh = 1
+    issue_date = utc_datetime(2020, 4, 30, 23, 30)
+    net = 1
+    reads = []
+    reference = "20848747847"
+    start_date = utc_datetime(2020, 3, 1)
+    vat = 1
+    headers = {
+        "message_type": "UTLBIL",
+        "errors": [],
+        "type_code": "N",
+        "reads": reads,
+        "bill_type_code": "N",
+        "breakdown": breakdown,
+        "gross": gross,
+        "vat": vat,
+        "net": net,
+        "kwh": kwh,
+        "issue_date": issue_date,
+        "finish_date": finish_date,
+        "start_date": start_date,
+        "account": account,
+        "reference": reference,
+    }
     line_number = 13
 
     bill = chellow.bill_parser_haven_edi._process_segment(
         code, elements, line, headers, line_number
     )
 
-    assert bill == {
-        "error": "Can't parse the line number 13  : The browser (or proxy) "
-        "sent a request that this server could not understand."
+    expected_bill = {
+        "bill_type_code": bill_type_code,
+        "account": account,
+        "error": "Can't parse the line number 13 : The browser (or proxy) sent a "
+        "request that this server could not understand. The key mpan_core is missing "
+        "from the headers at line number 13.",
+        "breakdown": breakdown,
+        "finish_date": finish_date,
+        "issue_date": issue_date,
+        "gross": gross,
+        "kwh": kwh,
+        "net": net,
+        "reads": reads,
+        "reference": reference,
+        "start_date": start_date,
+        "vat": vat,
     }
+
+    assert bill == expected_bill
 
 
 def test_Parser(mocker, sess):
