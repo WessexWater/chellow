@@ -700,11 +700,8 @@ class Bill(Base, PersistentClass):
         self.issue_date = issue_date
         if start_date > finish_date:
             raise BadRequest(
-                "The bill start date "
-                + hh_format(start_date)
-                + " can't be after the finish date "
-                + hh_format(finish_date)
-                + "."
+                f"The bill start date {hh_format(start_date)} can't be after the "
+                f"finish date {hh_format(finish_date)}."
             )
 
         self.start_date = start_date
@@ -717,10 +714,8 @@ class Bill(Base, PersistentClass):
         for val, name in ((net, "net"), (vat, "vat"), (gross, "gross")):
             if val.as_tuple().exponent > -2:
                 raise BadRequest(
-                    "The '"
-                    + name
-                    + "' field of a bill must be written to at least two "
-                    "decimal places. It's actually " + str(val)
+                    f"The '{name}' field of a bill must be written to at least two "
+                    f"decimal places. It's actually {val}"
                 )
         self.net = net
         self.vat = vat
@@ -3343,11 +3338,8 @@ class Supply(Base, PersistentClass):
                     hh_data = hh_data.filter(HhDatum.start_date <= finish_date)
                 if hh_data.count() > 0:
                     raise BadRequest(
-                        "There are orphaned HH data between "
-                        + hh_format(start_date)
-                        + " and "
-                        + hh_format(finish_date)
-                        + "."
+                        f"There are orphaned HH data between {hh_format(start_date)} "
+                        f"and {hh_format(finish_date)}."
                     )
 
         if old_era is not None and new_era is not None:
@@ -3390,18 +3382,13 @@ class Supply(Base, PersistentClass):
 
                 if hh_data.count() > 0:
                     if target_channel is None:
-                        raise Exception(
-                            "There is no channel for the import related: "
-                            + str(channel.imp_related)
-                            + " and channel type: "
-                            + str(channel.channel_type)
-                            + " HH data from "
-                            + str(start_date)
-                            + " to move to in the era starting "
-                            + str(new_era.start_date)
-                            + ", finishing "
-                            + str(new_era.finish_date)
-                            + "."
+                        raise BadRequest(
+                            f"There is no channel for the import related: "
+                            f"{channel.imp_related} and channel type: "
+                            f"{channel.channel_type} HH data from "
+                            f"{hh_format(start_date)} to move to in the era starting "
+                            f"{hh_format(new_era.start_date)}, finishing "
+                            f"{hh_format(new_era.finish_date)}."
                         )
 
                     c_params = {
@@ -3547,9 +3534,7 @@ class Supply(Base, PersistentClass):
                 )
                 if sup is not None:
                     raise BadRequest(
-                        "The MPAN core "
-                        + mc
-                        + " is already attached to another supply."
+                        f"The MPAN core {mc} is already attached to another supply."
                     )
 
         old_stripes = []
