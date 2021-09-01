@@ -490,8 +490,8 @@ class DataSource:
         self.finish_date = finish_date
         if self.start_date > self.finish_date:
             raise Exception(
-                "The start date {hh_format(start_date)} is after the finish date "
-                "{hh_format(finish_date)}."
+                f"The start date {hh_format(start_date)} is after the finish date "
+                f"{hh_format(finish_date)}."
             )
         self.deltas = deltas
         times = get_times(start_date, finish_date, forecast_date)
@@ -821,7 +821,7 @@ class SiteSource(DataSource):
             start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
             months = c_months_u(
                 start_year=start_date_ct.year,
-                start_month=start_date.month,
+                start_month=start_date_ct.month,
                 finish_year=finish_date_ct.year,
                 finish_month=finish_date_ct.month,
             )
