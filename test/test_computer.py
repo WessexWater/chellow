@@ -811,3 +811,30 @@ def test_SiteSource_get_data_sources(mocker):
     finish_date = to_utc(ct_datetime(2008, 7, 31, 23, 30))
     result = ds.get_data_sources(start_date, finish_date)
     next(result)
+
+
+def test_SiteSource_get_data_sources_clock_change(mocker):
+    mocker.patch.object(chellow.computer.SiteSource, "__init__", lambda *x: None)
+    mocker.patch("chellow.computer.displaced_era")
+    mock_c_months_u = mocker.patch("chellow.computer.c_months_u")
+    ds = chellow.computer.SiteSource()
+    ds.forecast_date = to_utc(ct_datetime(2010, 1, 1))
+    ds.start_date = to_utc(ct_datetime(2008, 1, 1))
+    ds.finish_date = to_utc(ct_datetime(2008, 8, 31, 22, 30))
+    ds.stream_focus = "gen-used"
+    ds.sess = mocker.Mock()
+    ds.caches = {}
+    ds.site = mocker.Mock()
+    ds.era_maps = mocker.Mock()
+    ds.deltas = mocker.Mock()
+
+    start_date = to_utc(ct_datetime(2008, 4, 1))
+    finish_date = to_utc(ct_datetime(2008, 4, 30, 23, 30))
+    result = ds.get_data_sources(start_date, finish_date)
+    try:
+        next(result)
+    except StopIteration:
+        pass
+    mock_c_months_u.assert_called_with(
+        finish_month=4, finish_year=2008, start_month=4, start_year=2008
+    )

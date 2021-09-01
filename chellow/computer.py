@@ -1231,9 +1231,9 @@ class SupplySource(DataSource):
 
                             if tpr_code not in tpr_codes:
                                 self._add_problem(
-                                    f"The TPR {tpr_code} from the register read "
-                                    f"does not match any of the TPRs ("
-                                    f"{', '.join(tpr_codes)}) associated with the "
+                                    f"The TPR {tpr_code} from the register read does "
+                                    f"not match any of the TPRs "
+                                    f"({', '.join(tpr_codes)}) associated with the "
                                     f"MPAN."
                                 )
 
