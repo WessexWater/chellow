@@ -31,6 +31,7 @@ from sqlalchemy import (
     not_,
     null,
     or_,
+    select,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
@@ -6543,6 +6544,14 @@ def db_upgrade_25_to_26(sess, root_path):
         sess.execute("delete from meter_type where id = :id", params={"id": code_id})
 
 
+def db_upgrade_26_to_27(sess, root_path):
+    party_88 = sess.execute(select(Party).where(Party.dno_code == "88")).scalar_one()
+    participant_cidc = sess.execute(
+        select(Participant).where(Participant.code == "CIDC")
+    ).scalar_one()
+    party_88.participant = participant_cidc
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1,
     db_upgrade_1_to_2,
@@ -6570,6 +6579,7 @@ upgrade_funcs = [
     db_upgrade_23_to_24,
     db_upgrade_24_to_25,
     db_upgrade_25_to_26,
+    db_upgrade_26_to_27,
 ]
 
 

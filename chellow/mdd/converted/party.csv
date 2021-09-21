@@ -1252,4 +1252,4 @@ id,participant_id,market_role_id,name,valid_from,valid_to,dno_code
 1250,785,29,Green Network Energy Ltd,2015-11-18 00:00:00+00,,
 1251,790,9,Scorpio,2000-07-06 23:00:00+00,,
 1252,792,29,Zythos Energy Limited,2019-02-20 00:00:00+00,,
-1253,68,23,Virtual DNO,2000-01-01 00:00:00+00,,88
+1253,70,23,Virtual DNO,2000-01-01 00:00:00+00,,88
