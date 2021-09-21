@@ -104,9 +104,8 @@ def _make_site_deltas(
 
             if len(cells) != 2:
                 raise BadRequest(
-                    "Can't interpret the row "
-                    + str(cells)
-                    + " it should be of the form 'timestamp, kWh'"
+                    f"Can't interpret the row {cells} it should be of the form "
+                    f"'timestamp, kWh'"
                 )
 
             date_str, kwh_str = cells
@@ -117,8 +116,8 @@ def _make_site_deltas(
                 hh_data[ts] = float(kwh_str)
             except ValueError as e:
                 raise BadRequest(
-                    "When looking at " + typ + " hh data, can't parse the "
-                    "kWh at " + date_str + ": " + str(e)
+                    f"When looking at {typ} hh data, can't parse the kWh at {date_str} "
+                    f": {e}"
                 )
             found_hh = True
 
@@ -686,9 +685,8 @@ def _process_site(
                 gbp = 0
                 imp_supplier_bill["problem"] += (
                     f"For the supply {imp_ss.mpan_core} the virtual bill "
-                    + f"{imp_supplier_bill} from the contract "
-                    + f"{imp_supplier_contract.name} does not contain the "
-                    + "net-gbp key."
+                    f"{imp_supplier_bill} from the contract "
+                    f"{imp_supplier_contract.name} does not contain the net-gbp key."
                 )
 
             if source_code in ("net", "gen-net"):
@@ -926,18 +924,18 @@ def _process_site(
             proportion = overlap_duration / bill_duration
             month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
             bill_prop_gbp = proportion * float(bill.net)
-            month_data["billed-import-net-gbp"] += bill_prop_gbp
             if bill_role_code == "X":
-                month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
-                site_month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
+                key = "billed-supplier-import-net-gbp"
             elif bill_role_code == "C":
-                month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
-                site_month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
+                key = "billed-dc-import-net-gbp"
             elif bill_role_code == "M":
-                month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
-                site_month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
+                key = "billed-mop-import-net-gbp"
             else:
                 raise BadRequest("Role code not recognized.")
+
+            for data in month_data, site_month_data:
+                data["billed-import-net-gbp"] += bill_prop_gbp
+                data[key] += bill_prop_gbp
 
         era = sess.execute(
             select(Era)
@@ -1195,8 +1193,8 @@ def content(
                 )
                 if title_func is None:
                     raise Exception(
-                        f"For the contract {cont.name} there doesn't seem to "
-                        f"be a 'virtual_bill_titles' function."
+                        f"For the contract {cont.name} there doesn't seem to be a "
+                        f"'virtual_bill_titles' function."
                     )
                 for title in title_func():
                     if title not in titles:
