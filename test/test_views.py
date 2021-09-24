@@ -28,6 +28,7 @@ from chellow.models import (
     Mtc,
     Participant,
     Pc,
+    ReportRun,
     Scenario,
     Site,
     Snag,
@@ -2354,4 +2355,13 @@ def test_supply_months_get(sess, client):
         "years": "1",
     }
     response = client.get(f"/supplies/{supply.id}/months", query_string=query_string)
+    match(response, 200)
+
+
+def test_report_run_spreadsheet_get(sess, client):
+    report_run = ReportRun.insert(sess, "bill_check", None, "_b_88")
+    report_run.insert_row(sess, "", ["clump"], {}, {})
+    sess.commit()
+
+    response = client.get(f"/report_runs/{report_run.id}/spreadsheet")
     match(response, 200)

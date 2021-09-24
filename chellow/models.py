@@ -5576,6 +5576,12 @@ class ReportRun(Base, PersistentClass):
         sess.delete(self)
         sess.flush()
 
+    @staticmethod
+    def insert(sess, name, user, title):
+        report_run = ReportRun(name, user, title)
+        sess.add(report_run)
+        return report_run
+
 
 def _jsonize(val):
     if isinstance(val, dict):

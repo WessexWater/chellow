@@ -3832,21 +3832,24 @@ def report_run_spreadsheet_get(run_id):
     cw = csv.writer(si)
 
     first_row = (
-        g.sess.query(ReportRunRow)
-        .filter(ReportRunRow.report_run == run)
-        .order_by(ReportRunRow.id)
+        g.sess.execute(
+            select(ReportRunRow)
+            .where(ReportRunRow.report_run == run)
+            .order_by(ReportRunRow.id)
+        )
+        .scalars()
         .first()
     )
 
     titles = first_row.data["titles"]
     cw.writerow(titles)
 
-    for row in (
-        g.sess.query(ReportRunRow)
-        .filter(ReportRunRow.report_run == run)
+    for row in g.sess.execute(
+        select(ReportRunRow)
+        .where(ReportRunRow.report_run == run)
         .order_by(ReportRunRow.id)
-    ):
-        cw.writerow([csv_make_val(row.data["values"][t]) for t in titles])
+    ).scalars():
+        cw.writerow([csv_make_val(row.data["values"].get(t)) for t in titles])
 
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = f'attachment; filename="{run.title}"'

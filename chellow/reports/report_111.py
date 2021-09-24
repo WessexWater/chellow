@@ -112,8 +112,7 @@ def content(
         writer = csv.writer(tmp_file, lineterminator="\n")
 
         sess = Session()
-        report_run = ReportRun("bill_check", user, fname_additional)
-        sess.add(report_run)
+        report_run = ReportRun.insert(sess, "bill_check", user, fname_additional)
 
         bills = (
             sess.query(Bill)
