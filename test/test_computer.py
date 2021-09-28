@@ -179,7 +179,7 @@ def test_init_hh_data(sess, mocker):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -345,7 +345,7 @@ def test_init_hh_data_export(sess, mocker):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -520,7 +520,7 @@ def test_SupplySource_init_hh(sess, mocker):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -674,7 +674,7 @@ def test_SupplySource_init_nhh(sess, mocker):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "03", "nhh", utc_datetime(2000, 1, 1), None)

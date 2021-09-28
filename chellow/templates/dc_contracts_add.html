@@ -23,8 +23,7 @@
 									<select name="party_id">
 										{% for party in parties %}
 											{{ input_option('party_id', party.id,
-												 	party.participant.code + " : " + party.name
-													+ " : " + party.market_role.description) }}
+												 	party.participant.code + " : " + party.name) }}
 										{% endfor %}
 									</select>
 								</div>

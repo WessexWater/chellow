@@ -1356,7 +1356,7 @@ def dc_contracts_get():
     dc_contracts = (
         g.sess.query(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code.in_(("C", "D")))
+        .filter(MarketRole.code == "C")
         .order_by(Contract.name)
         .all()
     )
@@ -1366,21 +1366,13 @@ def dc_contracts_get():
 @views.route("/dc_contracts/add", methods=["POST"])
 def dc_contracts_add_post():
     try:
-        party_id = req_int("party_id")
+        participant_id = req_int("participant_id")
         name = req_str("name")
         start_date = req_date("start")
-        party = Party.get_by_id(g.sess, party_id)
-        market_role_code = party.market_role.code
-        if market_role_code == "C":
-            contract = Contract.insert_hhdc(
-                g.sess, name, party.participant, "{}", {}, start_date, None, {}
-            )
-        elif market_role_code == "D":
-            contract = Contract.insert_nhhdc(
-                g.sess, name, party.participant, "{}", {}, start_date, None, {}
-            )
-        else:
-            raise BadRequest(f"The market role {market_role_code} must be C or D.")
+        participant = Participant.get_by_id(g.sess, participant_id)
+        contract = Contract.insert_dc(
+            g.sess, name, participant, "{}", {}, start_date, None, {}
+        )
         g.sess.commit()
         chellow.hh_importer.startup_contract(contract.id)
         return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
@@ -1392,7 +1384,7 @@ def dc_contracts_add_post():
             g.sess.query(Party)
             .join(MarketRole)
             .join(Participant)
-            .filter(MarketRole.code.in_(("C", "D")))
+            .filter(MarketRole.code == "C")
             .order_by(Participant.code)
             .all()
         )
@@ -1412,7 +1404,7 @@ def dc_contracts_add_get():
         g.sess.query(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code.in_(("C", "D")))
+        .filter(MarketRole.code == "C")
         .order_by(Participant.code)
         .all()
     )
@@ -1501,7 +1493,7 @@ def dc_contract_edit_get(dc_contract_id):
         g.sess.query(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code.in_(("C", "D")))
+        .filter(MarketRole.code == "C")
         .order_by(Participant.code)
         .all()
     )
@@ -1524,7 +1516,7 @@ def dc_contract_edit_post(contract_id):
             state = req_zish("state")
             contract.update_state(state)
             g.sess.commit()
-            return chellow_redirect("/dc_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
         elif "ignore_snags" in request.form:
             ignore_date = req_date("ignore")
             g.sess.execute(
@@ -1538,7 +1530,7 @@ def dc_contract_edit_post(contract_id):
                 params=dict(contract_id=contract.id, ignore_date=ignore_date),
             )
             g.sess.commit()
-            return chellow_redirect("/dc_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
         elif "delete" in request.form:
             contract.delete(g.sess)
             g.sess.commit()
@@ -1551,7 +1543,7 @@ def dc_contract_edit_post(contract_id):
             party = Party.get_by_id(g.sess, party_id)
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
-            return chellow_redirect("/dc_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         if contract is None:
@@ -1561,7 +1553,7 @@ def dc_contract_edit_post(contract_id):
                 g.sess.query(Party)
                 .join(MarketRole)
                 .join(Participant)
-                .filter(MarketRole.code.in_(("C", "D")))
+                .filter(MarketRole.code == "C")
                 .order_by(Participant.code)
                 .all()
             )
@@ -1594,7 +1586,7 @@ def dc_rate_script_add_post(contract_id):
         start_date = req_date("start")
         rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
-        return chellow_redirect("/dc_rate_scripts/" + str(rate_script.id), 303)
+        return chellow_redirect(f"/dc_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
         now = utc_datetime_now()
@@ -1660,7 +1652,7 @@ def dc_rate_script_edit_post(dc_rate_script_id):
         if "delete" in request.form:
             dc_contract.delete_rate_script(g.sess, dc_rate_script)
             g.sess.commit()
-            return chellow_redirect("/dc_contracts/" + str(dc_contract.id), 303)
+            return chellow_redirect(f"/dc_contracts/{dc_contract.id}", 303)
         else:
             script = req_zish("script")
             start_date = req_date("start")
@@ -1670,7 +1662,7 @@ def dc_rate_script_edit_post(dc_rate_script_id):
                 g.sess, dc_rate_script, start_date, finish_date, script
             )
             g.sess.commit()
-            return chellow_redirect("/dc_rate_scripts/" + str(dc_rate_script.id), 303)
+            return chellow_redirect(f"/dc_rate_scripts/{dc_rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
@@ -1710,7 +1702,7 @@ def supplier_contract_edit_post(contract_id):
             properties = req_zish("properties")
             contract.update(name, party, charge_script, properties)
             g.sess.commit()
-            return chellow_redirect("/supplier_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/supplier_contracts/{contract.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         description = e.description
@@ -2084,7 +2076,7 @@ def mop_rate_script_edit_post(rate_script_id):
                 g.sess, rate_script, start_date, finish_date, script
             )
             g.sess.commit()
-            return chellow_redirect("/mop_rate_scripts/" + str(rate_script.id), 303)
+            return chellow_redirect(f"/mop_rate_scripts/{rate_script.id}", 303)
         except BadRequest as e:
             flash(e.description)
             return make_response(
@@ -2116,7 +2108,7 @@ def mop_contract_add_post():
             g.sess, name, participant, "{}", {}, start_date, None, {}
         )
         g.sess.commit()
-        return chellow_redirect("/mop_contracts/" + str(contract.id), 303)
+        return chellow_redirect(f"/mop_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         initial_date = utc_datetime_now()
@@ -5523,6 +5515,8 @@ def supplier_bill_add_post(batch_id):
         issue_date = req_date("issue")
         start_date = req_hh_date("start")
         finish_date = req_hh_date("finish")
+        if finish_date > utc_datetime_now():
+            raise BadRequest("The finish date can't be in the future.")
         kwh = req_decimal("kwh")
         net = req_decimal("net")
         vat = req_decimal("vat")
@@ -5548,7 +5542,7 @@ def supplier_bill_add_post(batch_id):
             Supply.get_by_mpan_core(g.sess, mpan_core),
         )
         g.sess.commit()
-        return chellow_redirect("/supplier_bills/" + str(bill.id), 303)
+        return chellow_redirect(f"/supplier_bills/{bill.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)

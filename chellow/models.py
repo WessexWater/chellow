@@ -1079,35 +1079,11 @@ class Contract(Base, PersistentClass):
 
     @staticmethod
     def get_dc_by_id(sess, oid):
-        role_codes = ("C", "D")
-        cont = (
-            sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code.in_(role_codes), Contract.id == oid)
-            .first()
-        )
-        if cont is None:
-            raise NotFound(
-                f"There isn't a contract with the role codes '{role_codes}' and id '"
-                f"{oid}'."
-            )
-        return cont
+        return Contract.get_by_role_code_id(sess, "C", oid)
 
     @staticmethod
     def get_dc_by_name(sess, name):
-        role_codes = ("C", "D")
-        cont = (
-            sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code.in_(role_codes), Contract.name == name)
-            .first()
-        )
-        if cont is None:
-            raise BadRequest(
-                f"There isn't a contract with the role codes '{role_codes}' and name '"
-                f"{name}'."
-            )
-        return cont
+        return Contract.get_by_role_code_name(sess, "C", name)
 
     @staticmethod
     def get_mop_by_id(sess, oid):
@@ -1211,7 +1187,7 @@ class Contract(Base, PersistentClass):
         )
 
     @staticmethod
-    def insert_hhdc(
+    def insert_dc(
         sess,
         name,
         participant,
@@ -1226,29 +1202,6 @@ class Contract(Base, PersistentClass):
             name,
             participant,
             "C",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
-        )
-
-    @staticmethod
-    def insert_nhhdc(
-        sess,
-        name,
-        participant,
-        charge_script,
-        properties,
-        start_date,
-        finish_date,
-        rate_script,
-    ):
-        return Contract.insert(
-            sess,
-            name,
-            participant,
-            "D",
             charge_script,
             properties,
             start_date,
@@ -1336,16 +1289,10 @@ class Contract(Base, PersistentClass):
             raise BadRequest("The contract name can't be blank.")
         self.name = name
         if party.market_role.id != self.market_role.id:
-            if party.market_role.code in ("C", "D") and self.market_role.code in (
-                "C",
-                "D",
-            ):
-                self.market_role = party.market_role
-            else:
-                raise BadRequest(
-                    """The market role of the party doesn't match
-                        the market role of the contract."""
-                )
+            raise BadRequest(
+                "The market role of the party doesn't match the market role of the "
+                "contract."
+            )
         self.party = party
         self.update_properties(properties)
         try:

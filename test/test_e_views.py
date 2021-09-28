@@ -50,7 +50,7 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -181,7 +181,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)

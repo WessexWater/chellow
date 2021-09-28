@@ -117,7 +117,7 @@ def test_site_edit_post_fail(client, sess):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -277,7 +277,7 @@ def test_era_edit_post_fail(client, sess):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -1031,7 +1031,7 @@ def test_general_import_post_full(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -1199,7 +1199,7 @@ def test_channel_snag_get(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -1315,7 +1315,7 @@ def test_dc_rate_script_add_post(sess, client):
     participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1418,7 +1418,7 @@ def test_mop_batch_import_bills_full(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -1536,7 +1536,7 @@ def test_mop_batch_upload_file_post(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -1818,7 +1818,7 @@ def test_dc_contract_edit_post_error(sess, client):
     participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_hhdc(
+    contract = Contract.insert_dc(
         sess, "Lowri Beck", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1836,7 +1836,7 @@ def test_dc_contract_get(sess, client):
     participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_hhdc(
+    contract = Contract.insert_dc(
         sess, "Lowri Beck", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1849,14 +1849,14 @@ def test_dc_contract_get(sess, client):
 def test_dc_contracts_add_post(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    party = participant.insert_party(
+    participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
 
     sess.commit()
 
     data = {
-        "party_id": str(party.id),
+        "participant_id": str(participant.id),
         "name": "NHH DC contract",
         "start_year": "2000",
         "start_month": "01",
@@ -1875,12 +1875,12 @@ def test_dc_contracts_add_post(sess, client):
 
 
 def test_dc_auto_importer_get(sess, client):
-    market_role_C = MarketRole.insert(sess, "C", "DC")
     participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     participant.insert_party(
-        sess, market_role_C, "DC Ltd.", utc_datetime(2000, 1, 1), None, None
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_hhdc(
+    contract = Contract.insert_dc(
         sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1891,12 +1891,12 @@ def test_dc_auto_importer_get(sess, client):
 
 
 def test_dc_auto_importer_post(mocker, sess, client):
-    market_role_C = MarketRole.insert(sess, "C", "DC")
     participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     participant.insert_party(
-        sess, market_role_C, "DC Ltd.", utc_datetime(2000, 1, 1), None, None
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_hhdc(
+    contract = Contract.insert_dc(
         sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1914,7 +1914,7 @@ def test_dc_contract_edit_post(sess, client):
     party = participant.insert_party(
         sess, market_role_C, "DC Ltd.", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_hhdc(
+    contract = Contract.insert_dc(
         sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
@@ -1976,7 +1976,7 @@ def test_add_channel_post(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -2115,7 +2115,7 @@ def test_site_edit_post(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
@@ -2253,7 +2253,7 @@ def test_supply_months_get(sess, client):
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_hhdc(
+    dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
