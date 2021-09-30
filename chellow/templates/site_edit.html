@@ -234,6 +234,15 @@
 												{% endfor %}
 											</select>										
 										</div>
+										<div class="col-sm-4">
+											<label>Comm</label>
+											<select name="comm_id">
+												{% for comm in comms %}
+													{{input_option(
+														'comm_id', comm.id, comm.code + ' ' + comm.description)}}
+												{% endfor %}
+											</select>										
+										</div>
 									</div>
 									<div class="row">
 										<div class="col-sm-4">

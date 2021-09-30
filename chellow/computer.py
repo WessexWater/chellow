@@ -522,6 +522,7 @@ class DataSource:
         self.era_map_dc_contracts = self.era_map.get("dc_contracts", {})
         self.era_map_mop_contracts = self.era_map.get("mop_contracts", {})
         self.era_map_cops = self.era_map.get("cops", {})
+        self.era_map_comms = self.era_map.get("comms", {})
         self.era_map_mpan_cores = self.era_map.get("mpan_cores", {})
         self.era_map_dnos = self.era_map.get("dnos", {})
         self.era_map_gsp_groups = self.era_map.get("gsp_groups", {})
@@ -604,6 +605,11 @@ class SiteSource(DataSource):
                 self.cop_code = self.era_map_cops[era.cop.code]
             else:
                 self.cop_code = era.cop.code
+
+            if era.comm.code in self.era_map_comms:
+                self.comm_code = self.era_map_comms[era.comm.code]
+            else:
+                self.comm_code = era.comm.code
 
             if era.imp_supplier_contract.id in self.era_map_supplier_contracts:
                 self.supplier_contract = Contract.get_supplier_by_id(
@@ -994,6 +1000,11 @@ class SupplySource(DataSource):
             self.cop_code = self.era_map_cops[era.cop.code]
         else:
             self.cop_code = era.cop.code
+
+        if era.comm.code in self.era_map_comms:
+            self.comm_code = self.era_map_comms[era.comm.code]
+        else:
+            self.comm_code = era.comm.code
 
         self.properties = dict(self.era_map.get("properties_overwritten", {}))
         self.properties.update(era.props)
@@ -1388,6 +1399,7 @@ class SupplySource(DataSource):
                 joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
                 joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
                 joinedload(Era.cop),
+                joinedload(Era.comm),
                 joinedload(Era.supply).joinedload(Supply.dno),
                 joinedload(Era.supply).joinedload(Supply.gsp_group),
                 joinedload(Era.supply).joinedload(Supply.source),

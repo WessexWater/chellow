@@ -12,6 +12,7 @@ from zish import loads
 
 from chellow.models import (
     BillType,
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -27,6 +28,7 @@ from chellow.models import (
     Source,
     VoltageLevel,
     insert_bill_types,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_sources,
@@ -263,6 +265,8 @@ def test_scenario_new_generation(mocker, sess):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -337,6 +341,7 @@ def test_scenario_new_generation(mocker, sess):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -480,6 +485,8 @@ def virtual_bill(ds):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
 import chellow.ccl
@@ -577,6 +584,7 @@ def virtual_bill(ds):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -778,6 +786,8 @@ def virtual_bill(ds):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
 import chellow.ccl
@@ -875,6 +885,7 @@ def virtual_bill(ds):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1027,6 +1038,8 @@ def virtual_bill(ds):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
 import chellow.ccl
@@ -1125,6 +1138,7 @@ def virtual_bill(ds):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},

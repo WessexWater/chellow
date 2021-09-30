@@ -15,7 +15,6 @@ def test_eras(mocker):
     eras = chellow.reports.report_41._make_eras(
         sess, year_start, year_finish, supply_id
     )
-    print(eras)
     desired = "".join(
         (
             "SELECT era.id AS era_id, era.supply_id AS era_supply_id, "
@@ -29,6 +28,7 @@ def test_eras(mocker):
             "era.pc_id AS era_pc_id, "
             "era.mtc_id AS era_mtc_id, "
             "era.cop_id AS era_cop_id, "
+            "era.comm_id AS era_comm_id, "
             "era.ssc_id AS era_ssc_id, "
             "era.energisation_status_id AS era_energisation_status_id, "
             "era.properties AS era_properties, "

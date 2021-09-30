@@ -149,6 +149,7 @@
                     <th rowspan="2"><a title="Meter Serial Number">MSN</a></th>
                     <th rowspan="2"><a title="Meter Timeswitch Class">MTC</a></th>
                     <th rowspan="2"><a title="Metering Code Of Practice">CoP</a></th>
+                    <th rowspan="2"><a title="Communications Type">Comm</a></th>
                     <th rowspan="2">
                         <a title="Standard Settlement Configuration">SSC</a>
                     </th>
@@ -215,6 +216,9 @@
                     </td>
                     <td rowspan="4">
                         <a href="/cops/{{era.cop.id}}" title="{{era.cop.description}}">{{era.cop.code}}</a>
+                    </td>
+                    <td rowspan="4">
+                        <a href="/comms/{{era.comm.id}}" title="{{era.comm.description}}">{{era.comm.code}}</a>
                     </td>
                     <td rowspan="4">
                         {% if era.ssc %}

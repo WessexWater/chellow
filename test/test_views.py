@@ -13,6 +13,7 @@ import chellow.views
 from chellow.models import (
     BatchFile,
     BillType,
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -35,6 +36,7 @@ from chellow.models import (
     Source,
     VoltageLevel,
     insert_bill_types,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_g_read_types,
@@ -283,6 +285,8 @@ def test_era_edit_post_fail(client, sess):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -357,6 +361,7 @@ def test_era_edit_post_fail(client, sess):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1037,6 +1042,8 @@ def test_general_import_post_full(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -1111,6 +1118,7 @@ def test_general_import_post_full(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1205,6 +1213,8 @@ def test_channel_snag_get(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -1279,6 +1289,7 @@ def test_channel_snag_get(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1424,6 +1435,8 @@ def test_mop_batch_import_bills_full(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -1485,6 +1498,7 @@ def test_mop_batch_import_bills_full(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1542,6 +1556,8 @@ def test_mop_batch_upload_file_post(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -1603,6 +1619,7 @@ def test_mop_batch_upload_file_post(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -1982,6 +1999,8 @@ def test_add_channel_post(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -2056,6 +2075,7 @@ def test_add_channel_post(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -2121,6 +2141,8 @@ def test_site_edit_post(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -2181,6 +2203,7 @@ def test_site_edit_post(sess, client):
         "pc_id": pc.id,
         "mtc_code": "845",
         "cop_id": cop.id,
+        "comm_id": comm.id,
         "ssc_code": "",
         "properties": "{}",
         "start_year": "2021",
@@ -2259,6 +2282,8 @@ def test_supply_months_get(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -2333,6 +2358,7 @@ def test_supply_months_get(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},

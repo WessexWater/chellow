@@ -3,6 +3,7 @@ from decimal import Decimal
 from chellow.e_views import get_era_bundles
 from chellow.models import (
     BillType,
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -17,6 +18,7 @@ from chellow.models import (
     Source,
     VoltageLevel,
     insert_bill_types,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_sources,
@@ -56,6 +58,8 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -117,6 +121,7 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -187,6 +192,8 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -248,6 +255,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},

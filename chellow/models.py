@@ -467,16 +467,42 @@ class Cop(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
-        type = sess.query(Cop).filter_by(code=code).first()
-        if type is None:
-            raise BadRequest("The CoP with code " + code + " can't be found.")
-        return type
+        typ = sess.query(Cop).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest(f"The CoP with code {code} can't be found.")
+        return typ
 
     __tablename__ = "cop"
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(String, unique=True, nullable=False)
     eras = relationship("Era", backref="cop")
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
+
+
+class Comm(Base, PersistentClass):
+    @staticmethod
+    def insert(sess, code, desc):
+        comm = Comm(code, desc)
+        sess.add(comm)
+        return comm
+
+    @staticmethod
+    def get_by_code(sess, code):
+        code = code.strip()
+        comm = sess.execute(select(Comm).where(Comm.code == code)).scalar_one_or_none()
+        if comm is None:
+            raise BadRequest(f"The Comm with code {code} can't be found.")
+        return comm
+
+    __tablename__ = "comm"
+    id = Column(Integer, primary_key=True)
+    code = Column(String, unique=True, nullable=False)
+    description = Column(String, unique=True, nullable=False)
+    eras = relationship("Era", backref="comm")
 
     def __init__(self, code, description):
         self.code = code
@@ -1349,8 +1375,8 @@ class Contract(Base, PersistentClass):
 
             if not hh_before(finish_date, next_rscript.finish_date):
                 raise BadRequest(
-                    """The finish date must be before the
-                        finish date of the next rate script."""
+                    "The finish date must be before the finish date of the next rate "
+                    "script."
                 )
 
             next_rscript.start_date = next_hh(finish_date)
@@ -1383,10 +1409,8 @@ class Contract(Base, PersistentClass):
             if mpan_core is None:
                 mpan_core = eras_before[0].exp_mpan_core
             raise BadRequest(
-                "The era with MPAN core "
-                + mpan_core
-                + " exists before the start of this contract, and is "
-                + "attached to this contract."
+                f"The era with MPAN core {mpan_core} exists before the start of this "
+                f"contract, and is attached to this contract."
             )
 
         if self.finish_rate_script.finish_date is not None:
@@ -1408,10 +1432,8 @@ class Contract(Base, PersistentClass):
                 if mpan_core is None:
                     mpan_core = eras_after[0].exp_mpan_core
                 raise BadRequest(
-                    "The era with MPAN core "
-                    + mpan_core
-                    + " exists after the start of this contract, and is "
-                    + "attached to this contract."
+                    f"The era with MPAN core {mpan_core} exists after the start of "
+                    f"this contract, and is attached to this contract."
                 )
 
     def delete(self, sess):
@@ -1476,13 +1498,8 @@ class Contract(Base, PersistentClass):
         else:
             if hh_after(start_date, scripts[-1].finish_date):
                 raise BadRequest(
-                    "For the contract "
-                    + str(self.id)
-                    + " called "
-                    + str(self.name)
-                    + ", the start date "
-                    + str(start_date)
-                    + " is after the last rate script."
+                    f"For the contract {self.id} called {self.name}, the start date "
+                    f"{start_date} is after the last rate script."
                 )
 
             covered_script = self.find_rate_script_at(sess, start_date)
@@ -1539,7 +1556,7 @@ class Contract(Base, PersistentClass):
             .first()
         )
         if batch is None:
-            raise BadRequest("The batch '" + reference + "' can't be found.")
+            raise BadRequest(f"The batch '{reference}' can't be found.")
         return batch
 
     def get_next_batch_details(self, sess):
@@ -1587,8 +1604,7 @@ class Site(Base, PersistentClass):
     def delete(self, sess):
         if len(self.site_eras) > 0:
             raise BadRequest(
-                "This site can't be deleted while there are still eras "
-                "attached to it."
+                "This site can't be deleted while there are still eras attached to it."
             )
 
         for snag in self.snags:
@@ -1695,7 +1711,7 @@ class Site(Base, PersistentClass):
     def get_by_code(sess, code):
         site = Site.find_by_code(sess, code)
         if site is None:
-            raise BadRequest("There isn't a site with the code " + code + ".")
+            raise BadRequest(f"There isn't a site with the code {code}.")
         return site
 
     def find_linked_sites(self, sess, start_date, finish_date):
@@ -1733,6 +1749,7 @@ class Site(Base, PersistentClass):
         pc,
         mtc_code,
         cop,
+        comm,
         ssc,
         energisation_status,
         properties,
@@ -1750,7 +1767,7 @@ class Site(Base, PersistentClass):
         mpan_core = exp_mpan_core if imp_mpan_core is None else imp_mpan_core
         if mpan_core is None:
             raise BadRequest(
-                "An era must have either an import or export MPAN core or " "both."
+                "An era must have either an import or export MPAN core or both."
             )
         dno = Party.get_dno_by_code(sess, mpan_core[:2])
         supply = Supply(supply_name, source, generator_type, gsp_group, dno)
@@ -1765,7 +1782,7 @@ class Site(Base, PersistentClass):
         try:
             int(mtc_code)
         except ValueError as e:
-            raise BadRequest("The MTC code must be a whole number. " + str(e))
+            raise BadRequest(f"The MTC code must be a whole number. {e}")
 
         mtc = Mtc.get_by_code(sess, dno, mtc_code)
         supply.insert_era(
@@ -1782,6 +1799,7 @@ class Site(Base, PersistentClass):
             pc,
             mtc,
             cop,
+            comm,
             ssc,
             energisation_status,
             properties,
@@ -2475,7 +2493,7 @@ class Ssc(Base, PersistentClass):
         code = code.zfill(4)
         ssc = sess.query(Ssc).filter_by(code=code).first()
         if ssc is None:
-            raise BadRequest("The SSC with code '" + code + "' can't be found.")
+            raise BadRequest(f"The SSC with code '{code}' can't be found.")
         return ssc
 
 
@@ -2578,6 +2596,7 @@ class Era(Base, PersistentClass):
     pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False)
     mtc_id = Column(Integer, ForeignKey("mtc.id"), nullable=False)
     cop_id = Column(Integer, ForeignKey("cop.id"), nullable=False)
+    comm_id = Column(Integer, ForeignKey("comm.id"), nullable=False)
     ssc_id = Column(Integer, ForeignKey("ssc.id"))
     energisation_status_id = Column(
         Integer, ForeignKey("energisation_status.id"), nullable=False
@@ -2617,6 +2636,7 @@ class Era(Base, PersistentClass):
         pc,
         mtc_code,
         cop,
+        comm,
         ssc,
         energisation_status,
         properties,
@@ -2644,6 +2664,7 @@ class Era(Base, PersistentClass):
             pc,
             mtc_code,
             cop,
+            comm,
             ssc,
             energisation_status,
             properties,
@@ -2681,8 +2702,7 @@ class Era(Base, PersistentClass):
             )
         if site_era.is_physical:
             raise BadRequest(
-                "You can't detach an era from the site where it is "
-                "physically located."
+                "You can't detach an era from the site where it is physically located."
             )
 
         sess.delete(site_era)
@@ -2721,6 +2741,7 @@ class Era(Base, PersistentClass):
                 self.pc,
                 self.mtc,
                 self.cop,
+                self.comm,
                 self.ssc,
                 self.energisation_status,
                 loads(self.properties),
@@ -2749,6 +2770,7 @@ class Era(Base, PersistentClass):
         pc,
         mtc,
         cop,
+        comm,
         ssc,
         energisation_status,
         properties,
@@ -2811,6 +2833,7 @@ class Era(Base, PersistentClass):
         locs = locals()
         voltage_level = None
         self.cop = cop
+        self.comm = comm
         self.mtc = mtc
 
         self.start_date = start_date
@@ -2860,10 +2883,10 @@ class Era(Base, PersistentClass):
             if hh_before(supplier_contract.finish_date(), finish_date):
                 raise BadRequest("The supplier contract finishes before the era.")
             supplier_account = locs[polarity + "_supplier_account"]
-            setattr(self, polarity + "_supplier_contract", supplier_contract)
-            setattr(self, polarity + "_supplier_account", supplier_account)
+            setattr(self, f"{polarity}_supplier_contract", supplier_contract)
+            setattr(self, f"{polarity}_supplier_account", supplier_account)
 
-            llfc_code = locs[polarity + "_llfc_code"]
+            llfc_code = locs[f"{polarity}_llfc_code"]
             llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
             if finish_date is not None and hh_before(llfc.valid_to, finish_date):
                 raise BadRequest(
@@ -3627,7 +3650,7 @@ class Supply(Base, PersistentClass):
 
         if hh_after(start_date, self.find_last_era(sess).finish_date):
             raise BadRequest(
-                "One can't add an era that starts after the " "supply has finished."
+                "One can't add an era that starts after the supply has finished."
             )
 
         first_era = self.find_first_era(sess)
@@ -3679,6 +3702,7 @@ class Supply(Base, PersistentClass):
             template_era.pc,
             template_era.mtc,
             template_era.cop,
+            template_era.comm,
             template_era.ssc,
             template_era.energisation_status,
             loads(template_era.properties),
@@ -3710,6 +3734,7 @@ class Supply(Base, PersistentClass):
         pc,
         mtc,
         cop,
+        comm,
         ssc,
         energisation_status,
         properties,
@@ -3730,7 +3755,7 @@ class Supply(Base, PersistentClass):
         if len(self.eras) > 0:
             if hh_after(start_date, self.find_last_era(sess).finish_date):
                 raise BadRequest(
-                    "One can't add a era that starts after " "the supply has finished."
+                    "One can't add a era that starts after the supply has finished."
                 )
 
             first_era = self.find_first_era(sess)
@@ -3773,6 +3798,7 @@ class Supply(Base, PersistentClass):
             pc,
             mtc,
             cop,
+            comm,
             ssc,
             energisation_status,
             properties,
@@ -3815,7 +3841,7 @@ class Supply(Base, PersistentClass):
     def delete_era(self, sess, era):
         if len(self.eras) == 1:
             raise BadRequest(
-                "The only way to delete the last era is to " "delete the entire supply."
+                "The only way to delete the last era is to delete the entire supply."
             )
 
         prev_era = self.find_era_at(sess, prev_hh(era.start_date))
@@ -3848,7 +3874,7 @@ class Supply(Base, PersistentClass):
     def delete(self, sess):
         if len(self.bills) > 0:
             BadRequest(
-                "One can't delete a supply if there are still " "bills attached to it."
+                "One can't delete a supply if there are still bills attached to it."
             )
 
         for era in self.eras:
@@ -3938,11 +3964,11 @@ class HhDatum(Base, PersistentClass):
                         ]
                     )
                     if contract is None:
-                        msg = f"There is no channel for the datum " f"({datum_str})."
+                        msg = f"There is no channel for the datum ({datum_str})."
                     else:
                         msg = (
-                            f"There is no channel under the contract "
-                            f"{contract.name} for the datum ({datum_str})."
+                            f"There is no channel under the contract {contract.name} "
+                            f"for the datum ({datum_str})."
                         )
                     raise BadRequest(msg)
 
@@ -4228,7 +4254,7 @@ class Scenario(Base, PersistentClass):
         ):
             if required not in properties:
                 raise BadRequest(
-                    f"The field '{required}' is required in the scenario " f"properties"
+                    f"The field '{required}' is required in the scenario properties"
                 )
 
         for name in ("local_rates", "industry_rates"):
@@ -4422,8 +4448,7 @@ class GEra(Base, PersistentClass):
             )
         if site_g_era.is_physical:
             raise BadRequest(
-                "You can't detach an era from the site where it is "
-                "physically located."
+                "You can't detach an era from the site where it is physically located."
             )
 
         sess.delete(site_g_era)
@@ -5638,6 +5663,19 @@ def insert_cops(sess):
         Cop.insert(sess, code, desc)
 
 
+def insert_comms(sess):
+    for code, desc in (
+        ("IP", "Internet Protocol"),
+        ("GSM", "Global System for Mobile Communications"),
+        ("GPRS", "General Packet Radio Service"),
+        ("PS", "Public Switch (BT Line)"),
+        ("PK", "Paknet"),
+        ("HP", "Handheld Perm"),
+        ("SUB", "Sub Meter"),
+    ):
+        Comm.insert(sess, code, desc)
+
+
 def insert_sources(sess):
     for code, desc in (
         ("net", "Public distribution system."),
@@ -5709,6 +5747,9 @@ def db_init(sess, root_path):
     sess.commit()
 
     insert_cops(sess)
+    sess.commit()
+
+    insert_comms(sess)
     sess.commit()
 
     insert_bill_types(sess)
@@ -6505,6 +6546,23 @@ def db_upgrade_26_to_27(sess, root_path):
     party_88.participant = participant_cidc
 
 
+def db_upgrade_27_to_28(sess, root_path):
+    insert_comms(sess)
+    sess.execute("alter table era add comm_id integer references comm (id);")
+    for era in sess.execute(select(Era).order_by(Era.id)).scalars():
+        props = era.props
+        try:
+            code = props["comms_type"]
+            del props["comms_type"]
+            era.properties = dumps(props)
+        except KeyError:
+            code = "GSM"
+        era.comm = Comm.get_by_code(sess, code.upper())
+        sess.flush()
+
+    sess.execute("alter table era alter comm_id set not null;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1,
     db_upgrade_1_to_2,
@@ -6533,6 +6591,7 @@ upgrade_funcs = [
     db_upgrade_24_to_25,
     db_upgrade_25_to_26,
     db_upgrade_26_to_27,
+    db_upgrade_27_to_28,
 ]
 
 

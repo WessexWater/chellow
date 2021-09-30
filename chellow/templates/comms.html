@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Comms
+{% endblock %}
+
+{% block nav %}
+	&raquo; Comms
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Comms</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for comm in comms %}
+						<tr>
+							<td>
+								<a href="/comms/{{comm.id}}">{{comm.code}}</a>
+							</td>
+							<td>{{comm.description}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
+{% endblock %}

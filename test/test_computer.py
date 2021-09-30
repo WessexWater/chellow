@@ -1,5 +1,6 @@
 import chellow.computer
 from chellow.models import (
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -14,6 +15,7 @@ from chellow.models import (
     Source,
     Ssc,
     VoltageLevel,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_sources,
@@ -185,6 +187,8 @@ def test_init_hh_data(sess, mocker):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -259,6 +263,7 @@ def test_init_hh_data(sess, mocker):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -351,6 +356,8 @@ def test_init_hh_data_export(sess, mocker):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     exp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -425,6 +432,7 @@ def test_init_hh_data_export(sess, mocker):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -526,6 +534,8 @@ def test_SupplySource_init_hh(sess, mocker):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     exp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -600,6 +610,7 @@ def test_SupplySource_init_hh(sess, mocker):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -681,6 +692,8 @@ def test_SupplySource_init_nhh(sess, mocker):
     ssc = Ssc.insert(sess, "0393", "unrestricted", True, utc_datetime(2000, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     exp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -755,6 +768,7 @@ def test_SupplySource_init_nhh(sess, mocker):
         pc,
         "845",
         cop,
+        comm,
         ssc,
         energisation_status,
         {},

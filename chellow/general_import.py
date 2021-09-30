@@ -15,6 +15,7 @@ from chellow.models import (
     Bill,
     BillType,
     Channel,
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -361,7 +362,13 @@ def general_import_era(sess, action, vals, args):
         else:
             cop = Cop.get_by_code(sess, cop_code)
 
-        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 11)
+        comm_code = add_arg(args, "Comms Type", vals, 11)
+        if comm_code == NO_CHANGE:
+            comm = existing_era.comm
+        else:
+            comm = Comm.get_by_code(sess, comm_code)
+
+        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 12)
         if ssc_code == NO_CHANGE:
             ssc = existing_era.ssc
         elif len(ssc_code) > 0:
@@ -369,19 +376,19 @@ def general_import_era(sess, action, vals, args):
         else:
             ssc = None
 
-        es_code = add_arg(args, "Energisation Status", vals, 12)
+        es_code = add_arg(args, "Energisation Status", vals, 13)
         if es_code == NO_CHANGE:
             energisation_status = existing_era.energisation_status
         else:
             energisation_status = EnergisationStatus.get_by_code(sess, es_code)
 
-        properties_str = add_arg(args, "Properties", vals, 13)
+        properties_str = add_arg(args, "Properties", vals, 14)
         if properties_str == NO_CHANGE:
             properties = loads(existing_era.properties)
         else:
             properties = loads(properties_str)
 
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 14)
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 15)
         if imp_mpan_core == NO_CHANGE:
             imp_mpan_core = existing_era.imp_mpan_core
         elif len(imp_mpan_core) == 0:
@@ -394,11 +401,11 @@ def general_import_era(sess, action, vals, args):
         imp_supplier_contract_name = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class", vals, 15)
+            imp_llfc_code = add_arg(args, "Import Line Loss Factor Class", vals, 16)
             if imp_llfc_code == NO_CHANGE and existing_era.imp_llfc is not None:
                 imp_llfc_code = existing_era.imp_llfc.code
 
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 16)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 17)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = existing_era.imp_sc
             else:
@@ -410,7 +417,7 @@ def general_import_era(sess, action, vals, args):
                     )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier " + "Contract", vals, 17
+                args, "Import Supplier Contract", vals, 18
             )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = existing_era.imp_supplier_contract
@@ -420,14 +427,14 @@ def general_import_era(sess, action, vals, args):
                 )
 
             imp_supplier_account = add_arg(
-                args, "Import Supplier Account " + "Reference", vals, 18
+                args, "Import Supplier Account Reference", vals, 19
             )
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = existing_era.imp_supplier_account
 
             for i, ctype in enumerate(CHANNEL_TYPES):
                 field_name = f"Import {ctype}?"
-                has_chan_str = add_arg(args, field_name, vals, i + 19)
+                has_chan_str = add_arg(args, field_name, vals, i + 20)
                 if has_chan_str == NO_CHANGE:
                     if existing_era.find_channel(sess, True, ctype) is not None:
                         channel_set.add((True, ctype))
@@ -440,19 +447,19 @@ def general_import_era(sess, action, vals, args):
         exp_supplier_account = None
         exp_sc = None
 
-        if len(vals) > 22:
-            exp_mpan_core = add_arg(args, "Export MPAN", vals, 22)
+        if len(vals) > 23:
+            exp_mpan_core = add_arg(args, "Export MPAN", vals, 23)
             if exp_mpan_core == NO_CHANGE:
                 exp_mpan_core = existing_era.exp_mpan_core
             elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 23)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 24)
                 if exp_llfc_code == NO_CHANGE and existing_era.exp_llfc is not None:
                     exp_llfc_code = existing_era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 24)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 25)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = existing_era.exp_sc
                 else:
@@ -464,7 +471,7 @@ def general_import_era(sess, action, vals, args):
                         )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 25
+                    args, "Export Supplier Contract", vals, 26
                 )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = existing_era.exp_supplier_contract
@@ -474,14 +481,14 @@ def general_import_era(sess, action, vals, args):
                     )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 26
+                    args, "Export Supplier Account", vals, 27
                 )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = existing_era.exp_supplier_account
 
                 for i, ctype in enumerate(CHANNEL_TYPES):
                     field_name = f"Export {ctype}?"
-                    has_chan_str = add_arg(args, field_name, vals, i + 27)
+                    has_chan_str = add_arg(args, field_name, vals, i + 28)
                     if has_chan_str == NO_CHANGE:
                         if existing_era.find_channel(sess, False, ctype) is not None:
                             channel_set.add((False, ctype))
@@ -502,6 +509,7 @@ def general_import_era(sess, action, vals, args):
             pc,
             mtc,
             cop,
+            comm,
             ssc,
             energisation_status,
             properties,

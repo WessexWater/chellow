@@ -5,6 +5,7 @@ import sqlalchemy.exc
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -21,6 +22,7 @@ from chellow.models import (
     Source,
     Supply,
     VoltageLevel,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_sources,
@@ -45,6 +47,7 @@ def test_Era_update(mocker):
     pc = mocker.Mock()
     mtc = mocker.Mock()
     cop = mocker.Mock()
+    comm = mocker.Mock()
     ssc = mocker.Mock()
     energisation_status = mocker.Mock()
     properties = {}
@@ -78,6 +81,7 @@ def test_Era_update(mocker):
         pc,
         mtc,
         cop,
+        comm,
         ssc,
         energisation_status,
         properties,
@@ -121,6 +125,10 @@ def test_update_Era_llfc_valid_to(mocker):
     dc_account = "A dc account"
     msn = "mtr001"
     mtc_code = "845"
+    cop = mocker.Mock()
+    comm = mocker.Mock()
+    ssc = mocker.Mock()
+    energisation_status = mocker.Mock()
     properties = {}
     imp_mpan_core = "22 9877 3472 588"
     imp_llfc_code = "510"
@@ -148,9 +156,10 @@ def test_update_Era_llfc_valid_to(mocker):
             msn,
             mocker.Mock(),
             mtc_code,
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
+            cop,
+            comm,
+            ssc,
+            energisation_status,
             properties,
             imp_mpan_core,
             imp_llfc_code,
@@ -287,6 +296,8 @@ def test_Supply_insert_era_at(sess):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -363,6 +374,7 @@ def test_Supply_insert_era_at(sess):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},
@@ -393,6 +405,7 @@ def test_Supply_insert_era_at(sess):
         pc,
         mtc_845,
         cop,
+        comm,
         None,
         energisation_status,
         {},

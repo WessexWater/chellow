@@ -66,6 +66,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
             "PC",
             "MTC",
             "CoP",
+            "Comms Type",
             "SSC Code",
             "SSC Description",
             "Energisation Status",
@@ -140,6 +141,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                 .options(
                     joinedload(Era.channels),
                     joinedload(Era.cop),
+                    joinedload(Era.comm),
                     joinedload(Era.dc_contract),
                     joinedload(Era.exp_llfc),
                     joinedload(Era.exp_supplier_contract),
@@ -423,6 +425,7 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     era.pc.code,
                     era.mtc.code,
                     era.cop.code,
+                    era.comm.code,
                     ssc_code,
                     ssc_description,
                     era.energisation_status.code,

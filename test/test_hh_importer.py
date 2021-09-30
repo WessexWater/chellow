@@ -1,5 +1,6 @@
 from chellow.hh_importer import https_handler
 from chellow.models import (
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -13,6 +14,7 @@ from chellow.models import (
     Site,
     Source,
     VoltageLevel,
+    insert_comms,
     insert_cops,
     insert_energisation_statuses,
     insert_sources,
@@ -51,6 +53,8 @@ def test_https_handler(mocker, sess):
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
         "Fusion Supplier 2000",
@@ -125,6 +129,7 @@ def test_https_handler(mocker, sess):
         pc,
         "845",
         cop,
+        comm,
         None,
         energisation_status,
         {},

@@ -259,6 +259,20 @@
 										</select>
 									</div>
 								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">Comm</label>
+										</div>
+										<div class="col-sm-4">
+										<select name="cop_id">
+											{% for comm in comms %}
+												{{input_option(
+												  'comm_id', comm.id, comm.code + ' ' + comm.description,
+												 	era.comm.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
 								
 								<div class="row">
 									<div class="col-sm-2">

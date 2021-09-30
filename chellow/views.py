@@ -81,6 +81,7 @@ from chellow.models import (
     BillType,
     Channel,
     ClockInterval,
+    Comm,
     Contract,
     Cop,
     EnergisationStatus,
@@ -577,6 +578,18 @@ def cop_get(cop_id):
     return render_template("cop.html", cop=cop)
 
 
+@views.route("/comms")
+def comms_get():
+    comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
+    return render_template("comms.html", comms=comms)
+
+
+@views.route("/comms/<int:comm_id>")
+def comm_get(comm_id):
+    comm = Comm.get_by_id(g.sess, comm_id)
+    return render_template("comm.html", comm=comm)
+
+
 @views.route("/read_types")
 def read_types_get():
     read_types = g.sess.query(ReadType).order_by(ReadType.code)
@@ -1021,6 +1034,7 @@ def site_edit_get(site_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
+        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
         energisation_statuses = g.sess.query(EnergisationStatus).order_by(
             EnergisationStatus.code
         )
@@ -1045,6 +1059,7 @@ def site_edit_get(site_id):
             supplier_contracts=supplier_contracts,
             pcs=pcs,
             cops=cops,
+            comms=comms,
             g_contracts=g_contracts,
             g_units=g_units,
             g_exit_zones=g_exit_zones,
@@ -1065,6 +1080,7 @@ def site_edit_get(site_id):
             supplier_contracts=supplier_contracts,
             pcs=pcs,
             cops=cops,
+            comms=comms,
             g_contracts=g_contracts,
             g_units=g_units,
             g_exit_zones=g_exit_zones,
@@ -1106,6 +1122,8 @@ def site_edit_post(site_id):
             mtc_code = req_str("mtc_code")
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
+            comm_id = req_int("comm_id")
+            comm = Comm.get_by_id(g.sess, comm_id)
             ssc_code = req_str("ssc_code")
             ssc_code = ssc_code.strip()
             if len(ssc_code) > 0:
@@ -1186,6 +1204,7 @@ def site_edit_post(site_id):
                 pc,
                 mtc_code,
                 cop,
+                comm,
                 ssc,
                 energisation_status,
                 properties,
@@ -1277,6 +1296,7 @@ def site_edit_post(site_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
+        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
         g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
@@ -1298,6 +1318,7 @@ def site_edit_post(site_id):
                 supplier_contracts=supplier_contracts,
                 pcs=pcs,
                 cops=cops,
+                comms=comms,
                 g_contracts=g_contracts,
                 g_units=g_units,
                 g_exit_zones=g_exit_zones,
@@ -1344,7 +1365,7 @@ def sites_get():
         )
 
         if len(sites) == 1:
-            return chellow_redirect("/sites/" + str(sites[0].id))
+            return chellow_redirect(f"/sites/{sites[0].id}")
         else:
             return render_template("sites.html", sites=sites, limit=LIMIT)
     else:
@@ -2476,6 +2497,8 @@ def era_edit_post(era_id):
             mtc = Mtc.get_by_code(g.sess, era.supply.dno, mtc_code)
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
+            comm_id = req_int("comm_id")
+            comm = Comm.get_by_id(g.sess, comm_id)
             ssc_code = req_str("ssc_code")
             ssc_code = ssc_code.strip()
             energisation_status_id = req_int("energisation_status_id")
@@ -2543,6 +2566,7 @@ def era_edit_post(era_id):
                 pc,
                 mtc,
                 cop,
+                comm,
                 ssc,
                 energisation_status,
                 properties,
@@ -2566,6 +2590,7 @@ def era_edit_post(era_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
+        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
         mop_contracts = (
             g.sess.query(Contract)
@@ -2598,6 +2623,7 @@ def era_edit_post(era_id):
                 era=era,
                 pcs=pcs,
                 cops=cops,
+                comms=comms,
                 gsp_groups=gsp_groups,
                 mop_contracts=mop_contracts,
                 dc_contracts=dc_contracts,
