@@ -89,15 +89,6 @@ def _process(sess, progress, file_like):
     name_list = zip_file.namelist()
     if len(name_list) != 1:
         raise BadRequest("The zip archive must contain exactly one file.")
-    '''
-    stmt = text(
-        """
-INSERT INTO laf (llfc_id, timestamp, value) VALUES (:llfc_id, :timestamp, :value)
-ON CONFLICT ON CONSTRAINT laf_llfc_id_timestamp_key
-DO UPDATE SET (llfc_id, timestamp, value) =
-(EXCLUDED.llfc_id, EXCLUDED.timestamp, EXCLUDED.value)"""
-    )
-    '''
     stmt = text(
         """
 INSERT INTO laf (llfc_id, timestamp, value) VALUES
@@ -164,7 +155,10 @@ def laf_days(sess, progress, csv_file):
                 )
 
             if hh_after(timestamp, llfc_valid_to):
-                llfc = dno.get_llfc_by_code(sess, llfc_code, timestamp)
+                llfc = dno.find_llfc_by_code(sess, llfc_code, timestamp)
+                if llfc is None:
+                    continue
+
                 llfc_id, llfc_valid_to = llfc.id, llfc.valid_to
             llfc_ids.append(llfc_id)
             timestamps.append(timestamp)
