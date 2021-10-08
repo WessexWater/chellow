@@ -2385,7 +2385,7 @@ def test_supply_months_get(sess, client):
 
 
 def test_report_run_spreadsheet_get(sess, client):
-    report_run = ReportRun.insert(sess, "bill_check", None, "_b_88")
+    report_run = ReportRun.insert(sess, "bill_check", None, "_b_88", {})
     report_run.insert_row(sess, "", ["clump"], {}, {})
     sess.commit()
 

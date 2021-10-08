@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	{% if request.method == "GET" and request.values.delete %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>
+					Are you sure you want to delete this report run?
+				</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form method="post" action="/report_runs/{{run.id}}">
+							<fieldset>
+								<input type="submit" name="delete" value="delete"> 
+								<a href="/report_runs/{{run.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% else %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Asset Database Comparison</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Date Created</th>
+								<th>Created By</th>
+								<th>State</th>
+								<th>Number Of Rows</th>
+								<th>Delete</th>
+								<th>Download Spreadsheet</th>
+								<th>Active Statuses</th>
+								<th>Inactive Statuses</th>
+								<th>Ignored Statuses</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{run.date_created|hh_format}}</td>
+								<td>{{run.creator}}</td>
+								<td>{{run.state}}</td>
+								<td>{{rows|length}}</td>
+								<td>
+									<form action="/report_runs/{{run.id}}">
+										<fieldset style="border: none;">
+											<input type="submit" name="delete" value="Delete">
+										</fieldset>
+									</form>
+								</td>
+								<td>
+									<a href="/report_runs/{{run.id}}/spreadsheet">Download</a>
+								</td>
+								<td>{{run.data['STATUSES_ACTIVE']}}</td>
+								<td>{{run.data['STATUSES_INACTIVE']}}</td>
+								<td>{{run.data['STATUSES_IGNORE']}}</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					<table class="etheling etheling_sticky">
+						<caption>
+							Sites inactive in the asset database, but with an electricity supply in
+						 	Chellow
+						</caption>
+						<thead>
+							<tr>
+								<th>Site Code</th>
+								<th>Asset Status</th>
+								<th>Chellow Supplies</th>
+								<th>Asset Database</th>
+								<th>Chellow</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in rows %}
+								<tr>
+									{% for title in row.data.titles %}
+										<td>{{row.data['values'][title]}}</td>
+									{% endfor %}
+									<td>
+										<a href="https://sitefile.wwcorp.ad.com/SiteDetails?siteId={{row.data['values']['site_code']}}">view</a>
+									</td>
+									<td>
+										<a href="/sites/{{row.data['values']['site_id']}}">view</a>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

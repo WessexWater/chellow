@@ -112,7 +112,7 @@ def content(
         writer = csv.writer(tmp_file, lineterminator="\n")
 
         sess = Session()
-        report_run = ReportRun.insert(sess, "bill_check", user, fname_additional)
+        report_run = ReportRun.insert(sess, "bill_check", user, fname_additional, {})
 
         bills = (
             sess.query(Bill)
@@ -279,8 +279,8 @@ def do_post(sess):
         fname_additional = "_".join(s)
     else:
         raise BadRequest(
-            "The bill check needs a batch_id, a bill_id or a start_date "
-            "and finish_date."
+            "The bill check needs a batch_id, a bill_id or a start_date and "
+            "finish_date."
         )
 
     args = (

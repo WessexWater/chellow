@@ -3816,6 +3816,22 @@ def report_run_get(run_id):
             hide_checked=hide_checked,
         )
 
+    elif run.name == "asset_comparison":
+        rows = (
+            g.sess.execute(
+                select(ReportRunRow)
+                .filter(ReportRunRow.report_run == run)
+                .order_by(ReportRunRow.data["values"]["asset_status"])
+            )
+            .scalars()
+            .all()
+        )
+        return render_template(
+            "report_run_asset_comparison.html",
+            run=run,
+            rows=rows,
+        )
+
     else:
         order_by = "row.id"
         ob = ReportRunRow.id
@@ -3830,7 +3846,11 @@ def report_run_get(run_id):
         )
 
         return render_template(
-            "report_run.html", run=run, rows=rows, order_by=order_by, summary=summary
+            "report_run_asset_comparison.html",
+            run=run,
+            rows=rows,
+            order_by=order_by,
+            summary=summary,
         )
 
 
@@ -3859,8 +3879,9 @@ def report_run_spreadsheet_get(run_id):
         .first()
     )
 
-    titles = first_row.data["titles"]
-    cw.writerow(titles)
+    if first_row is not None:
+        titles = first_row.data["titles"]
+        cw.writerow(titles)
 
     for row in g.sess.execute(
         select(ReportRunRow)

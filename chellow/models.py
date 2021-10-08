@@ -5501,7 +5501,7 @@ class GExitZone(Base, PersistentClass):
         code = code.strip()
         typ = sess.query(GExitZone).filter_by(code=code).first()
         if typ is None:
-            raise BadRequest("The Exit Zone with code " + code + " can't be found.")
+            raise BadRequest(f"The Exit Zone with code {code} can't be found.")
         return typ
 
 
@@ -5513,6 +5513,7 @@ class ReportRun(Base, PersistentClass):
     name = Column(String, nullable=False, index=True)
     title = Column(String, nullable=False, index=True)
     state = Column(String, nullable=False, index=True)
+    data = Column(JSONB, nullable=False)
     rows = relationship(
         "ReportRunRow",
         backref="report_run",
@@ -5520,7 +5521,7 @@ class ReportRun(Base, PersistentClass):
         passive_deletes=True,
     )
 
-    def __init__(self, name, user, title):
+    def __init__(self, name, user, title, data):
         self.name = name
 
         if user is None:
@@ -5535,6 +5536,7 @@ class ReportRun(Base, PersistentClass):
         self.title = title
         self.date_created = utc_datetime_now()
         self.state = "running"
+        self.data = _jsonize(data)
 
     def update(self, state):
         self.state = state
@@ -5549,8 +5551,8 @@ class ReportRun(Base, PersistentClass):
         sess.flush()
 
     @staticmethod
-    def insert(sess, name, user, title):
-        report_run = ReportRun(name, user, title)
+    def insert(sess, name, user, title, data):
+        report_run = ReportRun(name, user, title, data)
         sess.add(report_run)
         return report_run
 
@@ -6563,6 +6565,12 @@ def db_upgrade_27_to_28(sess, root_path):
     sess.execute("alter table era alter comm_id set not null;")
 
 
+def db_upgrade_28_to_29(sess, root_path):
+    sess.execute("ALTER TABLE report_run ADD data JSONB;")
+    sess.execute("UPDATE report_run SET data = CAST('{}' as JSONB)")
+    sess.execute("ALTER TABLE report_run ALTER data SET NOT NULL;")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1,
     db_upgrade_1_to_2,
@@ -6592,6 +6600,7 @@ upgrade_funcs = [
     db_upgrade_25_to_26,
     db_upgrade_26_to_27,
     db_upgrade_27_to_28,
+    db_upgrade_28_to_29,
 ]
 
 
