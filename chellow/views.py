@@ -3834,6 +3834,25 @@ def report_run_get(run_id):
             rows=rows,
         )
 
+    elif run.name == "ecoes_comparison":
+        rows = (
+            g.sess.execute(
+                select(ReportRunRow)
+                .filter(ReportRunRow.report_run == run)
+                .order_by(
+                    ReportRunRow.data["values"]["chellow_supplier_contract_name"],
+                    ReportRunRow.data["values"]["problem"],
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return render_template(
+            "report_run_ecoes_comparison.html",
+            run=run,
+            rows=rows,
+        )
+
     else:
         order_by = "row.id"
         ob = ReportRunRow.id
@@ -6024,11 +6043,6 @@ def csv_supplies_monthly_duration_get():
     init = Datetime.utcnow()
     init = Datetime(init.year, init.month, 1) - relativedelta(months=1)
     return render_template("csv_supplies_monthly_duration.html", init=init)
-
-
-@views.route("/ecoes_comparison")
-def ecoes_comparison_get():
-    return render_template("ecoes_comparison.html")
 
 
 @views.route("/csv_bills")
