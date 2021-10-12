@@ -2409,6 +2409,7 @@ def era_edit_get(era_id):
     )
     pcs = g.sess.query(Pc).order_by(Pc.code)
     cops = g.sess.query(Cop).order_by(Cop.code)
+    comms = g.sess.query(Comm).order_by(Comm.code)
     gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
     mop_contracts = (
         g.sess.query(Contract)
@@ -2441,6 +2442,7 @@ def era_edit_get(era_id):
         energisation_statuses=energisation_statuses,
         pcs=pcs,
         cops=cops,
+        comms=comms,
         gsp_groups=gsp_groups,
         mop_contracts=mop_contracts,
         dc_contracts=dc_contracts,
@@ -2582,7 +2584,7 @@ def era_edit_post(era_id):
                 exp_sc,
             )
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(era.supply.id), 303)
+            return chellow_redirect(f"/supplies/{era.supply.id}", 303)
     except BadRequest as e:
         flash(e.description)
         energisation_statuses = g.sess.query(EnergisationStatus).order_by(
