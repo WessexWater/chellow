@@ -84,6 +84,7 @@
 									<th rowspan="2">Mpan Core</th>
 									<th rowspan="2">Supplier Contract</th>
 									<th rowspan="2">Edit Era</th>
+									<th rowspan="2">Edit Supply</th>
 									{% for diff in vals['diffs'] %}
 										<th colspan="2">{{diff}}</th>
 									{% endfor %}
@@ -105,6 +106,9 @@
 									<a href="/supplier_contracts/{{vals['chellow_supplier_contract_id']}}">{{vals['chellow_supplier_contract_name']}}</a>
 								</td>
 								<td>[<a href="/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
+								<td>
+									[<a href="/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
+								</td>
 								{% for diff in vals['diffs'] %}
 									<td>{{vals['chellow_' + diff]}}</td>
 									<td>{{vals['ecoes_' + diff]}}
