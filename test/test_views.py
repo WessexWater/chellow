@@ -2787,3 +2787,8 @@ def test_report_run_spreadsheet_get(sess, client):
 
     response = client.get(f"/report_runs/{report_run.id}/spreadsheet")
     match(response, 200)
+
+
+def test_mdd_imports_get(sess, client):
+    response = client.get("/mdd_imports")
+    match(response, 200)

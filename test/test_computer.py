@@ -14,6 +14,7 @@ from chellow.models import (
     Site,
     Source,
     Ssc,
+    ValidMtcLlfcSscPc,
     VoltageLevel,
     insert_comms,
     insert_cops,
@@ -711,7 +712,7 @@ def test_SupplySource_init_nhh(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    mtc = Mtc.insert(
         sess,
         None,
         "845",
@@ -727,7 +728,7 @@ def test_SupplySource_init_nhh(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc_imp = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -737,7 +738,7 @@ def test_SupplySource_init_nhh(sess, mocker):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
+    llfc_exp = dno.insert_llfc(
         sess,
         "521",
         "Export (HV)",
@@ -752,6 +753,12 @@ def test_SupplySource_init_nhh(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "D")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    ValidMtcLlfcSscPc.insert(
+        sess, mtc, llfc_imp, ssc, pc, utc_datetime(1996, 1, 1), None
+    )
+    ValidMtcLlfcSscPc.insert(
+        sess, mtc, llfc_exp, ssc, pc, utc_datetime(1996, 1, 1), None
+    )
     supply = site.insert_e_supply(
         sess,
         source,

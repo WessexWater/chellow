@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; MDD Converter
+	MDD Imports
 {% endblock %}
 
 {% block nav %}
-	&raquo; MDD Converter
+	MDD Imports
 {% endblock %}
 
 {% block content %}
@@ -13,12 +13,35 @@
 	<div class="layer-section">
 		<!-- Section Header -->
 		<div class="section-header">
-			<h2>MDD Converter</h2>	
+			<h2>Import MDD ZIP File</h2>	
 		</div>
 		<!-- End Section Header -->
+		
 		<!-- Section Content -->
 		<div class="section-content">
 			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/mdd_imports">
+						<fieldset>
+							<input
+									type="file" name="import_file" size="45"
+									value="{{request.values.import_file}}">
+							<input type="submit" value="Import">
+						</fieldset>
+					</form>
+					
+					{% if process_ids %}
+						<ul>
+							{% for id in process_ids %}
+								<li>
+									<a href="/mdd_imports/{{id}}">{{id}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
 				<p>
 					The <a
 					href="https://www.elexon.co.uk/reference/technical-operations/market-domain-data/"
@@ -28,10 +51,7 @@
 					download, so you have to manually download it now and again and
 					manually import it into Chellow. The MDD has a version number, so you
 					only need to do an update if the version number has been incremented.
-					The form below will take a MDD ZIP file and convert it into the
-					General Import format so that it can be
-					<a href="/general_imports">imported</a> into Chellow. At the moment,
-					the files within the zip that are recognized are:
+					The files within the zip that are recognized are:
 				</p>
 				<ul>
 					<li>Market_Participant</li>
@@ -41,16 +61,9 @@
 					<li>MTC_Meter_Type</li>
 					<li>MTC_in_PES_Area</li>
 					<li>Meter_Timeswitch_Class</li>
+					<li>Standard_Settlement_Configuration</li>
+					<li>Valid_MTC_LLFC_SSC_PC_Combination</li>
 				</ul>
-			<div class="standardForm">
-				<form
-						enctype="multipart/form-data" action="/reports/163" method="post">
-					<fieldset>
-						<legend>Convert an MDD CSV file</legend>
-							<input type="file" name="file">
-							<input type="submit" value="Convert">
-					</fieldset>
-				</form>
 			</div>
 		</div>
 		<!-- End Section Content -->

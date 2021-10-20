@@ -70,6 +70,7 @@ import chellow.g_cv
 import chellow.general_import
 import chellow.hh_importer
 import chellow.laf_import
+import chellow.mdd_importer
 import chellow.rcrc
 import chellow.system_price
 import chellow.tlms
@@ -130,6 +131,7 @@ from chellow.models import (
     Tpr,
     User,
     UserRole,
+    ValidMtcLlfcSscPc,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -816,6 +818,46 @@ def general_import_get(import_id):
     except BadRequest as e:
         flash(e.description)
         return render_template("general_import.html", process_id=import_id)
+
+
+@views.route("/mdd_imports")
+def mdd_imports_get():
+    return render_template(
+        "mdd_imports.html",
+        process_ids=sorted(chellow.mdd_importer.get_process_ids(), reverse=True),
+    )
+
+
+@views.route("/mdd_imports", methods=["POST"])
+def mdd_imports_post():
+    try:
+        file_item = request.files["import_file"]
+        file_name = file_item.filename
+        if not file_name.endswith(".zip"):
+            raise BadRequest("The file name should have the extension '.csv'.")
+        f = BytesIO(file_item.stream.read())
+        f.seek(0)
+        proc_id = chellow.mdd_importer.start_process(f)
+        return chellow_redirect(f"/mdd_imports/{proc_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template(
+            "mdd_imports.html",
+            process_ids=sorted(chellow.mdd_importer.get_process_ids(), reverse=True),
+        )
+
+
+@views.route("/mdd_imports/<int:import_id>")
+def mdd_import_get(import_id):
+    try:
+        proc = chellow.mdd_importer.get_process(import_id)
+        fields = proc.get_fields()
+        fields["is_alive"] = proc.isAlive()
+        fields["process_id"] = import_id
+        return render_template("mdd_import.html", **fields)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template("mdd_import.html", process_id=import_id)
 
 
 @views.route("/laf_imports")
@@ -2466,19 +2508,19 @@ def era_edit_post(era_id):
             site = Site.get_by_code(g.sess, site_code)
             era.attach_site(g.sess, site)
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(era.supply.id), 303)
+            return chellow_redirect(f"/supplies/{era.supply.id}", 303)
         elif "detach" in request.form:
             site_id = req_int("site_id")
             site = Site.get_by_id(g.sess, site_id)
             era.detach_site(g.sess, site)
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(era.supply.id), 303)
+            return chellow_redirect(f"/supplies/{era.supply.id}", 303)
         elif "locate" in request.form:
             site_id = req_int("site_id")
             site = Site.get_by_id(g.sess, site_id)
             era.set_physical_location(g.sess, site)
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(era.supply.id), 303)
+            return chellow_redirect(f"/supplies/{era.supply.id}", 303)
         else:
             start_date = req_date("start")
             is_ended = req_bool("is_ended")
@@ -2496,7 +2538,7 @@ def era_edit_post(era_id):
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
             mtc_code = req_str("mtc_code")
-            mtc = Mtc.get_by_code(g.sess, era.supply.dno, mtc_code)
+            mtc = Mtc.get_by_code(g.sess, era.supply.dno, mtc_code, start_date)
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             comm_id = req_int("comm_id")
@@ -6449,6 +6491,42 @@ def industry_rate_script_get(contract_code, start_date_str):
         contract_code=contract_code,
         rate_script=rate_script,
     )
+
+
+@views.route("/valid_mtc_llfc_ssc_pcs")
+def valid_mtc_llfc_ssc_pcs_get():
+    dno_id = req_int("dno_id")
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    only_ongoing = req_bool("only_ongoing")
+    q = (
+        select(ValidMtcLlfcSscPc)
+        .join(Mtc)
+        .join(Llfc)
+        .join(Ssc)
+        .join(Pc)
+        .where(Llfc.dno == dno)
+        .order_by(
+            Pc.code, Llfc.code, Ssc.code, Mtc.code, ValidMtcLlfcSscPc.valid_from.desc()
+        )
+        .options(
+            joinedload(ValidMtcLlfcSscPc.mtc),
+            joinedload(ValidMtcLlfcSscPc.llfc),
+            joinedload(ValidMtcLlfcSscPc.ssc),
+            joinedload(ValidMtcLlfcSscPc.pc),
+        )
+    )
+    if only_ongoing:
+        q = q.where(ValidMtcLlfcSscPc.valid_to == null())
+    combos = g.sess.execute(q).scalars()
+    return render_template(
+        "valid_mtc_llfc_ssc_pcs.html", valid_mtc_llfc_ssc_pcs=combos, dno=dno
+    )
+
+
+@views.route("/valid_mtc_llfc_ssc_pcs/<int:combo_id>")
+def valid_mtc_llfc_ssc_pc_get(combo_id):
+    combo = ValidMtcLlfcSscPc.get_by_id(g.sess, combo_id)
+    return render_template("valid_mtc_llfc_ssc_pc.html", valid_mtc_llfc_ssc_pc=combo)
 
 
 @views.route("/llfcs")

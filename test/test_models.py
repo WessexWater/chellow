@@ -45,10 +45,11 @@ def test_Era_update(mocker):
     dc_account = "dc account"
     msn = " yhlk "
     pc = mocker.Mock()
+    pc.code = "00"
     mtc = mocker.Mock()
     cop = mocker.Mock()
     comm = mocker.Mock()
-    ssc = mocker.Mock()
+    ssc = None
     energisation_status = mocker.Mock()
     properties = {}
     imp_mpan_core = "22 3423 2442 127"
@@ -99,16 +100,35 @@ def test_Era_update(mocker):
     assert era.msn == "yhlk"
 
 
-def test_MTC_find_by_code(mocker):
-    q_mock = mocker.Mock()
-    q_mock.filter_by = mocker.Mock(return_value=mocker.Mock())
-    sess = mocker.Mock()
-    sess.query.return_value = q_mock
-    dno = mocker.Mock()
-    code = "34"
+def test_MTC_find_by_code(sess):
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    code = "034"
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    Mtc.insert(
+        sess,
+        dno,
+        code,
+        "an mtc",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        1,
+        utc_datetime(2000, 1, 1),
+        None,
+    )
+    sess.commit()
 
-    Mtc.find_by_code(sess, dno, code)
-    q_mock.filter_by.assert_called_with(dno=dno, code="034")
+    mtc = Mtc.find_by_code(sess, dno, "34", utc_datetime(2000, 1, 1))
+    assert mtc.code == code
 
 
 def test_update_Era_llfc_valid_to(mocker):

@@ -15,6 +15,7 @@ from itertools import takewhile
 from dateutil.relativedelta import relativedelta
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Column,
     DateTime,
@@ -826,9 +827,13 @@ class Pc(Base, PersistentClass):
         return pc
 
     @staticmethod
+    def find_by_code(sess, code):
+        code = code.strip().zfill(2)
+        return sess.execute(select(Pc).where(Pc.code == code)).scalar_one_or_none()
+
+    @staticmethod
     def get_by_code(sess, code):
-        code = code.strip()
-        pc = sess.query(Pc).filter_by(code=code).first()
+        pc = Pc.find_by_code(sess, code)
         if pc is None:
             raise BadRequest(f"The PC with code {code} can't be found.")
         return pc
@@ -840,6 +845,7 @@ class Pc(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     eras = relationship("Era", backref="pc")
+    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="pc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, name, valid_from, valid_to):
@@ -950,78 +956,6 @@ class Batch(Base, PersistentClass):
 
 
 class Party(Base, PersistentClass):
-    @staticmethod
-    def get_by_participant_id_role_id(sess, participant_id, market_role_id):
-        party = (
-            sess.query(Party)
-            .filter(
-                Party.participant_id == participant_id,
-                Party.market_role_id == market_role_id,
-            )
-            .first()
-        )
-        if party is None:
-            raise BadRequest(
-                f"There isn't a party with participant id {participant_id} "
-                f" and market role {market_role_id}"
-            )
-        return party
-
-    @staticmethod
-    def get_by_participant_code_role_code(sess, participant_code, market_role_code):
-        party = (
-            sess.query(Party)
-            .join(Participant)
-            .join(MarketRole)
-            .filter(
-                Participant.code == participant_code,
-                MarketRole.code == market_role_code,
-            )
-            .first()
-        )
-        if party is None:
-            raise BadRequest(
-                f"There isn't a party with participant code "
-                f"{participant_code} and market role code {market_role_code}"
-            )
-        return party
-
-    @staticmethod
-    def get_by_participant_id_role_code(sess, participant_id, market_role_code):
-        party = (
-            sess.query(Party)
-            .join(MarketRole)
-            .filter(
-                Party.participant_id == participant_id,
-                MarketRole.code == market_role_code,
-            )
-            .first()
-        )
-        if party is None:
-            raise BadRequest(
-                f"There isn't a party with participant id {participant_id} "
-                f"and market role code {market_role_code}"
-            )
-        return party
-
-    @staticmethod
-    def get_dno_by_code(sess, dno_code):
-        dno = sess.query(Party).filter_by(dno_code=dno_code).first()
-        if dno is None:
-            raise BadRequest(f"There is no DNO with the code '{dno_code}'.")
-        return dno
-
-    @staticmethod
-    def get_dno_by_id(sess, dno_id):
-        dno = (
-            sess.query(Party)
-            .filter(Party.id == dno_id, Party.dno_code != null())
-            .first()
-        )
-        if dno is None:
-            raise BadRequest(f"There is no DNO with the id '{dno_id}'.")
-        return dno
-
     __tablename__ = "party"
     id = Column(Integer, primary_key=True)
     market_role_id = Column(Integer, ForeignKey("market_role.id"), index=True)
@@ -1049,15 +983,16 @@ class Party(Base, PersistentClass):
 
     def find_llfc_by_code(self, sess, code, date):
         code = code.zfill(3)
-        llfc_query = sess.query(Llfc).filter(Llfc.dno == self, Llfc.code == code)
+        q = sess.query(Llfc).filter(Llfc.dno == self, Llfc.code == code)
+
         if date is None:
-            llfc_query = llfc_query.filter(Llfc.valid_to == null())
+            q = q.where(Llfc.valid_to == null())
         else:
-            llfc_query = llfc_query.filter(
+            q = q.where(
                 Llfc.valid_from <= date,
                 or_(Llfc.valid_to == null(), Llfc.valid_to >= date),
             )
-        return llfc_query.first()
+        return sess.execute(q).scalar_one_or_none()
 
     def get_llfc_by_code(self, sess, code, date):
         llfc = self.find_llfc_by_code(sess, code, date)
@@ -1096,6 +1031,117 @@ class Party(Base, PersistentClass):
             return llfc
         else:
             raise BadRequest("This party isn't a DNO.")
+
+    @staticmethod
+    def find_by_participant_role(sess, participant, market_role, valid_from):
+        return sess.execute(
+            select(Party).where(
+                Party.participant == participant,
+                Party.market_role == market_role,
+                Party.valid_from == valid_from,
+            )
+        ).scalar_one_or_none()
+
+    @staticmethod
+    def get_by_participant_role(sess, participant, market_role, valid_from):
+        party = Party.find_by_participant_role(participant, market_role, valid_from)
+        if party is None:
+            raise BadRequest(
+                f"There isn't a party with participant {participant} and market role "
+                f"{market_role} at {hh_format(valid_from)}."
+            )
+        return party
+
+    @staticmethod
+    def find_by_participant_code_role_code(
+        sess, participant_code, market_role_code, date
+    ):
+        q = (
+            select(Party)
+            .join(Participant)
+            .join(MarketRole)
+            .where(
+                Participant.code == participant_code,
+                MarketRole.code == market_role_code,
+            )
+        )
+        if date is None:
+            q = q.where(Party.valid_to == null())
+        else:
+            q = q.where(
+                Party.valid_from <= date,
+                or_(Party.valid_to == null(), Party.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @staticmethod
+    def get_by_participant_code_role_code(
+        sess, participant_code, market_role_code, valid_from
+    ):
+        party = Party.find_by_participant_code_role_code(
+            sess, participant_code, market_role_code, valid_from
+        )
+        if party is None:
+            raise BadRequest(
+                f"There isn't a party with participant code {participant_code} and "
+                f"market role code {market_role_code} at {hh_format(valid_from)}"
+            )
+        return party
+
+    @staticmethod
+    def get_by_participant_id_role_code(sess, participant_id, market_role_code):
+        party = (
+            sess.query(Party)
+            .join(MarketRole)
+            .filter(
+                Party.participant_id == participant_id,
+                MarketRole.code == market_role_code,
+            )
+            .first()
+        )
+        if party is None:
+            raise BadRequest(
+                f"There isn't a party with participant id {participant_id} "
+                f"and market role code {market_role_code}"
+            )
+        return party
+
+    @staticmethod
+    def find_dno_by_code(sess, dno_code, date):
+        q = (
+            select(Party)
+            .join(MarketRole)
+            .where(Party.dno_code == dno_code, MarketRole.code == "R")
+        )
+        if date is None:
+            q = q.where(Party.valid_to == null())
+        else:
+            q = q.where(
+                Party.valid_from <= date,
+                or_(Party.valid_to == null(), Party.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_dno_by_code(cls, sess, dno_code, valid_from):
+        dno = cls.find_dno_by_code(sess, dno_code, valid_from)
+        if dno is None:
+            raise BadRequest(
+                f"There is no DNO with the code '{dno_code}' at time "
+                f"{hh_format(valid_from)}."
+            )
+        return dno
+
+    @staticmethod
+    def get_dno_by_id(sess, dno_id):
+        dno = (
+            sess.query(Party)
+            .filter(Party.id == dno_id, Party.dno_code != null())
+            .first()
+        )
+        if dno is None:
+            raise BadRequest(f"There is no DNO with the id '{dno_id}'.")
+        return dno
 
 
 class Contract(Base, PersistentClass):
@@ -1769,7 +1815,7 @@ class Site(Base, PersistentClass):
             raise BadRequest(
                 "An era must have either an import or export MPAN core or both."
             )
-        dno = Party.get_dno_by_code(sess, mpan_core[:2])
+        dno = Party.get_dno_by_code(sess, mpan_core[:2], start_date)
         supply = Supply(supply_name, source, generator_type, gsp_group, dno)
 
         try:
@@ -1784,7 +1830,7 @@ class Site(Base, PersistentClass):
         except ValueError as e:
             raise BadRequest(f"The MTC code must be a whole number. {e}")
 
-        mtc = Mtc.get_by_code(sess, dno, mtc_code)
+        mtc = Mtc.get_by_code(sess, dno, mtc_code, start_date)
         supply.insert_era(
             sess,
             self,
@@ -2047,8 +2093,14 @@ class MarketRole(Base, PersistentClass):
         return market_role
 
     @staticmethod
+    def find_by_code(sess, code):
+        return sess.execute(
+            select(MarketRole).where(MarketRole.code == code)
+        ).scalar_one_or_none()
+
+    @staticmethod
     def get_by_code(sess, code):
-        role = sess.query(MarketRole).filter_by(code=code).first()
+        role = MarketRole.find_by_code(sess, code)
         if role is None:
             raise BadRequest(f"A role with code {code} cannot be found.")
         return role
@@ -2066,20 +2118,6 @@ class MarketRole(Base, PersistentClass):
 
 
 class Participant(Base, PersistentClass):
-    @staticmethod
-    def insert(sess, code, name):
-        participant = Participant(code, name)
-        sess.add(participant)
-        sess.flush()
-        return participant
-
-    @staticmethod
-    def get_by_code(sess, code):
-        participant = sess.query(Participant).filter_by(code=code).first()
-        if participant is None:
-            raise BadRequest(f"There isn't a Participant with code {code}.")
-        return participant
-
     __tablename__ = "participant"
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -2088,12 +2126,35 @@ class Participant(Base, PersistentClass):
 
     def __init__(self, code, name):
         self.code = code
+        self.update(name)
+
+    def update(self, name):
         self.name = name
 
     def insert_party(self, sess, market_role, name, valid_from, valid_to, dno_code):
         party = Party(self, market_role, name, valid_from, valid_to, dno_code)
         sess.add(party)
         return party
+
+    @staticmethod
+    def insert(sess, code, name):
+        participant = Participant(code, name)
+        sess.add(participant)
+        sess.flush()
+        return participant
+
+    @staticmethod
+    def find_by_code(sess, code):
+        return sess.execute(
+            select(Participant).where(Participant.code == code)
+        ).scalar_one_or_none()
+
+    @staticmethod
+    def get_by_code(sess, code):
+        participant = Participant.find_by_code(sess, code)
+        if participant is None:
+            raise BadRequest(f"There isn't a Participant with code {code}.")
+        return participant
 
 
 class RateScript(Base, PersistentClass):
@@ -2177,6 +2238,7 @@ class Llfc(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     lafs = relationship("Laf", backref="llfc")
+    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="llfc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
     def __init__(
@@ -2236,19 +2298,6 @@ class Laf(Base, PersistentClass):
 
 
 class MeterType(Base, PersistentClass):
-    @staticmethod
-    def insert(sess, code, description, valid_from, valid_to):
-        meter_type = MeterType(code, description, valid_from, valid_to)
-        sess.add(meter_type)
-        return meter_type
-
-    @staticmethod
-    def get_by_code(sess, code):
-        meter_type = sess.query(MeterType).filter(MeterType.code == code).first()
-        if meter_type is None:
-            raise Exception(f"Can't find the meter type with code {code}.")
-        return meter_type
-
     __tablename__ = "meter_type"
     id = Column(Integer, primary_key=True)
     code = Column(String, nullable=False)
@@ -2264,6 +2313,33 @@ class MeterType(Base, PersistentClass):
         self.valid_from = valid_from
         self.valid_to = valid_to
 
+    @staticmethod
+    def insert(sess, code, description, valid_from, valid_to):
+        meter_type = MeterType(code, description, valid_from, valid_to)
+        sess.add(meter_type)
+        return meter_type
+
+    @staticmethod
+    def find_by_code(sess, code, date):
+        q = select(MeterType).where(MeterType.code == code)
+        if date is None:
+            q = q.where(MeterType.valid_to == null())
+        else:
+            q = q.where(
+                MeterType.valid_from <= date,
+                or_(MeterType.valid_to == null(), MeterType.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_code(cls, sess, code, date):
+        meter_type = cls.find_by_code(sess, code, date)
+        if meter_type is None:
+            raise Exception(
+                f"Can't find the meter type with code {code} at {hh_format(date)}."
+            )
+        return meter_type
+
 
 class MeterPaymentType(Base, PersistentClass):
     @staticmethod
@@ -2273,10 +2349,23 @@ class MeterPaymentType(Base, PersistentClass):
         return meter_payment_type
 
     @staticmethod
-    def get_by_code(sess, code):
-        meter_payment_type = (
-            sess.query(MeterPaymentType).filter(MeterPaymentType.code == code).first()
-        )
+    def find_by_code(sess, code, date):
+        q = select(MeterPaymentType).where(MeterPaymentType.code == code)
+        if date is None:
+            q = q.where(MeterPaymentType.valid_to == null())
+        else:
+            q = q.where(
+                MeterPaymentType.valid_from <= date,
+                or_(
+                    MeterPaymentType.valid_to == null(),
+                    MeterPaymentType.valid_to >= date,
+                ),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_code(cls, sess, code, date):
+        meter_payment_type = cls.find_by_code(sess, code, date)
         if meter_payment_type is None:
             raise Exception(f"Can't find the meter payment type with code {code}.")
         return meter_payment_type
@@ -2336,17 +2425,25 @@ class Mtc(Base, PersistentClass):
         return not ((499 < num < 510) or (799 < num < 1000))
 
     @staticmethod
-    def find_by_code(sess, dno, code):
+    def find_by_code(sess, dno, code, date):
         code = code.zfill(3)
         dno = dno if Mtc.has_dno(code) else None
-        return sess.query(Mtc).filter_by(dno=dno, code=code).first()
+        return sess.execute(
+            select(Mtc).where(
+                Mtc.dno == dno,
+                Mtc.code == code,
+                Mtc.valid_from <= date,
+                or_(Mtc.valid_to == null(), Mtc.valid_to >= date),
+            )
+        ).scalar_one_or_none()
 
     @staticmethod
-    def get_by_code(sess, dno, code):
-        mtc = Mtc.find_by_code(sess, dno, code)
+    def get_by_code(sess, dno, code, date):
+        mtc = Mtc.find_by_code(sess, dno, code, date)
         if mtc is None:
             raise BadRequest(
-                f"There isn't an MTC with the code {code} for the DNO {dno.dno_code}."
+                f"There isn't an MTC with the code {code} for the DNO {dno.dno_code} "
+                f"at date {hh_format(date)}."
             )
         return mtc
 
@@ -2364,6 +2461,7 @@ class Mtc(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     eras = relationship("Era", backref="mtc")
+    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="mtc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
     def __init__(
@@ -2464,7 +2562,7 @@ class MeasurementRequirement(Base, PersistentClass):
 
 class Ssc(Base, PersistentClass):
     __tablename__ = "ssc"
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     code = Column(String, nullable=False)
     description = Column(String)
     is_import = Column(Boolean)
@@ -2472,6 +2570,7 @@ class Ssc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     measurement_requirements = relationship("MeasurementRequirement", backref="ssc")
     eras = relationship("Era", backref="ssc")
+    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="ssc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, is_import, valid_from, valid_to):
@@ -2489,12 +2588,88 @@ class Ssc(Base, PersistentClass):
         return ssc
 
     @staticmethod
-    def get_by_code(sess, code):
+    def find_by_code(sess, code, date):
         code = code.zfill(4)
-        ssc = sess.query(Ssc).filter_by(code=code).first()
+        q = select(Ssc).where(Ssc.code == code)
+        if date is None:
+            q = q.where(Ssc.valid_to == null())
+        else:
+            q = q.where(
+                Ssc.valid_from <= date,
+                or_(Ssc.valid_to == null(), Ssc.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_code(cls, sess, code, date):
+        ssc = cls.find_by_code(sess, code, date)
         if ssc is None:
-            raise BadRequest(f"The SSC with code '{code}' can't be found.")
+            raise BadRequest(
+                f"The SSC with code '{code}' can't be found at {hh_format(date)}."
+            )
         return ssc
+
+
+class ValidMtcLlfcSscPc(Base, PersistentClass):
+    __tablename__ = "valid_mtc_llfc_ssc_pc"
+    id = Column(BigInteger, primary_key=True)
+    mtc_id = Column(BigInteger, ForeignKey("mtc.id"), nullable=False)
+    llfc_id = Column(BigInteger, ForeignKey("llfc.id"), nullable=False)
+    ssc_id = Column(BigInteger, ForeignKey("ssc.id"), nullable=False)
+    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint("mtc_id", "llfc_id", "ssc_id", "pc_id", "valid_from"),
+    )
+
+    def __init__(self, mtc, llfc, ssc, pc, valid_from, valid_to):
+        self.mtc = mtc
+        self.llfc = llfc
+        self.ssc = ssc
+        self.pc = pc
+        self.valid_from = valid_from
+        self.update(valid_to)
+
+    def update(self, valid_to):
+        self.valid_to = valid_to
+
+    @staticmethod
+    def insert(sess, mtc, llfc, ssc, pc, valid_from, valid_to):
+        if mtc.dno is not None and mtc.dno != llfc.dno:
+            raise Exception(
+                f"The MTC DNO {mtc.dno.dno_code} must match the LLFC DNO "
+                f"{llfc.dno.dno_code}"
+            )
+        combo = ValidMtcLlfcSscPc(mtc, llfc, ssc, pc, valid_from, valid_to)
+        sess.add(combo)
+        sess.flush()
+        return combo
+
+    @staticmethod
+    def find_by_values(sess, mtc, llfc, ssc, pc, date):
+        return sess.execute(
+            select(ValidMtcLlfcSscPc).where(
+                ValidMtcLlfcSscPc.mtc == mtc,
+                ValidMtcLlfcSscPc.llfc == llfc,
+                ValidMtcLlfcSscPc.ssc == ssc,
+                ValidMtcLlfcSscPc.pc == pc,
+                or_(
+                    ValidMtcLlfcSscPc.valid_to == null(),
+                    ValidMtcLlfcSscPc.valid_to >= date,
+                ),
+            )
+        ).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc, llfc, ssc, pc, date):
+        combo = cls.find_by_values(sess, mtc, llfc, ssc, pc, date)
+        if combo is None:
+            raise BadRequest(
+                f"The valid combination of MTC {mtc.code} LLFC {llfc.code} SSC "
+                f"{ssc.code} PC {pc.code} at {hh_format(date)} can't be found."
+            )
+        return combo
 
 
 class SiteEra(Base, PersistentClass):
@@ -2917,6 +3092,18 @@ class Era(Base, PersistentClass):
                 )
 
             setattr(self, polarity + "_sc", sc)
+
+            if pc.code != "00":
+                combo = ValidMtcLlfcSscPc.get_by_values(
+                    sess, mtc, llfc, ssc, pc, start_date
+                )
+                if finish_date is not None and hh_before(combo.valid_to, finish_date):
+                    raise BadRequest(
+                        f"The {polarity} combination of MTC {mtc.code} LLFC "
+                        f"{llfc.code} SSC {ssc.code} PC {pc.code} is only valid until "
+                        f"{hh_format(combo.valid_to)} but the era ends at "
+                        f"{hh_format(finish_date)}."
+                    )
 
         if (
             self.mtc.meter_type.code == "C5"
@@ -6576,6 +6763,15 @@ def db_upgrade_28_to_29(sess, root_path):
     sess.execute("ALTER TABLE report_run ALTER data SET NOT NULL;")
 
 
+def db_upgrade_29_to_30(sess, root_path):
+    val = sess.execute("select max(id) from ssc;").scalar_one()
+    sess.execute("select setval('ssc_id_seq', :val)", {"val": val})
+
+
+def db_upgrade_30_to_31(sess, root_path):
+    sess.execute("ALTER TABLE ssc DROP CONSTRAINT IF EXISTS ssc_code_key")
+
+
 upgrade_funcs = [
     db_upgrade_0_to_1,
     db_upgrade_1_to_2,
@@ -6606,6 +6802,8 @@ upgrade_funcs = [
     db_upgrade_26_to_27,
     db_upgrade_27_to_28,
     db_upgrade_28_to_29,
+    db_upgrade_29_to_30,
+    db_upgrade_30_to_31,
 ]
 
 

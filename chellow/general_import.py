@@ -48,6 +48,7 @@ from chellow.models import (
     Tpr,
     User,
     UserRole,
+    ValidMtcLlfcSscPc,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -1327,7 +1328,6 @@ def general_import_supply(sess, action, vals, args):
 def general_import_llfc(sess, action, vals, args):
     if action == "insert":
         dno_code = add_arg(args, "dno", vals, 0)
-        dno = Party.get_dno_by_code(sess, dno_code)
         llfc_code = add_arg(args, "llfc", vals, 1)
         llfc_description = add_arg(args, "llfc_description", vals, 2)
         vl_code = add_arg(args, "voltage_level", vals, 3)
@@ -1341,14 +1341,8 @@ def general_import_llfc(sess, action, vals, args):
         valid_to_str = add_arg(args, "valid_to", vals, 7)
         valid_to = parse_hh_start(valid_to_str)
 
-        llfc_query = sess.query(Llfc).filter(
-            Llfc.dno == dno,
-            Llfc.code == llfc_code,
-            or_(Llfc.valid_to == null(), Llfc.valid_to >= valid_from),
-        )
-        if valid_to is not None:
-            llfc_query = llfc_query.filter(Llfc.valid_from <= valid_to)
-        existing_llfc = llfc_query.first()
+        dno = Party.get_dno_by_code(sess, dno_code, valid_from)
+        existing_llfc = dno.find_llfc_by_code(sess, llfc_code, valid_from)
 
         if existing_llfc is None:
             llfc = Llfc(
@@ -1367,6 +1361,100 @@ def general_import_llfc(sess, action, vals, args):
             raise BadRequest(
                 "There's already a LLFC with this DNO and code for this " "period."
             )
+
+    elif action == "update":
+        dno_code = add_arg(args, "dno", vals, 0)
+        llfc_code = add_arg(args, "llfc", vals, 1)
+        valid_from_str = add_arg(args, "valid_from", vals, 2)
+        valid_from = parse_hh_start(valid_from_str)
+
+        dno = Party.get_dno_by_code(sess, dno_code, valid_from)
+        llfc = (
+            sess.query(Llfc)
+            .filter(
+                Llfc.dno == dno, Llfc.code == llfc_code, Llfc.valid_from == valid_from
+            )
+            .first()
+        )
+        if llfc is None:
+            raise BadRequest(
+                f"Can't find an LLFC for the DNO {dno_code} and 'valid from' "
+                f"date {hh_format(valid_from)}."
+            )
+
+        llfc_description_str = add_arg(args, "llfc_description", vals, 3)
+        if llfc_description_str == NO_CHANGE:
+            llfc_description = llfc.description
+        else:
+            llfc_description = llfc_description_str
+
+        vl_code_str = add_arg(args, "voltage_level", vals, 4)
+        if vl_code_str == NO_CHANGE:
+            vl = llfc.voltage_level
+        else:
+            vl = VoltageLevel.get_by_code(sess, vl_code_str.upper())
+
+        is_substation_str = add_arg(args, "is_substation", vals, 5)
+        if is_substation_str == NO_CHANGE:
+            is_substation = llfc.is_substation
+        else:
+            is_substation = parse_bool(is_substation_str)
+
+        is_import_str = add_arg(args, "is_import", vals, 6)
+        if is_import_str == NO_CHANGE:
+            is_import = llfc.is_import
+        else:
+            is_import = parse_bool(is_import_str)
+
+        valid_to_str = add_arg(args, "valid_to", vals, 7)
+        if valid_to_str == NO_CHANGE:
+            valid_to = llfc.valid_to
+        else:
+            valid_to = parse_hh_start(valid_to_str)
+
+        llfc.update(
+            llfc_description, vl, is_substation, is_import, llfc.valid_from, valid_to
+        )
+        sess.flush()
+
+    elif action == "delete":
+        dno_code = add_arg(args, "dno_code", vals, 0)
+        dno = Party.get_dno_by_code(sess, dno_code)
+        llfc_code = add_arg(args, "llfc", vals, 1)
+        date_str = add_arg(args, "date", vals, 2)
+        date = parse_hh_start(date_str)
+
+        llfc = dno.get_llfc_by_code(sess, llfc_code, date)
+        sess.delete(llfc)
+        sess.flush()
+    else:
+        raise BadRequest("Action not recognized.")
+
+
+def general_import_valid_mtc_llfc_ssc_pc(sess, action, vals, args):
+    if action == "insert":
+        dno_code = add_arg(args, "dno_code", vals, 0)
+        dno = Party.get_dno_by_code(sess, dno_code)
+        mtc_code = add_arg(args, "mtc_code", vals, 1)
+        mtc_from_str = add_arg(args, "mtc_from", vals, 2)
+        mtc_from = parse_hh_start(mtc_from_str)
+        mtc = Mtc.get_by_code(sess, dno, mtc_code, mtc_from)
+        llfc_code = add_arg(args, "llfc_code", vals, 3)
+        llfc_from_str = add_arg(args, "llfc_from", vals, 4)
+        llfc_from = parse_hh_start(llfc_from_str)
+        llfc = dno.get_llfc_by_code(sess, llfc_code, llfc_from)
+        ssc_code = add_arg(args, "ssc_code", vals, 5)
+        ssc_from_str = add_arg(args, "ssc_from", vals, 6)
+        ssc_from = parse_hh_start(ssc_from_str)
+        ssc = Ssc.get_by_code(sess, ssc_code, ssc_from)
+        pc_code = add_arg(args, "pc_code", vals, 7)
+        pc = Pc.get_by_code(sess, pc_code)
+        valid_from_str = add_arg(args, "valid_from", vals, 8)
+        valid_from = parse_hh_start(valid_from_str)
+        valid_to_str = add_arg(args, "valid_to", vals, 9)
+        valid_to = parse_hh_start(valid_to_str)
+
+        ValidMtcLlfcSscPc.insert(sess, mtc, llfc, ssc, pc)
 
     elif action == "update":
         dno_code = add_arg(args, "dno", vals, 0)
@@ -1662,15 +1750,10 @@ class GeneralImporter(threading.Thread):
                 if len(line) > 0 and line[0].startswith("#"):
                     continue
 
-                if len(line) < 2:
-                    raise BadRequest(
-                        "There must be an 'action' field followed by a 'type' field."
-                    )
-
                 action = add_arg(self.args, "action", line, 0).lower()
                 if action not in ALLOWED_ACTIONS:
                     raise BadRequest(
-                        "The 'action' field must be one of " + str(ALLOWED_ACTIONS)
+                        f"The 'action' field must be one of {ALLOWED_ACTIONS}"
                     )
                 typ = add_arg(self.args, "type", line, 1).lower()
                 vals = line[2:]
@@ -1696,7 +1779,7 @@ class GeneralImporter(threading.Thread):
                         typ_func = typ_funcs[typ]
                         typ_func(sess, action, vals, self.args)
                     except KeyError:
-                        raise BadRequest("The type " + typ + " is not recognized.")
+                        raise BadRequest(f"The type {typ} is not recognized.")
 
             HhDatum.insert(sess, hh_data)
             sess.commit()

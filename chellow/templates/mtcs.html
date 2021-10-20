@@ -26,7 +26,9 @@
 							<th>Dno</th>
 							<th>Description</th>
 							<th>Meter Type</th>
-							<th>TPR count</th>
+							<th>TPR Count</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -51,6 +53,8 @@
 									</a>
 								</td>
 								<td>{{mtc.tpr_count}}</td>
+								<td>{{mtc.valid_from|hh_format}}</td>
+								<td>{{mtc.valid_to|hh_format}}</td>
 							</tr>
 						{% endfor %}
 					</tbody>

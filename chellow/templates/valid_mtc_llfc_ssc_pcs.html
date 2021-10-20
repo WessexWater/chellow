@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; Valid MTC, LLFC, SSC And PC Combinations
+{% endblock %}
+
+{% block nav %}
+	<a href="/dnos">DNOs</a> &raquo; 
+	<a href="/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo;
+ 	Valid MTC, LLFC, SSC And PC Combinations
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Valid MTC, LLFC, SSC And PC Combinations</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>PC</th>
+							<th>LLFC</th>
+							<th>SSC</th>
+							<th>MTC</th>
+							<th>Valid From</th>
+							<th>
+								Valid To
+								{% if request.values.only_ongoing %}
+									(<a href="/valid_mtc_llfc_ssc_pcs?dno_id={{dno.id}}"
+										>show all</a>)
+								{% else %}
+									(<a href="/valid_mtc_llfc_ssc_pcs?dno_id={{dno.id}}&amp;only_ongoing=true"
+										>only show ongoing</a>)
+								{% endif %}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for combo in valid_mtc_llfc_ssc_pcs %}
+							<tr>
+								<td>
+									<a href="/valid_mtc_llfc_ssc_pcs/{{combo.id}}">View</a>
+								</td>
+								<td>{{combo.pc.code}} {{combo.pc.description}}</td>
+								<td>{{combo.llfc.code}} {{combo.llfc.description}}</td>
+								<td>{{combo.ssc.code}} {{combo.ssc.description}}</td>
+								<td>{{combo.mtc.code}} {{combo.mtc.description}}</td>
+								<td>{{combo.valid_from|hh_format}}</td>
+								<td>{{combo.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}
