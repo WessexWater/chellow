@@ -5701,67 +5701,7 @@ def insert_voltage_levels(sess):
         VoltageLevel.insert(sess, code, desc)
 
 
-def db_init(sess, root_path):
-    db_name = config["PGDATABASE"]
-    log_message("Initializing database.")
-    insert_voltage_levels(sess)
-    sess.commit()
-
-    for code in ("editor", "viewer", "party-viewer"):
-        sess.add(UserRole(code))
-    sess.commit()
-
-    insert_sources(sess)
-    sess.commit()
-
-    for code, desc in (
-        ("chp", "Combined heat and power."),
-        ("lm", "Load management."),
-        ("turb", "Water turbine."),
-        ("pv", "Solar Photovoltaics."),
-    ):
-        sess.add(GeneratorType(code, desc))
-    sess.commit()
-
-    for code, desc in (
-        ("A", "Actual Change of Supplier Read"),
-        (
-            "D",
-            "Deemed (Settlement Registers) or Estimated (Non-Settlement " "Registers)",
-        ),
-        ("C", "Customer"),
-        ("CP", "Computer"),
-        ("E", "Estimated"),
-        ("E3", "Estimated 3rd Party"),
-        ("EM", "Estimated Manual"),
-        ("F", "Final"),
-        ("H", "Data Collector Reading Queried By Supplier"),
-        ("I", "Initial"),
-        ("IF", "Information"),
-        ("N", "Normal"),
-        ("N3", "Normal 3rd Party"),
-        ("O", "Old Supplier's Estimated CoS Reading"),
-        ("Q", "Meter Reading modified manually by DC"),
-        ("S", "Special"),
-        ("W", "Withdrawn"),
-        ("X", "Exchange"),
-        ("Z", "Actual Change of Tenancy Read"),
-    ):
-        sess.add(ReadType(code, desc))
-    sess.commit()
-
-    insert_cops(sess)
-    sess.commit()
-
-    insert_comms(sess)
-    sess.commit()
-
-    insert_bill_types(sess)
-    sess.commit()
-
-    insert_energisation_statuses(sess)
-    sess.commit()
-
+def insert_mdd(sess, root_path):
     dbapi_conn = sess.connection().connection.connection
     cursor = dbapi_conn.cursor()
     mdd_path = os.path.join(root_path, "mdd", "converted")
@@ -5838,16 +5778,79 @@ def db_init(sess, root_path):
         f = open(os.path.join(mdd_path, name + ".csv"), "rb")
         cursor.execute("set transaction isolation level serializable read write")
         cursor.execute(
-            "COPY " + name + " (" + ", ".join(fields) + ") FROM STDIN CSV HEADER",
+            f"COPY {name} ({','.join(fields)}) FROM STDIN CSV HEADER",
             stream=f,
         )
         cursor.execute("select count(*) from " + name + ";")
         row_count = cursor.fetchall()[0][0]
-        cursor.execute(
-            "ALTER SEQUENCE " + name + "_id_seq restart with " + str(row_count + 1)
-        )
+        cursor.execute(f"ALTER SEQUENCE {name}_id_seq restart with {row_count + 1}")
         dbapi_conn.commit()
         f.close()
+
+
+def db_init(sess, root_path):
+    db_name = config["PGDATABASE"]
+    log_message("Initializing database.")
+    insert_voltage_levels(sess)
+    sess.commit()
+
+    for code in ("editor", "viewer", "party-viewer"):
+        sess.add(UserRole(code))
+    sess.commit()
+
+    insert_sources(sess)
+    sess.commit()
+
+    for code, desc in (
+        ("chp", "Combined heat and power."),
+        ("lm", "Load management."),
+        ("turb", "Water turbine."),
+        ("pv", "Solar Photovoltaics."),
+    ):
+        sess.add(GeneratorType(code, desc))
+    sess.commit()
+
+    for code, desc in (
+        ("A", "Actual Change of Supplier Read"),
+        (
+            "D",
+            "Deemed (Settlement Registers) or Estimated (Non-Settlement " "Registers)",
+        ),
+        ("C", "Customer"),
+        ("CP", "Computer"),
+        ("E", "Estimated"),
+        ("E3", "Estimated 3rd Party"),
+        ("EM", "Estimated Manual"),
+        ("F", "Final"),
+        ("H", "Data Collector Reading Queried By Supplier"),
+        ("I", "Initial"),
+        ("IF", "Information"),
+        ("N", "Normal"),
+        ("N3", "Normal 3rd Party"),
+        ("O", "Old Supplier's Estimated CoS Reading"),
+        ("Q", "Meter Reading modified manually by DC"),
+        ("S", "Special"),
+        ("W", "Withdrawn"),
+        ("X", "Exchange"),
+        ("Z", "Actual Change of Tenancy Read"),
+    ):
+        sess.add(ReadType(code, desc))
+    sess.commit()
+
+    insert_cops(sess)
+    sess.commit()
+
+    insert_comms(sess)
+    sess.commit()
+
+    insert_bill_types(sess)
+    sess.commit()
+
+    insert_energisation_statuses(sess)
+    sess.commit()
+
+    insert_mdd(sess, root_path)
+    sess.commit()
 
     contracts_path = os.path.join(root_path, "non_core_contracts")
 

@@ -1034,7 +1034,7 @@ def site_edit_get(site_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
+        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
         energisation_statuses = g.sess.query(EnergisationStatus).order_by(
             EnergisationStatus.code
         )

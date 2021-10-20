@@ -2423,6 +2423,90 @@ def test_csv_supplies_duration_get(mocker):
     )
 
 
+def test_site_edit_get(sess, client, app):
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+    Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    insert_cops(sess)
+    insert_comms(sess)
+    Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    Mtc.insert(
+        sess,
+        None,
+        "845",
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_sources(sess)
+    insert_energisation_statuses(sess)
+    sess.commit()
+
+    response = client.get(f"/sites/{site.id}/edit")
+    patterns = [
+        r'<select name="comm_id">\s*'
+        r'<option value="3">GPRS General Packet Radio Service</option>\s*'
+    ]
+    match(response, 200, *patterns)
+
+
 def test_site_edit_post(sess, client):
     site = Site.insert(sess, "CI017", "Water Works")
 
