@@ -16,26 +16,16 @@
 		</div>
 		<div class="section-content">
 			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<tbody>
-						<tr>
-							<th>Name</th>
-							<td>{{scenario.name }}</td>
-						</tr>
-						<tr>
-							<th>Run</th>
-							<td>
-								<form action="/reports/247" method="post">
-									<fieldset>
-										<input
-											type="hidden" name="scenario_id" value="{{scenario.id}}">
-										<input type="submit" value="Run">
-									</fieldset>	
-								</form>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+				<form action="/reports/247" method="post">
+					<fieldset>
+						<label>Site Codes</label><br>
+						{{input_textarea('site_codes', '', 5, 40, placeholder='One on each line, includes all if left blank')}}    						
+						<br>
+						<input
+							type="hidden" name="scenario_id" value="{{scenario.id}}">
+						<input type="submit" value="Run">
+					</fieldset>	
+				</form>
 			</div>
 		</div>
 	</div>
