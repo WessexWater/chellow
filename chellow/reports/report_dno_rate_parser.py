@@ -95,7 +95,7 @@ def to_pcs(row, idx):
     val = get_value(row, idx)
     llfcs = []
     if isinstance(val, str):
-        for v in map(str.strip, val.replace("or", ",").split(",")):
+        for v in map(str.strip, val.replace("or", ",").replace("to", "-").split(",")):
             if len(v) > 0:
                 if "-" in v:
                     start, finish = v.split("-")
