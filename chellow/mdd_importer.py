@@ -339,7 +339,7 @@ def _import_Standard_Settlement_Configuration(sess, csv_reader):
         valid_to = parse_to_date(values[2])
         description = values[3]
         is_import = values[4] == "I"
-        ssc = sscs[(code, valid_from)]
+        ssc = sscs.get((code, valid_from))
 
         if ssc is None:
             Ssc.insert(sess, code, description, is_import, valid_from, valid_to)
