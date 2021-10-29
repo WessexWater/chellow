@@ -2648,18 +2648,23 @@ class ValidMtcLlfcSscPc(Base, PersistentClass):
 
     @staticmethod
     def find_by_values(sess, mtc, llfc, ssc, pc, date):
-        return sess.execute(
-            select(ValidMtcLlfcSscPc).where(
-                ValidMtcLlfcSscPc.mtc == mtc,
-                ValidMtcLlfcSscPc.llfc == llfc,
-                ValidMtcLlfcSscPc.ssc == ssc,
-                ValidMtcLlfcSscPc.pc == pc,
+        q = select(ValidMtcLlfcSscPc).where(
+            ValidMtcLlfcSscPc.mtc == mtc,
+            ValidMtcLlfcSscPc.llfc == llfc,
+            ValidMtcLlfcSscPc.ssc == ssc,
+            ValidMtcLlfcSscPc.pc == pc,
+        )
+        if date is None:
+            q = q.where(ValidMtcLlfcSscPc.valid_to == null())
+        else:
+            q = q.where(
+                ValidMtcLlfcSscPc.valid_from <= date,
                 or_(
                     ValidMtcLlfcSscPc.valid_to == null(),
                     ValidMtcLlfcSscPc.valid_to >= date,
                 ),
             )
-        ).scalar_one_or_none()
+        return sess.execute(q).scalar_one_or_none()
 
     @classmethod
     def get_by_values(cls, sess, mtc, llfc, ssc, pc, date):

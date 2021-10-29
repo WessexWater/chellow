@@ -1,6 +1,7 @@
 import csv
 import threading
 import traceback
+from collections import deque
 from datetime import datetime as Datetime, timedelta as Timedelta
 from io import StringIO
 from zipfile import ZipFile
@@ -11,7 +12,6 @@ from sqlalchemy.orm import joinedload
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
-    Llfc,
     MarketRole,
     MeterPaymentType,
     MeterType,
@@ -26,8 +26,10 @@ from chellow.models import (
 )
 from chellow.utils import (
     ct_datetime,
+    hh_format,
     to_ct,
     to_utc,
+    utc_datetime_now,
 )
 
 
@@ -351,17 +353,9 @@ def _import_Standard_Settlement_Configuration(sess, csv_reader):
 
 def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
     dnos = {}
-    mtcs = dict(
-        (((None if v.dno is None else v.dno.id), v.code, v.valid_from), v)
-        for v in sess.execute(select(Mtc)).scalars()
-    )
-    llfcs = dict(
-        ((v.dno.id, v.code, v.valid_from), v)
-        for v in sess.execute(select(Llfc)).scalars()
-    )
-    sscs = dict(
-        ((v.code, v.valid_from), v) for v in sess.execute(select(Ssc)).scalars()
-    )
+    mtcs = {}
+    llfcs = {}
+    sscs = {}
     pcs = dict((v.code, v) for v in sess.execute(select(Pc)).scalars())
     combos = dict(
         ((v.mtc.id, v.llfc.id, v.ssc.id, v.pc.id, v.valid_from), v)
@@ -401,9 +395,26 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
                 )
             ).scalar_one()
 
-        mtc = mtcs[((dno.id if Mtc.has_dno(mtc_code) else None), mtc_code, mtc_from)]
-        llfc = llfcs[(dno.id, llfc_code, llfc_from)]
-        ssc = sscs[(ssc_code, ssc_from)]
+        mtc_dno_id = dno.id if Mtc.has_dno(mtc_code) else None
+        try:
+            mtc = mtcs[(mtc_dno_id, mtc_code, mtc_from)]
+        except KeyError:
+            mtc = mtcs[(mtc_dno_id, mtc_code, mtc_from)] = Mtc.get_by_code(
+                sess, dno, mtc_code, mtc_from
+            )
+
+        try:
+            llfc = llfcs[(dno.id, llfc_code, llfc_from)]
+        except KeyError:
+            llfc = llfcs[(dno.id, llfc_code, llfc_from)] = dno.get_llfc_by_code(
+                sess, llfc_code, llfc_from
+            )
+
+        try:
+            ssc = sscs[(ssc_code, ssc_from)]
+        except KeyError:
+            ssc = sscs[(ssc_code, ssc_from)] = Ssc.get_by_code(sess, ssc_code, ssc_from)
+
         pc = pcs[pc_code]
         combo = combos.get((mtc.id, llfc.id, ssc.id, pc.id, valid_from))
 
@@ -426,20 +437,18 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
 class MddImporter(threading.Thread):
     def __init__(self, f):
         threading.Thread.__init__(self)
-        self.progress = None
+        self.log_lines = deque(maxlen=1000)
         self.f = f
         self.rd_lock = threading.Lock()
         self.error_message = None
-        self.args = []
-        self.hh_data = []
 
     def get_fields(self):
-        fields = {"progress": self.progress, "error_message": self.error_message}
-        if self.error_message is not None:
-            fields["csv_line"] = self.args
-        return fields
+        return {"log": self.log_lines, "error_message": self.error_message}
 
     def run(self):
+        def log_f(msg):
+            self.log_lines.appendleft(f"{hh_format(utc_datetime_now())}: {msg}")
+
         sess = None
         try:
             sess = Session()
@@ -447,6 +456,7 @@ class MddImporter(threading.Thread):
             znames = {}
 
             for zname in zip_file.namelist():
+                log_f(f"Inspecting {zname} in ZIP file")
                 csv_file = StringIO(zip_file.read(zname).decode("utf-8"))
                 csv_reader = iter(csv.reader(csv_file))
                 next(csv_reader)  # Skip titles
@@ -470,12 +480,12 @@ class MddImporter(threading.Thread):
                     _import_Valid_MTC_LLFC_SSC_PC_Combination,
                 ),
             ]:
-                self.progress = f"Importing {tname}."
 
-                try:
+                if tname in znames:
+                    log_f(f"Found {tname} and will now import it.")
                     func(sess, znames[tname])
-                except KeyError:
-                    pass
+                else:
+                    log_f(f"Can't find {tname} in the ZIP file.")
 
             sess.commit()
 

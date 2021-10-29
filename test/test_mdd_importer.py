@@ -14,6 +14,7 @@ from chellow.models import (
     Party,
     Pc,
     Ssc,
+    ValidMtcLlfcSscPc,
     VoltageLevel,
     insert_voltage_levels,
 )
@@ -135,7 +136,7 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc_code = "906"
     llfc_description = "PC 5-8 & HH HV"
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         llfc_code,
         llfc_description,
@@ -149,7 +150,7 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    mtc = Mtc.insert(
         sess,
         dno,
         "001",
@@ -163,8 +164,10 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
         to_utc(ct_datetime(2009, 4, 16)),
         None,
     )
-    Ssc.insert(sess, "0349", "an ssc", True, to_utc(ct_datetime(2009, 4, 16)), None)
-    Pc.insert(sess, "02", "dom", to_utc(ct_datetime(1996, 1, 1)), None)
+    ssc = Ssc.insert(
+        sess, "0349", "an ssc", True, to_utc(ct_datetime(2009, 4, 16)), None
+    )
+    pc = Pc.insert(sess, "02", "dom", to_utc(ct_datetime(1996, 1, 1)), None)
     sess.commit()
 
     row = [
@@ -184,6 +187,8 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
 
     csv_reader = iter([row])
     chellow.mdd_importer._import_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader)
+    sess.commit()
+    ValidMtcLlfcSscPc.get_by_values(sess, mtc, llfc, ssc, pc, utc_datetime(2012, 1, 1))
 
 
 def test_import_Market_Participant(sess):

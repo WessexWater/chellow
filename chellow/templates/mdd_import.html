@@ -15,9 +15,6 @@
 		</div>
 		<div class="section-content">
 			<div class="section-data">
-			  {% if progress %}
-					<p>{{progress}}</p>
-				{% endif %}
 
 				{% if is_alive %}
 						<p>Still running. Refresh the page to see latest progress.</p>
@@ -32,23 +29,11 @@
 						{% endif %}
 				{% endif %}
 
-				{% if csv_line %}
-					<table class="etheling">
-						<caption>Failed Line</caption>
-						<tbody>
-							<tr>
-								{% for title, value in csv_line %}
-									<th>{{title}}</th>
-								{% endfor %}
-							</tr>
-							<tr>
-								{% for title, value in csv_line %}
-									<td>{{value}}</td>
-								{% endfor %}
-							</tr>
-						</tbody>
-					</table>
-				{% endif %}
+				<ul>
+					{% for line in log %}
+						<li>{{line}}</li>
+					{% endfor %}
+				</ul>
 			</div>
 		</div>
 	</div>
