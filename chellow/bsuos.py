@@ -1,5 +1,6 @@
 import atexit
 import collections
+import csv
 import threading
 import traceback
 from datetime import datetime as Datetime
@@ -139,17 +140,16 @@ class BsuosImporter(threading.Thread):
                             urls.update(_discover_urls(self.log))
 
                         url_list = sorted(urls)
-                        self.log("List of URLs to process: " + str(url_list))
+                        self.log(f"List of URLs to process: {url_list}")
                         for url in url_list:
-                            self.process_url(sess, url, contract)
+                            _process_url(self.log, sess, url, contract)
                     else:
                         self.log(
-                            "The automatic importer is disabled. To "
-                            "enable it, edit the contract properties to "
-                            "set 'enabled' to True."
+                            "The automatic importer is disabled. To enable it, edit "
+                            "the contract properties to set 'enabled' to True."
                         )
                 except BaseException:
-                    self.log("Outer problem " + traceback.format_exc())
+                    self.log(f"Outer problem {traceback.format_exc()}")
                     self.global_alert = (
                         "There's a problem with the BSUoS automatic importer."
                     )
@@ -163,44 +163,111 @@ class BsuosImporter(threading.Thread):
             self.going.wait(60 * 60 * 24)
             self.going.clear()
 
-    def process_url(self, sess, url, contract):
-        self.log("Checking to see if there's any new data at " + url)
-        res = requests.get(url)
-        self.log("Received " + str(res.status_code) + " " + res.reason)
+
+def _find_file_type(disp):
+    # Content-Disposition: form-data; name="fieldName"; filename="filename.jpg"
+    filetype = "csv"
+    if disp is not None:
+        fields = dict(v.strip().lower().split("=") for v in disp.split(";") if "=" in v)
+        if "filename" in fields:
+            filetype = fields["filename"].split(".")[-1][:-1]
+
+    return filetype
+
+
+def _process_url(logger, sess, url, contract):
+    logger(f"Checking to see if there's any new data at {url}")
+    res = requests.get(url)
+    content_disposition = res.headers.get("Content-Disposition")
+    logger(f"Received {res.status_code} {res.reason} {content_disposition}")
+    cache = {}
+    parsed_rows = []
+
+    filetype = _find_file_type(content_disposition)
+    if filetype == "csv":
+        reader = csv.reader(res.text.splitlines())
+        next(reader)  # Skip titles
+
+        for row in reader:
+            date_str = row[0]
+            date = Datetime.strptime(date_str, "%d/%m/%Y")
+            period_str = row[1]
+            period = int(period_str)
+            price_str = row[2]
+            price = Decimal(price_str)
+            run = row[5]
+            parsed_rows.append((date, period, price, run))
+
+    elif filetype == "xls":
         book = xlrd.open_workbook(file_contents=res.content)
         sheet = book.sheet_by_index(0)
-        cache = {}
 
         for row_index in range(1, sheet.nrows):
             row = sheet.row(row_index)
 
-            raw_date_val = row[0].value
-            if isinstance(raw_date_val, float):
-                raw_date = Datetime(*xlrd.xldate_as_tuple(raw_date_val, book.datemode))
-            elif isinstance(raw_date_val, str):
-                separator = raw_date_val[2]
+            date_val = row[0].value
+            if isinstance(date_val, float):
+                date = Datetime(*xlrd.xldate_as_tuple(date_val, book.datemode))
+            elif isinstance(date_val, str):
+                separator = date_val[2]
                 fmat = separator.join(("%d", "%m", "%Y"))
-                raw_date = Datetime.strptime(raw_date_val, fmat)
+                date = Datetime.strptime(date_val, fmat)
             else:
-                raise BadRequest(
-                    "Type of date field " + str(raw_date_val) + " not recognized."
-                )
+                raise BadRequest(f"Type of date field {date_val} not recognized.")
 
-            hh_date_ct = to_ct(raw_date)
-            hh_date_ct += relativedelta(minutes=30 * (int(row[1].value) - 1))
-            hh_date = to_utc(hh_date_ct)
+            period = int(row[1].value)
             price = Decimal(str(row[2].value))
             run = row[5].value
+            parsed_rows.append((date, period, price, run))
+    else:
+        raise BadRequest(f"The file extension {filetype} is not recognised.")
+
+    for date, period, price, run in parsed_rows:
+        hh_date_ct = to_ct(date)
+        hh_date_ct += relativedelta(minutes=30 * (period - 1))
+        hh_date = to_utc(hh_date_ct)
+
+        try:
+            rs, rates, rts = cache[hh_date.year][hh_date.month]
+        except KeyError:
+            _save_cache(sess, cache)
 
             try:
-                rs, rates, rts = cache[hh_date.year][hh_date.month]
+                yr_cache = cache[hh_date.year]
             except KeyError:
-                _save_cache(sess, cache)
+                yr_cache = cache[hh_date.year] = {}
 
-                try:
-                    yr_cache = cache[hh_date.year]
-                except KeyError:
-                    yr_cache = cache[hh_date.year] = {}
+            rs = (
+                sess.query(RateScript)
+                .filter(
+                    RateScript.contract == contract,
+                    RateScript.start_date <= hh_date,
+                    or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= hh_date,
+                    ),
+                )
+                .first()
+            )
+            while rs is None:
+                logger(f"There's no rate script at {hh_format(hh_date)}.")
+                latest_rs = (
+                    sess.query(RateScript)
+                    .filter(RateScript.contract == contract)
+                    .order_by(RateScript.start_date.desc())
+                    .first()
+                )
+                contract.update_rate_script(
+                    sess,
+                    latest_rs,
+                    latest_rs.start_date,
+                    latest_rs.start_date + relativedelta(months=2) - HH,
+                    loads(latest_rs.script),
+                )
+                new_rs_start = latest_rs.start_date + relativedelta(months=1)
+                contract.insert_rate_script(sess, new_rs_start, {})
+                sess.commit()
+                logger(f"Added a rate script starting at {hh_format(new_rs_start)}.")
 
                 rs = (
                     sess.query(RateScript)
@@ -214,70 +281,34 @@ class BsuosImporter(threading.Thread):
                     )
                     .first()
                 )
-                while rs is None:
-                    self.log("There's no rate script at " + hh_format(hh_date) + ".")
-                    latest_rs = (
-                        sess.query(RateScript)
-                        .filter(RateScript.contract == contract)
-                        .order_by(RateScript.start_date.desc())
-                        .first()
-                    )
-                    contract.update_rate_script(
-                        sess,
-                        latest_rs,
-                        latest_rs.start_date,
-                        latest_rs.start_date + relativedelta(months=2) - HH,
-                        loads(latest_rs.script),
-                    )
-                    new_rs_start = latest_rs.start_date + relativedelta(months=1)
-                    contract.insert_rate_script(sess, new_rs_start, {})
-                    sess.commit()
-                    self.log(
-                        "Added a rate script starting at "
-                        + hh_format(new_rs_start)
-                        + "."
-                    )
 
-                    rs = (
-                        sess.query(RateScript)
-                        .filter(
-                            RateScript.contract == contract,
-                            RateScript.start_date <= hh_date,
-                            or_(
-                                RateScript.finish_date == null(),
-                                RateScript.finish_date >= hh_date,
-                            ),
-                        )
-                        .first()
-                    )
-
-                rates = loads(rs.script)
-                try:
-                    rts = rates["rates_gbp_per_mwh"]
-                except KeyError:
-                    rts = rates["rates_gbp_per_mwh"] = {}
-                yr_cache[hh_date.month] = rs, rates, rts
-
-            key = key_format(hh_date)
+            rates = loads(rs.script)
             try:
-                existing = rts[key]
+                rts = rates["rates_gbp_per_mwh"]
             except KeyError:
-                existing = rts[key] = {}
+                rts = rates["rates_gbp_per_mwh"] = {}
+            yr_cache[hh_date.month] = rs, rates, rts
 
-            if run not in existing:
-                existing[run] = price
-                self.log(
-                    "Added rate at " + hh_format(hh_date) + " for run " + run + "."
-                )
+        key = key_format(hh_date)
+        try:
+            existing = rts[key]
+        except KeyError:
+            existing = rts[key] = {}
 
-        _save_cache(sess, cache)
-        book = sheet = None
+        if run not in existing:
+            existing[run] = price
+            logger(f"Added rate at {hh_format(hh_date)} for run {run}.")
+
+    _save_cache(sess, cache)
 
 
 def _discover_urls(logger):
     host = "https://www.nationalgrideso.com"
-    page = host + "/charging/balancing-services-use-system-bsuos-charges"
-    logger("Searching for URLs on " + page)
+    page = (
+        f"{host}/industry-information/charging/"
+        "balancing-services-use-system-bsuos-charges"
+    )
+    logger(f"Searching for URLs on {page}")
     urls = set()
     res = requests.get(page)
     src = res.text
