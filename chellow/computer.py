@@ -921,7 +921,7 @@ class SupplySource(DataSource):
 
         if self.supply.dno.dno_code in self.era_map_dnos:
             self.dno_code = self.era_map_dnos[self.supply.dno.dno_code]
-            self.dno = Party.get_dno_by_code(sess, self.dno_code)
+            self.dno = Party.get_dno_by_code(sess, self.dno_code, self.start_date)
         else:
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
