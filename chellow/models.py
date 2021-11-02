@@ -2992,6 +2992,16 @@ class Era(Base, PersistentClass):
         self.msn = msn.strip()
         self.pc = pc
         self.ssc = ssc
+
+        if pc.code == "00" and ssc is not None:
+            raise BadRequest(
+                "A supply with Profile Class 00 can't have a Standard Settlement "
+                "Configuration."
+            )
+        if pc.code != "00" and ssc is None:
+            raise BadRequest(
+                "A NHH supply must have a Standard Settlement Configuration."
+            )
         self.energisation_status = energisation_status
 
         if isinstance(properties, dict):
@@ -3135,16 +3145,6 @@ class Era(Base, PersistentClass):
         if hh_before(mop_contract.finish_date(), finish_date):
             raise BadRequest(
                 f"The MOP contract {mop_contract.id} finishes before the era."
-            )
-
-        if pc.code == "00" and ssc is not None:
-            raise BadRequest(
-                "A supply with Profile Class 00 can't have a Standard Settlement "
-                "Configuration."
-            )
-        if pc.code != "00" and ssc is None:
-            raise BadRequest(
-                "A NHH supply must have a Standard Settlement Configuration."
             )
 
         try:

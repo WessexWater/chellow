@@ -1941,7 +1941,6 @@ def supplier_contract_add_get():
 
 @views.route("/supplier_contracts/<int:contract_id>")
 def supplier_contract_get(contract_id):
-    print("starting to find supplier contracts")
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     rate_scripts = (
         g.sess.query(RateScript)
@@ -2553,7 +2552,7 @@ def era_edit_post(era_id):
             if len(ssc_code) == 0:
                 ssc = None
             else:
-                ssc = Ssc.get_by_code(g.sess, ssc_code)
+                ssc = Ssc.get_by_code(g.sess, ssc_code, start_date)
 
             if "imp_mpan_core" in request.values:
                 imp_mpan_core_raw = req_str("imp_mpan_core")
