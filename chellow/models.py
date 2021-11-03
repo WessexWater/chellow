@@ -2589,7 +2589,7 @@ class Ssc(Base, PersistentClass):
 
     @staticmethod
     def find_by_code(sess, code, date):
-        code = code.zfill(4)
+        code = code.strip().zfill(4)
         q = select(Ssc).where(Ssc.code == code)
         if date is None:
             q = q.where(Ssc.valid_to == null())

@@ -1145,8 +1145,9 @@ def site_edit_post(site_id):
             site.update(code, name)
             g.sess.commit()
             flash("Site updated successfully.")
-            return chellow_redirect("/sites/" + str(site.id), 303)
+            return chellow_redirect(f"/sites/{site.id}", 303)
         elif "insert_electricity" in request.form:
+            start_date = req_date("start")
             name = req_str("name")
             source_id = req_int("source_id")
             source = Source.get_by_id(g.sess, source_id)
@@ -1167,9 +1168,8 @@ def site_edit_post(site_id):
             comm_id = req_int("comm_id")
             comm = Comm.get_by_id(g.sess, comm_id)
             ssc_code = req_str("ssc_code")
-            ssc_code = ssc_code.strip()
             if len(ssc_code) > 0:
-                ssc = Ssc.get_by_code(g.sess, ssc_code)
+                ssc = Ssc.get_by_code(g.sess, ssc_code, start_date)
             else:
                 ssc = None
             energisation_status_id = req_int("energisation_status_id")
@@ -1177,7 +1177,6 @@ def site_edit_post(site_id):
                 g.sess, energisation_status_id
             )
             properties = req_zish("properties")
-            start_date = req_date("start")
             if "generator_type_id" in request.form:
                 generator_type_id = req_int("generator_type_id")
                 generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
