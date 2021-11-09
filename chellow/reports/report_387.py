@@ -6,7 +6,7 @@ import traceback
 
 from flask import g
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
 
 import chellow.computer
@@ -29,114 +29,125 @@ def content(supply_id, start_date, finish_date, user):
 
         forecast_date = chellow.computer.forecast_date()
 
-        prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(
             f"supply_virtual_bills_hh_{supply_id}.csv", user
         )
         f = open(running_name, mode="w", newline="")
         w = csv.writer(f, lineterminator="\n")
 
+        mop_titles = []
+        dc_titles = []
+        imp_supplier_titles = []
+        exp_supplier_titles = []
+
+        for era in sess.execute(
+            select(Era).where(
+                Era.supply == supply,
+                Era.start_date <= finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            )
+        ).scalars():
+
+            ds = chellow.computer.SupplySource(
+                sess, era.start_date, era.start_date, forecast_date, era, True, caches
+            )
+
+            for t in ds.contract_func(era.mop_contract, "virtual_bill_titles")():
+                if t not in mop_titles:
+                    mop_titles.append(t)
+
+            for t in ds.contract_func(era.dc_contract, "virtual_bill_titles")():
+                if t not in dc_titles:
+                    dc_titles.append(t)
+
+            if era.imp_supplier_contract is not None:
+                for t in ds.contract_func(
+                    era.imp_supplier_contract, "virtual_bill_titles"
+                )():
+                    if t not in imp_supplier_titles:
+                        imp_supplier_titles.append(t)
+
+            if era.exp_supplier_contract is not None:
+                ds = chellow.computer.SupplySource(
+                    sess,
+                    era.start_date,
+                    era.start_date,
+                    forecast_date,
+                    era,
+                    False,
+                    caches,
+                )
+                for t in ds.contract_func(
+                    era.exp_supplier_contract, "virtual_bill_titles"
+                )():
+                    if t not in exp_supplier_titles:
+                        exp_supplier_titles.append(t)
+
+        titles = [
+            "mpan_core",
+            "site_code",
+            "site_name",
+            "hh_start",
+        ]
+        for pref, t in (
+            ("mop", mop_titles),
+            ("dc", dc_titles),
+            ("imp_supplier", imp_supplier_titles),
+            ("exp_supplier", exp_supplier_titles),
+        ):
+            titles.append("")
+            titles.extend([f"{pref}_{n}" for n in t])
+
+        w.writerow(titles)
+
         for hh_start in hh_range(caches, start_date, finish_date):
-            era = (
-                sess.query(Era)
-                .filter(
+            era = sess.execute(
+                select(Era).where(
                     Era.supply == supply,
                     Era.start_date <= hh_start,
                     or_(Era.finish_date == null(), Era.finish_date >= hh_start),
                 )
-                .one()
-            )
+            ).scalar_one()
 
-            site = (
-                sess.query(Site)
+            site = sess.execute(
+                select(Site)
                 .join(SiteEra)
-                .filter(SiteEra.era == era, SiteEra.is_physical == true())
-                .one()
-            )
+                .where(SiteEra.era == era, SiteEra.is_physical == true())
+            ).scalar_one()
 
             ds = chellow.computer.SupplySource(
                 sess, hh_start, hh_start, forecast_date, era, True, caches
             )
 
-            titles = ["MPAN Core", "Site Code", "Site Name", "Account", "HH Start", ""]
-
-            output_line = [
-                ds.mpan_core,
-                site.code,
-                site.name,
-                ds.supplier_account,
-                hh_format(ds.start_date),
-                "",
-            ]
-
-            mop_titles = ds.contract_func(era.mop_contract, "virtual_bill_titles")()
-            titles.extend(["mop-" + t for t in mop_titles])
+            vals = {
+                "mpan_core": ds.mpan_core,
+                "site_code": site.code,
+                "site_name": site.name,
+                "hh_start": hh_format(ds.start_date),
+            }
 
             ds.contract_func(era.mop_contract, "virtual_bill")(ds)
-            bill = ds.mop_bill
-            for title in mop_titles:
-                output_line.append(csv_make_val(bill.get(title, "")))
-                if title in bill:
-                    del bill[title]
-            for k in sorted(bill.keys()):
-                output_line.extend([k, csv_make_val(bill[k])])
-
-            output_line.append("")
-            dc_titles = ds.contract_func(era.dc_contract, "virtual_bill_titles")()
-            titles.append("")
-            titles.extend(["dc-" + t for t in dc_titles])
+            for k, v in ds.mop_bill.items():
+                vals[f"mop_{k}"] = v
 
             ds.contract_func(era.dc_contract, "virtual_bill")(ds)
-            bill = ds.dc_bill
-            for title in dc_titles:
-                output_line.append(csv_make_val(bill.get(title, "")))
-                if title in bill:
-                    del bill[title]
-
-            for k in sorted(bill.keys()):
-                output_line.extend([k, csv_make_val(bill[k])])
+            for k, v in ds.dc_bill.items():
+                vals[f"dc_{k}"] = v
 
             if era.imp_supplier_contract is not None:
-                contract = era.imp_supplier_contract
-                output_line.append("")
-                supplier_titles = ds.contract_func(contract, "virtual_bill_titles")()
-                titles.append("")
-                titles.extend(["imp-supplier-" + t for t in supplier_titles])
-
-                ds.contract_func(contract, "virtual_bill")(ds)
-                bill = ds.supplier_bill
-                for title in supplier_titles:
-                    output_line.append(csv_make_val(bill.get(title, "")))
-                    if title in bill:
-                        del bill[title]
-
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, csv_make_val(bill[k])])
+                ds.contract_func(era.imp_supplier_contract, "virtual_bill")(ds)
+                for k, v in ds.supplier_bill.items():
+                    vals[f"imp_supplier_{k}"] = v
 
             if era.exp_supplier_contract is not None:
-                contract = era.exp_supplier_contract
                 ds = chellow.computer.SupplySource(
                     sess, hh_start, hh_start, forecast_date, era, False, caches
                 )
-                output_line.append("")
-                supplier_titles = ds.contract_func(contract, "virtual_bill_titles")()
-                titles.append("")
-                titles.extend(["exp-supplier-" + t for t in supplier_titles])
+                ds.contract_func(era.exp_supplier_contract, "virtual_bill")(ds)
+                for k, v in ds.supplier_bill.items():
+                    vals[f"exp_supplier_{k}"] = v
 
-                ds.contract_func(contract, "virtual_bill")(ds)
-                bill = ds.supplier_bill
-                for title in supplier_titles:
-                    output_line.append(csv_make_val(bill.get(title, "")))
-                    if title in bill:
-                        del bill[title]
-
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, csv_make_val(bill[k])])
-
-            if titles != prev_titles:
-                prev_titles = titles
-                w.writerow(titles)
-            w.writerow(output_line)
+            w.writerow([csv_make_val(vals.get(t)) for t in titles])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
