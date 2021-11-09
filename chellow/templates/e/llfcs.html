@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; LLFCs
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; LLFCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Line Loss Factor Classes</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Description</th>
+							<th>Voltage Level</th>
+							<th>Is Substation?</th>
+							<th>Is Import?</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for llfc in llfcs %}
+							<tr>
+								<td>
+									<a href="/e/llfcs/{{llfc.id}}">{{llfc.code}}</a>
+								</td>
+								<td>{{llfc.description}}</td>
+								<td>
+									{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}
+								</td>
+								<td>
+									{% if llfc.is_substation %}
+										Has Substation
+									{% else %}
+										No Substation
+									{% endif %}
+								</td>
+								<td>
+									{% if llfc.is_import %}
+										Import
+									{% else %}
+										Export
+									{% endif %}
+								</td>
+								<td>{{llfc.valid_from|hh_format}}</td>
+								<td>{{llfc.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

@@ -26,7 +26,7 @@ from chellow.models import (
     Supply,
 )
 from chellow.utils import req_bool
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 FNAME = "ecoes_comparison"

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Market Participants
+{% endblock %}
+
+{% block nav %}
+	Market Participants
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Market Participants</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table>
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Name</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for participant in participants %}
+						<tr>
+							<td>
+								<a href="/e/participants/{{participant.id}}">{{participant.code}}</a>
+							</td>
+							<td>{{participant.name}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
+{% endblock %}

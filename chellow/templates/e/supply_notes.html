@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo;  {{supply.id}} &raquo; Notes
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a>  &raquo;
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a>  &raquo;
+	Notes [<a href="/e/supplies/{{supply.id}}/notes/add">add</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Notes</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap widthAuto">
+					<table class="DataTable">
+						<thead>
+							<tr>
+								<th>Edit</th>
+								<th>Category</th>
+								<th>Importance</th>
+								<th>Body</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for note in supply_note.notes %}
+								<tr>
+									<td>
+										[<a
+												href="/e/supplies/{{supply.id}}/notes/{{loop.index0}}/edit"
+												>edit</a>]
+									</td>
+									<td>{{note.category}}</td>
+									<td>
+										{% if note.is_important %}
+											High
+										{% else %}
+											Low
+										{% endif %}
+									</td>
+									<td>
+										<pre style=" white-space: pre-wrap;">{{note.body}}</pre>
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

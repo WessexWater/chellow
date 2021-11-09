@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; CSV Supplies HH Duration
+{% endblock %}
+
+{% block nav %}
+	CSV Supplies HH Duration
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>48 Column Format</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<form action="/reports/169" method='post'>
+					<fieldset>
+						<div class="standardForm textWidthAuto inlineFormSubmit">
+							<select name="imp_related">
+								{{input_option('imp_related', 'true', 'Import')}}
+								{{input_option('imp_related', 'false', 'Export')}}
+							</select>
+							<select name="channel_type">
+								{{input_option('channel_type', 'ACTIVE', 'ACTIVE')}}
+								{{input_option('channel_type', 'REACTIVE_IMP', 'REACTIVE_IMP')}}
+								{{input_option('channel_type', 'REACTIVE_EXP', 'REACTIVE_EXP')}}
+							</select> from {{input_date('start', start_date)}} to
+							{{input_date('finish', finish_date)}}
+							<label>{{input_checkbox('is_zipped', False)}} Zipped?</label> 
+							<br>
+							MPAN Cores (one on each line, includes all supplies if left
+							blank)<br>
+							{{input_textarea('mpan_cores', '', 5, 40)}}    						
+						</div>
+						<input type="submit" value="Download">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>HH Per Row Format</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			
+			<form action="/reports/187" method='post'>
+				<fieldset>
+					<div class="standardForm textWidthAuto inlineFormSubmit">
+						<label>From</label> {{input_date('start', start_date)}}
+						<label>to</label> {{input_date('finish', finish_date)}}
+						<label>{{input_checkbox('is_zipped', False)}} Zipped?</label> 
+						<br>
+						MPAN Cores (one on each line, includes all supplies if left
+						blank)<br>
+						{{input_textarea('mpan_cores', '', 5, 40)}}
+					</div>
+					<input type="submit" value="Download">
+				</fieldset>
+			</form>
+			
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
+	<br><br>
+	
+{% endblock %}

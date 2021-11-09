@@ -36,7 +36,7 @@ from chellow.utils import (
     req_bool,
     req_int,
 )
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{contract.name}}
+{% endblock %}
+
+{% block nav %}
+		<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+		<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
+		&raquo; Edit
+{% endblock %}
+
+{% block content %}
+
+	{% if request.method == 'GET' and request.values.delete %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete this contract?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post">
+							<fieldset>
+								<input type="hidden" name="supplier_contract_id"
+							 	value="{{contract.id}}">
+								<input type="submit" name="delete" value="Delete">
+								<a class="btn" href="/e/supplier_contracts/{{contract.id}}/edit"
+									>Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+	{% else %}
+	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Update Contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form method="post">
+						<fieldset>
+						<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+							<div class="row">
+								<div class="col-sm-6">
+									<label>Party</label>
+									<select name="party_id">
+										{% for party in parties %}
+											{{ input_option('party_id', party.id, party.participant.code + ' : ' + party.name, contract.party.id) }}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6">
+									<label>Name</label>
+									{{input_text('name', contract.name)}}
+								</div>
+							</div>	
+							Charge script
+							<br>
+							{{input_textarea('charge_script', contract.charge_script, 40, 80)}}
+							<br>
+							<br>
+							Properties
+							<br>
+							{{input_textarea('properties', contract.properties, 20, 80)}}
+							<br />
+							<br />
+							<input type="submit" value="Update">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Delete this contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form>
+						<fieldset>
+							<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	{% endif %}
+{% endblock %}

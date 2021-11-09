@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; TPRs
+{% endblock %}
+
+{% block nav %}
+	TPRs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>TPRs</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<ul>
+					{% for tpr in tprs %}
+						<li>
+							<a href="/e/tprs/{{tpr.id}}">{{tpr.code}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

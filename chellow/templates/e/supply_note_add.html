@@ -1,0 +1,38 @@
+	{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{supply.id}} &raquo; Notes &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a>  &raquo;
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a>  &raquo;
+	<a href="/e/supplies/{{supply.id}}/notes">Notes</a>  &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Note</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<div class="row">
+						<div class="col-sm-6">
+							<form method="post">
+								<input type="hidden" name="supply_id" value="{{supply.id}}">
+								Category {{input_text('category')}}
+								<br>
+								Important?{{input_checkbox('is_important')}}
+								<br>
+								{{input_textarea('body', '', 30, 80)}}
+							<input type="submit" value="Add">
+							</form>	
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

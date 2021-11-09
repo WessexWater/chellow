@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{batch.contract.name}} &raquo;
+ 	Batches &raquo; {{batch.reference}} &raquo;
+ 	Bill Imports &raquo; {{importer_id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/e/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo; 
+	<a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
+ 	{{importer_id}}
+{% endblock %}
+
+{% block content %}
+    <!-- Layer Section -->
+    <div class="layer-section">
+    	<!-- Section Content -->
+    	<div class="section-content">
+    	    {% if is_alive %}
+        		<div class="section-data">
+            		<p>Still running. Refresh the page to see latest progress.</p>
+        		</div>
+    		{% endif %}
+    		<div class="section-data">
+    		    {% if status is defined %}
+    		        <p>{{status}}</p>
+            	{% endif %}
+    		    <ul>
+            		{% for msg in log %}
+            			<li>{{msg}}</li>
+            		{% endfor %}
+            	</ul>
+    		</div>
+    		{% if failed_bills|length > 0 %}
+        		<div class="section-data">
+        		    <table class="DataTable widthAuto">
+            			<caption>Failed Bills</caption>
+            			<thead>
+            				<tr>
+            					{% for k, v in failed_bills[0]|dictsort %}
+            						<th>{{k}}</th>
+            					{% endfor %}
+            				</tr>
+            			</thead>
+            			<tbody>
+            				{% for bill in failed_bills %}
+            					<tr>
+            						{% for k, v in bill|dictsort %}
+            							<td>{{bill[k]}}</td>
+            						{% endfor %}
+            					</tr>
+            				{% endfor %}
+            			</tbody>
+            		</table>
+        		</div>
+        	{% endif %}
+        	{% if successful_bills|length > 0 %}
+        		<div class="section-data">
+        		    <table class="DataTable widthAuto">
+            			<caption>Successful Bills</caption>
+            			<thead>
+            				<tr>
+            					<th>Reference</th>
+            					<th>Account</th>
+            					<th>Bill Type</th>
+            					<th>MPAN Core</th>
+            					<th>Issue Date</th>
+            					<th>Start Date</th>
+            					<th>Finish Date</th>
+            					<th>kWh</th>
+            					<th>Net</th>
+            					<th>VAT</th>
+            					<th>Gross</th>
+            					<th>Breakdown</th>
+            				</tr>
+            			</thead>
+            			<tbody>
+            				{% for bill in successful_bills %}
+            					<tr>
+            						<td>{{bill.reference}}</td>
+            						<td>{{bill.account}}</td>
+            						<td>{{bill.bill_type_code}}</td>
+            						<td>{{bill.mpan_core}}</td>
+            						<td>{{bill.issue_date|hh_format}}</td>
+            						<td>{{bill.start_date|hh_format}}</td>
+            						<td>{{bill.finish_date|hh_format}}</td>
+            						<td>{{bill.kwh}}</td>
+            						<td>{{bill.net}}</td>
+            						<td>{{bill.vat}}</td>
+            						<td>{{bill.gross}}</td>
+            						<td>{{bill.breakdown|dumps}}</td>
+            					</tr>
+            				{% endfor %}
+            			</tbody>
+            		</table>
+        		</div>
+        	{% endif %}
+    	</div>
+    	<!-- End Section Content -->
+    </div>
+    <!-- End Layer Section -->
+	
+{% endblock %}

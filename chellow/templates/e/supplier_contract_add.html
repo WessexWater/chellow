@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="standardForm">
+				<form action="" method="post">
+					<fieldset>
+						<div class="section-data">
+							<div class="row">
+								<div class="col-sm-6">
+									<label>Supplier</label>
+									<select name="participant_id">
+										{% for party in parties %}
+											{{input_option('participant_id', party.participant.id, party.participant.code + ' ' + party.name)}}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6">
+									<label>Name</label>
+									{{input_text('name')}}
+								</div>
+							</div>							
+						</div>		
+						<div class="section-data">
+							<div class="standardForm textWidthAuto">
+								<fieldset>
+									<legend>Start Date</legend>
+									{{input_date('start')}}
+								</fieldset>
+							</div>
+						</div>			
+						<div class="section-data">
+							<fieldset>
+								Charge script
+								<br>
+								{{input_textarea('charge_script', '', 40, 80)}}
+								<br>
+								<br>
+								Properties
+								<br>
+								{{input_textarea('properties', '{}', 20, 80)}}
+								<br />
+								<input type="submit" value="Update">
+							</fieldset>
+
+							<input type="submit" value="Add">
+						</div>		
+					</fieldset>	
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

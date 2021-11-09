@@ -15,7 +15,7 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 from chellow.models import Contract, Era, ReportRun, Session, Site, SiteEra
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 STATUSES_ACTIVE = ("IN USE / IN SERVICE", "STORED SPARE")
 STATUSES_INACTIVE = ("DEMOLISHED", "SOLD", "ABANDONED")

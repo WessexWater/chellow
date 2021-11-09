@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Batches &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/dc_batches?dc_contract_id={{contract.id}}">Batches</a> &raquo; 
+	Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a batch</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<input type="hidden" name="dc_contract_id" value="{{ contract.id }}">
+				<form action="/e/dc_contracts/{{contract.id}}/add_batch" method="post">
+					<fieldset class="grid">
+						<label>Reference</label>
+						{{input_text('reference', next_batch_reference, required=True)}}
+							
+						<label>Description</label>
+						{{input_text('description', '',
+						placeholder=next_batch_description)}}
+
+						<input type="submit" value="Add">
+					</fieldset>
+				</form>
+			</div>	
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Existing Batches</h2>
+		</div>	
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap">
+					<table class="DataTable widthAuto noMarginBottom">
+						<thead>
+							<tr>
+								<th>Reference</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for batch in batches %}
+								<tr>
+									<td>{{batch.reference}}</td>
+									<td>{{batch.description}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

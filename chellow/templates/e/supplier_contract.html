@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; {{contract.name}}
+ 	[<a href="/e/supplier_contracts/{{contract.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Supplier Contract</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Name</th>
+							<td>{{contract.name }}</td>
+						</tr>
+						<tr>
+							<th>Supplier</th>
+							<td>
+								<a
+										href="/e/parties/{{contract.party.id}}"
+										>{{contract.party.name}}</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<caption>Rate Scripts
+				[<a
+						href="/e/supplier_contracts/{{contract.id}}/add_rate_script"
+						>add</a>]</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<th>From</th>
+							<th>To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for rate_script in rate_scripts %}
+							<tr>
+								<td>
+									<a href="/e/supplier_rate_scripts/{{rate_script.id}}">view</a>
+								</td>
+								<td>{{rate_script.start_date|hh_format}}</td>
+								<td>{{rate_script.finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>	
+			</div>
+			<div class="section-data">
+				<ul>
+					<li>
+						<a
+								href="/e/supplier_batches?supplier_contract_id={{contract.id}}"
+								>Batches</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>CSV Downloads</h2>	
+		</div>
+		<div class="section-content">
+			<div class="standardForm textWidthAuto">
+				<div class="section-data">
+					<form action="/reports/87">
+						<fieldset>
+							<input
+									type="hidden" name="supplier_contract_id"
+									value="{{contract.id}}">
+							<legend>Download Supply Level Virtual Bills</legend>
+							<br>
+							From {{ input_date('start', month_start) }} to
+							{{ input_date('finish', month_finish) }}
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+				<div class="section-data">
+					<form action="/reports/109">
+						<fieldset>
+							<input
+									type="hidden" name="supplier_contract_id"
+									value="{{contract.id}}">
+							<legend>Download Displaced Virtual Bills</legend>
+							<br/>
+							For <input name="months" value="1" maxlength="2" size="2">
+							month(s) until the end of
+							{{ input_date('finish', month_finish, 'month') }} in
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+				<div class="section-data">
+					<form action="/reports/111" method="POST">
+						<fieldset>
+							<input type="hidden" name="contract_id" value="{{contract.id}}">
+							<legend>Download Bill Check</legend>
+							<br>
+							From {{input_date('start_date', month_start)}} to
+							{{input_date('finish_date', month_finish)}}
+							<br>
+							<label>MPAN Cores</label><br>
+							{{input_textarea('mpan_cores', '', 5, 40, placeholder='One on each line, includes all if left blank')}}
+							<br>
+							<br>
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+			<pre>{{contract.charge_script}}</pre>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2 id="properties">Properties</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+			<pre>{{contract.properties}}</pre>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{supply.id}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.delete %}	
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Are you sure you want to delete this supply?</h2>
+		</div>
+		<div class="section-content">
+			<div class="standardForm">
+				<div class="section-data">
+					<form method="post">
+						<fieldset>						
+							<input type="submit" name="delete" value="Delete">
+							<a class="btn" href="/supplies/{{supply.id}}/edit">Cancel</a>
+						</fieldset>
+					</form>
+				</div>			
+			</div>
+		</div>
+	</div>
+	{% else %}
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="standardForm">
+				<div class="section-data">
+					<form method="post">
+						<fieldset>
+							<legend>Update this supply</legend>
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							<div class="row">
+								<div class="col-sm-4">
+									<label>Name</label> {{input_text('name', supply.name)}}
+								</div>
+								<div class="col-sm-4">
+									<label>Source</label>
+									<select name="source_id">
+									{% for source in sources %}
+									{{input_option('source_id', source.id, source.code, supply.source.id)}}
+									{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-4">
+									<label>Generator Type</label>
+									<select name="generator_type_id">
+									{% for generator_type in generator_types %}
+									{{input_option('generator_type_id', generator_type.id, generator_type.code, supply.generator_type.id)}}
+									{% endfor %}
+									</select>
+									<label>* if source is 'gen' or 'gen-net'</label>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-sm-4">
+									<label>GSP Group</label>
+									<select name="gsp_group_id">
+									{% for gsp_group in gsp_groups %}
+									{{input_option('gsp_group_id', gsp_group.id, gsp_group.code + ' '  + gsp_group.description, supply.gsp_group.id)}}
+									{% endfor %}
+									</select>
+								</div>
+							</div>							
+							<input type="submit" value="Update">
+						</fieldset>
+					</form>
+				</div>		
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="standardForm">
+				<div class="section-data">
+					<form>
+						<fieldset>
+							<legend>Delete this supply</legend>
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>					
+				</div>			
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-content">
+			<div class="standardForm textWidthAuto">
+				<div class="section-data">
+					<form method="post">
+						<fieldset>
+							<legend>Insert a new era</legend>
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							<label>Start date</label> {{input_date('start', None)}}
+							<input type="submit" name="insert_era" value="Insert">
+						</fieldset>
+					</form>
+				</div>							
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Existing Eras</h2>
+		</div>
+		<div class="section-content">		
+			<div class="section-data">
+				<div class="noWrap widthAuto">
+					<table class="DataTable widthAuto">
+						<thead>
+							<tr>
+								<th>Start date</th>
+								<th>Finish date</th>
+								<th>Import Mpan Core</th>
+								<th>Export Mpan Core</th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for era in eras %}
+							<tr>
+								<td>{{era.start_date|hh_format}}</td>
+								<td>{{era.finish_date|hh_format}}</td>
+								<td>
+									{% if era.imp_mpan_core %}
+									{{era.imp_mpan_core}}
+									{% endif %}
+								</td>
+								<td>
+									{% if era.exp_mpan_core %}
+									{{era.exp_mpan_core}}
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>									
+		</div>
+	</div>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a MOP contract</h2>
+		</div>
+		<div class="section-content">
+			<div class="standardForm">
+				<form method="post">
+					<fieldset>
+						<div class="section-data">
+							<div class="row">
+								<div class="col-sm-6">
+									<label>
+										Participant
+										<select name="participant_id">
+											{% for party in parties %}
+												{{ input_option('participant_id', party.participant.id,
+														party.participant.code + " : " + party.name) }}
+											{% endfor %}
+										</select>
+									</label>
+								</div>
+								<div class="col-sm-6">
+									<label>
+										Name {{input_text('name')}}
+									</label>
+								</div>
+							</div>
+						</div>
+						<div class="section-data">
+							<fieldset>
+								<div class="standardForm textWidthAuto">
+									<legend>Start Date</legend>
+									{{ input_date('start') }}
+								</div>
+							</fieldset>
+							<input type="submit" value="Add">
+						</div>
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

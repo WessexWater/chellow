@@ -31,10 +31,8 @@ from chellow.models import (
     HhDatum,
     Llfc,
     MarketRole,
-    MeterPaymentType,
     MeterType,
     OldMtc,
-    OldValidMtcLlfcSscPc,
     Participant,
     Party,
     Pc,
@@ -139,7 +137,7 @@ def general_import_era(sess, action, vals, args):
 
         mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 10)
         if mtc_code == NO_CHANGE:
-            mtc = era.mtc
+            mtc_participant = era.mtc_participant
         else:
             old_mtc = OldMtc.get_by_code(sess, supply.dno, mtc_code)
 
@@ -261,7 +259,7 @@ def general_import_era(sess, action, vals, args):
             dc_account,
             msn,
             pc,
-            mtc,
+            mtc_participant,
             cop,
             ssc,
             es,
@@ -658,10 +656,10 @@ def general_import_meter_type(sess, action, vals, args):
         valid_from = parse_hh_start(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 3)
         valid_to = parse_hh_start(valid_to_str)
-        mtc = MeterType(
+        meter_type = MeterType(
             code=code, description=description, valid_from=valid_from, valid_to=valid_to
         )
-        sess.add(mtc)
+        sess.add(meter_type)
         sess.flush()
 
     elif action == "update":
@@ -675,131 +673,6 @@ def general_import_meter_type(sess, action, vals, args):
         valid_to_str = add_arg(args, "Valid To", vals, 3)
         valid_to = parse_hh_start(valid_to_str)
         mt.valid_to = valid_to
-        sess.flush()
-
-
-def general_import_mtc(sess, action, vals, args):
-    if action == "insert":
-        dno_code = add_arg(args, "DNO Code", vals, 0)
-        if dno_code == "":
-            dno = None
-        else:
-            dno = Party.get_dno_by_code(sess, dno_code)
-        code = add_arg(args, "Code", vals, 1)
-        description = add_arg(args, "Description", vals, 2)
-        has_related_metering_str = add_arg(args, "Has Related Metering?", vals, 3)
-        has_related_metering = parse_bool(has_related_metering_str)
-        has_comms_str = add_arg(args, "Has Comms?", vals, 4)
-        has_comms = parse_bool(has_comms_str)
-        is_hh_str = add_arg(args, "Is HH?", vals, 5)
-        is_hh = parse_bool(is_hh_str)
-        meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
-        meter_type = MeterType.get_by_code(sess, meter_type_code)
-        meter_payment_type_code = add_arg(args, "Meter Payment Type Code", vals, 7)
-        meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
-        tpr_count_str = add_arg(args, "TPR Count", vals, 8)
-        tpr_count = int(tpr_count_str)
-        valid_from_str = add_arg(args, "Valid From", vals, 9)
-        valid_from = parse_hh_start(valid_from_str)
-        valid_to_str = add_arg(args, "Valid To", vals, 10)
-        valid_to = parse_hh_start(valid_to_str)
-
-        old_mtc_query = sess.query(OldMtc).filter(
-            OldMtc.dno == dno,
-            OldMtc.code == code,
-            or_(OldMtc.valid_to == null(), OldMtc.valid_to >= valid_from),
-        )
-        if valid_to is not None:
-            old_mtc_query = old_mtc_query.filter(OldMtc.valid_from <= valid_to)
-        existing_old_mtc = old_mtc_query.first()
-        if existing_old_mtc is None:
-            old_mtc = OldMtc(
-                dno=dno,
-                code=code,
-                description=description,
-                has_related_metering=has_related_metering,
-                has_comms=has_comms,
-                is_hh=is_hh,
-                meter_type=meter_type,
-                meter_payment_type=meter_payment_type,
-                tpr_count=tpr_count,
-                valid_from=valid_from,
-                valid_to=valid_to,
-            )
-            sess.add(old_mtc)
-            sess.flush()
-        else:
-            raise BadRequest(
-                "There's already a MTC with this DNO and code for this period."
-            )
-
-    elif action == "update":
-        dno_code = add_arg(args, "DNO Code", vals, 0)
-        if dno_code == "":
-            dno = None
-        else:
-            dno = Party.get_dno_by_code(sess, dno_code)
-        code = add_arg(args, "Code", vals, 1)
-        old_mtc = OldMtc.get_by_code(sess, dno, code)
-
-        description = add_arg(args, "Description", vals, 2)
-        old_mtc.description = description
-        has_related_metering_str = add_arg(args, "Has Related Metering?", vals, 3)
-        has_related_metering = parse_bool(has_related_metering_str)
-        old_mtc.has_related_metering = has_related_metering
-        has_comms_str = add_arg(args, "Has Comms?", vals, 4)
-        has_comms = parse_bool(has_comms_str)
-        old_mtc.has_comms = has_comms
-        is_hh_str = add_arg(args, "Is HH?", vals, 5)
-        is_hh = parse_bool(is_hh_str)
-        old_mtc.is_hh = is_hh
-        meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
-        meter_type = MeterType.get_by_code(sess, meter_type_code)
-        old_mtc.meter_type = meter_type
-        meter_payment_type_code = add_arg(args, "Meter Payment Type Code", vals, 7)
-        meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
-        old_mtc.meter_payment_type = meter_payment_type
-        tpr_count_str = add_arg(args, "TPR Count", vals, 8)
-        tpr_count = int(tpr_count_str)
-        old_mtc.tpr_count = tpr_count
-        valid_from_str = add_arg(args, "Valid From", vals, 9)
-        valid_from = parse_hh_start(valid_from_str)
-        old_mtc.valid_from = valid_from
-        valid_to_str = add_arg(args, "Valid To", vals, 10)
-        valid_to = parse_hh_start(valid_to_str)
-        old_mtc.valid_to = valid_to
-        sess.flush()
-
-
-def general_import_participant(sess, action, vals, args):
-    if action == "insert":
-        participant_code = add_arg(args, "Participant Code", vals, 0)
-        participant_name = add_arg(args, "Participant Name", vals, 1)
-        participant = Participant(code=participant_code, name=participant_name)
-        sess.add(participant)
-        sess.flush()
-
-    elif action == "update":
-        participant_code = add_arg(args, "Participant Code", vals, 0)
-        participant = Participant.get_by_code(sess, participant_code)
-        participant_name = add_arg(args, "Participant Name", vals, 1)
-        participant.name = participant_name
-        sess.flush()
-
-
-def general_import_market_role(sess, action, vals, args):
-    if action == "insert":
-        role_code = add_arg(args, "Market Role Code", vals, 0)
-        role_description = add_arg(args, "Market Role Description", vals, 1)
-        role = MarketRole(code=role_code, description=role_description)
-        sess.add(role)
-        sess.flush()
-
-    elif action == "update":
-        role_code = add_arg(args, "Market Role Code", vals, 0)
-        role = MarketRole.get_by_code(sess, role_code)
-        role_description = add_arg(args, "Market Role Description", vals, 1)
-        role.description = role_description
         sess.flush()
 
 
@@ -1369,100 +1242,6 @@ def general_import_llfc(sess, action, vals, args):
         valid_from = parse_hh_start(valid_from_str)
 
         dno = Party.get_dno_by_code(sess, dno_code, valid_from)
-        llfc = (
-            sess.query(Llfc)
-            .filter(
-                Llfc.dno == dno, Llfc.code == llfc_code, Llfc.valid_from == valid_from
-            )
-            .first()
-        )
-        if llfc is None:
-            raise BadRequest(
-                f"Can't find an LLFC for the DNO {dno_code} and 'valid from' "
-                f"date {hh_format(valid_from)}."
-            )
-
-        llfc_description_str = add_arg(args, "llfc_description", vals, 3)
-        if llfc_description_str == NO_CHANGE:
-            llfc_description = llfc.description
-        else:
-            llfc_description = llfc_description_str
-
-        vl_code_str = add_arg(args, "voltage_level", vals, 4)
-        if vl_code_str == NO_CHANGE:
-            vl = llfc.voltage_level
-        else:
-            vl = VoltageLevel.get_by_code(sess, vl_code_str.upper())
-
-        is_substation_str = add_arg(args, "is_substation", vals, 5)
-        if is_substation_str == NO_CHANGE:
-            is_substation = llfc.is_substation
-        else:
-            is_substation = parse_bool(is_substation_str)
-
-        is_import_str = add_arg(args, "is_import", vals, 6)
-        if is_import_str == NO_CHANGE:
-            is_import = llfc.is_import
-        else:
-            is_import = parse_bool(is_import_str)
-
-        valid_to_str = add_arg(args, "valid_to", vals, 7)
-        if valid_to_str == NO_CHANGE:
-            valid_to = llfc.valid_to
-        else:
-            valid_to = parse_hh_start(valid_to_str)
-
-        llfc.update(
-            llfc_description, vl, is_substation, is_import, llfc.valid_from, valid_to
-        )
-        sess.flush()
-
-    elif action == "delete":
-        dno_code = add_arg(args, "dno_code", vals, 0)
-        dno = Party.get_dno_by_code(sess, dno_code)
-        llfc_code = add_arg(args, "llfc", vals, 1)
-        date_str = add_arg(args, "date", vals, 2)
-        date = parse_hh_start(date_str)
-
-        llfc = dno.get_llfc_by_code(sess, llfc_code, date)
-        sess.delete(llfc)
-        sess.flush()
-    else:
-        raise BadRequest("Action not recognized.")
-
-
-def general_import_valid_mtc_llfc_ssc_pc(sess, action, vals, args):
-    if action == "insert":
-        dno_code = add_arg(args, "dno_code", vals, 0)
-        dno = Party.get_dno_by_code(sess, dno_code)
-        old_mtc_code = add_arg(args, "mtc_code", vals, 1)
-        old_mtc_from_str = add_arg(args, "mtc_from", vals, 2)
-        old_mtc_from = parse_hh_start(old_mtc_from_str)
-        old_mtc = OldMtc.get_by_code(sess, dno, old_mtc_code, old_mtc_from)
-        llfc_code = add_arg(args, "llfc_code", vals, 3)
-        llfc_from_str = add_arg(args, "llfc_from", vals, 4)
-        llfc_from = parse_hh_start(llfc_from_str)
-        llfc = dno.get_llfc_by_code(sess, llfc_code, llfc_from)
-        ssc_code = add_arg(args, "ssc_code", vals, 5)
-        ssc_from_str = add_arg(args, "ssc_from", vals, 6)
-        ssc_from = parse_hh_start(ssc_from_str)
-        ssc = Ssc.get_by_code(sess, ssc_code, ssc_from)
-        pc_code = add_arg(args, "pc_code", vals, 7)
-        pc = Pc.get_by_code(sess, pc_code)
-        valid_from_str = add_arg(args, "valid_from", vals, 8)
-        valid_from = parse_hh_start(valid_from_str)
-        valid_to_str = add_arg(args, "valid_to", vals, 9)
-        valid_to = parse_hh_start(valid_to_str)
-
-        OldValidMtcLlfcSscPc.insert(sess, old_mtc, llfc, ssc, pc)
-
-    elif action == "update":
-        dno_code = add_arg(args, "dno", vals, 0)
-        dno = Party.get_dno_by_code(sess, dno_code)
-        llfc_code = add_arg(args, "llfc", vals, 1)
-        valid_from_str = add_arg(args, "valid_from", vals, 2)
-        valid_from = parse_hh_start(valid_from_str)
-
         llfc = (
             sess.query(Llfc)
             .filter(

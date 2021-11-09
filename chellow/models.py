@@ -38,8 +38,13 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, ProgrammingError, SQLAlchemyError
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import aliased, joinedload, relationship, sessionmaker
+from sqlalchemy.orm import (
+    aliased,
+    declarative_base,
+    joinedload,
+    relationship,
+    sessionmaker,
+)
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql.expression import false, true
@@ -386,18 +391,20 @@ class VoltageLevel(Base, PersistentClass):
         self.code = code
         self.name = name
 
-    @staticmethod
-    def insert(sess, code, name):
-        voltage_level = VoltageLevel(code, name)
+    @classmethod
+    def insert(cls, sess, code, name):
+        voltage_level = cls(code, name)
         sess.add(voltage_level)
         sess.flush()
         return voltage_level
 
     @staticmethod
     def get_by_code(sess, code):
-        vl = sess.query(VoltageLevel).filter_by(code=code).first()
+        vl = sess.execute(
+            select(VoltageLevel).where(VoltageLevel.code == code)
+        ).scalar_one_or_none()
         if vl is None:
-            raise BadRequest("There is no voltage level with the code '" + code + "'.")
+            raise BadRequest(f"There is no voltage level with the code '{code}'.")
         return vl
 
 
@@ -852,6 +859,7 @@ class Pc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     eras = relationship("Era", backref="pc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="pc")
+    valid_mtc_llfc_ssc_pcs = relationship("MtcLlfcSscPc", backref="pc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, name, valid_from, valid_to):
@@ -2121,6 +2129,7 @@ class Participant(Base, PersistentClass):
     code = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
     parties = relationship("Party", backref="participant")
+    mtc_participants = relationship("MtcParticipant", backref="participant")
 
     def __init__(self, code, name):
         self.code = code
@@ -2134,9 +2143,16 @@ class Participant(Base, PersistentClass):
         sess.add(party)
         return party
 
-    @staticmethod
-    def insert(sess, code, name):
-        participant = Participant(code, name)
+    def get_dno(self, sess):
+        return sess.execute(
+            select(Party)
+            .join(MarketRole)
+            .where(Party.participant == self, MarketRole.code == "R")
+        ).scalar_one()
+
+    @classmethod
+    def insert(cls, sess, code, name):
+        participant = cls(code, name)
         sess.add(participant)
         sess.flush()
         return participant
@@ -2237,6 +2253,8 @@ class Llfc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     lafs = relationship("Laf", backref="llfc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="llfc")
+    mtc_llfcs = relationship("MtcLlfc", backref="llfc")
+    mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="llfc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
     def __init__(
@@ -2303,6 +2321,7 @@ class MeterType(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     old_mtcs = relationship("OldMtc", backref="meter_type")
+    mtc_participants = relationship("MtcParticipant", backref="meter_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, valid_from, valid_to):
@@ -2311,9 +2330,9 @@ class MeterType(Base, PersistentClass):
         self.valid_from = valid_from
         self.valid_to = valid_to
 
-    @staticmethod
-    def insert(sess, code, description, valid_from, valid_to):
-        meter_type = MeterType(code, description, valid_from, valid_to)
+    @classmethod
+    def insert(cls, sess, code, description, valid_from, valid_to):
+        meter_type = cls(code, description, valid_from, valid_to)
         sess.add(meter_type)
         return meter_type
 
@@ -2340,9 +2359,9 @@ class MeterType(Base, PersistentClass):
 
 
 class MeterPaymentType(Base, PersistentClass):
-    @staticmethod
-    def insert(sess, code, description, valid_from, valid_to):
-        meter_payment_type = MeterPaymentType(code, description, valid_from, valid_to)
+    @classmethod
+    def insert(cls, sess, code, description, valid_from, valid_to):
+        meter_payment_type = cls(code, description, valid_from, valid_to)
         sess.add(meter_payment_type)
         return meter_payment_type
 
@@ -2375,6 +2394,7 @@ class MeterPaymentType(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True))
     valid_to = Column(DateTime(timezone=True))
     old_mtcs = relationship("OldMtc", backref="meter_payment_type")
+    mtc_participants = relationship("MtcParticipant", backref="meter_payment_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, valid_from, valid_to):
@@ -2382,6 +2402,455 @@ class MeterPaymentType(Base, PersistentClass):
         self.description = description
         self.valid_from = valid_from
         self.valid_to = valid_to
+
+
+class Mtc(Base, PersistentClass):
+    __tablename__ = "mtc"
+    id = Column(Integer, primary_key=True)
+    code = Column(String, nullable=False, index=True)
+    is_common = Column(Boolean, nullable=False)
+    has_related_metering = Column(Boolean, nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    mtc_participants = relationship("MtcParticipant", backref="mtc")
+    __table_args__ = (UniqueConstraint("code", "valid_from"),)
+
+    def __init__(
+        self,
+        code,
+        is_common,
+        has_related_metering,
+        valid_from,
+        valid_to,
+    ):
+        self.code = code
+        self.valid_from = valid_from
+        self.update(
+            is_common,
+            has_related_metering,
+            valid_to,
+        )
+
+    def update(
+        self,
+        is_common,
+        has_related_metering,
+        valid_to,
+    ):
+        self.is_common = is_common
+        self.has_related_metering = has_related_metering
+        self.valid_to = valid_to
+
+        if hh_after(self.valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be over the valid_to date.")
+
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        code,
+        is_common,
+        has_related_metering,
+        valid_from,
+        valid_to,
+    ):
+        mtc = cls(
+            code,
+            is_common,
+            has_related_metering,
+            valid_from,
+            valid_to,
+        )
+        sess.add(mtc)
+        sess.flush()
+        return mtc
+
+    @staticmethod
+    def find_by_code(sess, code, date):
+        code = code.zfill(3)
+        q = select(Mtc).where(Mtc.code == code)
+        if date is None:
+            q = q.where(Mtc.valid_to == null())
+        else:
+            q = q.where(
+                Mtc.valid_from <= date,
+                or_(Mtc.valid_to == null(), Mtc.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_code(cls, sess, code, date):
+        mtc = cls.find_by_code(sess, code, date)
+        if mtc is None:
+            raise BadRequest(
+                f"There isn't an MTC with the code {code} at date {hh_format(date)}."
+            )
+        return mtc
+
+
+class MtcParticipant(Base, PersistentClass):
+    __tablename__ = "mtc_participant"
+    id = Column(Integer, primary_key=True)
+    mtc_id = Column(Integer, ForeignKey("mtc.id"), index=True)
+    participant_id = Column(Integer, ForeignKey("participant.id"), index=True)
+    description = Column(String, nullable=False)
+    has_comms = Column(Boolean, nullable=False)
+    is_hh = Column(Boolean, nullable=False)
+    meter_type_id = Column(Integer, ForeignKey("meter_type.id"))
+    meter_payment_type_id = Column(Integer, ForeignKey("meter_payment_type.id"))
+    tpr_count = Column(Integer)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    mtc_sscs = relationship("MtcSsc", backref="mtc_participant")
+    mtc_llfcs = relationship("MtcLlfc", backref="mtc_participant")
+    __table_args__ = (UniqueConstraint("mtc_id", "participant_id", "valid_from"),)
+
+    def __init__(
+        self,
+        mtc,
+        participant,
+        description,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+        self.mtc = mtc
+        self.participant = participant
+        self.update(
+            description,
+            has_comms,
+            is_hh,
+            meter_type,
+            meter_payment_type,
+            tpr_count,
+            valid_from,
+            valid_to,
+        )
+
+    def update(
+        self,
+        description,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+
+        self.description = description
+        self.has_comms = has_comms
+        self.is_hh = is_hh
+        self.meter_type = meter_type
+        self.meter_payment_type = meter_payment_type
+        self.tpr_count = tpr_count
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
+        if hh_after(valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be over the valid_to date.")
+
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        mtc,
+        participant,
+        description,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+        mtc_participant = cls(
+            mtc,
+            participant,
+            description,
+            has_comms,
+            is_hh,
+            meter_type,
+            meter_payment_type,
+            tpr_count,
+            valid_from,
+            valid_to,
+        )
+        sess.add(mtc_participant)
+        sess.flush()
+        return mtc_participant
+
+    @staticmethod
+    def find_by_values(sess, mtc, participant, date):
+        q = select(MtcParticipant).where(
+            MtcParticipant.mtc == mtc,
+            MtcParticipant.participant == participant,
+        )
+        if date is None:
+            q = q.where(MtcParticipant.valid_to == null())
+        else:
+            q = q.where(
+                MtcParticipant.valid_from <= date,
+                or_(MtcParticipant.valid_to == null(), MtcParticipant.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc, participant, date):
+        mtc_participant = cls.find_by_values(sess, mtc, participant, date)
+        if mtc_participant is None:
+            raise BadRequest(
+                f"There isn't an MTC Participant with the MTC {mtc} and participant "
+                f"{participant} at date {hh_format(date)}."
+            )
+        return mtc_participant
+
+
+class MtcLlfc(Base, PersistentClass):
+    __tablename__ = "mtc_llfc"
+    id = Column(Integer, primary_key=True)
+    mtc_participant_id = Column(Integer, ForeignKey("mtc_participant.id"), index=True)
+    llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    __table_args__ = (UniqueConstraint("mtc_participant_id", "llfc_id", "valid_from"),)
+
+    def __init__(
+        self,
+        mtc_participant,
+        llfc,
+        valid_from,
+        valid_to,
+    ):
+        self.mtc_participant = mtc_participant
+        self.llfc = llfc
+        self.valid_from = valid_from
+        self.update(
+            valid_to,
+        )
+
+    def update(
+        self,
+        valid_to,
+    ):
+
+        self.valid_to = valid_to
+
+        if hh_after(self.valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be after the valid_to date.")
+
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        mtc_participant,
+        llfc,
+        valid_from,
+        valid_to,
+    ):
+        if mtc_participant.participant.code != llfc.dno.participant.code:
+            raise Exception(
+                f"The MTC Participant {mtc_participant.participant.code} must match "
+                f"the LLFC DNO Participant {llfc.dno.participant.code}"
+            )
+        mtc_llfc = cls(
+            mtc_participant,
+            llfc,
+            valid_from,
+            valid_to,
+        )
+        sess.add(mtc_llfc)
+        sess.flush()
+        return mtc_llfc
+
+    @staticmethod
+    def find_by_values(sess, mtc_participant, llfc, date):
+        q = select(MtcLlfc).where(
+            MtcLlfc.mtc_participant == mtc_participant,
+            MtcLlfc.llfc == llfc,
+        )
+        if date is None:
+            q = q.where(MtcLlfc.valid_to == null())
+        else:
+            q = q.where(
+                MtcLlfc.valid_from <= date,
+                or_(MtcLlfc.valid_to == null(), MtcLlfc.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc_participant, llfc, date):
+        mtc_llfc = cls.find_by_values(sess, mtc_participant, llfc, date)
+        if mtc_llfc is None:
+            raise BadRequest(
+                f"There isn't an MTC LLFC with the MTC Participant {mtc_participant} "
+                f"and LLFC {llfc} at date {hh_format(date)}."
+            )
+        return mtc_llfc
+
+
+class MtcSsc(Base, PersistentClass):
+    __tablename__ = "mtc_ssc"
+    id = Column(Integer, primary_key=True)
+    mtc_participant_id = Column(Integer, ForeignKey("mtc_participant.id"), index=True)
+    ssc_id = Column(Integer, ForeignKey("ssc.id"), index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="mtc_ssc")
+    __table_args__ = (UniqueConstraint("mtc_participant_id", "ssc_id", "valid_from"),)
+
+    def __init__(
+        self,
+        mtc_participant,
+        ssc,
+        valid_from,
+        valid_to,
+    ):
+        self.mtc_participant = mtc_participant
+        self.ssc = ssc
+        self.valid_from = valid_from
+        self.update(
+            valid_to,
+        )
+
+    def update(
+        self,
+        valid_to,
+    ):
+
+        self.valid_to = valid_to
+
+        if hh_after(self.valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be after the valid_to date.")
+
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        mtc_participant,
+        ssc,
+        valid_from,
+        valid_to,
+    ):
+        mtc_ssc = cls(
+            mtc_participant,
+            ssc,
+            valid_from,
+            valid_to,
+        )
+        sess.add(mtc_ssc)
+        sess.flush()
+        return mtc_ssc
+
+    @staticmethod
+    def find_by_values(sess, mtc_participant, ssc, date):
+        q = select(MtcSsc).where(
+            MtcSsc.mtc_participant == mtc_participant,
+            MtcSsc.ssc == ssc,
+        )
+        if date is None:
+            q = q.where(MtcSsc.valid_to == null())
+        else:
+            q = q.where(
+                MtcSsc.valid_from <= date,
+                or_(MtcSsc.valid_to == null(), MtcSsc.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc_participant, ssc, date):
+        mtc_ssc = cls.find_by_values(sess, mtc_participant, ssc, date)
+        if mtc_ssc is None:
+            raise BadRequest(
+                f"There isn't an MTC SSC with the MTC Participant {mtc_participant} "
+                f"and SSC {ssc} at date {hh_format(date)}."
+            )
+        return mtc_ssc
+
+
+class MtcLlfcSsc(Base, PersistentClass):
+    __tablename__ = "mtc_llfc_ssc"
+    id = Column(Integer, primary_key=True)
+    mtc_ssc_id = Column(Integer, ForeignKey("mtc_ssc.id"), index=True)
+    llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    mtc_llfc_ssc_pcs = relationship("MtcLlfcSscPc", backref="mtc_llfc_ssc")
+    __table_args__ = (UniqueConstraint("mtc_ssc_id", "llfc_id", "valid_from"),)
+
+    def __init__(
+        self,
+        mtc_ssc,
+        llfc,
+        valid_from,
+        valid_to,
+    ):
+        self.mtc_ssc = mtc_ssc
+        self.llfc = llfc
+        self.valid_from = valid_from
+        self.update(
+            valid_to,
+        )
+
+    def update(
+        self,
+        valid_to,
+    ):
+
+        self.valid_to = valid_to
+
+        if hh_after(self.valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be after the valid_to date.")
+
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        mtc_ssc,
+        llfc,
+        valid_from,
+        valid_to,
+    ):
+        mtc_llfc_ssc = cls(
+            mtc_ssc,
+            llfc,
+            valid_from,
+            valid_to,
+        )
+        sess.add(mtc_llfc_ssc)
+        sess.flush()
+        return mtc_llfc_ssc
+
+    @staticmethod
+    def find_by_values(sess, mtc_ssc, llfc, date):
+        q = select(MtcLlfcSsc).where(
+            MtcLlfcSsc.mtc_ssc == mtc_ssc,
+            MtcLlfcSsc.llfc == llfc,
+        )
+        if date is None:
+            q = q.where(MtcLlfcSsc.valid_to == null())
+        else:
+            q = q.where(
+                MtcLlfcSsc.valid_from <= date,
+                or_(MtcLlfcSsc.valid_to == null(), MtcLlfcSsc.valid_to >= date),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc_ssc, llfc, date):
+        mtc_llfc_ssc = cls.find_by_values(sess, mtc_ssc, llfc, date)
+        if mtc_llfc_ssc is None:
+            raise BadRequest(
+                f"There isn't an MTC LLFC SSC with the MTC SSC {mtc_ssc} and LLFC "
+                f"{llfc} at date {hh_format(date)}."
+            )
+        return mtc_llfc_ssc
 
 
 class OldMtc(Base, PersistentClass):
@@ -2570,6 +3039,7 @@ class Ssc(Base, PersistentClass):
     measurement_requirements = relationship("MeasurementRequirement", backref="ssc")
     eras = relationship("Era", backref="ssc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="ssc")
+    mtc_sscs = relationship("MtcSsc", backref="ssc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, is_import, valid_from, valid_to):
@@ -2579,9 +3049,9 @@ class Ssc(Base, PersistentClass):
         self.valid_from = valid_from
         self.valid_to = valid_to
 
-    @staticmethod
-    def insert(sess, code, description, is_import, valid_from, valid_to):
-        ssc = Ssc(code, description, is_import, valid_from, valid_to)
+    @classmethod
+    def insert(cls, sess, code, description, is_import, valid_from, valid_to):
+        ssc = cls(code, description, is_import, valid_from, valid_to)
         sess.add(ssc)
         sess.flush()
         return ssc
@@ -2607,6 +3077,60 @@ class Ssc(Base, PersistentClass):
                 f"The SSC with code '{code}' can't be found at {hh_format(date)}."
             )
         return ssc
+
+
+class MtcLlfcSscPc(Base, PersistentClass):
+    __tablename__ = "mtc_llfc_ssc_pc"
+    id = Column(BigInteger, primary_key=True)
+    mtc_llfc_ssc_id = Column(BigInteger, ForeignKey("mtc_llfc_ssc.id"), nullable=False)
+    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    __table_args__ = (UniqueConstraint("mtc_llfc_ssc_id", "pc_id", "valid_from"),)
+
+    def __init__(self, mtc_llfc_ssc, pc, valid_from, valid_to):
+        self.mtc_llfc_ssc = mtc_llfc_ssc
+        self.pc = pc
+        self.valid_from = valid_from
+        self.update(valid_to)
+
+    def update(self, valid_to):
+        self.valid_to = valid_to
+
+    @classmethod
+    def insert(cls, sess, mtc_llfc_ssc, pc, valid_from, valid_to):
+        combo = cls(mtc_llfc_ssc, pc, valid_from, valid_to)
+        sess.add(combo)
+        sess.flush()
+        return combo
+
+    @staticmethod
+    def find_by_values(sess, mtc_llfc_ssc, pc, date):
+        q = select(MtcLlfcSscPc).where(
+            MtcLlfcSscPc.mtc_llfc_ssc == mtc_llfc_ssc,
+            MtcLlfcSscPc.pc == pc,
+        )
+        if date is None:
+            q = q.where(MtcLlfcSscPc.valid_to == null())
+        else:
+            q = q.where(
+                MtcLlfcSscPc.valid_from <= date,
+                or_(
+                    MtcLlfcSscPc.valid_to == null(),
+                    MtcLlfcSscPc.valid_to >= date,
+                ),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, mtc_llfc_ssc, pc, date):
+        combo = cls.find_by_values(sess, mtc_llfc_ssc, pc, date)
+        if combo is None:
+            raise BadRequest(
+                f"The valid combination of MTC LLFC SSC {mtc_llfc_ssc.id} and PC "
+                f"{pc.code} at {hh_format(date)} can't be found."
+            )
+        return combo
 
 
 class OldValidMtcLlfcSscPc(Base, PersistentClass):

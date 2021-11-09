@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MTCs
+{% endblock %}
+
+{% block nav %}
+	MTCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Meter Timeswitch Classes</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Code</th>
+							<th>Common?</th>
+							<th>Related Metering?</th>
+							<th>Meter Type</th>
+							<th>TPR Count</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for mtc in mtcs %}
+							<tr>
+								<td>
+									<a href="/e/mtcs/{mtc.id}}">view</a>
+								</td>
+								<td>
+									{{mtc.code}}
+								</td>
+								<td>
+									{% if mtc.is_common %}
+										Yes
+									{% else %}
+										No
+									{% endif %}
+								</td>
+								<td>
+									{% if mtc.has_related_metering %}
+										Yes
+									{% else %}
+										No
+									{% endif %}
+								</td>
+								<td>{{mtc.valid_from|hh_format}}</td>
+								<td>{{mtc.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

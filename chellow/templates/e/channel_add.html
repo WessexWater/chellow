@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &raquo; 
+ 	Add Channel
+{% endblock %}
+
+{% block nav %}
+	<a href="/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{era.supply.id}}">Supply {{era.supply.id}} Era {{era.start_date|hh_format}}</a> &raquo; 
+	Add Channel
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Existing Channels</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Import / Export Related?</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for channel in channels %}
+							<tr>
+								<td>
+									{% if channel.imp_related %}
+										Import
+									{% else %}
+										Export
+									{% endif %}
+								</td>
+								<td>
+									{{channel.channel_type}}
+								</td>
+							</tr>
+						{% endfor %}
+					<tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Add a channel</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form method="post">
+						<fieldset>
+							<input type="hidden" name="era_id" value="{{era.id}}">
+							<div class="row">
+								<div class="col-sm-6">
+									<label>
+										<select name="imp_related">
+											{% for lb, vl in (('Import Related', 'true'), ('Export Related', 'false')) %}
+												{{input_option('is_import', vl, lb)}}
+											{% endfor %}
+										</select>
+									</label>
+								</div>
+								<div class="col-sm-6">
+									<label>
+										<select name="channel_type">
+											{{input_option('channel_type', 'ACTIVE', 'ACTIVE')}}
+											{{input_option('channel_type', 'REACTIVE_IMP', 'REACTIVE_IMP')}}
+											{{input_option('channel_type', 'REACTIVE_EXP', 'REACTIVE_EXP')}}
+										</select>
+									</label>
+								</div>
+							</div>
+							<input type="submit" value="Add">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+		<br>
+		
+{% endblock %}

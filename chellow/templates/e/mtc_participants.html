@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; MTCs
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; MTCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Meter Timeswitch Classes</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Code</th>
+							<th>Common?</th>
+							<th>Related Metering?</th>
+							<th>Description</th>
+							<th>Comms?</th>
+							<th>HH?</th>
+							<th>Meter Type</th>
+							<th>Meter Payment Type</th>
+							<th>TPR Count</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for mp in mtc_participants %}
+							<tr>
+								<td>
+									<a href="/e/mtc_participants/{{mp.id}}">View</a>
+								</td>
+								<td><a href="/e/mtcs/{{mp.mtc.id}}">{{mp.mtc.code}}</td>
+								<td>{{mp.mtc.is_common}}</td>
+								<td>{{mp.mtc.has_related_metering}}</td>
+								<td>{{mp.description}}</td>
+								<td>{{mp.has_comms}}</td>
+								<td>{{mp.is_hh}}</td>
+								<td>
+									<a href="/e/meter_types/{{mp.meter_type.id}}"
+										title="{{mp.meter_type.description}}"
+										>{{mp.meter_type.code}}</a>
+								</td>
+								<td>
+									<a href="/e/meter_payment_types/{{mp.meter_payment_type.id}}"
+										title="{{mp.meter_payment_type.description}}"
+										>{{mp.meter_payment_type.code}}</a>
+								</td>
+								<td>{{mp.tpr_count}}</td>
+								<td>{{mp.valid_from|hh_format}}</td>
+								<td>{{mp.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

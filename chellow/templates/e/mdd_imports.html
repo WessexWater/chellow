@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+	MDD Imports
+{% endblock %}
+
+{% block nav %}
+	MDD Imports
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Import MDD ZIP File</h2>	
+		</div>
+		<!-- End Section Header -->
+		
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/e/mdd_imports">
+						<fieldset>
+							<input
+									type="file" name="import_file" size="45"
+									value="{{request.values.import_file}}">
+							<input type="submit" value="Import">
+						</fieldset>
+					</form>
+					
+					{% if process_ids %}
+						<ul>
+							{% for id in process_ids %}
+								<li>
+									<a href="/e/mdd_imports/{{id}}">{{id}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+				<p>
+					The <a
+					href="https://www.elexon.co.uk/reference/technical-operations/market-domain-data/"
+							>Market
+					Domain Data</a> (MDD) changes over time, and so needs to be regularly
+					updated. Unfortunately Elexon don't provide the MDD for automated
+					download, so you have to manually download it now and again and
+					manually import it into Chellow. The MDD has a version number, so you
+					only need to do an update if the version number has been incremented.
+					The files within the zip that are recognized are:
+				</p>
+				<ul>
+					<li>Market_Participant</li>
+					<li>Market_Role</li>
+					<li>Market_Participant_Role</li>
+					<li>Line_Loss_Factor_Class</li>
+					<li>Meter_Timeswitch_Class</li>
+					<li>MTC_Meter_Type</li>
+					<li>MTC_in_PES_Area</li>
+					<li>Standard_Settlement_Configuration</li>
+					<li>Valid_MTC_LLFC_Combination</li>
+					<li>Valid_MTC_SSC_Combination</li>
+					<li>Valid_MTC_LLFC_SSC_Combination</li>
+					<li>Valid_MTC_LLFC_SSC_PC_Combination</li>
+				</ul>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

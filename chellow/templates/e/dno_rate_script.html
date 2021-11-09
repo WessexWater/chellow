@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; {{rate_script[0]|hh_format}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo;
+	{{rate_script[0]|hh_format}}
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Rate Script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Start Date</th>
+							<td>{{rate_script[0]|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{rate_script[1]|hh_format}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<pre>{{rate_script[2]}}</pre>
+			</div>
+		</div>
+	</div>
+{% endblock %}

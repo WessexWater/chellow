@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Market Roles &raquo; {{market_role.description}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/market_roles">Market Roles</a> &raquo; 
+	{{ market_role.description }}
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>{{ market_role.description }}</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<tr>
+					<th>Code</th>
+					<td>{{market_role.code}}</td>
+				</tr>
+				<tr>
+					<th>Description</th>
+					<td>{{market_role.description}}</td>
+				</tr>
+			</table>
+			<table  class="DataTable widthAuto">
+				<caption>Parties</caption>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Participant</th>
+						{% if market_role.code == 'R' %}
+							<th>DNO Code</th>
+						{% endif %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for party in market_role.parties %}
+						<tr>
+							<td>
+								<a href="/e/parties/{{party.id}}">{{party.name}}</a>
+							</td>
+							<td>
+								<a href="/e/participants/{{party.participant.id}}">{{party.participant.code}}</a>
+							</td>
+							{% if market_role.code == 'R' %}
+								<td>{{ party.dno_code }}</td>
+							{% endif %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+	
+{% endblock %}

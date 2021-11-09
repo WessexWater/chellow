@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; CSV Sites Duration
+{% endblock %}
+
+{% block nav %}
+	CSV Sites Duration
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Download</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form action="/reports/59">
+						<fieldset>
+							From {{input_date('start', month_start)}} to 
+							{{input_date('finish', month_finish)}}
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

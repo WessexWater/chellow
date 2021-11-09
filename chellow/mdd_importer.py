@@ -12,9 +12,16 @@ from sqlalchemy.orm import joinedload
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
+    Llfc,
     MarketRole,
     MeterPaymentType,
     MeterType,
+    Mtc,
+    MtcLlfc,
+    MtcLlfcSsc,
+    MtcLlfcSscPc,
+    MtcParticipant,
+    MtcSsc,
     OldMtc,
     OldValidMtcLlfcSscPc,
     Participant,
@@ -54,26 +61,30 @@ def parse_to_date(date_str):
         return to_utc(dt)
 
 
-def is_common_mtc(code):
-    return 499 < code < 510 or 799 < code < 1000
+def parse_bool(bool_str):
+    return bool_str == "T"
 
 
 VOLTAGE_MAP = {"24": {"602": {to_utc(ct_datetime(2010, 4, 1)): "LV"}}}
 
 
-def _import_Line_Loss_Factor_Class(sess, csv_reader):
-    VOLTAGE_LEVELS = dict(
-        (v.code, v) for v in sess.execute(select(VoltageLevel)).scalars()
-    )
-    DNO_MAP = dict(
-        (dno.participant.code, dno)
-        for dno in sess.query(Party)
-        .join(MarketRole)
-        .filter(MarketRole.code == "R")
-        .options(joinedload(Party.participant))
-    )
+def _import_Line_Loss_Factor_Class(sess, rows, ctx):
+    VOLTAGE_LEVELS = {v.code: v for v in sess.execute(select(VoltageLevel)).scalars()}
+    DNO_MAP = {
+        dno.participant.code: dno
+        for dno in sess.execute(
+            select(Party)
+            .join(MarketRole)
+            .where(MarketRole.code == "R")
+            .options(joinedload(Party.participant))
+        ).scalars()
+    }
+    llfcs = {
+        (v.dno.id, v.code, v.valid_from): v
+        for v in sess.execute(select(Llfc)).scalars()
+    }
 
-    for values in csv_reader:
+    for values in rows:
         participant_code = values[0]
         # market_role_code = values[1]
         llfc_code = values[3].zfill(3)
@@ -105,9 +116,15 @@ def _import_Line_Loss_Factor_Class(sess, csv_reader):
 
         voltage_level = VOLTAGE_LEVELS[voltage_level_code]
 
-        llfc = dno.find_llfc_by_code(sess, llfc_code, valid_from)
-
-        if llfc is None:
+        try:
+            llfc = llfcs[(dno.id, llfc_code, valid_from)]
+            llfc.description = description
+            llfc.voltage_level = voltage_level
+            llfc.is_substation = is_substation
+            llfc.is_import = is_import
+            llfc.valid_to = valid_to
+            sess.flush()
+        except KeyError:
             dno.insert_llfc(
                 sess,
                 llfc_code,
@@ -119,17 +136,9 @@ def _import_Line_Loss_Factor_Class(sess, csv_reader):
                 valid_to,
             )
 
-        else:
-            llfc.description = description
-            llfc.voltage_level = voltage_level
-            llfc.is_substation = is_substation
-            llfc.is_import = is_import
-            llfc.valid_to = valid_to
-            sess.flush()
 
-
-def _import_Market_Participant(sess, csv_reader):
-    for values in csv_reader:
+def _import_Market_Participant(sess, rows, ctx):
+    for values in rows:
         participant_code = values[0]
         participant_name = values[1]
 
@@ -143,8 +152,8 @@ def _import_Market_Participant(sess, csv_reader):
             sess.flush()
 
 
-def _import_Market_Role(sess, csv_reader):
-    for values in csv_reader:
+def _import_Market_Role(sess, rows, ctx):
+    for values in rows:
         role_code = values[0]
         role_description = values[1]
 
@@ -158,8 +167,8 @@ def _import_Market_Role(sess, csv_reader):
             sess.flush()
 
 
-def _import_Market_Participant_Role(sess, csv_reader):
-    for values in csv_reader:
+def _import_Market_Participant_Role(sess, rows, ctx):
+    for values in rows:
         participant_code = values[0]
         participant = Participant.get_by_code(sess, participant_code)
         market_role_code = values[1]
@@ -192,7 +201,7 @@ def _import_Market_Participant_Role(sess, csv_reader):
             sess.flush()
 
 
-def _import_Old_Meter_Timeswitch_Class(sess, rows):
+def _import_Old_Meter_Timeswitch_Class(sess, rows, ctx):
     for values in rows:
         code = values[0].zfill(3)
         valid_from = parse_date(values[1])
@@ -242,7 +251,7 @@ def _import_Old_Meter_Timeswitch_Class(sess, rows):
                 sess.flush()
 
 
-def _import_Old_MTC_in_PES_Area(sess, csv_reader):
+def _import_Old_MTC_in_PES_Area(sess, rows, ctx):
     dnos = dict(
         (p.participant.code, p)
         for p in sess.query(Party)
@@ -262,7 +271,7 @@ def _import_Old_MTC_in_PES_Area(sess, csv_reader):
         (m.code, m) for m in sess.execute(select(MeterPaymentType)).scalars()
     )
 
-    for values in csv_reader:
+    for values in rows:
         code_str = values[0]
         if not OldMtc.has_dno(code_str):
             continue
@@ -314,11 +323,152 @@ def _import_Old_MTC_in_PES_Area(sess, csv_reader):
             sess.flush()
 
 
-def _import_MTC_Meter_Type(sess, csv_reader):
+def _import_Meter_Timeswitch_Class(sess, rows, ctx):
+    ctx_mtcs = ctx["mtcs"] = {}
+    meter_types = dict((m.code, m) for m in sess.execute(select(MeterType)).scalars())
+    meter_payment_types = dict(
+        (m.code, m) for m in sess.execute(select(MeterPaymentType)).scalars()
+    )
+
+    for values in rows:
+        code = values[0].zfill(3)  # Meter Timeswitch Class ID
+        valid_from = parse_date(values[1])  # Effective From Settlement Date (MTC)
+        valid_to = parse_to_date(values[2])  # Effective To Settlement Date (MTC)
+        description = values[3]  # Meter Timeswitch Class Description
+        is_common = parse_bool(values[4])  # MTC Common Code Indicator
+        has_related_metering_str = values[5]  # MTC Related Metering System Indicator
+        has_related_metering = parse_bool(has_related_metering_str)
+
+        ctx_mtc = {
+            "code": code,
+            "valid_from": valid_from,
+            "valid_to": valid_to,
+            "description": description,
+            "is_common": is_common,
+            "has_related_metering": has_related_metering,
+        }
+
+        if is_common:
+            meter_type_code = values[6]  # Mtc Meter Type ID
+            meter_type = meter_types[meter_type_code]
+            meter_payment_type_code = values[7]  # MTC Payment Type ID
+            meter_payment_type = meter_payment_types[meter_payment_type_code]
+            has_comms_str = values[8]  # MTC Communication Indicator
+            has_comms = parse_bool(has_comms_str)
+            is_hh_str = values[9]  # MTC Type Indicator
+            is_hh = parse_bool(is_hh_str)
+            tpr_count_str = values[10]  # TPR Count
+            tpr_count = None if tpr_count_str == "" else int(tpr_count_str)
+
+            ctx_mtc["meter_type"] = meter_type
+            ctx_mtc["meter_payment_type"] = meter_payment_type
+            ctx_mtc["has_comms"] = has_comms
+            ctx_mtc["is_hh"] = is_hh
+            ctx_mtc["tpr_count"] = tpr_count
+
+        ctx_mtcs[(code, valid_from)] = ctx_mtc
+
+        mtc = Mtc.find_by_code(sess, code, valid_from)
+        if mtc is None:
+            Mtc.insert(
+                sess,
+                code,
+                is_common,
+                has_related_metering,
+                valid_from,
+                valid_to,
+            )
+
+        else:
+            mtc.description = description
+            mtc.has_related_metering = has_related_metering
+            mtc.valid_to = valid_to
+            sess.flush()
+
+
+def _import_MTC_in_PES_Area(sess, rows, ctx):
+    mtc_participants = {
+        (m.participant.id, m.mtc.id, m.valid_from): m
+        for m in sess.execute(
+            select(MtcParticipant).options(
+                joinedload(MtcParticipant.meter_type),
+                joinedload(MtcParticipant.meter_payment_type),
+            )
+        ).scalars()
+    }
+    mtcs = {(m.code, m.valid_from): m for m in sess.execute(select(Mtc)).scalars()}
+    participants = {p.code: p for p in sess.execute(select(Participant)).scalars()}
+    meter_types = {m.code: m for m in sess.execute(select(MeterType)).scalars()}
+    meter_payment_types = {
+        m.code: m for m in sess.execute(select(MeterPaymentType)).scalars()
+    }
+
+    for values in rows:
+        mtc_code_str = values[0]  # Meter Timeswitch Class ID
+        mtc_code = mtc_code_str.zfill(3)
+        mtc_from_str = values[1]  # Effective From Settlement Date (MTC)
+        mtc_from = parse_date(mtc_from_str)
+        mtc = mtcs[(mtc_code, mtc_from)]
+        participant_code = values[2]  # Market Participant ID
+        participant = participants[participant_code]
+        valid_from_str = values[3]  # Effective From Settlement Date (MTCPA)
+        valid_from = parse_date(valid_from_str)
+        mtc_participant = mtc_participants.get((participant.id, mtc.id, valid_from))
+        valid_to_str = values[4]  # Effective To Settlement Date (MTCPA)
+        valid_to = parse_date(valid_to_str)
+
+        if mtc.is_common:
+            ctx_mtc = ctx["mtcs"][(mtc_code, mtc_from)]
+            description = ctx_mtc["description"]
+            meter_type = ctx_mtc["meter_type"]
+            meter_payment_type = ctx_mtc["meter_payment_type"]
+            has_comms = ctx_mtc["has_comms"]
+            is_hh = ctx_mtc["is_hh"]
+            tpr_count = ctx_mtc["tpr_count"]
+
+        else:
+            description = values[5]  # Meter Timeswitch Class Description
+            meter_type_code = values[6]  # Mtc Meter Type ID
+            meter_type = meter_types[meter_type_code]
+            meter_payment_type_code = values[7]  # MTC Payment Type ID
+            meter_payment_type = meter_payment_types[meter_payment_type_code]
+            has_comms = values[8] == "Y"  # MTC Comm. Indicator
+            is_hh = values[9] == "H"  # MTC Type Indicator
+            tpr_count_str = values[10]  # TPR Count
+            tpr_count = 0 if tpr_count_str == "" else int(tpr_count_str)
+
+        if mtc_participant is None:
+
+            MtcParticipant.insert(
+                sess,
+                mtc,
+                participant,
+                description,
+                has_comms,
+                is_hh,
+                meter_type,
+                meter_payment_type,
+                tpr_count,
+                valid_from,
+                valid_to,
+            )
+
+        else:
+            mtc.description = description
+            mtc.has_comms = has_comms
+            mtc.is_hh = is_hh
+            mtc.meter_type = meter_type
+            mtc.meter_payment_type = meter_payment_type
+            mtc.tpr_count = tpr_count
+            mtc.valid_to = valid_to
+            sess.flush()
+
+
+def _import_MTC_Meter_Type(sess, rows, ctx):
     meter_types = dict(
         ((v.code, v.valid_from), v) for v in sess.execute(select(MeterType)).scalars()
     )
-    for values in csv_reader:
+    for values in rows:
         code = values[0]
         description = values[1]
         valid_from = parse_date(values[2])
@@ -334,11 +484,11 @@ def _import_MTC_Meter_Type(sess, csv_reader):
             sess.flush()
 
 
-def _import_Standard_Settlement_Configuration(sess, csv_reader):
+def _import_Standard_Settlement_Configuration(sess, rows, ctx):
     sscs = dict(
         ((v.code, v.valid_from), v) for v in sess.execute(select(Ssc)).scalars()
     )
-    for values in csv_reader:
+    for values in rows:
         code = values[0]
         valid_from = parse_date(values[1])
         valid_to = parse_to_date(values[2])
@@ -356,7 +506,7 @@ def _import_Standard_Settlement_Configuration(sess, csv_reader):
             sess.flush()
 
 
-def _import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
+def _import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
     dnos = {}
     old_mtcs = {}
     llfcs = {}
@@ -366,7 +516,7 @@ def _import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
         ((v.old_mtc.id, v.llfc.id, v.ssc.id, v.pc.id, v.valid_from), v)
         for v in sess.execute(select(OldValidMtcLlfcSscPc)).scalars()
     )
-    for values in csv_reader:
+    for values in rows:
         old_mtc_code = values[0].zfill(3)  # Meter Timeswitch Class ID
         # Effective From Settlement Date (MTC)
         participant_code = values[2]  # Market Participant ID
@@ -439,6 +589,311 @@ def _import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader):
             sess.flush()
 
 
+def _import_Valid_MTC_LLFC_Combination(sess, rows, ctx):
+    mtcs = {(v.code, v.valid_from): v for v in sess.execute(select(Mtc)).scalars()}
+    participants = {v.code: v for v in sess.execute(select(Participant)).scalars()}
+    mtc_participants = {
+        (v.mtc.id, v.participant.id, v.valid_from): v
+        for v in sess.execute(select(MtcParticipant)).scalars()
+    }
+    mtc_llfcs = {
+        (v.mtc_participant.id, v.llfc.id, v.valid_from): v
+        for v in sess.execute(select(MtcLlfc)).scalars()
+    }
+    dnos = {}
+    llfcs = {}
+
+    for values in rows:
+        mtc_code_str = values[0]  # Meter Timeswitch Class ID
+        mtc_code = mtc_code_str.zfill(3)
+        mtc_from_str = values[1]  # Effective From Settlement Date (MTC)
+        mtc_from = parse_date(mtc_from_str)
+        mtc = mtcs[(mtc_code, mtc_from)]
+        participant_code = values[2]  # Market Participant ID
+        participant = participants[participant_code]
+
+        mtc_participant_from_str = values[3]  # Effective From Settlement Date (MTCPA)
+        mtc_participant_from = parse_date(mtc_participant_from_str)
+        mtc_participant = mtc_participants[
+            (mtc.id, participant.id, mtc_participant_from)
+        ]
+        llfc_code = values[4]  # Line Loss Factor Class ID
+        valid_from_str = values[5]  # Effective From Settlement Date (VMTCLC)
+        valid_from = parse_date(valid_from_str)
+        valid_to_str = values[6]  # Effective To Settlement Date (VMTCLC)
+        valid_to = parse_date(valid_to_str)
+
+        try:
+            dno = dnos[(participant.id, valid_from)]
+        except KeyError:
+            dno = dnos[(participant.id, valid_from)] = sess.execute(
+                select(Party)
+                .join(Participant)
+                .join(MarketRole)
+                .where(
+                    Participant.code == participant_code,
+                    MarketRole.code == "R",
+                    Party.valid_from <= valid_from,
+                    or_(Party.valid_to == null(), Party.valid_to >= valid_from),
+                )
+            ).scalar_one()
+        try:
+            llfc = llfcs[(dno.id, llfc_code, valid_from)]
+        except KeyError:
+            llfc = llfcs[(dno.id, llfc_code, valid_from)] = dno.get_llfc_by_code(
+                sess, llfc_code, valid_from
+            )
+
+        try:
+            mtc_llfc = mtc_llfcs[(mtc_participant.id, llfc.id, valid_from)]
+            mtc_llfc.valid_to = valid_to
+            sess.flush()
+        except KeyError:
+            MtcLlfc.insert(
+                sess,
+                mtc_participant,
+                llfc,
+                valid_from,
+                valid_to,
+            )
+
+
+def _import_Valid_MTC_SSC_Combination(sess, rows, ctx):
+    mtcs = dict(
+        ((v.code, v.valid_from), v) for v in sess.execute(select(Mtc)).scalars()
+    )
+    participants = dict(
+        (v.code, v) for v in sess.execute(select(Participant)).scalars()
+    )
+    mtc_participants = dict(
+        ((v.mtc.id, v.participant.id, v.valid_from), v)
+        for v in sess.execute(select(MtcParticipant)).scalars()
+    )
+    sscs = dict(
+        ((v.code, v.valid_from), v) for v in sess.execute(select(Ssc)).scalars()
+    )
+    mtc_sscs = dict(
+        ((v.mtc_participant.id, v.ssc.id, v.valid_from), v)
+        for v in sess.execute(select(MtcSsc)).scalars()
+    )
+
+    for values in rows:
+        mtc_code = values[0].zfill(3)  # Meter Timeswitch Class ID
+        mtc_from_str = values[1]  # Effective From Settlement Date (MTC)
+        mtc_from = parse_date(mtc_from_str)
+        mtc = mtcs[(mtc_code, mtc_from)]
+        participant_code = values[2]  # Market Participant ID
+        participant = participants[participant_code]
+        mtc_participant_from_str = values[3]  # Effective From Settlement Date (MTCPA)
+        mtc_participant_from = parse_date(mtc_participant_from_str)
+        mtc_participant = mtc_participants[
+            (mtc.id, participant.id, mtc_participant_from)
+        ]
+        ssc_code = values[4]  # Standard Settlement Configuration ID
+        valid_from_str = values[5]  # Effective From Settlement Date (VMTCSC)
+        valid_from = parse_date(valid_from_str)
+        valid_to_str = values[6]  # Effective To Settlement Date (VMTCSC)
+        valid_to = parse_date(valid_to_str)
+
+        try:
+            ssc = sscs[(ssc_code, valid_from)]
+        except KeyError:
+            ssc = sscs[(ssc_code, valid_from)] = Ssc.get_by_code(
+                sess, ssc_code, valid_from
+            )
+
+        try:
+            mtc_ssc = mtc_sscs[(mtc_participant.id, ssc.id, valid_from)]
+            mtc_ssc.valid_to = valid_to
+            sess.flush()
+        except KeyError:
+            MtcSsc.insert(
+                sess,
+                mtc_participant,
+                ssc,
+                valid_from,
+                valid_to,
+            )
+
+
+def _import_Valid_MTC_LLFC_SSC_Combination(sess, rows, ctx):
+    mtcs = {(v.code, v.valid_from): v for v in sess.execute(select(Mtc)).scalars()}
+    participants = {v.code: v for v in sess.execute(select(Participant)).scalars()}
+    mtc_participants = {
+        (v.mtc.id, v.participant.id, v.valid_from): v
+        for v in sess.execute(select(MtcParticipant)).scalars()
+    }
+    sscs = {(v.code, v.valid_from): v for v in sess.execute(select(Ssc)).scalars()}
+    mtc_sscs = {
+        (v.mtc_participant.id, v.ssc.id, v.valid_from): v
+        for v in sess.execute(select(MtcSsc)).scalars()
+    }
+    dnos = {}
+    llfcs = {}
+    mtc_llfc_sscs = {
+        (v.mtc_ssc.id, v.llfc.id, v.valid_from): v
+        for v in sess.execute(select(MtcLlfcSsc)).scalars()
+    }
+
+    for values in rows:
+        mtc_code = values[0].zfill(3)  # Meter Timeswitch Class ID
+        mtc_from_str = values[1]  # Effective From Settlement Date (MTC)
+        mtc_from = parse_date(mtc_from_str)
+        mtc = mtcs[(mtc_code, mtc_from)]
+        participant_code = values[2]  # Market Participant ID
+        participant = participants[participant_code]
+        mtc_participant_from_str = values[3]  # Effective From Settlement Date (MTCPA)
+        mtc_participant_from = parse_date(mtc_participant_from_str)
+        mtc_participant = mtc_participants[
+            (mtc.id, participant.id, mtc_participant_from)
+        ]
+        ssc_code = values[4]  # Standard Settlement Configuration ID
+        mtc_ssc_from_str = values[5]  # Effective From Settlement date (VMTCSC)
+        mtc_ssc_from = parse_date(mtc_ssc_from_str)
+        try:
+            ssc = sscs[(ssc_code, mtc_ssc_from)]
+        except KeyError:
+            ssc = sscs[(ssc_code, mtc_ssc_from)] = Ssc.get_by_code(
+                sess, ssc_code, mtc_ssc_from
+            )
+        mtc_ssc = mtc_sscs[(mtc_participant.id, ssc.id, mtc_ssc_from)]
+        llfc_code = values[6]  # Line Loss Factor Class ID
+        valid_from_str = values[7]  # Effective From Settlement Date (VMTCLSC)
+        valid_from = parse_date(valid_from_str)
+        valid_to_str = values[8]  # Effective To Settlement Date (VMTCLSC)
+        valid_to = parse_date(valid_to_str)
+
+        try:
+            dno = dnos[(participant.id, valid_from)]
+        except KeyError:
+            dno = dnos[(participant.id, valid_from)] = sess.execute(
+                select(Party)
+                .join(Participant)
+                .join(MarketRole)
+                .where(
+                    Participant.code == participant_code,
+                    MarketRole.code == "R",
+                    Party.valid_from <= valid_from,
+                    or_(Party.valid_to == null(), Party.valid_to >= valid_from),
+                )
+            ).scalar_one()
+
+        try:
+            llfc = llfcs[(dno.id, llfc_code, valid_from)]
+        except KeyError:
+            llfc = llfcs[(dno.id, llfc_code, valid_from)] = dno.get_llfc_by_code(
+                sess, llfc_code, valid_from
+            )
+
+        try:
+            mtc_llfc_ssc = mtc_llfc_sscs[mtc_ssc.id, llfc.id, valid_from]
+            mtc_llfc_ssc.valid_to = valid_to
+            sess.flush()
+        except KeyError:
+            MtcLlfcSsc.insert(
+                sess,
+                mtc_ssc,
+                llfc,
+                valid_from,
+                valid_to,
+            )
+
+
+def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
+    mtcs = {(v.code, v.valid_from): v for v in sess.execute(select(Mtc)).scalars()}
+    participants = {v.code: v for v in sess.execute(select(Participant)).scalars()}
+    mtc_participants = {
+        (v.mtc.id, v.participant.id, v.valid_from): v
+        for v in sess.execute(select(MtcParticipant)).scalars()
+    }
+    mtc_sscs = {
+        (v.mtc_participant.id, v.ssc.id, v.valid_from): v
+        for v in sess.execute(select(MtcSsc)).scalars()
+    }
+    mtc_llfc_sscs = {
+        (v.mtc_ssc.id, v.llfc.id, v.valid_from): v
+        for v in sess.execute(select(MtcLlfcSsc)).scalars()
+    }
+    dnos = {}
+    llfcs = {}
+    sscs = {}
+    pcs = {v.code: v for v in sess.execute(select(Pc)).scalars()}
+    combos = {
+        (v.mtc_llfc_ssc.id, v.pc.id, v.valid_from): v
+        for v in sess.execute(select(MtcLlfcSscPc)).scalars()
+    }
+    for values in rows:
+        mtc_code = values[0].zfill(3)  # Meter Timeswitch Class ID
+        mtc_from_str = values[1]  # Effective From Settlement Date (MTC)
+        mtc_from = parse_date(mtc_from_str)
+        mtc = mtcs[(mtc_code, mtc_from)]
+        participant_code = values[2]  # Market Participant ID
+        participant = participants[participant_code]
+        mtc_participant_from_str = values[3]  # Effective From Settlement Date (MTCPA)
+        mtc_participant_from = parse_date(mtc_participant_from_str)
+        mtc_participant = mtc_participants[
+            (mtc.id, participant.id, mtc_participant_from)
+        ]
+        ssc_code = values[4]  # Standard Settlement Configuration ID
+        mtc_ssc_from_str = values[5]  # Effective From Settlement date (VMTCSC)
+        mtc_ssc_from = parse_date(mtc_ssc_from_str)
+
+        try:
+            ssc = sscs[(ssc_code, mtc_ssc_from)]
+        except KeyError:
+            ssc = sscs[(ssc_code, mtc_ssc_from)] = Ssc.get_by_code(
+                sess, ssc_code, mtc_ssc_from
+            )
+
+        mtc_ssc = mtc_sscs[(mtc_participant.id, ssc.id, mtc_ssc_from)]
+        llfc_code = values[6]  # Line Loss Factor Class ID
+        mtc_llfc_ssc_from_str = values[7]  # Effective From Settlement Date (VMTCLSC)
+        mtc_llfc_ssc_from = parse_date(mtc_llfc_ssc_from_str)
+        pc_code = values[8].zfill(2)  # Profile Class ID
+        valid_from_str = values[9]  # Effective From Settlement Date (VMTCLSPC)
+        valid_from = parse_date(valid_from_str)
+        valid_to_str = values[10]  # Effective To Settlement Date (VMTCLSPC)
+        valid_to = parse_date(valid_to_str)
+
+        try:
+            dno = dnos[(participant_code, valid_from)]
+        except KeyError:
+            dno = dnos[(participant_code, valid_from)] = sess.execute(
+                select(Party)
+                .join(Participant)
+                .join(MarketRole)
+                .where(
+                    Participant.code == participant_code,
+                    MarketRole.code == "R",
+                    Party.valid_from <= valid_from,
+                    or_(Party.valid_to == null(), Party.valid_to >= valid_from),
+                )
+            ).scalar_one()
+
+        try:
+            llfc = llfcs[(dno.id, llfc_code, mtc_llfc_ssc_from)]
+        except KeyError:
+            llfc = llfcs[(dno.id, llfc_code, mtc_llfc_ssc_from)] = dno.get_llfc_by_code(
+                sess, llfc_code, mtc_llfc_ssc_from
+            )
+
+        mtc_llfc_ssc = mtc_llfc_sscs[(mtc_ssc.id, llfc.id, mtc_llfc_ssc_from)]
+
+        pc = pcs[pc_code]
+        try:
+            combo = combos[(mtc_llfc_ssc.id, pc.id, valid_from)]
+            combo.valid_to = valid_to
+            sess.flush()
+        except KeyError:
+            MtcLlfcSscPc.insert(
+                sess,
+                mtc_llfc_ssc,
+                pc,
+                valid_from,
+                valid_to,
+            )
+
+
 class MddImporter(threading.Thread):
     def __init__(self, f):
         threading.Thread.__init__(self)
@@ -459,14 +914,14 @@ class MddImporter(threading.Thread):
             sess = Session()
             zip_file = ZipFile(self.f)
             znames = {}
+            ctx = {}
 
             for zname in zip_file.namelist():
-                log_f(f"Inspecting {zname} in ZIP file")
                 csv_file = StringIO(zip_file.read(zname).decode("utf-8"))
                 csv_reader = iter(csv.reader(csv_file))
                 next(csv_reader)  # Skip titles
                 table_name = "_".join(zname.split("_")[:-1])
-                znames[table_name] = [row for row in csv_reader]
+                znames[table_name] = list(csv_reader)
 
             for tname, func in [
                 ("Market_Participant", _import_Market_Participant),
@@ -475,6 +930,8 @@ class MddImporter(threading.Thread):
                 ("Line_Loss_Factor_Class", _import_Line_Loss_Factor_Class),
                 ("Meter_Timeswitch_Class", _import_Old_Meter_Timeswitch_Class),
                 ("MTC_in_PES_Area", _import_Old_MTC_in_PES_Area),
+                ("Meter_Timeswitch_Class", _import_Meter_Timeswitch_Class),
+                ("MTC_in_PES_Area", _import_MTC_in_PES_Area),
                 ("MTC_Meter_Type", _import_MTC_Meter_Type),
                 (
                     "Standard_Settlement_Configuration",
@@ -484,13 +941,29 @@ class MddImporter(threading.Thread):
                     "Valid_MTC_LLFC_SSC_PC_Combination",
                     _import_Old_Valid_MTC_LLFC_SSC_PC_Combination,
                 ),
+                (
+                    "Valid_MTC_LLFC_Combination",
+                    _import_Valid_MTC_LLFC_Combination,
+                ),
+                (
+                    "Valid_MTC_SSC_Combination",
+                    _import_Valid_MTC_SSC_Combination,
+                ),
+                (
+                    "Valid_MTC_LLFC_SSC_Combination",
+                    _import_Valid_MTC_LLFC_SSC_Combination,
+                ),
+                (
+                    "Valid_MTC_LLFC_SSC_PC_Combination",
+                    _import_Valid_MTC_LLFC_SSC_PC_Combination,
+                ),
             ]:
 
                 if tname in znames:
                     log_f(f"Found {tname} and will now import it.")
-                    func(sess, znames[tname])
+                    func(sess, znames[tname], ctx)
                 else:
-                    log_f(f"Can't find {tname} in the ZIP file.")
+                    raise BadRequest(f"Can't find {tname} in the ZIP file.")
 
             sess.commit()
 

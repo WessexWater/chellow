@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; MTC LLFCs &raquo;
+ 	{{mtc_llfc.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; 
+	<a href="/e/mtc_llfcs?participant_id={{mtc_llfc.mtc_participant.participant.id}}">MTC
+	 	LLFCs</a> &raquo;
+ 	{{mtc_llfc.id}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>MTC Participant</th>
+						<td>
+							<a href="/e/mtc_participants/{{mtc_llfc.mtc_participant.id}}"
+								 >{{mtc_llfc.mtc_participant.mtc.code}}
+								 {{mtc_llfc.mtc_participant.description}}</a>
+						</td>
+					</tr>
+					</tr>
+					<tr>
+						<th>LLFC</th>
+						<td>
+							<a href="/e/llfcs/{{mtc_llfc.llfc.id}}"
+								 >{{mtc_llfc.llfc.code}} {{mtc_llfc.llfc.description}}</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Valid From</th>
+						<td>{{mtc_llfc.valid_from|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid To</th>
+						<td>{{mtc_llfc.valid_to|hh_format}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

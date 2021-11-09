@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MTCs &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|hh_format}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mtcs">MTCs</a> &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|hh_format}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{mtc.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{mtc.code}}</td>
+					</tr>
+					<tr>
+						<th>Common?</th>
+						<td>{{mtc.is_common}}</td>
+					</tr>
+					<tr>
+						<th>Related Metering?</th>
+						<td>
+							{% if mtc.has_related_metering == True %}
+								Yes
+							{% else %}
+								No
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>Valid From</th>
+						<td>{{mtc.valid_from|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid To</th>
+						<td>{{mtc.valid_to|hh_format}}</td>
+					</tr>
+				</table>
+				<br>
+				<table class="DataTable widthAuto">
+					<caption>Participants</caption>
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Participant</th>
+							<th>Description</th>
+							<th>Comms?</th>
+							<th>HH?</th>
+							<th>Meter Type</th>
+							<th>Meter Payment Type</th>
+							<th>TPR Count</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for mtc_participant in mtc.mtc_participants %}
+							<tr>
+								<td>
+									<a href="/e/mtc_participants/{{mtc_participant.id}}">View</a>
+								</td>
+								<td>{{mtc_participant.participant.code}}</td>
+								<td>{{mtc_participant.description}}</td>
+								<td>{{mtc_participant.has_comms}}</td>
+								<td>{{mtc_participant.is_hh}}</td>
+								<td>
+									<a href="/e/meter_types/{{mtc_participant.meter_type.id}}"
+										title="{{mtc_participant.meter_type.description}}"
+										>{{mtc_participant.meter_type.code}}</a>
+								</td>
+								<td>
+									<a
+									 	href="/e/meter_payment_types/{{mtc_participant.meter_payment_type.id}}"
+										title="{{mtc_participant.meter_payment_type.description}}"
+										>{{mtc_participant.meter_payment_type.code}}</a>
+								</td>
+								<td>{{mtc_participant.tpr_count}}</td>
+								<td>{{mtc_participant.valid_from|hh_format}}</td>
+								<td>{{mtc_participant.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

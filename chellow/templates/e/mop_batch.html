@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/e/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+	&raquo; 
+	<a href="/e/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a>
+	&raquo; {{batch.reference}}
+	[<a href="/e/mop_batches/{{batch.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.confirm_delete_bills %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete all the bills in this batch?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/mop_batches/{{batch_id}}">
+							<fieldset>
+								<input type="submit" name="delete_bills" value="Delete">
+								<a href="/e/mop_batches/{{batch_id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% elif request.method == 'GET' and
+ 			request.values.confirm_delete_import_bills %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>
+					Are you sure you want to delete all the bills in this batch
+					and then re-import bills from the files?</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/e/mop_batches/{{batch.id}}">
+							<fieldset>
+								<input type="submit" name="delete_import_bills"
+							 		value="Re-Import">
+								<a href="/e/mop_batches/{{batch.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% elif request.method == 'GET' and
+ 			request.values.confirm_import_bills %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>
+					Are you sure you want to import the bills from the files into this
+					batch?
+				</h2>	
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/e/mop_batches/{{batch.id}}">
+							<fieldset>
+								<input type="submit" name="import_bills"
+							 		value="Import">
+								<a href="/e/mop_batches/{{batch.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% else %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Batch</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<table class="DataTable widthAuto">
+						<tr>
+							<th>Reference</th>
+							<td>{{ batch.reference }}</td>
+						</tr>
+						<tr>
+							<th>Description</th>
+							<td>{{ batch.description }}</td>
+						</tr>
+						<tr>
+							<th>Number Of Bills</th>
+							<td>{{ bills|length }}</td>
+						</tr>
+						{% if batch_reports %}
+							<tr>
+								<th>Custom Reports</th>
+								<td>
+									<ul>
+										{% for report in batch_reports %}
+											<li>
+												<a href="/local_reports/{{report.id}}/output?batch_id={{batch.id}}">{{report.name}}</a>
+											</li>
+										{% endfor %}
+									</ul>
+								</td>
+							</tr>
+						{% endif %}
+					</table>
+					<br>
+					<table class="etheling">
+						<caption>
+							Billing Files
+							[<a href="/e/mop_batches/{{batch.id}}/upload_file">upload</a>]
+						</caption>
+						<thead>
+							<tr>
+								<th>View</th>
+								<th>Filename</th>
+								<th>Upload Timestamp</th>
+								<th>Parser Name</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for file in batch.files %}
+								<tr>
+									<td><a href="/e/mop_batch_files/{{file.id}}"/>View</td>
+									<td>{{file.filename}}</td>
+									<td>
+										{{file.upload_timestamp|hh_format}}
+									</td>
+									<td>{{file.parser_name}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<br>
+					<table class="etheling">
+						<caption>Imports</caption>
+						<thead>
+							<th>View</th>
+							<th>Id</th>
+						</thead>
+						<tbody>
+							{% for id in importer_ids %}
+								<tr>
+									<td><a href="/e/mop_bill_imports/{{id}}">View</a></td>
+									<td>{{id}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<br>
+					<form action="/e/mop_batches/{{batch.id}}">
+						<fieldset>
+							<legend>Actions</legend>
+							<input
+						 			name="confirm_import_bills" type="submit"
+								 	value="Import Bills">
+							<input name="confirm_delete_bills" type="submit"
+						 	value="Delete Bills">
+							<input name="confirm_delete_import_bills" type="submit"
+						 	value="Re-Import Bills">
+						</fieldset>
+					</form>
+					<br>
+				</div>
+				<div class="section-data">
+					<ul>
+						<li>
+							<a href="/reports/111?batch_id={{batch.id}}">Check Bills</a>
+						</li>
+						<li>
+							<a
+									href="/e/mop_batches/{{batch.id}}/csv"
+									>CSV of Bills</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Bills [<a href="/e/mop_batches/{{batch.id}}/add_bill">add</a>]</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<table class="etheling etheling_sticky">
+						<thead>
+							<tr>
+								<th>View</th>
+								<th>Reference</th>
+								<th>Supply</th>
+								<th>Account</th>
+								<th>Issue Date</th>
+								<th>From</th>
+								<th>To</th>
+								<th>kWh</th>
+								<th>Net</th>
+								<th>VAT</th>
+								<th>Gross</th>
+								<th>Type</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for bill in bills %}
+								<tr>
+									<td>
+										<a href="/e/mop_bills/{{bill.id}}">View</a>
+									</td>
+									<td>{{bill.reference}}</td>
+									<td>
+										<a href="/e/supplies/{{bill.supply.id}}">supply</a>
+									</td>
+									<td>{{ bill.account }}</td>
+									<td>{{ bill.issue_date|hh_format }}</td>
+									<td>{{ bill.start_date|hh_format }}</td>
+									<td>{{ bill.finish_date|hh_format }}</td>
+									<td>{{ bill.kwh }}</td>
+									<td>{{ bill.net }}</td>
+									<td>{{ bill.vat }}</td>
+									<td>{{ bill.gross }}</td>
+									<td>
+										<a href="/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+									</td>
+								</tr>
+							{% endfor %}
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	{% endif %}
+{% endblock %}

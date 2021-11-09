@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{supply.id}} &raquo; Virtual Bill
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
+ 	Virtual Bill
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Show Virtual Bills</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form>
+						<fieldset>
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							From {{input_date('start', start_date)}} to
+							{{input_date('finish', finish_date)}}
+						 	<input type="submit" value="Show">
+						</fieldset>
+					</form>
+				</div>
+				<table class="DataTable widthAuto">
+					<caption>Summary</caption>
+					<tr>
+						<th>From</th>
+						<td>{{start_date|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>To</th>
+						<td>{{finish_date|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Net GBP</th>
+						<td>{{net_gbp}}</td>
+					</tr>
+				</table>
+				<table class="DataTable widthAuto">
+					<caption>Import Supplier Virtual Bill</caption>
+					{% for mera in meras %}
+						{% if not mera.skip %}
+							<thead>
+								<tr>
+									{% for heading in mera.headings %}
+										<th>{{heading}}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+						{% endif %}
+						<tbody>
+							<tr>
+								{% for datum in mera.data %}
+										<td>{{datum}}</td>
+								{% endfor %}
+							</tr>
+						</tbody>
+					{% endfor %}
+				</table>
+			</div>
+			
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

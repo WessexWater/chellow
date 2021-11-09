@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{supply.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
+	{% if is_import %}
+		Import
+	{% else %}
+		Export
+	{% endif %}
+	data by month
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+		<h2>
+			{% if is_import %}
+					Import
+				{% else %}
+					Export
+				{% endif %}
+				data by month
+		</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form>
+						<fieldset>
+							<input
+						 			type="hidden" name="is_import"
+								 	value="{{request.values.is_import}}">
+							<input type="hidden" name="supply_id" value="{{supply.id}}">
+							<legend>View Supply Months</legend>
+							<br>
+							For {{input_text('years', '1', 2, 2)}}
+							years, ending 31st December
+							{{input_text('year', now.year, 4, 4)}}
+							<input type="submit" value="View"><br><br>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>	
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Months</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap">
+					<table class="DataTable widthAuto">
+						<thead>
+							<tr>
+								<th rowspan="2">Month Starting</th>
+								<th rowspan="2">MPAN Core</th>
+								<th colspan="5">At MD kVA</th>
+								<th rowspan="2">Agreed Supply Capacity (kVA)</th>
+								<th rowspan="2">kWh</th>
+							</tr>
+							<tr>
+								<th>Date</th>
+								<th>kW</th>
+								<th>kVAr</th>
+								<th>Power Factor</th>
+								<th>kVA</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for month in months %}
+								<tr>
+									<td>{{month.start_date|hh_format}}</td>
+									<td>{{month.mpan_core}}</td>
+
+									{% if month.md_date %}
+										<td>{{month.md_date|hh_format}}</td>
+										<td>{{month.md_kw|round(1)}}</td>
+										<td>{{month.md_kvar|round(1)}}</td>
+										<td>{{month.md_pf|round(2)}}</td>
+										<td>{{month.md_kva|round(1)}}</td>
+									{% else %}
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+										<td></td>
+									{% endif %}
+
+									<td>{{month.sc}}</td>
+									<td>
+										{% if month.total_kwh %}
+											{{month.total_kwh|round|int}}
+										{% endif %}
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>	
+{% endblock %}

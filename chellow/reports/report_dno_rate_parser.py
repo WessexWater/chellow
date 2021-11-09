@@ -17,7 +17,7 @@ from zish import dumps
 import chellow.dloads
 from chellow.models import GspGroup, Session
 from chellow.utils import req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def get_value(row, idx):

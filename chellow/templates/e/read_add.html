@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{bill.batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{bill.batch.reference}} &raquo; Bills &raquo; {{bill.id}} &raquo; Add Read
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{bill.batch.contract.id}}"
+		>{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}"
+		>Batches</a> &raquo; 
+	<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	<a href="/e/supplier_bills/{{bill.id}}">Bill {{bill.id}}</a>
+ 	&raquo; Add Read
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Add New Register Read</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<form action="/e/supplier_bills/{{bill.id}}/add_read" method="post">
+				<fieldset>
+						<div class="section-data">
+							<div class="standardForm">
+								<div class="row">
+									<div class="col-sm-4">
+										<label>MPAN</label>
+										{{input_text('mpan', mpan_str)}}
+									</div>
+									<div class="col-sm-4">
+										<label>Coefficient</label>
+										{{input_text('coefficient', coefficient)}}
+									</div>
+									<div class="col-sm-4">
+											<label>Meter Serial Number</label>
+											{{input_text('msn', msn)}}
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-4">
+										<label>Units</label>
+										{{input_text('units', 'kWh')}}
+									</div>
+									<div class="col-sm-4">
+										<label>TPR</label>
+										<select name="tpr_id">
+											{% for tpr in tprs %}
+												{{input_option('tpr_id', tpr.id, tpr.code)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="section-data">
+								<fieldset>
+									<legend>Previous Read</legend>
+									<div class="row">
+												<div class="col-sm-4">
+														<div class="standardForm textWidthAuto">
+																<fieldset>
+																<label>Date</label>
+																{{input_date('previous', previous_date)}}
+															</fieldset>
+													</div>
+												</div>
+												<div class="col-sm-4">
+													<div class="standardForm">
+														<label>Value</label>
+														{{input_text('previous_value', previous_value)}}
+													</div>
+												</div>
+												<div class="col-sm-4">
+													<div class="standardForm">
+															<label>Type</label>
+															<select name="previous_type_id">
+														{% for read_type in read_types %}
+															{{input_option('previous_type_id', read_type.id, read_type.code + ' ' + read_type.description, previous_type_id)}}
+														{% endfor %}
+													</select>
+												</div>
+												</div>
+										</div>            				
+								</fieldset>
+						</div>
+						<div class="section-data">
+								<fieldset>
+									<legend>Present Read</legend>
+									<div class="row">
+												<div class="col-sm-4">
+														<div class="standardForm textWidthAuto">
+																<fieldset>
+																<label>Date</label>
+																{{input_date('present', None)}}
+															</fieldset>
+													</div>
+												</div>
+												<div class="col-sm-4">
+														<div class="standardForm">
+																<label>Value</label>
+																{{input_text('present_value', 0)}}
+														</div>
+												</div>
+												<div class="col-sm-4">
+														<div class="standardForm">
+																<label>Type
+																<select name="present_type_id">
+																	{% for read_type in read_types %}
+																		{{input_option('present_type_id', read_type.id, read_type.code + ' ' + read_type.description, estimated_read_type_id)}}
+																	{% endfor %}
+																</select>
+															</label>
+													</div>
+												</div>
+										</div>            				
+								</fieldset>
+						</div>
+						<div class="section-data">
+								<input type="submit" value="Add">
+							</div>
+					</fieldset>
+				</form>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{dc_contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/e/dc_contracts/{{dc_contract.id}}">{{dc_contract.name}}</a> &raquo;
+ 	Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>Are you sure you want to delete this contract?</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form
+								method="post"
+								action="/e/dc_contracts/{{dc_contract.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete" value="delete">
+								<a href="/e/dc_contracts/{{dc_contract.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+	{% else %}
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Update Contract</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form
+						 		action="/e/dc_contracts/{{dc_contract.id}}/edit"
+							 	method="post">
+							<fieldset>
+								<div class="row">
+									<div class="col-sm-6">
+										<label>Party</label>
+										<select name="party_id">
+											{% for party in parties %}
+												{{ input_option(
+														'party_id', party.id,
+													 	party.participant.code + ' : ' + party.name,
+													 	dc_contract.party.id) }}
+											{% endfor %}
+										</select>
+									</div>
+									<div class="col-sm-6">
+										<label>Name</label>
+											{{input_text('name', dc_contract.name)}}
+									</div>
+								</div>
+
+								Charge script
+								<br>
+								{{input_textarea(
+									'charge_script', dc_contract.charge_script, 40, 80)}}
+								<br>
+								<br>
+								Properties
+								<br>
+								{{ input_textarea(
+									'properties', dc_contract.properties, 40, 80) }}
+					
+								<br>
+								<br>
+								<h4>Example</h4>
+								<p>For the SFTP protocol:</p>
+								<code>
+									<pre>
+{
+  "enabled": true,
+	"protocol": "sftp",
+	"file_type": ".df2",
+	"hostname": "example.com",
+	"username": "username",
+	"password": "password",
+	"directories": ["downloads1", "downloads2"]}
+									</pre>
+								</code>
+								<p>For the HTTPS protocol:</p>
+								<code>
+									<pre>
+										{% raw %}
+{
+  "enabled": true,
+  "protocol": "https",
+  "download_days": 8,
+  "result_data_key": "Data",
+  "url_template": "https://data.example.com/?from={{chunk_start.strftime('%d/%m/%Y')}}&amp;to={{chunk_finish.strftime('%d/%m/%Y')}}",
+  "url_values": {
+    "99 4298 4729 917": {
+      "name1": val1,
+      "name2": val2,
+  	}
+	}
+}
+
+										{% endraw %}
+									</pre>
+								</code>
+								<input type="submit" value="Update">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+	    <!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Update State</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form
+								action="/e/dc_contracts/{{dc_contract.id}}/edit"
+								method="post">
+							<fieldset>
+								<label>State</label>
+								<br>
+								{{input_textarea('state', dc_contract.state, 40, 80)}}
+								<br>
+								<input type="submit" name="update_state" value="Update">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Delete This Contract</h2>
+			</div>
+			<!-- End Section Header -->
+
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form action="/e/dc_contracts/{{dc_contract.id}}/edit">
+							<fieldset>
+								<input type="hidden" name="view" value="confirm_delete">
+								<input type="submit" value="Delete">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Ignore all snags before</h2>
+			</div>
+			<!-- End Section Header -->
+
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form
+						 		method="post"
+							 	action="/e/dc_contracts/{{dc_contract.id}}/edit">
+							<fieldset>
+								{{ input_date('ignore', initial_date) }}
+								<input type="submit" name="ignore_snags" value="Ignore">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

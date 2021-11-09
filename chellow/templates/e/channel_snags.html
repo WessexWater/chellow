@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Channel Snags
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+ 	Channel Snags
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Download CSV</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto ">
+					<form action="/reports/233">
+						<fieldset>
+							<input
+						 			type="hidden" name="dc_contract_id" value="{{contract.id}}">
+							<label>
+								Snags less than
+								<input size="3" maxlength="3" name="days_hidden" value="0">
+								GMT calendar day(s) old are hidden.
+							</label>
+							<input type="submit" value="Download">
+						</fieldset>
+					</form>
+					<p>
+						The 'Days Since Snag Finished' column is blank if the snag is
+						ongoing (ie. if the finish date is 'ongoing' or if it finished less
+					 	than 'Days Hidden' ago).
+					</p>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Show Channel Snags</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form>
+						<fieldset>
+							<input
+						 			type="hidden" name="dc_contract_id" value="{{contract.id}}">
+							<label>
+								Snags less than {{input_text('days_hidden', '0', 3, 3)}} days
+							 	old are hidden.
+							</label>
+							<label>
+								Include ignored snags {{input_checkbox('is_ignored', False)}} 
+							</label>
+							<input type="submit" value="Show">
+						</fieldset>
+					</form>
+				</div>
+					<p>
+					There are {{total_snags}} snag(s) older than
+					{{request.values.days_hidden}} days
+					{%- if not is_ignored %}
+						that aren't ignored
+					{%- endif -%}.
+				</p>
+				<table class="DataTable widthAuto">
+					<caption>Snags (truncated after 200)</caption>
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Import MPAN Core</th>
+							<th>Export MPAN Core</th>
+							<th>Sites</th>
+							<th>Snag Description</th>
+							<th>Channels</th>
+							<th>Duration</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for snag_group in snag_groups %}
+							<tr>
+								<td>
+									<ul>
+										{% for snag in snag_group.snags %}
+											<li>
+												<a href="/e/channel_snags/{{snag.id}}">view</a>
+												[<a href="/e/channel_snags/{{snag.id}}/edit">edit</a>]
+												{% if snag.is_ignored %} ignored{% endif %}
+											</li>
+										{% endfor %}
+									</ul>
+								</td>
+								<td>
+									{% if snag_group.era.imp_mpan_core %}
+										{{snag_group.era.imp_mpan_core}}
+									{% endif %}
+								</td>
+								<td>
+									{% if snag_group.era.exp_mpan_core %}
+										{{snag_group.era.exp_mpan_core}}
+									{% endif %}
+								</td>
+								<td>
+									<ul>
+										{% for site in snag_group.sites %}
+											<li>{{site.code}} {{site.name}}</li>
+										{% endfor %}
+									</ul>
+								</td>
+								<td>{{snag_group.description}}</td>
+								<td>
+									<ul>
+										{% for snag in snag_group.snags %}
+											<li>
+												{% if snag.channel.imp_related %}
+													Import
+												{% else %}
+													Export
+												{% endif %}
+												{{snag.channel.channel_type}}
+											</li>
+										{% endfor %}
+									</ul>
+								</td>
+								<td>
+									{{snag_group.start_date|hh_format}} to
+									{{snag_group.finish_date|hh_format}}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

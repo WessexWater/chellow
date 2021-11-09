@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Sources &raquo; {{source.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/sources">Sources</a> &raquo; {{source.code}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{source.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{source.code}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{source.name}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	
+{% endblock %}

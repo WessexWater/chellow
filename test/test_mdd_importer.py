@@ -1,18 +1,20 @@
-from csv import writer
-from io import BytesIO, StringIO
-from zipfile import ZipFile
-
-from sqlalchemy import select
-
-import chellow.mdd_importer
+from chellow.mdd_importer import (
+    _import_MTC_in_PES_Area,
+    _import_Meter_Timeswitch_Class,
+    _import_Valid_MTC_LLFC_Combination,
+    _import_Valid_MTC_LLFC_SSC_Combination,
+    _import_Valid_MTC_LLFC_SSC_PC_Combination,
+    _import_Valid_MTC_SSC_Combination,
+)
 from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
-    OldValidMtcLlfcSscPc,
+    Mtc,
+    MtcLlfcSsc,
+    MtcParticipant,
+    MtcSsc,
     Participant,
-    Party,
     Pc,
     Ssc,
     VoltageLevel,
@@ -21,142 +23,253 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_import_Line_Loss_Factor_Class(sess):
-    participant_code = "CALB"
-    participant = Participant.insert(sess, participant_code, "AK Industries")
-    market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
-    )
-    insert_voltage_levels(sess)
-    voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc_code = "004"
-    llfc_description = "PC 5-8 & HH HV"
-    dno.insert_llfc(
-        sess,
-        llfc_code,
-        llfc_description,
-        voltage_level,
-        False,
-        True,
-        to_utc(ct_datetime(1996, 1, 1)),
-        None,
-    )
-    sess.commit()
-
-    row = [participant_code, "", "", llfc_code, "01/01/1996", llfc_description, "A", ""]
-
-    csv_reader = iter([row])
-    chellow.mdd_importer._import_Line_Loss_Factor_Class(sess, csv_reader)
-
-
-def test_import_MTC_Meter_Type(sess):
-    row = ["6A", "COP6(a)  20 days memory", "01/04/1996", ""]
-
-    csv_reader = iter([row])
-    chellow.mdd_importer._import_MTC_Meter_Type(sess, csv_reader)
-
-
-def test_MddImporter(mocker, sess):
-    participant_code = "ACCU"
-    Participant.insert(sess, participant_code, "accu")
-    market_role_code = "5"
-    MarketRole.insert(sess, market_role_code, "mr5")
-    sess.commit()
-
-    party_name = "Callisto Data Limited"
-    zf = BytesIO()
-    vals = [
+def test_import_Meter_Timeswitch_Class(sess):
+    rows = [
         [
-            "Market Participant ID",
-            "Market Participant Role Code",
-            "Effective From Date (MPR)",
-            "Effective To Date (MPR)",
-            "Address 1",
-            "Address 2",
-            "Address 3",
-            "Address 4",
-            "Address 5",
-            "Address 6",
-            "Address 7",
-            "Address 8",
-            "Address 9",
-            "Post Code",
-            "Distributor Short Code",
-        ],
-        [
-            participant_code,
-            market_role_code,
-            "18/12/2013",
+            "1",
+            "01/04/1996",
             "",
-            party_name,
-            "11 Silver Fox Way",
-            "Cobalt Business Park",
-            "Newcastle Upon Tyne",
-            "Tyne and Wear",
+            "",
+            "F",
+            "F",
             "",
             "",
             "",
             "",
-            "NE27 0QJ",
             "",
-        ],
+        ]
     ]
-
-    csv_file = StringIO()
-    csv_writer = writer(csv_file)
-    for row in vals:
-        csv_writer.writerow(row)
-
-    with ZipFile(zf, "w") as f:
-        f.writestr("Market_Participant_Role_316.csv", csv_file.getvalue())
-
-    importer = chellow.mdd_importer.MddImporter(zf)
-    importer.run()
-    assert importer.error_message is None
-
-    party = sess.execute(select(Party)).scalar_one()
-
-    assert party.participant.code == participant_code
-    assert party.market_role.code == market_role_code
-    assert party.name == party_name
-    assert party.valid_from == to_utc(ct_datetime(2013, 12, 18))
-    assert party.valid_to is None
-    assert party.dno_code is None
+    ctx = {}
+    _import_Meter_Timeswitch_Class(sess, rows, ctx)
 
 
-def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
-    participant_code = "EDFI"
-    participant = Participant.insert(sess, participant_code, "AK Industries")
-    market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
-    )
-    insert_voltage_levels(sess)
-    voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc_code = "906"
-    llfc_description = "PC 5-8 & HH HV"
-    llfc = dno.insert_llfc(
+def test_import_Meter_Timeswitch_Class_no_tpr_count(sess):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    rows = [
+        [
+            "845",
+            "01/04/1996",
+            "",
+            "HH COP5 And Above With Comms",
+            "T",
+            "F",
+            "C5",
+            "CR",
+            "Y",
+            "H",
+            "",
+        ]
+    ]
+    ctx = {}
+    _import_Meter_Timeswitch_Class(sess, rows, ctx)
+
+
+def test_import_MTC_in_PES_Area(sess):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "001"
+    Mtc.insert(
         sess,
-        llfc_code,
-        llfc_description,
-        voltage_level,
+        mtc_code,
         False,
-        True,
-        to_utc(ct_datetime(2009, 4, 16)),
+        False,
+        vf,
         None,
     )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    old_mtc = OldMtc.insert(
+    MeterType.insert(sess, "UN", "A c5 meter", vf, None)
+    MeterPaymentType.insert(sess, "TS", "credit", vf, None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            "HYDE",
+            "01/04/1996",
+            "",
+            "Unrestricted, Single rate",
+            "UN",
+            "TS",
+            "N",
+            "N",
+            "1",
+        ]
+    ]
+    ctx = {}
+    _import_MTC_in_PES_Area(sess, rows, ctx)
+
+
+def test_import_Valid_MTC_LLFC_Combination(sess):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    participant = Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "001"
+    mtc = Mtc.insert(
         sess,
-        dno,
-        "001",
-        "an mtc",
+        mtc_code,
         False,
         False,
+        valid_from,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "UN", "A c5 meter", valid_from, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "TS", "credit", valid_from, None)
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "desc",
+        True,
+        True,
+        meter_type,
+        meter_payment_type,
+        1,
+        valid_from,
+        None,
+    )
+    dno_role = MarketRole.insert(sess, "R", "dno")
+    dno = participant.insert_party(sess, dno_role, "dno", valid_from, None, "10")
+    insert_voltage_levels(sess)
+    vl = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(sess, "H85", "llfc h85", vl, False, True, valid_from, None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "01/04/1996",
+            "H85",
+            "01/04/2021",
+            "",
+        ]
+    ]
+    ctx = {}
+    _import_Valid_MTC_LLFC_Combination(sess, rows, ctx)
+
+
+def test_import_Valid_MTC_SSC_Combination(sess):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    participant = Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "001"
+    mtc = Mtc.insert(
+        sess,
+        mtc_code,
+        False,
+        False,
+        valid_from,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "UN", "A c5 meter", valid_from, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "TS", "credit", valid_from, None)
+    mtc_participant_valid_from = to_utc(ct_datetime(2005, 12, 2))
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "desc",
+        True,
+        True,
+        meter_type,
+        meter_payment_type,
+        1,
+        mtc_participant_valid_from,
+        None,
+    )
+    ssc_code = "0721"
+    Ssc.insert(sess, ssc_code, "desc", True, valid_from, None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "02/12/2005",
+            ssc_code,
+            "02/12/2005",
+            "",
+        ]
+    ]
+    ctx = {}
+    _import_Valid_MTC_SSC_Combination(sess, rows, ctx)
+
+
+def test_import_Valid_MTC_LLFC_SSC_Combination(sess):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    participant = Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "001"
+    mtc = Mtc.insert(
+        sess,
+        mtc_code,
+        False,
+        False,
+        valid_from,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "UN", "A c5 meter", valid_from, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "TS", "credit", valid_from, None)
+    mtc_participant_valid_from = to_utc(ct_datetime(2005, 12, 2))
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "desc",
+        True,
+        True,
+        meter_type,
+        meter_payment_type,
+        1,
+        mtc_participant_valid_from,
+        None,
+    )
+    ssc_code = "0721"
+    ssc = Ssc.insert(sess, ssc_code, "desc", True, valid_from, None)
+    dno_role = MarketRole.insert(sess, "R", "dno")
+    dno = participant.insert_party(sess, dno_role, "dno", valid_from, None, "10")
+    insert_voltage_levels(sess)
+    vl = VoltageLevel.get_by_code(sess, "HV")
+    llfc_code = "183"
+    dno.insert_llfc(sess, llfc_code, "llfc h85", vl, False, True, valid_from, None)
+    MtcSsc.insert(sess, mtc_participant, ssc, to_utc(ct_datetime(2005, 12, 2)), None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "02/12/2005",
+            ssc_code,
+            "02/12/2005",
+            llfc_code,
+            "01/04/2006",
+            "",
+        ]
+    ]
+    ctx = {}
+    _import_Valid_MTC_LLFC_SSC_Combination(sess, rows, ctx)
+
+
+def test_import_Valid_MTC_LLFC_SSC_PC_Combination(sess):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    participant = Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "001"
+    mtc = Mtc.insert(
+        sess,
+        mtc_code,
+        False,
+        False,
+        valid_from,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "UN", "A c5 meter", valid_from, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "TS", "credit", valid_from, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "desc",
+        True,
         True,
         meter_type,
         meter_payment_type,
@@ -164,37 +277,37 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
         to_utc(ct_datetime(2009, 4, 16)),
         None,
     )
-    ssc = Ssc.insert(
-        sess, "0349", "an ssc", True, to_utc(ct_datetime(2009, 4, 16)), None
+    ssc_code = "0721"
+    ssc = Ssc.insert(sess, ssc_code, "desc", True, valid_from, None)
+    dno_role = MarketRole.insert(sess, "R", "dno")
+    dno = participant.insert_party(sess, dno_role, "dno", valid_from, None, "10")
+    insert_voltage_levels(sess)
+    vl = VoltageLevel.get_by_code(sess, "HV")
+    llfc_code = "183"
+    llfc = dno.insert_llfc(
+        sess, llfc_code, "llfc h85", vl, False, True, valid_from, None
     )
-    pc = Pc.insert(sess, "02", "dom", to_utc(ct_datetime(1996, 1, 1)), None)
-    sess.commit()
-
-    row = [
-        "1",
-        "01/04/1996",
-        participant_code,
-        "16/04/2009",
-        "0349",
-        "16/04/2009",
-        "906",
-        "16/04/2009",
-        "2",
-        "17/03/2010",
-        "20/08/2014",
-        "F",
+    pc_code = "00"
+    Pc.insert(sess, pc_code, "hh", utc_datetime(2000, 1, 1), None)
+    mtc_ssc = MtcSsc.insert(
+        sess, mtc_participant, ssc, to_utc(ct_datetime(2009, 4, 16)), None
+    )
+    MtcLlfcSsc.insert(sess, mtc_ssc, llfc, to_utc(ct_datetime(2009, 4, 16)), None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "16/04/2009",
+            ssc_code,
+            "16/04/2009",
+            llfc_code,
+            "16/04/2009",
+            pc_code,
+            "17/03/2010",
+            "20/08/2014",
+            "F",
+        ]
     ]
-
-    csv_reader = iter([row])
-    chellow.mdd_importer._import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader)
-    sess.commit()
-    OldValidMtcLlfcSscPc.get_by_values(
-        sess, old_mtc, llfc, ssc, pc, utc_datetime(2012, 1, 1)
-    )
-
-
-def test_import_Market_Participant(sess):
-    row = ["AAUL", "Alcan Aluminium Limited", ""]
-
-    csv_reader = iter([row])
-    chellow.mdd_importer._import_Market_Participant(sess, csv_reader)
+    ctx = {}
+    _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx)

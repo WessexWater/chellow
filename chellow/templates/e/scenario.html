@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; {{scenario.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/scenarios">Scenarios</a> &raquo; {{scenario.name}} 
+ 	[<a href="/e/scenarios/{{scenario.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Scenario</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<form action="/reports/247" method="post">
+					<fieldset>
+						<label>Site Codes</label><br>
+						{{input_textarea('site_codes', '', 5, 40, placeholder='One on each line, includes all if left blank')}}    						
+						<br>
+						<input
+							type="hidden" name="scenario_id" value="{{scenario.id}}">
+						<input type="submit" value="Run">
+					</fieldset>	
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Properties</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+			<pre>{{scenario.properties}}</pre>
+			</div>
+		</div>
+	</div>
+{% endblock %}

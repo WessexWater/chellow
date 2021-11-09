@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{contract.name}} &raquo; Add Rate Script
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/e/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+ 	Add Rate Script
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Add a rate script</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto">
+					<form
+					 		method="post"
+						 	action="/e/mop_contracts/{{contract.id}}/add_rate_script">
+						<fieldset>
+							<fieldset>
+								<legend>Start Date</legend>
+								{{ input_date('start', initial_date) }}
+							</fieldset>
+							<input type="submit" value="Add">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

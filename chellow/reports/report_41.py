@@ -24,7 +24,7 @@ from chellow.utils import (
     req_int,
     to_utc,
 )
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def _make_eras(sess, nov_start, year_finish, supply_id):
@@ -77,7 +77,7 @@ def content(year, supply_id, user):
 
         for i in range(1, 4):
             for p in ("triad-actual-", "triad-estimate-"):
-                act_pref = p + str(i) + "-"
+                act_pref = f"{p}{i}-"
                 for suf in ("msp-kw", "gsp-kw"):
                     scalar_names.add(act_pref + suf)
                 for suf in ("date", "status", "laf"):

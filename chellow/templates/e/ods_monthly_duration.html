@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Monthly Duration
+{% endblock %}
+
+{% block nav %}
+	Monthly Duration
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Download</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<form action="/reports/247" method="post">
+					<fieldset>
+						<div class="standardForm textWidthAuto inlineFormSubmit">
+							For {{input_text('months', '1', 2, 2)}}
+							month(s) finishing at the end of
+							{{input_date('finish', month_finish, resolution='month')}}
+							<br>
+							<br>
+							<label>Site Codes</label><br>
+							{{input_textarea('site_codes', '', 5, 40, placeholder='One on each line, includes all if left blank')}}    						
+							<br>
+							<br>
+						</div>
+						<input type="submit" value="Download">
+					</fieldset>
+        </form>
+				<br>
+				<p>
+					Here's how Chellow calculates the monthly consumption for dumb NHH
+					supplies. First it finds the closest normal reads. Let's assume
+					there are just two for simplicity. For each TPR, Chellow works out
+					the (historical kWh / hh) = (kWh between the two reads) /
+					(number of HHs between the two reads). Then Chellow finds the
+					number of HHs between the beginning of the month and the end of the
+					month, and also the number of HHs that fall within the TPR, between
+					the beginning and and of the month. The kWh for each half hour in
+					the month for each TPR is (historical kWh / hh) *
+					(month half-hours) / (month half-hours within TPR).
+				</P>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

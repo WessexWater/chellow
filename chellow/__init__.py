@@ -20,7 +20,8 @@ import chellow.rcrc
 import chellow.system_price
 import chellow.tlms
 import chellow.utils
-import chellow.views
+import chellow.views.e
+import chellow.views.home
 from chellow._version import get_versions
 from chellow.models import (
     Contract,
@@ -51,7 +52,8 @@ def create_app(testing=False):
     app.secret_key = os.urandom(24)
     start_sqlalchemy()
 
-    app.register_blueprint(chellow.views.views)
+    app.register_blueprint(chellow.views.home.home)
+    app.register_blueprint(chellow.views.e.e)
     chellow.utils.root_path = app.root_path
 
     api = chellow.api.api

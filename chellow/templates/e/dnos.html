@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs
+{% endblock %}
+
+{% block nav %}
+	DNOs
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>DNOs</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Name</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for dno in dnos %}
+							<tr>
+								<td>
+									<a href="/e/dnos/{{dno.dno.id}}">{{dno.dno.dno_code}}</a>
+								</td>
+								<td>{{dno.dno.name}}</td>
+								<td>{{dno.start_date|hh_format}}</td>
+								<td>{{dno.finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="section-header">
+			<h2>CSV Downloads</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<p>
+					<a href="/reports/csv_llfcs">LLFCs</a>
+				</p>
+			</div>
+		</div>
+		<div class="section-header">
+			<h2>LAF Importer</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<p><a href="/laf_imports">LAF Importer</a></p>
+			</div>
+		</div>
+		<div class="section-header">
+			<h2>DNO Rate Parser</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/reports/dno_rate_parser">
+						<fieldset>
+							<input
+									type="file" name="dno_file" size="45"
+									value="{{request.values.import_file}}">
+							<select name="gsp_group_id">
+							{% for gsp_group in gsp_groups %}
+								{{input_option(
+										'gsp_group_id', gsp_group.id,
+										gsp_group.code + ': ' + gsp_group.description)}}
+							{% endfor %}
+							</select>
+							<input type="submit" value="Parse">
+						</fieldset>
+					</form>
+					<p>
+						This gadget takes a DNO rate spreadsheet and outputs the rates in
+					 	the Zish format.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

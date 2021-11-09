@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; GSP Groups
+{% endblock %}
+
+{% block nav %}
+	GSP Groups
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>GSP Groups</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for group in groups %}
+							<tr>
+								<td>
+									<a href="/e/gsp_groups/{{group.id}}">
+										{{group.code}}
+									</a>
+								</td>
+								<td>{{group.description}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

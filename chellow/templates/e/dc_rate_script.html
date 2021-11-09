@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{dc_rate_script.contract.name}} &raquo;
+ 	Rate Script {{dc_rate_script.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/e/dc_contracts/{{dc_rate_script.contract.id}}"
+		>{{dc_rate_script.contract.name}}</a> &raquo;
+ 	{{dc_rate_script.start_date|hh_format}}
+	[<a href="/e/dc_rate_scripts/{{dc_rate_script.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Rate Script</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tr>
+						<th>Start Date</th>
+						<td>{{dc_rate_script.start_date|hh_format }}</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>{{dc_rate_script.finish_date|hh_format }}</td>
+					</tr>
+					<tr>
+						<td>
+							{% if previous_rate_script %}
+								<a
+									href="/e/dc_rate_scripts/{{previous_rate_script.id}}"
+									>Previous Rate Script</a>
+							{% else %}
+								No Previous Rate Script
+							{% endif %}
+						</td>
+						<td>
+							{% if next_rate_script %}
+								<a
+									href="/e/dc_rate_scripts/{{next_rate_script.id}}"
+									>Next Rate Script</a>
+							{% else %}
+								No Next Rate Script
+							{% endif %}
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<pre>{{dc_rate_script.script}}</pre>
+			</div>
+		</div>
+	</div>
+	
+{% endblock %}

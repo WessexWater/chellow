@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}} &raquo; Add Bill
+{% endblock %}
+
+{% block inside_head %}
+	<style>
+		label {
+			width: 6em;
+			float: left;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/e/supplier_batches?supplier_contract_id={{batch.contract.id}}">Batches</a>
+ 	&raquo; 
+	<a href="/e/supplier_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
+	Add Bill
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Add A Bill</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+			{% if supply %}
+				<form action="/e/supplier_batches/{{batch.id}}/add_bill" method="post">
+					<fieldset>
+							<div class="standardForm">
+								<div class="row">
+									<div class="col-sm-2">
+											<label>MPAN Core</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('mpan_core')}}
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-2">
+											<label>Reference</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('reference')}}
+									</div>
+								</div>
+							</div>
+									
+									<div class="standardForm textWidthAuto">
+										<fieldset>
+												<div class="row">
+															<div class="col-sm-2">
+																	<label>Issue Date</label>
+															</div>
+															<div class="col-sm-4">
+																	{{input_date('issue')}}
+															</div>
+													</div>
+									</fieldset>
+									
+									<fieldset>
+											<div class="row">
+															<div class="col-sm-2">
+																	<label>Start Date</label>
+															</div>
+															<div class="col-sm-4">
+																{{input_date('start', start_date)}}
+															</div>
+													</div>
+									</fieldset>
+									
+									<fieldset>
+											<div class="row">
+															<div class="col-sm-2">
+																	<label>Finish Date</label>
+															</div>
+															<div class="col-sm-4">
+																	{{input_date('finish')}}
+															</div>
+													</div>
+									</fieldset>
+									</div>
+																	
+									<div class="standardForm">
+											<div class="row">
+													<div class="col-sm-2">
+															<label>kWh</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('kwh', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Net</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('net', '0')}}
+													</div>
+											</div>   
+											<div class="row">
+													<div class="col-sm-2">
+															<label>VAT</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('vat', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Gross</label>
+													</div>
+													<div class="col-sm-4">
+															{{input_text('gross', '0')}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Account</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('account', account)}}
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Type</label> 
+													</div>
+													<div class="col-sm-4">
+												<select name="bill_type_id">
+										{% for bill_type in bill_types %}
+										<p>{{normal_bill_type_id}} {{bill_type.id}}</p>
+											{{input_option('bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
+										{% endfor %}
+									</select>
+													</div>
+											</div>
+											<div class="row">
+													<div class="col-sm-2">
+															<label>Breakdown</label>
+													</div>
+													<div class="col-sm-4">
+												{{input_text('breakdown', '{}')}}
+													</div>
+											</div>
+
+											<input type="submit" value="Add">
+									</div>
+							</fieldset>
+					</form>
+			{% else %}
+				<form action="/e/supplier_batches/{{batch.id}}/add_bill">
+					<fieldset>
+						<div class="standardForm">
+							<div class="row">
+								<div class="col-sm-2">
+									<label>MPAN Core</label>
+								</div>
+								<div class="col-sm-4">
+									{{input_text('mpan_core')}}
+								</div>
+								<input type="submit" value="Find Supply">
+							</div>
+						</div>
+					</fieldset>
+				</form>
+			{% endif %}
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+	
+{% endblock %}

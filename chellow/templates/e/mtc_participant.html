@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; MTCs &raquo;
+ 	{{mtc_participant.mtc.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; 
+	<a href="/e/mtc_participants?participant_id={{dno.participant.id}}">MTCs</a> &raquo;
+ 	{{mtc_participant.mtc.code}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{mtc_participant.mtc.description}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>
+							<a href="/e/mtcs/{{mtc_participant.mtc.id}}"
+								>{{mtc_participant.mtc.code}}</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Common?</th>
+						<td>{{mtc_participant.mtc.is_common}}</td>
+					</tr>
+					<tr>
+						<th>Related Metering?</th>
+						<td>{{mtc_participant.mtc.has_related_metering}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{mtc_participant.description}}</td>
+					</tr>
+					<tr>
+						<th>Comms?</th>
+						<td>{{mtc_participant.has_comms}}</td>
+					</tr>
+					<tr>
+						<th>HH?</th>
+						<td>{{mtc_participant.is_hh}}</td>
+					</tr>
+					<tr>
+						<th>Meter Type</th>
+						<td>
+							<a href="/e/meter_types/{{mtc_participant.meter_type.id}}"
+								title="{{mtc_participant.meter_type.description}}"
+								>{{mtc_participant.meter_type.code}}</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Meter Payment Type</th>
+						<td>
+							<a href="/e/meter_payment_types/{{mtc_participant.meter_payment_type.id}}"
+								title="{{mtc_participant.meter_payment_type.description}}"
+								>{{mtc_participant.meter_payment_type.code}}</a>
+						</td>
+					</tr>
+					<tr>
+						<th>TPR Count</th>
+						<td>{{mtc_participant.tpr_count}}</td>
+					</tr>
+					<tr>
+						<th>Valid From</th>
+						<td>{{mtc_participant.valid_from|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid To</th>
+						<td>{{mtc_participant.valid_to|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid SSC Combinations</th>
+						<td>
+							<ul>
+								{% for mtc_ssc in mtc_participant.mtc_sscs %}
+									<li>
+										<a href="/e/mtc_sscs/{{mtc_ssc.id}}">{{mtc_ssc.ssc.code}}</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<th>Valid LLFC Combinations</th>
+						<td>
+							<ul>
+								{% for mtc_llfc in mtc_participant.mtc_llfcs %}
+									<li>
+										<a href="/e/mtc_llfcs/{{mtc_llfc.id}}">{{mtc_llfc.llfc.code}}</a>
+									</li>
+								{% endfor %}
+							</ul>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

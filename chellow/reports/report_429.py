@@ -19,7 +19,7 @@ import chellow.dloads
 import chellow.g_engine
 from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(g_batch_id, g_bill_id, user):

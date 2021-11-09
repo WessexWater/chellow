@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{bill.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{bill.batch.reference}} &raquo; {{bill.reference}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{bill.batch.contract.id}}"
+		>{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}"
+		>Batches</a> &raquo; 
+	<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	Bill {{bill.id}}
+	[<a href="/e/supplier_bills/{{bill.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Bill</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Supply</th>
+							<th>Reference</th>
+							<th>Account</th>
+							<th>Issue Date</th>
+							<th>From</th>
+							<th>To</th>
+							<th>kWh</th>
+							<th>Net</th>
+							<th>VAT</th>
+							<th>Gross</th>
+							<th>Type</th>
+							<th>Check</th>
+							<th>Rate Scripts</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+								<a href="/supplies/{{bill.supply.id}}">Supply</a>
+							</td>
+							<td>{{bill.reference}}</td>
+							<td>{{bill.account}}</td>
+							<td>{{bill.issue_date.strftime('%Y-%m-%d %H:%M')}}</td>
+							<td>{{bill.start_date|hh_format }}</td>
+							<td>{{bill.finish_date|hh_format }}</td>
+							<td>{{bill.kwh}}</td>
+							<td>{{bill.net}}</td>
+							<td>{{bill.vat}}</td>
+							<td>{{bill.gross}}</td>
+							<td>
+								<a href="/bill_types/{{bill.bill_type.id}}"
+									title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+							</td>
+							<td>
+								<a href="/reports/111?bill_id={{bill.id}}">Check</a>
+							</td>
+							<td>
+								{% if rate_scripts|length > 0 %}
+									<ul>
+										{% for rate_script in rate_scripts %}
+											<li>
+												<a
+												 href="/e/supplier_rate_scripts/{{rate_script.id}}">
+													{{rate_script.start_date|hh_format}}
+												</a>
+											</li>
+										{% endfor %}
+									</ul>
+								{% endif %}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Reads
+						[<a href="/e/supplier_bills/{{bill.id}}/add_read">add</a>]</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th rowspan="2">Edit</th>
+							<th rowspan="2">MPAN</th>
+							<th rowspan="2">Coefficient</th>
+							<th rowspan="2">Units</th>
+							<th rowspan="2">TPR</th>
+							<th rowspan="2">Meter Serial Number</th>
+							<th colspan="3">Previous</th>
+							<th colspan="3">Present</th>
+						</tr>
+						<tr>
+							<th>Date</th>
+							<th>Value</th>
+							<th>Type</th>
+							<th>Date</th>
+							<th>Value</th>
+							<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for read in register_reads %}
+							<tr>
+								<td>
+									[<a href="/e/reads/{{read.id}}/edit">edit</a>]
+								</td>
+								<td>{{read.mpan_str}}</td>
+								<td>{{read.coefficient}}</td>
+								<td>{{read.units_as_str()}}</td>
+								<td>
+									<a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
+								</td>
+								<td>{{read.msn}}</td>
+								<td>{{read.previous_date|hh_format}}</td>
+								<td>{{read.previous_value}}</td>
+								<td>
+									<a title="{{read.previous_type.description}}"
+									href="/e/read_types/{{read.previous_type.id}}"
+									>{{read.previous_type.code}}</a>
+								</td>
+								<td>{{read.present_date|hh_format}}</td>
+								<td>{{read.present_value}}</td>
+								<td>
+									<a title="{{read.present_type.description}}"
+									href="/e/read_types/{{read.present_type.id}}"
+									>{{read.present_type.code}}</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Breakdown</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>element</th>
+							{% for col in column_list %}
+								<th>{{col}}</th>
+							{% endfor %}
+						</tr>  
+					</thead>
+					<tbody>
+						{% for row in row_list %}
+							<tr>
+								<td>{{row}}</td>
+								{% for col in column_list %}
+									<td>{{grid[row][col]}}</td>
+								{% endfor %}
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+				<br>
+				<pre>{{bill.breakdown}}</pre>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

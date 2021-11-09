@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Market Roles
+{% endblock %}
+
+{% block nav %}
+	Market Roles
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Market Roles</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for role in market_roles %}
+						<tr>
+							<td>
+								<a href="/e/market_roles/{{role.id}}">{{role.code}}</a>
+							</td>
+							<td>{{ role.description }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+ 
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Read Types
+{% endblock %}
+
+{% block nav %}
+	Read Types
+{% endblock %}
+
+{% block content %}
+<!-- Layer Section -->
+<div class="layer-section">
+	<!-- Section Header -->
+	<div class="section-header">
+		<h2>Read Types</h2>	
+	</div>
+	<!-- End Section Header -->
+	<!-- Section Content -->
+	<div class="section-content">
+		<div class="section-data">
+			<table class="DataTable widthAuto">
+				<thead>
+					<tr>
+						<th>Code</th>
+						<th>Description</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for read_type in read_types %}
+						<tr>
+							<td>
+								<a
+										href="/e/read_types/{{read_type.id}}"
+										>{{read_type.code}}</a>
+							</td>
+							<td>{{read_type.description}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!-- End Section Content -->
+</div>
+<!-- End Layer Section -->
+
+	
+{% endblock %}

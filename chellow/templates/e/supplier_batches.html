@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{contract.name}} &raquo; Batches
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	Batches
+	[<a href="/e/supplier_contracts/{{contract.id}}/add_batch">add</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Batches</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<thead>
+						<tr>
+							<th>Reference</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for batch in batches %}
+							<tr>
+								<td>
+									<a
+											href="/e/supplier_batches/{{batch.id}}?bill_limit=1000"
+									>{{batch.reference}}</a>
+								</td>
+								<td>{{batch.description}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+	LAF Imports
+{% endblock %}
+
+{% block nav %}
+	LAF Imports
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Import LAF Files</h2>	
+		</div>
+		<!-- End Section Header -->
+		
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form enctype="multipart/form-data" method="post" action="/e/laf_imports">
+						<fieldset>
+							<input type="file" name="laf_file" size="45" multiple=true
+									value="{{request.values.laf_file}}">
+							<input type="submit" value="Import">
+						</fieldset>
+					</form>
+
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Participant</th>
+								<th>Timestamp</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for participant, timestamp in properties.items() %}
+								<tr>
+									<td>{{participant}}</td>
+									<td>{{timestamp|hh_format}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<br>
+					
+					{% if process_ids %}
+						<ul>
+							{% for id in process_ids %}
+								<li>
+									<a href="/e/laf_imports/{{id}}">{{id}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</div>
+		
+				<p>
+					This gadget takes files from
+					<a
+							href="https://www.elexonportal.co.uk/svallf/view"
+							>https://www.elexonportal.co.uk/svallf/view</a> and imports into
+					Chellow. In the Elexon form, choose:
+					<ul>
+						<li>All LDSOs</li>
+						<li>Approved</li>
+						<li>Live</li>
+						<li>Pool Transfer Format (PTF)</li>
+					</ul>
+				</p>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

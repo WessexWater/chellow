@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{era.supply.id}} &raquo;
+ 	Era {{era.start_date|hh_format}} Edit
+{% endblock %}
+
+{% block style %}
+	<style>
+		label.aligned {
+			width: 18em;
+			float: left;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{era.supply.id}}">{{era.supply.id}}</a> &raquo;
+ 	Era {{era.start_date|hh_format}} Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.delete %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Are you sure you want to delete this era?</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm">
+						<form method="post" action="/e/eras/{{era.id}}/edit">
+							<fieldset>
+								<input type="submit" name="delete" value="Delete">
+								<a href="/e/eras/{{era.supply.id}}/edit">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+		
+			
+	{% else %}
+	
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Sites</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<table class="DataTable widthAuto noMarginBottom">
+						<thead>
+							<tr>
+								<th>Code</th>
+								<th>Name</th>
+								{% if site_eras|length > 1 %}
+									<th></th>
+									<th></th>
+									<th></th>
+								{% endif %}
+							</tr>
+						</thead>
+						<tbody>
+							{% for site_era in site_eras %}
+								<tr>
+									<td>
+										{{site_era.site.code}}
+									</td>
+									<td>
+										{{site_era.site.name}}
+									</td>
+									{% if site_eras|length > 1 %}
+										<td>
+											{% if site_era.is_physical %}
+												Located here
+											{% else %}
+												<form method="post" action="/e/eras/{{era.id}}/edit">
+													<fieldset>
+														<input type="hidden" name="era_id" value="{{era.id}}">
+														<input
+																type="hidden" name="site_id"
+																value="{{site_era.site.id}}">
+														<input
+																type="submit" name="locate" value="Locate Here">
+													</fieldset>
+												</form>
+											{% endif %}
+										</td>
+										<td>
+											<form method="post">
+												<fieldset>
+													<label>Detach from site</label>
+													<input type="hidden" name="era_id" value="{{era.id}}">
+													<input
+															type="hidden" name="site_id"
+															value="{{site_era.site.id}}">
+													<input type="submit" name="detach" value="Detach">
+												</fieldset>
+											</form>
+										</td>
+									{% endif %}
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div class="section-data">
+					<div class="standardForm">
+							<legend>Attach to another site</legend>
+						<form method="post">
+							<fieldset>
+								<input type="hidden" name="era_id" value="{{era.id}}">							
+								<div class="row">
+									<div class="col-sm-6">
+										<label>Site Code {{input_text("site_code", '')}}</label>
+									</div>
+								</div>
+								<input type="submit" name="attach" value="Attach">
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+		
+		
+		 
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Update this era</h2>	
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<form method="post">	
+					<fieldset>
+						<div class="section-data">
+								<div class="standardForm textWidthAuto">
+										<input type="hidden" name="era_id" value="{{era.id}}">
+										<div class="row">
+												<fieldset>
+											<div class="col-sm-2">
+																<label>Start date</label>
+														</div>
+														<div class="col-sm-4">
+																{{input_date('start', era.start_date)}}
+														</div> 
+									</fieldset>
+										</div>
+										<div class="row">
+												<fieldset>
+											<div class="col-sm-2">
+																<label>End date</label>
+														</div>
+														<div class="col-sm-4">
+																{{input_date('finish', era.finish_date)}}
+																<label>Ended?
+													{{input_checkbox('is_ended', era.finish_date is not none)}}
+													</label>
+														</div> 
+									</fieldset>
+										</div>
+								</div>
+							<div class="standardForm">
+								<div class="row">
+									<div class="col-sm-2">
+										<label class="aligned">MOP Contract</label>
+									</div>
+									<div class="col-sm-4">
+											<select name="mop_contract_id">
+											{% for contract in mop_contracts %}
+												{{input_option('mop_contract_id', contract.id, contract.name, era.mop_contract.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div> 
+								<div class="row">
+										<div class="col-sm-2">
+										<label class="aligned">MOP Account</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('mop_account', era.mop_account)}}
+										</div>
+								</div>
+								
+								
+								<div class="row">
+										<div class="col-sm-2">
+										<label class="aligned">DC Contract</label>
+									</div>	
+									<div class="col-sm-4">
+										<select name="dc_contract_id">
+											{% for contract in dc_contracts %}
+												{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">DC Account</label>
+										</div>
+										<div class="col-sm-4">
+										{{input_text('dc_account', era.dc_account)}}
+									</div>
+								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">Meter Serial Number</label>
+										</div>
+										<div class="col-sm-4">
+										{{input_text('msn', era.msn)}}
+									</div>
+								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">Profile Class</label>
+										</div>
+										<div class="col-sm-4">
+										<select name="pc_id">
+											{% for pc in pcs %}
+												{{input_option('pc_id', pc.id, pc.code + ' - ' + pc.name, era.pc.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-sm-2">
+										<label class="aligned">Meter Timeswitch Class</label>
+									</div>
+									<div class="col-sm-4">
+										{{input_text('mtc_code', era.old_mtc.code, 3, 3)}}
+									</div>
+								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">CoP</label>
+										</div>
+										<div class="col-sm-4">
+										<select name="cop_id">
+											{% for cop in cops %}
+												{{input_option('cop_id', cop.id, cop.code + ' ' + cop.description, era.cop.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="row">
+										<div class="col-sm-2">
+												<label class="aligned">Comm</label>
+										</div>
+										<div class="col-sm-4">
+										<select name="comm_id">
+											{% for comm in comms %}
+												{{input_option(
+												  'comm_id', comm.id, comm.code + ' ' + comm.description,
+												 	era.comm.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								
+								<div class="row">
+									<div class="col-sm-2">
+										<label class="aligned">SSC</label>
+									</div>								
+									<div class="col-sm-4">
+										{{input_text('ssc_code', era.ssc.code, 4, 4)}}
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="col-sm-2">
+										<label class="aligned">Energisation Status</label>
+									</div>								
+									<div class="col-sm-4">
+										<select name="energisation_status_id">
+											{% for energisation_status in energisation_statuses %}
+												{{input_option(
+													'energisation_status_id', energisation_status.id,
+													energisation_status.description,
+													era.energisation_status.id)}}
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+
+								<div class="row">
+									<div class="col-sm-2">
+										<label class="aligned">Properties</label>
+									</div>								
+									<div class="col-sm-4">
+										{{input_textarea('properties', era.properties, 20, 80)}}
+									</div>
+									<p>
+										The <code>meter_type</code> property contains a
+										<a href="/e/dtc_meter_types">DTC Meter Type Code</a>.
+									</p>
+								</div>
+							</div>
+						</div>							
+						<div class="section-data">
+							<div class="standardForm">
+								<fieldset>
+									<legend>Import MPAN</legend>
+									<div class="row">
+											<div class="col-sm-2">
+													<label class="aligned">Line Loss Factor Class</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('imp_llfc_code', era.imp_llfc.code, 3,3)}}
+										</div>
+									</div>
+									<div class="row">
+											<div class="col-sm-2">
+													<label class="aligned">MPAN Core</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('imp_mpan_core', era.imp_mpan_core|default(''), 16)}}										
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-sm-2">
+											<label class="aligned">Agreed Supply Capacity (kVA)</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('imp_sc', era.imp_sc, 9, 9)}}
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-sm-2">
+											<label class="aligned">Supplier Contract</label>
+										</div>
+									<div class="col-sm-4">
+										<select name="imp_supplier_contract_id">
+											{% for contract in supplier_contracts %}
+												{{input_option('imp_supplier_contract_id', contract.id, contract.name, era.imp_supplier_contract.id)}}
+											{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="row">
+											<div class="col-sm-2">
+											<label class="aligned">Supplier Account</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('imp_supplier_account', era.imp_supplier_account)}}
+										</div>
+									</div>
+								</fieldset>
+							</div>
+						</div>
+					 
+						<div class="section-data">
+							<div class="standardForm">
+								<fieldset>
+									<legend>Export MPAN</legend>
+									<div class="row">
+											<div class="col-sm-2">
+													<label class="aligned">Line Loss Factor Class</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('exp_llfc_code', era.exp_llfc.code, 3, 3)}}
+										</div>
+									</div>
+									<div class="row">
+											<div class="col-sm-2">
+													<label class="aligned">MPAN Core</label>
+											</div>
+											<div class="col-sm-4">
+											{{input_text('exp_mpan_core', era.exp_mpan_core, 16)}}
+										</div>
+									</div>
+									<div class="row">
+											<div class="col-sm-2">
+											<label class="aligned">Agreed Supply Capacity (kVA)</label>
+											</div>
+										<div class="col-sm-4">
+											{{input_text('exp_sc', era.exp_sc, 9, 9)}}
+										</div>
+									</div>
+									<div class="row">
+											<div class="col-sm-2">
+													<label class="aligned">Supplier Contract</label>
+											</div>
+											<div class="col-sm-4">
+											<select name="exp_supplier_contract_id">
+												{% for contract in supplier_contracts %}
+													{{input_option('exp_supplier_contract_id', contract.id, contract.name, era.exp_supplier_contract.id)}}
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-sm-2">
+											<label class="aligned">Supplier Account</label>
+										</div>
+										<div class="col-sm-4">
+											{{input_text('exp_supplier_account', era.exp_supplier_account)}}
+										</div>
+									</div>
+								</fieldset>
+							</div>
+							<input type="submit" value="Update">
+						</div>
+					</fieldset>
+				</form>
+			
+				
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+
+		{% if era.supply.eras|length > 1 %}
+			<!-- Layer Section -->
+			<div class="layer-section">
+				<!-- Section Header -->
+				<div class="section-header">
+					<h2>Delete this era</h2>	
+				</div>
+				<!-- End Section Header -->
+				<!-- Section Content -->
+				<div class="section-content">
+					<div class="section-data">
+						<div class="standardForm">
+							<form action="/eras/{{era.id}}/edit">
+								<fieldset>
+									<input type="submit" name="delete" value="Delete">
+								</fieldset>
+							</form>
+						</div>
+					</div>
+				</div>
+				<!-- End Section Content -->
+			</div>
+			<!-- End Layer Section -->
+		{% endif %}
+	 
+	{% endif %}
+{% endblock %}

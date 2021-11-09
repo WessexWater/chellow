@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo;
+ 	Automatic HH Data Downloader
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	Automatic HH Data Downloader
+{% endblock %}
+
+{% block content %}
+	{% if task %}
+
+	 <!-- Layer Section -->
+	<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">      
+					<h2>Automatic HH Data Downloader</h2>
+			</div>
+			<!-- End Section Header -->
+			
+			<!-- Section Content -->
+			<div class="section-content">
+					<div class="section-data">
+					<table class="DataTable widthAuto noMarginBottom">
+							<caption><a href="/e/dc_contracts/{{contract.id}}/auto_importer"
+									>Refresh page</a></caption>
+					<tr>
+						<th>Is Locked?</th>
+						<th>Is stopping?</th>
+					</tr>
+					<tr>
+						<td>{{task.is_locked()}}</td>
+						<td>{{task.stopped.isSet()}}</td>
+					</tr>
+				</table>        
+					</div>
+			</div>
+			<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Import Now</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<form method="post">
+						<fieldset>
+							<input type="hidden" name="dc_contract_id"
+									value="{{contract.id}}">
+							<input type="submit" value="Import" name="now"
+								{% if task.is_locked() %}
+									disabled
+								{% endif %}
+							>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+					<h2>Log</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+					<div class="section-data">
+							<p>{{ task.get_status() }}</p>
+
+							<ul>
+					{% for message in task.messages %}
+						<li>{{message}}</li>
+					{% endfor %}
+				</ul>
+					</div>
+			</div>
+			<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	{% else %}
+		<p>The importer task has not been started.</p>
+	{% endif %}
+{% endblock %}

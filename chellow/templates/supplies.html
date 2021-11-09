@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; Supplies
+	Supplies
 {% endblock %}
 
 {% block content %}
@@ -65,25 +65,25 @@
 								{% for e_era in e_eras %}
 									<tr>
 										<td>
-											<a href="/supplies/{{e_era.supply_id}}">supply</a>
+											<a href="/e/supplies/{{e_era.supply_id}}">supply</a>
 										</td>
 										<td>{{e_era.msn}}</td>
 										<td>
 											<a
-													href="/dc_contracts/{{e_era.dc_contract.id}}"
+													href="/e/dc_contracts/{{e_era.dc_contract.id}}"
 													>{{e_era.dc_contract.name}}</a>
 										</td>
 										<td>{{e_era.dc_account}}</td>
 										<td>
 											{% if e_era.imp_mpan_core %}
-												{{e_era.pc.code}} {{e_era.mtc.code}}
+												{{e_era.pc.code}} {{e_era.old_mtc.code}}
 												{{e_era.imp_llfc.code}} {{e_era.imp_mpan_core}}
 											{% endif %}
 										</td>
 										<td>
 											{% if e_era.imp_mpan_core %}
 												<a
-														href="/supplier_contracts/{{e_era.imp_supplier_contract.id}}">{{e_era.imp_supplier_contract.name}}</a>
+														href="/e/supplier_contracts/{{e_era.imp_supplier_contract.id}}">{{e_era.imp_supplier_contract.name}}</a>
 											{% endif %}
 										</td>
 										<td>
@@ -93,14 +93,14 @@
 										</td>
 										<td>
 											{% if e_era.exp_mpan_core %}
-												{{e_era.pc.code}} {{e_era.mtc.code}}
+												{{e_era.pc.code}} {{e_era.old_mtc.code}}
 												{{e_era.exp_llfc.code}} {{e_era.exp_mpan_core}}
 											{% endif %}
 										</td>
 										<td>
 											{% if e_era.exp_mpan_core %}
 												<a
-														href="/supplier_contracts/{{e_era.exp_supplier_contract.id}}"
+														href="/e/supplier_contracts/{{e_era.exp_supplier_contract.id}}"
 														>{{e_era.exp_supplier_contract.name}}</a>
 											{% endif %}
 										</td>

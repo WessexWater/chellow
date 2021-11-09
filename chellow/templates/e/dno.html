@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/dnos">DNOs</a> &raquo; {{dno.dno_code}}
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>DNO</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Code</th>
+							<td>{{dno.dno_code}}</td>
+						</tr>
+						<tr>
+							<th>Name</th>
+							<td>{{dno.name}}</td>
+						</tr>
+						<tr>
+							<th>Market Participant</th>
+							<td>
+								<a
+								 	href="/e/participants/{{dno.participant.id}}"
+								 	title="{{dno.participant.name}}"
+									>{{dno.participant.code}}</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{rate_scripts[0][0]|hh_format }}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{rate_scripts[-1][1]|hh_format }}</td>
+						</tr>
+						<tr>
+							<th>Custom Reports</th>
+							<td>
+								<ul>
+									{% for report in custom_reports %}
+										<li>
+											<a
+													href="/local_reports/{{report.id}}/output/?dno_id={{contract.id}}"
+													>{{report.name}}</a>
+										</li>
+									{% endfor %}
+								</ul>
+							</td>
+						</tr>
+						<tr>
+							<th>Line Loss Factor Classes</th>
+							<td>
+								<a href="/e/llfcs?dno_id={{dno.id}}">LLFCs</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Meter Timeswitch Classes</th>
+							<td>
+								<a href="/e/mtc_participants?participant_id={{dno.participant.id}}"
+									>MTCs</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Valid combinations of MTC and SSC</th>
+							<td>
+								<a href="/e/mtc_sscs?participant_id={{dno.participant.id}}"
+									>MTC SSCs </a>
+							</td>
+						</tr>
+						<tr>
+							<th>Valid combinations of MTC and LLFC</th>
+							<td>
+								<a href="/e/mtc_llfcs?participant_id={{dno.participant.id}}"
+									>MTC LLFCs</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Valid combinations of MTC, LLFC and SSC</th>
+							<td>
+								<a href="/e/mtc_llfc_sscs?participant_id={{dno.participant.id}}"
+									>MTC LLFC SSCs</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Valid combinations of PC, LLFC, SSC and MTC for NHH supplies</th>
+							<td>
+								<a href="/e/mtc_llfc_ssc_pcs?dno_id={{dno.id}}"
+									>MTC LLFC SSC PCs</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Old Valid combinations of PC, LLFC, SSC and MTC</th>
+							<td>
+								<a href="/old_valid_mtc_llfc_ssc_pcs?dno_id={{dno.id}}">Old Valid Combinations</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<caption>
+						Rate Scripts
+					</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<th>From</th>
+							<th>To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for start_date, finish_date, script in rate_scripts %}
+							<tr>
+								<td>
+									<a
+									 		href="/e/dnos/{{dno.id}}/rate_scripts/{{start_date.strftime('%Y%m%d%H%M')}}"
+											>View</a>
+								</td>
+								<td>{{start_date|hh_format}}</td>
+								<td>{{finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="section-header">
+			<h2>Voltage Level Parser</h2>	
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm">
+					<form
+							enctype="multipart/form-data" method="post"
+							action="/reports/dno_vl_parser">
+						<fieldset>
+							<input type="hidden" name="dno_id" value="{{dno.id}}">
+							<input
+									type="file" name="dno_file" size="45"
+									value="{{request.values.import_file}}">
+							<input type="submit" value="Parse">
+						</fieldset>
+					</form>
+					<p>
+						This gadget takes a DNO rate spreadsheet for the current financial
+						year and outputs a general import file that updates the LLFC
+						voltage levels and substation flag to make Chellow match the DNO
+						spreadsheet.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

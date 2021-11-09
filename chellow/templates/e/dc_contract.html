@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{dc_contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; {{dc_contract.name}}
+	[<a href="/e/dc_contracts/{{dc_contract.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>{{dc_contract.name}}</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <table class="DataTable widthAuto noMarginBottom">
+			<tbody>
+				<tr>
+					<th>Party</th>
+					<td>
+						<a href="/e/parties/{{dc_contract.party.id}}">
+							{{dc_contract.party.name}}
+						</a>
+					</td>
+				</tr>
+				<tr>
+					<th>Name</th>
+					<td>{{dc_contract.name}}</td>
+				</tr>
+				<tr>
+					<th>Start Date</th>
+					<td>{{dc_contract.start_rate_script.start_date|hh_format }}</td>
+				</tr>
+				<tr>
+					<th>Finish Date</th>
+					<td>{{dc_contract.finish_rate_script.finish_date|hh_format }}</td>
+				</tr>
+			</tbody>
+     		    </table>
+		</div>
+
+		<div class="section-data">
+		    <table class="DataTable widthAuto">
+			<caption>
+				Rate Scripts
+				[<a href="/e/dc_contracts/{{dc_contract.id}}/add_rate_script">add</a>]
+			</caption>
+			<thead>
+				<tr>
+					<th></th>
+					<th>From</th>
+					<th>To</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for rate_script in rate_scripts %}
+					<tr>
+						<td>
+							<a href="/e/dc_rate_scripts/{{rate_script.id}}">
+								view
+							</a>
+						</td>
+						<td>{{rate_script.start_date|hh_format}}</td>
+						<td>{{rate_script.finish_date|hh_format}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		</div>
+
+		<div class="section-data">
+		    <ul>
+			<li>
+				<a href="/e/dc_batches?dc_contract_id={{dc_contract.id}}">Batches</a>
+			</li>
+			<li>
+				<a href="/e/channel_snags?dc_contract_id={{dc_contract.id}}&days_hidden=5">Channel Snags</a>
+			</li>
+			<li>
+				<a href="/e/dc_contracts/{{dc_contract.id}}/auto_importer">Automatic HH Data Importer</a>
+			</li>
+			<li>
+			[<a href="/e/dc_contracts/{{dc_contract.id}}/hh_imports">HH data imports</a>]
+			</li>
+		</ul>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Download Virtual Bills</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <div class="standardForm textWidthAuto">
+		        <form action="/reports/81">
+				<fieldset>
+					<input type="hidden" name="dc_contract_id" value="{{dc_contract.id}}">
+					
+					For <input name="months" value="1" maxlength="2" size="2">
+					month(s) until the end of
+					{{input_date('end', last_month_finish, 'month')}}
+					<input type="submit" value="Download">
+				</fieldset>
+			</form>
+		    </div>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Script</h2>
+	    </div>
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{dc_contract.charge_script}}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>Properties</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{dc_contract.properties }}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+	    <!-- Section Header -->
+	    <div class="section-header">
+		<h2>State</h2>
+	    </div>
+	    <!-- End Section Header -->
+	    <!-- Section Content -->
+	    <div class="section-content">
+		<div class="section-data">
+		    <pre>{{dc_contract.state }}</pre>
+		</div>
+	    </div>
+	    <!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+{% endblock %}

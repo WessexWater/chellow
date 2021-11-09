@@ -28,13 +28,14 @@ setup(
     author_email="tlocke@tlocke.org.uk",
     url="https://github.com/WessexWater/chellow",
     cmdclass=versioneer.get_cmdclass(),
-    packages=["chellow", "chellow.reports"],
+    packages=["chellow", "chellow.reports", "chellow.views"],
     package_data={
         "chellow": [
             "non_core_contracts/*/*.zish",
             "non_core_contracts/*/rate_scripts/*.zish",
             "mdd/converted/*.csv",
             "templates/*.html",
+            "templates/*/*.html",
             "templates/css/*.css",
             "templates/js/*.js",
             "templates/*.css",

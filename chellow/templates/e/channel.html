@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; 
+ 	Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}
+ 	&raquo; 
+	Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
+	{{channel.channel_type}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{channel.era.supply.id}}">Supply {{channel.era.supply.name}}
+	 	Era {{channel.era.start_date|hh_format}}</a> &raquo; 
+	Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
+	{{channel.channel_type}}
+	[<a href="/e/channels/{{channel.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Snags</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+							<th>Description</th>
+							<th>Ignored?</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for snag in snags %}
+							<tr>
+								<td>
+									<a href="/e/channel_snags/{{snag.id}}">view</a>
+								</td>
+								<td>{{snag.start_date|hh_format}}</td>
+								<td>{{snag.finish_date|hh_format}}</td>
+								<td>{{snag.description}}</td>
+								<td>
+									{% if snag.is_ignored %}
+										Ignored
+									{% else %}
+										Not ignored
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>
+			HH Data Page
+			{% if prev_page != None %}
+			<a href="/e/channels/{{channel.id}}?page={{prev_page}}">{{prev_page}}</a>
+			{% endif%}
+			{% if next_page != None %}
+			<a href="/channels/{{channel.id}}?page={{next_page}}">{{next_page}}</a>
+			{% endif%}
+			</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table  class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Edit</th>
+							<th>Start Time</th>
+							<th>
+								{% if channel.imp_related %}
+									Import
+								{% else %}
+									Export
+								{% endif %}
+
+								{{channel.channel_type}}
+							</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for hh in hh_data %}
+							<tr>
+								<td>[<a href="/e/hh_data/{{hh.id}}/edit">edit</a>]</td>
+								<td>{{hh.start_date|hh_format}}</td>
+								<td>{{hh.value}}</td>
+								<td>{{hh.status}}</td>
+							</tr>
+						{%- endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+		
+{% endblock %}

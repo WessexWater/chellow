@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Site Snags &raquo; {{snag.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/site_snags">Site Snags</a> &raquo; {{snag.id}}
+	[<a href="/e/site_snags/{{snag.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Site Snag</h2>	
+		</div>
+		<!-- End Section Header -->
+		
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="noWrap-lg">
+					<table class="DataTable widthAuto noMarginBottom">
+						<tbody>
+							<tr>
+								<th>Date Created</th>
+								<td>{{snag.date_created|hh_format}}</td>
+							</tr>
+							<tr>
+								<th>Ignored?</th>
+								<td>
+									{% if snag.is_ignored %}
+										Ignored
+									{% else %}
+										Not ignored
+									{% endif %}
+								</td>
+							</tr>
+							<tr>
+								<th>Description</th>
+								<td>{{snag.description}}</td>
+							</tr>
+							<tr>
+								<th>Site</th>
+								<td>
+									<a href="/sites/{{snag.site.id}}">{{snag.site.code}}</a>
+								</td>
+							</tr>
+							<tr>
+								<th>Start Date</th>
+								<td>{{snag.start_date|hh_format}}</td>
+							</tr>
+							<tr>
+								<th>Finish Date</th>
+								<td>{{snag.finish_date|hh_format}}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+
+		
+{% endblock %}

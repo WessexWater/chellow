@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Meter Payment Types &raquo; {{meter_payment_type.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/meter_payment_types/">Meter Payment Types</a>
+	&raquo; {{meter_payment_type.description}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{meter_payment_type.description}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{meter_payment_type.code}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{meter_payment_type.description}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

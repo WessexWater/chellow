@@ -27,7 +27,7 @@ from chellow.utils import (
     req_int,
     utc_datetime,
 )
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(start_date, finish_date, g_contract_id, user):

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Site Snags &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/site_snags">Site Snags</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Bulk ignore</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto inlineFormSubmit">
+					<form method="post">
+						<fieldset>
+							<p>
+								Ignore all snags before {{input_date('ignore')}}
+								<input type="submit" name="ignore" value="Ignore">
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

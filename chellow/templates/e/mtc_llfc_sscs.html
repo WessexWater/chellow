@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; MTC LLFC SSCs
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; MTC LLFC SSCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>LLFC</th>
+							<th>SSC</th>
+							<th>MTC</th>
+							<th>Valid From</th>
+							<th>
+								Valid To
+								{% if request.values.only_ongoing %}
+									(<a href="/e/mtc_llfc_sscs?participant_id={{dno.participant.id}}"
+										>show all</a>)
+								{% else %}
+									(<a href="/e/mtc_llfc_sscs?participant_id={{dno.participant.id}}&amp;only_ongoing=true"
+										>only show ongoing</a>)
+								{% endif %}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for mtc_llfc_ssc in mtc_llfc_sscs %}
+							<tr>
+								<td>
+									<a href="/e/mtc_llfc_sscs/{{mtc_llfc_ssc.id}}">View</a>
+								</td>
+								<td>
+									<a href="/e/llfcs/{{mtc_llfc_ssc.llfc.id}}">{{mtc_llfc_ssc.llfc.code}}
+										{{mtc_llfc_ssc.llfc.description}}</a>
+								</td>
+								<td>
+									<a href="/e/sscs/{{mtc_llfc_ssc.mtc_ssc.ssc.id}}"
+										>{{mtc_llfc_ssc.mtc_ssc.ssc.code}}
+									 	{{mtc_llfc_ssc.mtc_ssc.ssc.description}}</a>
+								</td>
+								<td>
+									<a href="/e/mtc_participants/{{mtc_llfc_ssc.mtc_ssc.mtc_participant.id}}"
+									>{{mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}
+								 	{{mtc_llfc_ssc.mtc_ssc.mtc_participant.description}}</a>
+								</td>
+								<td>{{mtc_llfc_ssc.valid_from|hh_format}}</td>
+								<td>{{mtc_llfc_ssc.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

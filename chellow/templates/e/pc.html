@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Profile Classes &raquo; {{pc.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/pcs">Profile Classes</a> &raquo; {{pc.code}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{pc.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{pc.code}}</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{pc.name}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

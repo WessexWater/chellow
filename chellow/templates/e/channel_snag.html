@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{snag.channel.era.dc_contract.name}} &raquo; 
+ 	Channel Snags &raquo; {{snag.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{snag.channel.era.dc_contract.id}}"
+		>{{snag.channel.era.dc_contract.name}}</a> &raquo; 
+	<a href="/e/channel_snags?dc_contract_id={{snag.channel.era.dc_contract.id}}&amp;days_hidden=5">Channel Snags</a> &raquo; 
+
+	{{snag.id}}
+	[<a href="/e/channel_snags/{{snag.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Channel Snag</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tbody>
+						<tr>
+							<th>Date Created</th>
+							<td>{{snag.date_created|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Ignored?</th>
+							<td>
+								{% if snag.is_ignored %}
+									Ignored
+								{% else %}
+									Not ignored
+								{% endif %}
+							</td>
+						</tr>
+						<tr>
+							<th>Description</th>
+							<td>{{snag.description}}</td>
+						</tr>
+						<tr>
+							<th>Channel</th>
+							<td>
+								{% if snag.channel.imp_related %}
+									Import
+								{% else %}
+									Export
+								{% endif %}
+								{{snag.channel.channel_type}}
+								channel of <a href="/e/supplies/{{snag.channel.era.supply.id}}">supply {{snag.channel.era.supply.name}}</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{snag.start_date|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{snag.finish_date|hh_format}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

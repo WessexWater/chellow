@@ -31,7 +31,7 @@ from chellow.models import (
     Supply,
 )
 from chellow.utils import HH, hh_format, hh_max, hh_min, req_hh_date, req_int, to_utc
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 NORMAL_READ_TYPES = "C", "N", "N3"

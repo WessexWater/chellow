@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; TPRs &raquo; {{tpr.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/tprs">TPRs</a> &raquo; {{tpr.code}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{tpr.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{tpr.code}}</td>
+					</tr>
+					<tr>
+						<th>Teleswitch or Clock</th>
+						<td>
+							{% if tpr.is_teleswitch %}
+								Teleswitch
+							{% else %}
+								Clock
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>GMT or Clock Time</th>
+						<td>
+							{% if tpr.is_gmt %}
+								GMT
+							{% else %}
+								Clock Time
+							{% endif %}
+						</td>
+					</tr>
+				</table>
+				
+				<table class="DataTable widthAuto">
+					<caption>Clock Intervals</caption>
+					<thead>
+						<tr>
+							<th>Day Of Week</th>
+							<th>Start Day</th>
+							<th>Start Month</th>
+							<th>End Day</th>
+							<th>End Month</th>
+							<th>Start Hour</th>
+							<th>Start Minute</th>
+							<th>End Hour</th>
+							<th>End Minute</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for ci in clock_intervals %}
+							<tr>
+								<td>{{ ci.day_of_week }}</td>
+								<td>{{ ci.start_day}}</td>
+								<td>{{ ci.start_month }}</td>
+								<td>{{ ci.end_day }}</td>
+								<td>{{ ci.end_month }}</td>
+								<td>{{ ci.start_hour }}</td>
+								<td>{{ ci.start_minute }}</td>
+								<td>{{ ci.end_hour }}</td>
+								<td>{{ ci.end_minute }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+				<h3>SSCs</h3>
+
+				<ul>
+					{% for mr in tpr.measurement_requirements %}
+						<li>
+							<a href="/e/sscs/{{mr.ssc.id}}">{{mr.ssc.code}}</a>
+						</li>
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+	
+{% endblock %}

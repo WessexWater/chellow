@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Supplies &raquo; {{supply.id}} &raquo; Notes &raquo; {{note.index}} Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a>  &raquo;
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a>  &raquo;
+	<a href="/e/supplies/{{supply.id}}/notes">Notes</a>  &raquo;
+	{{note.index}} Edit
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Update Supply Note</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<form method="post">
+					<fieldset>
+						Category {{input_text('category', note.category)}}
+						Important? {{input_checkbox('is_important', note.is_important)}}
+						<br>
+						<br>
+						{{input_textarea('body', note.body, 30, 80)}}
+						<br>
+						<br>
+						<input type="submit" name="update" value="Update">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Delete Supply Note</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<form method="post">
+					<fieldset>
+						<input type="submit" name="delete" value="Delete">
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}

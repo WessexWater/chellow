@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; MTC LLFCs
+{% endblock %}
+
+{% block nav %}
+	<a href="/dnos">DNOs</a> &raquo; 
+	<a href="/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; MTC LLFCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>MTC</th>
+							<th>LLFC</th>
+							<th>Valid From</th>
+							<th>
+								Valid To
+								{% if request.values.only_ongoing %}
+									(<a href="/e/mtc_llfcs?participant_id={{dno.participant.id}}"
+										>show all</a>)
+								{% else %}
+									(<a href="/e/mtc_llfcs?participant_id={{dno.participant.id}}&amp;only_ongoing=true"
+										>only show ongoing</a>)
+								{% endif %}
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for mtc_llfc in mtc_llfcs %}
+							<tr>
+								<td>
+									<a href="/e/mtc_llfcs/{{mtc_llfc.id}}">View</a>
+								</td>
+								<td>
+									<a href="/e/mtc_participants/{{mtc_llfc.mtc_participant.id}}">{{mtc_llfc.mtc_participant.mtc.code}} {{mtc_llfc.mtc_participant.description}}</a>
+								</td>
+								<td>
+									<a href="/e/llfcs/{{mtc_llfc.llfc.id}}">{{mtc_llfc.llfc.code}} {{mtc_llfc.llfc.description}}</a>
+								</td>
+								<td>{{mtc_llfc.valid_from|hh_format}}</td>
+								<td>{{mtc_llfc.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

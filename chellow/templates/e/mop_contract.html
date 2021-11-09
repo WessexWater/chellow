@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
+	{{contract.name}}
+	[<a href="/e/mop_contracts/{{contract.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>MOP Contract</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">
+					<tbody>
+						<tr>
+							<th>Party</th>
+							<td>
+								<a
+								 		href="/e/parties/{{contract.party.id}}"
+								>{{contract.party.name}}</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Name</th>
+							<td>{{contract.name}}</td>
+						</tr>
+						<tr>
+							<th>Start Date</th>
+							<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+						</tr>
+						<tr>
+							<th>Finish Date</th>
+							<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<table class="DataTable widthAuto noMarginBottom">				
+					<caption>Rate Scripts
+						[<a href="/e/mop_contracts/{{contract.id}}/add_rate_script">add</a>]
+					</caption>
+					<thead>
+						<tr>
+							<th></th>
+							<th>From</th>
+							<th>To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for rate_script in rate_scripts %}
+							<tr>
+								<td>
+									<a href="/e/mop_rate_scripts/{{rate_script.id}}">view</a>
+								</td>
+								<td>{{rate_script.start_date|hh_format}}</td>
+								<td>{{rate_script.finish_date|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			<div class="section-data">
+				<ul>
+					<li>
+						<a href="/e/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Download Virtual Bills</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<div class="standardForm textWidthAuto inlineFormSubmit">
+					<form action="/reports/231">
+						<fieldset>
+							<input
+						 			type="hidden" name="mop_contract_id" value="{{contract.id}}">
+
+							From {{input_date('start', last_month_start)}} to
+							{{input_date('finish', last_month_finish)}}
+							<input type="submit" value="Download"/>
+						</fieldset>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layer-section">
+		<div class="section-header">
+			<h2>Script</h2>
+		</div>
+		<div class="section-content">
+			<div class="section-data">
+				<pre>{{contract.charge_script}}</pre>
+			</div>
+		</div>
+	</div>
+{% endblock %}
