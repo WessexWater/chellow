@@ -549,8 +549,6 @@ def _process_site(
         deltas=site_deltas,
     )
 
-    bill_ids = set()
-
     if displaced_era is not None and supply_id is None:
         month_data = {}
         for sname in (
@@ -784,40 +782,32 @@ def _process_site(
         if CATEGORY_ORDER[site_category] < CATEGORY_ORDER[era_category]:
             site_category = era_category
 
-        era_associates = set()
-        if mop_contract is not None:
-            era_associates.update(
-                {s.site.code for s in sss.era.site_eras if not s.is_physical}
-            )
+        era_associates = {s.site.code for s in sss.era.site_eras if not s.is_physical}
 
-            for bill in sess.query(Bill).filter(
-                Bill.supply == supply,
-                Bill.start_date <= finish_date,
-                Bill.finish_date >= start_date,
-            ):
-                if bill.id in bill_ids:
-                    continue
-
-                bill_ids.add(bill.id)
-                bill_role_code = bill.batch.contract.market_role.code
-                bill_start = bill.start_date
-                bill_finish = bill.finish_date
-                bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
-                overlap_duration = (
-                    min(bill_finish, finish_date) - max(bill_start, start_date)
-                ).total_seconds() + (30 * 60)
-                proportion = overlap_duration / bill_duration
-                month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
-                bill_prop_gbp = proportion * float(bill.net)
-                month_data["billed-import-net-gbp"] += bill_prop_gbp
-                if bill_role_code == "X":
-                    month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
-                elif bill_role_code == "C":
-                    month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
-                elif bill_role_code == "M":
-                    month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
-                else:
-                    raise BadRequest("Role code not recognized.")
+        for bill in sess.query(Bill).filter(
+            Bill.supply == supply,
+            Bill.start_date <= sss.finish_date,
+            Bill.finish_date >= sss.start_date,
+        ):
+            bill_role_code = bill.batch.contract.market_role.code
+            bill_start = bill.start_date
+            bill_finish = bill.finish_date
+            bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
+            overlap_duration = (
+                min(bill_finish, sss.finish_date) - max(bill_start, sss.start_date)
+            ).total_seconds() + (30 * 60)
+            proportion = overlap_duration / bill_duration
+            month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
+            bill_prop_gbp = proportion * float(bill.net)
+            month_data["billed-import-net-gbp"] += bill_prop_gbp
+            if bill_role_code == "X":
+                month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
+            elif bill_role_code == "C":
+                month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
+            elif bill_role_code == "M":
+                month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
+            else:
+                raise BadRequest("Role code not recognized.")
 
         if imp_ss is None:
             imp_supplier_contract_name = None
@@ -874,95 +864,112 @@ def _process_site(
             site_month_data[k] += v
         era_rows.append([make_val(v) for v in out])
 
-    for bill in (
-        sess.query(Bill)
-        .join(Supply)
-        .join(Supply.eras)
-        .join(SiteEra)
-        .filter(
-            SiteEra.site == site,
-            SiteEra.is_physical == true(),
-            Bill.start_date <= finish_date,
-            Bill.finish_date >= start_date,
+    for supply in sess.execute(
+        select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site)
+    ).scalars():
+        last_era = (
+            sess.execute(
+                select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
+            )
+            .scalars()
+            .first()
         )
-    ):
-        if bill.id in bill_ids:
-            continue
+        if last_era.finish_date is not None and last_era.start_date <= finish_date:
+            site_era = sess.execute(
+                select(SiteEra).where(
+                    SiteEra.era == last_era,
+                    SiteEra.is_physical == true(),
+                    SiteEra.site == site,
+                )
+            ).scalar_one_or_none()
+            if site_era is not None:
+                chunk_start = max(start_date, last_era.finish_date)
+                chunk_finish = finish_date
+                bills = (
+                    sess.execute(
+                        select(Bill).where(
+                            Bill.supply == supply,
+                            Bill.start_date <= chunk_finish,
+                            Bill.finish_date >= chunk_start,
+                        )
+                    )
+                    .scalars()
+                    .all()
+                )
+                if len(bills) > 0:
+                    month_data = {}
+                    for name in (
+                        "import-net",
+                        "export-net",
+                        "import-gen",
+                        "export-gen",
+                        "import-3rd-party",
+                        "export-3rd-party",
+                        "displaced",
+                        "used",
+                        "used-3rd-party",
+                        "billed-import-net",
+                    ):
+                        for sname in ("kwh", "gbp"):
+                            month_data[name + "-" + sname] = 0
+                    month_data["billed-supplier-import-net-gbp"] = 0
+                    month_data["billed-dc-import-net-gbp"] = 0
+                    month_data["billed-mop-import-net-gbp"] = 0
 
-        month_data = {}
-        for name in (
-            "import-net",
-            "export-net",
-            "import-gen",
-            "export-gen",
-            "import-3rd-party",
-            "export-3rd-party",
-            "displaced",
-            "used",
-            "used-3rd-party",
-            "billed-import-net",
-        ):
-            for sname in ("kwh", "gbp"):
-                month_data[name + "-" + sname] = 0
-        month_data["billed-supplier-import-net-gbp"] = 0
-        month_data["billed-dc-import-net-gbp"] = 0
-        month_data["billed-mop-import-net-gbp"] = 0
+                    for bill in bills:
+                        bill_role_code = bill.batch.contract.market_role.code
+                        bill_start = bill.start_date
+                        bill_finish = bill.finish_date
+                        bill_duration = (bill_finish - bill_start).total_seconds() + (
+                            30 * 60
+                        )
+                        overlap_duration = (
+                            min(bill_finish, chunk_finish)
+                            - max(bill_start, chunk_start)
+                        ).total_seconds() + (30 * 60)
+                        proportion = overlap_duration / bill_duration
+                        month_data["billed-import-net-kwh"] += proportion * float(
+                            bill.kwh
+                        )
+                        bill_prop_gbp = proportion * float(bill.net)
+                        if bill_role_code == "X":
+                            key = "billed-supplier-import-net-gbp"
+                        elif bill_role_code == "C":
+                            key = "billed-dc-import-net-gbp"
+                        elif bill_role_code == "M":
+                            key = "billed-mop-import-net-gbp"
+                        else:
+                            raise BadRequest("Role code not recognized.")
 
-        for bill in sess.query(Bill).filter(
-            Bill.supply == bill.supply,
-            Bill.start_date <= finish_date,
-            Bill.finish_date >= start_date,
-        ):
-            bill_ids.add(bill.id)
-            bill_role_code = bill.batch.contract.market_role.code
-            bill_start = bill.start_date
-            bill_finish = bill.finish_date
-            bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
-            overlap_duration = (
-                min(bill_finish, finish_date) - max(bill_start, start_date)
-            ).total_seconds() + (30 * 60)
-            proportion = overlap_duration / bill_duration
-            month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
-            bill_prop_gbp = proportion * float(bill.net)
-            if bill_role_code == "X":
-                key = "billed-supplier-import-net-gbp"
-            elif bill_role_code == "C":
-                key = "billed-dc-import-net-gbp"
-            elif bill_role_code == "M":
-                key = "billed-mop-import-net-gbp"
-            else:
-                raise BadRequest("Role code not recognized.")
+                        for data in month_data, site_month_data:
+                            data["billed-import-net-gbp"] += bill_prop_gbp
+                            data[key] += bill_prop_gbp
 
-            for data in month_data, site_month_data:
-                data["billed-import-net-gbp"] += bill_prop_gbp
-                data[key] += bill_prop_gbp
+                    imp_supplier_contract = last_era.imp_supplier_contract
+                    exp_supplier_contract = last_era.exp_supplier_contract
+                    out = [
+                        now,
+                        last_era.imp_mpan_core,
+                        None
+                        if imp_supplier_contract is None
+                        else imp_supplier_contract.name,
+                        last_era.exp_mpan_core,
+                        None
+                        if exp_supplier_contract is None
+                        else exp_supplier_contract.name,
+                        last_era.meter_category,
+                        last_era.supply.source.code,
+                        None,
+                        last_era.supply.name,
+                        last_era.msn,
+                        last_era.pc.code,
+                        site.code,
+                        site.name,
+                        None,
+                        finish_date,
+                    ] + [month_data[t] for t in summary_titles]
 
-        era = sess.execute(
-            select(Era)
-            .filter(Era.supply == bill.supply)
-            .order_by(Era.start_date.desc())
-        ).first()[0]
-        imp_supplier_contract = era.imp_supplier_contract
-        exp_supplier_contract = era.exp_supplier_contract
-        out = [
-            now,
-            era.imp_mpan_core,
-            None if imp_supplier_contract is None else imp_supplier_contract.name,
-            era.exp_mpan_core,
-            None if exp_supplier_contract is None else exp_supplier_contract.name,
-            era.meter_category,
-            era.supply.source.code,
-            None,
-            era.supply.name,
-            era.msn,
-            era.pc.code,
-            site.code,
-            site.name,
-            None,
-            finish_date,
-        ] + [month_data[t] for t in summary_titles]
-
-        era_rows.append([make_val(v) for v in out])
+                    era_rows.append([make_val(v) for v in out])
 
     site_row = [
         now,
