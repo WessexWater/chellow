@@ -46,7 +46,7 @@ def parse_edi(edi_str):
         elem_codes = [m["code"] for m in SEGMENTS[segment_name]["elements"]]
         elements = dict(zip(elem_codes, els))
 
-        yield line_number, line, code, elements
+        yield line_number, line, segment_name, elements
 
 
 def to_decimal(components):
