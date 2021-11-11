@@ -199,18 +199,21 @@ def _import_Meter_Timeswitch_Class(sess, csv_reader):
         valid_to = parse_to_date(values[2])
         description = values[3]
         is_common = values[4] == "T"
-        has_related_metering = values[5] == "T"
-        meter_type_code = values[6]
-        meter_type = MeterType.get_by_code(sess, meter_type_code)
-        meter_payment_type_code = values[7]
-        meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
-        has_comms = values[8] == "T"
-        is_hh = values[9] == "H"
-        tpr_count_str = values[10]
-        tpr_count = 0 if tpr_count_str == "" else int(tpr_count_str)
 
         if is_common:
-            mtc = Mtc.find_by_code(sess, code, valid_from)
+            has_related_metering = values[5] == "T"
+            meter_type_code = values[6]
+            meter_type = MeterType.get_by_code(sess, meter_type_code, valid_from)
+            meter_payment_type_code = values[7]
+            meter_payment_type = MeterPaymentType.get_by_code(
+                sess, meter_payment_type_code, valid_from
+            )
+            has_comms = values[8] == "T"
+            is_hh = values[9] == "H"
+            tpr_count_str = values[10]
+            tpr_count = 0 if tpr_count_str == "" else int(tpr_count_str)
+
+            mtc = Mtc.find_by_code(sess, None, code, valid_from)
             if mtc is None:
                 Mtc.insert(
                     code,
@@ -233,7 +236,7 @@ def _import_Meter_Timeswitch_Class(sess, csv_reader):
                 mtc.meter_type = meter_type
                 mtc.meter_payment_type = meter_payment_type
                 mtc.tpr_count = tpr_count
-                mtc.valid_to = tpr_count
+                mtc.valid_to = valid_to
                 sess.flush()
 
 
