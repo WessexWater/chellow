@@ -531,9 +531,11 @@ def get_process_ids():
         process_lock.release()
 
 
-def get_process(id):
+def get_process(pid):
     try:
         process_lock.acquire()
-        return processes[id]
+        return processes[pid]
+    except KeyError:
+        raise BadRequest(f"The importer with id {pid} can't be found.")
     finally:
         process_lock.release()
