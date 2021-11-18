@@ -55,10 +55,8 @@ class HhDataImportProcess(threading.Thread):
         self.conv_ext = [ext for ext in extensions if file_name.endswith(ext)]
         if len(self.conv_ext) == 0:
             raise BadRequest(
-                "The extension of the filename '"
-                + file_name
-                + "' is not one of the recognized extensions; "
-                + str(extensions)
+                f"The extension of the filename '{file_name}' is not one of the "
+                f"recognized extensions; {extensions}"
             )
         self.converter = None
 
@@ -477,10 +475,9 @@ def startup_contract(contract_id):
 def startup():
     for procs in processes.values():
         for proc in procs:
-            if proc.isAlive():
+            if proc.is_alive():
                 raise BadRequest(
-                    "Can't start hh importer, there are still some "
-                    "hh imports running."
+                    "Can't start hh importer, there are still some hh imports running."
                 )
 
     sess = None

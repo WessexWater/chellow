@@ -55,18 +55,12 @@ class BillImport(threading.Thread):
             )
 
     def status(self):
-        if self.isAlive():
+        if self.is_alive():
             if self.bill_num is not None:
-                return (
-                    "Inserting raw bills: I've reached bill number "
-                    + str(self.bill_num)
-                    + "."
-                )
+                return f"Inserting raw bills: I've reached bill number {self.bill_num}."
             elif self.parser is not None:
                 return (
-                    "Parsing file: I've reached line number "
-                    + str(self.parser.line_number)
-                    + "."
+                    f"Parsing file: I've reached line number {self.parser.line_number}."
                 )
             else:
                 return "Running"
@@ -151,9 +145,8 @@ class BillImport(threading.Thread):
             else:
                 sess.rollback()
                 self._log(
-                    f"The import has finished, but there were "
-                    f"{len(self.failed_bills)} failures, and so the "
-                    f"whole import has been rolled back."
+                    f"The import has finished, but there were {len(self.failed_bills)} "
+                    f"failures, and so the whole import has been rolled back."
                 )
 
         except BadRequest as e:
@@ -170,10 +163,10 @@ class BillImport(threading.Thread):
         with import_lock:
             fields = {
                 "log": tuple(self.log),
-                "is_alive": self.isAlive(),
+                "is_alive": self.is_alive(),
                 "importer_id": self.import_id,
             }
-            if not self.isAlive():
+            if not self.is_alive():
                 fields["successful_bills"] = self.successful_bills
                 fields["failed_bills"] = self.failed_bills
             return fields

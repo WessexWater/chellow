@@ -157,16 +157,14 @@ class GBillImporter(threading.Thread):
             else:
                 sess.rollback()
                 self._log(
-                    "The import has finished, but "
-                    + str(len(self.failed_bills))
-                    + " bills failed to load, "
-                    + "and so the whole import has been rolled back."
+                    f"The import has finished, but {len(self.failed_bills)} bills "
+                    f"failed to load, and so the whole import has been rolled back."
                 )
 
         except BadRequest as e:
             self._log(e.description)
         except BaseException:
-            self._log("I've encountered a problem: " + traceback.format_exc())
+            self._log(f"I've encountered a problem: {traceback.format_exc()}")
         finally:
             if sess is not None:
                 sess.rollback()
@@ -176,10 +174,10 @@ class GBillImporter(threading.Thread):
         with import_lock:
             fields = {
                 "log": tuple(self.log),
-                "is_alive": self.isAlive(),
+                "is_alive": self.is_alive(),
                 "importer_id": self.importer_id,
             }
-            if not self.isAlive():
+            if not self.is_alive():
                 fields["successful_bills"] = self.successful_bills
                 fields["failed_bills"] = self.failed_bills
             return fields

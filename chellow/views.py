@@ -812,7 +812,7 @@ def general_import_get(import_id):
     try:
         proc = chellow.general_import.get_process(import_id)
         fields = proc.get_fields()
-        fields["is_alive"] = proc.isAlive()
+        fields["is_alive"] = proc.is_alive()
         fields["process_id"] = import_id
         return render_template("general_import.html", **fields)
     except BadRequest as e:
@@ -852,7 +852,7 @@ def mdd_import_get(import_id):
     try:
         proc = chellow.mdd_importer.get_process(import_id)
         fields = proc.get_fields()
-        fields["is_alive"] = proc.isAlive()
+        fields["is_alive"] = proc.is_alive()
         fields["process_id"] = import_id
         return render_template("mdd_import.html", **fields)
     except BadRequest as e:
@@ -898,7 +898,7 @@ def laf_import_get(import_id):
     try:
         proc = chellow.laf_import.get_process(import_id)
         fields = proc.get_fields()
-        fields["is_alive"] = proc.isAlive()
+        fields["is_alive"] = proc.is_alive()
         fields["process_id"] = import_id
         return render_template("laf_import.html", **fields)
     except BadRequest as e:

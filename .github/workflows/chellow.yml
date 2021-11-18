@@ -2,15 +2,15 @@ name: Chellow
 
 on:
   push:
-    branches: [master, test]
+    branches: [main, test]
   pull_request:
-    branches: [master, test]
+    branches: [main, test]
 
 jobs:
   # Label of the container job
   test:
     runs-on: ubuntu-latest
-    container: python:3.6
+    container: python:3.9
 
     services:
       postgres:
@@ -35,13 +35,13 @@ jobs:
         env:
           PGHOST: postgres
           PGPORT: 5432
-  deploy_master:
+  deploy_main:
     runs-on: ubuntu-latest
-    container: python:3.6
+    container: python:3.9
     needs: test
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
         with:
           fetch-depth: 0
       - name: Build a binary wheel and a source tarball
@@ -53,11 +53,11 @@ jobs:
           password: ${{ secrets.pypi_password }}
   deploy_test:
     runs-on: ubuntu-latest
-    container: python:3.6
+    container: python:3.9
     needs: test
     if: github.ref == 'refs/heads/test'
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Build a binary wheel and a source tarball
         run: |
           python setup.py sdist bdist_wheel --test

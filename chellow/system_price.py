@@ -48,16 +48,14 @@ def hh(data_source):
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise BadRequest(
-                    "For the System Price rate script at "
-                    + hh_format(h_start)
-                    + " the rate cannot be found."
+                    f"For the System Price rate script at {hh_format(h_start)} "
+                    f"the rate cannot be found."
                 )
             except TypeError:
                 raise BadRequest(
-                    "For the System Price rate script at "
-                    + hh_format(h_start)
-                    + " the rate 'rates_gbp_per_mwh' has the problem: "
-                    + traceback.format_exc()
+                    f"For the System Price rate script at {hh_format(h_start)} "
+                    f"the rate 'rates_gbp_per_mwh' has the problem: "
+                    f"{traceback.format_exc()}"
                 )
 
         h["sbp"] = sbp
@@ -74,7 +72,7 @@ class SystemPriceImporter(threading.Thread):
     def __init__(self):
         super(SystemPriceImporter, self).__init__(name="System Price Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque()
+        self.messages = collections.deque(maxlen=1000)
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.PROXY_HOST_KEY = "proxy.host"
@@ -99,8 +97,6 @@ class SystemPriceImporter(threading.Thread):
         self.messages.appendleft(
             utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
         )
-        if len(self.messages) > 100:
-            self.messages.pop()
 
     def run(self):
         while not self.stopped.isSet():
@@ -136,10 +132,8 @@ class SystemPriceImporter(threading.Thread):
                         )
                         if scripting_key is None:
                             raise BadRequest(
-                                "The property "
-                                + ELEXON_PORTAL_SCRIPTING_KEY_KEY
-                                + " cannot be found in the configuration "
-                                "properties."
+                                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} "
+                                f"cannot be found in the configuration properties."
                             )
                         url_str = (
                             contract_props["url"]
@@ -148,10 +142,8 @@ class SystemPriceImporter(threading.Thread):
                         )
 
                         self.log(
-                            "Downloading from "
-                            + url_str
-                            + " and extracting data from "
-                            + hh_format(fill_start)
+                            f"Downloading from {url_str} and extracting data from "
+                            f"{hh_format(fill_start)}"
                         )
 
                         url = urllib.parse.urlparse(url_str)
@@ -217,9 +209,8 @@ class SystemPriceImporter(threading.Thread):
                             )
                             if rs is None:
                                 self.log(
-                                    "Adding a new rate script starting at "
-                                    + hh_format(month_start)
-                                    + "."
+                                    f"Adding a new rate script starting at "
+                                    f"{hh_format(month_start)}."
                                 )
 
                                 latest_rs = (
@@ -244,9 +235,8 @@ class SystemPriceImporter(threading.Thread):
                                 )
                             }
                             self.log(
-                                "Updating rate script starting at "
-                                + hh_format(month_start)
-                                + "."
+                                f"Updating rate script starting at "
+                                f"{hh_format(month_start)}."
                             )
                             contract.update_rate_script(
                                 sess, rs, rs.start_date, rs.finish_date, script
@@ -254,13 +244,12 @@ class SystemPriceImporter(threading.Thread):
                             sess.commit()
                     else:
                         self.log(
-                            "The automatic importer is disabled. To "
-                            "enable it, edit the contract properties to "
-                            "set 'enabled' to True."
+                            "The automatic importer is disabled. To enable it, edit "
+                            "the contract properties to set 'enabled' to True."
                         )
 
                 except BaseException:
-                    self.log("Outer problem " + traceback.format_exc())
+                    self.log(f"Outer problem {traceback.format_exc()}")
                     sess.rollback()
                 finally:
                     book = sbp_sheet = ssp_sheet = None
