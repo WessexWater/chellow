@@ -434,7 +434,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
             sess.rollback()  # Avoid long transactions
             res = requests.get(url, timeout=120)
             res.raise_for_status()
-            result = requests.get(url, timeout=120).json()
+            result = res.json()
             if isinstance(result, dict):
                 result_data = result["DataPoints"]
             elif isinstance(result, list):

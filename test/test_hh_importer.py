@@ -182,3 +182,4 @@ def test_https_handler(mocker, sess):
         "Finished loading.",
     ]
     assert log == expected_log
+    mock_requests.get.assert_called_once()
