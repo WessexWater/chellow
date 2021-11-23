@@ -864,9 +864,10 @@ def _process_site(
             site_month_data[k] += v
         era_rows.append([make_val(v) for v in out])
 
-    for supply in sess.execute(
-        select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site)
-    ).scalars():
+    q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
+    if supply_id is not None:
+        q = q.filter(Supply.id == supply_id)
+    for supply in sess.execute(q).scalars():
         last_era = (
             sess.execute(
                 select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
@@ -970,7 +971,6 @@ def _process_site(
                     ] + [month_data[t] for t in summary_titles]
 
                     era_rows.append([make_val(v) for v in out])
-
     site_row = [
         now,
         site.code,
