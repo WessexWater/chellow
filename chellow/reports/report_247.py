@@ -381,7 +381,7 @@ def _make_calcs(
             joinedload(Era.pc),
             joinedload(Era.site_eras),
         )
-        .order_by(Pc.code)
+        .order_by(Era.supply_id, Era.start_date)
     ):
 
         supply = era.supply
@@ -430,7 +430,10 @@ def _make_calcs(
             )
             measurement_type = exp_ss.measurement_type
 
-        order = meter_order[measurement_type]
+        order = (
+            f"{meter_order[measurement_type]}_{supply.id}_"
+            f"{hh_format(era.start_date)}"
+        )
         calcs.append((order, era.imp_mpan_core, era.exp_mpan_core, imp_ss, exp_ss))
 
     # Check if gen deltas haven't been consumed
@@ -485,7 +488,7 @@ def _make_calcs(
         else:
             exp_ss_name = exp_ss = None
 
-        calcs.append((0, imp_ss_name, exp_ss_name, imp_ss, exp_ss))
+        calcs.append(("0", imp_ss_name, exp_ss_name, imp_ss, exp_ss))
 
     # Check if exp net deltas haven't been consumed
     sup_deltas = site_deltas["supply_deltas"][False]["net"]
@@ -503,7 +506,7 @@ def _make_calcs(
             deltas=sup_deltas,
         )
 
-        calcs.append((0, None, ss_name, None, ss))
+        calcs.append(("0", None, ss_name, None, ss))
     return calcs, displaced_era, site_gen_types
 
 
