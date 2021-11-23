@@ -884,7 +884,7 @@ def _process_site(
                 )
             ).scalar_one_or_none()
             if site_era is not None:
-                chunk_start = max(start_date, last_era.finish_date)
+                chunk_start = max(start_date, last_era.finish_date + HH)
                 chunk_finish = finish_date
                 bills = (
                     sess.execute(
@@ -929,9 +929,7 @@ def _process_site(
                             - max(bill_start, chunk_start)
                         ).total_seconds() + (30 * 60)
                         proportion = overlap_duration / bill_duration
-                        month_data["billed-import-net-kwh"] += proportion * float(
-                            bill.kwh
-                        )
+                        bill_prop_kwh = proportion * float(bill.kwh)
                         bill_prop_gbp = proportion * float(bill.net)
                         if bill_role_code == "X":
                             key = "billed-supplier-import-net-gbp"
@@ -943,6 +941,7 @@ def _process_site(
                             raise BadRequest("Role code not recognized.")
 
                         for data in month_data, site_month_data:
+                            data["billed-import-net-kwh"] += bill_prop_kwh
                             data["billed-import-net-gbp"] += bill_prop_gbp
                             data[key] += bill_prop_gbp
 
