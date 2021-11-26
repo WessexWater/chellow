@@ -1,6 +1,6 @@
 {
   "to_entry_gbp_per_kwh": 0,
-  "so_entry_gbp_per_kwh": 0.000128,
+  "so_entry_gbp_per_kwh": 0,
   "to_exit_gbp_per_kwh": 0,
-  "so_exit_gbp_per_kwh": 0.000128
+  "so_exit_gbp_per_kwh": 0,
 }
