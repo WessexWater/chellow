@@ -236,7 +236,7 @@
         "to_73200_gbp_per_kwh": 0.000349,
         "73200_to_732000_gbp_per_kwh": 0.000305,
         "732000_and_over": {
-          "gbp_per_kwh": 0.003518,
+          "gbp_per_kwh": 0.003538,
           "exponent": -0.2775,
           "minimum_gbp_per_kwh": 0.000025
         }
