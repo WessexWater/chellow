@@ -2632,7 +2632,7 @@ def era_edit_post(era_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
+        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
         mop_contracts = (
             g.sess.query(Contract)

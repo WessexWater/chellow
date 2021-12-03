@@ -858,7 +858,9 @@ def test_era_edit_post_fail(client, sess):
         r'<select name="energisation_status_id">\s*'
         r'<option value="2">De-Energised</option>\s*'
         r'<option value="1" selected>Energised</option>\s*'
-        r"</select>"
+        r"</select>",
+        r'<select name="comm_id">\s*'
+        r'<option value="3">GPRS General Packet Radio Service</option>',
     ]
     match(response, 400, *patterns)
 
