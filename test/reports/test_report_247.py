@@ -2495,5 +2495,338 @@ def virtual_bill(ds):
             0.0,
         ],
     ]
-    print(era_table)
     assert era_expected == era_table
+
+
+def test_bill_before_begining_supply(mocker, sess):
+    site = Site.insert(sess, "CI017", "Water Works")
+    start_date = utc_datetime(1999, 12, 1)
+    months = 1
+    supply_id = None
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+
+    mop_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    mop_contract = Contract.insert_mop(
+        sess,
+        "Fusion Mop Contract",
+        participant,
+        mop_charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+
+    dc_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+
+    dc_contract = Contract.insert_dc(
+        sess,
+        "Fusion DC 2000",
+        participant,
+        dc_charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+
+    supplier_charge_script = """
+import chellow.ccl
+from chellow.utils import HH, reduce_bill_hhs, utc_datetime
+
+def virtual_bill_titles():
+    return [
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
+        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
+        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['vat-gbp'] = 0
+        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+
+    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        supplier_charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "a b", "")
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    Mtc.insert(
+        sess,
+        None,
+        "845",
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    dno.insert_llfc(
+        sess,
+        "521",
+        "Export (HV)",
+        voltage_level,
+        False,
+        False,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 31, 23, 30),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    insert_bill_types(sess)
+    bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
+    batch.insert_bill(
+        sess,
+        "dd",
+        "hjk",
+        start_date,
+        utc_datetime(1999, 12, 10),
+        utc_datetime(1999, 12, 15),
+        Decimal("10.00"),
+        Decimal("10.00"),
+        Decimal("10.00"),
+        Decimal("10.00"),
+        bill_type,
+        {},
+        supply,
+    )
+
+    sess.commit()
+
+    scenario_props = {
+        "scenario_start_year": start_date.year,
+        "scenario_start_month": start_date.month,
+        "scenario_duration": months,
+        "by_hh": False,
+    }
+    base_name = ["monthly_duration"]
+    site_id = site.id
+    user = mocker.Mock()
+    compression = False
+    site_codes = []
+    now = utc_datetime(2020, 1, 1)
+
+    mock_file = BytesIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
+    mocker.patch(
+        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_247.os.rename")
+
+    content(
+        scenario_props,
+        base_name,
+        site_id,
+        supply_id,
+        user,
+        compression,
+        site_codes,
+        now,
+    )
+
+    sheet = odio.parse_spreadsheet(mock_file)
+    table = list(sheet.tables[0].rows)
+
+    expected = [
+        [
+            "creation-date",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "month",
+            "metering-type",
+            "sources",
+            "generator-types",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            "CI017",
+            "Water Works",
+            "",
+            Datetime(1999, 12, 31, 23, 30),
+            None,
+            "",
+            "",
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            10.0,
+            10.0,
+            10.0,
+            0.0,
+            0.0,
+        ],
+    ]
+
+    assert expected == table

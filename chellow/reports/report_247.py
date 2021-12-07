@@ -973,6 +973,109 @@ def _process_site(
                     ] + [month_data[t] for t in summary_titles]
 
                     era_rows.append([make_val(v) for v in out])
+        first_era = (
+            sess.execute(
+                select(Era).where(Era.supply == supply).order_by(Era.start_date)
+            )
+            .scalars()
+            .first()
+        )
+        if first_era.start_date > start_date:
+            site_era = sess.execute(
+                select(SiteEra).where(
+                    SiteEra.era == first_era,
+                    SiteEra.is_physical == true(),
+                    SiteEra.site == site,
+                )
+            ).scalar_one_or_none()
+            if site_era is not None:
+                chunk_start = start_date
+                chunk_finish = hh_min(finish_date, first_era.start_date - HH)
+                chunk_finish = finish_date
+                bills = (
+                    sess.execute(
+                        select(Bill).where(
+                            Bill.supply == supply,
+                            Bill.start_date <= chunk_finish,
+                            Bill.finish_date >= chunk_start,
+                        )
+                    )
+                    .scalars()
+                    .all()
+                )
+                if len(bills) > 0:
+                    month_data = {}
+                    for name in (
+                        "import-net",
+                        "export-net",
+                        "import-gen",
+                        "export-gen",
+                        "import-3rd-party",
+                        "export-3rd-party",
+                        "displaced",
+                        "used",
+                        "used-3rd-party",
+                        "billed-import-net",
+                    ):
+                        for sname in ("kwh", "gbp"):
+                            month_data[name + "-" + sname] = 0
+                    month_data["billed-supplier-import-net-gbp"] = 0
+                    month_data["billed-dc-import-net-gbp"] = 0
+                    month_data["billed-mop-import-net-gbp"] = 0
+
+                    for bill in bills:
+                        bill_role_code = bill.batch.contract.market_role.code
+                        bill_start = bill.start_date
+                        bill_finish = bill.finish_date
+                        bill_duration = (bill_finish - bill_start).total_seconds() + (
+                            30 * 60
+                        )
+                        overlap_duration = (
+                            min(bill_finish, chunk_finish)
+                            - max(bill_start, chunk_start)
+                        ).total_seconds() + (30 * 60)
+                        proportion = overlap_duration / bill_duration
+                        bill_prop_kwh = proportion * float(bill.kwh)
+                        bill_prop_gbp = proportion * float(bill.net)
+                        if bill_role_code == "X":
+                            key = "billed-supplier-import-net-gbp"
+                        elif bill_role_code == "C":
+                            key = "billed-dc-import-net-gbp"
+                        elif bill_role_code == "M":
+                            key = "billed-mop-import-net-gbp"
+                        else:
+                            raise BadRequest("Role code not recognized.")
+
+                        for data in month_data, site_month_data:
+                            data["billed-import-net-kwh"] += bill_prop_kwh
+                            data["billed-import-net-gbp"] += bill_prop_gbp
+                            data[key] += bill_prop_gbp
+
+                    imp_supplier_contract = first_era.imp_supplier_contract
+                    exp_supplier_contract = first_era.exp_supplier_contract
+                    out = [
+                        now,
+                        last_era.imp_mpan_core,
+                        None
+                        if imp_supplier_contract is None
+                        else imp_supplier_contract.name,
+                        last_era.exp_mpan_core,
+                        None
+                        if exp_supplier_contract is None
+                        else exp_supplier_contract.name,
+                        last_era.meter_category,
+                        last_era.supply.source.code,
+                        None,
+                        last_era.supply.name,
+                        last_era.msn,
+                        last_era.pc.code,
+                        site.code,
+                        site.name,
+                        None,
+                        finish_date,
+                    ] + [month_data[t] for t in summary_titles]
+
+                    era_rows.append([make_val(v) for v in out])
     site_row = [
         now,
         site.code,
