@@ -202,12 +202,12 @@ def content(
         for bill in bills:
             bill_map[bill.supply.id].add(bill.id)
 
-        for supply_id in bill_map.keys():
+        for supply_id, bill_ids in bill_map.items():
             _process_supply(
                 sess,
                 caches,
                 supply_id,
-                bill_map,
+                bill_ids,
                 forecast_date,
                 contract,
                 vbf,
@@ -301,7 +301,7 @@ def _process_supply(
     sess,
     caches,
     supply_id,
-    bill_map,
+    bill_ids,
     forecast_date,
     contract,
     vbf,
@@ -313,7 +313,6 @@ def _process_supply(
     gaps = {}
     data_sources = {}
     market_role_code = contract.market_role.code
-    bill_ids = bill_map[supply_id]
 
     while len(bill_ids) > 0:
         bill_id = list(sorted(bill_ids))[0]
@@ -441,13 +440,15 @@ def _process_supply(
             covered_bdown["net-gbp"] += float(covered_bill.net)
             covered_bdown["vat-gbp"] += float(covered_bill.vat)
             covered_bdown["sum-msp-kwh"] += float(covered_bill.kwh)
-            covered_rates = defaultdict(set)
             for k, v in loads(covered_bill.breakdown).items():
                 if k in ("raw_lines", "raw-lines"):
                     continue
 
                 if isinstance(v, list):
-                    covered_rates[k].update(set(v))
+                    try:
+                        covered_bdown[k].update(set(v))
+                    except KeyError:
+                        covered_bdown[k] = set(v)
                 else:
                     if isinstance(v, Decimal):
                         v = float(v)
@@ -474,9 +475,6 @@ def _process_supply(
                             False,
                             v,
                         )
-
-            for k, v in covered_rates.items():
-                covered_bdown[k] = v.pop() if len(v) == 1 else None
 
             if primary_covered_bill is None or (
                 (covered_bill.finish_date - covered_bill.start_date)
@@ -665,7 +663,6 @@ def _process_supply(
             "covered-bills": sorted(covered_bills.keys()),
             "metered-kwh": metered_kwh,
         }
-
         for title in virtual_bill_titles:
             try:
                 cov_val = covered_bdown[title]
@@ -736,7 +733,7 @@ def _process_supply(
         for t in report_run_titles:
             if t not in titles:
                 csv_row.append(t)
-                csv_row.append(values[t])
+                csv_row.append(csv_make_val(values[t]))
 
         writer.writerow(csv_row)
 
