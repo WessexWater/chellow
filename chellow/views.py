@@ -373,11 +373,11 @@ def local_report_post(report_id):
 def system_get():
     traces = []
     for thread_id, stack in sys._current_frames().items():
-        traces.append("\n# ThreadID: %s" % thread_id)
+        traces.append(f"\n# ThreadID: {thread_id}")
         for filename, lineno, name, line in traceback.extract_stack(stack):
-            traces.append('File: "%s", line %d, in %s' % (filename, lineno, name))
+            traces.append(f'File: "{filename}", line {lineno}, in {name}')
             if line:
-                traces.append("  %s" % (line.strip()))
+                traces.append(f"  {line.strip()}")
     pg_stats = g.sess.execute("select * from pg_stat_activity").fetchall()
 
     pg_indexes = g.sess.execute(

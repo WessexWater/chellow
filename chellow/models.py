@@ -4,6 +4,7 @@ import math
 import operator
 import os.path
 import sys
+import traceback
 from binascii import hexlify, unhexlify
 from collections.abc import Mapping, Set
 from datetime import datetime as Datetime, timedelta as Timedelta
@@ -164,16 +165,22 @@ def get_non_core_contract_id(name):
 
 @event.listens_for(Engine, "handle_error")
 def handle_exception(context):
-    msg = (
-        "could not serialize access due to read/write dependencies "
-        + "among transactions"
-    )
+    msg = "could not serialize access due to read/write dependencies among transactions"
     exc_txt = str(context.original_exception)
     if msg in exc_txt:
         raise BadRequest(
-            "Temporary conflict with other database writes. Might work if you "
-            "try again. " + exc_txt
+            f"Temporary conflict with other database writes. Might work if you "
+            f"try again. {exc_txt}"
         )
+    elif "out of shared memory" in exc_txt:
+        traces = []
+        for thread_id, stack in sys._current_frames().items():
+            traces.append(f"\n# ThreadID: {thread_id}")
+            for filename, lineno, name, line in traceback.extract_stack(stack):
+                traces.append(f'File: "{filename}", line {lineno}, in {name}')
+                if line:
+                    traces.append(f"  {line.strip()}")
+        raise BadRequest(f"{traces}\n{exc_txt}")
 
 
 class PersistentClass:
