@@ -3113,7 +3113,7 @@ class Era(Base, PersistentClass):
 
             setattr(self, polarity + "_sc", sc)
 
-            if pc.code != "00":
+            if pc.code != "00" and self.supply.dno.dno_code not in ("99", "88"):
                 combo = ValidMtcLlfcSscPc.get_by_values(
                     sess, mtc, llfc, ssc, pc, start_date
                 )
