@@ -991,7 +991,6 @@ def _process_site(
             if site_era is not None:
                 chunk_start = start_date
                 chunk_finish = hh_min(finish_date, first_era.start_date - HH)
-                chunk_finish = finish_date
                 bills = (
                     sess.execute(
                         select(Bill).where(
