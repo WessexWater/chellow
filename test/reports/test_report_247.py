@@ -2839,7 +2839,7 @@ def test_bill_before_begining_supply_mid_month(mocker, sess):
     supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant = Participant.insert(sess, "CALB", "AB Industries")
     participant.insert_party(
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
