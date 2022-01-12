@@ -853,6 +853,7 @@ class Pc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     eras = relationship("Era", backref="pc")
     valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="pc")
+    old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="pc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, name, valid_from, valid_to):
@@ -974,6 +975,7 @@ class Party(Base, PersistentClass):
     dno_code = Column(String)
     contracts = relationship("Contract", back_populates="party")
     mtcs = relationship("Mtc", backref="dno")
+    old_mtcs = relationship("OldMtc", backref="dno")
     llfcs = relationship("Llfc", backref="dno")
     supplies = relationship("Supply", backref="dno")
     __table_args__ = (
@@ -2244,6 +2246,7 @@ class Llfc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     lafs = relationship("Laf", backref="llfc")
     valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="llfc")
+    old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="llfc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
     def __init__(
@@ -2310,6 +2313,7 @@ class MeterType(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     mtcs = relationship("Mtc", backref="meter_type")
+    old_mtcs = relationship("OldMtc", backref="meter_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, valid_from, valid_to):
@@ -2382,6 +2386,7 @@ class MeterPaymentType(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True))
     valid_to = Column(DateTime(timezone=True))
     mtcs = relationship("Mtc", backref="meter_payment_type")
+    old_mtcs = relationship("OldMtc", backref="meter_payment_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, valid_from, valid_to):
@@ -2524,6 +2529,139 @@ class Mtc(Base, PersistentClass):
             raise BadRequest("The valid_from date can't be over the valid_to date.")
 
 
+class OldMtc(Base, PersistentClass):
+    @classmethod
+    def insert(
+        cls,
+        sess,
+        dno,
+        code,
+        description,
+        has_related_metering,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+        old_mtc = cls(
+            dno,
+            code,
+            description,
+            has_related_metering,
+            has_comms,
+            is_hh,
+            meter_type,
+            meter_payment_type,
+            tpr_count,
+            valid_from,
+            valid_to,
+        )
+        sess.add(old_mtc)
+        sess.flush()
+        return old_mtc
+
+    @staticmethod
+    def has_dno(code):
+        num = int(code)
+        return not ((499 < num < 510) or (799 < num < 1000))
+
+    @staticmethod
+    def find_by_code(sess, dno, code, date):
+        code = code.zfill(3)
+        dno = dno if OldMtc.has_dno(code) else None
+        return sess.execute(
+            select(OldMtc).where(
+                OldMtc.dno == dno,
+                OldMtc.code == code,
+                OldMtc.valid_from <= date,
+                or_(OldMtc.valid_to == null(), OldMtc.valid_to >= date),
+            )
+        ).scalar_one_or_none()
+
+    @staticmethod
+    def get_by_code(sess, dno, code, date):
+        old_mtc = OldMtc.find_by_code(sess, dno, code, date)
+        if old_mtc is None:
+            raise BadRequest(
+                f"There isn't an Old MTC with the code {code} for the DNO "
+                f"{dno.dno_code} at date {hh_format(date)}."
+            )
+        return old_mtc
+
+    __tablename__ = "old_mtc"
+    id = Column(Integer, primary_key=True)
+    dno_id = Column(Integer, ForeignKey("party.id"), index=True)
+    code = Column(String, nullable=False, index=True)
+    description = Column(String, nullable=False)
+    has_related_metering = Column(Boolean, nullable=False)
+    has_comms = Column(Boolean, nullable=False)
+    is_hh = Column(Boolean, nullable=False)
+    meter_type_id = Column(Integer, ForeignKey("meter_type.id"))
+    meter_payment_type_id = Column(Integer, ForeignKey("meter_payment_type.id"))
+    tpr_count = Column(Integer, nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="old_mtc")
+    __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
+
+    def __init__(
+        self,
+        dno,
+        code,
+        description,
+        has_related_metering,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+        self.dno = dno
+        self.code = code
+        self.update(
+            description,
+            has_related_metering,
+            has_comms,
+            is_hh,
+            meter_type,
+            meter_payment_type,
+            tpr_count,
+            valid_from,
+            valid_to,
+        )
+
+    def update(
+        self,
+        description,
+        has_related_metering,
+        has_comms,
+        is_hh,
+        meter_type,
+        meter_payment_type,
+        tpr_count,
+        valid_from,
+        valid_to,
+    ):
+
+        self.description = description
+        self.has_related_metering = has_related_metering
+        self.has_comms = has_comms
+        self.is_hh = is_hh
+        self.meter_type = meter_type
+        self.meter_payment_type = meter_payment_type
+        self.tpr_count = tpr_count
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
+        if hh_after(valid_from, valid_to):
+            raise BadRequest("The valid_from date can't be over the valid_to date.")
+
+
 class Tpr(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
@@ -2576,6 +2714,7 @@ class Ssc(Base, PersistentClass):
     measurement_requirements = relationship("MeasurementRequirement", backref="ssc")
     eras = relationship("Era", backref="ssc")
     valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="ssc")
+    old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="ssc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
     def __init__(self, code, description, is_import, valid_from, valid_to):
@@ -2677,6 +2816,73 @@ class ValidMtcLlfcSscPc(Base, PersistentClass):
         if combo is None:
             raise BadRequest(
                 f"The valid combination of MTC {mtc.code} LLFC {llfc.code} SSC "
+                f"{ssc.code} PC {pc.code} at {hh_format(date)} can't be found."
+            )
+        return combo
+
+
+class OldValidMtcLlfcSscPc(Base, PersistentClass):
+    __tablename__ = "old_valid_mtc_llfc_ssc_pc"
+    id = Column(BigInteger, primary_key=True)
+    old_mtc_id = Column(BigInteger, ForeignKey("old_mtc.id"), nullable=False)
+    llfc_id = Column(BigInteger, ForeignKey("llfc.id"), nullable=False)
+    ssc_id = Column(BigInteger, ForeignKey("ssc.id"), nullable=False)
+    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False)
+    valid_to = Column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint("old_mtc_id", "llfc_id", "ssc_id", "pc_id", "valid_from"),
+    )
+
+    def __init__(self, old_mtc, llfc, ssc, pc, valid_from, valid_to):
+        self.old_mtc = old_mtc
+        self.llfc = llfc
+        self.ssc = ssc
+        self.pc = pc
+        self.valid_from = valid_from
+        self.update(valid_to)
+
+    def update(self, valid_to):
+        self.valid_to = valid_to
+
+    @staticmethod
+    def insert(sess, old_mtc, llfc, ssc, pc, valid_from, valid_to):
+        if old_mtc.dno is not None and old_mtc.dno != llfc.dno:
+            raise Exception(
+                f"The Old MTC DNO {old_mtc.dno.dno_code} must match the LLFC DNO "
+                f"{llfc.dno.dno_code}"
+            )
+        combo = OldValidMtcLlfcSscPc(old_mtc, llfc, ssc, pc, valid_from, valid_to)
+        sess.add(combo)
+        sess.flush()
+        return combo
+
+    @staticmethod
+    def find_by_values(sess, old_mtc, llfc, ssc, pc, date):
+        q = select(OldValidMtcLlfcSscPc).where(
+            OldValidMtcLlfcSscPc.old_mtc == old_mtc,
+            OldValidMtcLlfcSscPc.llfc == llfc,
+            OldValidMtcLlfcSscPc.ssc == ssc,
+            OldValidMtcLlfcSscPc.pc == pc,
+        )
+        if date is None:
+            q = q.where(OldValidMtcLlfcSscPc.valid_to == null())
+        else:
+            q = q.where(
+                OldValidMtcLlfcSscPc.valid_from <= date,
+                or_(
+                    OldValidMtcLlfcSscPc.valid_to == null(),
+                    OldValidMtcLlfcSscPc.valid_to >= date,
+                ),
+            )
+        return sess.execute(q).scalar_one_or_none()
+
+    @classmethod
+    def get_by_values(cls, sess, old_mtc, llfc, ssc, pc, date):
+        combo = cls.find_by_values(sess, old_mtc, llfc, ssc, pc, date)
+        if combo is None:
+            raise BadRequest(
+                f"The valid combination of Old MTC {old_mtc.code} LLFC {llfc.code} SSC "
                 f"{ssc.code} PC {pc.code} at {hh_format(date)} can't be found."
             )
         return combo

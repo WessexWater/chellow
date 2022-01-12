@@ -111,6 +111,8 @@ from chellow.models import (
     MeterPaymentType,
     MeterType,
     Mtc,
+    OldMtc,
+    OldValidMtcLlfcSscPc,
     Participant,
     Party,
     Pc,
@@ -6348,6 +6350,30 @@ def mtc_get(mtc_id):
     return render_template("mtc.html", mtc=mtc)
 
 
+@views.route("/old_mtcs")
+def old_mtcs_get():
+    old_mtcs = (
+        g.sess.query(OldMtc)
+        .outerjoin(OldMtc.dno)
+        .order_by(OldMtc.code, Party.dno_code)
+        .options(joinedload(OldMtc.dno))
+        .all()
+    )
+    return render_template("old_mtcs.html", old_mtcs=old_mtcs)
+
+
+@views.route("/old_mtcs/<int:old_mtc_id>")
+def old_mtc_get(old_mtc_id):
+    old_mtc = (
+        g.sess.query(OldMtc)
+        .outerjoin(OldMtc.dno)
+        .filter(OldMtc.id == old_mtc_id)
+        .options(joinedload(OldMtc.dno))
+        .one()
+    )
+    return render_template("old_mtc.html", old_mtc=old_mtc)
+
+
 @views.route("/mtcs/<int:mtc_id>/edit")
 def mtc_edit_get(mtc_id):
     mtc = Mtc.get_by_id(g.sess, mtc_id)
@@ -6535,6 +6561,48 @@ def valid_mtc_llfc_ssc_pcs_get():
 def valid_mtc_llfc_ssc_pc_get(combo_id):
     combo = ValidMtcLlfcSscPc.get_by_id(g.sess, combo_id)
     return render_template("valid_mtc_llfc_ssc_pc.html", valid_mtc_llfc_ssc_pc=combo)
+
+
+@views.route("/old_valid_mtc_llfc_ssc_pcs")
+def old_valid_mtc_llfc_ssc_pcs_get():
+    dno_id = req_int("dno_id")
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    only_ongoing = req_bool("only_ongoing")
+    q = (
+        select(OldValidMtcLlfcSscPc)
+        .join(OldMtc)
+        .join(Llfc)
+        .join(Ssc)
+        .join(Pc)
+        .where(Llfc.dno == dno)
+        .order_by(
+            Pc.code,
+            Llfc.code,
+            Ssc.code,
+            OldMtc.code,
+            OldValidMtcLlfcSscPc.valid_from.desc(),
+        )
+        .options(
+            joinedload(OldValidMtcLlfcSscPc.old_mtc),
+            joinedload(OldValidMtcLlfcSscPc.llfc),
+            joinedload(OldValidMtcLlfcSscPc.ssc),
+            joinedload(OldValidMtcLlfcSscPc.pc),
+        )
+    )
+    if only_ongoing:
+        q = q.where(OldValidMtcLlfcSscPc.valid_to == null())
+    combos = g.sess.execute(q).scalars()
+    return render_template(
+        "old_valid_mtc_llfc_ssc_pcs.html", old_valid_mtc_llfc_ssc_pcs=combos, dno=dno
+    )
+
+
+@views.route("/old_valid_mtc_llfc_ssc_pcs/<int:old_combo_id>")
+def old_valid_mtc_llfc_ssc_pc_get(old_combo_id):
+    old_combo = OldValidMtcLlfcSscPc.get_by_id(g.sess, old_combo_id)
+    return render_template(
+        "old_valid_mtc_llfc_ssc_pc.html", old_valid_mtc_llfc_ssc_pc=old_combo
+    )
 
 
 @views.route("/llfcs")

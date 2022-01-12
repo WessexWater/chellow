@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Old MTCs &raquo; {{old_mtc.code}}
+ 	DNO
+	{% if old_mtc.dno %}
+		{{old_mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+ 	{{old_mtc.valid_from|hh_format}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/old_mtcs">Old MTCs</a> &raquo; {{old_mtc.code}} DNO
+	{% if old_mtc.dno %}
+		{{old_mtc.dno.dno_code}}
+	{% else %}
+		All
+	{% endif %}
+ 	{{old_mtc.valid_from|hh_format}}
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>{{old_mtc.code}}</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<tr>
+						<th>Code</th>
+						<td>{{old_mtc.code}}</td>
+					</tr>
+					<tr>
+						<th>DNO</th>
+						<td>
+							{% if old_mtc.dno %}
+								<a href="/dnos/{{old_mtc.dno.id}}">{{old_mtc.dno.dno_code}}</a>
+							{% else %}
+								All
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>{{old_mtc.description}}</td>
+					</tr>
+					<tr>
+						<th>Has Related Metering?</th>
+						<td>
+							{% if old_mtc.has_related_metering == True %}
+								Yes
+							{% else %}
+								No
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>Has Comms?</th>
+						<td>
+							{% if old_mtc.has_comms == True %}
+								Yes
+							{% else %}
+								No
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>Measurement Class</th>
+						<td>
+							{% if old_mtc.is_hh == True %}
+								HH
+							{% else %}
+								NHH
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+						<th>Meter Type</th>
+						<td>
+							<a href="/meter_types/{{old_mtc.meter_type.id}}">
+								{{old_mtc.meter_type.description}}
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Payment Type</th>
+						<td>
+							<a href="/meter_payment_types/{{old_mtc.meter_payment_type.id}}">
+								{{old_mtc.meter_payment_type.description}}
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>TPR Count</th>
+						<td>{{old_mtc.tpr_count}}</td>
+					</tr>
+					<tr>
+						<th>Valid From</th>
+						<td>{{old_mtc.valid_from|hh_format}}</td>
+					</tr>
+					<tr>
+						<th>Valid To</th>
+						<td>{{old_mtc.valid_to|hh_format}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Old MTCs
+{% endblock %}
+
+{% block nav %}
+	Old MTCs
+{% endblock %}
+
+{% block content %}
+	<!-- Layer Section -->
+	<div class="layer-section">
+		<!-- Section Header -->
+		<div class="section-header">
+			<h2>Old Meter Timeswitch Classes</h2>	
+		</div>
+		<!-- End Section Header -->
+		<!-- Section Content -->
+		<div class="section-content">
+			<div class="section-data">
+				<table class="DataTable widthAuto">
+					<thead>
+						<tr>
+							<th>Code</th>
+							<th>Dno</th>
+							<th>Description</th>
+							<th>Meter Type</th>
+							<th>TPR Count</th>
+							<th>Valid From</th>
+							<th>Valid To</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for old_mtc in old_mtcs %}
+							<tr>
+								<td>
+									<a href="/old_mtcs/{{old_mtc.id}}">{{old_mtc.code}}</a>
+								</td>
+								<td>
+									{% if old_mtc.dno %}
+										<a href="/dnos/{{old_mtc.dno.id}}">
+											{{old_mtc.dno.dno_code}}
+										</a>
+									{% else %}
+										All
+									{% endif %}
+								</td>
+								<td>{{old_mtc.description}}</td>
+								<td>
+									<a href="/meter_types/{{old_mtc.meter_type.id}}">
+										{{old_mtc.meter_type.code}}
+									</a>
+								</td>
+								<td>{{old_mtc.tpr_count}}</td>
+								<td>{{old_mtc.valid_from|hh_format}}</td>
+								<td>{{old_mtc.valid_to|hh_format}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- End Section Content -->
+	</div>
+	<!-- End Layer Section -->
+{% endblock %}
