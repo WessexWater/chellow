@@ -29,11 +29,23 @@
 						</fieldset>
 					</form>
 
-					<ul>
-						{% for participant, timestamp in properties.items() %}
-							<li>{{participant}}: {{timestamp|hh_format}}</li>
-						{% endfor %}
-					</ul>
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Participant</th>
+								<th>Timestamp</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for participant, timestamp in properties.items() %}
+								<tr>
+									<td>{{participant}}</td>
+									<td>{{timestamp|hh_format}}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+					<br>
 					
 					{% if process_ids %}
 						<ul>

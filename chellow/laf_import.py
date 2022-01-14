@@ -97,8 +97,10 @@ ON CONFLICT ON CONSTRAINT laf_llfc_id_timestamp_key
 DO UPDATE SET (llfc_id, timestamp, value) =
 (EXCLUDED.llfc_id, EXCLUDED.timestamp, EXCLUDED.value)"""
     )
-    csv_file = StringIO(zip_file.read(name_list[0]).decode("utf-8"))
-    for llfc_ids, timestamps, values in laf_days(sess, progress, csv_file):
+    fname = name_list[0]
+    csv_file = StringIO(zip_file.read(fname).decode("utf-8"))
+    csv_dt = to_utc(to_ct(Datetime.strptime(fname[-12:-4], "%Y%m%d")))
+    for llfc_ids, timestamps, values in laf_days(sess, progress, csv_file, csv_dt):
         sess.execute(
             stmt,
             params={"llfc_ids": llfc_ids, "timestamps": timestamps, "values": values},
@@ -109,7 +111,7 @@ DO UPDATE SET (llfc_id, timestamp, value) =
 UTC_DATETIME_MIN = to_utc(Datetime.min)
 
 
-def laf_days(sess, progress, csv_file):
+def laf_days(sess, progress, csv_file, csv_dt):
     llfc_ids = []
     timestamps = []
     values = []
@@ -123,7 +125,9 @@ def laf_days(sess, progress, csv_file):
 
         if code == "DIS":
             participant_code = vals[1]
-            dno = Party.get_by_participant_code_role_code(sess, participant_code, "R")
+            dno = Party.get_by_participant_code_role_code(
+                sess, participant_code, "R", csv_dt
+            )
 
         elif code == "LLF":
             llfc_code = vals[1]

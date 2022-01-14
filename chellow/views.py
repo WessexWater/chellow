@@ -887,9 +887,15 @@ def laf_imports_post():
         return chellow_redirect(f"/laf_imports/{proc_id}", 303)
     except BadRequest as e:
         flash(e.description)
-        return render_template(
-            "laf_imports.html",
-            process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+        conf = Contract.get_non_core_by_name(g.sess, "configuration")
+        props = conf.make_properties()
+        return make_response(
+            render_template(
+                "laf_imports.html",
+                process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+                properties=props.get("laf_importer", {}),
+            ),
+            400,
         )
 
 

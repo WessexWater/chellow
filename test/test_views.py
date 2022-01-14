@@ -56,6 +56,20 @@ def test_dtc_meter_types(client):
     match(response, 200)
 
 
+def test_laf_imports_post(mocker, app, client):
+    file_lines = ("",)
+
+    file_name = "lafs.ptf"
+    file_bytes = "\n".join(file_lines).encode("utf8")
+    f = BytesIO(file_bytes)
+
+    data = {"import_file": (f, file_name)}
+
+    response = client.post("/laf_imports", data=data)
+
+    match(response, 400)
+
+
 def test_supply_edit_post_rollback(mocker, app):
     """When inserting an era that fails, make sure rollback is called."""
     supply_id = 1
