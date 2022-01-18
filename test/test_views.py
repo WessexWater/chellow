@@ -2289,6 +2289,23 @@ def test_non_core_contract_edit_post(sess, client):
     match(response, 303)
 
 
+def test_non_core_rate_script_edit_get(sess, client):
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    contract = Contract.insert_non_core(
+        sess, "rcrc", "import nonexistent", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    rs = contract.start_rate_script
+    sess.commit()
+
+    response = client.get(f"/non_core_rate_scripts/{rs.id}/edit")
+
+    match(response, 200)
+
+
 def test_scenario_edit_post(sess, client):
     props = {
         "scenario_start_year": 2010,

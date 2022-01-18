@@ -5524,10 +5524,14 @@ def non_core_rate_script_get(rs_id):
 @views.route("/non_core_rate_scripts/<int:rs_id>/edit")
 def non_core_rate_script_edit_get(rs_id):
     rate_script = RateScript.get_non_core_by_id(g.sess, rs_id)
-    rs_example_func = chellow.computer.contract_func(
-        {}, rate_script.contract, "rate_script_example"
-    )
-    rs_example = None if rs_example_func is None else rs_example_func()
+    try:
+        rs_example_func = chellow.computer.contract_func(
+            {}, rate_script.contract, "rate_script_example"
+        )
+        rs_example = None if rs_example_func is None else rs_example_func()
+    except BaseException:
+        rs_example = None
+
     return render_template(
         "non_core_rate_script_edit.html",
         rate_script=rate_script,
@@ -5543,7 +5547,7 @@ def non_core_rate_script_edit_post(rs_id):
         if "delete" in request.values:
             contract.delete_rate_script(g.sess, rate_script)
             g.sess.commit()
-            return chellow_redirect("/non_core_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
         else:
             script = req_zish("script")
             start_date = req_hh_date("start")
