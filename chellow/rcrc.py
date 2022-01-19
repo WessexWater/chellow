@@ -15,10 +15,10 @@ from zish import loads
 
 from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
 from chellow.utils import (
-    c_months_u,
     ct_datetime_parse,
     hh_format,
     to_utc,
+    u_months_u,
     utc_datetime_now,
 )
 
@@ -51,9 +51,8 @@ def hh(data_source):
                     )
                 except KeyError:
                     raise BadRequest(
-                        "For the RCRC rate script at "
-                        + hh_format(dt)
-                        + " the rate cannot be found."
+                        f"For the RCRC rate script at {hh_format(dt)} the rate cannot "
+                        f"be found."
                     )
 
         hh["rcrc-kwh"] = hh["nbp-kwh"]
@@ -115,6 +114,19 @@ class RcrcImporter(threading.Thread):
             self.going.clear()
 
 
+def _find_month(lines, month_start, month_finish):
+    parser = csv.reader(lines, delimiter=",", quotechar='"')
+    next(parser)
+    next(parser)
+    month_rcrcs = {}
+    for values in parser:
+        hh_date = to_utc(ct_datetime_parse(values[0], "%d/%m/%Y"))
+        hh_date += relativedelta(minutes=30 * int(values[2]))
+        if month_start <= hh_date <= month_finish:
+            month_rcrcs[key_format(hh_date)] = Decimal(values[3])
+    return month_rcrcs
+
+
 def _process(log_f, sess):
     log_f("Starting to check RCRCs.")
     contract = Contract.get_non_core_by_name(sess, "rcrc")
@@ -128,7 +140,7 @@ def _process(log_f, sess):
     latest_rs_start = latest_rs.start_date
 
     months = list(
-        c_months_u(
+        u_months_u(
             start_year=latest_rs_start.year, start_month=latest_rs_start.month, months=2
         )
     )
@@ -154,19 +166,9 @@ def _process(log_f, sess):
 
         sess.rollback()  # Avoid long-running transaction
         r = requests.get(url_str, timeout=60)
-        parser = csv.reader(
-            (x.decode() for x in r.iter_lines()),
-            delimiter=",",
-            quotechar='"',
+        month_rcrcs = _find_month(
+            (x.decode() for x in r.iter_lines()), month_start, month_finish
         )
-        next(parser)
-        next(parser)
-        month_rcrcs = {}
-        for values in parser:
-            hh_date = to_utc(ct_datetime_parse(values[0], "%d/%m/%Y"))
-            hh_date += relativedelta(minutes=30 * int(values[2]))
-            if month_start <= hh_date <= month_finish:
-                month_rcrcs[key_format(hh_date)] = Decimal(values[3])
         if key_format(month_finish) in month_rcrcs:
             log_f("The whole month's data is there.")
             script = {"rates": month_rcrcs}
