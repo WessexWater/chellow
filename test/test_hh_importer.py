@@ -165,6 +165,7 @@ def test_https_handler(mocker, sess):
         "enabled": True,
         "protocol": "https",
         "download_days": 8,
+        "result_data_key": "DataPoints",
         "url_template": "https://example.com/?from="
         "{{chunk_start.strftime('%d/%m/%Y')}}&to="
         "{{chunk_finish.strftime('%d/%m/%Y')}}",

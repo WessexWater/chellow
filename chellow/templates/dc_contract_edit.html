@@ -102,11 +102,16 @@
   "enabled": true,
   "protocol": "https",
   "download_days": 8,
+  "result_data_key": "Data",
   "url_template": "https://data.example.com/?from={{chunk_start.strftime('%d/%m/%Y')}}&amp;to={{chunk_finish.strftime('%d/%m/%Y')}}",
   "url_values": {
     "99 4298 4729 917": {
       "name1": val1,
-      "name2": val2}}}
+      "name2": val2,
+  	}
+	}
+}
+
 										{% endraw %}
 									</pre>
 								</code>

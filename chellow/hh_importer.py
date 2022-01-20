@@ -391,6 +391,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
     url_template_str = properties["url_template"]
     url_values = properties.get("url_values", {})
     download_days = properties["download_days"]
+    result_data_key = properties["result_data_key"]
     if now is None:
         now = utc_datetime_now()
     window_finish = utc_datetime(now.year, now.month, now.day) - HH
@@ -436,7 +437,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
             res.raise_for_status()
             result = res.json()
             if isinstance(result, dict):
-                result_data = result["DataPoints"]
+                result_data = result[result_data_key]
             elif isinstance(result, list):
                 result_data = result
             else:
