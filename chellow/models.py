@@ -7,7 +7,7 @@ import sys
 import traceback
 from binascii import hexlify, unhexlify
 from collections.abc import Mapping, Set
-from datetime import datetime as Datetime, timedelta as Timedelta
+from datetime import datetime as Datetime
 from decimal import Decimal
 from functools import lru_cache
 from hashlib import pbkdf2_hmac
@@ -57,7 +57,6 @@ from chellow.utils import (
     next_hh,
     parse_mpan_core,
     prev_hh,
-    to_ct,
     to_utc,
     utc_datetime,
     utc_datetime_now,
@@ -852,7 +851,6 @@ class Pc(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     eras = relationship("Era", backref="pc")
-    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="pc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="pc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -974,7 +972,6 @@ class Party(Base, PersistentClass):
     users = relationship("User", backref="party")
     dno_code = Column(String)
     contracts = relationship("Contract", back_populates="party")
-    mtcs = relationship("Mtc", backref="dno")
     old_mtcs = relationship("OldMtc", backref="dno")
     llfcs = relationship("Llfc", backref="dno")
     supplies = relationship("Supply", backref="dno")
@@ -992,7 +989,7 @@ class Party(Base, PersistentClass):
 
     def find_llfc_by_code(self, sess, code, date):
         code = code.zfill(3)
-        q = sess.query(Llfc).filter(Llfc.dno == self, Llfc.code == code)
+        q = select(Llfc).where(Llfc.dno == self, Llfc.code == code)
 
         if date is None:
             q = q.where(Llfc.valid_to == null())
@@ -1800,7 +1797,7 @@ class Site(Base, PersistentClass):
         dc_account,
         msn,
         pc,
-        mtc_code,
+        old_mtc_code,
         cop,
         comm,
         ssc,
@@ -1832,12 +1829,6 @@ class Site(Base, PersistentClass):
             sess.rollback()
             raise e
 
-        try:
-            int(mtc_code)
-        except ValueError as e:
-            raise BadRequest(f"The MTC code must be a whole number. {e}")
-
-        mtc = Mtc.get_by_code(sess, dno, mtc_code, start_date)
         supply.insert_era(
             sess,
             self,
@@ -1850,7 +1841,7 @@ class Site(Base, PersistentClass):
             dc_account,
             msn,
             pc,
-            mtc,
+            old_mtc_code,
             cop,
             comm,
             ssc,
@@ -2245,7 +2236,6 @@ class Llfc(Base, PersistentClass):
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     lafs = relationship("Laf", backref="llfc")
-    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="llfc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="llfc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
@@ -2312,7 +2302,6 @@ class MeterType(Base, PersistentClass):
     description = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
-    mtcs = relationship("Mtc", backref="meter_type")
     old_mtcs = relationship("OldMtc", backref="meter_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2385,7 +2374,6 @@ class MeterPaymentType(Base, PersistentClass):
     description = Column(String, nullable=False)
     valid_from = Column(DateTime(timezone=True))
     valid_to = Column(DateTime(timezone=True))
-    mtcs = relationship("Mtc", backref="meter_payment_type")
     old_mtcs = relationship("OldMtc", backref="meter_payment_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2394,139 +2382,6 @@ class MeterPaymentType(Base, PersistentClass):
         self.description = description
         self.valid_from = valid_from
         self.valid_to = valid_to
-
-
-class Mtc(Base, PersistentClass):
-    @staticmethod
-    def insert(
-        sess,
-        dno,
-        code,
-        description,
-        has_related_metering,
-        has_comms,
-        is_hh,
-        meter_type,
-        meter_payment_type,
-        tpr_count,
-        valid_from,
-        valid_to,
-    ):
-        mtc = Mtc(
-            dno,
-            code,
-            description,
-            has_related_metering,
-            has_comms,
-            is_hh,
-            meter_type,
-            meter_payment_type,
-            tpr_count,
-            valid_from,
-            valid_to,
-        )
-        sess.add(mtc)
-        sess.flush()
-        return mtc
-
-    @staticmethod
-    def has_dno(code):
-        num = int(code)
-        return not ((499 < num < 510) or (799 < num < 1000))
-
-    @staticmethod
-    def find_by_code(sess, dno, code, date):
-        code = code.zfill(3)
-        dno = dno if Mtc.has_dno(code) else None
-        return sess.execute(
-            select(Mtc).where(
-                Mtc.dno == dno,
-                Mtc.code == code,
-                Mtc.valid_from <= date,
-                or_(Mtc.valid_to == null(), Mtc.valid_to >= date),
-            )
-        ).scalar_one_or_none()
-
-    @staticmethod
-    def get_by_code(sess, dno, code, date):
-        mtc = Mtc.find_by_code(sess, dno, code, date)
-        if mtc is None:
-            raise BadRequest(
-                f"There isn't an MTC with the code {code} for the DNO {dno.dno_code} "
-                f"at date {hh_format(date)}."
-            )
-        return mtc
-
-    __tablename__ = "mtc"
-    id = Column(Integer, primary_key=True)
-    dno_id = Column(Integer, ForeignKey("party.id"), index=True)
-    code = Column(String, nullable=False, index=True)
-    description = Column(String, nullable=False)
-    has_related_metering = Column(Boolean, nullable=False)
-    has_comms = Column(Boolean, nullable=False)
-    is_hh = Column(Boolean, nullable=False)
-    meter_type_id = Column(Integer, ForeignKey("meter_type.id"))
-    meter_payment_type_id = Column(Integer, ForeignKey("meter_payment_type.id"))
-    tpr_count = Column(Integer, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
-    eras = relationship("Era", backref="mtc")
-    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="mtc")
-    __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
-
-    def __init__(
-        self,
-        dno,
-        code,
-        description,
-        has_related_metering,
-        has_comms,
-        is_hh,
-        meter_type,
-        meter_payment_type,
-        tpr_count,
-        valid_from,
-        valid_to,
-    ):
-        self.dno = dno
-        self.code = code
-        self.update(
-            description,
-            has_related_metering,
-            has_comms,
-            is_hh,
-            meter_type,
-            meter_payment_type,
-            tpr_count,
-            valid_from,
-            valid_to,
-        )
-
-    def update(
-        self,
-        description,
-        has_related_metering,
-        has_comms,
-        is_hh,
-        meter_type,
-        meter_payment_type,
-        tpr_count,
-        valid_from,
-        valid_to,
-    ):
-
-        self.description = description
-        self.has_related_metering = has_related_metering
-        self.has_comms = has_comms
-        self.is_hh = is_hh
-        self.meter_type = meter_type
-        self.meter_payment_type = meter_payment_type
-        self.tpr_count = tpr_count
-        self.valid_from = valid_from
-        self.valid_to = valid_to
-
-        if hh_after(valid_from, valid_to):
-            raise BadRequest("The valid_from date can't be over the valid_to date.")
 
 
 class OldMtc(Base, PersistentClass):
@@ -2604,6 +2459,7 @@ class OldMtc(Base, PersistentClass):
     tpr_count = Column(Integer, nullable=False)
     valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
+    eras = relationship("Era", backref="old_mtc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="old_mtc")
     __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
 
@@ -2713,7 +2569,6 @@ class Ssc(Base, PersistentClass):
     valid_to = Column(DateTime(timezone=True))
     measurement_requirements = relationship("MeasurementRequirement", backref="ssc")
     eras = relationship("Era", backref="ssc")
-    valid_mtc_llfc_ssc_pcs = relationship("ValidMtcLlfcSscPc", backref="ssc")
     old_valid_mtc_llfc_ssc_pcs = relationship("OldValidMtcLlfcSscPc", backref="ssc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2752,73 +2607,6 @@ class Ssc(Base, PersistentClass):
                 f"The SSC with code '{code}' can't be found at {hh_format(date)}."
             )
         return ssc
-
-
-class ValidMtcLlfcSscPc(Base, PersistentClass):
-    __tablename__ = "valid_mtc_llfc_ssc_pc"
-    id = Column(BigInteger, primary_key=True)
-    mtc_id = Column(BigInteger, ForeignKey("mtc.id"), nullable=False)
-    llfc_id = Column(BigInteger, ForeignKey("llfc.id"), nullable=False)
-    ssc_id = Column(BigInteger, ForeignKey("ssc.id"), nullable=False)
-    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
-    __table_args__ = (
-        UniqueConstraint("mtc_id", "llfc_id", "ssc_id", "pc_id", "valid_from"),
-    )
-
-    def __init__(self, mtc, llfc, ssc, pc, valid_from, valid_to):
-        self.mtc = mtc
-        self.llfc = llfc
-        self.ssc = ssc
-        self.pc = pc
-        self.valid_from = valid_from
-        self.update(valid_to)
-
-    def update(self, valid_to):
-        self.valid_to = valid_to
-
-    @staticmethod
-    def insert(sess, mtc, llfc, ssc, pc, valid_from, valid_to):
-        if mtc.dno is not None and mtc.dno != llfc.dno:
-            raise Exception(
-                f"The MTC DNO {mtc.dno.dno_code} must match the LLFC DNO "
-                f"{llfc.dno.dno_code}"
-            )
-        combo = ValidMtcLlfcSscPc(mtc, llfc, ssc, pc, valid_from, valid_to)
-        sess.add(combo)
-        sess.flush()
-        return combo
-
-    @staticmethod
-    def find_by_values(sess, mtc, llfc, ssc, pc, date):
-        q = select(ValidMtcLlfcSscPc).where(
-            ValidMtcLlfcSscPc.mtc == mtc,
-            ValidMtcLlfcSscPc.llfc == llfc,
-            ValidMtcLlfcSscPc.ssc == ssc,
-            ValidMtcLlfcSscPc.pc == pc,
-        )
-        if date is None:
-            q = q.where(ValidMtcLlfcSscPc.valid_to == null())
-        else:
-            q = q.where(
-                ValidMtcLlfcSscPc.valid_from <= date,
-                or_(
-                    ValidMtcLlfcSscPc.valid_to == null(),
-                    ValidMtcLlfcSscPc.valid_to >= date,
-                ),
-            )
-        return sess.execute(q).scalar_one_or_none()
-
-    @classmethod
-    def get_by_values(cls, sess, mtc, llfc, ssc, pc, date):
-        combo = cls.find_by_values(sess, mtc, llfc, ssc, pc, date)
-        if combo is None:
-            raise BadRequest(
-                f"The valid combination of MTC {mtc.code} LLFC {llfc.code} SSC "
-                f"{ssc.code} PC {pc.code} at {hh_format(date)} can't be found."
-            )
-        return combo
 
 
 class OldValidMtcLlfcSscPc(Base, PersistentClass):
@@ -2985,7 +2773,7 @@ class Era(Base, PersistentClass):
     dc_account = Column(String)
     msn = Column(String)
     pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False)
-    mtc_id = Column(Integer, ForeignKey("mtc.id"), nullable=False)
+    old_mtc_id = Column(Integer, ForeignKey("old_mtc.id"), nullable=False)
     cop_id = Column(Integer, ForeignKey("cop.id"), nullable=False)
     comm_id = Column(Integer, ForeignKey("comm.id"), nullable=False)
     ssc_id = Column(Integer, ForeignKey("ssc.id"))
@@ -3130,7 +2918,7 @@ class Era(Base, PersistentClass):
                 self.dc_account,
                 self.msn,
                 self.pc,
-                self.mtc,
+                self.old_mtc.code,
                 self.cop,
                 self.comm,
                 self.ssc,
@@ -3159,7 +2947,7 @@ class Era(Base, PersistentClass):
         dc_account,
         msn,
         pc,
-        mtc,
+        mtc_code,
         cop,
         comm,
         ssc,
@@ -3235,184 +3023,190 @@ class Era(Base, PersistentClass):
         voltage_level = None
         self.cop = cop
         self.comm = comm
-        self.mtc = mtc
+        with sess.no_autoflush:
+            self.old_mtc = OldMtc.get_by_code(
+                sess, self.supply.dno, mtc_code, start_date
+            )
 
-        self.start_date = start_date
-        self.finish_date = finish_date
-        self.mop_account = mop_account
-        self.mop_contract = mop_contract
-        self.dc_account = dc_account
-        self.dc_contract = dc_contract
+            self.start_date = start_date
+            self.finish_date = finish_date
+            self.mop_account = mop_account
+            self.mop_contract = mop_contract
+            self.dc_account = dc_account
+            self.dc_contract = dc_contract
 
-        for polarity in ["imp", "exp"]:
-            mcore_str = locs[polarity + "_mpan_core"]
-            if mcore_str is None:
-                for suf in [
-                    "mpan_core",
-                    "llfc",
-                    "supplier_contract",
-                    "supplier_account",
-                    "sc",
-                ]:
-                    setattr(self, polarity + "_" + suf, None)
-                continue
+            for polarity in ["imp", "exp"]:
+                mcore_str = locs[polarity + "_mpan_core"]
+                if mcore_str is None:
+                    for suf in [
+                        "mpan_core",
+                        "llfc",
+                        "supplier_contract",
+                        "supplier_account",
+                        "sc",
+                    ]:
+                        setattr(self, polarity + "_" + suf, None)
+                    continue
 
-            mcore = parse_mpan_core(mcore_str)
+                mcore = parse_mpan_core(mcore_str)
 
-            if mcore[:2] != self.supply.dno.dno_code:
-                raise BadRequest(
-                    f"The DNO code of the MPAN core {mcore} doesn't match the DNO "
-                    f"code of the supply."
-                )
-
-            setattr(self, polarity + "_mpan_core", mcore)
-
-            supplier_contract = locs[polarity + "_supplier_contract"]
-            if supplier_contract is None:
-                raise BadRequest(
-                    f"There's an {polarity} MPAN core, but no {polarity} supplier "
-                    f"contract."
-                )
-            if supplier_contract.start_date() > start_date:
-                raise BadRequest(
-                    f"For the era {self.id} the {polarity} supplier contract "
-                    f"{supplier_contract.id} starts at "
-                    f"{hh_format(supplier_contract.start_date())} which is after the "
-                    f"start of the era at {hh_format(start_date)}."
-                )
-
-            if hh_before(supplier_contract.finish_date(), finish_date):
-                raise BadRequest("The supplier contract finishes before the era.")
-            supplier_account = locs[polarity + "_supplier_account"]
-            setattr(self, f"{polarity}_supplier_contract", supplier_contract)
-            setattr(self, f"{polarity}_supplier_account", supplier_account)
-
-            llfc_code = locs[f"{polarity}_llfc_code"]
-            llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
-            if finish_date is not None and hh_before(llfc.valid_to, finish_date):
-                raise BadRequest(
-                    f"The {polarity} line loss factor {llfc_code} is only valid until "
-                    f"{hh_format(llfc.valid_to)} but the era ends at "
-                    f"{hh_format(finish_date)}."
-                )
-
-            if llfc.is_import != ("imp" == polarity):
-                raise BadRequest(
-                    f"The {polarity} line loss factor {llfc.code} is actually "
-                    "an " + ("imp" if llfc.is_import else "exp") + " one."
-                )
-            vl = llfc.voltage_level
-            if voltage_level is None:
-                voltage_level = vl
-            elif voltage_level != vl:
-                raise BadRequest(
-                    "The voltage level indicated by the Line Loss Factor "
-                    "must be the same for both the MPANs."
-                )
-            setattr(self, polarity + "_llfc", llfc)
-            sc = locs[polarity + "_sc"]
-            if sc is None:
-                raise BadRequest(
-                    f"There's an {polarity} MPAN core, but no {polarity} Supply "
-                    f"Capacity."
-                )
-
-            setattr(self, polarity + "_sc", sc)
-
-            if pc.code != "00" and self.supply.dno.dno_code not in ("99", "88"):
-                combo = ValidMtcLlfcSscPc.get_by_values(
-                    sess, mtc, llfc, ssc, pc, start_date
-                )
-                if finish_date is not None and hh_before(combo.valid_to, finish_date):
+                if mcore[:2] != self.supply.dno.dno_code:
                     raise BadRequest(
-                        f"The {polarity} combination of MTC {mtc.code} LLFC "
-                        f"{llfc.code} SSC {ssc.code} PC {pc.code} is only valid until "
-                        f"{hh_format(combo.valid_to)} but the era ends at "
+                        f"The DNO code of the MPAN core {mcore} doesn't match the DNO "
+                        f"code of the supply."
+                    )
+
+                setattr(self, polarity + "_mpan_core", mcore)
+
+                supplier_contract = locs[polarity + "_supplier_contract"]
+                if supplier_contract is None:
+                    raise BadRequest(
+                        f"There's an {polarity} MPAN core, but no {polarity} supplier "
+                        f"contract."
+                    )
+                if supplier_contract.start_date() > start_date:
+                    raise BadRequest(
+                        f"For the era {self.id} the {polarity} supplier contract "
+                        f"{supplier_contract.id} starts at "
+                        f"{hh_format(supplier_contract.start_date())} which is after "
+                        f"the start of the era at {hh_format(start_date)}."
+                    )
+
+                if hh_before(supplier_contract.finish_date(), finish_date):
+                    raise BadRequest("The supplier contract finishes before the era.")
+                supplier_account = locs[polarity + "_supplier_account"]
+                setattr(self, f"{polarity}_supplier_contract", supplier_contract)
+                setattr(self, f"{polarity}_supplier_account", supplier_account)
+
+                llfc_code = locs[f"{polarity}_llfc_code"]
+                llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
+                print("finish_date", finish_date, llfc.valid_to)
+                if finish_date is not None and hh_before(llfc.valid_to, finish_date):
+                    raise BadRequest(
+                        f"The {polarity} line loss factor {llfc_code} is only valid "
+                        f"until {hh_format(llfc.valid_to)} but the era ends at "
                         f"{hh_format(finish_date)}."
                     )
 
-        if (
-            self.mtc.meter_type.code == "C5"
-            and cop.code not in ["1", "2", "3", "4", "5"]
-            or self.mtc.meter_type.code in ["6A", "6B", "6C", "6D"]
-            and cop.code.upper() != self.mtc.meter_type.code
-        ):
-            raise BadRequest(
-                f"The CoP of {cop.code} is not compatible with the meter type code of "
-                f"{self.mtc.meter_type.code}."
-            )
+                if llfc.is_import != ("imp" == polarity):
+                    raise BadRequest(
+                        f"The {polarity} line loss factor {llfc.code} is actually "
+                        "an " + ("imp" if llfc.is_import else "exp") + " one."
+                    )
+                vl = llfc.voltage_level
+                if voltage_level is None:
+                    voltage_level = vl
+                elif voltage_level != vl:
+                    raise BadRequest(
+                        "The voltage level indicated by the Line Loss Factor "
+                        "must be the same for both the MPANs."
+                    )
+                setattr(self, polarity + "_llfc", llfc)
+                sc = locs[polarity + "_sc"]
+                if sc is None:
+                    raise BadRequest(
+                        f"There's an {polarity} MPAN core, but no {polarity} Supply "
+                        f"Capacity."
+                    )
 
-        if dc_contract.start_date() > start_date:
-            raise BadRequest("The DC contract starts after the era.")
+                setattr(self, polarity + "_sc", sc)
 
-        if hh_before(dc_contract.finish_date(), finish_date):
-            raise BadRequest(
-                f"The DC contract {dc_contract.id} finishes before the era."
-            )
+                if pc.code != "00" and self.supply.dno.dno_code not in ("99", "88"):
+                    combo = OldValidMtcLlfcSscPc.get_by_values(
+                        sess, self.old_mtc, llfc, ssc, pc, start_date
+                    )
+                    if finish_date is not None and hh_before(
+                        combo.valid_to, finish_date
+                    ):
+                        raise BadRequest(
+                            f"The {polarity} combination of MTC {self.old_mtc.code} "
+                            f"LLFC {llfc.code} SSC {ssc.code} PC {pc.code} is only "
+                            f"valid until {hh_format(combo.valid_to)} but the era ends "
+                            f"at {hh_format(finish_date)}."
+                        )
 
-        if mop_contract.start_date() > start_date:
-            raise BadRequest("The MOP contract starts after the supply era.")
-
-        if hh_before(mop_contract.finish_date(), finish_date):
-            raise BadRequest(
-                f"The MOP contract {mop_contract.id} finishes before the era."
-            )
-
-        try:
-            sess.flush()
-        except ProgrammingError as e:
             if (
-                e.orig.args[2]
-                == 'null value in column "start_date" violates not-null constraint'
+                self.old_mtc.meter_type.code == "C5"
+                and cop.code not in ["1", "2", "3", "4", "5"]
+                or self.old_mtc.meter_type.code in ["6A", "6B", "6C", "6D"]
+                and cop.code.upper() != self.old_mtc.meter_type.code
             ):
-                raise BadRequest("The start date cannot be blank.")
-            else:
-                raise e
-
-        prev_era = self.supply.find_era_at(sess, prev_hh(orig_start_date))
-        next_era = self.supply.find_era_at(sess, next_hh(orig_finish_date))
-
-        if prev_era is not None:
-            is_overlap = False
-            if imp_mpan_core is not None:
-                prev_imp_mpan_core = prev_era.imp_mpan_core
-                if (
-                    prev_imp_mpan_core is not None
-                    and imp_mpan_core == prev_imp_mpan_core
-                ):
-                    is_overlap = True
-            if not is_overlap and exp_mpan_core is not None:
-                prev_exp_mpan_core = prev_era.exp_mpan_core
-                if (
-                    prev_exp_mpan_core is not None
-                    and exp_mpan_core == prev_exp_mpan_core
-                ):
-                    is_overlap = True
-            if not is_overlap:
                 raise BadRequest(
-                    "MPAN cores can't change without an overlapping period."
+                    f"The CoP of {cop.code} is not compatible with the meter type code "
+                    f"of {self.old_mtc.meter_type.code}."
                 )
 
-        if next_era is not None:
-            is_overlap = False
-            if imp_mpan_core is not None:
-                next_imp_mpan_core = next_era.imp_mpan_core
-                if (
-                    next_imp_mpan_core is not None
-                    and imp_mpan_core == next_imp_mpan_core
-                ):
-                    is_overlap = True
-            if not is_overlap and exp_mpan_core is not None:
-                next_exp_mpan_core = next_era.exp_mpan_core
-                if (
-                    next_exp_mpan_core is not None
-                    and exp_mpan_core == next_exp_mpan_core
-                ):
-                    is_overlap = True
-            if not is_overlap:
+            if dc_contract.start_date() > start_date:
+                raise BadRequest("The DC contract starts after the era.")
+
+            if hh_before(dc_contract.finish_date(), finish_date):
                 raise BadRequest(
-                    "MPAN cores can't change without an overlapping period."
+                    f"The DC contract {dc_contract.id} finishes before the era."
                 )
+
+            if mop_contract.start_date() > start_date:
+                raise BadRequest("The MOP contract starts after the supply era.")
+
+            if hh_before(mop_contract.finish_date(), finish_date):
+                raise BadRequest(
+                    f"The MOP contract {mop_contract.id} finishes before the era."
+                )
+
+            try:
+                sess.flush()
+            except ProgrammingError as e:
+                if (
+                    'null value in column "start_date" violates not-null constraint'
+                    in str(e)
+                ):
+                    raise BadRequest("The start date cannot be blank.")
+                else:
+                    raise e
+
+            prev_era = self.supply.find_era_at(sess, prev_hh(orig_start_date))
+            next_era = self.supply.find_era_at(sess, next_hh(orig_finish_date))
+
+            if prev_era is not None:
+                is_overlap = False
+                if imp_mpan_core is not None:
+                    prev_imp_mpan_core = prev_era.imp_mpan_core
+                    if (
+                        prev_imp_mpan_core is not None
+                        and imp_mpan_core == prev_imp_mpan_core
+                    ):
+                        is_overlap = True
+                if not is_overlap and exp_mpan_core is not None:
+                    prev_exp_mpan_core = prev_era.exp_mpan_core
+                    if (
+                        prev_exp_mpan_core is not None
+                        and exp_mpan_core == prev_exp_mpan_core
+                    ):
+                        is_overlap = True
+                if not is_overlap:
+                    raise BadRequest(
+                        "MPAN cores can't change without an overlapping period."
+                    )
+
+            if next_era is not None:
+                is_overlap = False
+                if imp_mpan_core is not None:
+                    next_imp_mpan_core = next_era.imp_mpan_core
+                    if (
+                        next_imp_mpan_core is not None
+                        and imp_mpan_core == next_imp_mpan_core
+                    ):
+                        is_overlap = True
+                if not is_overlap and exp_mpan_core is not None:
+                    next_exp_mpan_core = next_era.exp_mpan_core
+                    if (
+                        next_exp_mpan_core is not None
+                        and exp_mpan_core == next_exp_mpan_core
+                    ):
+                        is_overlap = True
+                if not is_overlap:
+                    raise BadRequest(
+                        "MPAN cores can't change without an overlapping period."
+                    )
 
         sess.flush()
 
@@ -4105,7 +3899,7 @@ class Supply(Base, PersistentClass):
             template_era.dc_account,
             template_era.msn,
             template_era.pc,
-            template_era.mtc,
+            template_era.old_mtc.code,
             template_era.cop,
             template_era.comm,
             template_era.ssc,
@@ -6401,436 +6195,6 @@ def db_init(sess, root_path):
     sess.commit()
 
 
-def db_upgrade_0_to_1(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_1_to_2(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_2_to_3(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_3_to_4(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_4_to_5(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_5_to_6(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_6_to_7(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_7_to_8(sess, root_path):
-    raise Exception("Upgrading from this version is not supported.")
-
-
-def db_upgrade_8_to_9(sess, root_path):
-    sess.execute("update mtc set tpr_count = 0 where tpr_count is null;")
-    sess.execute("alter table mtc alter tpr_count set not null")
-
-    sess.execute("alter table pc add valid_from timestamp with time zone;")
-    sess.execute("update pc set valid_from = '1996-04-01 00:00:00 +0:00';")
-    sess.execute("alter table pc alter valid_from set not null;")
-    sess.execute("alter table pc add valid_to timestamp with time zone;")
-
-    for llfc_id, valid_from, valid_to in sess.execute(
-        "select id, valid_from, valid_to from llfc;"
-    ).fetchall():
-        if (
-            len(
-                sess.execute(
-                    "select * from era where "
-                    "(era.imp_llfc_id = :llfc_id or "
-                    "era.exp_llfc_id = :llfc_id);",
-                    {"llfc_id": llfc_id},
-                ).fetchall()
-            )
-            == 0
-        ):
-            sess.execute("delete from llfc where id = :llfc_id", {"llfc_id": llfc_id})
-        else:
-            if valid_from.hour == 23:
-                sess.execute(
-                    "update llfc set valid_from = :valid_from " "where id = :llfc_id;",
-                    {"llfc_id": llfc_id, "valid_from": valid_from + Timedelta(hours=1)},
-                )
-            if valid_to is not None and valid_to.hour == 23:
-                sess.execute(
-                    "update llfc set valid_to = :valid_to " "where id = :llfc_id;",
-                    {"llfc_id": llfc_id, "valid_to": valid_to + Timedelta(hours=1)},
-                )
-
-    sess.execute(
-        "ALTER TABLE ONLY llfc "
-        "ADD CONSTRAINT llfc_dno_id_code_valid_from_key UNIQUE "
-        "(dno_id, code, valid_from);"
-    )
-
-    sess.execute(
-        "alter table meter_payment_type "
-        "add constraint meter_payment_type_code_valid_from_key "
-        "UNIQUE (code, valid_from);"
-    )
-
-    sess.execute(
-        "alter table meter_type "
-        "add constraint meter_type_code_valid_from_key "
-        "UNIQUE (code, valid_from);"
-    )
-
-    sess.execute("alter table mtc drop constraint mtc_dno_id_code_key;")
-    sess.execute(
-        "alter table mtc add constraint mtc_dno_id_code_valid_from_key "
-        "UNIQUE (dno_id, code, valid_from);"
-    )
-    for mtc_id, valid_from, valid_to in sess.execute(
-        "select id, valid_from, valid_to from mtc;"
-    ).fetchall():
-        if (
-            len(
-                sess.execute(
-                    "select * from era where era.mtc_id = :mtc_id;", {"mtc_id": mtc_id}
-                ).fetchall()
-            )
-            == 0
-        ):
-            sess.execute("delete from mtc where id = :mtc_id", {"mtc_id": mtc_id})
-        else:
-            if valid_from.hour == 23:
-                sess.execute(
-                    "update mtc set valid_from = :valid_from " "where id = :mtc_id;",
-                    {"mtc_id": mtc_id, "valid_from": valid_from + Timedelta(hours=1)},
-                )
-            if valid_to is not None and valid_to.hour == 23:
-                sess.execute(
-                    "update mtc set valid_to = :valid_to " "where id = :mtc_id;",
-                    {"mtc_id": mtc_id, "valid_to": valid_to + Timedelta(hours=1)},
-                )
-
-    for party_id, valid_from, valid_to in sess.execute(
-        "select id, valid_from, valid_to from party;"
-    ).fetchall():
-        if all(
-            (
-                len(
-                    sess.execute(
-                        "select * from contract " "where party_id = :party_id;",
-                        {"party_id": party_id},
-                    ).fetchall()
-                )
-                == 0,
-                len(
-                    sess.execute(
-                        "select * from llfc where dno_id = :party_id;",
-                        {"party_id": party_id},
-                    ).fetchall()
-                )
-                == 0,
-                len(
-                    sess.execute(
-                        "select * from mtc where dno_id = :party_id;",
-                        {"party_id": party_id},
-                    ).fetchall()
-                )
-                == 0,
-            )
-        ):
-            sess.execute(
-                "delete from party where id = :party_id", {"party_id": party_id}
-            )
-        else:
-            if valid_from.hour == 23:
-                sess.execute(
-                    "update party set valid_from = :valid_from "
-                    "where id = :party_id;",
-                    {
-                        "party_id": party_id,
-                        "valid_from": valid_from + Timedelta(hours=1),
-                    },
-                )
-            if valid_to is not None and valid_to.hour == 23:
-                sess.execute(
-                    "update party set valid_to = :valid_to " "where id = :party_id;",
-                    {"party_id": party_id, "valid_to": valid_to + Timedelta(hours=1)},
-                )
-
-    sess.execute(
-        "alter table party "
-        "add constraint party_market_role_id_participant_id_valid_from_key "
-        "UNIQUE (market_role_id, participant_id, valid_from);"
-    )
-
-    sess.execute(
-        "alter table pc "
-        "ADD CONSTRAINT pc_code_valid_from_key UNIQUE (code, valid_from);"
-    )
-
-    sess.execute(
-        "ALTER TABLE ONLY ssc "
-        "ADD CONSTRAINT ssc_code_valid_from_key UNIQUE (code, valid_from);"
-    )
-    for ssc_id, valid_from, valid_to in sess.execute(
-        "select id, valid_from, valid_to from ssc;"
-    ).fetchall():
-        if valid_from.hour == 23:
-            sess.execute(
-                "update party set valid_from = :valid_from " "where id = :party_id;",
-                {"party_id": party_id, "valid_from": valid_from + Timedelta(hours=1)},
-            )
-        if valid_to is not None and valid_to.hour == 23:
-            sess.execute(
-                "update party set valid_to = :valid_to " "where id = :party_id;",
-                {"party_id": party_id, "valid_to": valid_to + Timedelta(hours=1)},
-            )
-
-
-def db_upgrade_9_to_10(sess, root_path):
-    market_role_id = sess.execute(
-        "select id from market_role where code = 'R'"
-    ).fetchone()[0]
-    participant_id = sess.execute(
-        "select id from participant where code = 'CIDA'"
-    ).fetchone()[0]
-    sess.execute(
-        "insert into party ("
-        "market_role_id, participant_id, name, valid_from, valid_to, "
-        "dno_code) values ("
-        ":market_role_id, :participant_id, 'Virtual DNO', '2000-01-01', "
-        "null, '88')",
-        {"market_role_id": market_role_id, "participant_id": participant_id},
-    )
-
-    dno_id = sess.execute(
-        "select id from party where "
-        "participant_id = :participant_id and "
-        "market_role_id = :market_role_id",
-        {"market_role_id": market_role_id, "participant_id": participant_id},
-    ).fetchone()[0]
-
-    for code, description, voltage_code, is_substation, is_import in (
-        ("510", "PC 5-8 & HH HV", "HV", False, True),
-        ("521", "Export (HV)", "HV", False, False),
-        ("570", "PC 5-8 & HH LV", "LV", False, True),
-        ("581", "Export (LV)", "LV", False, False),
-        ("110", "Profile 3 Unrestricted", "LV", False, True),
-        ("210", "Profile 4 Economy 7", "LV", False, True),
-    ):
-        voltage_level_id = sess.execute(
-            "select id from voltage_level where code = :code", {"code": voltage_code}
-        ).fetchone()[0]
-        sess.execute(
-            "insert into llfc ("
-            "dno_id, code, description, voltage_level_id, is_substation, "
-            "is_import, valid_from, valid_to) values ("
-            ":dno_id, :code, :description, :voltage_level_id, "
-            ":is_substation, :is_import, '2000-01-01', null)",
-            {
-                "dno_id": dno_id,
-                "code": code,
-                "description": description,
-                "voltage_level_id": voltage_level_id,
-                "is_substation": is_substation,
-                "is_import": is_import,
-            },
-        )
-
-
-def db_upgrade_10_to_11(sess, root_path):
-    sess.execute("alter table era rename hhdc_contract_id to dc_contract_id;")
-    sess.execute("alter table era rename hhdc_account to dc_account;")
-
-
-def db_upgrade_11_to_12(sess, root_path):
-    max_id = sess.execute("select max(id) from mtc;").fetchone()[0]
-    sess.execute("alter sequence mtc_id_seq restart with " + str(max_id + 1))
-
-
-def db_upgrade_12_to_13(sess, root_path):
-    sess.execute("drop table g_unit;")
-    sess.execute("alter table g_units rename to g_unit;")
-    sess.execute("alter table g_register_read rename g_units_id to g_unit_id;")
-    sess.execute(
-        "alter table g_register_read rename constraint "
-        "g_register_read_g_units_id_fkey to g_register_read_g_unit_id_fkey;"
-    )
-
-    sess.execute("alter table g_era add is_corrected boolean;")
-    sess.execute("update g_era set is_corrected = false;")
-    sess.execute("alter table g_era alter is_corrected set not null;")
-
-    sess.execute("alter table g_era add g_unit_id integer references g_unit (id);")
-    sess.execute("update g_era set g_unit_id = 1;")
-    sess.execute("alter table g_era alter g_unit_id set not null;")
-
-    sess.execute("alter table g_register_read add is_corrected boolean;")
-    sess.execute("update g_register_read set is_corrected = false;")
-    sess.execute("alter table g_register_read alter is_corrected set not null;")
-
-    sess.execute("alter table g_register_read alter correction_factor drop not null;")
-    sess.execute("alter table g_register_read alter calorific_value drop not null;")
-
-    for ldz_code, exit_zone_codes in (
-        ("EA", ["EA1", "EA2", "EA3", "EA4"]),
-        ("EM", ["EM1", "EM2", "EM3", "EM4"]),
-        ("NT", ["NT1", "NT2", "NT3"]),
-        ("NW", ["NW1", "NW2"]),
-        ("WM", ["WM1", "WM2", "WM3"]),
-        ("LC", ["LC"]),
-        ("LO", ["LO"]),
-        ("LS", ["LS"]),
-        ("LT", ["LT"]),
-        ("LW", ["LW"]),
-        ("SC", ["SC1", "SC2", "SC4"]),
-        ("SE", ["SE1", "SE2"]),
-        ("SO", ["SO1", "SO2"]),
-        ("NE", ["NE1", "NE2", "NE3"]),
-        ("NO", ["NO1", "NO2"]),
-        ("SW", ["SW1", "SW2", "SW3"]),
-        ("WA", ["WA1", "WA2"]),
-    ):
-        g_ldz = GLdz(ldz_code)
-        sess.add(g_ldz)
-        for exit_zone_code in exit_zone_codes:
-            g_ldz.insert_exit_zone(sess, exit_zone_code)
-    sess.flush()
-    sess.execute(
-        "alter table g_supply "
-        "add g_exit_zone_id integer references g_exit_zone (id);"
-    )
-    sess.execute("update g_supply set g_exit_zone_id = 9;")
-    sess.execute("alter table g_supply alter g_exit_zone_id set not null;")
-
-
-def db_upgrade_13_to_14(sess, root_path):
-    for rs_id, rs_script in sess.execute(
-        "select rate_script.id, rate_script.script "
-        "from rate_script, contract "
-        "where rate_script.contract_id = contract.id "
-        "and contract.name = 'tlms';"
-    ).fetchall():
-        tlms = {}
-        for k, v in loads(rs_script)["tlms"].items():
-            tlm = tlms[k[:-2]] = {}
-            for gsp_group_code in (
-                "A",
-                "B",
-                "C",
-                "D",
-                "E",
-                "F",
-                "G",
-                "H",
-                "J",
-                "K",
-                "L",
-                "M",
-                "N",
-                "P",
-            ):
-                tlm["_" + gsp_group_code] = {"DF": {"delivering": v, "off_taking": v}}
-        sess.execute(
-            "update rate_script set script = :script where id = :id;",
-            params={"script": dumps({"tlms": tlms}), "id": rs_id},
-        )
-
-
-def db_upgrade_14_to_15(sess, root_path):
-    for code, name in (
-        ("EE", "East of England"),
-        ("LO", "London"),
-        ("NW", "North West"),
-        ("WM", "West Midlands"),
-        ("SC", "Scotland"),
-        ("SO", "Southern"),
-        ("NO", "Northern"),
-        ("WW", "Wales & West"),
-    ):
-        sess.add(GDn(code, name))
-
-    sess.execute("insert into g_ldz (code) values ('WN')")
-    wn_id = sess.execute("select id from g_ldz where code = 'WN'").fetchone()[0]
-
-    sess.execute("insert into g_ldz (code) values ('WS')")
-    ws_id = sess.execute("select id from g_ldz where code = 'WS'").fetchone()[0]
-
-    sess.execute(
-        "update g_exit_zone set g_ldz_id = :wn_id where code = 'WA1'", {"wn_id": wn_id}
-    )
-    sess.execute(
-        "update g_exit_zone set g_ldz_id = :ws_id where code = 'WA2'", {"ws_id": ws_id}
-    )
-
-    sess.execute("delete from g_ldz where code = 'WA'")
-
-    sess.execute("alter table g_ldz add g_dn_id integer references g_dn (id);")
-
-    for dn_code, ldz_codes in {
-        "EE": ["EA", "EM"],
-        "LO": ["NT"],
-        "NW": ["NW"],
-        "WM": ["WM"],
-        "SC": ["LC", "LO", "LS", "LT", "LW", "SC"],
-        "SO": ["SE", "SO"],
-        "NO": ["NE", "NO"],
-        "WW": ["SW", "WN", "WS"],
-    }.items():
-        dn = GDn.get_by_code(sess, dn_code)
-        for ldz_code in ldz_codes:
-            sess.execute(
-                "update g_ldz set g_dn_id = :dn_id where code = :ldz_code",
-                {"dn_id": dn.id, "ldz_code": ldz_code},
-            )
-
-    sess.execute("alter table g_ldz alter g_dn_id set not null")
-
-
-def db_upgrade_15_to_16(sess, root_path):
-    sess.execute("alter table era add properties text;")
-    sess.execute("update era set properties = '{}';")
-    sess.execute("alter table era alter properties set not null;")
-
-
-def db_upgrade_16_to_17(sess, root_path):
-    sess.execute("alter table g_era add correction_factor numeric;")
-    sess.execute(
-        "update g_era set correction_factor = '1.02264' " "where not is_corrected;"
-    )
-    sess.execute("update g_era set correction_factor = '1' where is_corrected;")
-    sess.execute("alter table g_era alter correction_factor set not null;")
-    sess.execute("ALTER TABLE g_era DROP COLUMN is_corrected;")
-
-    sess.execute(
-        "update g_register_read set correction_factor = '1' " "where is_corrected;"
-    )
-    sess.execute("ALTER TABLE g_register_read DROP COLUMN is_corrected;")
-    sess.execute(
-        "update g_register_read set correction_factor = '1.02264' "
-        "where correction_factor = null;"
-    )
-    sess.execute("alter table g_register_read alter correction_factor set not null;")
-
-
-def db_upgrade_17_to_18(sess, root_path):
-    def _conv(dt):
-        if dt is None:
-            return None
-        return to_utc(to_ct(dt.replace(tzinfo=None)))
-
-    for tbl in (Llfc, Party, Mtc):
-        for row in sess.query(tbl):
-            row.valid_from = _conv(row.valid_from)
-            row.valid_to = _conv(row.valid_to)
-
-
 def db_upgrade_18_to_19(sess, root_path):
     for code, factor in (
         ("MCUF", "28.3"),
@@ -6988,39 +6352,54 @@ def db_upgrade_30_to_31(sess, root_path):
     sess.execute("ALTER TABLE ssc DROP CONSTRAINT IF EXISTS ssc_code_key")
 
 
-upgrade_funcs = [
-    db_upgrade_0_to_1,
-    db_upgrade_1_to_2,
-    db_upgrade_2_to_3,
-    db_upgrade_3_to_4,
-    db_upgrade_4_to_5,
-    db_upgrade_5_to_6,
-    db_upgrade_6_to_7,
-    db_upgrade_7_to_8,
-    db_upgrade_8_to_9,
-    db_upgrade_9_to_10,
-    db_upgrade_10_to_11,
-    db_upgrade_11_to_12,
-    db_upgrade_12_to_13,
-    db_upgrade_13_to_14,
-    db_upgrade_14_to_15,
-    db_upgrade_15_to_16,
-    db_upgrade_16_to_17,
-    db_upgrade_17_to_18,
-    db_upgrade_18_to_19,
-    db_upgrade_19_to_20,
-    db_upgrade_20_to_21,
-    db_upgrade_21_to_22,
-    db_upgrade_22_to_23,
-    db_upgrade_23_to_24,
-    db_upgrade_24_to_25,
-    db_upgrade_25_to_26,
-    db_upgrade_26_to_27,
-    db_upgrade_27_to_28,
-    db_upgrade_28_to_29,
-    db_upgrade_29_to_30,
-    db_upgrade_30_to_31,
-]
+def db_upgrade_31_to_32(sess, root_path):
+    sess.execute("alter table era add old_mtc_id integer references old_mtc (id);")
+    for era_id, mtc_dno_id, mtc_code, mtc_valid_from in sess.execute(
+        "select era.id, mtc.dno_id, mtc.code, mtc.valid_from "
+        "from era, mtc where era.mtc_id = mtc.id"
+    ):
+        params = {
+            "code": mtc_code,
+            "valid_from": to_utc(mtc_valid_from),
+        }
+        if mtc_dno_id is None:
+            q = (
+                "select id from old_mtc "
+                "where dno_id is null and code = :code and valid_from = :valid_from"
+            )
+        else:
+            params["dno_id"] = mtc_dno_id
+            q = (
+                "select id from old_mtc "
+                "where dno_id = :dno_id and code = :code and valid_from = :valid_from"
+            )
+        old_mtc_id = sess.execute(q, params=params).scalar_one()
+        sess.execute(
+            "UPDATE era SET old_mtc_id = :old_mtc_id where id = :era_id",
+            params={"old_mtc_id": old_mtc_id, "era_id": era_id},
+        )
+    sess.execute("alter table era alter old_mtc_id set not null;")
+
+
+upgrade_funcs = [None] * 18
+upgrade_funcs.extend(
+    [
+        db_upgrade_18_to_19,
+        db_upgrade_19_to_20,
+        db_upgrade_20_to_21,
+        db_upgrade_21_to_22,
+        db_upgrade_22_to_23,
+        db_upgrade_23_to_24,
+        db_upgrade_24_to_25,
+        db_upgrade_25_to_26,
+        db_upgrade_26_to_27,
+        db_upgrade_27_to_28,
+        db_upgrade_28_to_29,
+        db_upgrade_29_to_30,
+        db_upgrade_30_to_31,
+        db_upgrade_31_to_32,
+    ]
+)
 
 
 def db_upgrade(root_path):

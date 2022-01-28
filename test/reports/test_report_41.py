@@ -26,7 +26,7 @@ def test_eras(mocker):
             "era.dc_account AS era_dc_account, "
             "era.msn AS era_msn, "
             "era.pc_id AS era_pc_id, "
-            "era.mtc_id AS era_mtc_id, "
+            "era.old_mtc_id AS era_old_mtc_id, "
             "era.cop_id AS era_cop_id, "
             "era.comm_id AS era_comm_id, "
             "era.ssc_id AS era_ssc_id, "
@@ -47,7 +47,7 @@ def test_eras(mocker):
             "JOIN pc ON pc.id = era.pc_id \n"
             "WHERE era.start_date <= :start_date_1 AND "
             "(era.finish_date IS NULL OR era.finish_date >= :finish_date_1) "
-            "AND source.code IN ([POSTCOMPILE_code_1]) AND pc.code = :code_2 "
+            "AND source.code IN (__[POSTCOMPILE_code_1]) AND pc.code = :code_2 "
             "ORDER BY supply.id"
         )
     )

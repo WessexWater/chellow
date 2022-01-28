@@ -33,7 +33,7 @@ def get_era_bundles(sess, supply):
             joinedload(Era.imp_supplier_contract),
             joinedload(Era.exp_supplier_contract),
             joinedload(Era.ssc),
-            joinedload(Era.mtc),
+            joinedload(Era.old_mtc),
             joinedload(Era.mop_contract),
             joinedload(Era.dc_contract),
             joinedload(Era.imp_llfc),

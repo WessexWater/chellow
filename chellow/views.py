@@ -110,7 +110,6 @@ from chellow.models import (
     MeasurementRequirement,
     MeterPaymentType,
     MeterType,
-    Mtc,
     OldMtc,
     OldValidMtcLlfcSscPc,
     Participant,
@@ -133,7 +132,6 @@ from chellow.models import (
     Tpr,
     User,
     UserRole,
-    ValidMtcLlfcSscPc,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -2543,8 +2541,7 @@ def era_edit_post(era_id):
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
-            mtc_code = req_str("mtc_code")
-            mtc = Mtc.get_by_code(g.sess, era.supply.dno, mtc_code, start_date)
+            old_mtc_code = req_str("mtc_code")
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             comm_id = req_int("comm_id")
@@ -2614,7 +2611,7 @@ def era_edit_post(era_id):
                 dc_account,
                 msn,
                 pc,
-                mtc,
+                old_mtc_code,
                 cop,
                 comm,
                 ssc,
@@ -6326,30 +6323,6 @@ def supply_virtual_bill_get(supply_id):
     )
 
 
-@views.route("/mtcs")
-def mtcs_get():
-    mtcs = (
-        g.sess.query(Mtc)
-        .outerjoin(Mtc.dno)
-        .order_by(Mtc.code, Party.dno_code)
-        .options(joinedload(Mtc.dno))
-        .all()
-    )
-    return render_template("mtcs.html", mtcs=mtcs)
-
-
-@views.route("/mtcs/<int:mtc_id>")
-def mtc_get(mtc_id):
-    mtc = (
-        g.sess.query(Mtc)
-        .outerjoin(Mtc.dno)
-        .filter(Mtc.id == mtc_id)
-        .options(joinedload(Mtc.dno))
-        .one()
-    )
-    return render_template("mtc.html", mtc=mtc)
-
-
 @views.route("/old_mtcs")
 def old_mtcs_get():
     old_mtcs = (
@@ -6372,72 +6345,6 @@ def old_mtc_get(old_mtc_id):
         .one()
     )
     return render_template("old_mtc.html", old_mtc=old_mtc)
-
-
-@views.route("/mtcs/<int:mtc_id>/edit")
-def mtc_edit_get(mtc_id):
-    mtc = Mtc.get_by_id(g.sess, mtc_id)
-    meter_types = g.sess.query(MeterType).order_by(MeterType.code).all()
-    meter_payment_types = (
-        g.sess.query(MeterPaymentType).order_by(MeterPaymentType.code).all()
-    )
-    return render_template(
-        "mtc_edit.html",
-        mtc=mtc,
-        meter_types=meter_types,
-        meter_payment_types=meter_payment_types,
-    )
-
-
-@views.route("/mtcs/<int:mtc_id>/edit", methods=["POST"])
-def mtc_edit_post(mtc_id):
-    try:
-        mtc = Mtc.get_by_id(g.sess, mtc_id)
-        if "delete" in request.values:
-            mtc.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/mtcs/", 303)
-        else:
-            description = req_str("description")
-            has_related_metering = req_bool("has_related_metering")
-            has_comms = req_bool("has_comms")
-            is_hh = req_bool("is_hh")
-            meter_type_id = req_int("meter_type_id")
-            meter_payment_type_id = req_int("meter_payment_type_id")
-            tpr_count = req_int("tpr_count")
-            valid_from = req_date("valid_from")
-            has_finished = req_bool("has_finished")
-            valid_to = req_date("valid_to") if has_finished else None
-            mtc.update(
-                g.sess,
-                description,
-                has_related_metering,
-                has_comms,
-                is_hh,
-                meter_type_id,
-                meter_payment_type_id,
-                tpr_count,
-                valid_from,
-                valid_to,
-            )
-            g.sess.commit()
-            return chellow_redirect("/mtcs/" + str(mtc.id), 303)
-    except BadRequest as e:
-        g.sess.rollback()
-        flash(e.description)
-        meter_types = g.sess.query(MeterType).order_by(MeterType.code).all()
-        meter_payment_types = (
-            g.sess.query(MeterPaymentType).order_by(MeterPaymentType.code).all()
-        )
-        return make_response(
-            render_template(
-                "mtc_edit.html",
-                mtc=mtc,
-                meter_types=meter_types,
-                meter_payment_types=meter_payment_types,
-            ),
-            400,
-        )
 
 
 @views.route("/csv_crc")
@@ -6525,42 +6432,6 @@ def industry_rate_script_get(contract_code, start_date_str):
         contract_code=contract_code,
         rate_script=rate_script,
     )
-
-
-@views.route("/valid_mtc_llfc_ssc_pcs")
-def valid_mtc_llfc_ssc_pcs_get():
-    dno_id = req_int("dno_id")
-    dno = Party.get_dno_by_id(g.sess, dno_id)
-    only_ongoing = req_bool("only_ongoing")
-    q = (
-        select(ValidMtcLlfcSscPc)
-        .join(Mtc)
-        .join(Llfc)
-        .join(Ssc)
-        .join(Pc)
-        .where(Llfc.dno == dno)
-        .order_by(
-            Pc.code, Llfc.code, Ssc.code, Mtc.code, ValidMtcLlfcSscPc.valid_from.desc()
-        )
-        .options(
-            joinedload(ValidMtcLlfcSscPc.mtc),
-            joinedload(ValidMtcLlfcSscPc.llfc),
-            joinedload(ValidMtcLlfcSscPc.ssc),
-            joinedload(ValidMtcLlfcSscPc.pc),
-        )
-    )
-    if only_ongoing:
-        q = q.where(ValidMtcLlfcSscPc.valid_to == null())
-    combos = g.sess.execute(q).scalars()
-    return render_template(
-        "valid_mtc_llfc_ssc_pcs.html", valid_mtc_llfc_ssc_pcs=combos, dno=dno
-    )
-
-
-@views.route("/valid_mtc_llfc_ssc_pcs/<int:combo_id>")
-def valid_mtc_llfc_ssc_pc_get(combo_id):
-    combo = ValidMtcLlfcSscPc.get_by_id(g.sess, combo_id)
-    return render_template("valid_mtc_llfc_ssc_pc.html", valid_mtc_llfc_ssc_pc=combo)
 
 
 @views.route("/old_valid_mtc_llfc_ssc_pcs")

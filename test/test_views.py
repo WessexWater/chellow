@@ -26,7 +26,8 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
+    OldValidMtcLlfcSscPc,
     Participant,
     Pc,
     ReportRun,
@@ -35,7 +36,6 @@ from chellow.models import (
     Snag,
     Source,
     Ssc,
-    ValidMtcLlfcSscPc,
     VoltageLevel,
     insert_bill_types,
     insert_comms,
@@ -158,7 +158,7 @@ def test_site_edit_post_fail(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -320,7 +320,7 @@ def test_era_edit_get(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -467,7 +467,7 @@ def test_era_edit_post_hh(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -632,7 +632,7 @@ def test_era_edit_post_nhh(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(
+    old_mtc = OldMtc.insert(
         sess,
         None,
         "845",
@@ -664,7 +664,9 @@ def test_era_edit_post_nhh(client, sess):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1), None)
-    ValidMtcLlfcSscPc.insert(sess, mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None)
+    OldValidMtcLlfcSscPc.insert(
+        sess, old_mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None
+    )
     supply = site.insert_e_supply(
         sess,
         source,
@@ -789,7 +791,7 @@ def test_era_edit_post_fail(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1546,7 +1548,7 @@ def test_general_import_post_full(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1717,7 +1719,7 @@ def test_channel_snag_get(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1939,7 +1941,7 @@ def test_mop_batch_import_bills_full(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2060,7 +2062,7 @@ def test_mop_batch_upload_file_post(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2520,7 +2522,7 @@ def test_add_channel_post(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2659,7 +2661,7 @@ def test_site_edit_get(sess, client, app):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2746,7 +2748,7 @@ def test_site_edit_post_hh(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2860,7 +2862,7 @@ def test_site_edit_post_nhh(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(
+    old_mtc = OldMtc.insert(
         sess,
         None,
         "845",
@@ -2892,7 +2894,9 @@ def test_site_edit_post_nhh(sess, client):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1, 1), None)
-    ValidMtcLlfcSscPc.insert(sess, mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None)
+    OldValidMtcLlfcSscPc.insert(
+        sess, old_mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None
+    )
     sess.commit()
 
     data = {
@@ -3003,7 +3007,7 @@ def test_supply_months_get(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",

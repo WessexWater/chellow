@@ -9,12 +9,12 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
+    OldValidMtcLlfcSscPc,
     Participant,
     Party,
     Pc,
     Ssc,
-    ValidMtcLlfcSscPc,
     VoltageLevel,
     insert_voltage_levels,
 )
@@ -150,7 +150,7 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(
+    old_mtc = OldMtc.insert(
         sess,
         dno,
         "001",
@@ -186,9 +186,11 @@ def test_parse_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     ]
 
     csv_reader = iter([row])
-    chellow.mdd_importer._import_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader)
+    chellow.mdd_importer._import_Old_Valid_MTC_LLFC_SSC_PC_Combination(sess, csv_reader)
     sess.commit()
-    ValidMtcLlfcSscPc.get_by_values(sess, mtc, llfc, ssc, pc, utc_datetime(2012, 1, 1))
+    OldValidMtcLlfcSscPc.get_by_values(
+        sess, old_mtc, llfc, ssc, pc, utc_datetime(2012, 1, 1)
+    )
 
 
 def test_import_Market_Participant(sess):

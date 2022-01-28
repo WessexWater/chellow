@@ -28,7 +28,7 @@ from chellow.models import (
     HhDatum,
     Llfc,
     MeasurementRequirement,
-    Mtc,
+    OldMtc,
     Party,
     RateScript,
     ReadType,
@@ -1017,8 +1017,8 @@ class SupplySource(DataSource):
         self.voltage_level_code = self.voltage_level.code
         self.is_substation = self.llfc.is_substation
         self.is_new = False
-        self.mtc = self.era.mtc
-        self.meter_type = self.mtc.meter_type
+        self.old_mtc = self.era.old_mtc
+        self.meter_type = self.old_mtc.meter_type
         self.meter_type_code = self.meter_type.code
 
         if era.pc.code in self.era_map_pcs:
@@ -1066,7 +1066,7 @@ class SupplySource(DataSource):
             hist_eras = hist_eras.options(
                 joinedload(Era.pc),
                 joinedload(Era.channels),
-                joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
             ).all()
             if len(hist_eras) == 0:
                 hist_eras = (
@@ -1403,7 +1403,7 @@ class SupplySource(DataSource):
                 joinedload(Era.supply).joinedload(Supply.dno),
                 joinedload(Era.supply).joinedload(Supply.gsp_group),
                 joinedload(Era.supply).joinedload(Supply.source),
-                joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
                 joinedload(Era.pc),
                 joinedload(Era.site_eras),
             )

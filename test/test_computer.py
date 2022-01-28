@@ -8,13 +8,13 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
+    OldValidMtcLlfcSscPc,
     Participant,
     Pc,
     Site,
     Source,
     Ssc,
-    ValidMtcLlfcSscPc,
     VoltageLevel,
     insert_comms,
     insert_cops,
@@ -207,7 +207,7 @@ def test_init_hh_data(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -376,7 +376,7 @@ def test_init_hh_data_export(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -554,7 +554,7 @@ def test_SupplySource_init_hh(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -712,7 +712,7 @@ def test_SupplySource_init_nhh(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(
+    old_mtc = OldMtc.insert(
         sess,
         None,
         "845",
@@ -753,11 +753,11 @@ def test_SupplySource_init_nhh(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "D")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    ValidMtcLlfcSscPc.insert(
-        sess, mtc, llfc_imp, ssc, pc, utc_datetime(1996, 1, 1), None
+    OldValidMtcLlfcSscPc.insert(
+        sess, old_mtc, llfc_imp, ssc, pc, utc_datetime(1996, 1, 1), None
     )
-    ValidMtcLlfcSscPc.insert(
-        sess, mtc, llfc_exp, ssc, pc, utc_datetime(1996, 1, 1), None
+    OldValidMtcLlfcSscPc.insert(
+        sess, old_mtc, llfc_exp, ssc, pc, utc_datetime(1996, 1, 1), None
     )
     supply = site.insert_e_supply(
         sess,

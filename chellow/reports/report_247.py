@@ -28,7 +28,7 @@ from chellow.models import (
     Era,
     Llfc,
     MeasurementRequirement,
-    Mtc,
+    OldMtc,
     Pc,
     Scenario,
     Session,
@@ -377,7 +377,7 @@ def _make_calcs(
             joinedload(Era.supply).joinedload(Supply.dno),
             joinedload(Era.supply).joinedload(Supply.gsp_group),
             joinedload(Era.supply).joinedload(Supply.source),
-            joinedload(Era.mtc).joinedload(Mtc.meter_type),
+            joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
             joinedload(Era.pc),
             joinedload(Era.site_eras),
         )

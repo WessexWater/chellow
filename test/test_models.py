@@ -14,7 +14,7 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
     Participant,
     Pc,
     Scenario,
@@ -28,76 +28,165 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_Era_update(mocker):
-    sess = mocker.Mock()
-    start_date = utc_datetime(2019, 1, 1)
-    finish_date = utc_datetime(2019, 1, 10)
-    mop_contract = mocker.Mock()
-    mop_contract.start_date.return_value = start_date
-    mop_contract.finish_date.return_value = finish_date
-    mop_account = "mop account"
-    dc_contract = mocker.Mock()
-    dc_contract.start_date.return_value = start_date
-    dc_contract.finish_date.return_value = finish_date
-    dc_account = "dc account"
-    msn = " yhlk "
-    pc = mocker.Mock()
-    pc.code = "00"
-    mtc = mocker.Mock()
-    cop = mocker.Mock()
-    comm = mocker.Mock()
-    ssc = None
-    energisation_status = mocker.Mock()
-    properties = {}
-    imp_mpan_core = "22 3423 2442 127"
-    imp_llfc_code = "110"
-    imp_supplier_contract = mocker.Mock()
-    imp_supplier_contract.start_date.return_value = start_date
-    imp_supplier_contract.finish_date.return_value = None
-    imp_supplier_account = "supplier account"
-    imp_sc = 400
-    exp_mpan_core = exp_llfc_code = exp_supplier_contract = None
-    exp_supplier_account = exp_sc = None
-
-    era = mocker.Mock()
-    era.start_date = start_date
-    era.finish_date = finish_date
-    era.supply.dno.dno_code = "22"
-    era.supply.dno.get_llfc_by_code().valid_to = finish_date
-    era.supply.dno.get_llfc_by_code().is_import = True
-    era.supply.find_era_at.return_value = None
-    Era.update(
-        era,
+def test_Era_update(sess):
+    """Successful"""
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
         sess,
-        start_date,
-        finish_date,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    OldMtc.insert(
+        sess,
+        None,
+        "845",
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    dno.insert_llfc(
+        sess,
+        "521",
+        "Export (HV)",
+        voltage_level,
+        False,
+        False,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    imp_mpan_core = "22 7867 6232 781"
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
         mop_contract,
-        mop_account,
+        "773",
         dc_contract,
-        dc_account,
-        msn,
+        "ghyy3",
+        "e1msn",
         pc,
-        mtc,
+        "845",
         cop,
         comm,
-        ssc,
+        None,
         energisation_status,
-        properties,
+        {},
         imp_mpan_core,
-        imp_llfc_code,
+        "510",
         imp_supplier_contract,
-        imp_supplier_account,
-        imp_sc,
-        exp_mpan_core,
-        exp_llfc_code,
-        exp_supplier_contract,
-        exp_supplier_account,
-        exp_sc,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
     )
-    assert era.msn == "yhlk"
+    era = supply.eras[0]
+    msn = "e2msn"
+    era.update(
+        sess,
+        era.start_date,
+        None,
+        mop_contract,
+        "379540",
+        dc_contract,
+        "547yt",
+        msn,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        imp_mpan_core,
+        "510",
+        imp_supplier_contract,
+        "9745y6",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    sess.commit()
+    era = Era.get_by_id(sess, era.id)
+
+    assert era.msn == msn
 
 
 def test_MTC_find_by_code(sess):
@@ -111,7 +200,7 @@ def test_MTC_find_by_code(sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         dno,
         code,
@@ -127,70 +216,128 @@ def test_MTC_find_by_code(sess):
     )
     sess.commit()
 
-    mtc = Mtc.find_by_code(sess, dno, "34", utc_datetime(2000, 1, 1))
-    assert mtc.code == code
+    old_mtc = OldMtc.find_by_code(sess, dno, "34", utc_datetime(2000, 1, 1))
+    assert old_mtc.code == code
 
 
-def test_update_Era_llfc_valid_to(mocker):
+def test_Era_init_llfc_valid_to(sess):
     """
     Error raised if LLFC finishes before the era
     """
-    llfc = mocker.Mock()
-    llfc.valid_from = utc_datetime(2000, 1, 1)
-    llfc.valid_to = utc_datetime(2010, 5, 1)
-
-    start_date = utc_datetime(2010, 1, 1)
-    finish_date = utc_datetime(2011, 1, 1)
-    mop_account = "A mop account"
-    dc_account = "A dc account"
-    msn = "mtr001"
-    mtc_code = "845"
-    cop = mocker.Mock()
-    comm = mocker.Mock()
-    ssc = mocker.Mock()
-    energisation_status = mocker.Mock()
-    properties = {}
-    imp_mpan_core = "22 9877 3472 588"
-    imp_llfc_code = "510"
-    imp_supplier_contract = mocker.Mock()
-    imp_supplier_contract.start_date.return_value = utc_datetime(2000, 1, 1)
-    imp_supplier_contract.finish_date.return_value = None
-    instance = mocker.Mock()
-    instance.supply.dno.dno_code = "22"
-    instance.supply.dno.get_llfc_by_code.return_value = llfc
-
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    OldMtc.insert(
+        sess,
+        None,
+        "845",
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        to_utc(ct_datetime(2000, 5, 1)),
+        to_utc(ct_datetime(2010, 5, 1)),
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    imp_mpan_core = "22 7867 6232 781"
     with pytest.raises(
         BadRequest,
         match="The imp line loss factor 510 is only valid until "
-        "2010-05-01 01:00 but the era ends at 2011-01-01 00:00.",
+        "2010-05-01 00:00 but the era ends at 2011-01-01 00:00.",
     ):
-        Era.update(
-            instance,
-            mocker.Mock(),
-            start_date,
-            finish_date,
-            mocker.Mock(),
-            mop_account,
-            mocker.Mock(),
-            dc_account,
-            msn,
-            mocker.Mock(),
-            mtc_code,
+        site.insert_e_supply(
+            sess,
+            source,
+            None,
+            "Bob",
+            to_utc(ct_datetime(2002, 7, 1)),
+            to_utc(ct_datetime(2011, 1, 1)),
+            gsp_group,
+            mop_contract,
+            "773",
+            dc_contract,
+            "ghyy3",
+            "e1msn",
+            pc,
+            "845",
             cop,
             comm,
-            ssc,
+            None,
             energisation_status,
-            properties,
+            {},
             imp_mpan_core,
-            imp_llfc_code,
+            "510",
             imp_supplier_contract,
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
-            mocker.Mock(),
+            "7748",
+            361,
+            None,
+            None,
+            None,
+            None,
+            None,
         )
 
 
@@ -335,7 +482,7 @@ def test_Supply_insert_era_at(sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc_845 = Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -423,7 +570,7 @@ def test_Supply_insert_era_at(sess):
         "547yt",
         era2_msn,
         pc,
-        mtc_845,
+        "845",
         cop,
         comm,
         None,

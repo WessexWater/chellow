@@ -20,7 +20,7 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
     Participant,
     Pc,
     Scenario,
@@ -284,7 +284,7 @@ def test_scenario_new_generation(mocker, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -527,7 +527,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -828,7 +828,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1081,7 +1081,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1414,7 +1414,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -1749,7 +1749,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2085,7 +2085,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2633,7 +2633,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -2967,7 +2967,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",

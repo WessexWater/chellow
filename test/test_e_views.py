@@ -11,7 +11,7 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
     Participant,
     Pc,
     Site,
@@ -77,7 +77,7 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",
@@ -211,7 +211,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    Mtc.insert(
+    OldMtc.insert(
         sess,
         None,
         "845",

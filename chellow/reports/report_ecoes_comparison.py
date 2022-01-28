@@ -15,7 +15,16 @@ from sqlalchemy.sql.expression import null, or_
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-from chellow.models import Contract, Era, Mtc, Party, ReportRun, Session, Source, Supply
+from chellow.models import (
+    Contract,
+    Era,
+    OldMtc,
+    Party,
+    ReportRun,
+    Session,
+    Source,
+    Supply,
+)
 from chellow.utils import req_bool
 from chellow.views import chellow_redirect
 
@@ -287,7 +296,7 @@ def _process(
                     joinedload(Era.pc),
                     joinedload(Era.imp_llfc),
                     joinedload(Era.exp_llfc),
-                    joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                    joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
                     joinedload(Era.ssc),
                     joinedload(Era.energisation_status),
                     joinedload(Era.channels),
@@ -319,7 +328,7 @@ def _process(
                     problem += "Can't parse the PC. "
                     ignore = False
 
-                chellow_mtc = era.mtc.code
+                chellow_mtc = era.old_mtc.code
                 try:
                     if int(ecoes["mtc"]) != int(chellow_mtc):
                         problem += "The MTCs don't match. "

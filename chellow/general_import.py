@@ -33,7 +33,8 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    Mtc,
+    OldMtc,
+    OldValidMtcLlfcSscPc,
     Participant,
     Party,
     Pc,
@@ -48,7 +49,6 @@ from chellow.models import (
     Tpr,
     User,
     UserRole,
-    ValidMtcLlfcSscPc,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -141,7 +141,7 @@ def general_import_era(sess, action, vals, args):
         if mtc_code == NO_CHANGE:
             mtc = era.mtc
         else:
-            mtc = Mtc.get_by_code(sess, supply.dno, mtc_code)
+            old_mtc = OldMtc.get_by_code(sess, supply.dno, mtc_code)
 
         cop_code = add_arg(args, "CoP", vals, 11)
         cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(sess, cop_code)
@@ -351,11 +351,11 @@ def general_import_era(sess, action, vals, args):
             pc_code = parse_pc_code(pc_code_raw)
             pc = Pc.get_by_code(sess, pc_code)
 
-        mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 9)
-        if mtc_code == NO_CHANGE:
-            mtc = existing_era.mtc
+        old_mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 9)
+        if old_mtc_code == NO_CHANGE:
+            old_mtc = existing_era.old_mtc
         else:
-            mtc = Mtc.get_by_code(sess, supply.dno, mtc_code)
+            old_mtc = OldMtc.get_by_code(sess, supply.dno, old_mtc_code)
 
         cop_code = add_arg(args, "CoP", vals, 10)
         if cop_code == NO_CHANGE:
@@ -508,7 +508,7 @@ def general_import_era(sess, action, vals, args):
             dc_account,
             msn,
             pc,
-            mtc,
+            old_mtc.code,
             cop,
             comm,
             ssc,
@@ -704,16 +704,16 @@ def general_import_mtc(sess, action, vals, args):
         valid_to_str = add_arg(args, "Valid To", vals, 10)
         valid_to = parse_hh_start(valid_to_str)
 
-        mtc_query = sess.query(Mtc).filter(
-            Mtc.dno == dno,
-            Mtc.code == code,
-            or_(Mtc.valid_to == null(), Mtc.valid_to >= valid_from),
+        old_mtc_query = sess.query(OldMtc).filter(
+            OldMtc.dno == dno,
+            OldMtc.code == code,
+            or_(OldMtc.valid_to == null(), OldMtc.valid_to >= valid_from),
         )
         if valid_to is not None:
-            mtc_query = mtc_query.filter(Mtc.valid_from <= valid_to)
-        existing_mtc = mtc_query.first()
-        if existing_mtc is None:
-            mtc = Mtc(
+            old_mtc_query = old_mtc_query.filter(OldMtc.valid_from <= valid_to)
+        existing_old_mtc = old_mtc_query.first()
+        if existing_old_mtc is None:
+            old_mtc = OldMtc(
                 dno=dno,
                 code=code,
                 description=description,
@@ -726,11 +726,11 @@ def general_import_mtc(sess, action, vals, args):
                 valid_from=valid_from,
                 valid_to=valid_to,
             )
-            sess.add(mtc)
+            sess.add(old_mtc)
             sess.flush()
         else:
             raise BadRequest(
-                "There's already a MTC with this DNO and code for this " "period."
+                "There's already a MTC with this DNO and code for this period."
             )
 
     elif action == "update":
@@ -740,34 +740,34 @@ def general_import_mtc(sess, action, vals, args):
         else:
             dno = Party.get_dno_by_code(sess, dno_code)
         code = add_arg(args, "Code", vals, 1)
-        mtc = Mtc.get_by_code(sess, dno, code)
+        old_mtc = OldMtc.get_by_code(sess, dno, code)
 
         description = add_arg(args, "Description", vals, 2)
-        mtc.description = description
+        old_mtc.description = description
         has_related_metering_str = add_arg(args, "Has Related Metering?", vals, 3)
         has_related_metering = parse_bool(has_related_metering_str)
-        mtc.has_related_metering = has_related_metering
+        old_mtc.has_related_metering = has_related_metering
         has_comms_str = add_arg(args, "Has Comms?", vals, 4)
         has_comms = parse_bool(has_comms_str)
-        mtc.has_comms = has_comms
+        old_mtc.has_comms = has_comms
         is_hh_str = add_arg(args, "Is HH?", vals, 5)
         is_hh = parse_bool(is_hh_str)
-        mtc.is_hh = is_hh
+        old_mtc.is_hh = is_hh
         meter_type_code = add_arg(args, "Meter Type Code", vals, 6)
         meter_type = MeterType.get_by_code(sess, meter_type_code)
-        mtc.meter_type = meter_type
+        old_mtc.meter_type = meter_type
         meter_payment_type_code = add_arg(args, "Meter Payment Type Code", vals, 7)
         meter_payment_type = MeterPaymentType.get_by_code(sess, meter_payment_type_code)
-        mtc.meter_payment_type = meter_payment_type
+        old_mtc.meter_payment_type = meter_payment_type
         tpr_count_str = add_arg(args, "TPR Count", vals, 8)
         tpr_count = int(tpr_count_str)
-        mtc.tpr_count = tpr_count
+        old_mtc.tpr_count = tpr_count
         valid_from_str = add_arg(args, "Valid From", vals, 9)
         valid_from = parse_hh_start(valid_from_str)
-        mtc.valid_from = valid_from
+        old_mtc.valid_from = valid_from
         valid_to_str = add_arg(args, "Valid To", vals, 10)
         valid_to = parse_hh_start(valid_to_str)
-        mtc.valid_to = valid_to
+        old_mtc.valid_to = valid_to
         sess.flush()
 
 
@@ -1435,10 +1435,10 @@ def general_import_valid_mtc_llfc_ssc_pc(sess, action, vals, args):
     if action == "insert":
         dno_code = add_arg(args, "dno_code", vals, 0)
         dno = Party.get_dno_by_code(sess, dno_code)
-        mtc_code = add_arg(args, "mtc_code", vals, 1)
-        mtc_from_str = add_arg(args, "mtc_from", vals, 2)
-        mtc_from = parse_hh_start(mtc_from_str)
-        mtc = Mtc.get_by_code(sess, dno, mtc_code, mtc_from)
+        old_mtc_code = add_arg(args, "mtc_code", vals, 1)
+        old_mtc_from_str = add_arg(args, "mtc_from", vals, 2)
+        old_mtc_from = parse_hh_start(old_mtc_from_str)
+        old_mtc = OldMtc.get_by_code(sess, dno, old_mtc_code, old_mtc_from)
         llfc_code = add_arg(args, "llfc_code", vals, 3)
         llfc_from_str = add_arg(args, "llfc_from", vals, 4)
         llfc_from = parse_hh_start(llfc_from_str)
@@ -1454,7 +1454,7 @@ def general_import_valid_mtc_llfc_ssc_pc(sess, action, vals, args):
         valid_to_str = add_arg(args, "valid_to", vals, 9)
         valid_to = parse_hh_start(valid_to_str)
 
-        ValidMtcLlfcSscPc.insert(sess, mtc, llfc, ssc, pc)
+        OldValidMtcLlfcSscPc.insert(sess, old_mtc, llfc, ssc, pc)
 
     elif action == "update":
         dno_code = add_arg(args, "dno", vals, 0)
