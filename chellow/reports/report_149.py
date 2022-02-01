@@ -104,7 +104,7 @@ def mpan_bit(
     if kvarh_at_md is None:
         kva_at_md = "None"
     else:
-        kva_at_md = (kw_at_md ** 2 + (kvarh_at_md * 2) ** 2) ** 0.5
+        kva_at_md = (kw_at_md**2 + (kvarh_at_md * 2) ** 2) ** 0.5
 
     date_at_md_str = "" if date_at_md is None else hh_format(date_at_md)
 

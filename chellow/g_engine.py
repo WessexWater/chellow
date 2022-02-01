@@ -548,7 +548,7 @@ def _find_pair(is_forwards, read_list):
         # Clocked?
         if units < 0:
             digits = int(log10(back_value)) + 1
-            units += 10 ** digits
+            units += 10**digits
 
         return {"start-date": back_date, "units": units / num_hh}
 

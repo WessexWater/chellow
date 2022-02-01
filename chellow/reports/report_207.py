@@ -377,7 +377,7 @@ def content(year, supply_id, user):
 
                                         if kwh < 0:
                                             digits = int(math.log10(initial_val)) + 1
-                                            kwh = 10 ** digits + kwh
+                                            kwh = 10**digits + kwh
 
                                         tprs[tpr_code] = kwh / num_hh
 

@@ -300,7 +300,7 @@ def year_md_095_supply(ds, finish):
                 if month_kwh == 0 and month_kvarh == 0:
                     pf = 1
                 else:
-                    pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
+                    pf = month_kwh / (month_kwh**2 + month_kvarh**2) ** 0.5
             month_kva = month_md_kw / pf
             md_kva = max(md_kva, month_kva)
         month_finish += relativedelta(months=1)
@@ -332,7 +332,7 @@ def year_md_095_site(data_source, finish, pw):
             if month_kwh == 0 and month_kvarh == 0:
                 pf = 1
             else:
-                pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
+                pf = month_kwh / (month_kwh**2 + month_kvarh**2) ** 0.5
             month_kva = month_md_kw / pf
         md_kva = max(md_kva, month_kva)
         month_finish += relativedelta(months=1)
@@ -546,7 +546,7 @@ def datum_2010_04_01(ds, hh):
     hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     kvarh = max(
-        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95 ** -2 - 1) ** 0.5 * hh["msp-kwh"], 0
+        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95**-2 - 1) ** 0.5 * hh["msp-kwh"], 0
     )
 
     hh["duos-reactive-kvarh"] = kvarh
@@ -765,7 +765,7 @@ def datum_2012_02_23(ds, hh):
     hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     kvarh = max(
-        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95 ** -2 - 1) ** 0.5 * hh["msp-kwh"], 0
+        max(imp_msp_kvarh, exp_msp_kvarh) - (0.95**-2 - 1) ** 0.5 * hh["msp-kwh"], 0
     )
 
     hh["duos-reactive-kvarh"] = kvarh

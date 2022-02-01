@@ -2342,7 +2342,7 @@ def supply_months_get(supply_id):
         )
         for kwh, kvarh, hh_date in g.sess.execute(s):
 
-            kvah = (kwh ** 2 + kvarh ** 2) ** 0.5
+            kvah = (kwh**2 + kvarh**2) ** 0.5
             if kvah > md_kvah:
                 md_kvah = kvah
                 month_data["md_kva"] = 2 * md_kvah

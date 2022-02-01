@@ -1256,7 +1256,7 @@ class SupplySource(DataSource):
                             if advance < 0:
                                 self._add_problem("Clocked?")
                                 digits = int(log10(previous_value)) + 1
-                                advance = 10 ** digits - previous_value + present_value
+                                advance = 10**digits - previous_value + present_value
 
                             kwh = advance * coefficient
                             self.consumption_info += (
@@ -1455,7 +1455,7 @@ def _find_pair(sess, caches, is_forwards, read_list):
             # Clocked?
             if end_val - initial_val < 0:
                 digits = int(log10(initial_val)) + 1
-                end_val += 10 ** digits
+                end_val += 10**digits
 
             kwh = (
                 end_val * front["coefficients"][tpr_code]
