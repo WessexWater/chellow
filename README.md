@@ -17,7 +17,7 @@ Chellow is a web application for checking UK electricity bills. It's designed
 for organizations with high electricity consumption. The software is hosted at
 https://github.com/WessexWater/chellow.
 
-[![Build Status](https://travis-ci.org/WessexWater/chellow.svg?branch=master)](https://travis-ci.org/WessexWater/chellow)
+[![Build Status](https://github.com/WessexWater/chellow/workflows/chellow/badge.svg)](https://github.com/WessexWater/chellow/workflows/chellow)
 
 
 ## Installation
