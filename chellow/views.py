@@ -3670,7 +3670,7 @@ def site_get(site_id):
                 meter_cat = "HH"
             elif len(era.channels) > 0:
                 meter_cat = "AMR"
-            elif era.mtc.meter_type.code in ["UM", "PH"]:
+            elif era.old_mtc.meter_type.code in ["UM", "PH"]:
                 meter_cat = "Unmetered"
             else:
                 meter_cat = "NHH"
