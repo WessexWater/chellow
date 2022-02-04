@@ -6381,6 +6381,12 @@ def db_upgrade_31_to_32(sess, root_path):
     sess.execute("alter table era alter old_mtc_id set not null;")
 
 
+def db_upgrade_32_to_33(sess, root_path):
+    sess.execute("ALTER TABLE era DROP mtc_id CASCADE;")
+    sess.execute("DROP TABLE valid_mtc_llfc_ssc_pc CASCADE;")
+    sess.execute("DROP TABLE mtc CASCADE;")
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6398,6 +6404,7 @@ upgrade_funcs.extend(
         db_upgrade_29_to_30,
         db_upgrade_30_to_31,
         db_upgrade_31_to_32,
+        db_upgrade_32_to_33,
     ]
 )
 
