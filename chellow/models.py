@@ -3268,7 +3268,7 @@ class Era(Base, PersistentClass):
                     cat = "hh"
                 elif len(self.channels) > 0:
                     cat = "amr"
-                elif self.mtc.meter_type.code in ["UM", "PH"]:
+                elif self.old_mtc.meter_type.code in ["UM", "PH"]:
                     cat = "unmetered"
                 else:
                     cat = "nhh"
