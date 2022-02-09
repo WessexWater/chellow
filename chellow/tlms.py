@@ -151,20 +151,20 @@ def _import_tlms(log_func):
             scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
             if scripting_key is None:
                 raise BadRequest(
-                    "The property "
-                    + ELEXON_PORTAL_SCRIPTING_KEY_KEY
-                    + " cannot be found in the configuration properties."
+                    f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be found "
+                    f"in the configuration properties."
                 )
 
-            url_str = "".join(
-                (contract_props["url"], "file/download/TLM_FILE?key=", scripting_key)
+            url_str = (
+                f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
             )
 
+            sess.rollback()  # Avoid long-running transaction
             r = requests.get(url_str)
             parser = csv.reader(
                 (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
             )
-            log_func("Opened " + url_str + ".")
+            log_func(f"Opened {url_str}.")
 
             next(parser, None)
             for i, values in enumerate(parser):
@@ -178,15 +178,15 @@ def _import_tlms(log_func):
             _save_cache(sess, cache)
         else:
             log_func(
-                "The importer is disabled. Set 'enabled' to "
-                "'true' in the properties to enable it."
+                "The importer is disabled. Set 'enabled' to 'true' in the properties "
+                "to enable it."
             )
 
     except BadRequest as e:
-        log_func("Problem: " + e.description)
+        log_func(f"Problem: {e.description}")
         sess.rollback()
     except BaseException:
-        log_func("Outer problem " + traceback.format_exc())
+        log_func(f"Outer problem {traceback.format_exc()}")
         sess.rollback()
     finally:
         if sess is not None:
