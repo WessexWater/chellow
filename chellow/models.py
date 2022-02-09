@@ -3080,7 +3080,6 @@ class Era(Base, PersistentClass):
 
                 llfc_code = locs[f"{polarity}_llfc_code"]
                 llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
-                print("finish_date", finish_date, llfc.valid_to)
                 if finish_date is not None and hh_before(llfc.valid_to, finish_date):
                     raise BadRequest(
                         f"The {polarity} line loss factor {llfc_code} is only valid "

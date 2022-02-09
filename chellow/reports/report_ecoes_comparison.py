@@ -516,7 +516,7 @@ def _process(
             "ecoes_pc": "",
             "chellow_pc": era.pc.code,
             "ecoes_mtc": "",
-            "chellow_mtc": era.mtc.code,
+            "chellow_mtc": era.old_mtc.code,
             "ecoes_llfc": "",
             "chellow_llfc": llfc.code,
             "ecoes_ssc": "",
@@ -557,7 +557,7 @@ def _meter_type(era):
             return "H"
         elif len(era.channels) > 0:
             return "RCAMR"
-        elif era.mtc.meter_type.code in ["UM", "PH"]:
+        elif era.old_mtc.meter_type.code in ["UM", "PH"]:
             return ""
         else:
             return "N"

@@ -62,7 +62,6 @@ def content(date, g_supply_id, user):
             g_eras = g_eras.filter(GEra.g_supply == g_supply)
 
         for g_era, g_supply in g_eras:
-            print("found g_era")
             site_codes = []
             site_names = []
             for site_g_era in g_era.site_g_eras:
