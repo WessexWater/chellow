@@ -240,6 +240,21 @@ def _process(
 
     for mpan_spaces, ecoes in sorted(ecoes_mpans.items()):
         problem = ""
+        chellow_pc = ""
+        chellow_mtc = ""
+        chellow_llfc = ""
+        chellow_ssc = ""
+        chellow_es = ""
+        chellow_supplier = ""
+        chellow_supplier_contract_name = ""
+        chellow_supplier_contract_id = None
+        chellow_dc = ""
+        chellow_mop = ""
+        chellow_gsp_group = ""
+        chellow_msn = ""
+        chellow_meter_type = ""
+        chellow_supply_id = None
+        chellow_era_id = None
         ignore = True
         diffs = []
 
@@ -265,7 +280,29 @@ def _process(
             ignore = False
 
         elif not ecoes_disconnected and not current_chell:
-            problem += f"In ECOES (as {ecoes_es}) but disconnected in Chellow. "
+            era = sess.execute(
+                select(Era)
+                .filter(
+                    or_(
+                        Era.imp_mpan_core == mpan_spaces,
+                        Era.exp_mpan_core == mpan_spaces,
+                    ),
+                )
+                .order_by(Era.start_date.desc())
+                .limit(1)
+            ).scalar_one_or_none()
+            if era is None:
+                problem += f"In ECOES (as {ecoes_es}) but not in Chellow. "
+            else:
+                problem += f"In ECOES (as {ecoes_es}) but disconnected in Chellow. "
+                if era.imp_mpan_core == mpan_spaces:
+                    supplier_contract = era.imp_supplier_contract
+                else:
+                    supplier_contract = era.exp_supplier_contract
+                chellow_supplier_contract_name = supplier_contract.name
+                chellow_supplier_contract_id = supplier_contract.id
+                chellow_supply_id = era.supply.id
+                chellow_era_id = era.id
             ignore = False
 
         if current_chell:
@@ -424,22 +461,6 @@ def _process(
                     )
                     ignore = False
                     diffs.append("meter_type")
-        else:
-            chellow_pc = ""
-            chellow_mtc = ""
-            chellow_llfc = ""
-            chellow_ssc = ""
-            chellow_es = ""
-            chellow_supplier = ""
-            chellow_supplier_contract_name = ""
-            chellow_supplier_contract_id = None
-            chellow_dc = ""
-            chellow_mop = ""
-            chellow_gsp_group = ""
-            chellow_msn = ""
-            chellow_meter_type = ""
-            chellow_supply_id = None
-            chellow_era_id = None
 
         if len(problem) > 0 and not (not show_ignored and ignore):
             values = {
