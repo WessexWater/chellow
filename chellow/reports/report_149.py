@@ -23,7 +23,7 @@ from chellow.models import (
     Era,
     HhDatum,
     Llfc,
-    Mtc,
+    OldMtc,
     ReadType,
     RegisterRead,
     Session,
@@ -207,7 +207,7 @@ def content(supply_id, start_date, finish_date, user):
                 joinedload(Era.site_eras).joinedload(SiteEra.site),
                 joinedload(Era.pc),
                 joinedload(Era.cop),
-                joinedload(Era.mtc).joinedload(Mtc.meter_type),
+                joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
                 joinedload(Era.imp_supplier_contract),
                 joinedload(Era.exp_supplier_contract),
                 joinedload(Era.ssc),
@@ -308,7 +308,7 @@ def content(supply_id, start_date, finish_date, user):
                     hh_format(start_date),
                     hh_format(finish_date),
                     era.pc.code,
-                    era.mtc.code,
+                    era.old_mtc.code,
                     era.cop.code,
                     ssc_code,
                     era.energisation_status.code,
@@ -352,25 +352,22 @@ def content(supply_id, start_date, finish_date, user):
         if era is None:
             pref = "Problem: "
         else:
-            pref = (
-                "Problem with era "
-                + chellow.utils.url_root
-                + "eras/"
-                + str(era.id)
-                + "/edit : "
-            )
+            pref = f"Problem with era {chellow.utils.url_root}eras/{era.id}/edit : "
         f.write(pref + e.description)
     except BaseException as e:
         if era is None:
             pref = "Problem: "
         else:
             pref = "Problem with era " + str(era.id) + ": "
-        f.write(pref + str(e))
-        f.write(traceback.format_exc())
+        if f is not None:
+            f.write(pref + str(e))
+            f.write(traceback.format_exc())
     finally:
-        sess.close()
-        f.close()
-        os.rename(running_name, finished_name)
+        if sess is not None:
+            sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
