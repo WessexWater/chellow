@@ -91,6 +91,7 @@ SSC_MAP = {
     "0428": {
         "Energy Charges": "00258",
         "Energy Charges 2": "00259",
+        "Day": "00259",
     },
 }
 
