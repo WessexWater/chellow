@@ -26,7 +26,7 @@ Chellow is a Python web application (with a built-in webserver) that uses the
 PostgreSQL database. To install Chellow, follow these steps:
 
 * Install [PostgreSQL](http://www.postgresql.org/) 12
-* Install Python 3.6 (tested on the [CPython 3.6.8](http://www.python.org/)
+* Install Python 3.9 (tested on the [CPython 3.9.8](http://www.python.org/)
    interpreter)
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
 * Install Chellow: `pip install chellow`
@@ -82,105 +82,6 @@ with any WSGI compliant application server, eg Gunicorn. The WSGI app that
 should be specified is `chellow.app`.
 
 
-### Detailed Instructions For Installing On CentOS 6.7 64 bit For Development
-
-Install PostgreSQL 9.5.2
-
-Add the PostgreSQL repository:
-
-`sudo rpm -ivh https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-centos95-9.5-2.noarch.rpm`
-
-Install the PostgreSQL packages:
-
-`sudo yum install postgresql95 postgresql95-server postgresql95-contrib`
-
-Initialize the database:
-
-`sudo service postgresql-9.5 initdb`
-
-Make PostgreSQL start on boot:
-
-`sudo chkconfig postgresql-9.5 on`
-
-Edit PostgreSQL config file to accept all local connections:
-
-`sudo vi /var/lib/pgsql/9.5/data/pg_hba.conf`
-
-Find the lines:
-
-`local   all    all                    peer`
-`host    all    all    127.0.0.1/32    peer`
-
-and change them to:
-
-`local   all    all                    trust`
-`host    all    all    127.0.0.1/32    trust`
-
-start PostgreSQL:
-
-`sudo service postgresql-9.5 start`
-
-Install Python 3.5.1. Unfortunately there isn't an rpm for this so we have to
-compile it:
-
-`sudo yum groupinstall "Development tools"`
-`sudo yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel wget`
-`wget http://python.org/ftp/python/3.5.1/Python-3.5.1.tar.xz`
-`tar xf Python-3.5.1.tar.xz`
-`cd Python-3.5.1`
-`./configure --prefix=/usr/local --enable-shared LDFLAGS="Wl,-rpath /usr/local/lib"`
-`make`
-`sudo make altinstall`
-
-We need to tell Chellow which port to listen on, so:
-
-`vi ~/.bashrc`
-
-and add the line:
-
-`export CHELLOW_PORT=8080`
-`export PGUSER=postgres`
-
-Clone the Chellow source from GitHub:
-
-`git clone https://github.com/WessexWater/chellow.git`
-
-Change directory to the 'chellow' directory:
-
-`cd chellow`
-
-Create a local `test` branch to track the remote `origin/test` branch:
-
-`git branch --track test origin/test`
-
-Check out the 'test' branch into the working directory:
-
-`git checkout test`
-
-Create a Python virtual environment:
-
-`pyvenv-3.5 venv`
-
-Activate the environment:
-
-`source venv/bin/activate`
-
-Make sure you're running a recent version of pip:
-
-`pip install --upgrade pip`
-
-Install tox:
-
-`pip install tox`
-
-
-Run tests:
-
-`tox`
-
-Old style tests: run\_tests\_0.sh run\_tests\_1.sh run\_tests\_2.sh
- 
-
 ##  Getting Started
 
 This is a brief guide to setting things up after you've installed Chellow. It
@@ -208,6 +109,12 @@ read / write access. Once users are added, you have to log in as one of those
 users. Users are added from the 'users' page.
 
 
+### Importing Market Domain Data
+
+Follow the instructions at `/e/mdd_imports` to import the Market Domain Data into
+Chellow.
+
+
 ### Add HHDC Contracts
 
 Every supply must a have a data collector. Add in a new HHDC by going to the
@@ -230,7 +137,7 @@ simple virtual bill for the MOP, so in the 'script' field enter:
     
     def virtual_bill(data_source):
         for hh in data_source.hh_data:
-						bill_hh = data_source.mop_bill_hhs[hh['start-date']]
+	bill_hh = data_source.mop_bill_hhs[hh['start-date']]
             if hh['utc-is-month-end']:
                 bill_hh['net-gbp'] = 10
         data_source.mop_bill = reduce_bills_hh(data_source.mop_bill_hhs)
@@ -260,11 +167,11 @@ form. For the Charge Script field enter:
                 bill_hh['day-kwh'] = hh['msp-kwh']
                 bill_hh['day-gbp'] = hh['msp-kwh'] * 0.1
     
-						bill_hh['net-gbp'] = sum(
-								v for k, v in bill_hh.items() if k[-4:] == '-gbp')
+		bill_hh['net-gbp'] = sum(
+		v for k, v in bill_hh.items() if k[-4:] == '-gbp')
 
-				data_source.supplier_bill = reduce_bill_hhs(
-						data_source.supplier_bill_hhs)
+		data_source.supplier_bill = reduce_bill_hhs(
+			data_source.supplier_bill_hhs)
 ```
 
 This will generate a simple virtual bill based on a day / night tariff.

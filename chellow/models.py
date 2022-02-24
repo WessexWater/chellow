@@ -6422,93 +6422,6 @@ def insert_voltage_levels(sess):
         VoltageLevel.insert(sess, code, desc)
 
 
-def insert_mdd(sess, root_path):
-    dbapi_conn = sess.connection().connection.connection
-    cursor = dbapi_conn.cursor()
-    mdd_path = os.path.join(root_path, "mdd", "converted")
-    for name, fields in (
-        ("gsp_group", ["id", "code", "description"]),
-        ("pc", ["id", "code", "name", "valid_from", "valid_to"]),
-        ("market_role", ["id", "code", "description"]),
-        ("participant", ["id", "code", "name"]),
-        (
-            "party",
-            [
-                "id",
-                "participant_id",
-                "market_role_id",
-                "name",
-                "valid_from",
-                "valid_to",
-                "dno_code",
-            ],
-        ),
-        (
-            "llfc",
-            [
-                "id",
-                "dno_id",
-                "code",
-                "description",
-                "voltage_level_id",
-                "is_substation",
-                "is_import",
-                "valid_from",
-                "valid_to",
-            ],
-        ),
-        ("meter_type", ["id", "code", "description", "valid_from", "valid_to"]),
-        ("meter_payment_type", ["id", "code", "description", "valid_from", "valid_to"]),
-        (
-            "mtc",
-            [
-                "id",
-                "dno_id",
-                "code",
-                "description",
-                "has_related_metering",
-                "has_comms",
-                "is_hh",
-                "meter_type_id",
-                "meter_payment_type_id",
-                "tpr_count",
-                "valid_from",
-                "valid_to",
-            ],
-        ),
-        ("tpr", ["id", "code", "is_teleswitch", "is_gmt"]),
-        (
-            "clock_interval",
-            [
-                "id",
-                "tpr_id",
-                "day_of_week",
-                "start_day",
-                "start_month",
-                "end_day",
-                "end_month",
-                "start_hour",
-                "start_minute",
-                "end_hour",
-                "end_minute",
-            ],
-        ),
-        ("ssc", ["id", "code", "description", "is_import", "valid_from", "valid_to"]),
-        ("measurement_requirement", ["id", "ssc_id", "tpr_id"]),
-    ):
-        f = open(os.path.join(mdd_path, name + ".csv"), "rb")
-        cursor.execute("set transaction isolation level serializable read write")
-        cursor.execute(
-            f"COPY {name} ({','.join(fields)}) FROM STDIN CSV HEADER",
-            stream=f,
-        )
-        cursor.execute("select count(*) from " + name + ";")
-        row_count = cursor.fetchall()[0][0]
-        cursor.execute(f"ALTER SEQUENCE {name}_id_seq restart with {row_count + 1}")
-        dbapi_conn.commit()
-        f.close()
-
-
 def db_init(sess, root_path):
     db_name = config["PGDATABASE"]
     log_message("Initializing database.")
@@ -6533,10 +6446,7 @@ def db_init(sess, root_path):
 
     for code, desc in (
         ("A", "Actual Change of Supplier Read"),
-        (
-            "D",
-            "Deemed (Settlement Registers) or Estimated (Non-Settlement " "Registers)",
-        ),
+        ("D", "Deemed (Settlement Registers) or Estimated (Non-Settlement Registers)"),
         ("C", "Customer"),
         ("CP", "Computer"),
         ("E", "Estimated"),
@@ -6568,9 +6478,6 @@ def db_init(sess, root_path):
     sess.commit()
 
     insert_energisation_statuses(sess)
-    sess.commit()
-
-    insert_mdd(sess, root_path)
     sess.commit()
 
     contracts_path = os.path.join(root_path, "non_core_contracts")

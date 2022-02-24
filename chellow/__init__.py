@@ -162,13 +162,6 @@ def create_app(testing=False):
         method = request.method
         if path in (
             "/health",
-            "/nationalgrid/sf_bsuos.xls",
-            "/nationalgrid/cv.csv",
-            "/elexonportal/file/download/BESTVIEWPRICES_FILE",
-            "/ecoes",
-            "/elexonportal/file/download/TLM_FILE",
-            "/elexonportal/file/download/RCRC_FILE",
-            "/ecoes/NonDomesticCustomer/ExportPortfolioMPANs",
             "/hh_api",
         ):
             return
