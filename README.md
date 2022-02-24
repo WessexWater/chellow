@@ -1,6 +1,6 @@
 # Chellow
 
-A web application for checking UK electricity bills for organizations with
+A web application for checking UK electricity and gas bills for organizations with
 a large number of supplies and / or high consumption.
 
 Website: https://www.chellow.org/
@@ -13,7 +13,7 @@ Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
 
 ## Introduction
 
-Chellow is a web application for checking UK electricity bills. It's designed
+Chellow is a web application for checking UK electricity and gas bills. It's designed
 for organizations with high electricity consumption. The software is hosted at
 https://github.com/WessexWater/chellow.
 
