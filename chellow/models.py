@@ -55,6 +55,7 @@ from zish import ZishException, dumps, loads
 
 from chellow.utils import (
     HH,
+    ct_datetime,
     hh_after,
     hh_before,
     hh_format,
@@ -6910,6 +6911,29 @@ def db_upgrade_32_to_33(sess, root_path):
     sess.execute("DROP TABLE mtc CASCADE;")
 
 
+def db_upgrade_33_to_34(sess, root_path):
+    contract = Contract.insert_non_core(
+        sess,
+        "ro",
+        "",
+        {},
+        to_utc(ct_datetime(2000, 4, 1)),
+        None,
+        {"ro_gbp_per_msp_kwh": 0.00},
+    )
+    for year, script in [
+        (2015, {"ro_gbp_per_msp_kwh": 0.0128557}),
+        (2016, {"ro_gbp_per_msp_kwh": 0.01557996}),
+        (2017, {"ro_gbp_per_msp_kwh": 0.01864}),
+        (2018, {"ro_gbp_per_msp_kwh": 0.02245896}),
+        (2019, {"ro_gbp_per_msp_kwh": 0.02374052}),
+        (2020, {"ro_gbp_per_msp_kwh": 0.02447467}),
+        (2021, {"ro_gbp_per_msp_kwh": 0.0249936}),
+        (2022, {"ro_gbp_per_msp_kwh": 0.02596408}),
+    ]:
+        contract.insert_rate_script(sess, to_utc(ct_datetime(year, 4, 1)), script)
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6928,6 +6952,7 @@ upgrade_funcs.extend(
         db_upgrade_30_to_31,
         db_upgrade_31_to_32,
         db_upgrade_32_to_33,
+        db_upgrade_33_to_34,
     ]
 )
 
