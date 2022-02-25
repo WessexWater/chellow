@@ -1460,7 +1460,7 @@ def era_edit_post(era_id):
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
-            old_mtc_code = req_str("mtc_code")
+            mtc_code = req_str("mtc_code")
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             comm_id = req_int("comm_id")
@@ -1530,7 +1530,7 @@ def era_edit_post(era_id):
                 dc_account,
                 msn,
                 pc,
-                old_mtc_code,
+                mtc_code,
                 cop,
                 comm,
                 ssc,
@@ -4641,7 +4641,7 @@ def get_era_bundles(sess, supply):
             joinedload(Era.imp_supplier_contract),
             joinedload(Era.exp_supplier_contract),
             joinedload(Era.ssc),
-            joinedload(Era.old_mtc),
+            joinedload(Era.mtc_participant),
             joinedload(Era.mop_contract),
             joinedload(Era.dc_contract),
             joinedload(Era.imp_llfc),

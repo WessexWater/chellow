@@ -9,8 +9,12 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
-    OldValidMtcLlfcSscPc,
+    Mtc,
+    MtcLlfc,
+    MtcLlfcSsc,
+    MtcLlfcSscPc,
+    MtcParticipant,
+    MtcSsc,
     Participant,
     Pc,
     ReportRun,
@@ -25,17 +29,16 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.reports.report_ecoes_comparison import _meter_type, _process
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_process(mocker, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -50,15 +53,9 @@ def test_process(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
@@ -80,19 +77,15 @@ def test_process(mocker, sess):
         None,
         {},
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -103,7 +96,7 @@ def test_process(mocker, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -113,16 +106,7 @@ def test_process(mocker, sess):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -393,13 +377,12 @@ def test_process(mocker, sess):
 
 
 def test_process_in_chellow_not_ecoes(mocker, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -414,15 +397,9 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
@@ -444,19 +421,15 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
         None,
         {},
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -467,7 +440,7 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -477,6 +450,7 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     dno.insert_llfc(
         sess,
         "521",
@@ -614,6 +588,7 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
 
 
 def test_meter_type(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
@@ -673,12 +648,19 @@ def test_meter_type(mocker, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    old_mtc = OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -704,9 +686,10 @@ def test_meter_type(mocker, sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    OldValidMtcLlfcSscPc.insert(
-        sess, old_mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
 
     supply = site.insert_e_supply(
         sess,

@@ -8,8 +8,12 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
-    OldValidMtcLlfcSscPc,
+    Mtc,
+    MtcLlfc,
+    MtcLlfcSsc,
+    MtcLlfcSscPc,
+    MtcParticipant,
+    MtcSsc,
     Participant,
     Pc,
     Site,
@@ -150,6 +154,7 @@ def test_make_reads_backwards(mocker):
 
 def test_init_hh_data(sess, mocker):
     """New style channels"""
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -207,12 +212,19 @@ def test_init_hh_data(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -223,7 +235,7 @@ def test_init_hh_data(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -233,16 +245,7 @@ def test_init_hh_data(sess, mocker):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -319,6 +322,7 @@ def test_init_hh_data(sess, mocker):
 
 def test_init_hh_data_export(sess, mocker):
     """New style channels"""
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -376,12 +380,19 @@ def test_init_hh_data_export(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -392,24 +403,14 @@ def test_init_hh_data_export(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
-        "510",
+        "521",
         "PC 5-8 & HH HV",
         voltage_level,
         False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
         False,
-        False,
-        utc_datetime(1996, 1, 1),
+        valid_from,
         None,
     )
     insert_sources(sess)
@@ -417,6 +418,7 @@ def test_init_hh_data_export(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     supply = site.insert_e_supply(
         sess,
         source,
@@ -497,6 +499,7 @@ def test_init_hh_data_export(sess, mocker):
 
 def test_SupplySource_init_hh(sess, mocker):
     """Old style channels"""
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -554,12 +557,19 @@ def test_SupplySource_init_hh(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -570,17 +580,7 @@ def test_SupplySource_init_hh(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "521",
         "Export (HV)",
@@ -590,6 +590,7 @@ def test_SupplySource_init_hh(sess, mocker):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -654,6 +655,7 @@ def test_SupplySource_init_hh(sess, mocker):
 
 def test_SupplySource_init_nhh(sess, mocker):
     """Old style channels"""
+    valid_from = utc_datetime(1996, 1, 1)
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -712,12 +714,19 @@ def test_SupplySource_init_nhh(sess, mocker):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    old_mtc = OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -753,12 +762,13 @@ def test_SupplySource_init_nhh(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "D")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    OldValidMtcLlfcSscPc.insert(
-        sess, old_mtc, llfc_imp, ssc, pc, utc_datetime(1996, 1, 1), None
-    )
-    OldValidMtcLlfcSscPc.insert(
-        sess, old_mtc, llfc_exp, ssc, pc, utc_datetime(1996, 1, 1), None
-    )
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc_imp, valid_from, None)
+    mtc_llfc_imp_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc_imp, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_imp_ssc, pc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc_exp, valid_from, None)
+    mtc_llfc_exp_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc_exp, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_exp_ssc, pc, valid_from, None)
     supply = site.insert_e_supply(
         sess,
         source,

@@ -21,8 +21,12 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
-    OldValidMtcLlfcSscPc,
+    Mtc,
+    MtcLlfc,
+    MtcLlfcSsc,
+    MtcLlfcSscPc,
+    MtcParticipant,
+    MtcSsc,
     Participant,
     Pc,
     ReportRun,
@@ -41,7 +45,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_site_edit_post_fail(client, sess):
@@ -101,12 +105,19 @@ def test_site_edit_post_fail(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -205,6 +216,7 @@ def test_site_edit_post_fail(client, sess):
 
 
 def test_site_get(client, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
@@ -261,12 +273,19 @@ def test_site_get(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -277,7 +296,7 @@ def test_site_get(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -287,16 +306,7 @@ def test_site_get(client, sess):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -344,6 +354,7 @@ def test_site_get(client, sess):
 
 
 def test_site_get_dumb(client, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
@@ -401,12 +412,19 @@ def test_site_get_dumb(client, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    old_mtc = OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        valid_from,
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -434,9 +452,10 @@ def test_site_get_dumb(client, sess):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    OldValidMtcLlfcSscPc.insert(
-        sess, old_mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
     site.insert_e_supply(
         sess,
         source,
@@ -942,6 +961,7 @@ def test_general_import_post_full(sess, client):
     """General import of channel snag unignore and check the import that's
     been created.
     """
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
@@ -1000,12 +1020,19 @@ def test_general_import_post_full(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -1016,7 +1043,7 @@ def test_general_import_post_full(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1026,16 +1053,7 @@ def test_general_import_post_full(sess, client):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -1391,12 +1409,19 @@ def test_site_edit_get(sess, client, app):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -1430,6 +1455,7 @@ def test_site_edit_get(sess, client, app):
 
 
 def test_site_edit_post_hh(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
@@ -1478,12 +1504,12 @@ def test_site_edit_post_hh(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -1494,7 +1520,7 @@ def test_site_edit_post_hh(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1504,6 +1530,7 @@ def test_site_edit_post_hh(sess, client):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1544,6 +1571,7 @@ def test_site_edit_post_hh(sess, client):
 
 
 def test_site_edit_post_nhh(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
@@ -1592,18 +1620,18 @@ def test_site_edit_post_nhh(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    old_mtc = OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        valid_from,
         None,
     )
     insert_voltage_levels(sess)
@@ -1624,9 +1652,10 @@ def test_site_edit_post_nhh(sess, client):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1, 1), None)
-    OldValidMtcLlfcSscPc.insert(
-        sess, old_mtc, llfc, ssc, pc, utc_datetime(1996, 1, 1), None
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
     sess.commit()
 
     data = {

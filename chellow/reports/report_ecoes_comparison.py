@@ -18,7 +18,7 @@ import chellow.dloads
 from chellow.models import (
     Contract,
     Era,
-    OldMtc,
+    MtcParticipant,
     Party,
     ReportRun,
     Session,
@@ -333,7 +333,9 @@ def _process(
                     joinedload(Era.pc),
                     joinedload(Era.imp_llfc),
                     joinedload(Era.exp_llfc),
-                    joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
+                    joinedload(Era.mtc_participant).joinedload(
+                        MtcParticipant.meter_type
+                    ),
                     joinedload(Era.ssc),
                     joinedload(Era.energisation_status),
                     joinedload(Era.channels),
@@ -365,7 +367,7 @@ def _process(
                     problem += "Can't parse the PC. "
                     ignore = False
 
-                chellow_mtc = era.old_mtc.code
+                chellow_mtc = era.mtc_participant.mtc.code
                 try:
                     if int(ecoes["mtc"]) != int(chellow_mtc):
                         problem += "The MTCs don't match. "
@@ -537,7 +539,7 @@ def _process(
             "ecoes_pc": "",
             "chellow_pc": era.pc.code,
             "ecoes_mtc": "",
-            "chellow_mtc": era.old_mtc.code,
+            "chellow_mtc": era.mtc_participant.mtc.code,
             "ecoes_llfc": "",
             "chellow_llfc": llfc.code,
             "ecoes_ssc": "",
@@ -578,7 +580,7 @@ def _meter_type(era):
             return "H"
         elif len(era.channels) > 0:
             return "RCAMR"
-        elif era.old_mtc.meter_type.code in ["UM", "PH"]:
+        elif era.mtc_participant.meter_type.code in ["UM", "PH"]:
             return ""
         else:
             return "N"

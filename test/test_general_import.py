@@ -10,7 +10,9 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
     Participant,
     Pc,
     Site,
@@ -164,40 +166,29 @@ def test_parse_breakdown():
 
 
 def test_general_import_era_insert(sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, valid_from, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
     participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
     )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, valid_from, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, valid_from, None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
@@ -205,58 +196,31 @@ def test_general_import_era_insert(sess):
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     exp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, valid_from, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        valid_from,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+    llfc = dno.insert_llfc(
+        sess, "521", "Export (HV)", voltage_level, False, False, valid_from, None
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)

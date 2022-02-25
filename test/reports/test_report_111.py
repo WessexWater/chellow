@@ -15,7 +15,9 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
     Participant,
     Pc,
     ReportRun,
@@ -29,7 +31,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 # End to end tests
@@ -95,6 +97,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
 
 
 def test_process_supply(sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
@@ -173,12 +176,19 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(
         sess,
-        None,
         "845",
-        "HH COP5 And Above With Comms",
         False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
         False,
         True,
         meter_type,
@@ -189,7 +199,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -199,16 +209,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)

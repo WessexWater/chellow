@@ -92,10 +92,7 @@ from chellow.models import (
     GeneratorType,
     GspGroup,
     HhDatum,
-    Llfc,
     MarketRole,
-    OldMtc,
-    OldValidMtcLlfcSscPc,
     Participant,
     Party,
     Pc,
@@ -1317,7 +1314,7 @@ def site_get(site_id):
                 meter_cat = "HH"
             elif len(era.channels) > 0:
                 meter_cat = "AMR"
-            elif era.old_mtc.meter_type.code in ["UM", "PH"]:
+            elif era.mtc_participant.meter_type.code in ["UM", "PH"]:
                 meter_cat = "Unmetered"
             else:
                 meter_cat = "NHH"
@@ -2173,30 +2170,6 @@ def bill_type_get(type_id):
     return render_template("bill_type.html", bill_type=bill_type)
 
 
-@home.route("/old_mtcs")
-def old_mtcs_get():
-    old_mtcs = (
-        g.sess.query(OldMtc)
-        .outerjoin(OldMtc.dno)
-        .order_by(OldMtc.code, Party.dno_code)
-        .options(joinedload(OldMtc.dno))
-        .all()
-    )
-    return render_template("old_mtcs.html", old_mtcs=old_mtcs)
-
-
-@home.route("/old_mtcs/<int:old_mtc_id>")
-def old_mtc_get(old_mtc_id):
-    old_mtc = (
-        g.sess.query(OldMtc)
-        .outerjoin(OldMtc.dno)
-        .filter(OldMtc.id == old_mtc_id)
-        .options(joinedload(OldMtc.dno))
-        .one()
-    )
-    return render_template("old_mtc.html", old_mtc=old_mtc)
-
-
 @home.route("/industry_contracts")
 def industry_contracts_get():
     contracts = []
@@ -2241,48 +2214,6 @@ def industry_rate_script_get(contract_code, start_date_str):
         "industry_rate_script.html",
         contract_code=contract_code,
         rate_script=rate_script,
-    )
-
-
-@home.route("/old_valid_mtc_llfc_ssc_pcs")
-def old_valid_mtc_llfc_ssc_pcs_get():
-    dno_id = req_int("dno_id")
-    dno = Party.get_dno_by_id(g.sess, dno_id)
-    only_ongoing = req_bool("only_ongoing")
-    q = (
-        select(OldValidMtcLlfcSscPc)
-        .join(OldMtc)
-        .join(Llfc)
-        .join(Ssc)
-        .join(Pc)
-        .where(Llfc.dno == dno)
-        .order_by(
-            Pc.code,
-            Llfc.code,
-            Ssc.code,
-            OldMtc.code,
-            OldValidMtcLlfcSscPc.valid_from.desc(),
-        )
-        .options(
-            joinedload(OldValidMtcLlfcSscPc.old_mtc),
-            joinedload(OldValidMtcLlfcSscPc.llfc),
-            joinedload(OldValidMtcLlfcSscPc.ssc),
-            joinedload(OldValidMtcLlfcSscPc.pc),
-        )
-    )
-    if only_ongoing:
-        q = q.where(OldValidMtcLlfcSscPc.valid_to == null())
-    combos = g.sess.execute(q).scalars()
-    return render_template(
-        "old_valid_mtc_llfc_ssc_pcs.html", old_valid_mtc_llfc_ssc_pcs=combos, dno=dno
-    )
-
-
-@home.route("/old_valid_mtc_llfc_ssc_pcs/<int:old_combo_id>")
-def old_valid_mtc_llfc_ssc_pc_get(old_combo_id):
-    old_combo = OldValidMtcLlfcSscPc.get_by_id(g.sess, old_combo_id)
-    return render_template(
-        "old_valid_mtc_llfc_ssc_pc.html", old_valid_mtc_llfc_ssc_pc=old_combo
     )
 
 

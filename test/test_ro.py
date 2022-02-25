@@ -8,7 +8,9 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
     Participant,
     Pc,
     Site,
@@ -25,12 +27,11 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_hh(sess, mocker):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     participant = Participant.insert(sess, "CALB", "Calb")
     market_role = MarketRole.insert(sess, "Z", "Non-core")
-    participant.insert_party(
-        sess, market_role, "None core", to_utc(ct_datetime(2000, 1, 1)), None, None
-    )
+    participant.insert_party(sess, market_role, "None core", valid_from, None, None)
     Contract.insert_non_core(
         sess,
         "ro",
@@ -54,15 +55,9 @@ def test_hh(sess, mocker):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
     mop_contract = Contract.insert_mop(
         sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
@@ -84,19 +79,15 @@ def test_hh(sess, mocker):
         None,
         {},
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -107,7 +98,7 @@ def test_hh(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -117,6 +108,7 @@ def test_hh(sess, mocker):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)

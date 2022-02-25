@@ -20,7 +20,9 @@ from chellow.models import (
     MarketRole,
     MeterPaymentType,
     MeterType,
-    OldMtc,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
     Participant,
     Pc,
     Scenario,
@@ -35,7 +37,7 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.reports.report_247 import _make_calcs, _make_site_deltas, content
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_with_scenario(mocker, sess, client):
@@ -221,6 +223,7 @@ def test_make_site_deltas_nhh(mocker):
 
 
 def test_scenario_new_generation(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     finish_date = utc_datetime(2009, 8, 31, 22, 30)
@@ -284,12 +287,12 @@ def test_scenario_new_generation(mocker, sess):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", True, False, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -300,7 +303,7 @@ def test_scenario_new_generation(mocker, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc_imp = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -320,6 +323,7 @@ def test_scenario_new_generation(mocker, sess):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc_imp, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -394,6 +398,7 @@ def test_scenario_new_generation(mocker, sess):
 
 
 def test_without_scenario(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
@@ -401,9 +406,7 @@ def test_without_scenario(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -419,14 +422,10 @@ def test_without_scenario(mocker, sess):
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
     participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
     )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -524,15 +523,13 @@ def virtual_bill(ds):
         sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
     )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -543,7 +540,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -553,16 +550,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -710,6 +698,7 @@ def virtual_bill(ds):
 
 
 def test_missing_mop_script(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
@@ -717,9 +706,7 @@ def test_missing_mop_script(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -734,15 +721,9 @@ def test_missing_mop_script(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
 
     mop_charge_script = ""
     mop_contract = Contract.insert_mop(
@@ -828,12 +809,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -844,7 +825,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -854,16 +835,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -947,6 +919,7 @@ def virtual_bill(ds):
 
 
 def test_bill_after_end_supply(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
@@ -954,9 +927,7 @@ def test_bill_after_end_supply(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -971,15 +942,9 @@ def test_bill_after_end_supply(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -1074,19 +1039,15 @@ def virtual_bill(ds):
         {},
     )
     batch = imp_supplier_contract.insert_batch(sess, "a b", "")
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    OldMtc.insert(
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -1097,7 +1058,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1107,16 +1068,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1281,15 +1233,14 @@ def virtual_bill(ds):
 
 
 def test_bill_after_end_supply_with_supply_id(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -1304,15 +1255,9 @@ def test_bill_after_end_supply_with_supply_id(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -1414,12 +1359,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -1430,7 +1375,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1440,16 +1385,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1614,6 +1550,7 @@ def virtual_bill(ds):
 
 
 def test_supply_attached_to_different_sites(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site_1 = Site.insert(sess, "CI017", "Water Works 1")
     site_2 = Site.insert(sess, "CI018", "Water Works 2")
     start_date = utc_datetime(2000, 1, 1, 0, 0)
@@ -1622,9 +1559,7 @@ def test_supply_attached_to_different_sites(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -1639,15 +1574,9 @@ def test_supply_attached_to_different_sites(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -1749,12 +1678,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -1765,7 +1694,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1775,16 +1704,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1953,14 +1873,13 @@ def virtual_bill(ds):
 def test_supply_end_two_eras_in_month(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works 1")
     start_date = utc_datetime(2000, 1, 1, 0, 0)
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     months = 1
     supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -2085,12 +2004,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -2101,7 +2020,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -2111,16 +2030,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -2499,6 +2409,7 @@ def virtual_bill(ds):
 
 
 def test_bill_before_begining_supply(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(1999, 12, 1)
     months = 1
@@ -2506,9 +2417,7 @@ def test_bill_before_begining_supply(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -2523,9 +2432,7 @@ def test_bill_before_begining_supply(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
     participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
@@ -2633,12 +2540,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -2649,7 +2556,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -2659,6 +2566,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     dno.insert_llfc(
         sess,
         "521",
@@ -2833,6 +2741,7 @@ def virtual_bill(ds):
 
 
 def test_bill_before_begining_supply_mid_month(mocker, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2000, 1, 1)
     months = 1
@@ -2840,9 +2749,7 @@ def test_bill_before_begining_supply_mid_month(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AB Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -2857,12 +2764,8 @@ def test_bill_before_begining_supply_mid_month(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
     participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
@@ -2967,12 +2870,12 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    OldMtc.insert(
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
         sess,
-        None,
-        "845",
+        mtc,
+        participant,
         "HH COP5 And Above With Comms",
-        False,
         False,
         True,
         meter_type,
@@ -2983,7 +2886,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
+    llfc = dno.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -2993,16 +2896,7 @@ def virtual_bill(ds):
         utc_datetime(1996, 1, 1),
         None,
     )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")

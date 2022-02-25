@@ -19,7 +19,7 @@ from chellow.models import (
     Era,
     GeneratorType,
     MeasurementRequirement,
-    OldMtc,
+    MtcParticipant,
     ReadType,
     RegisterRead,
     Session,
@@ -149,7 +149,9 @@ def content(running_name, finished_name, date, supply_id, mpan_cores):
                     joinedload(Era.imp_supplier_contract),
                     joinedload(Era.mop_contract),
                     joinedload(Era.old_mtc),
-                    joinedload(Era.old_mtc).joinedload(OldMtc.meter_type),
+                    joinedload(Era.mtc_participant).joinedload(
+                        MtcParticipant.meter_type
+                    ),
                     joinedload(Era.pc),
                     joinedload(Era.site_eras).joinedload(SiteEra.site),
                     joinedload(Era.ssc),

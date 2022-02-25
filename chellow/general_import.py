@@ -32,7 +32,6 @@ from chellow.models import (
     Llfc,
     MarketRole,
     MeterType,
-    OldMtc,
     Participant,
     Party,
     Pc,
@@ -135,11 +134,11 @@ def general_import_era(sess, action, vals, args):
             pc_code = parse_pc_code(pc_code_raw)
             pc = Pc.get_by_code(sess, pc_code)
 
-        mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 10)
-        if mtc_code == NO_CHANGE:
-            mtc_participant = era.mtc_participant
+        mtc_code_raw = add_arg(args, "Meter Timeswitch Class", vals, 10)
+        if mtc_code_raw == NO_CHANGE:
+            mtc_code = era.mtc_participant.mtc.code
         else:
-            old_mtc = OldMtc.get_by_code(sess, supply.dno, mtc_code)
+            mtc_code = mtc_code_raw
 
         cop_code = add_arg(args, "CoP", vals, 11)
         cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(sess, cop_code)
@@ -259,7 +258,7 @@ def general_import_era(sess, action, vals, args):
             dc_account,
             msn,
             pc,
-            mtc_participant,
+            mtc_code,
             cop,
             ssc,
             es,
@@ -349,11 +348,11 @@ def general_import_era(sess, action, vals, args):
             pc_code = parse_pc_code(pc_code_raw)
             pc = Pc.get_by_code(sess, pc_code)
 
-        old_mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 9)
-        if old_mtc_code == NO_CHANGE:
-            old_mtc = existing_era.old_mtc
+        mtc_code_raw = add_arg(args, "Meter Timeswitch Class", vals, 9)
+        if mtc_code_raw == NO_CHANGE:
+            mtc_code = existing_era.mtc_participant.mtc.code
         else:
-            old_mtc = OldMtc.get_by_code(sess, supply.dno, old_mtc_code)
+            mtc_code = mtc_code_raw
 
         cop_code = add_arg(args, "CoP", vals, 10)
         if cop_code == NO_CHANGE:
@@ -506,7 +505,7 @@ def general_import_era(sess, action, vals, args):
             dc_account,
             msn,
             pc,
-            old_mtc.code,
+            mtc_code,
             cop,
             comm,
             ssc,

@@ -26,7 +26,7 @@ def test_eras(mocker):
             "era.dc_account AS era_dc_account, "
             "era.msn AS era_msn, "
             "era.pc_id AS era_pc_id, "
-            "era.old_mtc_id AS era_old_mtc_id, "
+            "era.mtc_participant_id AS era_mtc_participant_id, "
             "era.cop_id AS era_cop_id, "
             "era.comm_id AS era_comm_id, "
             "era.ssc_id AS era_ssc_id, "
