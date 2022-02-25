@@ -15,7 +15,7 @@ from zish import dumps
 import chellow.dloads
 from chellow.models import Session
 from chellow.utils import to_ct, to_utc
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(user, file_name, file_like):

@@ -22,7 +22,7 @@ from chellow.models import (
     Tpr,
 )
 from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(supply_id, file_name, start_date, finish_date, user):

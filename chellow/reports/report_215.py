@@ -15,7 +15,7 @@ from sqlalchemy.sql.expression import null, true
 import chellow.dloads
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import hh_after, hh_before, prev_hh, req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(year, supply_id, user):

@@ -15,7 +15,7 @@ import chellow.computer
 import chellow.dloads
 from chellow.models import Contract, Era, Session
 from chellow.utils import c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(contract_id, end_year, end_month, months, user):

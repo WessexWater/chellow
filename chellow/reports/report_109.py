@@ -14,7 +14,7 @@ import chellow.computer
 import chellow.dloads
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import c_months_u, hh_format, hh_range, req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def to_val(v):

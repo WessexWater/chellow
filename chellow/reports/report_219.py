@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.dloads
 from chellow.models import Batch, Bill, BillType, Era, RegisterRead, Session, Supply
 from chellow.utils import c_months_u, csv_make_val, req_int
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(year, month, months, supply_id, user):

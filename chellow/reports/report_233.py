@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import true
 import chellow.dloads
 from chellow.models import Channel, Contract, Era, Session, Site, SiteEra, Snag, Supply
 from chellow.utils import csv_make_val, hh_before, req_int, utc_datetime_now
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(contract_id, days_hidden, user):

@@ -18,7 +18,7 @@ from chellow.utils import (
     req_date,
     req_int,
 )
-from chellow.views import chellow_redirect
+from chellow.views.home import chellow_redirect
 
 
 def content(supply_id, start_date, finish_date, user):
