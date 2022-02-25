@@ -40,9 +40,7 @@ extensions = [".df2", ".simple.csv", ".bg.csv"]
 
 class HhDataImportProcess(threading.Thread):
     def __init__(self, dc_contract_id, process_id, istream, file_name, file_size):
-        super(HhDataImportProcess, self).__init__(
-            name="HH Manual Import: contract " + str(dc_contract_id)
-        )
+        super().__init__(name=f"HH Manual Import: contract {dc_contract_id}")
 
         self.messages = []
         self.istream = istream
@@ -104,9 +102,7 @@ def start_hh_import_process(dc_contract_id, istream, file_name, file_size):
 
 class HhImportTask(threading.Thread):
     def __init__(self, contract_id):
-        super(HhImportTask, self).__init__(
-            name="HH Automatic Import: contract " + str(contract_id)
-        )
+        super().__init__(name=f"HH Automatic Import: contract {contract_id}")
         self.lock = threading.RLock()
         self.messages = deque()
         self.contract_id = contract_id
@@ -217,7 +213,7 @@ class HhImportTask(threading.Thread):
             state["last_import_keys"] = last_import_keys
 
         sess.rollback()
-        self.log("Connecting to ftp server at " + host_name + ":" + str(port) + ".")
+        self.log(f"Connecting to ftp server at {host_name}:{port}.")
         ftp = ftplib.FTP()
         if port is None:
             ftp.connect(host=host_name, timeout=120)
@@ -227,7 +223,7 @@ class HhImportTask(threading.Thread):
         ftp.login(user_name, password)
         home_path = ftp.pwd()
 
-        file = None
+        fl = None
 
         for directory in directories:
             self.log("Checking the directory '" + directory + "'.")
@@ -252,18 +248,18 @@ class HhImportTask(threading.Thread):
                     files.append((key, fpath))
 
             if len(files) > 0:
-                file = sorted(files)[0]
-                last_import_keys[directory] = file[0]
+                fl = sorted(files)[0]
+                last_import_keys[directory] = fl[0]
                 break
 
-        if file is None:
+        if fl is None:
             self.log("No new files found.")
             ftp.quit()
             self.log("Logged out.")
             return False
         else:
-            key, fpath = file
-            self.log("Attempting to download " + fpath + " with key " + key + ".")
+            key, fpath = fl
+            self.log(f"Attempting to download {fpath} with key {key}.")
             f = tempfile.TemporaryFile()
             ftp.retrbinary("RETR " + fpath, f.write)
             self.log("File downloaded successfully.")
@@ -273,8 +269,8 @@ class HhImportTask(threading.Thread):
             f.seek(0, os.SEEK_END)
             fsize = f.tell()
             f.seek(0)
-            self.log("File size is " + str(fsize) + " bytes.")
-            self.log("Treating files as type " + file_type)
+            self.log(f"File size is {fsize} bytes.")
+            self.log(f"Treating files as type {file_type}")
             self.importer = HhDataImportProcess(
                 self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
             )
