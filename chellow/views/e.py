@@ -82,6 +82,7 @@ from chellow.utils import (
     hh_format,
     hh_max,
     hh_min,
+    hh_range,
     parse_mpan_core,
     req_bool,
     req_date,
@@ -4521,6 +4522,75 @@ def supply_note_edit_post(supply_id, index):
         note = supply_note["notes"][index]
         note["index"] = index
         return render_template("supply_note_edit.html", supply=supply, note=note)
+
+
+@e.route("/supplies/<int:supply_id>/hh_data")
+def supply_hh_data_get(supply_id):
+    caches = {}
+    months = req_int("months")
+    finish_year = req_int("finish_year")
+    finish_month = req_int("finish_month")
+    supply = Supply.get_by_id(g.sess, supply_id)
+
+    month_pairs = list(
+        c_months_u(finish_year=finish_year, finish_month=finish_month, months=months)
+    )
+    start_date, finish_date = month_pairs[0][0], month_pairs[-1][1]
+
+    era = (
+        g.sess.query(Era)
+        .filter(
+            Era.supply == supply,
+            Era.start_date <= finish_date,
+            or_(Era.finish_date == null(), Era.finish_date >= start_date),
+        )
+        .order_by(Era.start_date.desc())
+        .first()
+    )
+
+    keys = {
+        True: {
+            "ACTIVE": "import_active",
+            "REACTIVE_IMP": "import_reactive_imp",
+            "REACTIVE_EXP": "import_reactive_exp",
+        },
+        False: {
+            "ACTIVE": "export_active",
+            "REACTIVE_IMP": "export_reactive_imp",
+            "REACTIVE_EXP": "export_reactive_exp",
+        },
+    }
+
+    hh_data = iter(
+        g.sess.query(HhDatum)
+        .join(Channel)
+        .join(Era)
+        .filter(
+            Era.supply == supply,
+            HhDatum.start_date >= start_date,
+            HhDatum.start_date <= finish_date,
+        )
+        .order_by(HhDatum.start_date)
+        .options(joinedload(HhDatum.channel))
+    )
+    hh_lines = []
+
+    hh_datum = next(hh_data, None)
+    for hh_date in hh_range(caches, start_date, finish_date):
+        hh_line = {"timestamp": hh_date}
+        hh_lines.append(hh_line)
+        while hh_datum is not None and hh_datum.start_date == hh_date:
+            channel = hh_datum.channel
+            hh_line[keys[channel.imp_related][channel.channel_type]] = hh_datum
+            hh_datum = next(hh_data, None)
+    return render_template(
+        "supply_hh_data.html",
+        supply=supply,
+        era=era,
+        hh_lines=hh_lines,
+        start_date=start_date,
+        finish_date=finish_date,
+    )
 
 
 @e.route("/supplies/<int:supply_id>/virtual_bill")

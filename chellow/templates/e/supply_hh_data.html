@@ -16,7 +16,7 @@
 
 {% block nav %}
 	<a href="/supplies">Supplies</a> &raquo;
-	<a href="/supplies/{{supply.id}}">{{supply.name}}</a> &raquo; HH Data
+	<a href="/e/supplies/{{supply.id}}">{{supply.name}}</a> &raquo; HH Data
 {% endblock %}
 
 {% block content %}
@@ -54,7 +54,7 @@
 			<h2>Show HH Data</h2>
 		</div>
 		<div class="section-data">
-			<form action="/supplies/{{supply.id}}/hh_data">
+			<form action="/e/supplies/{{supply.id}}/hh_data">
 				<fieldset>
 					For {{ input_text('months', months, 2, 2) }} month(s)
 					finishing at the end of
@@ -96,7 +96,7 @@
 						</td>
 					{% if hh_line.import_active %}
 						{% set hh = hh_line.import_active %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
@@ -106,7 +106,7 @@
 					{% endif %}
 					{% if hh_line.import_reactive_imp %}
 						{% set hh = hh_line.import_reactive_imp %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
@@ -116,7 +116,7 @@
 					{% endif %}
 					{% if hh_line.import_reactive_exp %}
 						{% set hh = hh_line.import_reactive_exp %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
@@ -126,7 +126,7 @@
 					{% endif %}
 					{% if hh_line.export_active %}
 						{% set hh = hh_line.export_active %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
@@ -136,7 +136,7 @@
 					{% endif %}
 					{% if hh_line.export_reactive_imp %}
 						{% set hh = hh_line.export_reactive_imp %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
@@ -146,7 +146,7 @@
 					{% endif %}
 					{% if hh_line.export_reactive_exp %}
 						{% set hh = hh_line.export_reactive_exp %}
-						<td><a href="/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
+						<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 						<td>{{hh.status}}</td>
 						<td>{{hh.last_modified|hh_format}}</td>
 					{% else %}
