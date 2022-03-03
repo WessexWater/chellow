@@ -495,6 +495,19 @@ def test_site_get_dumb(client, sess):
     match(response, 200, *patterns)
 
 
+def test_site_hh_data(sess, client):
+    site = Site.insert(sess, "CI017", "Water Works")
+    sess.commit()
+
+    query_string = {
+        "year": "2022",
+        "month": "3",
+    }
+    response = client.get(f"/sites/{site.id}/hh_data", query_string=query_string)
+
+    match(response, 200)
+
+
 def test_g_bill_get(client, sess):
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
