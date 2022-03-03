@@ -137,6 +137,7 @@ class BsuosImporter(threading.Thread):
                     if props.get("enabled", False):
                         urls = set(props.get("urls", []))
                         if props.get("discover_urls", False):
+                            sess.rollback()  # Avoid long-running transaction
                             urls.update(_discover_urls(self.log))
 
                         url_list = sorted(urls)
@@ -177,6 +178,7 @@ def _find_file_type(disp):
 
 def _process_url(logger, sess, url, contract):
     logger(f"Checking to see if there's any new data at {url}")
+    sess.rollback()  # Avoid long-running transaction
     res = requests.get(url)
     content_disposition = res.headers.get("Content-Disposition")
     logger(f"Received {res.status_code} {res.reason} {content_disposition}")
