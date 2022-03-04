@@ -158,23 +158,6 @@ def chellow_redirect(path, code=None):
         return redirect(location, code)
 
 
-@home.route("/chellowcss", methods=["GET"])
-def chellowcss_get():
-    props = Contract.get_non_core_by_name(g.sess, "configuration").make_properties()
-    response = make_response(
-        render_template("css/chellow.css", background_colour=props["background_colour"])
-    )
-    response.headers["Content-type"] = "text/css"
-    return response
-
-
-@home.route("/chellowjs", methods=["GET"])
-def chellowjs_get():
-    response = make_response(render_template("js/chellow.js"))
-    response.headers["Content-type"] = "text/javascript"
-    return response
-
-
 @home.route("/configuration", methods=["GET"])
 def configuration():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
@@ -1910,12 +1893,12 @@ def non_core_contract_edit_post(contract_id):
             state = req_zish("state")
             contract.update_state(state)
             g.sess.commit()
-            return chellow_redirect("/non_core_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
         else:
             properties = req_zish("properties")
             contract.update_properties(properties)
             g.sess.commit()
-            return chellow_redirect("/non_core_contracts/" + str(contract.id), 303)
+            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(

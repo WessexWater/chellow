@@ -11,49 +11,31 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form
-							action="/g_contracts/{{g_contract.id}}/add_batch" method="post">
-						<fieldset>
-							<legend>Add a batch</legend>
-							<div class="row">						
-								<div class="col-sm-4">
-									<label>Reference</label>
-								 	{{input_text('reference', '')}}
-								</div>
-							</div>
-							<div class="row">						
-								<div class="col-sm-4">
-									<label>Description</label>
-								 	{{input_text('description', '')}}
-								</div>
-							</div>
-							<input type="submit" value="Add">
-						</fieldset>
-					</form>
-				</div>
-				<br>
-				<table class="DataTable widthAuto noMarginBottom">
-					<caption>Existing Batches</caption>
-					<thead>
-						<tr>
-							<th>Reference</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for g_batch in g_batches %}
-							<tr>
-								<td>{{g_batch.reference}}</td>
-								<td>{{g_batch.description}}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+	<form action="/g_contracts/{{g_contract.id}}/add_batch" method="post">
+		<fieldset>
+			<legend>Add a batch</legend>
+			<label>Reference</label> {{input_text('reference', '')}}
+			<label>Description</label> {{input_text('description', '')}}
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
+	<table>
+		<caption>Existing Batches</caption>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_batch in g_batches %}
+				<tr>
+					<td>{{g_batch.reference}}</td>
+					<td>{{g_batch.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 {% endblock %}

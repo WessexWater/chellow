@@ -5,36 +5,19 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; CSV Sites Monthly Duration
+	CSV Sites Monthly Duration
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Download</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-		    <div class="standardForm textWidthAuto">
-		        <form action="/reports/161">
-            		<fieldset>
-            			For {{input_text('months', '1', 2, 2)}}
-            			month(s) finishing at the end of
-            			{{input_date('finish', month_finish, resolution='month')}}
-            			<input type="submit" value="Download">
-            		</fieldset>
-            	</form>
-		    </div>
-		</div>
-	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
 
-
+	<form action="/reports/161">
+		<fieldset>
+			<legend>Download</legend>	
+			<label>Months</label> {{input_text('months', '1', 2, 2)}}
+			<label>Final Month</label>
+			{{input_date('finish', month_finish, resolution='month')}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
 	
 {% endblock %}

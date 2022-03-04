@@ -13,55 +13,41 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>{{llfc.description}}</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<tr>
-						<th>Code</th>
-						<td>{{llfc.code}}</td>
-					</tr>
-					<tr>
-						<th>Description</th>
-						<td>{{llfc.description}}</td>
-					</tr>
-					<tr>
-						<th>Voltage Level</th>
-						<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
-					</tr>
-					<tr>
-						<th>Is Substation?</th>
-						<td>{{llfc.is_substation}}</td>
-					</tr>
-					<tr>
-						<th>Is Import?</th>
-						<td>{{llfc.is_import}}</td>
-					</tr>
-					<tr>
-						<th>Valid From</th>
-						<td>{{llfc.valid_from|hh_format}}</td>
-					</tr>
-					<tr>
-						<th>Valid To</th>
-						<td>{{llfc.valid_to|hh_format}}</td>
-					</tr>
-					<tr>
-						<th>Loss Adjustment Factors</th>
-						<td>
-							<a href="/e/lafs?llfc_id={{llfc.id}}&amp;year={{now.year}}&amp;month={{now.month}}">LAFs</a>
-						</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
-	<!-- End Layer Section -->
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{llfc.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{llfc.description}}</td>
+		</tr>
+		<tr>
+			<th>Voltage Level</th>
+			<td>{{llfc.voltage_level.code}} - {{llfc.voltage_level.name}}</td>
+		</tr>
+		<tr>
+			<th>Is Substation?</th>
+			<td>{{llfc.is_substation}}</td>
+		</tr>
+		<tr>
+			<th>Is Import?</th>
+			<td>{{llfc.is_import}}</td>
+		</tr>
+		<tr>
+			<th>Valid From</th>
+			<td>{{llfc.valid_from|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Valid To</th>
+			<td>{{llfc.valid_to|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Loss Adjustment Factors</th>
+			<td>
+				<a href="/e/lafs?llfc_id={{llfc.id}}&amp;year={{now.year}}&amp;month={{now.month}}">LAFs</a>
+			</td>
+		</tr>
+	</table>
+
 {% endblock %}

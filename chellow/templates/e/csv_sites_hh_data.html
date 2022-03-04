@@ -9,45 +9,23 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Download</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form action="/reports/183">
-						<fieldset>
-						</fieldset>
-					</form>
-					<form action="/reports/183" method='post'>
-						<fieldset>
-							<select name="type">
-								<option value="used">Used</option>
-								<option value="imp_net">Imported</option>
-								<option value="exp_net">Exported</option>
-								<option value="imp_gen">Generated</option>
-								<option value="displaced">Displaced</option>
-								<option value="exp_gen">Parasitic</option>
-							</select>
-							from {{input_date('start', start_date)}} to
-							{{input_date('finish', finish_date)}}
-							<br>
-								Site Codes (one on each line, includes all sites if left blank)<br>
-							{{input_textarea('site_codes', '', 5, 40)}}    						
-							<br>
-							<input type="submit" value="Download">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
-	<!-- End Layer Section -->
+	<form action="/reports/183" method='post'>
+		<fieldset>
+			<legend>Download</legend>	
+			<select name="type">
+				<option value="used">Used</option>
+				<option value="imp_net">Imported</option>
+				<option value="exp_net">Exported</option>
+				<option value="imp_gen">Generated</option>
+				<option value="displaced">Displaced</option>
+				<option value="exp_gen">Parasitic</option>
+			</select>
+			<label>From</label> {{input_date('start', start_date)}}
+			<label>To</label> {{input_date('finish', finish_date)}}
+			<label>Site Codes (one on each line, includes all sites if left blank)</label>
+			{{input_textarea('site_codes', '', 5, 40)}}    						
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
 
 {% endblock %}

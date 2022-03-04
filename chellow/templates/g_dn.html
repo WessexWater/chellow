@@ -9,30 +9,23 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<tr>
-						<th>Code</th>
-						<td>{{g_dn.code}}</td>
-					</tr>
-					<tr>
-						<th>Name</th>
-						<td>{{g_dn.name}}</td>
-					</tr>
-				</table>
-				<br>
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_dn.code}}</td>
+		</tr>
+		<tr>
+			<th>Name</th>
+			<td>{{g_dn.name}}</td>
+		</tr>
+	</table>
 
-				<h4>LDZs</h4>
-				<ul>
-					{% for g_ldz in g_ldzs %}
-						<li>
-							<a href="/g_ldzs/{{g_ldz.id}}">{{g_ldz.code}}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			</div>
-		</div>
-	</div>
+	<h4>LDZs</h4>
+	<ul>
+		{% for g_ldz in g_ldzs %}
+			<li>
+				<a href="/g_ldzs/{{g_ldz.id}}">{{g_ldz.code}}</a>
+			</li>
+		{% endfor %}
+	</ul>
 {% endblock %}

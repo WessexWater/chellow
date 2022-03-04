@@ -21,135 +21,57 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Add New Register Read</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<form action="/g_bills/{{g_bill.id}}/add_read" method="post">
+	<form action="/g_bills/{{g_bill.id}}/add_read" method="post">
+		<fieldset>
+			<label>Meter Serial Number</label> {{input_text('msn', '')}}
+			<label>Units</label>
+			<select name="g_unit_id">
+				{% for g_unit in g_units %}
+					{{
+						input_option(
+							'g_unit_id', g_unit.id, g_unit.code + ' ' +
+							g_unit.description)}}
+				{% endfor %}
+			</select>
+			<label>Correction Factor</label> {{input_text('correction_factor', '1')}}
+			<label>Calorific Value</label> {{input_text('calorific_value', '1')}}
+			<fieldset>
+				<legend>Previous Read</legend>
 				<fieldset>
-					<div class="section-data">
-						<div class="standardForm">
-							<div class="row">
-								<div class="col-sm-4">
-									<label>Meter Serial Number</label>
-								</div>
-								<div class="col-sm-4">
-									{{input_text('msn', '')}}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-sm-4">
-									<label>Units</label>
-								</div>
-								<div class="col-sm-4">
-									<select name="g_unit_id">
-										{% for g_unit in g_units %}
-											{{
-												input_option(
-													'g_unit_id', g_unit.id, g_unit.code + ' ' +
-													g_unit.description)}}
-										{% endfor %}
-									</select>
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-sm-4">
-									<label>Correction Factor</label>
-								</div>
-								<div class="col-sm-4">
-									{{input_text('correction_factor', '1')}}
-								</div>
-							</div>
-							<div class="row">
-								<div class="col-sm-4">
-									<label>Calorific Value</label>
-								</div>
-								<div class="col-sm-4">
-									{{input_text('calorific_value', '1')}}
-								</div>
-							</div>
-        			<div class="section-data">
-								<fieldset>
-									<legend>Previous Read</legend>
-									<div class="row">
-										<div class="col-sm-4">
-											<div class="standardForm textWidthAuto">
-												<fieldset>
-													<legend>Date</legend>
-														{{input_date('prev_date', None)}}
-												</fieldset>
-												<div class="col-sm-4">
-													<div class="standardForm">
-														<label>Value</label>
-														{{input_text('prev_value', 0)}}
-													</div>
-												</div>
-												<div class="col-sm-4">
-													<div class="standardForm">
-														<label>Type</label>
-														<select name="prev_type_id">
-															{% for g_read_type in g_read_types %}
-																{{
-																	input_option(
-																		'prev_type_id', g_read_type.id,
-																		g_read_type.code + ' ' +
-																		g_read_type.description)}}
-															{% endfor %}
-														</select>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</fieldset>
-							</div>
-        			<div class="section-data">
-								<fieldset>
-									<legend>Present Read</legend>
-									<div class="row">
-										<div class="col-sm-4">
-											<div class="standardForm textWidthAuto">
-												<fieldset>
-													<legend>Date</legend>
-													{{input_date('pres_date', None)}}
-												</fieldset>
-												<div class="col-sm-4">
-													<div class="standardForm">
-														<label>Value</label>
-													 	{{input_text('pres_value', 0)}}
-													</div>
-												</div>
-												<div class="col-sm-4">
-													<div class="standardForm">
-														<label>Type
-														<select name="pres_type_id">
-															{% for g_read_type in g_read_types %}
-																{{
-																	input_option(
-																		'pres_type_id', g_read_type.id,
-																		g_read_type.code + ' ' +
-																	 	g_read_type.description)}}
-															{% endfor %}
-														</select>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</fieldset>
-							</div>
-						</div>
-					</div>
-					<div class="section-data">
-						<input type="submit" value="Add">
-					</div>
+					<legend>Date</legend>
+					{{input_date('prev_date', None)}}
 				</fieldset>
-			</form>
-		</div>
-	</div>
+				<label>Value</label> {{input_text('prev_value', 0)}}
+				<label>Type</label>
+				<select name="prev_type_id">
+					{% for g_read_type in g_read_types %}
+						{{
+							input_option(
+								'prev_type_id', g_read_type.id,
+								g_read_type.code + ' ' +
+								g_read_type.description)}}
+					{% endfor %}
+				</select>
+			</fieldset>
+			<fieldset>
+				<legend>Present Read</legend>
+				<fieldset>
+					<legend>Date</legend>
+					{{input_date('pres_date', None)}}
+				</fieldset>
+				<label>Value</label> {{input_text('pres_value', 0)}}
+				<label>Type</label>
+				<select name="pres_type_id">
+					{% for g_read_type in g_read_types %}
+						{{
+							input_option(
+								'pres_type_id', g_read_type.id,
+								g_read_type.code + ' ' +
+								g_read_type.description)}}
+					{% endfor %}
+				</select>
+			</fieldset>
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
 {% endblock %}

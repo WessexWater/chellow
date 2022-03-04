@@ -9,29 +9,24 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>LAF Import</h2>
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-			  {% if progress %}
-					<p>{{progress}}.</p>
-				{% endif %}
 
-				{% if is_alive %}
-						<p>Still running. Refresh the page to see latest progress.</p>
-				{% else %}
-						{% if error_message %}
-								<p>
-									The import has failed:
-								</p>
-								<pre>{{error_message}}</pre>
-						{% else %}
-								<p>The file has been imported successfully.</p>
-						{% endif %}
-				{% endif %}
-			</div>
-		</div>
-	</div>
+	<h2>LAF Import</h2>
+
+	{% if progress %}
+		<p>{{progress}}.</p>
+	{% endif %}
+
+	{% if is_alive %}
+			<p>Still running. Refresh the page to see latest progress.</p>
+	{% else %}
+			{% if error_message %}
+					<p>
+						The import has failed:
+					</p>
+					<pre>{{error_message}}</pre>
+			{% else %}
+					<p>The file has been imported successfully.</p>
+			{% endif %}
+	{% endif %}
+
 {% endblock %}

@@ -11,36 +11,23 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Rate Script</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<tbody>
-						<tr>
-							<th>Start Date</th>
-							<td>{{rate_script[0]|hh_format}}</td>
-						</tr>
-						<tr>
-							<th>Finish Date</th>
-							<td>{{rate_script[1]|hh_format}}</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
 
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Script</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<pre>{{rate_script[2]}}</pre>
-			</div>
-		</div>
-	</div>
+	<table>
+		<legend>Rate Script</legend>	
+		<tbody>
+			<tr>
+				<th>Start Date</th>
+				<td>{{rate_script[0]|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Finish Date</th>
+				<td>{{rate_script[1]|hh_format}}</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h2>Script</h2>	
+
+	<pre>{{rate_script[2]}}</pre>
+
 {% endblock %}

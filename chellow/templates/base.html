@@ -14,69 +14,70 @@
   {% endif %}
 
   {% set initial = initial|now_if_none|to_ct %}
+	<div>
+		<input name="{{ year_field }}" maxlength="4" size="4" value="
+			{%- if request.values[year_field] -%}
+				{{ request.values[year_field] }}
+			{%- else -%}
+				{{ initial|hh_format('year') }}
+			{%- endif %}">
 
-  <input name="{{ year_field }}" maxlength="4" size="4" value="
-    {%- if request.values[year_field] -%}
-      {{ request.values[year_field] }}
-    {%- else -%}
-      {{ initial|hh_format('year') }}
-    {%- endif %}">
+		{%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
+			-<select name="{{ month_field }}">
+			{% for month in range(1, 13) -%}
+				<option value="{{ "%02i"|format(month) }}"
+					{%- if request.values[month_field] -%}
+						{%- if request.values[month_field]|int == month %} selected
+						{%- endif -%}
+					{%- else -%}
+						{%- if initial.month == month %} selected{%- endif -%}
+					{%- endif -%}>{{ "%02i"|format(month) }}</option>
+			{% endfor %}
+			</select>
+		{%- endif -%}
 
-  {%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
-    -<select name="{{ month_field }}">
-    {% for month in range(1, 13) -%}
-      <option value="{{ "%02i"|format(month) }}"
-        {%- if request.values[month_field] -%}
-          {%- if request.values[month_field]|int == month %} selected
-          {%- endif -%}
-        {%- else -%}
-          {%- if initial.month == month %} selected{%- endif -%}
-        {%- endif -%}>{{ "%02i"|format(month) }}</option>
-    {% endfor %}
-    </select>
-  {%- endif -%}
+		{% if resolution in ['day', 'hour', 'minute'] -%}
+			-<select name="{{ day_field }}">
+				{% for day in range(1, 32) -%}
+					<option value="{{ day }}"
+						{%- if request.values[day_field] -%}
+							{%- if request.values[day_field]|int == day %} selected
+							{% endif -%}
+						{% else %}
+							{%- if initial.day == day %} selected{% endif -%}
+						{%- endif %}>{{ "%02i"|format(day) }}</option>
+				{% endfor -%}
+			</select>
+		{%- endif -%}
 
-  {% if resolution in ['day', 'hour', 'minute'] -%}
-    -<select name="{{ day_field }}">
-      {% for day in range(1, 32) -%}
-        <option value="{{ day }}"
-          {%- if request.values[day_field] -%}
-            {%- if request.values[day_field]|int == day %} selected
-            {% endif -%}
-          {% else %}
-            {%- if initial.day == day %} selected{% endif -%}
-          {%- endif %}>{{ "%02i"|format(day) }}</option>
-      {% endfor -%}
-    </select>
-  {%- endif -%}
+		{% if resolution in ['hour', 'minute'] %}
+			<select name="{{ hour_field }}">
+				{% for hour in range(24) %}
+					<option value="{{ hour }}"
+						{%- if request.values[hour_field] -%}
+							{%- if request.values[hour_field]|int == hour %} selected
+							{%- endif -%}
+						{%- else -%}
+							{%- if initial.hour == hour %} selected{%- endif -%}
+						{%- endif %}>{{ "%02i"|format(hour) }}</option>
+				{%- endfor %}
+			</select>
+		{%- endif -%}
 
-  {% if resolution in ['hour', 'minute'] %}
-    <select name="{{ hour_field }}">
-      {% for hour in range(24) %}
-        <option value="{{ hour }}"
-          {%- if request.values[hour_field] -%}
-            {%- if request.values[hour_field]|int == hour %} selected
-            {%- endif -%}
-          {%- else -%}
-            {%- if initial.hour == hour %} selected{%- endif -%}
-          {%- endif %}>{{ "%02i"|format(hour) }}</option>
-      {%- endfor %}
-    </select>
-  {%- endif -%}
-
-  {% if resolution == 'minute' -%}
-    :<select name="{{ minute_field }}">
-      {% for minute in range(0, 31, 30) -%}
-        <option value="{{ minute }}"
-          {%- if request.values[minute_field] %}
-            {%- if request.values[minute_field]|int == minute %} selected
-            {%- endif %}
-          {%- else %}
-            {%- if initial.minute == minute %} selected{% endif %}
-            {%- endif %}>{{ "%02i"|format(minute) }}</option>
-      {% endfor %}
-    </select>
-  {%- endif %}
+		{% if resolution == 'minute' -%}
+			:<select name="{{ minute_field }}">
+				{% for minute in range(0, 31, 30) -%}
+					<option value="{{ minute }}"
+						{%- if request.values[minute_field] %}
+							{%- if request.values[minute_field]|int == minute %} selected
+							{%- endif %}
+						{%- else %}
+							{%- if initial.minute == minute %} selected{% endif %}
+							{%- endif %}>{{ "%02i"|format(minute) }}</option>
+				{% endfor %}
+			</select>
+		{%- endif %}
+	</div>
 {%- endmacro -%}
 
 {%- macro input_option(name, item_id, desc, initial=None) -%}
@@ -157,271 +158,195 @@
 				{%- endif -%}
 		{%- else -%}
 				{%- if initial == True %} checked{% endif -%}
-				{%- endif -%}>
+		{%- endif -%}>
 {%- endmacro -%}
 
 <!DOCTYPE html>
 <html lang="en">
 	<head>
 		{% block head %}
-			<link rel="stylesheet" href="/static/css/bootstrap.min.css">
-			<link
-		 			rel="stylesheet"
-				 	href="/static/font-awesome-4.6.3/css/font-awesome.min.css">
-			<link rel="stylesheet" href="/chellowcss">
+			<link rel="stylesheet" type="text/css" href="/static/css/chellow.css">
+			{% if is_test %}
+				<link rel="icon" type="image/svg+xml" href="/static/images/favicon_test.svg">
+				<style>
+					{{ test_css|safe }}
+				</style>
+			{% else %}
+				<link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+			{% endif %}
 
-			<script src="/static/js/jquery-2.2.4.min.js"></script>
-			<script src="/static/js/bootstrap.min.js"></script>
-			<script src="/static/js/grids.min.js"></script>
-			<script src="/chellowjs"></script>
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 		
 			<title>Chellow {% block title %}{% endblock %}</title>
+			<script>
+				function onHamburgerClick() {
+					var navElement = document.getElementById('hamburger');
+					if (navElement.style.display == 'block') {
+						navElement.style.display = 'none';
+					} else {
+						navElement.style.display = 'block';
+					}
+				}
+
+			</script>
 			{% block inside_head %}{% endblock %}
 		{% endblock %}
 	</head>
 	<body>
 		{% block body %}
-			<!-- Layer Page -->
-			<div class="layer-page">
-	
-				<!-- Layer Header -->
-				<div class="layer-header">
-					<div class="container-fluid">
-						<div class="row">
-							<!-- Logo -->
-							<div
-									class="col-sm-3 col-md-2 alignCenter bgBlue headerSameHeight">
-								<p class="panel-logo">
-									<a href="/"><span class="hide"></span></a>
-								</p>
-							</div>
-                    	
-							<!-- Top Header -->
-							<div class="col-sm-9 col-md-10 top-header headerSameHeight">
-								<div class="pull-left">
-									<p class="panel-breadcrumbs">
-										<!-- <a href="/">Chellow</a> -->
-										{% block nav %}{% endblock %}</p>
-						
-								</div>
-                            
-								<div class="pull-right layer-profilemenu">
-									<!-- Layer Header Top -->
-									<div class="layer-headertop">
-										<div class="headertop createnew blue">
-											<div class="menu-topbar">
-												<div class="topbar-main">
-													<div class="standardForm siteSearch">
-														<form action="/sites">
-															<fieldset>
-																<span class="topbarmain-title">
-																	<input
-																			type="text" class="input-text"
-																			name="pattern"
-                                      placeholder="Search Sites..."
-																	>
-																</span>
-																<span class="topbarmain-arrow"><button type="submit" class="btn">&#x1F50D;</button></span>
-															</fieldset>
-														</form>
-													</div>
-												</div>
-											</div>
-										</div>
-										<div class="headertop search blue">
-											<div class="menu-topbar">
-												<div class="topbar-main">
-													<div class="standardForm supplySearch">
-														<form action="/supplies">
-															<fieldset>
-																<span class="topbarmain-title">
-																	<input type="text" class="input-text" name="search_pattern" placeholder="Search Supplies...">
-																</span>
-																<span class="topbarmain-arrow">
-																	<button
-																			type="submit" class="btn" >
-                                      &#x1F50D;
-																	</button>
-																</span>
-															</fieldset>
-														</form>
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-									<!-- End Layer Header Top -->
-								</div>
-							</div>
-						</div>
-					</div>
-	        <!-- End Layer Header -->
-	
-	
-	        <!-- Layer Body -->
-					<div class="layer-body menuHide">
-		        <div class="container-fluid">
-							<div class="row">           
-								<!-- Layer Sidebar -->
-								<div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
-									<div class="main-navigation">
-										<!-- Nav Contracts -->
-										<nav class="nav-main active">
-											<h4>&#x26A1; Contracts</h4>
-											<ul class="active">
-													<li><a href="/e/dc_contracts" title="DC">DC</a></li>
-													<li><a href="/e/mop_contracts" title="MOP">MOP</a></li>
-													<li><a href="/e/supplier_contracts" title="Supplier">Supplier</a></li>
-													<li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
-											</ul>
-										</nav>
-										<!-- End Nav Contracts -->
-										<!-- Nav Editors -->
-										<nav class="nav-editors">
-											<h4>&#x270F; For Editors</h4>
-											<ul>                                    
-												<li><a href="/local_reports_home" title="Local Reports">Local Reports</a></li>
-												<li><a href="/general_imports" title="General Import">General Import</a></li>
-												<li><a href="/downloads" title="Downloads">Downloads</a></li>
-												<li><a href="/reports/ecoes_comparison" title="Comparison against ECOES">Comparison against ECOES</a></li>
-												<li><a href="/local_reports" title="Edit Local Reports">Edit Local Reports</a></li>
-												<li><a href="/site_snags" title="Site Snags">Site Snags</a></li>
-												<li>
-                          <a href="/scenarios" title="Scenarios">Scenarios</a>
-                        </li>
-												<li><a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a></li> 
-											</ul>
-										</nav>
-										<!-- End Nav Editors -->
-										<!-- Nav Industry -->
-										<nav class="nav-industry">
-											<h4>&#x1F3ED; Industry Info</h4>
-											<ul>
-												<li><a href="/e/dnos" title="DNOs">DNOs</a></li>
-												<li><a href="/industry_contracts" title="Industry Rates">Industry Rates</a></li>
-												<li><a href="/e/participants" title="Market Participants">Market Participants</a></li>
-												<li><a href="/e/market_roles" title="Market Roles">Market Roles</a></li>
-												<li><a href="/e/parties" title="Parties">Parties</a></li>
-												<li><a href="/e/pcs" title="Profile Classes">Profile Classes</a></li>
-												<li>
-													<a href="/e/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a>
-												</li>
-												<li><a href="/e/meter_types" title="Meter Types">Meter Types</a></li>
-												<li><a href="/dtc_meter_types" title="DTC Meter Types">DTC Meter Types</a></li>
-												<li><a href="/e/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
-												<li><a href="/e/tprs" title="TPRs">TPRs</a></li>
-												<li><a href="/e/sscs" title="SSCs">SSCs</a></li>
-												<li><a href="/e/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-												<li><a href="/e/cops" title="CoPs">CoPs</a></li>
-												<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
-												<li><a href="/read_types" title="Read Types">Read Types</a></li>
-												<li><a href="/e/energisation_statuses" title="Energisation Statuses">Energisation Statuses</a></li>
-												<li><a href="/e/sources" title="Sources">Sources</a></li>
-												<li><a href="/e/generator_types" title="Generator Types">Generator Types</a></li>
-												<li><a href="/mdd_imports" title="MDD Imports">MDD Importer</a></li>
-											</ul>
-										</nav>
-										<!-- End Nav Industry -->
+			<header>
+				<nav>
+					<span onClick="onHamburgerClick()">&#x2630;</span>
+					<nav id="hamburger">
+						<details>
+							<summary>&#x26A1; Contracts</summary>
+							<ul>
+								<li><a href="/e/dc_contracts" title="DC">DC</a></li>
+								<li><a href="/e/mop_contracts" title="MOP">MOP</a></li>
+								<li><a href="/e/supplier_contracts" title="Supplier">Supplier</a></li>
+								<li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
+							</ul>
+						</details>
+						<details>
+							<summary>&#x270F; For Editors</summary>
+							<ul>                          
+								<li>
+									<a href="/local_reports_home" title="Local Reports">Local Reports</a>
+								</li>
+								<li>
+									<a href="/general_imports" title="General Import">General Import</a>
+								</li>
+								<li><a href="/downloads" title="Downloads">Downloads</a></li>
+								<li>
+									<a href="/reports/ecoes_comparison" title="Comparison against ECOES"
+										>Comparison against ECOES</a>
+								</li>
+								<li>
+									<a href="/reports/asset_comparison"
+										 title="Comparison against Asset DB"
+										>Comparison against Asset DB</a>
+								</li>
+								<li>
+									<a href="/local_reports" title="Edit Local Reports"
+										>Edit Local Reports</a>
+								</li>
+								<li><a href="/e/site_snags" title="Site Snags">Site Snags</a></li>
+								<li><a href="/e/scenarios" title="Scenarios">Scenarios</a></li>
+								<li><a href="/reports/batches">Batches</a></li>
+								<li><a href="/edi_viewer" title="EDI Viewer">EDI Viewer</a></li>
+								<li>
+									<a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a>
+								</li> 
+							</ul>
+						</details>
+						<details>
+							<summary>&#x1F3ED; Industry Info</summary>
+							<ul>
+								<li><a href="/e/dnos" title="DNOs">DNOs</a></li>
+								<li>
+									<a href="/industry_contracts" title="Industry Rates"
+										>Industry Rates</a>
+								</li>
+								<li>
+									<a href="/e/participants" title="Market Participants"
+										>Market Participants</a>
+								</li>
+								<li><a href="/e/market_roles" title="Market Roles">Market Roles</a></li>
+								<li><a href="/e/parties" title="Parties">Parties</a></li>
+								<li><a href="/e/pcs" title="Profile Classes">Profile Classes</a></li>
+								<li>
+									<a href="/e/mtcs" title="Meter Timeswitch Classes"
+										>Meter Timeswitch Classes</a>
+								</li>
+								<li><a href="/e/meter_types" title="Meter Types">Meter Types</a></li>
+								<li>
+									<a href="/dtc_meter_types" title="DTC Meter Types">DTC Meter Types</a>
+								</li>
+								<li>
+									<a href="/e/meter_payment_types" title="Meter Payments Types"
+										>Meter Payments Types</a>
+								</li>
+								<li><a href="/e/tprs" title="TPRs">TPRs</a></li>
+								<li><a href="/e/sscs" title="SSCs">SSCs</a></li>
+								<li><a href="/e/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+								<li><a href="/e/cops" title="CoPs">CoPs</a></li>
+								<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
+								<li><a href="/read_types" title="Read Types">Read Types</a></li>
+								<li>
+									<a href="/e/energisation_statuses" title="Energisation Statuses"
+										>Energisation Statuses</a></li>
+								<li><a href="/e/sources" title="Sources">Sources</a></li>
+								<li>
+									<a href="/e/generator_types" title="Generator Types"
+										>Generator Types</a>
+								</li>
+								<li><a href="/e/mdd_imports" title="MDD Imports">MDD Importer</a></li>
+							</ul>
+						</details>
+						<details>
+							<summary>&#x1F525; Gas</summary>
+							<ul>                          
+								<li><a href="/g_supplies">Supplies</a></li>
+								<li><a href="/g_contracts">Contracts</a></li>
+								<li><a href="/g_read_types">Read Types</a></li>
+								<li><a href="/g_units">Units</a></li>
+								<li><a href="/g_reports">Reports</a></li>
+								<li><a href="/g_dns">DNs</a></li>
+								<li><a href="/g_reading_frequencies">Reading Frequencies</a></li>
+							</ul>
+						</details>
+						<details>
+							<summary>&#x2699; Administration</summary>
+							<ul>                          
+								<li><a href="/users" title="Users">Users</a></li>
+								<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
+								<li><a href="/system" title="System">System</a></li>
+							</ul>
+						</details>
+					</nav>
+				</nav>
 
-										<!-- Nav Gas -->
-										<nav class="nav-gas">
-											<h4>&#x1F525; Gas</h4>
-											<ul>
-												<li><a href="/g_supplies">Supplies</a></li>
-												<li><a href="/g_contracts">Contracts</a></li>
-												<li><a href="/g_read_types">Read Types</a></li>
-												<li><a href="/g_units">Units</a></li>
-												<li><a href="/g_reports">Reports</a></li>
-												<li><a href="/g_dns">DNs</a></li>
-												<li>
-                          <a
-                            href="/g_reading_frequencies"
-                            >Reading Frequencies</a>
-                        </li>
-											</ul>
-										</nav>
-										<!-- End Nav Gas -->
+				<a href="/"><img src="/static/images/logo.png"></a>
+			</header>
+			<nav class="top-nav">
+				<ul>
+				{% block nav %}{% endblock %}
+				</ul>
 
-										<!-- Nav Administration -->
-										<nav class="nav-administration">
-											<h4>&#x2699; Administration</h4>
-											<ul>
-												<li><a href="/users" title="Users">Users</a></li>
-												<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
-												<li><a href="/system" title="System">System</a></li>
-											</ul>
-										</nav>
-										<!-- End Nav Administration -->
+				<div>
+					<form action="/sites">
+						<input type="text" name="pattern" placeholder="Search sites" size="14"
+							><button>&#x1F50D;</button>
+					</form>
 
-									</div>
-								</div>
-								<!-- End Layer Sidebar -->
-                                                    
-								<!-- Layer Content -->
-								<div class="col-sm-12 bodySameHeight bgColor">
-									<div class="layer-content">
-										<div class="row">
-											<div class="col-md-12">
-												{% if global_alerts %}
-													<!-- Layer Section -->
-													<div class="layer-section">
-														<!-- Section Content -->
-														<div class="section-content">
-															<div class="section-data">
-																<ul>
-																	{% for alert in global_alerts %}
-																		<li class="global">{{alert}}</li>
-																	{% endfor %}
-																</ul>
-															</div>
-														</div>
-														<!-- End Section Content -->
-													</div>
-													<!-- End Layer Section -->
-												{% endif %}
-
-												{% with messages = get_flashed_messages() %}
-													{% if messages %}
-														<!-- Layer Section -->
-														<div class="layer-section">
-															<!-- Section Content -->
-															<div class="section-content">
-																<div class="section-data">
-																	<ul>
-																		{% for message in messages %}
-																			<li>{{message}}</li>
-																		{% endfor %}
-																	</ul>
-																</div>
-															</div>
-															<!-- End Section Content -->
-														</div>
-														<!-- End Layer Section -->
-													{% endif %}
-												{% endwith %}
-												{% block content %}
-								           
-								        {% endblock %}
-											</div>
-										</div>
-									</div>
-								</div>
-								<!-- Layer Content -->
-							</div>
-						</div>		
-					</div>	
+					<form action="/supplies">
+						<input type="text" name="pattern" placeholder="Search supplies" size="14"
+							><button>&#x1F50D;</button>
+					</form>
 				</div>
-				<!-- End Layer Body -->
+			</nav>
 
-				<p class="panel-mainmenubutton">
-					<a
-					 		href="javascript:void(0)" title="Menu Toggle"
-						 	onClick="toggleMenuMain()">&#x2261;
-					</a>
-				</p>
-			</div>
-			<!-- End Layer Page -->
+			<main>
+				{% if global_alerts %}
+					<ul>
+						{% for alert in global_alerts %}
+							<li class="global">{{alert}}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
+																										
+				{% with messages = get_flashed_messages() %}
+					{% if messages %}
+						<ul>
+							{% for message in messages %}
+								<li>{{message}}</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				{% endwith %}
+				{% block content %}
+				{% endblock %}
+			</main>
 		{% endblock %}
 	</body>
 </html>

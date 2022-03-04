@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo; 
+ 	{{batch.reference}} &raquo; Bill Imports
+{% endblock %}
+
+{% block nav %}
+	<a href="/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a>
+ 	&raquo; 
+	<a href="/mop_batches/{{batch.id}}">{{batch.reference}}</a>
+ 	&raquo; Bill Imports
+{% endblock %}
+
+{% block content %}
+	<form enctype="multipart/form-data" method="post">
+		<fieldset>
+			<legend>Import Bill File</legend>	
+			<input type="hidden" name="mop_batch_id" value="{{batch.id}}">
+			<input type="file" name="import_file" size="45"
+				value="{{request.values.import_file}}">
+			<input type="submit" value="Import">
+		</fieldset>
+	</form>
+
+	<p>Valid file name extensions are {{parser_names}}.</p>
+	<table class="DataTable widthAuto">
+		<caption>The '.csv' Format</caption>
+		<tbody>
+			<tr>
+				<td>
+					# Bill Type (N - Normal, W - Withdrawn or F -Final)
+				</td>
+				<td>Account Reference</td>
+				<td>Mpans</td>
+				<td>Invoice Reference</td>
+				<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+				<td>Start Date (YYYY-mm-dd HH:MM)</td>
+				<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+				<td>kWh</td>
+				<td>Net</td>
+				<td>VAT</td>
+				<td>Gross</td>
+				<td>Breakdown</td>
+			</tr>
+		</tbody>
+	</table>
+
+	{% if importer_ids %}
+		<ul>
+			{% for id in importer_ids %}
+				<li><a href="/e/mop_bill_imports/{{id}}">{{id}}</a></li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}

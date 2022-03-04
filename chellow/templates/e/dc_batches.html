@@ -11,31 +11,22 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Batches</h2>
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<thead>
-						<tr>
-							<th>Reference</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for batch in batches %}
-							<tr>
-								<td>
-									<a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a>
-								</td>
-								<td>{{ batch.description }}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+
+	<table>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for batch in batches %}
+				<tr>
+					<td><a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a></td>
+					<td>{{ batch.description }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 {% endblock %}

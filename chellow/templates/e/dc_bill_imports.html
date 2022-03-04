@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{batch.contract.name}} &raquo; Batches &raquo;
+	{{batch.reference}} &raquo; Bill Imports
+{% endblock %}
+
+{% block nav %}
+	<a href="/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
+	<a href="/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/dc_batches/{{batch.id}}">{{batch.reference}}</a>
+ 	&raquo; Bill Imports
+{% endblock %}
+
+{% block content %}
+
+	<form action="/e/dc_bill_imports" enctype="multipart/form-data" method="post">
+		<fieldset>
+			<legend>Import Bill File</legend>
+			<input type="hidden" name="dc_batch_id" value="{{batch.id}}">
+			<input type="file" name="import_file">
+			<input type="submit" value="Import">
+		</fieldset>
+	</form>
+
+		<p>Valid file name extensions are {{parser_names}}.</p>
+											
+		<table>
+			<caption>The '.csv' Format</caption>
+			<tbody>
+				<tr>
+					<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
+					<td>Account Reference</td>
+					<td>Mpans</td>
+					<td>Invoice Reference</td>
+					<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+					<td>Start Date (YYYY-mm-dd HH:MM)</td>
+					<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+					<td>kWh</td>
+					<td>Net</td>
+					<td>VAT</td>
+					<td>Gross</td>
+					<td>Breakdown</td>
+					<td>R1 Meter Serial Number</td>
+					<td>R1 MPAN</td>
+					<td>R1 Coefficient</td>
+					<td>R1 Units (kWh, kW, kVA or kVArh)</td>
+					<td>R1 TPR (Blank if kW or kVA)</td>
+					<td>R1 Previous Read Date</td>
+					<td>R1 Previous Read Value</td>
+					<td>R1 Previous Read Type</td>
+					<td>R1 Present Read Date</td>
+					<td>R1 Present Read Value</td>
+					<td>R1 Present Read Type</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p>
+			The register read block of fields can be repeated for each register, or can be
+		 	left out entirely if the bill doesn't have any readings associated with it.
+		</p>
+
+		{% if importer_ids %}
+			<ul>
+				{% for id in importer_ids %}
+					<li><a href="/dc_bill_imports/{{id}}">{{id}}</a></li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	
+{% endblock %}

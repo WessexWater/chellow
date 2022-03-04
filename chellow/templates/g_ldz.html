@@ -11,28 +11,18 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<tr>
-						<th>Code</th>
-						<td>{{g_ldz.code}}</td>
-					</tr>
-				</table>
-				<br>
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_ldz.code}}</td>
+		</tr>
+	</table>
 
-				<h4>Exit Zones</h4>
-				<ul>
-					{% for g_exit_zone in g_exit_zones %}
-						<li>
-							<a
-							 		href="/g_exit_zones/{{g_exit_zone.id}}"
-									>{{g_exit_zone.code}}</a>
-						</li>
-					{% endfor %}
-				</ul>
-			</div>
-		</div>
-	</div>
+	<h4>Exit Zones</h4>
+
+	<ul>
+		{% for g_exit_zone in g_exit_zones %}
+			<li><a href="/g_exit_zones/{{g_exit_zone.id}}">{{g_exit_zone.code}}</a></li>
+		{% endfor %}
+	</ul>
 {% endblock %}

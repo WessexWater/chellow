@@ -9,34 +9,20 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Download supply info for a point in time</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form action="/reports/33">
-						<fieldset>
-							At {{input_date('date', default_timestamp)}}<br><br>
-							MPAN Cores (one on each line, includes all supplies if left
-							blank)<br> {{input_textarea('mpan_cores', '', 5, 40)}} <br><br>
-							<input type="submit" value="Download">
-						</fieldset>
-					</form>
-				</div>
-				<p>
-					It's mandatory that a supply is HH if the import or export average of
-					the three highest monthly maximum demands over the past 12 complete
-					months is &gt; 100 kW.
-				</p>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
-	<!-- End Layer Section -->
+
+	<form action="/reports/33">
+		<fieldset>
+			<legend>Download supply info for a point in time</legend>	
+			<label>At</label> {{input_date('date', default_timestamp)}}
+			<label>MPAN Cores (one on each line, includes all supplies if left blank)</label>
+		 	{{input_textarea('mpan_cores', '', 5, 40)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
+	<p>
+		It's mandatory that a supply is HH if the import or export average of the three
+	 	highest monthly maximum demands over the past 12 complete months is &gt; 100 kW.
+	</p>
+
 {% endblock %}

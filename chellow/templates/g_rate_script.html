@@ -15,31 +15,18 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Properties</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto noMarginBottom">
-					<tr>
-						<th>Start Date</th>
-						<td>{{ g_rate_script.start_date|hh_format }}</td>
-					</tr>
-					<tr>
-						<th>Finish Date</th>
-						<td>{{ g_rate_script.finish_date|hh_format }}</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Script</h2>	
-		</div>
-		<div class="section-content">
-			<pre>{{g_rate_script.script}}</pre>
-		</div>
-	</div>
+	<table class="DataTable widthAuto noMarginBottom">
+		<caption>Properties</caption>	
+		<tr>
+			<th>Start Date</th>
+			<td>{{ g_rate_script.start_date|hh_format }}</td>
+		</tr>
+		<tr>
+			<th>Finish Date</th>
+			<td>{{ g_rate_script.finish_date|hh_format }}</td>
+		</tr>
+	</table>
+
+	<h3>Script</h3>	
+	<pre>{{g_rate_script.script}}</pre>
 {% endblock %}

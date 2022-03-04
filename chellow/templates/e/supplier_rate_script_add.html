@@ -11,27 +11,18 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Add a rate script</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form method="post">
-						<fieldset>
-							<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
-							
-							<fieldset>
-								<legend>Start Date</legend>
-								{{input_date('start', initial_date)}}
-							</fieldset>
-						
-							<input type="submit" value="Add">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+	<form method="post">
+		<fieldset>
+			<legend>Add a rate script</legend>	
+			<input type="hidden" name="supplier_contract_id" value="{{contract.id}}">
+			
+			<fieldset>
+				<legend>Start Date</legend>
+				{{input_date('start', initial_date)}}
+			</fieldset>
+		
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
 {% endblock %}

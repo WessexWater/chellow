@@ -12,39 +12,22 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Update Supply Note</h2>
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<form method="post">
-					<fieldset>
-						Category {{input_text('category', note.category)}}
-						Important? {{input_checkbox('is_important', note.is_important)}}
-						<br>
-						<br>
-						{{input_textarea('body', note.body, 30, 80)}}
-						<br>
-						<br>
-						<input type="submit" name="update" value="Update">
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Delete Supply Note</h2>
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<form method="post">
-					<fieldset>
-						<input type="submit" name="delete" value="Delete">
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
+
+	<form method="post">
+		<fieldset>
+			<legend>Update Supply Note</legend>
+			Category {{input_text('category', note.category)}}
+			Important? {{input_checkbox('is_important', note.is_important)}}
+			{{input_textarea('body', note.body, 30, 80)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
+
+	<form method="post">
+		<fieldset>
+			<legend>Delete Supply Note</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+
 {% endblock %}

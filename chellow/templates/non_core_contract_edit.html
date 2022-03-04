@@ -5,168 +5,118 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/non_core_contracts">Non-core Contracts</a> &raquo; 
+	<a href="/non_core_contracts">Non-core Contracts</a> &raquo; 
 	<a href="/non_core_contracts/{{contract.id}}">{{contract.name}}</a>
 	&raquo; Edit
 {% endblock %}
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
-	
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Are you sure you want to delete this contract?</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm">
-					<form method="post">
-						<fieldset>
-							<input type="hidden" name="non_core_contract_id"
-								value="{{contract.id}}"
-							>
-							<input type="submit" name="delete" value="Delete">
-							<a href="/non_core_contracts/{{contract.id}}/edit">Cancel</a>
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	
-		
-	{% else %}
-	
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Update Contract</h2>	
-		</div>
-		<div class="section-content">
-			<div class="standardForm">
-				<form method="post">
-					<fieldset>
-						<div class="section-data">
-							<div class="row">
-								<div class="col-sm-6">
-									<label>Name</label>						
-								    <input name="name" value={{contract.name}}>
-							    </div>
-							</div>
-						</div>
-						<div class="section-data">
-							<label>Properties</label>
-							<p>
-								This field uses the
-							 	<a
-										href="https://github.com/tlocke/zish/blob/master/README.adoc"
-										>Zish format</a>.</p>
-							</br>
+		<form method="post">
+			<fieldset>
+				<legend>Are you sure you want to delete this contract?</legend>	
+				<input type="hidden" name="non_core_contract_id"
+					value="{{contract.id}}"
+				>
+				<input type="submit" name="delete" value="Delete">
+				<a href="/non_core_contracts/{{contract.id}}/edit">Cancel</a>
+			</fieldset>
+		</form>
 
-							{{ input_textarea('properties', contract.properties, 20, 80) }}
-							
-							{% if contract.name == 'bank_holidays' %}
-							  <h4>Example</h4>
-								<pre>{
+	{% else %}
+
+		<form method="post">
+			<fieldset>
+				<legend>Update Contract</legend>	
+				<label>Name</label>						
+				<input name="name" value={{contract.name}}>
+				<label>Properties</label>
+				{{ input_textarea('properties', contract.properties, 20, 80) }}
+				<input type="submit" value="Update">
+			</fieldset>
+		</form>
+
+		<p>
+			This field uses the
+			<a href="https://github.com/tlocke/zish/blob/master/README.adoc">Zish format</a>.
+		</p>
+		</br>
+
+		
+		{% if contract.name == 'bank_holidays' %}
+			<h4>Example</h4>
+			<pre>{
 "enabled": true,
 "url": "https://www.gov.uk/bank-holidays/england-and-wales.ics"}
-								</pre>
-							{% elif contract.name == 'bsuos' %}
-							  <h4>Example</h4>
-								<pre>{
-    "enabled": true,
-    "discover_urls": true,
+			</pre>
+		{% elif contract.name == 'bsuos' %}
+			<h4>Example</h4>
+			<pre>{
+"enabled": true,
+"discover_urls": true,
 
-    /* If discover_urls is true, then the importer goes to
-    https://www.nationalgrid.com/uk/electricity/charging-and-methodology/balancing-services-use-system-bsuos-charges
-    and finds the URLs for the latest data. This can be used in addition
-    to the 'urls' list. */
-								
-    "urls": []
+/* If discover_urls is true, then the importer goes to
+https://www.nationalgrid.com/uk/electricity/charging-and-methodology/balancing-services-use-system-bsuos-charges
+and finds the URLs for the latest data. This can be used in addition
+to the 'urls' list. */
+			
+"urls": []
 
-    /* List of URLs that hold BSUoS data */
+/* List of URLs that hold BSUoS data */
 
 }</pre>
-							{% elif contract.name == 'tlms' %}
-							  <h4>Example</h4>
-								<pre>{
+		{% elif contract.name == 'tlms' %}
+			<h4>Example</h4>
+			<pre>{
 "enabled": true,
 "url": "https://downloads.elexonportal.co.uk/"}
 
 /* Requires the 'elexonportal_scripting_key' to be set in the 'configuration'
-   non-core contract */
-								</pre>
-							{% elif contract.name == 'configuration' %}
-							  <h4>Example</h4>
-								<pre>
+non-core contract */
+			</pre>
+		{% elif contract.name == 'configuration' %}
+			<h4>Example</h4>
+			<pre>
 {
-  "background_colour": "aquamarine",
-  "batch_reports": [
-    1
-  ],
-  "ecoes": {
-    "password": "a",
-    "prefix": "https://ecoes2.co.uk/",
-    "user_name": "a"
-  },
-  "elexonportal_scripting_key": "xxx",
-  "site_links": [
-    {
-      "href": "https://maps.google.com/maps?q=",
-      "name": "Google Maps"
-    }
-  ],
-
-  // Custom error message for forbidden pages
-  "forbidden_message": "I'm afraid you don't have permission to do this."
+"background_colour": "aquamarine",
+"batch_reports": [
+1
+],
+"ecoes": {
+"password": "a",
+"prefix": "https://ecoes2.co.uk/",
+"user_name": "a"
+},
+"elexonportal_scripting_key": "xxx",
+"site_links": [
+{
+"href": "https://maps.google.com/maps?q=",
+"name": "Google Maps"
 }
-								</pre>
-							{% endif %}
-							<br>
-							<input type="submit" value="Update">
-						</div>
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Update State</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm">
-					<form method="post">
-						<fieldset>
-							<label>State</label>
-							</br>
-							{{ input_textarea('state', contract.state, 40, 80) }}
-							<br>
-							<input type="submit" name="update_state" value="Update">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	
-	<div class="layer-section">
-		<div class="section-header">
-			<h2>Delete this contract</h2>	
-		</div>
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm">
-					<form>
-						<fieldset>
-							<input type="hidden" name="view" value="confirm_delete">
-							<input type="submit" value="Delete">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
+],
 
+// Custom error message for forbidden pages
+"forbidden_message": "I'm afraid you don't have permission to do this."
+}
+		</pre>
+	{% endif %}
+		<form method="post">
+			<fieldset>
+				<legend>Update State</legend>	
+				<label>State</label>
+				</br>
+				{{ input_textarea('state', contract.state, 40, 80) }}
+				<br>
+				<input type="submit" name="update_state" value="Update">
+			</fieldset>
+		</form>
+
+		<form>
+			<fieldset>
+				<legend>Delete this contract</legend>	
+				<input type="hidden" name="view" value="confirm_delete">
+				<input type="submit" value="Delete">
+			</fieldset>
+		</form>
 	{% endif %}
 {% endblock %}

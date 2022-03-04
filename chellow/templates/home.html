@@ -1,415 +1,229 @@
 {% extends "base.html" %}
 
-{% block body %}
-	<!-- Layer Page -->
-	<div class="layer-page">
-		
-		<!-- Layer Header -->
-		<div class="layer-header">
-			<div class="container-fluid">
-				<div class="row">
-					<!-- Logo -->
-					<div class="col-sm-2 alignCenter bgBlue headerSameHeight">
-						<p class="panel-logo"><a><span class="hide"></span></a></p>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- End Layer Header -->
-		
-		
-		<!-- Layer Body -->
-		<div class="layer-body">
-			<div class="container-fluid">
-				<div class="row">
-					<!-- Layer Sidebar -->
-					<div class="layer-sidebar col-sm-2 bgWhite bodySameHeight">
-						<div class="main-navigation">
-							<!-- Nav Contracts -->
-							<nav class="nav-main active">
-								<h4>&#x26A1; Contracts</h4>
-								<ul class="active">
-									<li><a href="/e/dc_contracts" title="DC">DC</a></li>
-									<li><a href="/e/mop_contracts" title="MOP">MOP</a></li>
-									<li>
-										<a
-												href="/e/supplier_contracts"
-												title="Supplier">Supplier</a>
-									</li>
-									<li>
-										<a
-												href="/non_core_contracts"
-												title="Non-Core">Non-Core</a>
-									</li>
-								</ul>
-							</nav>
-							<!-- End Nav Contracts -->
-							<!-- Nav Editors -->
-							<nav class="nav-editors">
-								<h4>&#x270F; For Editors</h4>
-								<ul>
-									{% if properties.local_reports_id %}
-										<li>
-											<a
-											 		href="/local_reports/{{properties.local_reports_id}}/output" title="Local Reports"
-													>Local Reports</a>
-										</li>
-									{% endif %}
-									<li>
-										<a
-										 		href="/general_imports"
-											 	title="General Import">General Import</a>
-									</li>
-									<li><a href="/downloads" title="Downloads">Downloads</a></li>
-									<li>
-										<a
-										 		href="/report/ecoes_comparison"
-											 	title="Comparison against ECOES"
-												>Comparison against ECOES</a>
-									</li>
-									<li>
-										<a
-										 		href="/reports/asset_comparison"
-											 	title="Comparison against asset data"
-												>Comparison against asset data</a>
-									</li>
-									<li>
-										<a
-										 		href="/local_reports"
-											 	title="Edit Local Reports">Edit Local Reports</a>
-									</li>
-									<li><a href="/e/site_snags" title="Site Snags">Site Snags</a></li>
-									<li>
-										<a href="/edi_viewer" title="EDI Viewer">EDI Viewer</a>
-									</li>
-									<li>
-										<a href="/e/scenarios" title="Scenarios">Scenarios</a>
-									</li>
-									<li>
-										<a
-											  href="https://github.com/WessexWater/chellow"
-												title="Docs">Docs</a>
-									</li> 
-							</ul>
-										</nav>
-										<!-- End Nav Editors -->
-										<!-- Nav Industry -->
-										<nav class="nav-industry">
-											<h4>&#x1F3ED; Industry Info</h4>
-												<ul>
-														<li><a href="/e/dnos" title="DNOs">DNOs</a></li>
-														<li><a href="/industry_contracts" title="Industry Rates">Industry Rates</a></li>
-														<li><a href="/e/participants" title="Market Participants">Market Participants</a></li>
-														<li><a href="/e/market_roles" title="Market Roles">Market Roles</a></li>
-														<li><a href="/e/parties" title="Parties">Parties</a></li>
-														<li><a href="/e/pcs" title="Profile Classes">Profile Classes</a></li>
-														<li><a href="/e/mtcs" title="Meter Timeswitch Classes">Meter Timeswitch Classes</a></li>
-														<li><a href="/e/meter_types" title="Meter Types">Meter Types</a></li>
-														<li><a href="/e/meter_payment_types" title="Meter Payments Types">Meter Payments Types</a></li>
-														<li><a href="/e/dtc_meter_types" title="DTC Meter Types">DTC Meter Types</a></li>
-														<li><a href="/e/tprs" title="TPRs">TPRs</a></li>
-														<li><a href="/e/sscs" title="SSCs">SSCs</a></li>
-														<li><a href="/e/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-														<li><a href="/e/cops" title="CoPs">CoPs</a></li>
-														<li><a href="/e/comms" title="Comms">Comms</a></li>
-														<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
-														<li><a href="/e/read_types" title="Read Types">Read Types</a></li>
-														<li><a href="/e/sources" title="Sources">Sources</a></li>
-														<li><a href="/e/generator_types" title="Generator Types">Generator Types</a></li>
-														<li><a href="/e/mdd_imports" title="MDD Importer">MDD Importer</a></li>
-												</ul>
-										</nav>
-										<!-- End Nav Industry -->
-										<!-- Nav Gas -->
-										<nav class="nav-gas">
-											<h4>&#x1F525; Gas</h4>
-											<ul>
-												<li><a href="/g_supplies">Supplies</a></li>
-												<li><a href="/g_contracts">Contracts</a>
-												<li><a href="/g_read_types">Read Types</a>
-												<li><a href="/g_units">Units</a>
-												<li><a href="/g_reports">Reports</a>
-												<li><a href="/g_dns">DNs</a>
-												<li>
-                          <a
-                            href="/g_reading_frequencies"
-                            >Reading Frequencies</a>
-                        </li>
-											</ul>
-										</nav>
-										<!-- End Nav Gas -->
-										<!-- Nav Administration -->
-										<nav class="nav-administration">
-											<h4>&#x2699; Administration</h4>
-												<ul>
-														<li><a href="/users" title="Users">Users</a></li>
-														<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
-														<li><a href="/system" title="System">System</a></li>
-												</ul>
-										</nav>
-										<!-- End Nav Administration -->
-								</div>
-						</div>
-				<!-- End Layer Sidebar -->
-													
-					<!-- Layer Content -->
-					<div class="col-sm-10 bodySameHeight bgColor">
-						<div class="layer-content">
-							<div class="row">
-																<div class="col-md-12">
-									<div class="layer-section">
-										<div class="section-header">
-											<h2>Dashboard</h2>
-										</div>
-										<div class="section-content">
-											<div class="section-data">
-												{% if global_alerts %}
-													<div class="row">
-														<div class="col-sm-6">
-															<ul>
-																{% for alert in global_alerts %}
-																	<li class="global">{{alert}}</li>
-																{% endfor %}
-															</ul>
-														</div>
-													</div>
-												{% endif %}
-												{% with messages = get_flashed_messages(
-														with_categories=true) %}
-													{% if messages %}
-														<div class="row">
-															<div class="col-sm-6">
-																<ul>
-																	{% for message in messages %}
-																		<li>{{message}}</li>
-																	{% endfor %}
-																</ul>
-															</div>
-														</div>
-													{% endif %}
-												{% endwith %}
-												<div class="row">
-													<div class="col-sm-6">
-														<div class="standardForm">
-															<div class="well">
-																<h4>Site Search</h4>
-																<form action="/sites">
-																	<fieldset>
-																	<input type="text" class="input-text" name="pattern" />
-																	<input type="submit" value="Search">
-																	</fieldset>
-																</form>	
-																	</div>
-														</div>
-													</div>
-													<div class="col-sm-6">
-														<div class="standardForm">
-															<div class="well">
-																<h4>Supply Search</h4>
-																<form action="/supplies">
-																	<fieldset>
-																	<input type="text" class="input-text" name="search_pattern" />
-																	<input type="submit" value="Search">
-																	</fieldset>
-																</form>	
-																	</div>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="section-data">
-												<div class="row">
-													<div class="col-sm-6">
-														<div class="well">
-															<table class="DataTable">
-																<caption>
-																	<a href="/downloads">Downloads</a> |
-																	<a href="/report_runs">Runs</a>
-																</caption>
-																<thead>
-																	<tr>
-																		<th>Core Reports</th>
-																		<th>Supplies</th>
-																		<th>Sites</th>
-																	</tr>
-																</thead>
-																<tbody>
-																	<tr>
-																		<th>Snapshot</th>
-																		<td><a href="/e/csv_supplies_snapshot" title="Download">Download</a></td>
-																		<td>&nbsp;</td>
-																	</tr>
-																	<tr>
-																		<th>HH Data</th>
-																		<td><a href="/e/csv_supplies_hh_data">Download</a></td>
-																		<td><a href="/e/csv_sites_hh_data">Download</a></td>
-																	</tr>
-																	<tr>
-																		<th>TRIAD</th>
-																		<td><a href="/e/csv_supplies_triad">Download</a></td>
-																		<td><a href="/e/csv_sites_triad">Displaced</a></td>
-																	</tr>
-																	<tr>
-																		<th>CRC</th>
-																		<td><a href="/e/csv_crc">Download</a></td>
-																		<td>&nbsp;</td>
-																	</tr>
-																	<tr>
-																		<th>Register Reads</th>
-																		<td>
-																			<a href="/e/csv_register_reads">Download</a>
-																		</td>
-																		<td></td>
-																	</tr>
-																	<tr>
-																		<th>DNO / Supplier Contacts</th>
-																		<td>
-																			<a href="/reports/supply_contacts">Download</a>
-																		</td>
-																		<td></td>
-																	</tr>
-																	<tr>
-																		<th>
-																			<a
-																					href="/e/ods_monthly_duration"
-																					>Monthly Duration</a>
-																		</th>
-																		<td></td>
-																		<td></td>
-																	</tr>
-																	<tr>
-																		<th>
-																			Duration
-																		</th>
-																		<td>
-																			<a href="/e/csv_supplies_duration"
-																					>Download</a>
-																		</td>
-																		<td>
-																			<a
-																				href="/e/csv_sites_duration">Download</a>
-																		</td>
-																	</tr>
-																</tbody>
-															</table>
-														</div>
-													</div>
-													<div class="col-sm-6">
-														<div class="well">
-															<table  class="DataTable">
-																<tbody>
-																	<tr>
-																		<td rowspan=6>Contracts</td>
-																	</tr>							
-																	<tr>								
-																		<td><a href="/e/dc_contracts">DC</a></td>
-																	</tr>
-																	<tr>
-																
-																		<td><a href="/e/mop_contracts">MOP</a></td>
-																	</tr>
-																	<tr>
-																
-																		<td><a href="/e/supplier_contracts">Supplier</a></td>
-																	</tr>
-																	<tr>
-																
-																		<td><a href="/non_core_contracts">Non-Core</a></td>
-																	</tr>	
-																</tbody>
-															</table>
-														</div>
-													</div>
-												</div>
-											</div>
-											<div class="section-data">
-												<div class="row">
-													<div class="col-sm-6">
-														<div class="well alignCenter">
-															<h4>Industry Information Links</h4>
-															<div class="row">
-																<div class="col-sm-6">
-																	<ul class="listing-dash alignLeft">
-																
-																		<li><a href="/e/dnos">DNOs</a></li>
-																		<li>
-																			<a href="/industry_contracts">Industry Rates</a>
-																		</li>
-																		<li>
-																			<a href="/e/participants">Market Participants</a>
-																		</li>
-																		<li><a href="/e/parties">Parties</a></li>
-																		<li>
-																			<a href="/e/generator_types">Generator Types</a>
-																		</li>
-																		<li><a href="/e/meter_payment_types">Meter Payment Types</a></li>
-																		<li><a href="/e/sscs">SSCs</a></li>
-																		<li><a href="/e/cops">CoPs</a></li>
-																		<li><a href="/e/comms">Comms</a></li>
-																		<li><a href="/e/read_types">Read Types</a></li>
-																	</ul>
-																</div>
-																<div class="col-sm-6">
-																	<ul class="listing-dash alignLeft">
-																		<li><a href="/e/market_roles">Market Roles</a></li>
-																		<li><a href="/e/pcs">Profile Classes</a></li>
-																		<li><a href="/e/mdd_imports">MDD Importer</a></li>
-																		<li><a href="/e/tprs">TPRs</a></li>
-																		<li><a href="/e/gsp_groups">GSP Groups</a></li>
-																		<li><a href="/bill_types">Bill Types</a></li>
-																		<li><a href="/e/sources">Sources</a></li>
-																		<li><a href="/e/meter_types">Meter Types</a></li>
-																		<li><a href="/e/mtcs">Meter Timeswitch Classes</a></li>
-																	</ul>
-																</div>
-															</div>
-														</div>
-													</div>
-													<div class="col-sm-6">
-														<div class="well alignCenter">
-															<h4>For Editor Links</h4>
-															<div class="row">
-																<div class="col-sm-6">
-																	<ul class="listing-dash alignLeft">
-																		<li><a href="/local_reports">Edit Local Reports</a></li>
-																		<li><a href="/user_roles">Users Roles</a></li>
-																		<li><a href="/reports/ecoes_comparison" >Comparison against ECOES</a></li>
-																		<li><a href="/e/asset_comparison" >Comparison against asset data</a></li>
-																		<li><a href="/api/v1" >API</a></li>
-																	</ul>
-																</div>							
-																<div class="col-sm-6">
-																	<ul class="listing-dash alignLeft">
-																		<li><a href="/users">Users</a></li>
-																		<li><a href="/system">System</a></li>
-																		<li>
-																			<a href="/edi_viewer">EDI Viewer</a>
-																		</li>
-																		<li>
-																			<a href="/e/scenarios">Scenarios</a>
-																		</li>
-																		<li>
-																			<a href="/reports/batches">Batches</a>
-																		</li>
-																	</ul>	
-																</div>
-															</div>
-														</div>
-													</div>
-												</div>	
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-					<!-- Layer Content -->
-				</div>		
-			</div>	
-		</div>
-		<!-- End Layer Body -->
-	</div>
-	<!-- End Layer Page -->
+{% block inside_head %}
+	<style>
+		main section {
+			padding: 15px;
+		 	background-color: #f5f5f5;
+		 	border: 1px solid #e3e3e3;
+		 	border-radius: 4px;
+		}
+		main div {
+			display: grid;
+		 	grid-template-columns: 1fr 1fr;
+		 	grid-template-rows: auto auto auto;
+		 	grid-gap: 30px;
+		}
 
+		section.search h4 {
+			margin-top: 0;
+		}
+
+		section.search > form {
+			padding-left: 0;
+			margin-right: 0;
+		}
+		section.search > form > fieldset {
+			display: block;
+			border: none;
+			padding: 0;
+			margin: 0;
+		}
+		section.search > form > fieldset > input[type = text] {
+			width: 100%;
+			margin-left: 0;
+			margin-right: 0;
+			padding-left: 0;
+			padding-right: 0;
+		}
+
+		main table.stretch {
+			margin-top: 8px;
+			width: 100%;
+		}
+
+		main table td.bold {
+			font-weight: bold;
+		}
+		main table caption {
+			text-align: left;
+		}
+
+		main h4.center {
+			width: 100%;
+			text-align: center;
+			margin-top: 0;
+			margin-bottom: 8px;
+		}
+
+		main div.link-grid {
+			display: grid;
+			grid-template-columns: auto auto;
+			grid-template-rows: auto auto;
+			align-items: center;
+		}
+
+		main div.link-grid ul {
+			margin: 0;
+			padding: 0;
+		}
+
+	</style>
+{% endblock %}
+
+{% block content %}
+	<div>
+		<section class="search">
+			<h4>Site Search</h4>
+			<form action="/sites">
+				<fieldset>
+					<input type="text" name="pattern">
+					<input type="submit" value="Search">
+				</fieldset>
+			</form>
+		</section>
+
+		<section class="search">
+			<h4>Supply Search</h4>
+
+			<form action="/supplies">
+				<fieldset>
+					<input type="text" name="search_pattern">
+					<input type="submit" value="Search">
+				</fieldset>
+			</form>
+		</section>
+
+		<section>
+			<table class="stretch">
+				<caption>
+					<a href="/downloads">Downloads</a> |
+					<a href="/report_runs">Runs</a>
+				</caption>
+				<thead>
+					<tr>
+						<th>Core Reports</th>
+						<th>Supplies</th>
+						<th>Sites</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="bold">Snapshot</td>
+						<td><a href="/e/csv_supplies_snapshot" title="Download">Download</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="bold">HH Data</td>
+						<td><a href="/e/csv_supplies_hh_data">Download</a></td>
+						<td><a href="/e/csv_sites_hh_data">Download</a></td>
+					</tr>
+					<tr>
+						<td class="bold">TRIAD</td>
+						<td><a href="/e/csv_supplies_triad">Download</a></td>
+						<td><a href="/e/csv_sites_triad">Displaced</a></td>
+					</tr>
+					<tr>
+						<td class="bold">CRC</td>
+						<td><a href="/e/csv_crc">Download</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="bold">Register Reads</td>
+						<td><a href="/e/csv_register_reads">Download</a></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="bold">DNO / Supplier Contacts</td>
+						<td><a href="/reports/supply_contacts">Download</a></td>
+						<td>
+					</tr>
+					<tr>
+						<td class="bold"><a href="/e/ods_monthly_duration">Monthly Duration</a></td>
+						<td></td>
+						<td></td>
+					</tr>
+					<tr>
+						<td class="bold">Duration</td>
+						<td><a href="/e/csv_supplies_duration">Download</a></td>
+						<td><a href="/e/csv_sites_duration">Download</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+
+		<section>
+			<table class="stretch">
+				<tbody>
+					<tr>
+						<td rowspan="4">Contracts</td>
+						<td><a href="/e/dc_contracts">DC</a></td>
+					</tr>
+					<tr>
+						<td><a href="/e/mop_contracts">MOP</a></td>
+					</tr>
+					<tr>
+						<td><a href="/e/supplier_contracts">Supplier</a></td>
+					</tr>
+					<tr>
+						<td><a href="/non_core_contracts">Non-Core</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+		<section>
+			<h4 class="center">Industry Information Links</h4>
+			
+			<div class="link-grid">
+				<ul>
+					<li><a href="/e/dnos">DNOs</a></li>
+					<li><a href="/industry_contracts">Industry Rates</a></li>
+					<li><a href="/e/participants">Market Participants</a></li>
+					<li><a href="/e/parties">Parties</a></li>
+					<li><a href="/e/generator_types">Generator Types</a></li>
+					<li><a href="/e/meter_payment_types">Meter Payment Types</a></li>
+					<li><a href="/e/sscs">SSCs</a></li>
+					<li><a href="/e/cops">CoPs</a></li>
+					<li><a href="/e/comms">Comms</a></li>
+					<li><a href="/e/read_types">Read Types</a></li>
+				</ul>
+
+				<ul>
+					<li><a href="/e/market_roles">Market Roles</a></li>
+					<li><a href="/e/pcs">Profile Classes</a></li>
+					<li><a href="/e/mdd_imports">MDD Importer</a></li>
+					<li><a href="/e/tprs">TPRs</a></li>
+					<li><a href="/e/gsp_groups">GSP Groups</a></li>
+					<li><a href="/bill_types">Bill Types</a></li>
+					<li><a href="/e/sources">Sources</a></li>
+					<li><a href="/e/meter_types">Meter Types</a></li>
+					<li><a href="/e/mtcs">Meter Timeswitch Classes</a></li>
+				</ul>
+			</div>
+		</section>
+
+		<section>
+			<h4 class="center">For Editor Links</h4>
+			
+			<div class="link-grid">
+				<ul>
+					<li><a href="/local_reports">Edit Local Reports</a></li>
+					<li><a href="/user_roles">Users Roles</a></li>
+					<li><a href="/reports/ecoes_comparison" >Comparison against ECOES</a></li>
+					<li><a href="/e/asset_comparison" >Comparison against asset data</a></li>
+					<li><a href="/api/v1" >API</a></li>
+				</ul>
+			
+				<ul>
+					<li><a href="/users">Users</a></li>
+					<li><a href="/system">System</a></li>
+					<li><a href="/edi_viewer">EDI Viewer</a></li>
+					<li><a href="/e/scenarios">Scenarios</a></li>
+					<li><a href="/reports/batches">Batches</a></li>
+				</ul>
+			</div>
+		</section>
+	</div>
 {% endblock %}

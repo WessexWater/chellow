@@ -9,24 +9,18 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable">
-					<tr>
-						<th>Code</th>
-						<td>{{g_unit.code}}</td>
-					</tr>
-					<tr>
-						<th>Description</th>
-						<td>{{g_unit.description}}</td>
-					</tr>
-					<tr>
-						<th>Factor</th>
-						<td>{{g_unit.factor}}</td>
-					</tr>
-				</table>
-			</div>
-		</div>
-	</div>
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_unit.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{g_unit.description}}</td>
+		</tr>
+		<tr>
+			<th>Factor</th>
+			<td>{{g_unit.factor}}</td>
+		</tr>
+	</table>
 {% endblock %}

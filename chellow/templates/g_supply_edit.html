@@ -11,84 +11,74 @@
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.delete %}
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
-						<fieldset>
-							<legend>Delete</legend>
-							<p>Are you sure you want to delete this supply?</p>
-							<input type="submit" name="delete" value="Delete">
-						</fieldset>
-					</form>
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
+			<fieldset>
+				<legend>Delete</legend>
+				<p>Are you sure you want to delete this supply?</p>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
 
-					<p>
-						<a href="/g_supplies/{{g_supply.id}}">Cancel</a>
-					</p>
-				</div>
-			</div>
-		</div>
+		<p>
+			<a href="/g_supplies/{{g_supply.id}}">Cancel</a>
+		</p>
+
 	{% else %}
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
-						<fieldset>
-							<legend>Update this supply</legend>
-							<br>
-							<label>Name</label> {{input_text('name', g_supply.name)}}
-							<br>
-							<label>MPRN</label> {{input_text('mprn', g_supply.mprn)}}
-							<br>
-							<label>Exit Zone</label>
-							<select name="g_exit_zone_id">
-								{% for g_exit_zone in g_exit_zones %}
-									{{
-										input_option(
-											'g_exit_zone_id', g_exit_zone.id, g_exit_zone.code)}}
-								{% endfor %}
-							</select>
-							<br>
-							<br>
-							<input type="submit" value="Update">
-						</fieldset>
-					</form>
-					<br>
-					<form action="/g_supplies/{{g_supply.id}}/edit">
-						<fieldset>
-							<legend>Delete this supply</legend>
-							<input type="submit" name="delete" value="Delete">
-						</fieldset>
-					</form>
-					<br>
-					<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
-						<fieldset>
-							<legend>Insert a new era</legend>
-							<br>
-							<label>Start date</label> {{input_date('start', None)}}
-							<input type="submit" name="insert_g_era" value="Insert">
-						</fieldset>
-					</form>
-					<br>
-					<table>
-						<caption>Existing Eras</caption>
-						<thead>
-							<tr>
-								<th>Start date</th>
-								<th>Finish date</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for g_era in g_eras %}
-								<tr>
-									<td>{{g_era.start_date|hh_format}}</td>
-									<td>{{g_era.finish_date|hh_format}}</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
+
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
+			<fieldset>
+				<legend>Update this supply</legend>
+				<br>
+				<label>Name</label> {{input_text('name', g_supply.name)}}
+				<br>
+				<label>MPRN</label> {{input_text('mprn', g_supply.mprn)}}
+				<br>
+				<label>Exit Zone</label>
+				<select name="g_exit_zone_id">
+					{% for g_exit_zone in g_exit_zones %}
+						{{
+							input_option(
+								'g_exit_zone_id', g_exit_zone.id, g_exit_zone.code)}}
+					{% endfor %}
+				</select>
+				<br>
+				<br>
+				<input type="submit" value="Update">
+			</fieldset>
+		</form>
+		<br>
+		<form action="/g_supplies/{{g_supply.id}}/edit">
+			<fieldset>
+				<legend>Delete this supply</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+		<br>
+		<form method="post" action="/g_supplies/{{g_supply.id}}/edit">
+			<fieldset>
+				<legend>Insert a new era</legend>
+				<br>
+				<label>Start date</label> {{input_date('start', None)}}
+				<input type="submit" name="insert_g_era" value="Insert">
+			</fieldset>
+		</form>
+		<br>
+		<table>
+			<caption>Existing Eras</caption>
+			<thead>
+				<tr>
+					<th>Start date</th>
+					<th>Finish date</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for g_era in g_eras %}
+					<tr>
+						<td>{{g_era.start_date|hh_format}}</td>
+						<td>{{g_era.finish_date|hh_format}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	{% endif %}
 {% endblock %}

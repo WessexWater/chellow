@@ -9,36 +9,19 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Download</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<div class="standardForm textWidthAuto">
-					<form action="/reports/149">
-						<fieldset>
-							<p>
-								From {{input_date('start', last_month_start)}} to
-								{{input_date('finish', last_month_finish)}}
-								<input type="submit" value="Download">
-							</p>
-						</fieldset>
-					</form>
+	<form action="/reports/149">
+		<fieldset>
+			<legend>Download</legend>	
+			<label>From</label> {{input_date('start', last_month_start)}}
+			<label>To</label> {{input_date('finish', last_month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
 
-					<p>
-						Outputs a row for each era of every supply with various columns
-						calculated over the duration. The <code>Bad HHs</code> column is
-						the number of half-hours that are either missing or estimated.
-					</p>
-				</div>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
-	<!-- End Layer Section -->
+	<p>
+		Outputs a row for each era of every supply with various columns calculated over the
+	 	duration. The <code>Bad HHs</code> column is the number of half-hours that are
+	 	either missing or estimated.
+	</p>
+
 {% endblock %}

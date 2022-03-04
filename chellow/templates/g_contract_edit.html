@@ -10,63 +10,39 @@
 {% endblock %}
 
 {% block content %}
+
 	{% if request.method == 'GET' and request.values.delete %}
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<div class="standardForm textWidthAuto">
-						<form method="post" action="">
-							<fieldset>
-								<legend>
-									Are you sure you want to delete this contract?
-								</legend>
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-						<p>
-							<a href=".">Cancel</a>
-						</p>
-					</div>
-				</div>
-			</div>
-		</div>
+
+		<form method="post" action="">
+			<fieldset>
+				<legend>Are you sure you want to delete this contract?</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+		<p>
+			<a href=".">Cancel</a>
+		</p>
+
 	{% else %}
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<div class="standardForm textWidthAuto">
-						<form action="" method="post">
-							<fieldset>
-								<legend>Update Contract</legend>
-								<br>
-								<label>Name</label>
-								{{input_text('name', g_contract.name)}}
-								<br>
-								<br>
-								Charge script
-								<br>
-								{{input_textarea(
-									'charge_script', g_contract.charge_script, 40, 80)}}
-								<br>
-								<br>
-								Properties
-								<br>
-								{{input_textarea('properties', g_contract.properties, 20, 80)}}
-								<br />
-								<br />
-								<input type="submit" name="update" value="Update">
-							</fieldset>
-						</form>
-						<br />
-						<form action="/g_contracts/{{g_contract.id}}/edit">
-							<fieldset>
-								<legend>Delete this contract</legend>
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
+		<form action="" method="post">
+			<fieldset>
+				<legend>Update Contract</legend>
+				<label>Name</label>
+				{{input_text('name', g_contract.name)}}
+				Charge script
+				{{input_textarea(
+					'charge_script', g_contract.charge_script, 40, 80)}}
+				Properties
+				{{input_textarea('properties', g_contract.properties, 20, 80)}}
+				<input type="submit" name="update" value="Update">
+			</fieldset>
+		</form>
+
+		<form action="/g_contracts/{{g_contract.id}}/edit">
+			<fieldset>
+				<legend>Delete this contract</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
 	{% endif %}
 {% endblock %}

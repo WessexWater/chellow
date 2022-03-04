@@ -5,147 +5,115 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; System
+	System
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>System</h2>	
-		</div>
-		<!-- End Section Header -->
+	<table>
+		<tr>
+			<th>Version Number</th>
+			<td>{{version_number}}</td>
+		</tr>
+		<tr>
+			<th>Version Hash</th>
+			<td>
+				<a
+						href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
+						>
+					{{version_hash}}
+				</a>
+			</td>
+		</tr>
+		<tr>
+			<th>Python Version</th>
+			<td>{{python_version}}</td>
+		</tr>
+	</table>
 
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<tr>
-						<th>Version Number</th>
-						<td>{{version_number}}</td>
-					</tr>
-					<tr>
-						<th>Version Hash</th>
-						<td>
-							<a
-									href="https://github.com/WessexWater/chellow/commit/{{version_hash}}"
-									>
-								{{version_hash}}
-							</a>
-						</td>
-					</tr>
-					<tr>
-						<th>Python Version</th>
-						<td>{{python_version}}</td>
-					</tr>
-				</table>
-			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-						<caption>Memory</caption>
-						<thead>
-							<tr>
-								<th>RAM Total</th>
-								<th>RAM Available</th>
-								<th>Swap Total</th>
-								<th>Swap Available</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>{{'{0:,}'.format(virtual_memory.total)}}</td>
-								<td>{{'{0:,}'.format(virtual_memory.available)}}</td>
-								<td>{{'{0:,}'.format(swap_memory.total)}}</td>
-								<td>{{'{0:,}'.format(swap_memory.free)}}</td>
-							</tr>
-						</tbody>
-					</table>
-			</div>
-			<div class="section-data">
-					<pre>{{traces}}</pre>
-			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<caption>pg_stat</caption>
-					<thead>
-						<tr>
-							{% for title in pg_stats[0].keys() %}
-								<th>{{title}}</th>
-							{% endfor %}
-						</tr>
-					</thead>
-					<tbody>
-						{% for row in pg_stats %}
-							<tr>
-								{% for cell in row %}
-									<td>{{cell}}</td>
-								{% endfor %}
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<caption>HTTP Request Headers</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for k, v in request.headers.items() %}
-							<tr>
-								<td>{{k}}</td>
-								<td>{{v}}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-			<div class="section-data">
-				<table class="DataTable widthAuto">
-					<caption>pg indexes</caption>
-					<thead>
-						<tr>
-							{% for title in pg_indexes[0].keys() %}
-								<th>{{title}}</th>
-							{% endfor %}
-						</tr>
-					</thead>
-					<tbody>
-						{% for row in pg_indexes %}
-							<tr>
-								{% for cell in row %}
-									<td>{{cell}}</td>
-								{% endfor %}
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
+	<table>
+		<caption>Memory</caption>
+		<thead>
+			<tr>
+				<th>RAM Total</th>
+				<th>RAM Available</th>
+				<th>Swap Total</th>
+				<th>Swap Available</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{'{0:,}'.format(virtual_memory.total)}}</td>
+				<td>{{'{0:,}'.format(virtual_memory.available)}}</td>
+				<td>{{'{0:,}'.format(swap_memory.total)}}</td>
+				<td>{{'{0:,}'.format(swap_memory.free)}}</td>
+			</tr>
+		</tbody>
+	</table>
 
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Memory Tools</h2>	
-		</div>
-		<!-- End Section Header -->
+	<pre>{{traces}}</pre>
 
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<ul>
-					<li><a href="/system/chains">Object Chains</a></li>
-					<li><a href="/system/object_summary">Object Summary</a></li>
-				</ul>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
+	<table>
+		<caption>pg_stat</caption>
+		<thead>
+			<tr>
+				{% for title in pg_stats[0].keys() %}
+					<th>{{title}}</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in pg_stats %}
+				<tr>
+					{% for cell in row %}
+						<td>{{cell}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
+		<caption>HTTP Request Headers</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Value</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for k, v in request.headers.items() %}
+				<tr>
+					<td>{{k}}</td>
+					<td>{{v}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
+		<caption>pg indexes</caption>
+		<thead>
+			<tr>
+				{% for title in pg_indexes[0].keys() %}
+					<th>{{title}}</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in pg_indexes %}
+				<tr>
+					{% for cell in row %}
+						<td>{{cell}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>Memory Tools</h2>	
+
+	<ul>
+		<li><a href="/system/chains">Object Chains</a></li>
+		<li><a href="/system/object_summary">Object Summary</a></li>
+	</ul>
 {% endblock %}

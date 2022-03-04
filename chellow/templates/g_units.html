@@ -9,26 +9,20 @@
 {% endblock %}
 
 {% block content %}
-	<div class="layer-section">
-		<div class="section-content">
-			<div class="section-data">
-				<table>
-					<thead>
-						<tr>
-							<th>Code</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for g_unit in g_units %}
-							<tr>
-								<td><a href="/g_units/{{g_unit.id}}">{{g_unit.code}}</a></td>
-								<td>{{g_unit.description}}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_unit in g_units %}
+				<tr>
+					<td><a href="/g_units/{{g_unit.id}}">{{g_unit.code}}</a></td>
+					<td>{{g_unit.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

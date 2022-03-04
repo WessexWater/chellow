@@ -5,69 +5,34 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; List of Local Reports
+	List of Local Reports
 {% endblock %}
 
 {% block content %}
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Local Reports</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-			<table class="DataTable widthAuto">
-				<thead>
-					<tr>
-						<th>View</th>
-						<th>Name</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for report in reports %}
-						<tr>
-							<td>
-								<a href="/local_reports/{{report.id}}">View</a>
-							</td>
-							<td>
-								{{report.name}}
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
-	
-<!-- Layer Section -->
-<div class="layer-section">
-	<!-- Section Header -->
-	<div class="section-header">
-		<h2>Add a report</h2>	
-	</div>
-	<!-- End Section Header -->
-	<!-- Section Content -->
-	<div class="section-content">
-		<div class="section-data">
-			<div class="standardForm textWidthAuto">
-				<form method="post">
-					<fieldset>
-						<label>Name
-							<input name="name" value="{{request.values['name']}}">
-						</label>
-						<input type="submit" value="Add">
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
-	<!-- End Section Content -->
-</div>
-<!-- End Layer Section -->
+	<table>
+		<caption>Local Reports</caption>	
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for report in reports %}
+				<tr>
+					<td><a href="/local_reports/{{report.id}}">View</a></td>
+					<td>{{report.name}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<form method="post">
+		<fieldset>
+			<legend>Add a report</legend>	
+			<label>Name</label>
+			<input name="name" value="{{request.values['name']}}">
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
 {% endblock %}

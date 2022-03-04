@@ -23,107 +23,93 @@
 
 {% block content %}
 	{% if request.values.confirm_delete %}
-		<!-- Layer Section -->
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<form method="post" action="/g_reads/{{g_read.id}}/edit">
-						<fieldset>
-							<legend>
-								Are you sure you want to delete this register read?
-							</legend>
-							<input type="submit" name="delete" value="Delete">
-						</fieldset>
-					</form>
-					<p><a href="/g_reads/{{g_read.id}}/edit">Cancel</a></p>
-				</div>
-			</div>
-		</div>
+		<form method="post" action="/g_reads/{{g_read.id}}/edit">
+			<fieldset>
+				<legend>
+					Are you sure you want to delete this register read?
+				</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+		<p><a href="/g_reads/{{g_read.id}}/edit">Cancel</a></p>
 	{% else %}
-		<!-- Layer Section -->
-		<div class="layer-section">
-			<div class="section-content">
-				<div class="section-data">
-					<form action="/g_reads/{{g_read.id}}/edit" method="post">
-						<fieldset>
-							<legend>Update this read</legend>
-							<br>
-							<label>Meter Serial Number</label>
-						 	{{input_text('msn', g_read.msn)}}
-							<br>
-							<label>Unit</label>
-							<select name="g_unit_id">
-								{% for g_unit in g_units %}
-									{{input_option(
-										'g_unit_id', g_unit.id, g_unit.code, g_read.g_unit.id)}}
-								{% endfor %}
-							</select>
-							<br>
-							<label>Correction Factor</label>
-								{{input_text('correction_factor', g_read.correction_factor)}}
-							<br>
-							<label>Calorific Value</label>
-								{{input_text('calorific_value', g_read.calorific_value)}}
-							<br>
-							<br>
-							<fieldset>
-								<legend>Previous Read</legend>
-								<fieldset>
-									<legend>Date</legend>
-									{{input_date('prev_date', g_read.prev_date)}}
-								</fieldset>
-								<br>
-								<label>Value</label>
-									{{input_text('prev_value', g_read.prev_value)}}
-								<br>
-								<label>Type</label>
-									<select name="prev_type_id">
-										{% for g_read_type in g_read_types %}
-											{{
-												input_option(
-													'prev_type_id', g_read_type.id,
-													g_read_type.code + ' ' + g_read_type.description,
-													g_read.prev_type.id)}}
-										{% endfor %}
-									</select>
-							</fieldset>
-							<br>
-							<br>
-							<fieldset>
-								<legend>Present Read</legend>
-								<fieldset>
-									<legend>Date</legend>
-									{{input_date('pres_date', g_read.pres_date)}}
-								</fieldset>
-								<br>
-								<label>Value</label>
-									{{input_text('pres_value', g_read.pres_value)}}
-								<br>
-								<label>Type</label>
-								<select name="pres_type_id">
-									{% for g_read_type in g_read_types %}
-										{{
-											input_option(
-												'pres_type_id', g_read_type.id,
-												g_read_type.code + ' ' + g_read_type.description,
-												g_read.pres_type.id)}}
-									{% endfor %}
-								</select>
-							</fieldset>
-							<br>
-							<br>
-							<input type="submit" name="update" value="Update">
-						</fieldset>
-					</form>
+		<form action="/g_reads/{{g_read.id}}/edit" method="post">
+			<fieldset>
+				<legend>Update this read</legend>
+				<br>
+				<label>Meter Serial Number</label>
+				{{input_text('msn', g_read.msn)}}
+				<br>
+				<label>Unit</label>
+				<select name="g_unit_id">
+					{% for g_unit in g_units %}
+						{{input_option(
+							'g_unit_id', g_unit.id, g_unit.code, g_read.g_unit.id)}}
+					{% endfor %}
+				</select>
+				<br>
+				<label>Correction Factor</label>
+					{{input_text('correction_factor', g_read.correction_factor)}}
+				<br>
+				<label>Calorific Value</label>
+					{{input_text('calorific_value', g_read.calorific_value)}}
+				<br>
+				<br>
+				<fieldset>
+					<legend>Previous Read</legend>
+					<fieldset>
+						<legend>Date</legend>
+						{{input_date('prev_date', g_read.prev_date)}}
+					</fieldset>
 					<br>
-					<form action="">
-						<fieldset>
-							<legend>Delete this read</legend>
-							<input name="confirm_delete" type="submit" value="Delete">
-						</fieldset>
-					</form>
-				</div>
-			</div>
-		</div>
+					<label>Value</label>
+						{{input_text('prev_value', g_read.prev_value)}}
+					<br>
+					<label>Type</label>
+						<select name="prev_type_id">
+							{% for g_read_type in g_read_types %}
+								{{
+									input_option(
+										'prev_type_id', g_read_type.id,
+										g_read_type.code + ' ' + g_read_type.description,
+										g_read.prev_type.id)}}
+							{% endfor %}
+						</select>
+				</fieldset>
+				<br>
+				<br>
+				<fieldset>
+					<legend>Present Read</legend>
+					<fieldset>
+						<legend>Date</legend>
+						{{input_date('pres_date', g_read.pres_date)}}
+					</fieldset>
+					<br>
+					<label>Value</label>
+						{{input_text('pres_value', g_read.pres_value)}}
+					<br>
+					<label>Type</label>
+					<select name="pres_type_id">
+						{% for g_read_type in g_read_types %}
+							{{
+								input_option(
+									'pres_type_id', g_read_type.id,
+									g_read_type.code + ' ' + g_read_type.description,
+									g_read.pres_type.id)}}
+						{% endfor %}
+					</select>
+				</fieldset>
+				<br>
+				<br>
+				<input type="submit" name="update" value="Update">
+			</fieldset>
+		</form>
+
+		<form action="">
+			<fieldset>
+				<legend>Delete this read</legend>
+				<input name="confirm_delete" type="submit" value="Delete">
+			</fieldset>
+		</form>
 	{% endif %}
 {% endblock %}

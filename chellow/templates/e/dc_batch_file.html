@@ -17,39 +17,25 @@
 {% endblock %}
 
 {% block content %}
-	<!-- Layer Section -->
-	<div class="layer-section">
-		<!-- Section Header -->
-		<div class="section-header">
-			<h2>Billing File</h2>	
-		</div>
-		<!-- End Section Header -->
-		<!-- Section Content -->
-		<div class="section-content">
-			<div class="section-data">
-				<table class="etheling">
-					<thead>
-						<tr>
-							<th>Filename</th>
-							<th>Upload Timestamp</th>
-							<th>Parser</th>
-							<th>Download</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>{{batch_file.filename}}</td>
-							<td>{{batch_file.upload_timestamp|hh_format}}</td>
-							<td>{{batch_file.parser_name}}</td>
-							<td>
-								<a href="/e/dc_batch_files/{{batch_file.id}}/download">Download</a>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<!-- End Section Content -->
-	</div>
-	<!-- End Layer Section -->
+
+	<table>
+		<caption>Billing File</caption>	
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>Upload Timestamp</th>
+				<th>Parser</th>
+				<th>Download</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{batch_file.filename}}</td>
+				<td>{{batch_file.upload_timestamp|hh_format}}</td>
+				<td>{{batch_file.parser_name}}</td>
+				<td><a href="/e/dc_batch_files/{{batch_file.id}}/download">Download</a></td>
+			</tr>
+		</tbody>
+	</table>
+
 {% endblock %}

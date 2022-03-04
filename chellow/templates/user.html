@@ -5,220 +5,114 @@
 {% endblock %}
 
 {% block nav %}
-	&raquo; <a href="/users">Users</a> &raquo; {{ user.email_address }}
+	<a href="/users">Users</a> &raquo; {{ user.email_address }}
 {% endblock %}
 
 {% block content %}
 	{% if request.values.delete %}
-		<!-- Layer Section -->
-    <div class="layer-section">
-    	<!-- Section Header -->
-    	<div class="section-header">
-    		<h2>
+		<form method="post">
+			<fieldset>
+				<legend>
 					Do you really want to delete the user '{{ user.email_address }}'?
-				</h2>	
-    	</div>
-    	<!-- End Section Header -->
-    	<!-- Section Content -->
-    	<div class="section-content">
-    		<div class="section-data">
-					<div class="standardForm">
-						<form method="post">
-							<fieldset>
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-							<a href="/users/{{user.id}}">Cancel</a>
-						</form>
-					</div>
-    		</div>
-    	</div>
-    	<!-- End Section Content -->
-    </div>
-    <!-- End Layer Section -->
-	
-	
-		
+				</legend>	
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+			<a href="/users/{{user.id}}">Cancel</a>
+		</form>
 	{% else %}
-		<!-- Layer Section -->
-    <div class="layer-section">
-    	<!-- Section Header -->
-    	<div class="section-header">
-    		<h2>Update details</h2>	
-    	</div>
-    	<!-- End Section Header -->
-    	<!-- Section Content -->
-    	<div class="section-content">
-    		<div class="section-data">
-					<div class ="standardForm">
-						<form method="post">
-							<fieldset>
-								<div class="row">
-									<div class="col-sm-6">
-										<label>
-											Username
-										</label>
-										<input name="email_address" size="100" value="
-									      {%- if request.values.email_address -%}
-												  {{ request.values.email_address }}
-											  {%- else -%}
-												  {{ user.email_address }}
-											  {%- endif -%}">
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-sm-6">
-										<label>Role</label>
-										<label>
-											<input type="radio" name="user_role_code" value="editor"
-													{%- if request.values.user_role_editor -%}
-														{%- if request.values.user_role_editor == 'editor' %}
-															checked
-														{%- endif -%}
-													{%- else -%}
-														{%- if user.user_role.code == 'editor' %}
-															checked
-														{%- endif -%}
-													{%- endif -%}
-											>
-												Editor
-											</label>
-											<label>
-												<input type="radio" name="user_role_code" value="viewer"
-												    {% if request.values.user_role_code %}
-														  {% if request.values.user_role_code == 'viewer' %}
-															  checked
-															{% endif %}
-														{% else %}
-														  {% if user.user_role.code == 'viewer' %}
-														 	  checked
-														  {% endif %}
-													  {% endif %}
-														>
-												Viewer
-											</label>
-											<label>
-												<input
-												    type="radio" name="user_role_code"
-														value="party-viewer"
-														{%- if request.values.user_role_code -%}
-														  {%- if request.values.user_role_code == 'party-viewer' -%}
-															  checked
-														  {%- endif -%}
-													  {%- else -%}
-														  {%- if user.user_role.code == 'party-viewer' -%}
-																checked
-															{% endif %}
-														{% endif %}>
-												Party Viewer
-											</label>
-											<select name="party_id">
-												{% for party in parties %}
-													<option value="{{ party.id }}"
-														{%- if request.values.party_id -%}
-															{%- if request.values.party_id == party.id %}
-																selected
-															{%- endif -%}
-														{%- else -%}
-															{%- if user.party.id == party.id %}
-																selected
-															{%- endif -%}
-														{%- endif -%}
-													>
-														{{ party.name }} {{ party.participant.code }}
-														{{ party.market_role.description }}
-													</option>
-												{% endfor %}
-											</select>
-										</div>
-									</div>
-									<input type="submit" value="Update">
-								</fieldset>
-							</form>
-    		    </div>
-					</div>
-				</div>
-				<!-- End Section Content -->
-			</div>
-			<!-- End Layer Section -->
+		<form method="post">
+			<fieldset>
+				<legend>Update details</legend>	
+				<label>Username</label>
+				<input name="email_address" size="100" value="
+						{%- if request.values.email_address -%}
+							{{ request.values.email_address }}
+						{%- else -%}
+							{{ user.email_address }}
+						{%- endif -%}">
+
+				<label>Role</label>
+				<input type="radio" name="user_role_code" value="editor"
+						{%- if request.values.user_role_editor -%}
+							{%- if request.values.user_role_editor == 'editor' %}
+								checked
+							{%- endif -%}
+						{%- else -%}
+							{%- if user.user_role.code == 'editor' %}
+								checked
+							{%- endif -%}
+						{%- endif -%}
+				>
+				<label>Editor</label>
+				<input type="radio" name="user_role_code" value="viewer"
+				{% if request.values.user_role_code %}
+					{% if request.values.user_role_code == 'viewer' %}
+						checked
+					{% endif %}
+				{% else %}
+					{% if user.user_role.code == 'viewer' %}
+						checked
+					{% endif %}
+				{% endif %}
+				>
+				<label>Viewer</label>
+				<input
+						type="radio" name="user_role_code"
+						value="party-viewer"
+						{%- if request.values.user_role_code -%}
+							{%- if request.values.user_role_code == 'party-viewer' -%}
+								checked
+							{%- endif -%}
+						{%- else -%}
+							{%- if user.user_role.code == 'party-viewer' -%}
+								checked
+							{% endif %}
+						{% endif %}>
+				<label>Party Viewer</label>
+				<select name="party_id">
+					{% for party in parties %}
+						<option value="{{ party.id }}"
+							{%- if request.values.party_id -%}
+								{%- if request.values.party_id == party.id %}
+									selected
+								{%- endif -%}
+							{%- else -%}
+								{%- if user.party.id == party.id %}
+									selected
+								{%- endif -%}
+							{%- endif -%}
+						>
+							{{ party.name }} {{ party.participant.code }}
+							{{ party.market_role.description }}
+						</option>
+					{% endfor %}
+				</select>
+				<input type="submit" value="Update">
+			</fieldset>
+		</form>
 
 		{% if not ad_auth_on %}
-			<!-- Layer Section -->
-			<div class="layer-section">
-				<!-- Section Header -->
-				<div class="section-header">
-					<h2>Change password</h2>	
-				</div>
-					<!-- End Section Header -->
-					<!-- Section Content -->
-					<div class="section-content">
-						<div class="section-data">
-								<div class="standardForm">
-										<form method="post">
-											<fieldset>
-													<input type="hidden" name="change_password">
-													<div class="row">
-															<div class="col-sm-3">
-																	<label>
-																	Current password
-																</label>
-															</div>
-															<div class="col-sm-5">
-																<input type="password" name="current_password">
-															</div>
-													</div>
-													<div class="row">
-															<div class="col-sm-3">
-																	<label>
-																	New password
-																</label>
-															</div>
-															<div class="col-sm-5">
-																	<input type="password" name="new_password">
-															</div>
-													</div>
-													<div class="row">
-														<div class="col-sm-3">
-															<label>
-																Confirm new Password
-															</label>
-														</div>
-													<div class="col-sm-5">
-												<input type="password" name="confirm_new_password">
-											</div>
-										</div>
-									<input type="submit" value="Change">
-								</fieldset>
-							</form>
-						</div>
-					</div>
-				</div>
-				<!-- End Section Content -->
-			</div>
-			<!-- End Layer Section -->
+			<form method="post">
+				<fieldset>
+					<legend>Change password</legend>	
+					<input type="hidden" name="change_password">
+					<label>Current password</label>
+					<input type="password" name="current_password">
+					<label>New password</label>
+					<input type="password" name="new_password">
+					<label>Confirm new Password</label>
+					<input type="password" name="confirm_new_password">
+					<input type="submit" value="Change">
+				</fieldset>
+			</form>
 		{% endif %}	
-		<!-- Layer Section -->
-    <div class="layer-section">
-    	<!-- Section Header -->
-    	<div class="section-header">
-    		<h2>Delete this user</h2>	
-    	</div>
-    	<!-- End Section Header -->
-    	<!-- Section Content -->
-    	<div class="section-content">
-    		<div class="section-data">
-    		  <div class="standardForm">
-    		    <form>
-            	<fieldset>
-            	  <input type="hidden" name="Delete this user">
-            		<input type="submit" name="delete" value="Delete">
-            	</fieldset>
-         	  </form>
-    		  </div>
-    		</div>
-    	</div>
-    	<!-- End Section Content -->
-    </div>
-    <!-- End Layer Section -->
-		
+
+		<form>
+			<fieldset>
+				<legend>Delete this user</legend>	
+				<input type="hidden" name="Delete this user">
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
 	{% endif %}
 {% endblock %}

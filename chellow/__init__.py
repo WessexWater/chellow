@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from werkzeug.exceptions import NotFound
 
-from zish import dumps
+from zish import ZishException, dumps
 
 import chellow.api
 import chellow.bank_holidays
@@ -111,8 +111,11 @@ def create_app(testing=False):
     def check_permissions(*args, **kwargs):
         g.user = None
         config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        props = config_contract.make_properties()
-        ad_props = props.get("ad_authentication", {})
+        try:
+            g.config = config_contract.make_properties()
+        except ZishException:
+            g.config = {}
+        ad_props = g.config.get("ad_authentication", {})
         ad_auth_on = ad_props.get("on", False)
         if ad_auth_on:
             username = request.headers["X-Isrw-Proxy-Logon-User"].upper()
@@ -134,7 +137,7 @@ def create_app(testing=False):
 
             if auth is None:
                 try:
-                    ips = props["ips"]
+                    ips = g.config["ips"]
                     if request.remote_addr in ips:
                         key = request.remote_addr
                     elif "*.*.*.*" in ips:
@@ -160,10 +163,7 @@ def create_app(testing=False):
         # Got our user
         path = request.path
         method = request.method
-        if path in (
-            "/health",
-            "/hh_api",
-        ):
+        if path in ("/health",):
             return
 
         if g.user is not None:
@@ -199,7 +199,7 @@ def create_app(testing=False):
                         ):
                             return
                     elif market_role_code == "X":
-                        if path.startswith("/supplier_contracts/" + party.id):
+                        if path.startswith("/e/supplier_contracts/" + party.id):
                             return
 
         if g.user is None and g.sess.query(User).count() == 0:
@@ -217,10 +217,7 @@ def create_app(testing=False):
                 {"WWW-Authenticate": 'Basic realm="Chellow"'},
             )
 
-        config = Contract.get_non_core_by_name(g.sess, "configuration")
-        return make_response(
-            render_template("403.html", properties=config.make_properties()), 403
-        )
+        return make_response(render_template("403.html", properties=g.config), 403)
 
     @app.context_processor
     def chellow_context_processor():
@@ -230,8 +227,8 @@ def create_app(testing=False):
                 try:
                     contract = Contract.get_by_id(g.sess, task.contract_id)
                     global_alerts.append(
-                        f"There's a problem with the automatic HH data "
-                        f"importer for contract '{contract.name}'."
+                        f"There's a problem with the automatic HH data importer for "
+                        f"contract '{contract.name}'."
                     )
                 except NotFound:
                     pass
@@ -244,7 +241,14 @@ def create_app(testing=False):
             if importer is not None and importer.global_alert is not None:
                 global_alerts.append(importer.global_alert)
 
-        return {"current_user": g.user, "global_alerts": global_alerts}
+        test_match = g.config.get("test_match")
+
+        return {
+            "current_user": g.user,
+            "global_alerts": global_alerts,
+            "is_test": False if test_match is None else test_match in request.host,
+            "test_css": g.config.get("test_css"),
+        }
 
     @app.teardown_request
     def shutdown_session(exception=None):
