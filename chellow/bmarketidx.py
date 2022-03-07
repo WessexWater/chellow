@@ -164,6 +164,7 @@ def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
             "q": f"ajax/alldata/MID/Date,SP,Provider,Price,Volume/NULL/"
             f'{day_ct.strftime("%Y-%m-%d")}/ALL'
         }
+        sess.rollback()
         r = requests.get(
             "https://www.bmreports.com/bmrs/", params=params, timeout=60, verify=False
         )
