@@ -21,7 +21,7 @@
 					<form method="post">
 						<fieldset>						
 							<input type="submit" name="delete" value="Delete">
-							<a class="btn" href="/supplies/{{supply.id}}/edit">Cancel</a>
+							<a class="btn" href="/e/supplies/{{supply.id}}/edit">Cancel</a>
 						</fieldset>
 					</form>
 				</div>			
@@ -33,10 +33,9 @@
 		<div class="section-content">
 			<div class="standardForm">
 				<div class="section-data">
-					<form method="post">
+					<form method="post" action="/e/supplies/{{supply.id}}/edit">
 						<fieldset>
 							<legend>Update this supply</legend>
-							<input type="hidden" name="supply_id" value="{{supply.id}}">
 							<div class="row">
 								<div class="col-sm-4">
 									<label>Name</label> {{input_text('name', supply.name)}}
@@ -80,10 +79,9 @@
 		<div class="section-content">
 			<div class="standardForm">
 				<div class="section-data">
-					<form>
+					<form action="/e/supplies/{{supply.id}}/edit">
 						<fieldset>
 							<legend>Delete this supply</legend>
-							<input type="hidden" name="supply_id" value="{{supply.id}}">
 							<input type="submit" name="delete" value="Delete">
 						</fieldset>
 					</form>					
@@ -95,10 +93,9 @@
 		<div class="section-content">
 			<div class="standardForm textWidthAuto">
 				<div class="section-data">
-					<form method="post">
+					<form method="post" action="/e/supplies/{{supply.id}}/edit">
 						<fieldset>
 							<legend>Insert a new era</legend>
-							<input type="hidden" name="supply_id" value="{{supply.id}}">
 							<label>Start date</label> {{input_date('start', None)}}
 							<input type="submit" name="insert_era" value="Insert">
 						</fieldset>
