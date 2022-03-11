@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.dno.dno_code}} &raquo;
+	Valid MTC, LLFC, SSC, PC Combinations &raquo;
+	{{mtc_llfc_ssc_pc.pc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.ssc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo;
+	<a href="/e/dnos/{{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.dno.id}}"
+		>{{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.dno.dno_code}}</a> &raquo;
+	<a href="/e/mtc_llfc_ssc_pcs?dno_id={{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.dno.id}}"
+		>Valid MTC, LLFC, SSC, PC Combinations</a> &raquo;
+	{{mtc_llfc_ssc_pc.pc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.ssc.code}}
+	{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>MTC Code</th>
+			<td>{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}</td>
+		</tr>
+		<tr>
+			<th>LLFC Code</th>
+			<td>{{mtc_llfc_ssc_pc.mtc_llfc_ssc.llfc.code}}</td>
+		</tr>
+		<tr>
+			<th>SSC Code</th>
+			<td>{{mtc_llfc_ssc_pc.mtc_llfc_ssc.mtc_ssc.ssc.code}}</td>
+		</tr>
+		<tr>
+			<th>PC Code</th>
+			<td>{{mtc_llfc_ssc_pc.pc.code}}</td>
+		</tr>
+		<tr>
+			<th>Valid From</th>
+			<td>{{mtc_llfc_ssc_pc.valid_from|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Valid To</th>
+			<td>{{mtc_llfc_ssc_pc.valid_to|hh_format}}</td>
+		</tr>
+	</table>
+{% endblock %}

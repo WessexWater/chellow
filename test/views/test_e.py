@@ -1650,6 +1650,68 @@ def test_mtc_ssc(sess, client):
     match(response, 200)
 
 
+def test_mtc_llfc_ssc_pcs_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    mtc = Mtc.insert(sess, "001", True, True, valid_from, None)
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "an mtc participant",
+        True,
+        True,
+        meter_type,
+        meter_payment_type,
+        3,
+        valid_from,
+        None,
+    )
+    ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1), None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    combo = MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+
+    sess.commit()
+    response = client.get(f"/e/mtc_llfc_ssc_pcs/{combo.id}")
+
+    match(response, 200)
+
+
+def test_mtc_llfc_ssc_pc_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+
+    sess.commit()
+    query_string = {
+        "dno_id": dno.id,
+    }
+    response = client.get("/e/mtc_llfc_ssc_pcs", query_string=query_string)
+
+    match(response, 200)
+
+
 class Sess:
     def __init__(self, *results):
         self.it = iter(results)

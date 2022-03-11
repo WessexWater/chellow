@@ -2857,11 +2857,18 @@ def mtc_llfc_ssc_pcs_get():
         .options(
             joinedload(MtcLlfcSscPc.pc),
             joinedload(MtcLlfcSscPc.mtc_llfc_ssc),
-            joinedload(MtcLlfcSsc.llfc),
-            joinedload(MtcLlfcSsc.mtc_ssc),
-            joinedload(MtcSsc.ssc),
-            joinedload(MtcSsc.mtc_participant),
-            joinedload(MtcParticipant.mtc),
+            joinedload(MtcLlfcSscPc.mtc_llfc_ssc).joinedload(MtcLlfcSsc.llfc),
+            joinedload(MtcLlfcSscPc.mtc_llfc_ssc).joinedload(MtcLlfcSsc.mtc_ssc),
+            joinedload(MtcLlfcSscPc.mtc_llfc_ssc)
+            .joinedload(MtcLlfcSsc.mtc_ssc)
+            .joinedload(MtcSsc.ssc),
+            joinedload(MtcLlfcSscPc.mtc_llfc_ssc)
+            .joinedload(MtcLlfcSsc.mtc_ssc)
+            .joinedload(MtcSsc.mtc_participant),
+            joinedload(MtcLlfcSscPc.mtc_llfc_ssc)
+            .joinedload(MtcLlfcSsc.mtc_ssc)
+            .joinedload(MtcSsc.mtc_participant)
+            .joinedload(MtcParticipant.mtc),
         )
     )
     if only_ongoing:
@@ -2873,7 +2880,7 @@ def mtc_llfc_ssc_pcs_get():
 @e.route("/mtc_llfc_ssc_pcs/<int:combo_id>")
 def mtc_llfc_ssc_pc_get(combo_id):
     combo = MtcLlfcSscPc.get_by_id(g.sess, combo_id)
-    return render_template("mtc_llfc_ssc_pc.html", valid_mtc_llfc_ssc_pc=combo)
+    return render_template("mtc_llfc_ssc_pc.html", mtc_llfc_ssc_pc=combo)
 
 
 @e.route("/mtc_llfc_sscs")
