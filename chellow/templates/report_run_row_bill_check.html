@@ -52,13 +52,13 @@
 							<tr>
 								<td>
 									{% if values.batch_id != None %}
-										<a href="/supplier_batches/{{values.batch_id}}">{{
+										<a href="/e/supplier_batches/{{values.batch_id}}">{{
 											values['batch']}}</a>
 									{% endif %}
 								</td>
 								<td>
 									{% if values.bill_id != None %}
-										<a href="/supplier_bills/{{values.bill_id}}">{{
+										<a href="/e/supplier_bills/{{values.bill_id}}">{{
 											values['bill-reference']}}</a>
 									{% endif %}
 								</td>
@@ -71,13 +71,13 @@
 								<td>{{values['bill-finish-date']}}</td>
 								<td>
 									{% if values['imp-mpan-core'] != None %}
-									<a href="/supplies/{{values.supply_id}}">{{
+									<a href="/e/supplies/{{values.supply_id}}">{{
 										values['imp-mpan-core']}}</a>
 									{% endif %}
 								</td>
 								<td>
 									{% if values['exp-mpan-core'] != None %}
-										<a href="/supplies/{{values.supply_id}}">{{
+										<a href="/e/supplies/{{values.supply_id}}">{{
 											values['exp-mpan-core']}}</a>
 									{% endif %}
 								</td>
@@ -130,7 +130,7 @@
 										<ul>
 											{% for bill_id in values['covered-bills'] %}
 												<li>
-													<a href="/supplier_bills/{{bill_id}}">{{bill_id}}</a>
+													<a href="/e/supplier_bills/{{bill_id}}">{{bill_id}}</a>
 													{% if bill_id == values.bill_id %}
 														(This bill)
 													{% endif %}
