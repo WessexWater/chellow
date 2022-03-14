@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	{% if request.method == "GET" and request.values.delete %}
+		<div class="layer-section">
+			<div class="section-header">
+				<h2>
+					Are you sure you want to delete this report run?
+				</h2>
+			</div>
+			<div class="section-content">
+				<div class="section-data">
+					<div class="standardForm textWidthAuto">
+						<form method="post" action="/report_runs/{{run.id}}">
+							<fieldset>
+								<input type="submit" name="delete" value="delete"> 
+								<a href="/report_runs/{{run.id}}">Cancel</a>
+							</fieldset>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	{% else %}
+		<!-- Layer Section -->
+		<div class="layer-section">
+			<!-- Section Header -->
+			<div class="section-header">
+				<h2>Supply Contacts</h2>
+			</div>
+			<!-- End Section Header -->
+			<!-- Section Content -->
+			<div class="section-content">
+				<div class="section-data">
+					<table class="etheling">
+						<thead>
+							<tr>
+								<th>Date Created</th>
+								<th>Created By</th>
+								<th>State</th>
+								<th>Delete</th>
+								<th>Download Spreadsheet</th>
+								<th>Re-run Report</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>{{run.date_created|hh_format}}</td>
+								<td>{{run.creator}}</td>
+								<td>{{run.state}}</td>
+								<td>
+									<form action="/report_runs/{{run.id}}">
+										<fieldset style="border: none;">
+											<input type="submit" name="delete" value="Delete">
+										</fieldset>
+									</form>
+								</td>
+								<td>
+									<a href="/report_runs/{{run.id}}/spreadsheet">Download</a>
+								</td>
+								<td>
+									<a href="/reports/supply_contacts">Re-run</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<br>
+					<br>
+					<p>{{run.data['dno_contact_message']}}</p>
+					<br>
+					<br>
+					<table class="etheling">
+						<caption>Supply Contacts</caption>
+						<thead>
+							<tr>
+								<th>Site Id</th>
+								<th>Site Name</th>
+								<th>DNO</th>
+								<th>DNO Contact</th>
+								<th>Meter Operator</th>
+								<th>Import MPAN Core</th>
+								<th>Supplier</th>
+								<th>Problem</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for row in rows %}
+								{% set vals = row.data['values'] %}
+									<tr>
+										<td>{{vals['site_code']}}</td>
+										<td>{{vals['site_name']}}</td>
+										<td>{{vals['dno_name']}}</td>
+										<td>{{vals['dno_contact']}}</td>
+										<td>{{vals['mop_name']}}</td>
+										<td>{{vals['import_mpan_core']}}</td>
+										<td>{{vals['import_supplier_name']}}</td>
+										<td>{{vals['problem']}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+				</div>
+				
+			</div>
+			<!-- End Section Content -->
+		</div>
+		<!-- End Layer Section -->
+	{% endif %}
+{% endblock %}

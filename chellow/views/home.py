@@ -1542,6 +1542,24 @@ def report_run_get(run_id):
             rows=rows,
         )
 
+    elif run.name == "supply_contacts":
+        rows = (
+            g.sess.execute(
+                select(ReportRunRow)
+                .filter(ReportRunRow.report_run == run)
+                .order_by(
+                    ReportRunRow.data["values"]["site_code"],
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return render_template(
+            "report_run_supply_contacts.html",
+            run=run,
+            rows=rows,
+        )
+
     else:
         order_by = "row.id"
         ob = ReportRunRow.id

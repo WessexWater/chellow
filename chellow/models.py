@@ -40,6 +40,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError, ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import (
     aliased,
+    attributes,
     declarative_base,
     joinedload,
     relationship,
@@ -6075,10 +6076,14 @@ class ReportRun(Base, PersistentClass):
         self.title = title
         self.date_created = utc_datetime_now()
         self.state = "running"
-        self.data = _jsonize(data)
+        self.update_data(data)
 
     def update(self, state):
         self.state = state
+
+    def update_data(self, data):
+        self.data = _jsonize(data)
+        attributes.flag_modified(self, "data")
 
     def insert_row(self, sess, tab, titles, values, properties):
         vals = {"titles": titles, "values": values, "properties": properties}
