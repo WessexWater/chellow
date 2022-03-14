@@ -123,242 +123,247 @@ def mpan_bit(
     ]
 
 
-def content(supply_id, start_date, finish_date, user):
+def _process(sess, caches, f, start_date, finish_date, supply_id):
     forecast_date = to_utc(Datetime.max)
+
+    w = csv.writer(f, lineterminator="\n")
+    w.writerow(
+        (
+            "Era Start",
+            "Era Finish",
+            "Supply Id",
+            "Supply Name",
+            "Source",
+            "Generator Type",
+            "Site Code",
+            "Site Name",
+            "Associated Site Codes",
+            "From",
+            "To",
+            "PC",
+            "MTC",
+            "CoP",
+            "SSC",
+            "Energisation Status",
+            "Properties",
+            "MOP Contract",
+            "MOP Account",
+            "DC Contract",
+            "DC Account",
+            "Normal Reads",
+            "Type",
+            "Supply Start",
+            "Supply Finish",
+            "Import LLFC",
+            "Import MPAN Core",
+            "Import Supply Capacity",
+            "Import Supplier",
+            "Import Total MSP kWh",
+            "Import Non-actual MSP kWh",
+            "Import Total GSP kWh",
+            "Import MD / kW",
+            "Import MD Date",
+            "Import MD / kVA",
+            "Import Bad HHs",
+            "Export LLFC",
+            "Export MPAN Core",
+            "Export Supply Capacity",
+            "Export Supplier",
+            "Export Total MSP kWh",
+            "Export Non-actual MSP kWh",
+            "Export GSP kWh",
+            "Export MD / kW",
+            "Export MD Date",
+            "Export MD / kVA",
+            "Export Bad HHs",
+        )
+    )
+
+    eras = (
+        sess.query(Era)
+        .filter(
+            or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            Era.start_date <= finish_date,
+        )
+        .order_by(Era.supply_id, Era.start_date)
+        .options(
+            joinedload(Era.supply),
+            joinedload(Era.supply).joinedload(Supply.source),
+            joinedload(Era.supply).joinedload(Supply.generator_type),
+            joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.imp_llfc),
+            joinedload(Era.exp_llfc),
+            joinedload(Era.mop_contract),
+            joinedload(Era.dc_contract),
+            joinedload(Era.channels),
+            joinedload(Era.site_eras).joinedload(SiteEra.site),
+            joinedload(Era.pc),
+            joinedload(Era.cop),
+            joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
+            joinedload(Era.imp_supplier_contract),
+            joinedload(Era.exp_supplier_contract),
+            joinedload(Era.ssc),
+            joinedload(Era.energisation_status),
+            joinedload(Era.site_eras),
+        )
+    )
+
+    if supply_id is not None:
+        eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
+
+    for era in eras:
+        caches["era"] = era
+        supply = era.supply
+        site_codes = set()
+        site = None
+        for site_era in era.site_eras:
+            if site_era.is_physical:
+                site = site_era.site
+            else:
+                site_codes.add(site_era.site.code)
+
+        sup_eras = (
+            sess.query(Era).filter(Era.supply == supply).order_by(Era.start_date).all()
+        )
+        supply_start = sup_eras[0].start_date
+        supply_finish = sup_eras[-1].finish_date
+
+        if supply.generator_type is None:
+            generator_type = ""
+        else:
+            generator_type = supply.generator_type.code
+
+        ssc = era.ssc
+        ssc_code = "" if ssc is None else ssc.code
+
+        prime_reads = set()
+        for read, rdate in chain(
+            sess.query(RegisterRead, RegisterRead.previous_date)
+            .join(RegisterRead.previous_type)
+            .join(Bill)
+            .join(BillType)
+            .filter(
+                Bill.supply == supply,
+                BillType.code != "W",
+                RegisterRead.previous_date >= start_date,
+                RegisterRead.previous_date <= finish_date,
+                ReadType.code.in_(NORMAL_READ_TYPES),
+            )
+            .options(joinedload(RegisterRead.bill)),
+            sess.query(RegisterRead, RegisterRead.present_date)
+            .join(RegisterRead.present_type)
+            .join(Bill)
+            .join(BillType)
+            .filter(
+                Bill.supply == supply,
+                BillType.code != "W",
+                RegisterRead.present_date >= start_date,
+                RegisterRead.present_date <= finish_date,
+                ReadType.code.in_(NORMAL_READ_TYPES),
+            )
+            .options(joinedload(RegisterRead.bill)),
+        ):
+            prime_bill = (
+                sess.query(Bill)
+                .join(BillType)
+                .filter(
+                    Bill.supply == supply,
+                    Bill.start_date <= read.bill.finish_date,
+                    Bill.finish_date >= read.bill.start_date,
+                    Bill.reads.any(),
+                )
+                .order_by(Bill.issue_date.desc(), BillType.code)
+                .first()
+            )
+            if prime_bill.id == read.bill.id:
+                prime_reads.add(f"{rdate}_{read.msn}")
+
+        supply_type = era.meter_category
+
+        chunk_start = hh_max(era.start_date, start_date)
+        chunk_finish = hh_min(era.finish_date, finish_date)
+        num_hh = int((chunk_finish + HH - chunk_start).total_seconds() / (30 * 60))
+
+        w.writerow(
+            [
+                hh_format(era.start_date),
+                hh_format(era.finish_date, ongoing_str=""),
+                supply.id,
+                supply.name,
+                supply.source.code,
+                generator_type,
+                site.code,
+                site.name,
+                "| ".join(sorted(site_codes)),
+                hh_format(start_date),
+                hh_format(finish_date),
+                era.pc.code,
+                era.mtc_participant.mtc.code,
+                era.cop.code,
+                ssc_code,
+                era.energisation_status.code,
+                era.properties,
+                era.mop_contract.name,
+                era.mop_account,
+                era.dc_contract.name,
+                era.dc_account,
+                len(prime_reads),
+                supply_type,
+                hh_format(supply_start),
+                hh_format(supply_finish, ongoing_str=""),
+            ]
+            + mpan_bit(
+                sess,
+                supply,
+                True,
+                num_hh,
+                era,
+                chunk_start,
+                chunk_finish,
+                forecast_date,
+                caches,
+            )
+            + mpan_bit(
+                sess,
+                supply,
+                False,
+                num_hh,
+                era,
+                chunk_start,
+                chunk_finish,
+                forecast_date,
+                caches,
+            )
+        )
+
+        # Avoid a long-running transaction
+        sess.rollback()
+
+
+def content(supply_id, start_date, finish_date, user):
     caches = {}
-    f = sess = era = None
+    f = sess = None
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
             "supplies_duration.csv", user
         )
         f = open(running_name, mode="w", newline="")
-        w = csv.writer(f, lineterminator="\n")
-        w.writerow(
-            (
-                "Era Start",
-                "Era Finish",
-                "Supply Id",
-                "Supply Name",
-                "Source",
-                "Generator Type",
-                "Site Code",
-                "Site Name",
-                "Associated Site Codes",
-                "From",
-                "To",
-                "PC",
-                "MTC",
-                "CoP",
-                "SSC",
-                "Energisation Status",
-                "Properties",
-                "MOP Contract",
-                "MOP Account",
-                "DC Contract",
-                "DC Account",
-                "Normal Reads",
-                "Type",
-                "Supply Start",
-                "Supply Finish",
-                "Import LLFC",
-                "Import MPAN Core",
-                "Import Supply Capacity",
-                "Import Supplier",
-                "Import Total MSP kWh",
-                "Import Non-actual MSP kWh",
-                "Import Total GSP kWh",
-                "Import MD / kW",
-                "Import MD Date",
-                "Import MD / kVA",
-                "Import Bad HHs",
-                "Export LLFC",
-                "Export MPAN Core",
-                "Export Supply Capacity",
-                "Export Supplier",
-                "Export Total MSP kWh",
-                "Export Non-actual MSP kWh",
-                "Export GSP kWh",
-                "Export MD / kW",
-                "Export MD Date",
-                "Export MD / kVA",
-                "Export Bad HHs",
-            )
-        )
-
-        eras = (
-            sess.query(Era)
-            .filter(
-                or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                Era.start_date <= finish_date,
-            )
-            .order_by(Era.supply_id, Era.start_date)
-            .options(
-                joinedload(Era.supply),
-                joinedload(Era.supply).joinedload(Supply.source),
-                joinedload(Era.supply).joinedload(Supply.generator_type),
-                joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
-                joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
-                joinedload(Era.imp_llfc),
-                joinedload(Era.exp_llfc),
-                joinedload(Era.mop_contract),
-                joinedload(Era.dc_contract),
-                joinedload(Era.channels),
-                joinedload(Era.site_eras).joinedload(SiteEra.site),
-                joinedload(Era.pc),
-                joinedload(Era.cop),
-                joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
-                joinedload(Era.imp_supplier_contract),
-                joinedload(Era.exp_supplier_contract),
-                joinedload(Era.ssc),
-                joinedload(Era.energisation_status),
-                joinedload(Era.site_eras),
-            )
-        )
-
-        if supply_id is not None:
-            eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
-
-        for era in eras:
-            supply = era.supply
-            site_codes = set()
-            site = None
-            for site_era in era.site_eras:
-                if site_era.is_physical:
-                    site = site_era.site
-                else:
-                    site_codes.add(site_era.site.code)
-
-            sup_eras = (
-                sess.query(Era)
-                .filter(Era.supply == supply)
-                .order_by(Era.start_date)
-                .all()
-            )
-            supply_start = sup_eras[0].start_date
-            supply_finish = sup_eras[-1].finish_date
-
-            if supply.generator_type is None:
-                generator_type = ""
-            else:
-                generator_type = supply.generator_type.code
-
-            ssc = era.ssc
-            ssc_code = "" if ssc is None else ssc.code
-
-            prime_reads = set()
-            for read, rdate in chain(
-                sess.query(RegisterRead, RegisterRead.previous_date)
-                .join(RegisterRead.previous_type)
-                .join(Bill)
-                .join(BillType)
-                .filter(
-                    Bill.supply == supply,
-                    BillType.code != "W",
-                    RegisterRead.previous_date >= start_date,
-                    RegisterRead.previous_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES),
-                )
-                .options(joinedload(RegisterRead.bill)),
-                sess.query(RegisterRead, RegisterRead.present_date)
-                .join(RegisterRead.present_type)
-                .join(Bill)
-                .join(BillType)
-                .filter(
-                    Bill.supply == supply,
-                    BillType.code != "W",
-                    RegisterRead.present_date >= start_date,
-                    RegisterRead.present_date <= finish_date,
-                    ReadType.code.in_(NORMAL_READ_TYPES),
-                )
-                .options(joinedload(RegisterRead.bill)),
-            ):
-                prime_bill = (
-                    sess.query(Bill)
-                    .join(BillType)
-                    .filter(
-                        Bill.supply == supply,
-                        Bill.start_date <= read.bill.finish_date,
-                        Bill.finish_date >= read.bill.start_date,
-                        Bill.reads.any(),
-                    )
-                    .order_by(Bill.issue_date.desc(), BillType.code)
-                    .first()
-                )
-                if prime_bill.id == read.bill.id:
-                    prime_reads.add(f"{rdate}_{read.msn}")
-
-            supply_type = era.meter_category
-
-            chunk_start = hh_max(era.start_date, start_date)
-            chunk_finish = hh_min(era.finish_date, finish_date)
-            num_hh = int((chunk_finish + HH - chunk_start).total_seconds() / (30 * 60))
-
-            w.writerow(
-                [
-                    hh_format(era.start_date),
-                    hh_format(era.finish_date, ongoing_str=""),
-                    supply.id,
-                    supply.name,
-                    supply.source.code,
-                    generator_type,
-                    site.code,
-                    site.name,
-                    "| ".join(sorted(site_codes)),
-                    hh_format(start_date),
-                    hh_format(finish_date),
-                    era.pc.code,
-                    era.old_mtc.code,
-                    era.cop.code,
-                    ssc_code,
-                    era.energisation_status.code,
-                    era.properties,
-                    era.mop_contract.name,
-                    era.mop_account,
-                    era.dc_contract.name,
-                    era.dc_account,
-                    len(prime_reads),
-                    supply_type,
-                    hh_format(supply_start),
-                    hh_format(supply_finish, ongoing_str=""),
-                ]
-                + mpan_bit(
-                    sess,
-                    supply,
-                    True,
-                    num_hh,
-                    era,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    caches,
-                )
-                + mpan_bit(
-                    sess,
-                    supply,
-                    False,
-                    num_hh,
-                    era,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    caches,
-                )
-            )
-
-            # Avoid a long-running transaction
-            sess.rollback()
+        _process(sess, caches, f, start_date, finish_date, supply_id)
     except BadRequest as e:
+        era = caches.get("era")
         if era is None:
             pref = "Problem: "
         else:
             pref = f"Problem with era {chellow.utils.url_root}eras/{era.id}/edit : "
         f.write(pref + e.description)
     except BaseException as e:
+        era = caches.get("era")
         if era is None:
             pref = "Problem: "
         else:
-            pref = "Problem with era " + str(era.id) + ": "
+            pref = f"Problem with era {era.id}: "
         if f is not None:
             f.write(pref + str(e))
             f.write(traceback.format_exc())
