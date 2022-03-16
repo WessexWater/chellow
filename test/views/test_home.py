@@ -87,6 +87,7 @@ def test_site_edit_post_fail(client, sess):
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
+    insert_comms(sess)
     cop = Cop.get_by_code(sess, "5")
     imp_supplier_contract = Contract.insert_supplier(
         sess,
@@ -153,38 +154,6 @@ def test_site_edit_post_fail(client, sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    """
-    supply = site.insert_e_supply(
-        sess,
-        source,
-        None,
-        "Bob",
-        utc_datetime(2000, 1, 1),
-        utc_datetime(2020, 1, 1),
-        gsp_group,
-        mop_contract,
-        "773",
-        dc_contract,
-        "ghyy3",
-        "hgjeyhuw",
-        pc,
-        "845",
-        cop,
-        None,
-        energisation_status,
-        {},
-        "22 0470 7514 535",
-        "510",
-        imp_supplier_contract,
-        "7748",
-        361,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-    """
     sess.commit()
 
     data = {
@@ -210,7 +179,16 @@ def test_site_edit_post_fail(client, sess):
         r'<select name="energisation_status_id">\s*'
         r'<option value="2">D - De-Energised</option>\s*'
         r'<option value="1" selected>E - Energised</option>\s*'
-        r"</select>"
+        r"</select>",
+        r'<select name="comm_id">\s*'
+        r'<option value="3">GPRS General Packet Radio Service</option>\s*'
+        r'<option value="2">GSM Global System for Mobile Communications</option>\s*'
+        r'<option value="6">HP Handheld Perm</option>\s*'
+        r'<option value="1">IP Internet Protocol</option>\s*'
+        r'<option value="5">PK Paknet</option>\s*'
+        r'<option value="4">PS Public Switch \(BT Line\)</option>\s*'
+        r'<option value="7">SUB Sub Meter</option>\s*'
+        r"</select>",
     ]
     match(response, 400, *patterns)
 

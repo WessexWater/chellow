@@ -940,7 +940,7 @@ def site_edit_post(site_id):
                 exp_sc,
             )
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(supply.id), 303)
+            return chellow_redirect(f"/supplies/{supply.id}", 303)
         elif "insert_gas" in request.form:
             name = req_str("name")
             msn = req_str("msn")
@@ -1016,7 +1016,7 @@ def site_edit_post(site_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
+        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
         g_contracts = g.sess.query(GContract).order_by(GContract.name)
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
         g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
