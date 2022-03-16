@@ -3442,10 +3442,20 @@ class Era(Base, PersistentClass):
                 setattr(self, polarity + "_sc", sc)
 
                 if self.supply.dno.dno_code not in ("99", "88"):
-                    mtc_llfc = MtcLlfc.get_by_values(
-                        sess, self.mtc_participant, llfc, start_date
-                    )
-                    if pc.code != "00":
+                    if pc.code == "00":
+                        mtc_llfc = MtcLlfc.get_by_values(
+                            sess, self.mtc_participant, llfc, start_date
+                        )
+                        if finish_date is not None and hh_before(
+                            mtc_llfc.valid_to, finish_date
+                        ):
+                            raise BadRequest(
+                                f"The {polarity} combination of MTC "
+                                f"{self.mtc_participant.mtc.code} LLFC {llfc.code} is "
+                                f"only valid until {hh_format(mtc_llfc.valid_to)} but "
+                                f"the era ends at {hh_format(finish_date)}."
+                            )
+                    else:
                         mtc_ssc = MtcSsc.get_by_values(
                             sess, self.mtc_participant, self.ssc, start_date
                         )
