@@ -24,6 +24,7 @@ from chellow.models import (
     Session,
     Source,
     Supply,
+    User,
 )
 from chellow.utils import req_bool
 from chellow.views.home import chellow_redirect
@@ -32,10 +33,11 @@ from chellow.views.home import chellow_redirect
 FNAME = "ecoes_comparison"
 
 
-def content(user, show_ignored, report_run_id):
-    sess = f = None
+def content(user_id, show_ignored, report_run_id):
+    sess = f = report_run = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(f"{FNAME}.csv", user)
         f = open(running_name, mode="w", newline="")
         report_run = ReportRun.get_by_id(sess, report_run_id)
@@ -78,7 +80,10 @@ def content(user, show_ignored, report_run_id):
             "Username": ecoes_props["user_name"],
             "Password": ecoes_props["password"],
         }
-        r = s.post(url_prefix, data=data, allow_redirects=False)
+        login_j = s.post(url_prefix, data=data, allow_redirects=False).json()
+        if not login_j["Success"]:
+            raise BadRequest(f"Login to ECOES failed: {login_j['Messages']}")
+
         r = s.get(
             f"{url_prefix}NonDomesticCustomer/ExportPortfolioMPANs?fileType=csv",
             proxies=proxies,
@@ -96,6 +101,15 @@ def content(user, show_ignored, report_run_id):
         report_run.update("finished")
         sess.commit()
 
+    except BadRequest as e:
+        msg = e.description
+        if report_run is not None:
+            report_run.update("interrupted")
+            report_run.insert_row(sess, "", ["error"], {"error": msg}, {})
+            sess.commit()
+        if f is not None:
+            f.write(msg)
+        raise e
     except BaseException as e:
         msg = traceback.format_exc()
         if report_run is not None:
@@ -103,7 +117,8 @@ def content(user, show_ignored, report_run_id):
             report_run.insert_row(sess, "", ["error"], {"error": msg}, {})
             sess.commit()
         sys.stderr.write(msg)
-        f.write(msg)
+        if f is not None:
+            f.write(msg)
         raise e
     finally:
         if sess is not None:
@@ -596,5 +611,6 @@ def do_get(sess):
         {},
     )
     sess.commit()
-    threading.Thread(target=content, args=(g.user, show_ignored, report_run.id)).start()
+    args = g.user.id, show_ignored, report_run.id
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect(f"/report_runs/{report_run.id}", 303)

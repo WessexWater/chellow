@@ -105,9 +105,14 @@
 								<td>
 									<a href="/supplier_contracts/{{vals['chellow_supplier_contract_id']}}">{{vals['chellow_supplier_contract_name']}}</a>
 								</td>
-								<td>[<a href="/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
 								<td>
-									[<a href="/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
+									{% if 'chellow_era_id' in vals %}
+										[<a href="/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
+									{% endif %}
+								<td>
+									{% if 'chellow_supply_id' in vals %}
+										[<a href="/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
+									{% endif %}
 								</td>
 								{% for diff in vals['diffs'] %}
 									<td>{{vals['chellow_' + diff]}}</td>
@@ -127,7 +132,7 @@
 										{% endif %}
 									</td>
 								{% endfor %}
-								<td>{{vals['problem']}}</td>
+								<td>{{vals['error']}}</td>
 							</tr>
 							</tbody>
 						</table>
