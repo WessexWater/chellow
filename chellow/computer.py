@@ -560,6 +560,7 @@ class SiteSource(DataSource):
         era=None,
         era_maps=None,
         deltas=None,
+        bill=None,
     ):
         DataSource.__init__(
             self,
@@ -572,7 +573,7 @@ class SiteSource(DataSource):
             deltas=deltas,
         )
         self.site = site
-        self.bill = None
+        self.bill = bill
         self.stream_focus = "gen-used"
         if era is None:
             self.is_displaced = False

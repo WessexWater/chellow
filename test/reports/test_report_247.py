@@ -93,7 +93,18 @@ def test_with_scenario(mocker, sess, client):
 
     base_name = ["New Gen"]
     user = User.get_by_email_address(sess, "admin@example.com")
-    args = scenario_props, base_name, site.id, None, user.id, False, [], now
+    is_bill_check = False
+    args = (
+        scenario_props,
+        base_name,
+        site.id,
+        None,
+        user.id,
+        False,
+        [],
+        now,
+        is_bill_check,
+    )
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -404,6 +415,7 @@ def test_scenario_new_generation(mocker, sess):
         forecast_from,
         report_context,
         era_maps,
+        None,
     )
 
     assert calcs[1][1] == "CI017_extra_gen_TRUE"
@@ -627,6 +639,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -645,6 +658,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -914,6 +928,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -932,6 +947,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -1166,6 +1182,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -1184,6 +1201,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -1485,6 +1503,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -1503,6 +1522,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -1809,6 +1829,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -1827,6 +1848,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -2137,6 +2159,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -2155,6 +2178,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -2684,6 +2708,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -2702,6 +2727,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
@@ -3007,6 +3033,7 @@ def virtual_bill(ds):
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
@@ -3025,6 +3052,7 @@ def virtual_bill(ds):
         compression,
         site_codes,
         now,
+        is_bill_check,
     )
 
     sheet = odio.parse_spreadsheet(mock_file)

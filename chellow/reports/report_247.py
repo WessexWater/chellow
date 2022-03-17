@@ -66,13 +66,25 @@ CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
 meter_order = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
 
 
-def write_spreadsheet(fl, compressed, site_rows, era_rows, read_rows):
+def write_spreadsheet(
+    fl,
+    compressed,
+    site_rows,
+    era_rows,
+    read_rows,
+    bill_check_site_rows,
+    bill_check_era_rows,
+    is_bill_check,
+):
     fl.seek(0)
     fl.truncate()
     with odio.create_spreadsheet(fl, "1.2", compressed=compressed) as f:
         f.append_table("Site Level", site_rows)
         f.append_table("Era Level", era_rows)
         f.append_table("Normal Reads", read_rows)
+        if is_bill_check:
+            f.append_table("Bill Check Site", bill_check_site_rows)
+            f.append_table("Bill Check Era", bill_check_era_rows)
 
 
 def make_bill_row(titles, bill):
@@ -352,6 +364,7 @@ def _make_calcs(
     forecast_from,
     report_context,
     era_maps,
+    data_source_bill,
 ):
     site_gen_types = set()
     calcs = []
@@ -399,7 +412,6 @@ def _make_calcs(
             imp_ss = None
         else:
             sup_deltas = site_deltas["supply_deltas"][True][supply.source.code]
-
             imp_ss = SupplySource(
                 sess,
                 ss_start,
@@ -410,6 +422,7 @@ def _make_calcs(
                 report_context,
                 era_maps=era_maps,
                 deltas=sup_deltas,
+                bill=data_source_bill if era.pc.code == "00" else None,
             )
 
         if era.exp_mpan_core is None:
@@ -428,6 +441,7 @@ def _make_calcs(
                 report_context,
                 era_maps=era_maps,
                 deltas=sup_deltas,
+                bill=data_source_bill if era.pc.code == "00" else None,
             )
             measurement_type = exp_ss.measurement_type
 
@@ -470,6 +484,7 @@ def _make_calcs(
                 sup_deltas,
                 displaced_era.imp_supplier_contract,
                 imp_ss_name,
+                bill=data_source_bill,
             )
         else:
             imp_ss_name = imp_ss = None
@@ -485,6 +500,7 @@ def _make_calcs(
                 sup_deltas,
                 displaced_era.imp_supplier_contract,
                 imp_ss_name,
+                bill=data_source_bill,
             )
         else:
             exp_ss_name = exp_ss = None
@@ -505,6 +521,7 @@ def _make_calcs(
             report_context,
             era_maps=era_maps,
             deltas=sup_deltas,
+            bill=data_source_bill,
         )
 
         calcs.append(("0", None, ss_name, None, ss))
@@ -526,6 +543,7 @@ def _process_site(
     title_dict,
     era_rows,
     site_rows,
+    data_source_bill,
 ):
 
     calcs, displaced_era, site_gen_types = _make_calcs(
@@ -538,6 +556,7 @@ def _process_site(
         forecast_from,
         report_context,
         era_maps,
+        data_source_bill,
     )
 
     site_month_data = defaultdict(int)
@@ -551,6 +570,7 @@ def _process_site(
         displaced_era,
         era_maps=era_maps,
         deltas=site_deltas,
+        bill=data_source_bill,
     )
 
     if displaced_era is not None and supply_id is None:
@@ -1094,8 +1114,20 @@ def _process_site(
     return normal_reads
 
 
+class Object:
+    pass
+
+
 def content(
-    scenario_props, base_name, site_id, supply_id, user_id, compression, site_codes, now
+    scenario_props,
+    base_name,
+    site_id,
+    supply_id,
+    user_id,
+    compression,
+    site_codes,
+    now,
+    is_bill_check,
 ):
     report_context = {}
 
@@ -1173,6 +1205,8 @@ def content(
         site_rows = []
         era_rows = []
         normal_read_rows = []
+        bill_check_site_rows = []
+        bill_check_era_rows = []
 
         for rate_script in scenario_props.get("local_rates", []):
             contract_id = rate_script["contract_id"]
@@ -1332,7 +1366,7 @@ def content(
             for suffix in ("-kwh", "-rate", "-gbp"):
                 title_dict["exp-supplier"].append(tpr.code + suffix)
 
-        era_rows.append(
+        era_titles = (
             era_header_titles
             + summary_titles
             + [None]
@@ -1345,6 +1379,9 @@ def content(
             + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
         )
         site_rows.append(site_header_titles + summary_titles)
+        era_rows.append(era_titles)
+        bill_check_site_rows.append(site_header_titles + summary_titles)
+        bill_check_era_rows.append(era_titles)
 
         sites = sites.all()
         deltas = {}
@@ -1356,6 +1393,10 @@ def content(
             )
 
         for month_start, month_finish in month_pairs:
+            data_source_bill = Object()
+            data_source_bill.start_date = month_start
+            data_source_bill.finish_date = month_finish
+
             for site in sites:
                 if by_hh:
                     sf = [
@@ -1382,7 +1423,26 @@ def content(
                             title_dict,
                             era_rows,
                             site_rows,
+                            None,
                         )
+                        if is_bill_check:
+                            _process_site(
+                                sess,
+                                report_context,
+                                forecast_from,
+                                start,
+                                finish,
+                                site,
+                                deltas[site.id],
+                                supply_id,
+                                era_maps,
+                                now,
+                                summary_titles,
+                                title_dict,
+                                bill_check_era_rows,
+                                bill_check_site_rows,
+                                data_source_bill,
+                            )
                     except BadRequest as e:
                         raise BadRequest(f"Site Code {site.code}: {e.description}")
 
@@ -1391,17 +1451,44 @@ def content(
                 row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                 normal_read_rows.append(row)
 
-            write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+            write_spreadsheet(
+                rf,
+                compression,
+                site_rows,
+                era_rows,
+                normal_read_rows,
+                bill_check_site_rows,
+                bill_check_era_rows,
+                is_bill_check,
+            )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+        write_spreadsheet(
+            rf,
+            compression,
+            site_rows,
+            era_rows,
+            normal_read_rows,
+            bill_check_site_rows,
+            bill_check_era_rows,
+            is_bill_check,
+        )
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+        write_spreadsheet(
+            rf,
+            compression,
+            site_rows,
+            era_rows,
+            normal_read_rows,
+            bill_check_site_rows,
+            bill_check_era_rows,
+            is_bill_check,
+        )
     finally:
         if sess is not None:
             sess.close()
@@ -1471,6 +1558,9 @@ def do_post(sess):
             compression = req_bool("compression")
         else:
             compression = True
+
+        is_bill_check = req_bool("is_bill_check")
+
         user = g.user
 
         args = (
@@ -1482,6 +1572,7 @@ def do_post(sess):
             compression,
             site_codes,
             now,
+            is_bill_check,
         )
         threading.Thread(target=content, args=args).start()
         return chellow_redirect("/downloads", 303)
@@ -1511,6 +1602,7 @@ class ScenarioSource:
         deltas,
         supplier_contract,
         mpan_core,
+        bill=None,
     ):
         self.sess = sess
         self.supply = None
@@ -1542,6 +1634,7 @@ class ScenarioSource:
         self.generator_type_code = "chp"
         self.msn = ""
         self.measurement_type = "hh"
+        self.bill = bill
         self.hh_data = list(
             d.copy()
             for d in datum_range(
