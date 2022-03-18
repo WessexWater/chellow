@@ -175,6 +175,12 @@ def chellowjs_get():
     return response
 
 
+@home.route("/configuration", methods=["GET"])
+def configuration():
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    return chellow_redirect(f"/non_core_contracts/{config.id}")
+
+
 @home.route("/health")
 def health():
     return Response("healthy\n", mimetype="text/plain")
