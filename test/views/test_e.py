@@ -298,6 +298,12 @@ def test_csv_supplies_duration_get(mocker):
     )
 
 
+def test_csv_sites_duration_get(client):
+    response = client.get("/e/csv_sites_duration")
+
+    match(response, 200)
+
+
 def test_dc_contract_edit_post_error(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
