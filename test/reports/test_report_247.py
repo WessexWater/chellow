@@ -28,6 +28,8 @@ from chellow.models import (
     Scenario,
     Site,
     Source,
+    User,
+    UserRole,
     VoltageLevel,
     insert_bill_types,
     insert_comms,
@@ -90,7 +92,8 @@ def test_with_scenario(mocker, sess, client):
     match(response, 303)
 
     base_name = ["New Gen"]
-    args = scenario_props, base_name, site.id, None, None, False, [], now
+    user = User.get_by_email_address(sess, "admin@example.com")
+    args = scenario_props, base_name, site.id, None, user.id, False, [], now
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -588,6 +591,9 @@ def virtual_bill(ds):
         None,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -598,7 +604,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -616,7 +621,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -873,6 +878,9 @@ def virtual_bill(ds):
         None,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -883,7 +891,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -901,7 +908,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -1123,6 +1130,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -1133,7 +1143,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -1151,7 +1160,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -1440,6 +1449,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -1450,7 +1462,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -1468,7 +1479,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply.id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -1761,6 +1772,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -1771,7 +1785,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_1_id = site_1.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -1789,7 +1802,7 @@ def virtual_bill(ds):
         base_name,
         site_1_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -2086,6 +2099,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -2096,7 +2112,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -2114,7 +2129,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -2631,6 +2646,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -2641,7 +2659,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -2659,7 +2676,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,
@@ -2951,6 +2968,9 @@ def virtual_bill(ds):
         supply,
     )
 
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
     sess.commit()
 
     scenario_props = {
@@ -2961,7 +2981,6 @@ def virtual_bill(ds):
     }
     base_name = ["monthly_duration"]
     site_id = site.id
-    user = mocker.Mock()
     compression = False
     site_codes = []
     now = utc_datetime(2020, 1, 1)
@@ -2979,7 +2998,7 @@ def virtual_bill(ds):
         base_name,
         site_id,
         supply_id,
-        user,
+        user.id,
         compression,
         site_codes,
         now,

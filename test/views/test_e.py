@@ -2,6 +2,9 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
+from sqlalchemy import event
+from sqlalchemy.orm import Session
+
 from utils import match
 
 from chellow import hh_importer
@@ -1908,37 +1911,144 @@ def test_supplier_contract_add_rate_script(client, sess):
     assert finish_rate_script.finish_date is None
 
 
-'''
-def test_supply_edit_post_rollback(mocker, app):
-    """When inserting an era that fails, make sure rollback is called."""
-    supply_id = 1
-    with app.app_context():
-        with app.test_request_context():
-            g = mocker.patch("chellow.views.e.g", autospec=True)
-            g.sess = mocker.Mock()
-            supply_class = mocker.patch("chellow.views.e.Supply", autospec=True)
+def test_supply_edit_post(client, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
 
-            request = mocker.patch("chellow.views.e.request", autospec=True)
-            request.form = {"insert_era": 0}
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
+    )
+    participant.insert_party(
+        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
+    )
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(
+        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(
+        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
+    )
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2020, 1, 1),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 0470 7514 535",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    sess.commit()
 
-            req_date = mocker.patch("chellow.views.e.req_date", autospec=True)
-            req_date.return_value = utc_datetime(2019, 1, 1)
+    rolled_back = False
 
-            mocker.patch("chellow.views.home.flash", autospec=True)
-            era_class = mocker.patch("chellow.views.e.Era", autospec=True)
-            era_class.supply = mocker.Mock()
+    @event.listens_for(Session, "after_soft_rollback")
+    def do_something(session, previous_transaction):
+        nonlocal rolled_back
+        rolled_back = True
 
-            mocker.patch("chellow.views.e.make_response", autospec=True)
-            mocker.patch("chellow.views.e.render_template", autospec=True)
+    data = {"supply_edit_post": ""}
+    response = client.post(f"/e/supplies/{supply.id}/edit", data=data)
 
-            supply = mocker.Mock()
-            supply.insert_era_at.side_effect = BadRequest()
+    match(response, 400)
 
-            supply_class.get_by_id.return_value = supply
-
-            supply_edit_post(supply_id)
-            g.sess.rollback.assert_called_once_with()
-'''
+    assert rolled_back
 
 
 def test_supply_get(client, sess):

@@ -38,6 +38,7 @@ from chellow.models import (
     Ssc,
     Supply,
     Tpr,
+    User,
 )
 from chellow.utils import (
     HH,
@@ -1094,7 +1095,7 @@ def _process_site(
 
 
 def content(
-    scenario_props, base_name, site_id, supply_id, user, compression, site_codes, now
+    scenario_props, base_name, site_id, supply_id, user_id, compression, site_codes, now
 ):
     report_context = {}
 
@@ -1163,6 +1164,7 @@ def content(
             base_name.append("sitecodes")
             sites = sites.filter(Site.code.in_(site_codes))
 
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
             "_".join(base_name) + ".ods", user
         )
@@ -1476,7 +1478,7 @@ def do_post(sess):
             base_name,
             site_id,
             supply_id,
-            user,
+            user.id,
             compression,
             site_codes,
             now,

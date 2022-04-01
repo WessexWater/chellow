@@ -8,15 +8,25 @@ from flask import g
 from sqlalchemy.sql import func
 
 import chellow.dloads
-from chellow.models import Batch, Bill, Contract, GBatch, GBill, GContract, Session
+from chellow.models import (
+    Batch,
+    Bill,
+    Contract,
+    GBatch,
+    GBill,
+    GContract,
+    Session,
+    User,
+)
 from chellow.utils import csv_make_val
 from chellow.views.home import chellow_redirect
 
 
-def content(user):
+def content(user_id):
     sess = f = writer = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names("batches.csv", user)
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")
@@ -141,6 +151,5 @@ def content(user):
 
 
 def do_get(sess):
-    args = (g.user,)
-    threading.Thread(target=content, args=args).start()
+    threading.Thread(target=content, args=(g.user.id,)).start()
     return chellow_redirect("/downloads", 303)

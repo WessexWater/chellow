@@ -36,6 +36,7 @@ from chellow.models import (
     Site,
     SiteEra,
     Supply,
+    User,
 )
 from chellow.utils import (
     HH,
@@ -96,7 +97,7 @@ def content(
     contract_id,
     start_date,
     finish_date,
-    user,
+    user_id,
     mpan_cores,
     fname_additional,
 ):
@@ -105,13 +106,14 @@ def content(
     forecast_date = to_utc(Datetime.max)
 
     try:
+        sess = Session()
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
             f"bill_check_{fname_additional}.csv", user
         )
         tmp_file = open(running_name, mode="w", newline="")
         writer = csv.writer(tmp_file, lineterminator="\n")
 
-        sess = Session()
         report_run = ReportRun.insert(sess, "bill_check", user, fname_additional, {})
 
         bills = (
@@ -289,7 +291,7 @@ def do_post(sess):
         contract_id,
         start_date,
         finish_date,
-        g.user,
+        g.user.id,
         mpan_cores,
         fname_additional,
     )

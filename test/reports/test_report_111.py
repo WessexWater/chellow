@@ -23,6 +23,7 @@ from chellow.models import (
     ReportRun,
     Site,
     Source,
+    User,
     VoltageLevel,
     insert_bill_types,
     insert_comms,
@@ -67,6 +68,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
     )
     batch = supplier_contract.insert_batch(sess, "005", "batch 5")
     sess.commit()
+    user = User.get_by_email_address(sess, "admin@example.com")
     MockThread = mocker.patch("chellow.reports.report_111.threading.Thread")
 
     query_string = {
@@ -83,7 +85,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
         None,
         None,
         None,
-        None,
+        user.id,
         ["22 1065 3921 534"],
         "_batch_005",
     )

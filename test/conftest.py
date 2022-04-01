@@ -10,7 +10,7 @@ from requests.auth import _basic_auth_str
 
 import chellow.models
 from chellow import create_app
-from chellow.models import Session, stop_sqlalchemy
+from chellow.models import Session, User, UserRole, stop_sqlalchemy
 
 
 def fresh_db():
@@ -68,7 +68,8 @@ def client(app, sess):
 
     with app.test_client() as client:
         with app.app_context():
-            sess.execute("INSERT INTO user_role (code) VALUES ('editor')")
+            user_role = UserRole.insert(sess, "editor")
+            User.insert(sess, "admin@example.com", "admin", user_role, None)
 
             sess.execute(
                 "INSERT INTO market_role (code, description) "

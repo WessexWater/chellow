@@ -14,6 +14,7 @@ from chellow.models import (
     MarketRole,
     Participant,
     Site,
+    User,
     insert_bill_types,
     insert_g_reading_frequencies,
     insert_g_units,
@@ -200,6 +201,7 @@ def virtual_bill(ds):
         "",
         breakdown,
     )
+    user = User.get_by_email_address(sess, "admin@example.com")
     sess.commit()
 
     mock_file = StringIO()
@@ -210,8 +212,7 @@ def virtual_bill(ds):
     )
     mocker.patch("chellow.reports.report_429.os.rename")
 
-    user = mocker.Mock()
-    chellow.reports.report_429.content(g_batch.id, g_bill.id, user)
+    chellow.reports.report_429.content(g_batch.id, g_bill.id, user.id)
 
     actual = mock_file.getvalue()
     expected = [
@@ -244,6 +245,8 @@ def test_batch_http(mocker, sess, client):
         sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+
+    user = User.get_by_email_address(sess, "admin@example.com")
     sess.commit()
 
     query_string = {"g_batch_id": g_batch.id}
@@ -255,8 +258,7 @@ def test_batch_http(mocker, sess, client):
 
     match(response, 303)
 
-    user = None
-    args = (g_batch.id, None, user)
+    args = g_batch.id, None, user.id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)
 
 
@@ -312,6 +314,7 @@ def test_bill_http(mocker, sess, client):
         "",
         breakdown,
     )
+    user = User.get_by_email_address(sess, "admin@example.com")
     sess.commit()
 
     query_string = {"g_bill_id": g_bill.id}
@@ -323,6 +326,5 @@ def test_bill_http(mocker, sess, client):
 
     match(response, 303)
 
-    user = None
-    args = (None, g_bill.id, user)
+    args = None, g_bill.id, user.id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)

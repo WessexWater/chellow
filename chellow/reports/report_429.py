@@ -17,17 +17,18 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 import chellow.g_engine
-from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra
+from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra, User
 from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
 from chellow.views.home import chellow_redirect
 
 
-def content(g_batch_id, g_bill_id, user):
+def content(g_batch_id, g_bill_id, user_id):
     forecast_date = to_utc(Datetime.max)
     report_context = {}
     sess = tmp_file = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
 
         running_name, finished_name = chellow.dloads.make_names(
             "g_bill_check.csv", user
@@ -348,5 +349,5 @@ def do_get(sess):
     else:
         raise BadRequest("The bill check needs a g_batch_id or g_bill_id.")
 
-    threading.Thread(target=content, args=(g_batch_id, g_bill_id, g.user)).start()
+    threading.Thread(target=content, args=(g_batch_id, g_bill_id, g.user.id)).start()
     return chellow_redirect("/downloads", 303)

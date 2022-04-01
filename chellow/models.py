@@ -2022,23 +2022,6 @@ SALT_LENGTH = 16
 
 
 class User(Base, PersistentClass):
-    @staticmethod
-    def insert(sess, email_address, password, user_role, party):
-        try:
-            user = User(email_address, password, user_role, party)
-            sess.add(user)
-            sess.flush()
-        except IntegrityError as e:
-            if (
-                "duplicate key value violates unique "
-                + 'constraint "user_email_address_key"'
-                in str(e)
-            ):
-                raise BadRequest("There's already a user with this email address.")
-            else:
-                raise e
-        return user
-
     __tablename__ = "user"
     id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
@@ -2072,6 +2055,34 @@ class User(Base, PersistentClass):
         dk = pbkdf2_hmac("sha256", password.encode("utf8"), salt, 100000)
         self.password_digest = hexlify(salt + dk).decode("ascii")
 
+    @staticmethod
+    def insert(sess, email_address, password, user_role, party):
+        try:
+            user = User(email_address, password, user_role, party)
+            sess.add(user)
+            sess.flush()
+        except IntegrityError as e:
+            if (
+                "duplicate key value violates unique "
+                + 'constraint "user_email_address_key"'
+                in str(e)
+            ):
+                raise BadRequest("There's already a user with this email address.")
+            else:
+                raise e
+        return user
+
+    @staticmethod
+    def get_by_email_address(sess, email_address):
+        user = sess.execute(
+            select(User).where(User.email_address == email_address)
+        ).scalar_one_or_none()
+        if user is None:
+            raise BadRequest(
+                f"There isn't a user with the email address {email_address}."
+            )
+        return user
+
 
 class UserRole(Base, PersistentClass):
     __tablename__ = "user_role"
@@ -2081,6 +2092,13 @@ class UserRole(Base, PersistentClass):
 
     def __init__(self, code):
         self.code = code
+
+    @staticmethod
+    def insert(sess, code):
+        role = UserRole(code)
+        sess.add(role)
+        sess.flush()
+        return role
 
     @staticmethod
     def get_by_code(sess, code):
@@ -6260,7 +6278,7 @@ def db_init(sess, root_path):
     sess.commit()
 
     for code in ("editor", "viewer", "party-viewer"):
-        sess.add(UserRole(code))
+        UserRole.insert(sess, code)
     sess.commit()
 
     insert_sources(sess)
