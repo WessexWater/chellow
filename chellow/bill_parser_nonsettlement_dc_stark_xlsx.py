@@ -1,27 +1,24 @@
 import decimal
-from datetime import datetime as Datetime
 from decimal import Decimal
+
+from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
-from xlrd import open_workbook, xldate_as_tuple
-
 from chellow.models import Session
-from chellow.utils import ct_datetime, parse_mpan_core, to_ct, to_utc
+from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
 
-def get_ct_date(title_row, row, name, datemode):
-    val = get_value(title_row, row, name)
-    if isinstance(val, float):
-        return to_ct(Datetime(*xldate_as_tuple(val, datemode)))
+def get_ct_date(title_row, row, name):
+    return get_value(title_row, row, name)
 
 
-def get_start_date(title_row, row, name, datemode):
-    return to_utc(get_ct_date(title_row, row, name, datemode))
+def get_start_date(title_row, row, name):
+    return to_utc(get_ct_date(title_row, row, name))
 
 
-def get_finish_date(title_row, row, name, datemode):
-    d = get_ct_date(title_row, row, name, datemode)
+def get_finish_date(title_row, row, name):
+    d = get_ct_date(title_row, row, name)
     return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
@@ -69,8 +66,8 @@ METER_RATE = Decimal("60.00")
 
 class Parser:
     def __init__(self, f):
-        self.book = open_workbook(file_contents=f.read())
-        self.sheet = self.book.sheet_by_index(0)
+        self.book = load_workbook(f)
+        self.sheet = self.book.worksheets[0]
 
         self.last_line = None
         self._line_number = None
@@ -93,9 +90,9 @@ class Parser:
         try:
             sess = Session()
             bills = []
-            title_row = self.sheet.row(0)
-            for row_index in range(1, self.sheet.nrows):
-                row = self.sheet.row(row_index)
+            row_iter = self.sheet.iter_rows()
+            title_row = next(row_iter)
+            for row in row_iter:
                 val = get_value(title_row, row, "mpan ref")
                 if val is None or val == "":
                     break
@@ -103,9 +100,9 @@ class Parser:
                 self._set_last_line(row_index, val)
                 msn = str(get_value(title_row, row, "meter")).strip()
                 mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
-                start_date = get_start_date(title_row, row, "start", self.book.datemode)
+                start_date = get_start_date(title_row, row, "start")
                 issue_date = start_date
-                finish_date = get_finish_date(title_row, row, "end", self.book.datemode)
+                finish_date = get_finish_date(title_row, row, "end")
                 check = get_str(title_row, row, "check")
                 if check != "Billed":
                     continue

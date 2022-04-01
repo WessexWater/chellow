@@ -4,22 +4,20 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
+from openpyxl import load_workbook
+
 from werkzeug.exceptions import BadRequest
 
-from xlrd import open_workbook, xldate_as_tuple
-
 from chellow.models import Session
-from chellow.utils import hh_format, parse_mpan_core, to_ct, to_utc
+from chellow.utils import hh_format, parse_mpan_core, to_utc
 
 
-def get_ct_date(row, name, datemode):
-    val = get_value(row, name)
-    if isinstance(val, float):
-        return to_ct(Datetime(*xldate_as_tuple(val, datemode)))
+def get_ct_date(row, name):
+    return get_value(row, name)
 
 
-def get_start_date(row, name, datemode):
-    dt = get_ct_date(row, name, datemode)
+def get_start_date(row, name):
+    dt = get_ct_date(row, name)
     return None if dt is None else to_utc(dt)
 
 
@@ -53,8 +51,8 @@ def get_int(row, idx):
 
 class Parser:
     def __init__(self, f):
-        self.book = open_workbook(file_contents=f.read())
-        self.sheet = self.book.sheet_by_index(0)
+        self.book = load_workbook(f)
+        self.sheet = self.book.worksheets[0]
 
         self.last_line = None
         self._line_number = None
@@ -77,21 +75,21 @@ class Parser:
         try:
             sess = Session()
             bills = []
-            title_row = self.sheet.row(10)
-            issue_date_str = get_str(self.sheet.row(6), 0)
+            title_row = self.sheet[10]
+            issue_date_str = get_str(self.sheet[7], 0)
             issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
-            for row_index in range(11, self.sheet.nrows):
-                row = self.sheet.row(row_index)
+            for row_index in range(12, len(self.sheet["A"]) + 1):
+                row = self.sheet[row_index]
                 val = get_value(row, 1)
                 if val is None or val == "":
                     break
 
                 self._set_last_line(row_index, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                start_date = get_start_date(row, 3, self.book.datemode)
-                finish_date = get_start_date(
-                    row, 4, self.book.datemode
-                ) + relativedelta(hours=23, minutes=30)
+                start_date = get_start_date(row, 3)
+                finish_date = get_start_date(row, 4) + relativedelta(
+                    hours=23, minutes=30
+                )
 
                 net = round(get_dec(row, 31), 2)
 
@@ -111,7 +109,7 @@ class Parser:
                 annual_visits = get_int(row, 27)
                 annual_rate = get_dec(row, 28)
                 annual_gbp = get_dec(row, 29)
-                annual_date = hh_format(get_start_date(row, 30, self.book.datemode))
+                annual_date = hh_format(get_start_date(row, 30))
 
                 if cop_3_meters > 0:
                     cop = "3"
