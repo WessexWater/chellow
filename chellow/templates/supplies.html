@@ -76,7 +76,7 @@
 										<td>{{e_era.dc_account}}</td>
 										<td>
 											{% if e_era.imp_mpan_core %}
-												{{e_era.pc.code}} {{e_era.old_mtc.code}}
+												{{e_era.pc.code}} {{e_era.mtc_participant.mtc.code}}
 												{{e_era.imp_llfc.code}} {{e_era.imp_mpan_core}}
 											{% endif %}
 										</td>
@@ -93,7 +93,7 @@
 										</td>
 										<td>
 											{% if e_era.exp_mpan_core %}
-												{{e_era.pc.code}} {{e_era.old_mtc.code}}
+												{{e_era.pc.code}} {{e_era.mtc_participant.mtc.code}}
 												{{e_era.exp_llfc.code}} {{e_era.exp_mpan_core}}
 											{% endif %}
 										</td>
