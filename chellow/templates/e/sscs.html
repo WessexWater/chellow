@@ -24,7 +24,7 @@
 			{% for ssc in sscs %}
 				<tr>
 					<td>
-						<a href="/sscs/{{ssc.id}}">{{ssc.code}}</a>
+						<a href="/e/sscs/{{ssc.id}}">{{ssc.code}}</a>
 					</td>
 					<td>{{ ssc.description }}</td>
 					<td>
@@ -38,7 +38,7 @@
 					<td>{{ ssc.valid_to|hh_format }}</td>
 					<td>
 						{%- for mr in ssc.measurement_requirements -%}
-							<a href="/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
+							<a href="/e/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>
 							{%- if not loop.last %}, {% endif %}
 						{%- endfor -%}
 					</td>
