@@ -101,108 +101,106 @@
 					{% endfor %}
 				</select>
 				<label>Name</label> {{input_text('name', required=True)}}
-				<fieldset>
-					<legend>Start Date</legend>
-					{{input_date('start')}}
 
-					<label>Meter Serial Number</label> {{input_text('msn')}}
-					<label>GSP Group</label>
-					<select name="gsp_group_id">
-						{% for gsp_group in gsp_groups %}
+				<label>Start Date</label> {{input_date('start')}}
+
+				<label>Meter Serial Number</label> {{input_text('msn')}}
+				<label>GSP Group</label>
+				<select name="gsp_group_id">
+					{% for gsp_group in gsp_groups %}
+						{{input_option(
+							'gsp_group_id', gsp_group.id,
+							gsp_group.code + ' ' + gsp_group.description)}}
+					{% endfor %}
+				</select>
+				<label>MOP Contract</label>
+				<select name="mop_contract_id">
+					{% for contract in mop_contracts %}
+						{{input_option(
+							'mop_contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</select>
+				<label>MOP Account</label> {{input_text('mop_account')}}
+				<label>DC Contract</label>
+				<select name="dc_contract_id">
+					{% for contract in dc_contracts %}
+						{{input_option(
+							'dc_contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</select>
+				<label>DC Account</label> {{input_text('dc_account')}}
+				<label>Profile Class</label>
+				<select name="pc_id">
+					{% for pc in pcs %}
+						{{input_option(
+							'pc_id', pc.id, pc.code + ' ' + pc.name)}}
+					{% endfor %}
+				</select>
+				<label>MTC Code</label>
+				{{input_text('mtc_code', pattern='[0-9]*', maxlength='3')}}
+				<label>CoP</label>
+				<select name="cop_id">
+					{% for cop in cops %}
+						{{input_option('cop_id', cop.id, cop.description)}}
+					{% endfor %}
+				</select>										
+				<label>Comm</label>
+				<select name="comm_id">
+					{% for comm in comms %}
+						{{input_option(
+							'comm_id', comm.id, comm.code + ' ' + comm.description)}}
+					{% endfor %}
+				</select>										
+				<label>SSC</label> {{input_text('ssc_code')}}
+				<label>Energisation Status</label>
+				<select name="energisation_status_id">
+					{% for energisation_status in energisation_statuses %}
+						{{input_option(
+							'energisation_status_id', energisation_status.id,
+							energisation_status.code + ' - ' +
+							energisation_status.description,
+							initial=default_energisation_status.id)}}
+					{% endfor %}
+				</select>
+				<label>Properties</label>
+				{{input_textarea('properties', '{}', 20, 80)}}
+				<fieldset>
+					<legend>Import</legend>
+					<label>Mpan Core</label>
+							{{input_text('imp_mpan_core', '', 35, pattern='[0-9 ]*')}}
+					<label>LLFC</label>
+					{{input_text('imp_llfc_code', pattern='[a-zA-Z0-9]{3}', maxlength='3')}}
+					<label>Supply Capacity</label>
+					{{input_number('imp_sc', '0', required=True)}}
+					<label>Supplier Contract</label>
+					<select name="imp_supplier_contract_id">
+						{% for contract in supplier_contracts %}
 							{{input_option(
-								'gsp_group_id', gsp_group.id,
-								gsp_group.code + ' ' + gsp_group.description)}}
+								'imp_supplier_contract_id', contract.id,
+								contract.name)}}
 						{% endfor %}
 					</select>
-					<label>MOP Contract</label>
-					<select name="mop_contract_id">
-						{% for contract in mop_contracts %}
+					<label>Supplier Account</label>
+					{{input_text('imp_supplier_account')}}
+				</fieldset>	
+				<fieldset>
+					<legend>Export</legend>
+					<label>Mpan Core</label>
+					{{input_text('exp_mpan_core', '', 35, pattern='[0-9 ]*')}}
+					<label>LLFC</label>
+					{{input_text('exp_llfc_code', maxlength='3', pattern='[0-9]*')}}
+					<label>Supply Capacity</label>
+					{{input_number('exp_sc', '0', required=True)}}
+					<label>Supplier Contract</label>
+					<select name="exp_supplier_contract_id">
+						{% for contract in supplier_contracts %}
 							{{input_option(
-								'mop_contract_id', contract.id, contract.name)}}
+								'exp_supplier_contract_id', contract.id,
+								contract.name)}}
 						{% endfor %}
 					</select>
-					<label>MOP Account</label> {{input_text('mop_account')}}
-					<label>DC Contract</label>
-					<select name="dc_contract_id">
-						{% for contract in dc_contracts %}
-							{{input_option(
-								'dc_contract_id', contract.id, contract.name)}}
-						{% endfor %}
-					</select>
-					<label>DC Account</label> {{input_text('dc_account')}}
-					<label>Profile Class</label>
-					<select name="pc_id">
-						{% for pc in pcs %}
-							{{input_option(
-								'pc_id', pc.id, pc.code + ' ' + pc.name)}}
-						{% endfor %}
-					</select>
-					<label>MTC Code</label>
-				 	{{input_text('mtc_code', pattern='[0-9]*', maxlength='3')}}
-					<label>CoP</label>
-					<select name="cop_id">
-						{% for cop in cops %}
-							{{input_option('cop_id', cop.id, cop.description)}}
-						{% endfor %}
-					</select>										
-					<label>Comm</label>
-					<select name="comm_id">
-						{% for comm in comms %}
-							{{input_option(
-								'comm_id', comm.id, comm.code + ' ' + comm.description)}}
-						{% endfor %}
-					</select>										
-					<label>SSC</label> {{input_text('ssc_code')}}
-					<label>Energisation Status</label>
-					<select name="energisation_status_id">
-						{% for energisation_status in energisation_statuses %}
-							{{input_option(
-								'energisation_status_id', energisation_status.id,
-								energisation_status.code + ' - ' +
-								energisation_status.description,
-								initial=default_energisation_status.id)}}
-						{% endfor %}
-					</select>
-					<label>Properties</label>
-					{{input_textarea('properties', '{}', 20, 80)}}
-					<fieldset>
-						<legend>Import</legend>
-						<label>Mpan Core</label>
-								{{input_text('imp_mpan_core', '', 35, pattern='[0-9 ]*')}}
-						<label>LLFC</label>
-						{{input_text('imp_llfc_code', pattern='[a-zA-Z0-9]{3}', maxlength='3')}}
-						<label>Supply Capacity</label>
-						{{input_number('imp_sc', '0', required=True)}}
-						<label>Supplier Contract</label>
-						<select name="imp_supplier_contract_id">
-							{% for contract in supplier_contracts %}
-								{{input_option(
-									'imp_supplier_contract_id', contract.id,
-									contract.name)}}
-							{% endfor %}
-						</select>
-						<label>Supplier Account</label>
-						{{input_text('imp_supplier_account')}}
-					</fieldset>	
-					<fieldset>
-						<legend>Export</legend>
-						<label>Mpan Core</label>
-						{{input_text('exp_mpan_core', '', 35, pattern='[0-9 ]*')}}
-						<label>LLFC</label>
-						{{input_text('exp_llfc_code', maxlength='3', pattern='[0-9]*')}}
-						<label>Supply Capacity</label>
-						{{input_number('exp_sc', '0', required=True)}}
-						<label>Supplier Contract</label>
-						<select name="exp_supplier_contract_id">
-							{% for contract in supplier_contracts %}
-								{{input_option(
-									'exp_supplier_contract_id', contract.id,
-									contract.name)}}
-							{% endfor %}
-						</select>
-						<label>Supplier Account</label>
-						{{input_text('exp_supplier_account')}}
-					</fieldset>
+					<label>Supplier Account</label>
+					{{input_text('exp_supplier_account')}}
 				</fieldset>
 				<input name="insert_electricity" type="submit" value="Insert">
 			</fieldset>
