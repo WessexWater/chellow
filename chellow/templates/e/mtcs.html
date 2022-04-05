@@ -17,8 +17,6 @@
 				<th>Code</th>
 				<th>Common?</th>
 				<th>Related Metering?</th>
-				<th>Meter Type</th>
-				<th>TPR Count</th>
 				<th>Valid From</th>
 				<th>Valid To</th>
 			</tr>
@@ -26,7 +24,7 @@
 		<tbody>
 			{% for mtc in mtcs %}
 				<tr>
-					<td><a href="/e/mtcs/{mtc.id}}">view</a></td>
+					<td><a href="/e/mtcs/{{mtc.id}}">view</a></td>
 					<td>{{mtc.code}}</td>
 					<td>
 						{% if mtc.is_common %}

@@ -1568,6 +1568,14 @@ def test_mop_batch_upload_file_post(sess, client):
     assert batch_file.data == file_bytes
 
 
+def test_mtcs_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 4, 1))
+    Mtc.insert(sess, "001", True, True, valid_from, None)
+    sess.commit()
+    response = client.get("/e/mtcs")
+    match(response, 200)
+
+
 def test_mtc_participants(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")

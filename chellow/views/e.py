@@ -2744,7 +2744,7 @@ def mop_rate_script_add_post(contract_id):
 
 @e.route("/mtcs")
 def mtcs_get():
-    mtcs = g.sess.execute(select(Mtc).order_by(Mtc.code)).all()
+    mtcs = g.sess.execute(select(Mtc).order_by(Mtc.code)).scalars()
     return render_template("mtcs.html", mtcs=mtcs)
 
 
