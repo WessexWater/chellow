@@ -7,9 +7,10 @@
 
 {% block nav %}
 	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="/e/supplier_contracts/{{supplier_rate_script.contract.id}}">{{supplier_rate_script.contract.name}}</a> &raquo; 
-	<a href="/e/supplier_rate_scripts/{{supplier_rate_script.id}}">Rate Script {{supplier_rate_script.start_date|hh_format}}</a>
- 	&raquo; Edit
+	<a href="/e/supplier_contracts/{{supplier_rate_script.contract.id}}"
+		>{{supplier_rate_script.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_rate_scripts/{{supplier_rate_script.id}}"
+		>Rate Script {{supplier_rate_script.start_date|hh_format}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
