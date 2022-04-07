@@ -15,7 +15,7 @@
 
 	{% if task %}
 
-		<table class="DataTable widthAuto noMarginBottom">
+		<table>
 			<caption>
 				<a href="/e/dc_contracts/{{contract.id}}/auto_importer">Refresh page</a>
 			</caption>
@@ -30,14 +30,10 @@
 		</table>        
 
 		<form method="post">
-			<fieldset>
+			<fieldset {% if task.is_locked() %}disabled{% endif %}>
 				<legend>Import Now</legend>
 				<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
-				<input type="submit" value="Import" name="now"
-					{% if task.is_locked() %}
-						disabled
-					{% endif %}
-				>
+				<input type="submit" value="Import" name="now">
 			</fieldset>
 		</form>
 

@@ -277,7 +277,6 @@ main h4 {
 
 main li {
 	list-style-type: none;
-	color: #009FD9;
 }
 
 main li:before {
@@ -301,6 +300,11 @@ input[type = submit]:hover {
 	cursor: pointer;
 }
 
+input[type = submit]:disabled {
+	color: silver;
+	background-color: gray;
+	cursor: not-allowed;
+}
 
 .global {
 	color: red;

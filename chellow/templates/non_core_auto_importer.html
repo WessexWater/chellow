@@ -22,15 +22,12 @@
 				<td>{{importer.is_locked()}}</td>
 			</tr>
 		</table>
-		<br>
-		{% if not importer.is_locked() %}
-			<form method="post">
-				<fieldset>
-					<legend>Import Now</legend>
-					<input type="submit" value="Import" name="now">
-				</fieldset>
-			</form>
-		{% endif %}
+		<form method="post">
+			<fieldset {% if importer.is_locked() %}disabled{% endif %}>
+				<legend>Import Now</legend>
+				<input type="submit" value="Import" name="now">
+			</fieldset>
+		</form>
 
 		<h4>Log</h4>
 		<ul>
