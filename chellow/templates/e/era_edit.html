@@ -74,7 +74,8 @@
 		<form action="/e/eras/{{era.id}}/edit" method="post">
 			<fieldset>
 				<legend>Attach to another site</legend>
-				<label>Site Code {{input_text("site_code", '')}}</label>
+				<label>Site Code</label>
+				{{input_text("site_code", '')}}
 				<input type="submit" name="attach" value="Attach">
 			</fieldset>
 		</form>
@@ -82,25 +83,23 @@
 		<form action="/e/eras/{{era.id}}/edit" method="post">	
 			<fieldset>
 				<legend>Update this era</legend>	
-				<fieldset>
-					<label>Start date</label> {{input_date('start', era.start_date)}}
-				</fieldset>
-				<fieldset>
-					<label>End date</label> {{input_date('finish', era.finish_date)}}
-					<label>Ended?</label>
-					{{input_checkbox('is_ended', era.finish_date is not none)}}
-				</fieldset>
+				<label>Start Date</label> {{input_date('start', era.start_date)}}
+				<label>Finish Date</label> {{input_date('finish', era.finish_date)}}
+				<label>Finished?</label>
+				{{input_checkbox('is_ended', era.finish_date is not none)}}
 				<label>MOP Contract</label>
 				<select name="mop_contract_id">
 					{% for contract in mop_contracts %}
-						{{input_option('mop_contract_id', contract.id, contract.name, era.mop_contract.id)}}
+						{{input_option('mop_contract_id', contract.id, contract.name,
+						era.mop_contract.id)}}
 					{% endfor %}
 				</select>
 				<label>MOP Account</label> {{input_text('mop_account', era.mop_account)}}
 				<label>DC Contract</label>
 				<select name="dc_contract_id">
 					{% for contract in dc_contracts %}
-						{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
+						{{input_option('dc_contract_id', contract.id, contract.name,
+						era.dc_contract.id)}}
 					{% endfor %}
 				</select>
 				<label>DC Account</label>
@@ -118,7 +117,8 @@
 				<label>CoP</label>
 				<select name="cop_id">
 					{% for cop in cops %}
-						{{input_option('cop_id', cop.id, cop.code + ' ' + cop.description, era.cop.id)}}
+						{{input_option('cop_id', cop.id, cop.code + ' ' + cop.description,
+						era.cop.id)}}
 					{% endfor %}
 				</select>
 				<label>Comm</label>
@@ -139,11 +139,13 @@
 					{% endfor %}
 				</select>
 				<label>Properties</label>
-				{{input_textarea('properties', era.properties, 20, 80)}}
-				<p>
-					The <code>meter_type</code> property contains a
-					<a href="/e/dtc_meter_types">DTC Meter Type Code</a>.
-				</p>
+				<div>
+					{{input_textarea('properties', era.properties, 20, 80)}}
+					<p>
+						The <code>meter_type</code> property contains a
+						<a href="/e/dtc_meter_types">DTC Meter Type Code</a>.
+					</p>
+				</div>
 
 				<fieldset>
 					<legend>Import MPAN</legend>

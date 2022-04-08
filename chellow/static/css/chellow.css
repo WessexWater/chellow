@@ -306,6 +306,12 @@ input[type = submit]:disabled {
 	cursor: not-allowed;
 }
 
+input[type = file] {
+	border-style: solid;
+	border-width: thin;
+	border-color: silver;
+}
+
 .global {
 	color: red;
 	font-weight: bold;

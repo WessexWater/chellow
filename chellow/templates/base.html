@@ -134,7 +134,7 @@
 			{%- endif -%}
 		</textarea>
 		{% if show_pos %}
-			<p id="{{name}}_pos"></p>
+			<p id="{{name}}_pos">Line: Column:</p>
 			<script type="text/javascript">
 				var props = document.getElementById('{{name}}');
 				var cursorPos = document.getElementById('{{name}}_pos');
