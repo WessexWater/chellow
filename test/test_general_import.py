@@ -333,6 +333,7 @@ def test_general_import_era_update(mocker):
         "{no change}",
         "{no change}",
         "{no change}",
+        "{no change}",
     ]
     args = []
     chellow.general_import.general_import_era(sess, action, vals, args)

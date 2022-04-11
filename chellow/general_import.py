@@ -143,7 +143,10 @@ def general_import_era(sess, action, vals, args):
         cop_code = add_arg(args, "CoP", vals, 11)
         cop = era.cop if cop_code == NO_CHANGE else Cop.get_by_code(sess, cop_code)
 
-        ssc_code = add_arg(args, "SSC", vals, 12)
+        comm_code = add_arg(args, "Comms Type", vals, 12)
+        comm = era.comm if comm_code == NO_CHANGE else Comm.get_by_code(sess, comm_code)
+
+        ssc_code = add_arg(args, "SSC", vals, 13)
         if ssc_code == NO_CHANGE:
             ssc = era.ssc
         elif len(ssc_code) == 0:
@@ -151,19 +154,19 @@ def general_import_era(sess, action, vals, args):
         else:
             ssc = Ssc.get_by_code(sess, ssc_code)
 
-        es_code = add_arg(args, "Energisation Status", vals, 13)
+        es_code = add_arg(args, "Energisation Status", vals, 14)
         if es_code == NO_CHANGE:
             es = era.energisation_status
         else:
             es = EnergisationStatus.get_by_code(sess, es_code)
 
-        properties = add_arg(args, "Properties", vals, 14)
+        properties = add_arg(args, "Properties", vals, 15)
         if properties == NO_CHANGE:
             properties = loads(era.properties)
         else:
             properties = loads(properties)
 
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 15)
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 16)
         imp_llfc_code = None
         imp_sc = None
         imp_supplier_contract = None
@@ -174,11 +177,11 @@ def general_import_era(sess, action, vals, args):
             imp_mpan_core = None
 
         if imp_mpan_core is not None:
-            imp_llfc_code = add_arg(args, "Import LLFC", vals, 16)
+            imp_llfc_code = add_arg(args, "Import LLFC", vals, 17)
             if imp_llfc_code == NO_CHANGE:
                 imp_llfc_code = era.imp_llfc.code
 
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 17)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 18)
             if imp_sc_str == NO_CHANGE:
                 imp_sc = era.imp_sc
             else:
@@ -190,7 +193,7 @@ def general_import_era(sess, action, vals, args):
                     )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 18
+                args, "Import Supplier Contract", vals, 19
             )
             if imp_supplier_contract_name == NO_CHANGE:
                 imp_supplier_contract = era.imp_supplier_contract
@@ -199,7 +202,7 @@ def general_import_era(sess, action, vals, args):
                     sess, imp_supplier_contract_name
                 )
 
-            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 19)
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 20)
             if imp_supplier_account == NO_CHANGE:
                 imp_supplier_account = era.imp_supplier_account
 
@@ -208,19 +211,19 @@ def general_import_era(sess, action, vals, args):
         exp_supplier_contract = None
         exp_supplier_account = None
         exp_sc = None
-        if len(vals) > 20:
-            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 20)
+        if len(vals) > 21:
+            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 21)
             if exp_mpan_core == NO_CHANGE:
                 exp_mpan_core = era.exp_mpan_core
             elif len(exp_mpan_core) == 0:
                 exp_mpan_core = None
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 21)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 22)
                 if exp_llfc_code == NO_CHANGE:
                     exp_llfc_code = era.exp_llfc.code
 
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 22)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 23)
                 if exp_sc_str == NO_CHANGE:
                     exp_sc = era.exp_sc
                 else:
@@ -232,7 +235,7 @@ def general_import_era(sess, action, vals, args):
                         )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 23
+                    args, "Export Supplier Contract", vals, 24
                 )
                 if exp_supplier_contract_name == NO_CHANGE:
                     exp_supplier_contract = era.exp_supplier_contract
@@ -242,7 +245,7 @@ def general_import_era(sess, action, vals, args):
                     )
 
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 24
+                    args, "Export Supplier Account", vals, 25
                 )
                 if exp_supplier_account == NO_CHANGE:
                     exp_supplier_account = era.exp_supplier_account
@@ -260,6 +263,7 @@ def general_import_era(sess, action, vals, args):
             pc,
             mtc_code,
             cop,
+            comm,
             ssc,
             es,
             properties,
