@@ -13,7 +13,12 @@
 		<fieldset>
 			<legend>Download</legend>	
 			<label>From</label> {{input_date('start', last_month_start)}}
+
 			<label>To</label> {{input_date('finish', last_month_finish)}}
+
+			<label>MPAN Cores</label>
+		 	{{input_textarea('mpan_cores', '', 5, 40,
+			placeholder='One on each line, includes all supplies if left blank')}}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>

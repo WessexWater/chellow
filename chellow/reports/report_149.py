@@ -7,9 +7,8 @@ from itertools import chain
 
 from flask import g, request
 
-from sqlalchemy import Float, cast, func, or_
+from sqlalchemy import null, or_, select
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
@@ -21,7 +20,6 @@ from chellow.models import (
     BillType,
     Channel,
     Era,
-    HhDatum,
     Llfc,
     MtcParticipant,
     ReadType,
@@ -30,7 +28,17 @@ from chellow.models import (
     SiteEra,
     Supply,
 )
-from chellow.utils import HH, hh_format, hh_max, hh_min, req_hh_date, req_int, to_utc
+from chellow.utils import (
+    HH,
+    csv_make_val,
+    hh_max,
+    hh_min,
+    parse_mpan_core,
+    req_hh_date,
+    req_int,
+    req_str,
+    to_utc,
+)
 from chellow.views.home import chellow_redirect
 
 
@@ -48,136 +56,115 @@ def mpan_bit(
     forecast_date,
     caches,
 ):
-    mpan_core_str = llfc_code = sc_str = supplier_contract_name = num_bad = ""
-    gsp_kwh = msp_kwh = md = non_actual = 0
-    date_at_md = kvarh_at_md = None
 
-    mpan_core = era.imp_mpan_core if is_import else era.exp_mpan_core
-    if mpan_core is not None:
-        if num_bad == "":
-            num_bad = 0
+    active_channel = sess.execute(
+        select(Channel).where(
+            Channel.era == era,
+            Channel.channel_type == "ACTIVE",
+            Channel.imp_related == is_import,
+        )
+    ).scalar_one_or_none()
 
-        mpan_core_str = mpan_core
-        if is_import:
-            supplier_contract_name = era.imp_supplier_contract.name
-            llfc = era.imp_llfc
-            sc = era.imp_sc
-        else:
-            supplier_contract_name = era.exp_supplier_contract.name
-            llfc = era.exp_llfc
-            sc = era.exp_sc
-        llfc_code = llfc.code
-        sc_str = str(sc)
+    md_kw_date = None
+    md_kva_date = None
+
+    if active_channel is None:
+        gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = None
+        avg_msp_kw = None
+    else:
+        gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = 0
 
         supply_source = chellow.computer.SupplySource(
             sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
         )
 
-        if era.energisation_status.code == "E":
-            chellow.duos.duos_vb(supply_source)
-            for hh in supply_source.hh_data:
-                gsp_kwh += hh["gsp-kwh"]
-                hh_msp_kwh = hh["msp-kwh"]
-                msp_kwh += hh_msp_kwh
-                if hh["status"] != "A":
-                    num_bad += 1
-                    non_actual += hh_msp_kwh
-                if hh_msp_kwh > md:
-                    md = hh_msp_kwh
-                    date_at_md = hh["start-date"]
+        chellow.duos.duos_vb(supply_source)
+        for hh in supply_source.hh_data:
+            gsp_kwh += hh["gsp-kwh"]
+            hh_msp_kwh = hh["msp-kwh"]
+            msp_kwh += hh_msp_kwh
 
-    if date_at_md is not None:
-        kvarh_at_md = (
-            sess.query(cast(func.max(HhDatum.value), Float))
-            .join(Channel)
-            .filter(
-                Channel.era == era,
-                Channel.imp_related == is_import,
-                Channel.channel_type != "ACTIVE",
-                HhDatum.start_date == date_at_md,
-            )
-            .scalar()
-        )
+            if hh["status"] != "A":
+                num_bad += 1
+                non_actual_msp_kwh += hh_msp_kwh
 
-    kw_at_md = md * 2
+            hh_kw = 2 * hh_msp_kwh
 
-    if kvarh_at_md is None:
-        kva_at_md = "None"
-    else:
-        kva_at_md = (kw_at_md**2 + (kvarh_at_md * 2) ** 2) ** 0.5
+            if hh_kw > md_kw:
+                md_kw = hh_msp_kwh * 2
+                md_kw_date = hh["start-date"]
 
-    date_at_md_str = "" if date_at_md is None else hh_format(date_at_md)
+            hh_kva = (
+                hh["msp-kw"] ** 2 + max(hh["imp-msp-kvar"], hh["exp-msp-kvar"]) ** 2
+            ) ** 0.5
 
-    return [
-        llfc_code,
-        mpan_core_str,
-        sc_str,
-        supplier_contract_name,
-        msp_kwh,
-        non_actual,
-        gsp_kwh,
-        kw_at_md,
-        date_at_md_str,
-        kva_at_md,
-        num_bad,
-    ]
+            if hh_kva > md_kva:
+                md_kva = hh_kva
+                md_kva_date = hh["start-date"]
+
+        avg_msp_kw = msp_kwh / num_hh * 2
+
+    pref = "import" if is_import else "export"
+    return {
+        f"{pref}_msp_kwh": msp_kwh,
+        f"{pref}_non_actual_msp_kwh": non_actual_msp_kwh,
+        f"{pref}_gsp_kwh": gsp_kwh,
+        f"{pref}_avg_msp_kw": avg_msp_kw,
+        f"{pref}_md_kw": md_kw,
+        f"{pref}_md_kw_date": md_kw_date,
+        f"{pref}_md_kva": md_kva,
+        f"{pref}_md_kva_date": md_kva_date,
+        f"{pref}_bad_hhs": num_bad,
+    }
 
 
-def _process(sess, caches, f, start_date, finish_date, supply_id):
+def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
     forecast_date = to_utc(Datetime.max)
 
     w = csv.writer(f, lineterminator="\n")
-    w.writerow(
-        (
-            "Era Start",
-            "Era Finish",
-            "Supply Id",
-            "Supply Name",
-            "Source",
-            "Generator Type",
-            "Site Code",
-            "Site Name",
-            "Associated Site Codes",
-            "From",
-            "To",
-            "PC",
-            "MTC",
-            "CoP",
-            "SSC",
-            "Energisation Status",
-            "Properties",
-            "MOP Contract",
-            "MOP Account",
-            "DC Contract",
-            "DC Account",
-            "Normal Reads",
-            "Type",
-            "Supply Start",
-            "Supply Finish",
-            "Import LLFC",
-            "Import MPAN Core",
-            "Import Supply Capacity",
-            "Import Supplier",
-            "Import Total MSP kWh",
-            "Import Non-actual MSP kWh",
-            "Import Total GSP kWh",
-            "Import MD / kW",
-            "Import MD Date",
-            "Import MD / kVA",
-            "Import Bad HHs",
-            "Export LLFC",
-            "Export MPAN Core",
-            "Export Supply Capacity",
-            "Export Supplier",
-            "Export Total MSP kWh",
-            "Export Non-actual MSP kWh",
-            "Export GSP kWh",
-            "Export MD / kW",
-            "Export MD Date",
-            "Export MD / kVA",
-            "Export Bad HHs",
-        )
-    )
+    titles = [
+        "era_start",
+        "era_finish",
+        "supply_id",
+        "supply_name",
+        "source",
+        "generator_type",
+        "site_code",
+        "site_name",
+        "associated_site_codes",
+        "from",
+        "to",
+        "pc",
+        "mtc",
+        "cop",
+        "ssc",
+        "energisation_status",
+        "properties",
+        "mop_contract",
+        "mop_account",
+        "dc_contract",
+        "dc_account",
+        "normal_reads",
+        "type",
+        "supply_start",
+        "supply_finish",
+    ]
+
+    for polarity in ("import", "export"):
+        titles.append(f"{polarity}_llfc")
+        titles.append(f"{polarity}_mpan_core")
+        titles.append(f"{polarity}_supply_capacity")
+        titles.append(f"{polarity}_supplier")
+        titles.append(f"{polarity}_msp_kwh")
+        titles.append(f"{polarity}_non_actual_msp_kwh")
+        titles.append(f"{polarity}_gsp_kwh")
+        titles.append(f"{polarity}_md_kw")
+        titles.append(f"{polarity}_md_kw_date")
+        titles.append(f"{polarity}_md_kva")
+        titles.append(f"{polarity}_md_kva_date")
+        titles.append(f"{polarity}_bad_hhs")
+
+    w.writerow(titles)
 
     eras = (
         sess.query(Era)
@@ -210,7 +197,12 @@ def _process(sess, caches, f, start_date, finish_date, supply_id):
     )
 
     if supply_id is not None:
-        eras = eras.filter(Era.supply == Supply.get_by_id(sess, supply_id))
+        eras = eras.where(Era.supply == Supply.get_by_id(sess, supply_id))
+
+    if mpan_cores is not None:
+        eras = eras.where(
+            or_(Era.imp_mpan_core.in_(mpan_cores), Era.exp_mpan_core.in_(mpan_cores))
+        )
 
     for era in eras:
         caches["era"] = era
@@ -228,14 +220,6 @@ def _process(sess, caches, f, start_date, finish_date, supply_id):
         )
         supply_start = sup_eras[0].start_date
         supply_finish = sup_eras[-1].finish_date
-
-        if supply.generator_type is None:
-            generator_type = ""
-        else:
-            generator_type = supply.generator_type.code
-
-        ssc = era.ssc
-        ssc_code = "" if ssc is None else ssc.code
 
         prime_reads = set()
         for read, rdate in chain(
@@ -279,41 +263,57 @@ def _process(sess, caches, f, start_date, finish_date, supply_id):
             if prime_bill.id == read.bill.id:
                 prime_reads.add(f"{rdate}_{read.msn}")
 
-        supply_type = era.meter_category
-
         chunk_start = hh_max(era.start_date, start_date)
         chunk_finish = hh_min(era.finish_date, finish_date)
         num_hh = int((chunk_finish + HH - chunk_start).total_seconds() / (30 * 60))
+        ssc = era.ssc
+        generator_type = supply.generator_type
+        imp_llfc = era.imp_llfc
+        imp_supplier_contract = era.imp_supplier_contract
+        exp_llfc = era.exp_llfc
+        exp_supplier_contract = era.exp_supplier_contract
 
-        w.writerow(
-            [
-                hh_format(era.start_date),
-                hh_format(era.finish_date, ongoing_str=""),
-                supply.id,
-                supply.name,
-                supply.source.code,
-                generator_type,
-                site.code,
-                site.name,
-                "| ".join(sorted(site_codes)),
-                hh_format(start_date),
-                hh_format(finish_date),
-                era.pc.code,
-                era.mtc_participant.mtc.code,
-                era.cop.code,
-                ssc_code,
-                era.energisation_status.code,
-                era.properties,
-                era.mop_contract.name,
-                era.mop_account,
-                era.dc_contract.name,
-                era.dc_account,
-                len(prime_reads),
-                supply_type,
-                hh_format(supply_start),
-                hh_format(supply_finish, ongoing_str=""),
-            ]
-            + mpan_bit(
+        values = {
+            "era_start": era.start_date,
+            "era_finish": era.finish_date,
+            "supply_id": supply.id,
+            "supply_name": supply.name,
+            "source": supply.source.code,
+            "generator_type": None if generator_type is None else generator_type.code,
+            "site_code": site.code,
+            "site_name": site.name,
+            "associated_site_codes": site_codes,
+            "from": start_date,
+            "to": finish_date,
+            "pc": era.pc.code,
+            "mtc": era.mtc_participant.mtc.code,
+            "cop": era.cop.code,
+            "ssc": None if ssc is None else ssc.code,
+            "energisation_status": era.energisation_status.code,
+            "properties": era.properties,
+            "mop_contract": era.mop_contract.name,
+            "mop_account": era.mop_account,
+            "dc_contract": era.dc_contract.name,
+            "dc_account": era.dc_account,
+            "normal_reads": len(prime_reads),
+            "type": era.meter_category,
+            "supply_start": supply_start,
+            "supply_finish": supply_finish,
+            "import_llfc": None if imp_llfc is None else imp_llfc.code,
+            "import_mpan_core": era.imp_mpan_core,
+            "import_supply_capacity": era.imp_sc,
+            "import_supplier": None
+            if imp_supplier_contract is None
+            else imp_supplier_contract.name,
+            "export_llfc": None if exp_llfc is None else exp_llfc.code,
+            "export_mpan_core": era.exp_mpan_core,
+            "export_supply_capacity": era.exp_sc,
+            "export_supplier": None
+            if exp_supplier_contract is None
+            else exp_supplier_contract.name,
+        }
+        values.update(
+            mpan_bit(
                 sess,
                 supply,
                 True,
@@ -324,7 +324,9 @@ def _process(sess, caches, f, start_date, finish_date, supply_id):
                 forecast_date,
                 caches,
             )
-            + mpan_bit(
+        )
+        values.update(
+            mpan_bit(
                 sess,
                 supply,
                 False,
@@ -337,20 +339,23 @@ def _process(sess, caches, f, start_date, finish_date, supply_id):
             )
         )
 
+        w.writerow(csv_make_val(values[t]) for t in titles)
+
         # Avoid a long-running transaction
         sess.rollback()
 
 
-def content(supply_id, start_date, finish_date, user):
+def content(supply_id, start_date, finish_date, user, mpan_cores):
     caches = {}
     f = sess = None
     try:
         sess = Session()
+        filter_str = "" if mpan_cores is None else "_filter"
         running_name, finished_name = chellow.dloads.make_names(
-            "supplies_duration.csv", user
+            f"supplies_duration{filter_str}.csv", user
         )
         f = open(running_name, mode="w", newline="")
-        _process(sess, caches, f, start_date, finish_date, supply_id)
+        _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores)
     except BadRequest as e:
         era = caches.get("era")
         if era is None:
@@ -379,8 +384,18 @@ def do_get(sess):
     start_date = req_hh_date("start")
     finish_date = req_hh_date("finish")
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
-    thread = threading.Thread(
-        target=content, args=(supply_id, start_date, finish_date, g.user)
-    )
+    if "mpan_cores" in request.values:
+        mpan_cores_str = req_str("mpan_cores")
+        mpan_cores = mpan_cores_str.splitlines()
+        if len(mpan_cores) == 0:
+            mpan_cores = None
+        else:
+            for i in range(len(mpan_cores)):
+                mpan_cores[i] = parse_mpan_core(mpan_cores[i])
+    else:
+        mpan_cores = None
+
+    args = supply_id, start_date, finish_date, g.user, mpan_cores
+    thread = threading.Thread(target=content, args=args)
     thread.start()
     return chellow_redirect("/downloads", 303)
