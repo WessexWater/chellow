@@ -1,4 +1,8 @@
+from io import BytesIO
+from zipfile import ZipFile
+
 from chellow.mdd_importer import (
+    MddImporter,
     _import_MTC_in_PES_Area,
     _import_Meter_Timeswitch_Class,
     _import_Valid_MTC_LLFC_Combination,
@@ -7,6 +11,7 @@ from chellow.mdd_importer import (
     _import_Valid_MTC_SSC_Combination,
 )
 from chellow.models import (
+    Contract,
     MarketRole,
     MeterPaymentType,
     MeterType,
@@ -292,7 +297,9 @@ def test_import_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     mtc_ssc = MtcSsc.insert(
         sess, mtc_participant, ssc, to_utc(ct_datetime(2009, 4, 16)), None
     )
-    MtcLlfcSsc.insert(sess, mtc_ssc, llfc, to_utc(ct_datetime(2009, 4, 16)), None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(
+        sess, mtc_ssc, llfc, to_utc(ct_datetime(2009, 4, 16)), None
+    )
     rows = [
         [
             mtc_code,
@@ -311,3 +318,42 @@ def test_import_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     ]
     ctx = {}
     _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx)
+    combos = mtc_llfc_ssc.mtc_llfc_ssc_pcs
+    assert len(combos) == 1
+
+    combo = combos[0]
+
+    assert combo.valid_to == to_utc(ct_datetime(2014, 8, 20, 23, 30))
+
+
+def test_MddImporter_run(sess):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    calb_participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
+    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
+    sess.commit()
+    f = BytesIO()
+    zf = ZipFile(f, mode="w")
+    for fname in (
+        "Market_Participant",
+        "Market_Role",
+        "Market_Participant_Role",
+        "Line_Loss_Factor_Class",
+        "Meter_Timeswitch_Class",
+        "MTC_in_PES_Area",
+        "MTC_Meter_Type",
+        "Standard_Settlement_Configuration",
+        "Valid_MTC_LLFC_Combination",
+        "Valid_MTC_SSC_Combination",
+        "Valid_MTC_LLFC_SSC_Combination",
+        "Valid_MTC_LLFC_SSC_PC_Combination",
+    ):
+        zf.writestr(f"{fname}_50.csv", "\n")
+    zf.close()
+    f.seek(0)
+    imp = MddImporter(f)
+    imp.run()
+    assert imp.error_message is None

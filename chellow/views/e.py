@@ -1921,9 +1921,13 @@ def market_roles_get():
 
 @e.route("/mdd_imports")
 def mdd_imports_get():
+    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+    properties = config_contract.make_properties()
+    mdd_version = properties.get("mdd_version")
     return render_template(
         "mdd_imports.html",
         process_ids=sorted(chellow.mdd_importer.get_process_ids(), reverse=True),
+        mdd_version=mdd_version,
     )
 
 

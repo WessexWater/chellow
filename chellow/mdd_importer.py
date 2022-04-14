@@ -12,6 +12,7 @@ from sqlalchemy.orm import joinedload
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
+    Contract,
     Llfc,
     MarketRole,
     MeterPaymentType,
@@ -291,7 +292,7 @@ def _import_MTC_in_PES_Area(sess, rows, ctx):
         valid_from = parse_date(valid_from_str)
         mtc_participant = mtc_participants.get((participant.id, mtc.id, valid_from))
         valid_to_str = values[4]  # Effective To Settlement Date (MTCPA)
-        valid_to = parse_date(valid_to_str)
+        valid_to = parse_to_date(valid_to_str)
 
         if mtc.is_common:
             ctx_mtc = ctx["mtcs"][(mtc_code, mtc_from)]
@@ -414,7 +415,7 @@ def _import_Valid_MTC_LLFC_Combination(sess, rows, ctx):
         valid_from_str = values[5]  # Effective From Settlement Date (VMTCLC)
         valid_from = parse_date(valid_from_str)
         valid_to_str = values[6]  # Effective To Settlement Date (VMTCLC)
-        valid_to = parse_date(valid_to_str)
+        valid_to = parse_to_date(valid_to_str)
 
         try:
             dno = dnos[(participant.id, valid_from)]
@@ -486,7 +487,7 @@ def _import_Valid_MTC_SSC_Combination(sess, rows, ctx):
         valid_from_str = values[5]  # Effective From Settlement Date (VMTCSC)
         valid_from = parse_date(valid_from_str)
         valid_to_str = values[6]  # Effective To Settlement Date (VMTCSC)
-        valid_to = parse_date(valid_to_str)
+        valid_to = parse_to_date(valid_to_str)
 
         try:
             ssc = sscs[(ssc_code, valid_from)]
@@ -554,7 +555,7 @@ def _import_Valid_MTC_LLFC_SSC_Combination(sess, rows, ctx):
         valid_from_str = values[7]  # Effective From Settlement Date (VMTCLSC)
         valid_from = parse_date(valid_from_str)
         valid_to_str = values[8]  # Effective To Settlement Date (VMTCLSC)
-        valid_to = parse_date(valid_to_str)
+        valid_to = parse_to_date(valid_to_str)
 
         try:
             dno = dnos[(participant.id, valid_from)]
@@ -646,7 +647,7 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
         valid_from_str = values[9]  # Effective From Settlement Date (VMTCLSPC)
         valid_from = parse_date(valid_from_str)
         valid_to_str = values[10]  # Effective To Settlement Date (VMTCLSPC)
-        valid_to = parse_date(valid_to_str)
+        valid_to = parse_to_date(valid_to_str)
 
         try:
             dno = dnos[(participant_code, valid_from)]
@@ -708,12 +709,25 @@ class MddImporter(threading.Thread):
             zip_file = ZipFile(self.f)
             znames = {}
             ctx = {}
+            version = None
 
             for zname in zip_file.namelist():
                 csv_file = StringIO(zip_file.read(zname).decode("utf-8"))
                 csv_reader = iter(csv.reader(csv_file))
                 next(csv_reader)  # Skip titles
-                table_name = "_".join(zname.split("_")[:-1])
+
+                table_name_elements = zname.split("_")
+                ver = int(table_name_elements[-1].split(".")[0])
+                if version is None:
+                    version = ver
+
+                if version != ver:
+                    raise BadRequest(
+                        f"There's a mixture of MDD versions in the file names. "
+                        f"Expected version {version} but found version {ver} in "
+                        f"{zname}."
+                    )
+                table_name = "_".join(table_name_elements[:-1])
                 znames[table_name] = list(csv_reader)
 
             for tname, func in [
@@ -752,6 +766,10 @@ class MddImporter(threading.Thread):
                 else:
                     raise BadRequest(f"Can't find {tname} in the ZIP file.")
 
+            config = Contract.get_non_core_by_name(sess, "configuration")
+            state = config.make_state()
+            state["mdd_version"] = version
+            config.update_state(state)
             sess.commit()
 
         except BadRequest as e:

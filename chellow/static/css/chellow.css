@@ -275,11 +275,11 @@ main h4 {
 	font-weight: bold;
 }
 
-main li {
+main ul li {
 	list-style-type: none;
 }
 
-main li:before {
+main ul li:before {
 	content: '- ';
 }
 
