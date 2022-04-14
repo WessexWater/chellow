@@ -92,7 +92,8 @@ def _process(sess, progress, file_like):
     stmt = text(
         """
 INSERT INTO laf (llfc_id, timestamp, value) VALUES
-(unnest(:llfc_ids), unnest(:timestamps), unnest(:values))
+(unnest(CAST(:llfc_ids AS INTEGER[])), unnest(CAST(:timestamps AS TIMESTAMPTZ[])),
+unnest(CAST(:values AS NUMERIC[])))
 ON CONFLICT ON CONSTRAINT laf_llfc_id_timestamp_key
 DO UPDATE SET (llfc_id, timestamp, value) =
 (EXCLUDED.llfc_id, EXCLUDED.timestamp, EXCLUDED.value)"""
