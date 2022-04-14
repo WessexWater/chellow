@@ -335,8 +335,8 @@ def test_process(mocker, sess):
             "The energisation statuses don't match. Can't parse the PC. Can't parse "
             "the MTC. The LLFCs don't match. The supplier codes don't match. The DC "
             "codes don't match. The MOP codes don't match. The GSP group codes don't "
-            "match. The meter serial numbers don't match. The meter types don't match. "
-            "See https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 ",
+            "match. The meter serial numbers don't match. The DTC meter types don't "
+            "match.",
         ],
         [
             "22 7868 6232 789",
@@ -369,8 +369,8 @@ def test_process(mocker, sess):
             "The energisation statuses don't match. Can't parse the PC. Can't parse "
             "the MTC. The LLFCs don't match. The supplier codes don't match. The DC "
             "codes don't match. The MOP codes don't match. The GSP group codes don't "
-            "match. The meter serial numbers don't match. The meter types don't match. "
-            "See https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 ",
+            "match. The meter serial numbers don't match. The DTC meter types don't "
+            "match.",
         ],
     ]
     assert f.getvalue() == "\n".join(",".join(line) for line in expected) + "\n"

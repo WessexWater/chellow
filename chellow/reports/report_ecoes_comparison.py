@@ -472,10 +472,7 @@ def _process(
                 chellow_meter_type = _meter_type(era)
 
                 if chellow_meter_type != ecoes["meter-type"]:
-                    problem += (
-                        "The meter types don't match. See "
-                        "https://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "
-                    )
+                    problem += "The DTC meter types don't match."
                     ignore = False
                     diffs.append("meter_type")
 
