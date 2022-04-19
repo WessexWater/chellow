@@ -2787,8 +2787,9 @@ class MtcSsc(Base, PersistentClass):
         mtc_ssc = cls.find_by_values(sess, mtc_participant, ssc, date)
         if mtc_ssc is None:
             raise BadRequest(
-                f"There isn't an MTC SSC with the MTC Participant {mtc_participant} "
-                f"and SSC {ssc} at date {hh_format(date)}."
+                f"For the participant {mtc_participant.participant.code} there isn't "
+                f"an MTC SSC with the MTC {mtc_participant.mtc.code} and SSC "
+                f"{ssc.code} at date {hh_format(date)}."
             )
         return mtc_ssc
 

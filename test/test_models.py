@@ -316,6 +316,44 @@ def test_MtcParticipant_find_by_values(sess):
     assert mtc_participant.mtc.code == code
 
 
+def test_MtcSSC_get_by_values(sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    code = "034"
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", valid_from, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(
+        sess,
+        code,
+        False,
+        True,
+        valid_from,
+        None,
+    )
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "an mtc",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        1,
+        utc_datetime(2000, 1, 1),
+        None,
+    )
+    ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1), None)
+    sess.commit()
+
+    with pytest.raises(
+        BadRequest,
+        match="For the participant CALB there isn't an MTC SSC with the MTC 034 and "
+        "SSC 0001 at date 2000-01-01 00:00.",
+    ):
+        MtcSsc.get_by_values(sess, mtc_participant, ssc, valid_from)
+
+
 def test_Era_init_llfc_valid_to(sess):
     """
     Error raised if LLFC finishes before the era
