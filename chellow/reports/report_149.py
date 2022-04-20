@@ -361,7 +361,7 @@ def content(supply_id, start_date, finish_date, user, mpan_cores):
         if era is None:
             pref = "Problem: "
         else:
-            pref = f"Problem with era {chellow.utils.url_root}eras/{era.id}/edit : "
+            pref = f"Problem with era {chellow.utils.url_root}e/eras/{era.id}/edit : "
         f.write(pref + e.description)
     except BaseException as e:
         era = caches.get("era")
