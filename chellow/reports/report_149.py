@@ -70,9 +70,9 @@ def mpan_bit(
 
     if active_channel is None:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = None
-        avg_msp_kw = None
+        avg_msp_kw = avg_kva = None
     else:
-        gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = 0
+        gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
 
         supply_source = chellow.computer.SupplySource(
             sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
@@ -98,11 +98,14 @@ def mpan_bit(
                 hh["msp-kw"] ** 2 + max(hh["imp-msp-kvar"], hh["exp-msp-kvar"]) ** 2
             ) ** 0.5
 
+            kva += hh_kva
+
             if hh_kva > md_kva:
                 md_kva = hh_kva
                 md_kva_date = hh["start-date"]
 
         avg_msp_kw = msp_kwh / num_hh * 2
+        avg_kva = kva / num_hh
 
     pref = "import" if is_import else "export"
     return {
@@ -110,6 +113,7 @@ def mpan_bit(
         f"{pref}_non_actual_msp_kwh": non_actual_msp_kwh,
         f"{pref}_gsp_kwh": gsp_kwh,
         f"{pref}_avg_msp_kw": avg_msp_kw,
+        f"{pref}_avg_kva": avg_kva,
         f"{pref}_md_kw": md_kw,
         f"{pref}_md_kw_date": md_kw_date,
         f"{pref}_md_kva": md_kva,
@@ -156,6 +160,8 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
         titles.append(f"{polarity}_supply_capacity")
         titles.append(f"{polarity}_supplier")
         titles.append(f"{polarity}_msp_kwh")
+        titles.append(f"{polarity}_avg_kw")
+        titles.append(f"{polarity}_avg_kva")
         titles.append(f"{polarity}_non_actual_msp_kwh")
         titles.append(f"{polarity}_gsp_kwh")
         titles.append(f"{polarity}_md_kw")
