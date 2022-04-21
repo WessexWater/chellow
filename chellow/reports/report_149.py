@@ -160,7 +160,7 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
         titles.append(f"{polarity}_supply_capacity")
         titles.append(f"{polarity}_supplier")
         titles.append(f"{polarity}_msp_kwh")
-        titles.append(f"{polarity}_avg_kw")
+        titles.append(f"{polarity}_avg_msp_kw")
         titles.append(f"{polarity}_avg_kva")
         titles.append(f"{polarity}_non_actual_msp_kwh")
         titles.append(f"{polarity}_gsp_kwh")

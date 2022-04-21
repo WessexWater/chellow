@@ -75,6 +75,8 @@ def test_process_blank(sess, mocker):
         "import_supply_capacity",
         "import_supplier",
         "import_msp_kwh",
+        "import_avg_msp_kw",
+        "import_avg_kva",
         "import_non_actual_msp_kwh",
         "import_gsp_kwh",
         "import_md_kw",
@@ -87,6 +89,8 @@ def test_process_blank(sess, mocker):
         "export_supply_capacity",
         "export_supplier",
         "export_msp_kwh",
+        "export_avg_msp_kw",
+        "export_avg_kva",
         "export_non_actual_msp_kwh",
         "export_gsp_kwh",
         "export_md_kw",
@@ -314,6 +318,8 @@ def virtual_bill(ds):
             "import_supply_capacity",
             "import_supplier",
             "import_msp_kwh",
+            "import_avg_msp_kw",
+            "import_avg_kva",
             "import_non_actual_msp_kwh",
             "import_gsp_kwh",
             "import_md_kw",
@@ -326,6 +332,8 @@ def virtual_bill(ds):
             "export_supply_capacity",
             "export_supplier",
             "export_msp_kwh",
+            "export_avg_msp_kw",
+            "export_avg_kva",
             "export_non_actual_msp_kwh",
             "export_gsp_kwh",
             "export_md_kw",
@@ -384,8 +392,11 @@ def virtual_bill(ds):
             "",
             "",
             "",
+            "",
+            "",
+            "",
+            "",
         ],
     ]
-    print(f.getvalue())
     expected_str = "\n".join(",".join(line) for line in expected) + "\n"
     assert f.getvalue() == expected_str
