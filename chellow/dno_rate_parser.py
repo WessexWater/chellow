@@ -1,23 +1,10 @@
-import os
 import re
-import threading
-import traceback
 from decimal import Decimal, InvalidOperation
-from io import BytesIO
 from itertools import chain
-
-from flask import g, request
 
 import openpyxl
 
 from werkzeug.exceptions import BadRequest
-
-from zish import dumps
-
-import chellow.dloads
-from chellow.models import GspGroup, Session
-from chellow.utils import req_int
-from chellow.views.home import chellow_redirect
 
 
 def get_value(row, idx):
@@ -328,45 +315,19 @@ def tab_ehv(sheet, gsp_rates):
                         )
 
 
-def content(user, file_name, file_like, gsp_group_id):
-    f = sess = None
-    try:
-        sess = Session()
-        running_name, finished_name = chellow.dloads.make_names("dno_rates.zish", user)
-        f = open(running_name, mode="w")
-        gsp_group = GspGroup.get_by_id(sess, gsp_group_id)
-        gsp_rates = {}
+def find_rates(file_name, file_like, gsp_group):
+    gsp_rates = {"a_file_name": file_name}
 
-        if not file_name.endswith(".xlsx"):
-            raise BadRequest(f"The file extension for {file_name} isn't recognized.")
+    if not file_name.endswith(".xlsx"):
+        raise BadRequest(f"The file extension for {file_name} isn't recognized.")
 
-        book = openpyxl.load_workbook(file_like, data_only=True, read_only=True)
+    book = openpyxl.load_workbook(file_like, data_only=True, read_only=True)
 
-        for sheet in book.worksheets:
-            title = sheet.title.strip().lower()
-            if title.startswith("annex 1 "):
-                tab_lv_hv(sheet, gsp_rates)
-            elif title.startswith("annex 2 "):
-                tab_ehv(sheet, gsp_rates)
+    for sheet in book.worksheets:
+        title = sheet.title.strip().lower()
+        if title.startswith("annex 1 "):
+            tab_lv_hv(sheet, gsp_rates)
+        elif title.startswith("annex 2 "):
+            tab_ehv(sheet, gsp_rates)
 
-        rs = {gsp_group.code: gsp_rates}
-        f.write(dumps(rs))
-
-    except BaseException:
-        f.write(traceback.format_exc())
-    finally:
-        if sess is not None:
-            sess.close()
-        if f is not None:
-            f.close()
-            os.rename(running_name, finished_name)
-
-
-def do_post(session):
-    user = g.user
-    file_item = request.files["dno_file"]
-    gsp_group_id = req_int("gsp_group_id")
-
-    args = user, file_item.filename, BytesIO(file_item.read()), gsp_group_id
-    threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return {gsp_group.code: gsp_rates}

@@ -1,33 +1,35 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; {{rate_script[0]|hh_format}}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo;
+ 	Rate Script {{rate_script.start_date|hh_format}}
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/dnos">DNOs</a> &raquo; 
 	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo;
-	{{rate_script[0]|hh_format}}
+	Rate Script {{rate_script.start_date|hh_format}}
+	[<a href="/e/dno_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
 
 	<table>
-		<legend>Rate Script</legend>	
+		<caption>Rate Script</caption>	
 		<tbody>
 			<tr>
-				<th>Start Date</th>
-				<td>{{rate_script[0]|hh_format}}</td>
+				<td>Start Date</td>
+				<td>{{rate_script.start_date|hh_format}}</td>
 			</tr>
 			<tr>
-				<th>Finish Date</th>
-				<td>{{rate_script[1]|hh_format}}</td>
+				<td>Finish Date</td>
+				<td>{{rate_script.finish_date|hh_format}}</td>
 			</tr>
 		</tbody>
 	</table>
 
 	<h2>Script</h2>	
 
-	<pre>{{rate_script[2]}}</pre>
+	<pre>{{rate_script.script}}</pre>
 
 {% endblock %}

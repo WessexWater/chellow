@@ -193,6 +193,13 @@ def _import_Market_Participant_Role(sess, rows, ctx):
                 dno_code,
             )
 
+            if dno_code is not None:
+                contract = Contract.find_dno(sess, dno_code)
+                if contract is None:
+                    Contract.insert_dno(
+                        sess, dno_code, participant, "", {}, valid_from, None, {}
+                    )
+
         else:
             party.name = name
             party.valid_to = valid_to

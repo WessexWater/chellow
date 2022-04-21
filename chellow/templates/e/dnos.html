@@ -21,10 +21,10 @@
 		<tbody>
 			{% for dno in dnos %}
 				<tr>
-					<td><a href="/e/dnos/{{dno.dno.id}}">{{dno.dno.dno_code}}</a></td>
-					<td>{{dno.dno.name}}</td>
-					<td>{{dno.start_date|hh_format}}</td>
-					<td>{{dno.finish_date|hh_format}}</td>
+					<td><a href="/e/dnos/{{dno.party.id}}">{{dno.party.dno_code}}</a></td>
+					<td>{{dno.party.name}}</td>
+					<td>{{dno.contract.start_rate_script.start_date|hh_format}}</td>
+					<td>{{dno.contract.finish_rate_script.finish_date|hh_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
@@ -39,26 +39,5 @@
 	<h2>LAF Importer</h2>	
 
 	<p><a href="/e/laf_imports">LAF Importer</a></p>
-
-	<h2>DNO Rate Parser</h2>	
-
-	<form enctype="multipart/form-data" method="post" action="/reports/dno_rate_parser">
-		<fieldset>
-			<input type="file" name="dno_file" size="45"
-		 			value="{{request.values.import_file}}">
-			<select name="gsp_group_id">
-				{% for gsp_group in gsp_groups %}
-					{{input_option('gsp_group_id', gsp_group.id,
-							gsp_group.code + ': ' + gsp_group.description)}}
-				{% endfor %}
-			</select>
-			<input type="submit" value="Parse">
-		</fieldset>
-	</form>
-
-	<p>
-		This gadget takes a DNO rate spreadsheet and outputs the rates in
-		the Zish format.
-	</p>
 
 {% endblock %}

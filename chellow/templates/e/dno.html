@@ -12,15 +12,15 @@
 	<table>
 		<tbody>
 			<tr>
-				<th>Code</th>
+				<td>Code</td>
 				<td>{{dno.dno_code}}</td>
 			</tr>
 			<tr>
-				<th>Name</th>
+				<td>Name</td>
 				<td>{{dno.name}}</td>
 			</tr>
 			<tr>
-				<th>Market Participant</th>
+				<td>Market Participant</td>
 				<td>
 					<a
 						href="/e/participants/{{dno.participant.id}}"
@@ -28,15 +28,15 @@
 				</td>
 			</tr>
 			<tr>
-				<th>Start Date</th>
-				<td>{{rate_scripts[0][0]|hh_format }}</td>
+				<td>Start Date</td>
+				<td>{{dno_contract.start_rate_script.start_date|hh_format }}</td>
 			</tr>
 			<tr>
-				<th>Finish Date</th>
-				<td>{{rate_scripts[-1][1]|hh_format }}</td>
+				<td>Finish Date</td>
+				<td>{{dno_contract.finish_rate_script.finish_date|hh_format }}</td>
 			</tr>
 			<tr>
-				<th>Custom Reports</th>
+				<td>Custom Reports</td>
 				<td>
 					<ul>
 						{% for report in custom_reports %}
@@ -50,38 +50,38 @@
 				</td>
 			</tr>
 			<tr>
-				<th>Line Loss Factor Classes</th>
+				<td>Line Loss Factor Classes</td>
 				<td>
 					<a href="/e/llfcs?dno_id={{dno.id}}">LLFCs</a>
 				</td>
 			</tr>
 			<tr>
-				<th>Meter Timeswitch Classes</th>
+				<td>Meter Timeswitch Classes</td>
 				<td>
 					<a href="/e/mtc_participants?participant_id={{dno.participant.id}}">MTCs</a>
 				</td>
 			</tr>
 			<tr>
-				<th>Valid combinations of MTC and SSC</th>
+				<td>Valid combinations of MTC and SSC</td>
 				<td>
 					<a href="/e/mtc_sscs?participant_id={{dno.participant.id}}">MTC SSCs </a>
 				</td>
 			</tr>
 			<tr>
-				<th>Valid combinations of MTC and LLFC</th>
+				<td>Valid combinations of MTC and LLFC</td>
 				<td>
 					<a href="/e/mtc_llfcs?participant_id={{dno.participant.id}}">MTC LLFCs</a>
 				</td>
 			</tr>
 			<tr>
-				<th>Valid combinations of MTC, LLFC and SSC</th>
+				<td>Valid combinations of MTC, LLFC and SSC</td>
 				<td>
 					<a href="/e/mtc_llfc_sscs?participant_id={{dno.participant.id}}"
 						>MTC LLFC SSCs</a>
 				</td>
 			</tr>
 			<tr>
-				<th>Valid combinations of PC, LLFC, SSC and MTC for NHH supplies</th>
+				<td>Valid combinations of PC, LLFC, SSC and MTC for NHH supplies</td>
 				<td>
 					<a href="/e/mtc_llfc_ssc_pcs?dno_id={{dno.id}}"
 						>MTC LLFC SSC PCs</a>
@@ -102,15 +102,11 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for start_date, finish_date, script in rate_scripts %}
+			{% for rs in rate_scripts %}
 				<tr>
-					<td>
-						<a
-								href="/e/dnos/{{dno.id}}/rate_scripts/{{start_date.strftime('%Y%m%d%H%M')}}"
-								>View</a>
-					</td>
-					<td>{{start_date|hh_format}}</td>
-					<td>{{finish_date|hh_format}}</td>
+					<td><a href="/e/dno_rate_scripts/{{rs.id}}">View</a></td>
+					<td>{{rs.start_date|hh_format}}</td>
+					<td>{{rs.finish_date|hh_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

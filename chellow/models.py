@@ -57,6 +57,7 @@ from zish import ZishException, dumps, loads
 from chellow.utils import (
     HH,
     ct_datetime,
+    get_file_scripts,
     hh_after,
     hh_before,
     hh_format,
@@ -1137,12 +1138,12 @@ class Party(Base, PersistentClass):
         return sess.execute(q).scalar_one_or_none()
 
     @classmethod
-    def get_dno_by_code(cls, sess, dno_code, valid_from):
-        dno = cls.find_dno_by_code(sess, dno_code, valid_from)
+    def get_dno_by_code(cls, sess, dno_code, date):
+        dno = cls.find_dno_by_code(sess, dno_code, date)
         if dno is None:
             raise BadRequest(
                 f"There is no DNO with the code '{dno_code}' at time "
-                f"{hh_format(valid_from)}."
+                f"{hh_format(date)}."
             )
         return dno
 
@@ -1170,6 +1171,14 @@ class Contract(Base, PersistentClass):
     @staticmethod
     def get_dc_by_name(sess, name):
         return Contract.get_by_role_code_name(sess, "C", name)
+
+    @staticmethod
+    def find_dno_by_name(sess, name):
+        return Contract.find_by_role_code_name(sess, "R", name)
+
+    @staticmethod
+    def get_dno_by_name(sess, name):
+        return Contract.get_by_role_code_name(sess, "R", name)
 
     @staticmethod
     def get_mop_by_id(sess, oid):
@@ -1311,6 +1320,30 @@ class Contract(Base, PersistentClass):
             name,
             participant,
             "X",
+            charge_script,
+            properties,
+            start_date,
+            finish_date,
+            rate_script,
+        )
+
+    @classmethod
+    def insert_dno(
+        cls,
+        sess,
+        name,
+        participant,
+        charge_script,
+        properties,
+        start_date,
+        finish_date,
+        rate_script,
+    ):
+        return cls.insert(
+            sess,
+            name,
+            participant,
+            "R",
             charge_script,
             properties,
             start_date,
@@ -6786,6 +6819,30 @@ def db_upgrade_35_to_36(sess, root_path):
     sess.execute("DROP TABLE old_mtc CASCADE;")
 
 
+def db_upgrade_36_to_37(sess, root_path):
+    for dno in (
+        sess.query(Party)
+        .join(MarketRole)
+        .filter(MarketRole.code == "R")
+        .order_by(Party.dno_code)
+    ):
+        scripts = get_file_scripts(dno.dno_code)
+        contract = Contract.find_dno_by_name(sess, dno.dno_code)
+        if contract is None:
+            contract = Contract.insert_dno(
+                sess,
+                dno.dno_code,
+                dno.participant,
+                "",
+                {},
+                scripts[0][0],
+                None,
+                loads(scripts[0][2]),
+            )
+        for script in scripts[1:]:
+            contract.insert_rate_script(sess, script[0], loads(script[2]))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6807,6 +6864,7 @@ upgrade_funcs.extend(
         db_upgrade_33_to_34,
         db_upgrade_34_to_35,
         db_upgrade_35_to_36,
+        db_upgrade_36_to_37,
     ]
 )
 
