@@ -553,6 +553,16 @@ def test_SupplySource_init_hh(sess, mocker):
     dno = participant.insert_party(
         sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
     )
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
@@ -709,6 +719,16 @@ def test_SupplySource_init_nhh(sess, mocker):
     )
     dno = participant.insert_party(
         sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
+    )
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
     )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(

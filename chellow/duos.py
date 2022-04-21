@@ -10,7 +10,6 @@ from chellow.utils import (
     HH,
     c_months_u,
     ct_datetime,
-    get_file_rates,
     hh_format,
     to_utc,
     utc_datetime,
@@ -40,10 +39,10 @@ VL_LOOKUP = {
 
 
 def datum_beginning_22(ds, hh):
-    rs = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])
+    dno_rates = ds.hh_rate(ds.dno_contract.id, hh["start-date"])
     try:
-        tariff = rs["tariffs"][ds.llfc_code]
-        lafs = rs["lafs"][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
+        tariff = dno_rates["tariffs"][ds.llfc_code]
+        lafs = dno_rates["lafs"][VL_LOOKUP[ds.voltage_level_code][ds.is_substation]]
     except KeyError as e:
         raise BadRequest(str(e))
 
@@ -96,7 +95,7 @@ def datum_beginning_22(ds, hh):
                 month_imp_kvarh += h["imp-msp-kvarh"]
                 month_kwh += h["msp-kwh"]
 
-        tariff = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])["tariffs"][
+        tariff = ds.hh_rate(ds.dno_contract.id, hh["start-date"])["tariffs"][
             ds.llfc_code
         ]
         try:
@@ -127,9 +126,8 @@ def datum_beginning_22(ds, hh):
 
 def datum_beginning_20(ds, hh):
     tariff = None
-    for k, tf in get_file_rates(ds.caches, ds.dno_code, hh["start-date"])[
-        "tariffs"
-    ].items():
+    dno_rates = ds.hh_rate(ds.dno_contract.id, hh["start-date"])
+    for k, tf in dno_rates["tariffs"].items():
         if ds.llfc_code in [cd.strip() for cd in k.split(",")]:
             tariff = tf
 
@@ -142,9 +140,7 @@ def datum_beginning_20(ds, hh):
             + "."
         )
 
-    lafs = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])["lafs"][
-        ds.voltage_level_code.lower()
-    ]
+    lafs = dno_rates["lafs"][ds.voltage_level_code.lower()]
 
     try:
         day_rate = float(tariff["day-gbp-per-kwh"])
@@ -185,9 +181,7 @@ def datum_beginning_20(ds, hh):
 
     if hh["ct-is-month-end"]:
         tariff = None
-        for k, tf in get_file_rates(ds.caches, ds.dno_code, hh["start-date"])[
-            "tariffs"
-        ].items():
+        for k, tf in dno_rates["tariffs"].items():
             if ds.llfc_code in map(str.strip, k.split(",")):
                 tariff = tf
                 break
@@ -340,7 +334,7 @@ def year_md_095_site(data_source, finish, pw):
 
 
 def datum_beginning_14(ds, hh):
-    rates = get_file_rates(ds.caches, ds.dno_code, hh["start-date"])
+    rates = ds.hh_rate(ds.dno_contract.id, hh["start-date"])
     try:
         tariff = rates["tariffs"][ds.llfc_code]
     except KeyError as e:
@@ -438,7 +432,7 @@ def datum_2010_04_01(ds, hh):
         except KeyError:
             tariff = None
             try:
-                tariff_list = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                tariff_list = ds.hh_rate(ds.dno_contract.id, start_date)[
                     ds.gsp_group_code
                 ]["tariffs"]
             except KeyError as e:
@@ -480,9 +474,9 @@ def datum_2010_04_01(ds, hh):
             ct_hr = hh["ct-decimal-hour"]
             weekend = hh["ct-day-of-week"] > 4
             try:
-                slots = get_file_rates(ds.caches, ds.dno_code, start_date)[
-                    ds.gsp_group_code
-                ]["bands"]
+                slots = ds.hh_rate(ds.dno_contract.id, start_date)[ds.gsp_group_code][
+                    "bands"
+                ]
             except KeyError as e:
                 raise BadRequest(str(e))
 
@@ -642,7 +636,7 @@ def datum_2012_02_23(ds, hh):
         except KeyError:
             tariff = None
             try:
-                tariff_list = get_file_rates(ds.caches, ds.dno_code, start_date)[
+                tariff_list = ds.hh_rate(ds.dno_contract.id, start_date)[
                     ds.gsp_group_code
                 ]["tariffs"]
             except KeyError as e:
@@ -684,9 +678,9 @@ def datum_2012_02_23(ds, hh):
             ct_hr = hh["ct-decimal-hour"]
             weekend = hh["ct-day-of-week"] > 4
             try:
-                slots = get_file_rates(ds.caches, ds.dno_code, start_date)[
-                    ds.gsp_group_code
-                ]["bands"]
+                slots = ds.hh_rate(ds.dno_contract.id, start_date)[ds.gsp_group_code][
+                    "bands"
+                ]
             except KeyError as e:
                 raise BadRequest(str(e))
 

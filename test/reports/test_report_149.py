@@ -210,6 +210,20 @@ def virtual_bill(ds):
     dno = participant.insert_party(
         sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
     )
+    dno_rates = {
+        "lafs": {"hv": {"other": 0}},
+        "tariffs": {"510": {"day-gbp-per-kwh": 0, "night-gbp-per-kwh": 0}},
+    }
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        dno_rates,
+    )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None

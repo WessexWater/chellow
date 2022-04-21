@@ -80,6 +80,16 @@ def test_hh(sess, mocker):
         {},
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
     mtc = Mtc.insert(sess, "845", False, True, valid_from, None)

@@ -3,16 +3,33 @@ from collections import defaultdict
 import pytest
 
 import chellow.duos
-from chellow.models import MarketRole, Participant, VoltageLevel, insert_voltage_levels
+from chellow.models import (
+    Contract,
+    MarketRole,
+    Participant,
+    VoltageLevel,
+    insert_voltage_levels,
+)
 from chellow.utils import BadRequest, ct_datetime, hh_range, to_utc
 
 
 def test_duos_availability_from_to(mocker, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     caches = {"dno": {"22": {}}}
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
     dno = participant.insert_party(
         sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
+    )
+    dno_contract = Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
@@ -37,6 +54,7 @@ def test_duos_availability_from_to(mocker, sess):
 
     ds = mocker.Mock()
     ds.dno_code = "22"
+    ds.dno_contract = dno_contract
     ds.gsp_group_code = "_L"
     ds.llfc_code = "510"
     ds.is_displaced = False
@@ -46,6 +64,20 @@ def test_duos_availability_from_to(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=[])
     ds.caches = caches
     ds.sess = sess
+    dno_rates = {
+        "_L": {
+            "bands": {},
+            "tariffs": {
+                "510": {
+                    "gbp-per-kvarh": 0,
+                    "green-gbp-per-kwh": 0,
+                    "gbp-per-mpan-per-day": 0,
+                    "gbp-per-kva-per-day": 0,
+                }
+            },
+        }
+    }
+    ds.hh_rate = mocker.Mock(return_value=dno_rates)
 
     hh = {
         "start-date": ct_datetime(2019, 2, 28, 23, 30),
@@ -104,6 +136,20 @@ def test_lafs_hist(mocker, sess):
     ds.caches = caches
     ds.sess = sess
     ds.hh_data = []
+    dno_rates = {
+        "_L": {
+            "bands": {},
+            "tariffs": {
+                "510": {
+                    "gbp-per-kvarh": 0,
+                    "green-gbp-per-kwh": 0,
+                    "gbp-per-mpan-per-day": 0,
+                    "gbp-per-kva-per-day": 0,
+                }
+            },
+        }
+    }
+    ds.hh_rate = mocker.Mock(return_value=dno_rates)
 
     hh = {
         "hist-start": hist_date,
@@ -161,6 +207,20 @@ def test_lafs_forecast_none(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
+    dno_rates = {
+        "_L": {
+            "bands": {},
+            "tariffs": {
+                "510": {
+                    "gbp-per-kvarh": 0,
+                    "green-gbp-per-kwh": 0,
+                    "gbp-per-mpan-per-day": 0,
+                    "gbp-per-kva-per-day": 0,
+                }
+            },
+        }
+    }
+    ds.hh_rate = mocker.Mock(return_value=dno_rates)
 
     hh = {
         "hist-start": hist_date,
@@ -225,6 +285,20 @@ def test_lafs_forecast(mocker, sess):
     ds.caches = caches
     ds.sess = sess
     ds.hh_data = []
+    dno_rates = {
+        "_L": {
+            "bands": {},
+            "tariffs": {
+                "510": {
+                    "gbp-per-kvarh": 0,
+                    "green-gbp-per-kwh": 0,
+                    "gbp-per-mpan-per-day": 0,
+                    "gbp-per-kva-per-day": 0,
+                }
+            },
+        }
+    }
+    ds.hh_rate = mocker.Mock(return_value=dno_rates)
 
     hh = {
         "hist-start": hist_date,

@@ -187,6 +187,8 @@ def hh_rate(sess, caches, contract_id, date):
                 seg = "supplier_rate_scripts/"
             elif market_role_code == "Z":
                 seg = "non_core_rate_scripts/"
+            elif market_role_code == "R":
+                seg = "dno_rate_scripts/"
             else:
                 raise Exception(
                     f"The market role code {market_role_code} isn't recognized."
@@ -925,6 +927,8 @@ class SupplySource(DataSource):
         else:
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
+
+        self.dno_contract = Contract.get_dno_by_name(sess, self.dno_code)
 
         era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
         self.is_import = is_import
