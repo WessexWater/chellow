@@ -372,16 +372,16 @@ def virtual_bill(ds):
             "22 7867 6232 781",
             "361",
             "Fusion Supplier 2000",
+            "0",
+            "0.0",
+            "0.0",
+            "0",
+            "0.0",
+            "0",
             "",
+            "0",
             "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "1",
             "",
             "",
             "",
@@ -399,4 +399,6 @@ def virtual_bill(ds):
         ],
     ]
     expected_str = "\n".join(",".join(line) for line in expected) + "\n"
+    print(expected_str)
+    print(f.getvalue())
     assert f.getvalue() == expected_str

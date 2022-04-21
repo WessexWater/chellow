@@ -68,7 +68,10 @@ def mpan_bit(
     md_kw_date = None
     md_kva_date = None
 
-    if active_channel is None:
+    supplier_contract = (
+        era.imp_supplier_contract if is_import else era.exp_supplier_contract
+    )
+    if active_channel is None and supplier_contract is None:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = None
         avg_msp_kw = avg_kva = None
     else:
