@@ -315,8 +315,8 @@ def tab_ehv(sheet, gsp_rates):
                         )
 
 
-def find_rates(file_name, file_like, gsp_group):
-    gsp_rates = {"a_file_name": file_name}
+def find_rates(file_name, file_like):
+    rates = {"a_file_name": file_name}
 
     if not file_name.endswith(".xlsx"):
         raise BadRequest(f"The file extension for {file_name} isn't recognized.")
@@ -326,8 +326,8 @@ def find_rates(file_name, file_like, gsp_group):
     for sheet in book.worksheets:
         title = sheet.title.strip().lower()
         if title.startswith("annex 1 "):
-            tab_lv_hv(sheet, gsp_rates)
+            tab_lv_hv(sheet, rates)
         elif title.startswith("annex 2 "):
-            tab_ehv(sheet, gsp_rates)
+            tab_ehv(sheet, rates)
 
-    return {gsp_group.code: gsp_rates}
+    return rates

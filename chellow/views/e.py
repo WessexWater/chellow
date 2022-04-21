@@ -1355,7 +1355,7 @@ def dno_rate_script_edit_post(dno_rate_script_id):
                 file_item.filename, BytesIO(file_item.read()), gsp_group
             )
             script_rates = loads(rate_script.script)
-            script_rates.update(rates)
+            script_rates[gsp_group.code] = rates
             contract.update_rate_script(
                 g.sess,
                 rate_script,
