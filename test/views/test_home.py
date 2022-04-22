@@ -5,7 +5,7 @@ from flask import g
 
 from utils import match
 
-
+import chellow.g_bill_import
 from chellow.models import (
     BillType,
     Comm,
@@ -812,13 +812,19 @@ def test_g_bill_imports_post_full(mocker, app, client, sess):
 
     match(response, 303, "/g_bill_imports/0")
 
+    importer = next(iter(chellow.g_bill_import.importers.values()))
+    for _ in range(5):
+        if not importer.is_alive():
+            break
+
     response = client.get("/g_bill_imports/0")
 
     match(
         response,
         200,
-        r"All the bills have been successfully loaded and attached to the " r"batch.",
+        r"All the bills have been successfully loaded and attached to the batch.",
     )
+
     sess.rollback()
     res = sess.execute("select breakdown from g_bill where id = 2")
     assert '"units_consumed": 771,' in next(res)[0]

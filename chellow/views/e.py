@@ -88,6 +88,7 @@ from chellow.utils import (
     req_bool,
     req_date,
     req_decimal,
+    req_file,
     req_hh_date,
     req_int,
     req_str,
@@ -1349,12 +1350,12 @@ def dno_rate_script_edit_post(dno_rate_script_id):
             g.sess.commit()
             return chellow_redirect(f"/dnos/{dno.id}", 303)
         elif "import" in request.form:
-            file_item = request.files["dno_file"]
+            file_item = req_file("dno_file")
             gsp_group_id = req_int("gsp_group_id")
             gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
 
             rates = chellow.dno_rate_parser.find_rates(
-                file_item.filename, BytesIO(file_item.read()), gsp_group
+                file_item.filename, BytesIO(file_item.read())
             )
             script_rates = loads(rate_script.script)
             script_rates[gsp_group.code] = rates

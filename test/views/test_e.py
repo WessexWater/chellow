@@ -2,6 +2,8 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
+from openpyxl import Workbook
+
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
@@ -601,6 +603,35 @@ def test_era_edit_get(client, sess):
         r'<select name="comm_id">',
     ]
     match(response, 200, *patterns)
+
+
+def test_dno_rate_script_edit_post(sess, client):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "WPD")
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno_contract = Contract.insert_dno(
+        sess, dno.dno_code, participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    rs = dno_contract.rate_scripts[0]
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    sess.commit()
+
+    file_name = "rates.xlsx"
+    f = BytesIO()
+    wb = Workbook()
+    wb.save(f)
+    f.seek(0)
+
+    data = {
+        "dno_file": (f, file_name),
+        "import": "Import",
+        "gsp_group_id": gsp_group.id,
+    }
+
+    response = client.post(f"/e/dno_rate_scripts/{rs.id}/edit", data=data)
+
+    match(response, 303)
 
 
 def test_era_edit_post_hh(client, sess):
