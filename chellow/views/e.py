@@ -77,6 +77,7 @@ from chellow.utils import (
     PropDict,
     c_months_u,
     csv_make_val,
+    ct_datetime,
     ct_datetime_now,
     hh_after,
     hh_format,
@@ -91,6 +92,7 @@ from chellow.utils import (
     req_int,
     req_str,
     req_zish,
+    to_utc,
     utc_datetime,
     utc_datetime_now,
 )
@@ -1383,6 +1385,38 @@ def dno_rate_script_edit_post(dno_rate_script_id):
             rate_script=rate_script,
             dno=dno,
             gsp_groups=gsp_groups,
+        )
+
+
+@e.route("/dnos/<int:dno_id>/add_rate_script")
+def dno_rate_script_add_get(dno_id):
+    now = ct_datetime_now()
+    initial_date = to_utc(ct_datetime(now.year, now.month))
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    return render_template(
+        "dno_rate_script_add.html", now=now, dno=dno, initial_date=initial_date
+    )
+
+
+@e.route("/dnos/<int:dno_id>/add_rate_script", methods=["POST"])
+def dno_rate_script_add_post(dno_id):
+    try:
+        dno = Party.get_dno_by_id(g.sess, dno_id)
+        contract = Contract.get_dno_by_name(g.sess, dno.dno_code)
+        start_date = req_date("start")
+        rate_script = contract.insert_rate_script(g.sess, start_date, {})
+        g.sess.commit()
+        return chellow_redirect(f"/dno_rate_scripts/{rate_script.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        now = ct_datetime_now()
+        initial_date = to_utc(ct_datetime(now.year, now.month))
+        return render_template(
+            "dno_rate_script_add.html",
+            dno=dno,
+            now=now,
+            contract=contract,
+            initial_date=initial_date,
         )
 
 

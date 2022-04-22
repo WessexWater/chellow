@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; Add Rate Script
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; Add Rate Script
+{% endblock %}
+
+{% block content %}
+
+	<form action="/e/dnos/{{dno.id}}/add_rate_script" method="post">
+		<fieldset>
+			<legend>Add a rate script</legend>	
+			<label>Start Date</label>
+			{{input_date('start', initial_date)}}
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>		    
+
+{% endblock %}
