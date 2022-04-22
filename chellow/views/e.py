@@ -501,7 +501,10 @@ def dc_batch_get(batch_id):
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
-    fields = {"batch": batch, "bills": bills}
+    importer_ids = sorted(
+        chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+    )
+    fields = {"batch": batch, "bills": bills, "importer_ids": importer_ids}
     if "batch_reports" in properties:
         batch_reports = []
         for report_id in properties["batch_reports"]:

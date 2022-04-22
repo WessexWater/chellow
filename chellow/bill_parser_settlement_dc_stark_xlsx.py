@@ -12,46 +12,47 @@ from chellow.models import Session
 from chellow.utils import hh_format, parse_mpan_core, to_utc
 
 
-def get_ct_date(row, name):
-    return get_value(row, name)
+def get_ct_date(row, idx):
+    cell = get_cell(row, idx)
+    val = cell.value
+    if not isinstance(val, Datetime):
+        raise BadRequest(f"Problem reading {val} as a timestamp at {cell.coordinate}.")
+    return val
 
 
-def get_start_date(row, name):
-    dt = get_ct_date(row, name)
+def get_start_date(row, idx):
+    dt = get_ct_date(row, idx)
     return None if dt is None else to_utc(dt)
 
 
-def get_value(row, idx):
+def get_cell(row, idx):
     try:
-        return row[idx].value
+        return row[idx]
     except IndexError:
         raise BadRequest(
-            "For the row "
-            + str(row)
-            + ", the index is "
-            + str(idx)
-            + " which is beyond the end of the row. "
+            f"For the row {row}, the index is {idx} which is beyond the end of the row."
         )
 
 
 def get_str(row, idx):
-    return get_value(row, idx).strip()
+    return get_cell(row, idx).value.strip()
 
 
 def get_dec(row, idx):
+    cell = get_cell(row, idx)
     try:
-        return Decimal(str(get_value(row, idx)))
-    except decimal.InvalidOperation:
-        return None
+        return Decimal(str(cell.value))
+    except decimal.InvalidOperation as e:
+        raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
 
 
 def get_int(row, idx):
-    return int(get_value(row, idx))
+    return int(get_cell(row, idx).value)
 
 
 class Parser:
     def __init__(self, f):
-        self.book = load_workbook(f)
+        self.book = load_workbook(f, data_only=True)
         self.sheet = self.book.worksheets[0]
 
         self.last_line = None
@@ -75,12 +76,11 @@ class Parser:
         try:
             sess = Session()
             bills = []
-            title_row = self.sheet[10]
             issue_date_str = get_str(self.sheet[7], 0)
             issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
             for row_index in range(12, len(self.sheet["A"]) + 1):
                 row = self.sheet[row_index]
-                val = get_value(row, 1)
+                val = get_cell(row, 1).value
                 if val is None or val == "":
                     break
 
@@ -109,7 +109,6 @@ class Parser:
                 annual_visits = get_int(row, 27)
                 annual_rate = get_dec(row, 28)
                 annual_gbp = get_dec(row, 29)
-                annual_date = hh_format(get_start_date(row, 30))
 
                 if cop_3_meters > 0:
                     cop = "3"
@@ -121,7 +120,7 @@ class Parser:
                     mpan_gbp = cop_5_gbp
 
                 breakdown = {
-                    "raw_lines": [str(title_row)],
+                    "raw_lines": [],
                     "cop": [cop],
                     "settlement-status": ["settlement"],
                     "mpan-rate": [mpan_rate],
@@ -132,8 +131,15 @@ class Parser:
                     "annual-visits-count": annual_visits,
                     "annual-visits-rate": [annual_rate],
                     "annual-visits-gbp": annual_gbp,
-                    "annual-visits-date": [annual_date],
                 }
+                annual_date_cell = get_cell(row, 30)
+                annual_date_value = annual_date_cell.value
+                if annual_date_value is not None:
+                    if isinstance(annual_date_value, Datetime):
+                        annual_date = hh_format(annual_date_value)
+                    else:
+                        annual_date = annual_date_value
+                    breakdown["annual-visits-date"] = [annual_date]
 
                 bills.append(
                     {
@@ -161,7 +167,7 @@ class Parser:
                 )
                 sess.rollback()
         except BadRequest as e:
-            raise BadRequest("Row number: " + str(row_index) + " " + e.description)
+            raise BadRequest(f"Row number: {row_index} {e.description}")
         finally:
             if sess is not None:
                 sess.close()
