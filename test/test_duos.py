@@ -4,13 +4,33 @@ import pytest
 
 import chellow.duos
 from chellow.models import (
+    Comm,
     Contract,
+    Cop,
+    EnergisationStatus,
+    GspGroup,
     MarketRole,
+    MeterPaymentType,
+    MeterType,
+    Mtc,
+    MtcLlfc,
+    MtcLlfcSsc,
+    MtcLlfcSscPc,
+    MtcParticipant,
+    MtcSsc,
     Participant,
+    Pc,
+    Site,
+    Source,
+    Ssc,
     VoltageLevel,
+    insert_comms,
+    insert_cops,
+    insert_energisation_statuses,
+    insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import BadRequest, ct_datetime, hh_range, to_utc
+from chellow.utils import BadRequest, ct_datetime, hh_range, to_utc, utc_datetime
 
 
 def test_duos_availability_from_to(mocker, sess):
@@ -313,3 +333,151 @@ def test_lafs_forecast(mocker, sess):
         "exp-msp-kvarh": 0,
     }
     chellow.duos.datum_2012_02_23(ds, hh)
+
+
+def test_SiteSource(sess):
+    valid_from = utc_datetime(1996, 1, 1)
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
+    )
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, valid_from, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, valid_from, None, {}
+    )
+    pc = Pc.insert(sess, "03", "nhh", utc_datetime(2000, 1, 1), None)
+    ssc = Ssc.insert(sess, "0393", "unrestricted", True, utc_datetime(2000, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno_rates = {
+        "tariffs": {
+            "510": {
+                "day-gbp-per-kwh": 0,
+                "night-gbp-per-kwh": 0,
+                "reactive-gbp-per-kvarh": 0,
+            }
+        },
+        "lafs": {"hv": {"other": 0}},
+    }
+    Contract.insert_dno(
+        sess, dno.dno_code, participant, "", {}, valid_from, None, dno_rates
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, True, True, valid_from, None
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "D")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        ssc,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    era = supply.eras[0]
+    active_channel = era.insert_channel(sess, False, "ACTIVE")
+    active_data_raw = [
+        {
+            "start_date": utc_datetime(2009, 8, 10),
+            "value": 10,
+            "status": "A",
+        }
+    ]
+    active_channel.add_hh_data(sess, active_data_raw)
+    era.insert_channel(sess, True, "REACTIVE_IMP")
+
+    sess.commit()
+
+    caches = {}
+    start_date = utc_datetime(2009, 7, 31, 23, 00)
+    finish_date = utc_datetime(2009, 8, 31, 22, 30)
+    forecast_date = utc_datetime(2019, 8, 31, 22, 30)
+    ss = chellow.computer.SiteSource(
+        sess, site, start_date, finish_date, forecast_date, caches, era=era
+    )
+    chellow.duos.duos_vb(ss)

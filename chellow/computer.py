@@ -583,6 +583,7 @@ class SiteSource(DataSource):
             self.mpan_core = era.imp_mpan_core
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
+            self.dno_contract = Contract.get_dno_by_name(self.sess, self.dno_code)
 
             era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
             if era.imp_llfc.code in era_map_llfcs:
