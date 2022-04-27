@@ -9,7 +9,7 @@
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
 	<a href="/e/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
 	<a href="/e/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
- 	{{batch.reference}} [<a href="/dc_batches/{{batch.id}}/edit">edit</a>]
+ 	{{batch.reference}} [<a href="/e/dc_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
 				 	re-import bills from the files?
 				</h2>	
 				<input type="submit" name="delete_import_bills" value="Re-Import">
-				<a href="/dc_batches/{{batch.id}}">Cancel</a>
+				<a href="/e/dc_batches/{{batch.id}}">Cancel</a>
 			</fieldset>
 		</form>
 
