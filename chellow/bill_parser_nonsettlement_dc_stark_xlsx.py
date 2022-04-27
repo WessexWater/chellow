@@ -1,5 +1,4 @@
-import decimal
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from openpyxl import load_workbook
 
@@ -10,39 +9,44 @@ from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
 
 def get_ct_date(title_row, row, name):
+
     return get_value(title_row, row, name)
 
 
 def get_start_date(title_row, row, name):
+
     return to_utc(get_ct_date(title_row, row, name))
 
 
 def get_finish_date(title_row, row, name):
+
     d = get_ct_date(title_row, row, name)
+
     return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
 def get_value(title_row, row, name):
     idx = None
     name = name.strip().lower()
+
     for i, title_cell in enumerate(title_row):
         if str(title_cell.value).strip().lower() == name:
             idx = i
             break
+
     if idx is None:
         raise BadRequest(
             "The name '{name}' can't be found in the titles "
             "{title_row}.".format(name=name, title_row=title_row)
         )
+
     try:
+
         return row[idx].value
+
     except IndexError:
         raise BadRequest(
-            "For the row "
-            + str(row)
-            + ", the index is "
-            + str(idx)
-            + " which is beyond the end of the row. "
+            f"For the row {row}, the index is {idx} which is beyond the end of the row."
         )
 
 
@@ -53,11 +57,12 @@ def get_str(title_row, row, name):
 def get_dec(title_row, row, name):
     try:
         return Decimal(str(get_value(title_row, row, name)))
-    except decimal.InvalidOperation:
+    except InvalidOperation:
         return None
 
 
 def get_int(title_row, row, name):
+
     return int(get_value(title_row, row, name))
 
 
@@ -98,7 +103,7 @@ class Parser:
                     break
 
                 self._set_last_line(row_index, val)
-                msn = str(get_value(title_row, row, "meter")).strip()
+                msn = get_str(title_row, row, "meter").strip()
                 mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
                 start_date = get_start_date(title_row, row, "start")
                 issue_date = start_date
