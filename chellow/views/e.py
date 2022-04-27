@@ -571,11 +571,11 @@ def dc_batch_post(batch_id):
             import_id = chellow.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)
         elif "delete_bills" in request.values:
-            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.query(Bill).filter(Bill.batch == batch).delete(False)
             g.sess.commit()
             return chellow_redirect(f"/dc_batches/{batch.id}", 303)
         elif "delete_import_bills" in request.values:
-            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.query(Bill).filter(Bill.batch == batch).delete(False)
             g.sess.commit()
             import_id = chellow.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)

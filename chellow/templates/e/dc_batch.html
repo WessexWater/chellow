@@ -16,11 +16,11 @@
 
 	{% if request.method == 'GET' and request.values.confirm_delete_bills %}
 
-		<form method="post" action="/e/dc_batches/{{batch_id}}">
+		<form method="post" action="/e/dc_batches/{{batch.id}}">
 			<fieldset>
 				<legend>Are you sure you want to delete all the bills in this batch?</legend>	
 				<input type="submit" name="delete_bills" value="Delete">
-				<a href="/dc_batches/{{batch_id}}">Cancel</a>
+				<a href="/e/dc_batches/{{batch_id}}">Cancel</a>
 			</fieldset>
 		</form>
 
