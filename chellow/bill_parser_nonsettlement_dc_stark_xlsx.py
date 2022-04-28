@@ -103,7 +103,7 @@ class Parser:
                     break
 
                 self._set_last_line(row_index, val)
-                msn = get_str(title_row, row, "meter").strip()
+                msn = str(get_value(title_row, row, "meter")).strip()
                 mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
                 start_date = get_start_date(title_row, row, "start")
                 issue_date = start_date
@@ -116,7 +116,7 @@ class Parser:
                 vat = round(net * Decimal("0.2"), 2)
 
                 breakdown = {
-                    "raw_lines": [str(title_row)],
+                    "raw_lines": [],
                     "cop": ["5"],
                     "settlement-status": ["non_settlement"],
                     "msn": [msn],
