@@ -105,7 +105,7 @@
 								{% if diff == 'msn' %}
 									- {{vals['ecoes_msn_install_date']}}
 								{% elif diff == 'supplier' %}
-									- {{vals['ecoes_registration_from']}}
+									- {{vals['ecoes_supplier_registration_from']}}
 								{% elif diff == 'mtc' %}
 									- {{vals['ecoes_mtc_date']}}
 								{% elif diff == 'llfc' %}
@@ -117,7 +117,7 @@
 								{% endif %}
 							</td>
 						{% endfor %}
-						<td>{{vals['error']}}</td>
+						<td>{{vals['problem']}}</td>
 					</tr>
 				</tbody>
 			</table>
