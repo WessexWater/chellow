@@ -1,9 +1,9 @@
 from datetime import datetime as Datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import to_ct, to_utc
+from chellow.utils import ct_datetime, to_ct, to_utc
 
 
 class EdiParser:
@@ -20,16 +20,15 @@ class EdiParser:
 
         if self.line[-1] != "'":
             raise BadRequest(
-                "The parser expects each line to end with a ', but line "
-                "number " + str(self.line_number) + " doesn't: " + self.line + "."
+                f"The parser expects each line to end with a ', but line number "
+                f"{self.line_number} doesn't: {self.line}."
             )
         self.elements = [element.split(":") for element in self.line[4:-1].split("+")]
         return self.line[:3]
 
 
 def parse_edi(edi_str):
-    line_number = 0
-    for i, raw_line in enumerate(edi_str.splitlines()):
+    for line_number, raw_line in enumerate(edi_str.splitlines(), start=1):
         if raw_line[-1] != "'":
             raise BadRequest(
                 f"The parser expects each line to end with a ', but line "
@@ -37,27 +36,47 @@ def parse_edi(edi_str):
             )
 
         line = raw_line.strip()
-        line_number += 1
         code = line[:3]
 
         els = [el.split(":") for el in line[4:-1].split("+")]
 
         segment_name = code + els[1][0] if code == "CCD" else code
-        elem_codes = [m["code"] for m in SEGMENTS[segment_name]["elements"]]
+
+        try:
+            elem_data = SEGMENTS[segment_name]
+        except KeyError:
+            raise BadRequest(
+                f"At line number {line_number} the segment name {segment_name} isn't "
+                f"recognized."
+            )
+        elem_codes = [m["code"] for m in elem_data["elements"]]
+
         elements = dict(zip(elem_codes, els))
 
         yield line_number, line, segment_name, elements
 
 
 def to_decimal(components):
-    result = Decimal(components[0])
+    try:
+        result = Decimal(components[0])
+    except InvalidOperation as e:
+        raise BadRequest(f"Problem parsing decimal '{components[0]}' {e}")
     if len(components) > 1 and components[-1] == "R":
         result *= Decimal("-1")
     return result
 
 
+def to_ct_date(component):
+    return to_ct(Datetime.strptime(component, "%y%m%d"))
+
+
 def to_date(component):
-    return to_utc(to_ct(Datetime.strptime(component, "%y%m%d")))
+    return to_utc(to_ct_date(component))
+
+
+def to_finish_date(component):
+    d = to_ct_date(component)
+    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
 def to_int(component):
@@ -385,6 +404,38 @@ SEGMENTS = {
                     ("Numeric VAT Registration Number", "X"),
                     ("Alphanumeric VAT Registration Number", "X"),
                 ],
+            },
+        ],
+    },
+    "CDA": {
+        "description": "CONTRACT DATA",
+        "elements": [
+            {
+                "code": "CPSC",
+                "description": "Current Price Structure Reference",
+                "components": [
+                    ("Current Price Structure Reference", "X"),
+                ],
+            },
+            {
+                "code": "ORNO",
+                "description": "Order Number and Date",
+                "components": [
+                    ("Customer's Order Number", "X"),
+                    ("Supplier's Order Number", "X"),
+                    ("Date Order Placed by customer", "date"),
+                    ("Date Order Received by Supplier", "date"),
+                ],
+            },
+            {
+                "code": "INSD",
+                "description": "Installation Date",
+                "components": [("Installation Date", "date")],
+            },
+            {
+                "code": "REPE",
+                "description": "Rental Period",
+                "components": [("Rental Period", "X")],
             },
         ],
     },

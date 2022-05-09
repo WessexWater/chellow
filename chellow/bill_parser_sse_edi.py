@@ -1,13 +1,11 @@
 from collections import defaultdict
-from datetime import datetime as Datetime
 from decimal import Decimal
-from io import StringIO
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import EdiParser, to_decimal
+from chellow.edi_lib import parse_edi, to_ct_date, to_date, to_decimal, to_finish_date
 from chellow.models import Era, Session
-from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, parse_mpan_core, to_utc
 
 
 read_type_map = {
@@ -174,369 +172,387 @@ WRONG_TPRS = {
 }
 
 
-def to_ct_date(component):
-    return to_ct(Datetime.strptime(component, "%y%m%d"))
+def _process_BCD(elements, headers):
+    ivdt = elements["IVDT"]
+    headers["issue_date"] = to_date(ivdt[0])
+
+    invn = elements["INVN"]
+    reference = invn[0]
+    headers["reference"] = reference
+    headers["account"] = "SA" + reference[:9]
+
+    btcd = elements["BTCD"]
+    headers["bill_type_code"] = btcd[0]
+
+    sumo = elements["SUMO"]
+    headers["start_date"] = to_date(sumo[0])
+    headers["is_ebatch"] = to_ct_date(sumo[1]) in (
+        ct_datetime(2020, 4, 1),
+        ct_datetime(2020, 3, 16),
+    )
+    if headers["is_ebatch"]:
+        headers["finish_date"] = to_date(sumo[1]) - HH
+    else:
+        headers["finish_date"] = to_finish_date(sumo[1])
 
 
-def to_start_date(component):
-    return to_utc(to_ct_date(component))
+def _process_MHD(elements, headers):
+    message_type = elements["TYPE"][0]
+    sess = headers["sess"]
+    if message_type == "UTLBIL":
+        headers.clear()
+        headers["kwh"] = Decimal("0")
+        headers["reads"] = []
+        headers["breakdown"] = defaultdict(int, {"raw-lines": []})
+        headers["bill_elements"] = []
+        headers["errors"] = []
+        headers["sess"] = sess
+        headers["mpan_core"] = None
+        headers["account"] = None
+        headers["is_ebatch"] = False
+        headers["bill_type_code"] = None
+        headers["reference"] = None
+        headers["issue_date"] = None
+        headers["start_date"] = None
+        headers["finish_date"] = None
+        headers["net"] = Decimal("0.00")
+        headers["vat"] = Decimal("0.00")
+        headers["gross"] = Decimal("0.00")
+    headers["message_type"] = message_type
 
 
-def to_finish_date(component):
-    d = to_ct_date(component)
-    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
+def _process_CCD1(elements, headers):
+    prdt = elements["PRDT"]
+    pvdt = elements["PVDT"]
+
+    pres_read_date = to_finish_date(prdt[0])
+    prev_read_date = to_finish_date(pvdt[0])
+
+    tmod = elements["TMOD"]
+    mtnr = elements["MTNR"]
+    mloc = elements["MLOC"]
+
+    mpan = mloc[0]
+    mpan_core = f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}"
+    headers["mpan_core"] = mpan_core
+    mpan = f"{mpan[13:15]} {mpan[15:18]} {mpan[18:]} {mpan_core}"
+
+    prrd = elements["PRRD"]
+    pres_read_type = read_type_map[prrd[1]]
+    prev_read_type = read_type_map[prrd[3]]
+
+    adjf = elements["ADJF"]
+    cona = elements["CONA"]
+
+    coefficient = Decimal(adjf[1]) / Decimal(100000)
+    pres_reading_value = Decimal(prrd[0])
+    prev_reading_value = Decimal(prrd[2])
+    msn = mtnr[0]
+    tpr_native = tmod[0]
+    if tpr_native not in tmod_map:
+        raise BadRequest(
+            f"The TPR code {tpr_native} can't be found in the TPR list "
+            f"for mpan {mpan}."
+        )
+    tpr_code = tmod_map[tpr_native]
+    if tpr_code == "kW":
+        units = "kW"
+        tpr_code = None
+    elif tpr_code == "kVA":
+        units = "kVA"
+        tpr_code = None
+    else:
+        units = "kWh"
+        headers["kwh"] += to_decimal(cona) / Decimal("1000")
+
+    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
+        ct_datetime(2020, 4, 1, 23, 30)
+    ):
+        pres_read_date = to_utc(ct_datetime(2020, 4, 1, 22, 30))
+        headers["reads"].append(
+            {
+                "msn": "Separator Read",
+                "mpan": mpan,
+                "coefficient": coefficient,
+                "units": units,
+                "tpr_code": tpr_code,
+                "prev_date": to_utc(ct_datetime(2020, 4, 1, 23)),
+                "prev_value": 0,
+                "prev_type_code": "N",
+                "pres_date": to_utc(ct_datetime(2020, 4, 1, 23)),
+                "pres_value": 0,
+                "pres_type_code": "N",
+            }
+        )
+
+    headers["reads"].append(
+        {
+            "msn": msn,
+            "mpan": mpan,
+            "coefficient": coefficient,
+            "units": units,
+            "tpr_code": tpr_code,
+            "prev_date": prev_read_date,
+            "prev_value": prev_reading_value,
+            "prev_type_code": prev_read_type,
+            "pres_date": pres_read_date,
+            "pres_value": pres_reading_value,
+            "pres_type_code": pres_read_type,
+        }
+    )
+
+
+def _process_CCD2(elements, headers):
+    tmod = elements["TMOD"]
+    mtnr = elements["MTNR"]
+    mloc = elements["MLOC"]
+
+    mpan = mloc[0]
+    mpan_core = f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}"
+    mpan = f"{mpan[13:15]} {mpan[15:18]} {mpan[18:]} {mpan_core}"
+
+    prdt = elements["PRDT"]
+    pvdt = elements["PVDT"]
+
+    pres_read_date = to_finish_date(prdt[0])
+    prev_read_date = to_finish_date(pvdt[0])
+
+    prrd = elements["PRRD"]
+    pres_read_type = read_type_map[prrd[1]]
+    prev_read_type = read_type_map[prrd[3]]
+
+    adjf = elements["ADJF"]
+    cona = elements["CONA"]
+
+    coefficient = Decimal(adjf[1]) / Decimal(100000)
+    pres_reading_value = Decimal(prrd[0])
+    prev_reading_value = Decimal(prrd[2])
+    msn = mtnr[0]
+    tpr_code = tmod[0]
+    if tpr_code not in tmod_map:
+        raise BadRequest(
+            f"The TPR code {tpr_code} can't be found in the TPR list "
+            f"for mpan {mpan}."
+        )
+    tpr = tmod_map[tpr_code]
+    if tpr == "kW":
+        units = "kW"
+        tpr = None
+        prefix = "md-"
+    elif tpr == "kVA":
+        units = "kVA"
+        tpr = None
+        prefix = "md-"
+    else:
+        units = "kWh"
+        headers["kwh"] += to_decimal(cona) / Decimal("1000")
+        prefix = tpr + "-"
+
+    nuct = elements["NUCT"]
+    breakdown = headers["breakdown"]
+    breakdown[prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
+    cppu = elements["CPPU"]
+    rate_key = prefix + "rate"
+    if rate_key not in breakdown:
+        breakdown[rate_key] = set()
+    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
+    ctot = elements["CTOT"]
+    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
+
+    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
+        ct_datetime(2020, 4, 1, 23, 30)
+    ):
+        pres_read_date = to_utc(ct_datetime(2020, 4, 1, 22, 30))
+        headers["reads"].append(
+            {
+                "msn": "Separator Read",
+                "mpan": mpan,
+                "coefficient": coefficient,
+                "units": units,
+                "tpr_code": tpr,
+                "prev_date": to_utc(ct_datetime(2020, 4, 1, 23)),
+                "prev_value": 0,
+                "prev_type_code": "N",
+                "pres_date": to_utc(ct_datetime(2020, 4, 1, 23)),
+                "pres_value": 0,
+                "pres_type_code": "N",
+            }
+        )
+
+    headers["reads"].append(
+        {
+            "msn": msn,
+            "mpan": mpan,
+            "coefficient": coefficient,
+            "units": units,
+            "tpr_code": tpr,
+            "prev_date": prev_read_date,
+            "prev_value": prev_reading_value,
+            "prev_type_code": prev_read_type,
+            "pres_date": pres_read_date,
+            "pres_value": pres_reading_value,
+            "pres_type_code": pres_read_type,
+        }
+    )
+
+
+def _process_CCD3(elements, headers):
+    tmod = elements["TMOD"]
+    tmod0 = tmod[0]
+    if tmod0 == "CCL":
+        prefix = kwh_prefix = "ccl-"
+    elif tmod0 in ["CQFITC", "CMFITC"]:
+        prefix = "fit-"
+        kwh_prefix = "fit-msp-"
+    elif tmod0 == "FITARR":
+        prefix = kwh_prefix = "fit-reconciliation-"
+    else:
+        tpr_code = tmod0
+        if tpr_code not in tmod_map:
+            raise BadRequest(
+                f"The TPR code {tpr_code} can't be found in the TPR "
+                f"list for mpan {headers['mpan']}."
+            )
+        prefix = kwh_prefix = tmod_map[tpr_code] + "-"
+
+    nuct = elements["NUCT"]
+    breakdown = headers["breakdown"]
+    breakdown[kwh_prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
+    cppu = elements["CPPU"]
+
+    rate_key = prefix + "rate"
+    if rate_key not in breakdown:
+        breakdown[rate_key] = set()
+    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
+
+    ctot = elements["CTOT"]
+    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
+
+
+def _process_CCD4(elements, headers):
+    ndrp = elements["NDRP"]
+    breakdown = headers["breakdown"]
+    if len(ndrp[0]) > 0:
+        breakdown["standing-days"] += to_decimal(ndrp)
+    ctot = elements["CTOT"]
+    if len(ctot[0]) > 0:
+        breakdown["standing-gbp"] += to_decimal(ctot) / Decimal("100")
+
+
+def _process_MTR(elements, headers):
+    if headers["message_type"] == "UTLBIL":
+
+        if headers["mpan_core"] is None:
+            sess = headers["sess"]
+            era = (
+                sess.query(Era)
+                .filter(Era.imp_supplier_account == headers["account"])
+                .first()
+            )
+            if era is not None:
+                headers["mpan_core"] = era.imp_mpan_core
+            sess.close()
+
+        if headers["is_ebatch"]:
+            for r in headers["reads"]:
+                if r["pres_type_code"] == "C":
+                    r["pres_type_code"] = "E"
+
+        raw_bill = {
+            "bill_type_code": headers["bill_type_code"],
+            "account": headers["account"],
+            "mpan_core": headers["mpan_core"],
+            "reference": headers["reference"],
+            "issue_date": headers["issue_date"],
+            "start_date": headers["start_date"],
+            "finish_date": headers["finish_date"],
+            "kwh": headers["kwh"],
+            "net": headers["net"],
+            "vat": headers["vat"],
+            "gross": headers["gross"],
+            "breakdown": headers["breakdown"],
+            "reads": headers["reads"],
+        }
+        return raw_bill
+
+
+def _process_MAN(elements, headers):
+    madn = elements["MADN"]
+    headers["mpan_core"] = parse_mpan_core("".join((madn[0], madn[1], madn[2])))
+
+
+def _process_VAT(elements, headers):
+    uvla = elements["UVLA"]
+    headers["net"] += to_decimal(uvla) / Decimal("100")
+    uvtt = elements["UVTT"]
+    headers["vat"] += to_decimal(uvtt) / Decimal("100")
+    ucsi = elements["UCSI"]
+    headers["gross"] += to_decimal(ucsi) / Decimal("100")
+
+
+def _process_NOOP(elements, headers):
+    pass
+
+
+CODE_FUNCS = {
+    "BCD": _process_BCD,
+    "BTL": _process_NOOP,
+    "CCD1": _process_CCD1,
+    "CCD2": _process_CCD2,
+    "CCD3": _process_CCD3,
+    "CCD4": _process_CCD4,
+    "CDA": _process_NOOP,
+    "CDT": _process_NOOP,
+    "CLO": _process_NOOP,
+    "DNA": _process_NOOP,
+    "END": _process_NOOP,
+    "FIL": _process_NOOP,
+    "MAN": _process_MAN,
+    "MHD": _process_MHD,
+    "MTR": _process_MTR,
+    "REF": _process_NOOP,
+    "SDT": _process_NOOP,
+    "STX": _process_NOOP,
+    "TYP": _process_NOOP,
+    "TTL": _process_NOOP,
+    "VAT": _process_VAT,
+    "VTS": _process_NOOP,
+}
 
 
 class Parser:
     def __init__(self, f):
-        self.parser = EdiParser(StringIO(str(f.read(), "utf-8", errors="ignore")))
+        self.edi_str = str(f.read(), "utf-8", errors="ignore")
         self.line_number = None
 
     def make_raw_bills(self):
-        raw_bills = []
-        breakdown = None
+        bills = []
+        sess = Session()
+        headers = {"sess": sess}
+        bill = None
+        try:
+            for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
 
-        for self.line_number, code in enumerate(self.parser):
-            if code == "BCD":
-                ivdt = self.parser.elements[0]
-                issue_date = to_utc(to_ct_date(ivdt[0]))
+                try:
+                    func = CODE_FUNCS[seg_name]
+                except KeyError:
+                    raise BadRequest(f"Code {seg_name} not recognized.")
 
-                invn = self.parser.elements[2]
-                reference = invn[0]
-                account = "SA" + reference[:9]
-
-                btcd = self.parser.elements[5]
-                bill_type_code = btcd[0]
-
-                sumo = self.parser.elements[7]
-                start_date = to_start_date(sumo[0])
-                if to_ct_date(sumo[1]) in (
-                    ct_datetime(2020, 4, 1),
-                    ct_datetime(2020, 3, 16),
-                ):
-                    finish_date = to_start_date(sumo[1]) - HH
-                else:
-                    finish_date = to_finish_date(sumo[1])
-
-            elif code == "MHD":
-                type = self.parser.elements[1]
-                message_type = type[0]
-                if message_type == "UTLBIL":
-                    issue_date = None
-                    start_date = None
-                    finish_date = None
-                    account = None
-                    reference = None
-                    net = Decimal("0.00")
-                    vat = Decimal("0.00")
-                    gross = Decimal("0.00")
-                    kwh = Decimal(0)
-                    reads = []
-                    bill_type_code = None
-                    mpan_core = None
-                    breakdown = defaultdict(int, {"raw-lines": []})
-
-            elif code == "CCD":
-                ccde = self.parser.elements[1]
-                consumption_charge_indicator = ccde[0]
-
-                if consumption_charge_indicator == "1":
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
-
-                    pres_read_date = to_finish_date(prdt[0])
-                    prev_read_date = to_finish_date(pvdt[0])
-
-                    tmod = self.parser.elements[3]
-                    mtnr = self.parser.elements[4]
-                    mloc = self.parser.elements[5]
-
-                    mpan = mloc[0]
-                    mpan_core = " ".join([mpan[:2], mpan[2:6], mpan[6:10], mpan[10:13]])
-                    mpan = (
-                        mpan[13:15]
-                        + " "
-                        + mpan[15:18]
-                        + " "
-                        + mpan[18:]
-                        + " "
-                        + mpan_core
+                try:
+                    bill = func(elements, headers)
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"{e.description} on line {self.line_number} line {line} "
+                        f"seg_name {seg_name} elements {elements}"
                     )
 
-                    prrd = self.parser.elements[9]
-                    pres_read_type = read_type_map[prrd[1]]
-                    prev_read_type = read_type_map[prrd[3]]
+                if "breakdown" in headers:
+                    headers["breakdown"]["raw-lines"].append(line)
 
-                    adjf = self.parser.elements[12]
-                    cons = self.parser.elements[13]
+                if bill is not None:
+                    bills.append(bill)
+        finally:
+            if sess is not None:
+                sess.close()
 
-                    coefficient = Decimal(adjf[1]) / Decimal(100000)
-                    pres_reading_value = Decimal(prrd[0])
-                    prev_reading_value = Decimal(prrd[2])
-                    msn = mtnr[0]
-                    tpr_native = tmod[0]
-                    if tpr_native not in tmod_map:
-                        raise BadRequest(
-                            "The TPR code "
-                            + tpr_native
-                            + " can't be found in the TPR list for mpan "
-                            + mpan
-                            + "."
-                        )
-                    tpr_code = tmod_map[tpr_native]
-                    if tpr_code == "kW":
-                        units = "kW"
-                        tpr_code = None
-                    elif tpr_code == "kVA":
-                        units = "kVA"
-                        tpr_code = None
-                    else:
-                        units = "kWh"
-                        kwh += to_decimal(cons) / Decimal("1000")
-
-                    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
-                        ct_datetime(2020, 4, 1, 23, 30)
-                    ):
-                        pres_read_date = to_utc(ct_datetime(2020, 4, 1, 22, 30))
-                        reads.append(
-                            {
-                                "msn": "Separator Read",
-                                "mpan": mpan,
-                                "coefficient": coefficient,
-                                "units": units,
-                                "tpr_code": tpr_code,
-                                "prev_date": to_utc(ct_datetime(2020, 4, 1, 23)),
-                                "prev_value": 0,
-                                "prev_type_code": "N",
-                                "pres_date": to_utc(ct_datetime(2020, 4, 1, 23)),
-                                "pres_value": 0,
-                                "pres_type_code": "N",
-                            }
-                        )
-                    reads.append(
-                        {
-                            "msn": msn,
-                            "mpan": mpan,
-                            "coefficient": coefficient,
-                            "units": units,
-                            "tpr_code": tpr_code,
-                            "prev_date": prev_read_date,
-                            "prev_value": prev_reading_value,
-                            "prev_type_code": prev_read_type,
-                            "pres_date": pres_read_date,
-                            "pres_value": pres_reading_value,
-                            "pres_type_code": pres_read_type,
-                        }
-                    )
-
-                elif consumption_charge_indicator == "2":
-                    # tcod = self.parser.elements[2]
-                    tmod = self.parser.elements[3]
-                    mtnr = self.parser.elements[4]
-                    mloc = self.parser.elements[5]
-
-                    mpan = mloc[0]
-                    mpan_core = " ".join([mpan[:2], mpan[2:6], mpan[6:10], mpan[10:13]])
-                    mpan = (
-                        mpan[13:15]
-                        + " "
-                        + mpan[15:18]
-                        + " "
-                        + mpan[18:]
-                        + " "
-                        + mpan_core
-                    )
-
-                    prdt = self.parser.elements[6]
-                    pvdt = self.parser.elements[7]
-
-                    pres_read_date = to_finish_date(prdt[0])
-                    prev_read_date = to_finish_date(pvdt[0])
-
-                    ndrp = self.parser.elements[8]
-                    prrd = self.parser.elements[9]
-                    pres_read_type = read_type_map[prrd[1]]
-                    prev_read_type = read_type_map[prrd[3]]
-
-                    adjf = self.parser.elements[12]
-                    cona = self.parser.elements[13]
-
-                    coefficient = Decimal(adjf[1]) / Decimal(100000)
-                    pres_reading_value = Decimal(prrd[0])
-                    prev_reading_value = Decimal(prrd[2])
-                    msn = mtnr[0]
-                    tpr_code = tmod[0]
-                    if tpr_code not in tmod_map:
-                        raise BadRequest(
-                            "The TPR code "
-                            + tpr_code
-                            + " can't be found in the TPR list for mpan "
-                            + mpan
-                            + "."
-                        )
-                    tpr = tmod_map[tpr_code]
-                    if tpr == "kW":
-                        units = "kW"
-                        tpr = None
-                        prefix = "md-"
-                    elif tpr == "kVA":
-                        units = "kVA"
-                        tpr = None
-                        prefix = "md-"
-                    else:
-                        units = "kWh"
-                        kwh += to_decimal(cona) / Decimal("1000")
-                        prefix = tpr + "-"
-
-                    nuct = self.parser.elements[15]
-                    breakdown[prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
-                    cppu = self.parser.elements[18]
-                    rate_key = prefix + "rate"
-                    if rate_key not in breakdown:
-                        breakdown[rate_key] = set()
-                    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
-                    ctot = self.parser.elements[19]
-                    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
-
-                    if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
-                        ct_datetime(2020, 4, 1, 23, 30)
-                    ):
-                        pres_read_date = to_utc(ct_datetime(2020, 4, 1, 22, 30))
-                        reads.append(
-                            {
-                                "msn": "Separator Read",
-                                "mpan": mpan,
-                                "coefficient": coefficient,
-                                "units": units,
-                                "tpr_code": tpr,
-                                "prev_date": to_utc(ct_datetime(2020, 4, 1, 23)),
-                                "prev_value": 0,
-                                "prev_type_code": "N",
-                                "pres_date": to_utc(ct_datetime(2020, 4, 1, 23)),
-                                "pres_value": 0,
-                                "pres_type_code": "N",
-                            }
-                        )
-
-                    reads.append(
-                        {
-                            "msn": msn,
-                            "mpan": mpan,
-                            "coefficient": coefficient,
-                            "units": units,
-                            "tpr_code": tpr,
-                            "prev_date": prev_read_date,
-                            "prev_value": prev_reading_value,
-                            "prev_type_code": prev_read_type,
-                            "pres_date": pres_read_date,
-                            "pres_value": pres_reading_value,
-                            "pres_type_code": pres_read_type,
-                        }
-                    )
-
-                elif consumption_charge_indicator == "3":
-                    # tcod = self.parser.elements[2]
-                    tmod = self.parser.elements[3]
-                    tmod0 = tmod[0]
-                    if tmod0 == "CCL":
-                        prefix = kwh_prefix = "ccl-"
-                    elif tmod0 in ["CQFITC", "CMFITC"]:
-                        prefix = "fit-"
-                        kwh_prefix = "fit-msp-"
-                    elif tmod0 == "FITARR":
-                        prefix = kwh_prefix = "fit-reconciliation-"
-                    else:
-                        tpr_code = tmod0
-                        if tpr_code not in tmod_map:
-                            raise BadRequest(
-                                "The TPR code "
-                                + tpr_code
-                                + " can't be found in the TPR list for mpan "
-                                + mpan
-                                + "."
-                            )
-                        prefix = kwh_prefix = tmod_map[tpr_code] + "-"
-
-                    mtnr = self.parser.elements[4]
-                    ndrp = self.parser.elements[8]
-                    cona = self.parser.elements[13]
-                    nuct = self.parser.elements[15]
-                    breakdown[kwh_prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
-                    cppu = self.parser.elements[18]
-
-                    rate_key = prefix + "rate"
-                    if rate_key not in breakdown:
-                        breakdown[rate_key] = set()
-                    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
-
-                    ctot = self.parser.elements[19]
-                    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
-                elif consumption_charge_indicator == "4":
-                    # tcod = self.parser.elements[2]
-                    tmod = self.parser.elements[3]
-                    tmod0 = tmod[0]
-
-                    mtnr = self.parser.elements[4]
-                    ndrp = self.parser.elements[8]
-                    if len(ndrp[0]) > 0:
-                        breakdown["standing-days"] += to_decimal(ndrp)
-                    cona = self.parser.elements[13]
-                    nuct = self.parser.elements[15]
-                    cppu = self.parser.elements[18]
-                    ctot = self.parser.elements[19]
-                    if len(ctot[0]) > 0:
-                        breakdown["standing-gbp"] += to_decimal(ctot) / Decimal("100")
-            elif code == "MTR":
-                if message_type == "UTLBIL":
-
-                    if mpan_core is None:
-                        sess = Session()
-                        era = (
-                            sess.query(Era)
-                            .filter(Era.imp_supplier_account == account)
-                            .first()
-                        )
-                        if era is not None:
-                            mpan_core = era.imp_mpan_core
-                        sess.close()
-
-                    raw_bill = {
-                        "bill_type_code": bill_type_code,
-                        "account": account,
-                        "mpan_core": mpan_core,
-                        "reference": reference,
-                        "issue_date": issue_date,
-                        "start_date": start_date,
-                        "finish_date": finish_date,
-                        "kwh": kwh,
-                        "net": net,
-                        "vat": vat,
-                        "gross": gross,
-                        "breakdown": breakdown,
-                        "reads": reads,
-                    }
-                    raw_bills.append(raw_bill)
-                    breakdown = None
-
-            elif code == "MAN":
-                madn = self.parser.elements[2]
-                """
-                pc_code = madn[3]
-                mtc_code = madn[4]
-                llfc_code = madn[5]
-                """
-
-                mpan_core = parse_mpan_core("".join((madn[0], madn[1], madn[2])))
-
-            elif code == "VAT":
-                uvla = self.parser.elements[5]
-                net += to_decimal(uvla) / Decimal("100")
-                uvtt = self.parser.elements[6]
-                vat += to_decimal(uvtt) / Decimal("100")
-                ucsi = self.parser.elements[7]
-                gross += to_decimal(ucsi) / Decimal("100")
-
-            if breakdown is not None:
-                breakdown["raw-lines"].append(self.parser.line)
-
-        return raw_bills
+        return bills
