@@ -13,7 +13,8 @@
 		<thead>
 			<tr>
 				<th>Scenario</th>
-				<th>Run</th>
+				<th>Run With Monthy Duration</th>
+				<th>Run With Duration</th>
 				<th>View</th>
 				<th>Edit</th>
 				<th>Scenario Start Year</th>
@@ -27,6 +28,14 @@
 					<td>{{scenario.name}}</td>
 					<td>
 						<form action="/reports/247" method="post">
+							<fieldset>
+								<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+								<input type="submit" value="Run">
+							</fieldset>	
+						</form>
+					</td>
+					<td>
+						<form action="/reports/149" method="post">
 							<fieldset>
 								<input type="hidden" name="scenario_id" value="{{scenario.id}}">
 								<input type="submit" value="Run">

@@ -28,22 +28,38 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_content_blank(mocker, client):
-    supply_id = None
-    start_date = to_utc(ct_datetime(2022, 1, 1))
-    finish_date = to_utc(ct_datetime(2022, 1, 31, 23, 30))
     user = None
-    mpan_cores = None
-    content(supply_id, start_date, finish_date, user, mpan_cores)
+    scenario_props = {
+        "scenario_start_year": 2022,
+        "scenario_start_month": 1,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2022,
+        "scenario_finish_month": 1,
+        "scenario_finish_day": 31,
+        "scenario_finish_hour": 23,
+        "scenario_finish_minute": 30,
+    }
+    content(scenario_props, user)
 
 
 def test_process_blank(sess, mocker):
-    supply_id = None
-    start_date = to_utc(ct_datetime(2022, 1, 1))
-    finish_date = to_utc(ct_datetime(2022, 1, 31, 23, 30))
     f = StringIO()
     caches = {}
-    mpan_cores = None
-    _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores)
+    scenario_props = {
+        "scenario_start_year": 2022,
+        "scenario_start_month": 1,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2022,
+        "scenario_finish_month": 1,
+        "scenario_finish_day": 31,
+        "scenario_finish_hour": 23,
+        "scenario_finish_minute": 30,
+    }
+    _process(sess, caches, f, scenario_props)
     expected = [
         "era_start",
         "era_finish",
@@ -103,11 +119,8 @@ def test_process_blank(sess, mocker):
 
 
 def test_process(sess, mocker):
-    start_date = to_utc(ct_datetime(2022, 1, 1))
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
-    start_date = utc_datetime(2009, 7, 31, 23, 00)
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -295,11 +308,21 @@ def virtual_bill(ds):
 
     sess.commit()
 
-    supply_id = None
     f = StringIO()
     caches = {}
-    mpan_cores = None
-    _process(sess, caches, f, start_date, start_date, supply_id, mpan_cores)
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 8,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2009,
+        "scenario_finish_month": 8,
+        "scenario_finish_day": 1,
+        "scenario_finish_hour": 0,
+        "scenario_finish_minute": 0,
+    }
+    _process(sess, caches, f, scenario_props)
     expected = [
         [
             "era_start",
@@ -417,11 +440,8 @@ def virtual_bill(ds):
 
 
 def test_process_de_energised(sess, mocker):
-    start_date = to_utc(ct_datetime(2022, 1, 1))
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
-    start_date = utc_datetime(2009, 7, 31, 23, 00)
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -609,11 +629,22 @@ def virtual_bill(ds):
 
     sess.commit()
 
-    supply_id = None
     f = StringIO()
     caches = {}
-    mpan_cores = None
-    _process(sess, caches, f, start_date, start_date, supply_id, mpan_cores)
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 8,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2009,
+        "scenario_finish_month": 8,
+        "scenario_finish_day": 1,
+        "scenario_finish_hour": 0,
+        "scenario_finish_minute": 0,
+    }
+
+    _process(sess, caches, f, scenario_props)
     expected = [
         [
             "era_start",

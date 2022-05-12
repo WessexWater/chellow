@@ -236,7 +236,20 @@ Table of site level monthly kWh, MD kWh etc.</a>
 	<form action="/reports/247" method="post">
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">
-			<legend>Run Scenario</legend>
+			<legend>Run Scenario With Monthly Duration</legend>
+			<select name="scenario_id">
+				{% for scenario in scenarios %}
+					{{input_option('scenario', scenario.id, scenario.name)}}
+				{% endfor %}
+			</select>
+			<input type="submit" value="Run">
+		</fieldset>
+	</form>
+
+	<form action="/reports/149" method="post">
+		<fieldset>
+			<input type="hidden" name="site_id" value="{{site.id}}">
+			<legend>Run Scenario With Duration</legend>
 			<select name="scenario_id">
 				{% for scenario in scenarios %}
 					{{input_option('scenario', scenario.id, scenario.name)}}
@@ -248,8 +261,8 @@ Table of site level monthly kWh, MD kWh etc.</a>
 
 	<h2>Gas</h2>
 
-	<table class="table">
-	<caption>Gas supplies that power this site</caption>
+	<table>
+		<caption>Gas supplies that power this site</caption>
 		<thead>
 			<tr>
 				<th>View</th>
@@ -315,7 +328,6 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		</tbody>
 	</table>
 
-	<br>
 	<form action="/reports/g_monthly_duration">
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">

@@ -2,7 +2,6 @@ import csv
 import os
 import threading
 import traceback
-from datetime import datetime as Datetime
 from itertools import chain
 
 from flask import g, request
@@ -24,6 +23,7 @@ from chellow.models import (
     MtcParticipant,
     ReadType,
     RegisterRead,
+    Scenario,
     Session,
     SiteEra,
     Supply,
@@ -31,12 +31,15 @@ from chellow.models import (
 from chellow.utils import (
     HH,
     csv_make_val,
+    ct_datetime,
+    hh_format,
     hh_max,
     hh_min,
     parse_mpan_core,
     req_hh_date,
     req_int,
     req_str,
+    to_ct,
     to_utc,
 )
 from chellow.views.home import chellow_redirect
@@ -55,6 +58,7 @@ def mpan_bit(
     chunk_finish,
     forecast_date,
     caches,
+    scenario_props,
 ):
 
     active_channel = sess.execute(
@@ -111,9 +115,16 @@ def mpan_bit(
 
     else:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
-
+        era_maps = scenario_props.get("era_maps", {})
         supply_source = chellow.computer.SupplySource(
-            sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
+            sess,
+            chunk_start,
+            chunk_finish,
+            forecast_date,
+            era,
+            is_import,
+            caches,
+            era_maps=era_maps,
         )
 
         chellow.duos.duos_vb(supply_source)
@@ -160,8 +171,16 @@ def mpan_bit(
     }
 
 
-def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
-    forecast_date = to_utc(Datetime.max)
+def _process(sess, caches, f, scenario_props):
+    if "forecast_from" in scenario_props:
+        forecast_from = scenario_props["forecast_from"]
+    else:
+        forecast_from = None
+
+    if forecast_from is None:
+        forecast_from = chellow.computer.forecast_date()
+    else:
+        forecast_from = to_utc(forecast_from)
 
     w = csv.writer(f, lineterminator="\n")
     titles = [
@@ -210,6 +229,26 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
 
     w.writerow(titles)
 
+    start_date = to_utc(
+        ct_datetime(
+            scenario_props["scenario_start_year"],
+            scenario_props["scenario_start_month"],
+            scenario_props["scenario_start_day"],
+            scenario_props["scenario_start_hour"],
+            scenario_props["scenario_start_minute"],
+        )
+    )
+    finish_date = to_utc(
+        ct_datetime(
+            scenario_props["scenario_finish_year"],
+            scenario_props["scenario_finish_month"],
+            scenario_props["scenario_finish_day"],
+            scenario_props["scenario_finish_hour"],
+            scenario_props["scenario_finish_minute"],
+        )
+    )
+    mpan_cores = scenario_props.get("mpan_cores")
+
     eras = (
         sess.query(Era)
         .filter(
@@ -239,9 +278,6 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
             joinedload(Era.site_eras),
         )
     )
-
-    if supply_id is not None:
-        eras = eras.where(Era.supply == Supply.get_by_id(sess, supply_id))
 
     if mpan_cores is not None:
         eras = eras.where(
@@ -366,8 +402,9 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
                 era,
                 chunk_start,
                 chunk_finish,
-                forecast_date,
+                forecast_from,
                 caches,
+                scenario_props,
             )
         )
         values.update(
@@ -379,8 +416,9 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
                 era,
                 chunk_start,
                 chunk_finish,
-                forecast_date,
+                forecast_from,
                 caches,
+                scenario_props,
             )
         )
 
@@ -390,17 +428,18 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
         sess.rollback()
 
 
-def content(supply_id, start_date, finish_date, user, mpan_cores):
+def content(scenario_props, user):
     caches = {}
     f = sess = None
     try:
         sess = Session()
+        mpan_cores = scenario_props.get("mpan_cores")
         filter_str = "" if mpan_cores is None else "_filter"
         running_name, finished_name = chellow.dloads.make_names(
             f"supplies_duration{filter_str}.csv", user
         )
         f = open(running_name, mode="w", newline="")
-        _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores)
+        _process(sess, caches, f, scenario_props)
     except BadRequest as e:
         era = caches.get("era")
         if era is None:
@@ -425,22 +464,58 @@ def content(supply_id, start_date, finish_date, user, mpan_cores):
             os.rename(running_name, finished_name)
 
 
-def do_get(sess):
-    start_date = req_hh_date("start")
-    finish_date = req_hh_date("finish")
-    supply_id = req_int("supply_id") if "supply_id" in request.values else None
-    if "mpan_cores" in request.values:
-        mpan_cores_str = req_str("mpan_cores")
-        mpan_cores = mpan_cores_str.splitlines()
-        if len(mpan_cores) == 0:
-            mpan_cores = None
-        else:
-            for i in range(len(mpan_cores)):
-                mpan_cores[i] = parse_mpan_core(mpan_cores[i])
-    else:
-        mpan_cores = None
+def do_post(sess):
 
-    args = supply_id, start_date, finish_date, g.user, mpan_cores
-    thread = threading.Thread(target=content, args=args)
+    base_name = ["duration"]
+
+    if "scenario_id" in request.values:
+        scenario_id = req_int("scenario_id")
+        scenario = Scenario.get_by_id(sess, scenario_id)
+        scenario_props = scenario.props
+        base_name.append(scenario.name)
+
+    else:
+        start_date = req_hh_date("start")
+        finish_date = req_hh_date("finish")
+
+        if "mpan_cores" in request.values:
+            mpan_cores_str = req_str("mpan_cores")
+            mpan_cores = mpan_cores_str.splitlines()
+            if len(mpan_cores) == 0:
+                mpan_cores = None
+            else:
+                for i in range(len(mpan_cores)):
+                    mpan_cores[i] = parse_mpan_core(mpan_cores[i])
+        else:
+            mpan_cores = None
+
+        if "supply_id" in request.values:
+            supply_id = req_int("supply_id")
+            supply = Supply.get_by_id(sess, supply_id)
+            if mpan_cores is None:
+                mpan_cores = []
+            era = supply.eras[-1]
+            imp_mpan_core = era.imp_mpan_core
+            exp_mpan_core = era.exp_mpan_core
+            mpan_cores.append(imp_mpan_core if imp_mpan_core is None else exp_mpan_core)
+
+        start_date_ct = to_ct(start_date)
+        finish_date_ct = to_ct(finish_date)
+        scenario_props = {
+            "scenario_start_year": start_date_ct.year,
+            "scenario_start_month": start_date_ct.month,
+            "scenario_start_day": start_date_ct.day,
+            "scenario_start_hour": start_date_ct.hour,
+            "scenario_start_minute": start_date_ct.minute,
+            "scenario_finish_year": finish_date_ct.year,
+            "scenario_finish_month": finish_date_ct.month,
+            "scenario_finish_day": finish_date_ct.day,
+            "scenario_finish_hour": finish_date_ct.hour,
+            "scenario_finish_minute": finish_date_ct.minute,
+            "mpan_cores": mpan_cores,
+        }
+        base_name.append(hh_format(start_date).replace(" ", "_").replace(":", "_"))
+
+    thread = threading.Thread(target=content, args=(scenario_props, g.user))
     thread.start()
     return chellow_redirect("/downloads", 303)

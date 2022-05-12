@@ -50,9 +50,27 @@
 {
   "scenario_start_year": 2011,  /* clock-time year, or null for current year */
   "scenario_start_month": 1,  /* clock-time month or null for this month */
-  "scenario_duration": 1,  /* Number of months */
+
+  "scenario_start_day": 1,  /* used by Duration */
+  "scenario_start_hour": 1,  /* used by Duration */
+  "scenario_start_minute": 1,  /* used by Duration */
+
+  "scenario_duration": 1,  /* Number of months (used by Monthly Duration) */
+
+  "scenario_finish_year": 2011,  /* used by Duration */
+  "scenario_finish_month": 1,  /* used by Duration */
+  "scenario_finish_day": 1,  /* used by Duration */
+  "scenario_finish_hour": 1,  /* used by Duration */
+  "scenario_finish_minute": 1,  /* used by Duration */
+
+	"forecast_from": 2016-10-01T00:00:00Z,  /* omit if forecast from current month */
 
   "by_hh": false,  /* To show a line per half hour rather than each month */
+
+  /* Run only for these supplies */
+  "mpan_cores": [
+      "22 7458 7682 127",
+  ]
 
   /* Industry rates - those you can't edit in Chellow */
 
