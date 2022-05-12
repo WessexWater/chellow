@@ -6177,7 +6177,7 @@ def _jsonize(val):
         return array
 
     elif isinstance(val, Set):
-        return [_jsonize(v) for v in sorted(val)[:3]]
+        return [_jsonize(v) for v in sorted(val, key=str)[:3]]
 
     elif isinstance(val, Decimal):
         return float(val)

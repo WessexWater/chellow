@@ -28,6 +28,7 @@ from chellow.models import (
     Ssc,
     Supply,
     VoltageLevel,
+    _jsonize,
     insert_comms,
     insert_cops,
     insert_energisation_statuses,
@@ -727,3 +728,9 @@ def test_Scenario_init(sess):
 
     with pytest.raises(BadRequest, match="The 'local_rates' must be a list."):
         Scenario(name, properties)
+
+
+def test_jsonize():
+    val = {1, None}
+    actual = _jsonize(val)
+    assert actual == [1, None]
