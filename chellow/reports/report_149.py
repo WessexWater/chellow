@@ -74,6 +74,41 @@ def mpan_bit(
     if active_channel is None and supplier_contract is None:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = None
         avg_msp_kw = avg_kva = None
+    elif era.energisation_status.code == "D":
+        gsp_kwh = None
+        msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
+
+        supply_source = chellow.computer.SupplySource(
+            sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
+        )
+
+        for hh in supply_source.hh_data:
+            hh_msp_kwh = hh["msp-kwh"]
+            msp_kwh += hh_msp_kwh
+
+            if hh["status"] != "A":
+                num_bad += 1
+                non_actual_msp_kwh += hh_msp_kwh
+
+            hh_kw = 2 * hh_msp_kwh
+
+            if hh_kw > md_kw:
+                md_kw = hh_msp_kwh * 2
+                md_kw_date = hh["start-date"]
+
+            hh_kva = (
+                hh["msp-kw"] ** 2 + max(hh["imp-msp-kvar"], hh["exp-msp-kvar"]) ** 2
+            ) ** 0.5
+
+            kva += hh_kva
+
+            if hh_kva > md_kva:
+                md_kva = hh_kva
+                md_kva_date = hh["start-date"]
+
+        avg_msp_kw = msp_kwh / num_hh * 2
+        avg_kva = kva / num_hh
+
     else:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
 
@@ -321,32 +356,33 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
             if exp_supplier_contract is None
             else exp_supplier_contract.name,
         }
-        values.update(
-            mpan_bit(
-                sess,
-                supply,
-                True,
-                num_hh,
-                era,
-                chunk_start,
-                chunk_finish,
-                forecast_date,
-                caches,
+        if era.energisation_status.code == "E":
+            values.update(
+                mpan_bit(
+                    sess,
+                    supply,
+                    True,
+                    num_hh,
+                    era,
+                    chunk_start,
+                    chunk_finish,
+                    forecast_date,
+                    caches,
+                )
             )
-        )
-        values.update(
-            mpan_bit(
-                sess,
-                supply,
-                False,
-                num_hh,
-                era,
-                chunk_start,
-                chunk_finish,
-                forecast_date,
-                caches,
+            values.update(
+                mpan_bit(
+                    sess,
+                    supply,
+                    False,
+                    num_hh,
+                    era,
+                    chunk_start,
+                    chunk_finish,
+                    forecast_date,
+                    caches,
+                )
             )
-        )
 
         w.writerow(csv_make_val(values[t]) for t in titles)
 
