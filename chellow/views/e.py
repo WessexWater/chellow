@@ -4533,9 +4533,15 @@ def supply_edit_post(supply_id):
         supply = Supply.get_by_id(g.sess, supply_id)
 
         if "delete" in request.form:
+            site_id = None
+            for site_era in supply.eras[-1].site_eras:
+                if site_era.is_physical:
+                    site_id = site_era.site.id
+                    break
+
             supply.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/supplies", 303)
+            return credirect(f"/sites/{site_id}", 303)
         elif "insert_era" in request.form:
             start_date = req_date("start")
             supply.insert_era_at(g.sess, start_date)
