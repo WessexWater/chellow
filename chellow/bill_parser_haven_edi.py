@@ -103,6 +103,7 @@ TMOD_MAP = {
     "422733": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
     "066540": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
     "453043": None,
+    "493988": ("reconciliation-gbp", None, None),
     "068476": None,
     "265091": None,
     "517180": None,
