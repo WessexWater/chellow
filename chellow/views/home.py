@@ -929,7 +929,7 @@ def site_edit_post(site_id):
                 exp_sc,
             )
             g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply.id}", 303)
+            return chellow_redirect(f"/e/supplies/{supply.id}", 303)
         elif "insert_gas" in request.form:
             name = req_str("name")
             msn = req_str("msn")

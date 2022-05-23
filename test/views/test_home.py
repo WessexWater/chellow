@@ -1736,7 +1736,7 @@ def test_site_edit_post_hh(sess, client):
         "name": "main",
     }
     response = client.post(f"/sites/{site.id}/edit", data=data)
-    match(response, 303)
+    match(response, 303, "/e/supplies")
 
 
 def test_site_edit_post_nhh(sess, client):
