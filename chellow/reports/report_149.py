@@ -356,33 +356,33 @@ def _process(sess, caches, f, start_date, finish_date, supply_id, mpan_cores):
             if exp_supplier_contract is None
             else exp_supplier_contract.name,
         }
-        if era.energisation_status.code == "E":
-            values.update(
-                mpan_bit(
-                    sess,
-                    supply,
-                    True,
-                    num_hh,
-                    era,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    caches,
-                )
+
+        values.update(
+            mpan_bit(
+                sess,
+                supply,
+                True,
+                num_hh,
+                era,
+                chunk_start,
+                chunk_finish,
+                forecast_date,
+                caches,
             )
-            values.update(
-                mpan_bit(
-                    sess,
-                    supply,
-                    False,
-                    num_hh,
-                    era,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    caches,
-                )
+        )
+        values.update(
+            mpan_bit(
+                sess,
+                supply,
+                False,
+                num_hh,
+                era,
+                chunk_start,
+                chunk_finish,
+                forecast_date,
+                caches,
             )
+        )
 
         w.writerow(csv_make_val(values[t]) for t in titles)
 
