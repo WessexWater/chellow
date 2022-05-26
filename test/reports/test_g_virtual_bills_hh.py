@@ -25,6 +25,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_supply(mocker, sess, client):
+    from_date = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
@@ -43,9 +44,11 @@ def test_supply(mocker, sess, client):
             }
         }
     }
-    Contract.insert_non_core(
-        sess, "g_cv", "", {}, utc_datetime(2000, 1, 1), None, g_cv_rate_script
-    )
+    GContract.insert_industry(sess, "cv", "", {}, from_date, None, g_cv_rate_script)
+    uig_rate_script = {"uig_gbp_per_kwh": {"EA1": Decimal("40.1")}}
+    GContract.insert_industry(sess, "uig", "", {}, from_date, None, uig_rate_script)
+    ccl_rate_script = {"ccl_gbp_per_kwh": Decimal("0.00198")}
+    GContract.insert_industry(sess, "ccl", "", {}, from_date, None, ccl_rate_script)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
@@ -57,8 +60,8 @@ def test_supply(mocker, sess, client):
         bank_holiday_rate_script,
     )
     charge_script = """
-import chellow.g_ccl
-from chellow.g_engine import g_rates
+import chellow.gas.ccl
+from chellow.gas.engine import g_rates
 from chellow.utils import reduce_bill_hhs
 
 
@@ -71,7 +74,7 @@ def virtual_bill_titles():
 
 
 def virtual_bill(ds):
-    chellow.g_ccl.vb(ds)
+    chellow.gas.ccl.vb(ds)
     for hh in ds.hh_data:
         start_date = hh['start_date']
         bill_hh = ds.bill_hhs[start_date]
@@ -113,6 +116,7 @@ def virtual_bill(ds):
     }
     g_contract = GContract.insert(
         sess,
+        False,
         "Fusion 2020",
         charge_script,
         {},

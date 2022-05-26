@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+	DNs &raquo; {{g_dn.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/dns">DNs</a> &raquo; {{g_dn.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_dn.code}}</td>
+		</tr>
+		<tr>
+			<th>Name</th>
+			<td>{{g_dn.name}}</td>
+		</tr>
+	</table>
+
+	<h4>LDZs</h4>
+	<ul>
+		{% for g_ldz in g_ldzs %}
+			<li>
+				<a href="/g/ldzs/{{g_ldz.id}}">{{g_ldz.code}}</a>
+			</li>
+		{% endfor %}
+	</ul>
+{% endblock %}

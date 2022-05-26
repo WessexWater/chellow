@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplier Contracts &raquo; {{g_rate_script.g_contract.name}} &raquo;
+ 	Rate Scripts &raquo; {{g_rate_script.start_date|hh_format}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+	<a
+	 		href="/g/supplier_contracts/{{g_rate_script.g_contract.id}}"
+			>{{g_rate_script.g_contract.name}}</a> &raquo;
+	<a
+	 		href="/g/supplier_rate_scripts/{{g_rate_script.id}}"
+			>Rate Script {{g_rate_script.start_date|hh_format}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+	{% if request.method == 'GET' and request.values.delete %}
+		<form method="post" action="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit">
+			<fieldset>
+				<legend>
+					Are you sure you want to delete this rate script?
+				</legend>
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+		<p>
+			<a href="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit">Cancel</a>
+		</p>
+	{% else %}
+		<form action="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit" method="post">
+			<fieldset>
+				<legend>Update Rate Script</legend>	
+				<fieldset>
+					<legend>Start date</legend>
+					{{ input_date('start', g_rate_script.start_date) }}
+				</fieldset>
+				<fieldset>
+					<legend>Finish date</legend>
+					<label>
+						Ended?
+						{{input_checkbox('has_finished', g_rate_script.finish_date != None) }}
+					</label>
+					{{ input_date('finish', g_rate_script.finish_date) }}
+				</fieldset>
+				<label>Script</label>
+				{{ input_textarea('script', g_rate_script.script, 40, 80, show_pos=True) }}
+				<input type="submit" value="Update">
+				<input type="reset" value="Reset">
+			</fieldset>
+		</form>
+
+		<form action="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit">
+			<fieldset>
+				<legend>Delete this Rate Script</legend>	
+				<input type="submit" name="delete" value="Delete">
+			</fieldset>
+		</form>
+	{% endif %}
+{% endblock %}

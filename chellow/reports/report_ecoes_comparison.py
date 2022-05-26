@@ -27,7 +27,7 @@ from chellow.models import (
     User,
 )
 from chellow.utils import req_bool
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 FNAME = "ecoes_comparison"

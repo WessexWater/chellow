@@ -9,7 +9,7 @@ from flask import g
 import chellow.dloads
 from chellow.models import Session, Site
 from chellow.utils import c_months_u, req_int, req_str, to_ct
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(start_date, finish_date, site_id, typ, user):

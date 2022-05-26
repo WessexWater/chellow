@@ -29,7 +29,7 @@ def test_supply(mocker, sess, client):
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
     g_contract = GContract.insert(
-        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")

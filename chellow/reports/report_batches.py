@@ -19,7 +19,7 @@ from chellow.models import (
     User,
 )
 from chellow.utils import csv_make_val
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(user_id):

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Industry Contracts &raquo; {{contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/industry_contracts">Gas Industry Contracts</a> &raquo; {{contract.name}}
+ 	[<a href="/g/industry_contracts/{{contract.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tbody>
+			<tr>
+				<th>Name</th>
+				<td>{{contract.name}}</td>
+			</tr>
+			<tr>
+				<th>Start Date</th>
+				<td>{{contract.start_g_rate_script.start_date|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Finish Date</th>
+				<td>{{contract.finish_g_rate_script.finish_date|hh_format}}</td>
+			</tr>
+		</tbody>
+	</table>
+
+	{% if has_auto_importer %}
+		<p>
+			<a href="/g/industry_contracts/{{contract.id}}/auto_importer">Automatic
+				Importer</a>
+		</p>
+	{% endif %}
+
+	<table>
+		<caption>
+			Rate Scripts
+		 	[<a href="/g/industry_contracts/{{contract.id}}/add_rate_script">add</a>]
+		</caption>
+		<thead>
+			<tr>
+				<th></th>
+				<th>From</th>
+				<th>To</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for rate_script in rate_scripts %}
+				<tr>
+					<td>
+						<a href="/g/industry_rate_scripts/{{rate_script.id}}">view</a>
+					</td>
+					<td>{{rate_script.start_date|hh_format}}</td>
+					<td>{{rate_script.finish_date|hh_format}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h3>Script</h3>
+	<pre>{{ contract.charge_script }}</pre>
+
+	<h3 id="properties">Properties</h3>
+
+	<pre>{{contract.properties}}</pre>
+{% endblock %}

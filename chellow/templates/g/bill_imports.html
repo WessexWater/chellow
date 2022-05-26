@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplier Contracts &raquo; {{g_batch.g_contract.name}} &raquo; Batches &raquo;
+ 	{{g_batch.reference}} &raquo; Bill Imports
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+	<a href="/g/supplier_contracts/{{g_batch.g_contract.id}}"
+		>{{g_batch.g_contract.name}}</a> &raquo;
+	<a href="/g/batches?g_contract_id={{g_batch.g_contract.id}}" >Batches</a> &raquo;
+	<a href="/g/batches/{{g_batch.id}}">{{g_batch.reference}}</a> &raquo; Bill Imports
+{% endblock %}
+
+{% block content %}
+	<form enctype="multipart/form-data" method="post" action="/g/bill_imports">
+		<fieldset>
+			<input type="hidden" name="g_batch_id" value="{{g_batch.id}}">
+			<legend>Import Bill File</legend>
+			<input type="file" name="import_file" size="45"
+				value="{{request.values.import_file}}">
+			<input type="submit" value="Import">
+		</fieldset>
+	</form>
+
+	<p>Valid file name extensions are {{parser_names}}.</p>
+
+	<table>
+		<caption>The '.csv' Format</caption>
+		<tbody>
+			<tr>
+				<td>Bill Reference</td>
+				<td>MPRN</td>
+				<td><a href="/bill_types">Bill Type</a> Code</td>
+				<td>Account</td>
+				<td>Issue Date (YYYY-mm-dd HH:MM)</td>
+				<td>Start Date (YYYY-mm-dd HH:MM)</td>
+				<td>Finish Date (YYYY-mm-dd HH:MM)</td>
+				<td>kWh</td>
+				<td>Net</td>
+				<td>VAT</td>
+				<td>Gross</td>
+				<td>Breakdown</td>
+				<td>R1 Meter Serial Number</td>
+				<td>R1 <a href="/g/units">Unit</a> Code</td>
+				<td>R1 Correction Factor</td>
+				<td>R1 Calorific Value (optional)</td>
+				<td>R1 Previous Read Date</td>
+				<td>R1 Previous Read Value</td>
+				<td>R1 Previous <a href="/g/read_types">Read Type</a> Code</td>
+				<td>R1 Present Read Date</td>
+				<td>R1 Present Read Value</td>
+				<td>R1 Present <a href="/g/read_types">Read Type</a> Code</td>
+			</tr>
+			<tr>
+				<td>7678hhe</td>
+				<td>86743880</td>
+				<td>N</td>
+				<td>bunker_3</td>
+				<td>2015-10-15 00:00</td>
+				<td>2015-09-01 00:00</td>
+				<td>2015-09-30 23:30</td>
+				<td>521</td>
+				<td>77.40</td>
+				<td>2.11</td>
+				<td>79.51</td>
+				<td>
+					{
+						"standing_gbp": 0.03,
+						"ccl_rate": 0.004,
+						"units_consumed": 609
+					}
+				</td>
+				<td>hhMNN882</td>
+				<td>M3</td>
+				<td></td>
+				<td></td>
+				<td>2015-09-09 00:00</td>
+				<td>344.005</td>
+				<td>A</td>
+				<td>2015-09-28 00:00</td>
+				<td>350.833</td>
+				<td>E</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>
+		The register read block of fields can be repeated for each register, or can be left
+	 	out entirely if the bill doesn't have any readings associated with it.
+	</p>
+		
+	{% if importer_ids %}
+		<ul>
+			{% for id in importer_ids %}
+				<li>
+					<a href="/g/bill_imports/{{id}}">{{id}}</a>
+				</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endblock %}

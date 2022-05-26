@@ -546,9 +546,9 @@ def general_import_g_supply(sess, action, vals, args):
         correction_factor = Decimal(correction_factor_str)
         g_unit_code = add_arg(args, "Unit of Measurement", vals, 8)
         g_unit = GUnit.get_by_code(sess, g_unit_code)
-        g_contract_name = add_arg(args, "Contract", vals, 9)
+        g_contract_name = add_arg(args, "Supplier Contract", vals, 9)
         if len(g_contract_name) > 0:
-            g_contract = GContract.get_by_name(sess, g_contract_name)
+            g_contract = GContract.get_supplier_by_name(sess, g_contract_name)
         else:
             g_contract = None
         account = add_arg(args, "Account", vals, 10)
@@ -591,16 +591,16 @@ def general_import_g_supply(sess, action, vals, args):
 
 def general_import_g_batch(sess, action, vals, args):
     if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        g_contract = GContract.get_by_name(sess, contract_name)
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
+        g_contract = GContract.get_supplier_by_name(sess, contract_name)
 
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         g_contract.insert_g_batch(sess, reference, description)
 
     elif action == "update":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
-        g_contract = GContract.get_by_name(sess, contract_name)
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
+        g_contract = GContract.get_supplier_by_name(sess, contract_name)
 
         old_reference = add_arg(args, "Old Reference", vals, 1)
         g_batch = g_contract.get_batch(sess, old_reference)
@@ -860,9 +860,9 @@ def general_import_bill(sess, action, vals, args):
 
 def general_import_g_bill(sess, action, vals, args):
     if action == "insert":
-        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
 
-        g_contract = GContract.get_by_name(sess, contract_name)
+        g_contract = GContract.get_supplier_by_name(sess, contract_name)
 
         batch_reference = add_arg(args, "Batch Reference", vals, 1)
 

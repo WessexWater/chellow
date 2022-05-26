@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &raquo; {{g_batch.g_contract.name}} &raquo; Batches &raquo;
+ 	{{g_batch.reference}} &raquo; Bill Imports &raquo; {{importer_id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Contracts</a> &raquo;
+	<a
+			href="/g/supplier_contracts/{{g_batch.g_contract.id}}"
+			>{{g_batch.g_contract.name}}</a> &raquo;
+	<a
+			href="/g/batches?g_contract_id={{g_batch.g_contract.id}}">Batches</a> &raquo;
+	<a href="/g/batches/{{g_batch.id}}">{{g_batch.reference}}</a> &raquo;
+	<a href="/g/bill_imports?g_batch_id={{g_batch.id}}">Bill Imports</a> &raquo;
+ 	{{importer_id}}
+{% endblock %}
+
+{% block content %}
+	{% if is_alive %}
+		<p>Still running. Refresh the page to see latest progress.</p>
+	{% endif %}
+
+	{% if status is defined %}
+		<p>{{status}}</p>
+	{% endif %}
+
+	<ul>
+		{% for msg in log %}
+			<li>{{msg}}</li>
+		{% endfor %}
+	</ul>
+	
+	{% if failed_bills|length > 0 %}
+		<table>
+			<caption>Failed Bills</caption>
+			<thead>
+				<tr>
+					<th>Error</th>
+					<th>Bill Type Code</th>
+					<th>MPRN</th>
+					<th>Account</th>
+					<th>Reference</th>
+					<th>Issue Date</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>Net GBP</th>
+					<th>VAT 5%</th>
+					<th>VAT 15%</th>
+					<th>VAT 17.5%</th>
+					<th>VAT 20%</th>
+					<th>VAT</th>
+					<th>Gross GBP</th>
+					{% for read in failed_bills[0]['reads'] %}
+						{% for k in read|sort %}
+							<th>{{k}}</th>
+						{% endfor %}
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for bill in failed_bills %}
+					<tr>
+						<td>{{bill.error}}</td>
+						<td>{{bill.bill_type_code}}</td>
+						<td>{{bill.mprn}}</td>
+						<td>{{bill.account}}</td>
+						<td>{{bill.reference}}</td>
+						<td>{{bill.issue_date|hh_format}}</td>
+						<td>{{bill.start_date|hh_format}}</td>
+						<td>{{bill.finish_date|hh_format}}</td>
+						<td>{{bill.net_gbp}}</td>
+						<td>{{bill.vat_5pc}}</td>
+						<td>{{bill.vat_15pc}}</td>
+						<td>{{bill.vat_17_5pc}}</td>
+						<td>{{bill.vat_20pc}}</td>
+						<td>{{bill.vat_gbp}}</td>
+						<td>{{bill.gross_gbp}}</td>
+						{% for read in bill.reads %}
+							{% for k, v in read|dictsort %}
+								<td>{{v}}</td>
+							{% endfor %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	{% if successful_bills|length > 0 %}
+		<table>
+			<caption>Successful Bills</caption>
+			<thead>
+				<tr>
+					<th>Bill Type</th>
+					<th>MPRN</th>
+					<th>Reference</th>
+					<th>Account</th>
+					<th>Issue Date</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>kWh</th>
+					<th>Net GBP</th>
+					<th>VAT GBP</th>
+					<th>Gross GBP</th>
+					<th>Breakdown</th>
+					{% for i in range(successful_max_registers) %}
+						<th>R{{loop.index}} MSN</th>
+						<th>R{{loop.index}} Previous Read Date</th>
+						<th>R{{loop.index}} Previous Read Value</th>
+						<th>R{{loop.index}} Previous Read Type</th>
+						<th>R{{loop.index}} Present Read Date</th>
+						<th>R{{loop.index}} Present Read Value</th>
+						<th>R{{loop.index}} Present Read Type</th>
+						<th>R{{loop.index}} Units</th>
+						<th>R{{loop.index}} Correction Factor</th>
+						<th>R{{loop.index}} Calorific Value</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for bill in successful_bills %}
+					<tr>
+						<td>{{bill.bill_type_code}}</td>
+						<td>{{bill.mprn}}</td>
+						<td>{{bill.reference}}</td>
+						<td>{{bill.account}}</td>
+						<td>{{bill.issue_date|hh_format}}</td>
+						<td>{{bill.start_date|hh_format}}</td>
+						<td>{{bill.finish_date|hh_format}}</td>
+						<td>{{bill.kwh}}</td>
+						<td>{{bill.net_gbp}}</td>
+						<td>{{bill.vat_gbp}}</td>
+						<td>{{bill.gross_gbp}}</td>
+						<td>{{bill.breakdown|dumps}}</td>
+						{% for g_read in bill.reads %}
+							<td>{{g_read.msn}}</td>
+							<td>{{g_read.prev_date|hh_format}}</td>
+							<td>{{g_read.prev_value}}</td>
+							<td>{{g_read.prev_type_code}}</td>
+							<td>{{g_read.pres_date|hh_format}}</td>
+							<td>{{g_read.pres_value}}</td>
+							<td>{{g_read.pres_type_code}}</td>
+							<td>{{g_read.units}}</td>                 
+							<td>{{g_read.correction_factor}}</td>
+							<td>{{g_read.calorific_value}}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

@@ -37,11 +37,13 @@ def test_general_import_g_batch(mocker):
 
 def test_general_import_g_bill(mocker):
     c = mocker.patch("chellow.general_import.GContract", autospec=True)
-    c.get_by_name.return_value = chellow.general_import.GContract("CH4U", "{}", "{}")
+    c.get_supplier_by_name.return_value = chellow.general_import.GContract(
+        False, "CH4U", "{}", "{}"
+    )
 
     mocker.patch("chellow.models.GBatch", autospec=True)
     batch = chellow.models.GBatch(1, 2, 3, 4)
-    batch.g_contract = chellow.general_import.GContract("CH4U", "{}", "{}")
+    batch.g_contract = chellow.general_import.GContract(False, "CH4U", "{}", "{}")
     c.get_g_batch_by_reference.return_value = batch
 
     sess = mocker.Mock()
@@ -68,8 +70,8 @@ def test_general_import_g_bill(mocker):
 
 def test_general_import_g_bill_reads(mocker):
     c = mocker.patch("chellow.general_import.GContract", autospec=True)
-    contract = chellow.general_import.GContract("CH4U", "{}", "{}")
-    c.get_by_name.return_value = contract
+    contract = chellow.general_import.GContract(False, "CH4U", "{}", "{}")
+    c.get_supplier_by_name.return_value = contract
 
     mocker.patch("chellow.models.GBatch", autospec=True)
     batch = chellow.models.GBatch("CH4U", "{}", "{}", 4)

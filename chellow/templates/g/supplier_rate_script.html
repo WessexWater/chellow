@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplier Contracts &raquo; {{g_rate_script.g_contract.name}} &raquo;
+ 	Rate Script {{g_rate_script.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+	<a
+			href="/g/supplier_contracts/{{g_rate_script.g_contract.id}}"
+			>{{g_rate_script.g_contract.name}}</a> &raquo;
+	 	Rate Script {{g_rate_script.start_date|hh_format}}
+	[<a href="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<caption>Properties</caption>	
+		<tr>
+			<th>Start Date</th>
+			<td>{{ g_rate_script.start_date|hh_format }}</td>
+		</tr>
+		<tr>
+			<th>Finish Date</th>
+			<td>{{ g_rate_script.finish_date|hh_format }}</td>
+		</tr>
+		<tr>
+			<td>
+				{% if previous_g_rate_script %}
+					<a
+						href="/g/supplier_rate_scripts/{{previous_g_rate_script.id}}"
+						>Previous Rate Script</a>
+				{% else %}
+					No Previous Rate Script
+				{% endif %}
+			</td>
+			<td>
+				{% if next_g_rate_script %}
+					<a
+						href="/g/supplier_rate_scripts/{{next_g_rate_script.id}}"
+						>Next Rate Script</a>
+				{% else %}
+					No Next Rate Script
+				{% endif %}
+			</td>
+		</tr>
+	</table>
+
+	<h3>Script</h3>	
+	<pre>{{g_rate_script.script}}</pre>
+{% endblock %}

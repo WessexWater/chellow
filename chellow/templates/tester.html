@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Tester
+{% endblock %}
+
+{% block nav %}
+	Tester
+{% endblock %}
+
+{% block content %}
+	{% if tester %}
+		<table>
+			<tr>
+				<th>Is Locked?</th>
+				<td>{{tester.is_locked()}}</td>
+			</tr>
+		</table>
+		<form method="post">
+			<fieldset {% if tester.is_locked() %}disabled{% endif %}>
+				<legend>Test Now</legend>
+				<input type="submit" value="Test" name="test">
+			</fieldset>
+		</form>
+
+		<h4>Log</h4>
+		<ul>
+			{% for message in tester.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>Tester not present.</p>
+	{% endif %}
+{% endblock %}

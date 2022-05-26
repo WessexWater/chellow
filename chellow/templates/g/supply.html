@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+
+{% block inside_head %}
+	<title>Chellow &raquo; Gas Supplies &raquo; {{g_supply.id}}</title>
+
+	<script type="text/javascript" language="javascript">    
+		function hideText() {
+			document.getElementById('full_note').style.display='none';
+			document.getElementById('truncated_note').style.display='inline';
+		}
+
+		function showText() {
+			document.getElementById('truncated_note').style.display='none';
+			document.getElementById('full_note').style.display='inline';
+		}
+
+		function collapseBills(collapseId) {
+			var collapsibles =
+			 	document.getElementsByClassName('collapsible_' + collapseId);
+			for (var i = 0; i < collapsibles.length; i++) {
+				collapsibles[i].style.display = 'none';
+			}
+			var expanders = document.getElementsByClassName('expander_' + collapseId);
+			for (var i = 0; i < expanders.length; i++) {
+				expanders[i].style.display = 'table-cell';
+			}
+			var collapsers =
+			 	document.getElementsByClassName('collapser_' + collapseId);
+			for (var i = 0; i < collapsers.length; i++) {
+				collapsers[i].style.display = 'none';
+			}
+		}
+
+		function expandBills(collapseId) {
+			var collapsibles = document.getElementsByClassName(
+				'collapsible_' + collapseId);
+			for (var i = 0; i < collapsibles.length; i++) {
+				collapsibles[i].style.display = 'table-row';
+			}
+			var expanders = document.getElementsByClassName('expander_' + collapseId);
+			for (var i = 0; i < expanders.length; i++) {
+				expanders[i].style.display = 'none';
+			}
+			var collapsers = document.getElementsByClassName(
+			  'collapser_' + collapseId);
+			for (var i = 0; i < collapsers.length; i++) {
+				collapsers[i].style.display = 'table-cell';
+			}
+		}    
+	
+	</script>
+{% endblock %}
+
+{% block title %}
+    Gas Supplies &raquo; {{g_supply.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplies">Gas Supplies</a> &raquo; {{g_supply.id}}
+ 	[<a href="/g/supplies/{{g_supply.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Name</th>
+			<td>{{g_supply.name}}</td>
+		</tr>
+		<tr>
+			<th>MPRN</th>
+			<td>{{g_supply.mprn}}</td>
+		</tr>
+		<tr>
+			<th>Exit Zone</th>
+			<td>
+				<a href="/g/exit_zones/{{g_supply.g_exit_zone.id}}"
+					>{{g_supply.g_exit_zone.code}}</a>
+			</td>
+		</tr>
+			{% if system_properties['g_supply_links'] %}
+				<tr>
+					<th>Links</th>
+					<td>
+						<ul>
+							{% for link in system_properties['g_supply_links'] %}
+								<li>
+									<a
+										href="{{link.url}}g_supply_id={{site.id}}"
+										>{{link.name}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
+				</tr>
+			{% endif %}
+		<tr>
+			<th><a href="/g/supplies/{{g_supply.id}}/notes">Notes</a></th>
+			<td>
+				{% if note %}
+					{% if is_truncated %}
+						<div id="truncated_note">
+							{{ truncated_note }} 
+						</div>
+						<div id="full_note" style="display: none;">
+							<pre
+									style=" white-space: pre-wrap;"
+									>{{ g_supply.note }}</pre>
+							<a
+									href="JavaScript:void()" onClick="hideText()"
+									>Less...</a>
+						</div>
+					{% else %}
+						Category: {{note.category}}
+						{% if note.is_important %}
+							Important
+						{% else %}
+							Not important
+						{% endif %}
+						<pre style="display: inline;">{{note.body}}</pre>
+					{% endif %}
+				{% endif %}
+			</td>
+		</tr>
+	</table>
+				
+	{% for g_era_bundle in g_era_bundles %}
+		{% set g_era = g_era_bundle['g_era'] %}
+		{% set physical_site = g_era_bundle['physical_site'] %}
+		{% set other_sites = g_era_bundle['other_sites'] %}
+		<table>
+			<caption>
+				Era [<a href="/g/eras/{{g_era.id}}/edit">edit</a>]
+			</caption>
+			<thead>
+				<tr>
+					<th>From</th>
+					<th>To</th>
+					<th>Sites</th>
+					<th title="Meter Serial Number">MSN</th>
+					<th>Correction Factor</th>
+					<th>Units</th>
+					<th>Contract</th>
+					<th>Account</th>
+					<th>Reading Frequency</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						<span
+								title="{{g_era.start_date|hh_format}}"
+								>{{g_era.start_date|hh_format(modifier='date') }}</span>
+					</td>
+					<td>
+						<span
+								title="{{g_era.finish_date|hh_format}}"
+								>{{ g_era.finish_date|hh_format(modifier='date') }}</span>
+					</td>
+					<td>
+						<a
+								href="/sites/{{physical_site.id}}"
+								title="{{physical_site.name}}">{{physical_site.code}}</a>
+						{% if other_sites %}
+							(also
+								{% for other_site in other_sites %}
+									<a
+										href="/sites/{{other_site.id}}"
+										title="{{other_site.name}}">{{other_site.code}}</a>
+								{%- endfor -%}
+							)
+						{% endif %}
+					</td>
+					<td>{{g_era.msn}}</td>
+					<td>{{g_era.correction_factor}}</td>
+					<td>
+						<a
+								href="/g/units/{{g_era.g_unit.id}}"
+								>{{g_era.g_unit.code}}</a>
+					</td>
+					<td>
+						<a href="/g/supplier_contracts/{{g_era.g_contract.id}}"
+								>{{g_era.g_contract.name }}</a>
+					</td>
+					<td>
+						{{ g_era.account }}
+						{% if g_era_bundle['shared_accounts'] %}(
+							{%- for sup in g_era_bundle['shared_accounts'] -%}
+								{%- if not loop.first    -%} {%- endif -%}
+									<a href="/g/supplies/{{sup.id}}"
+											>{{sup.id}}</a>
+							{%- endfor -%}
+							)
+						{% endif %}
+					</td>
+					<td>
+						<a  title="{{g_era.g_reading_frequency.description}}"
+								href="/g/reading_frequencies/{{g_era.g_reading_frequency.id}}"
+								>{{g_era.g_reading_frequency.code}}</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<caption>Gas Bills</caption>
+			<thead>
+				<tr>
+					<th>View</th>
+					<th>From</th>
+					<th>To</th>
+					<th>Issued</th>
+					<th>Batch</th>
+					<th>Reference</th>
+					<th>kWh</th>
+					<th>Net</th>
+					<th>VAT</th>
+					<th>Gross</th>
+					<th>Type</th>
+					<th colspan="2">Previous</th>
+					<th colspan="2">Present</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for g_bill_dict in g_era_bundle.g_bill_dicts %}
+					{% set g_bill = g_bill_dict.g_bill %}
+					{% set rows_high = [g_bill_dict.g_reads|length, 1] | max %}
+					{% if g_bill_dict.first_collapsible %}
+						<tr style="background-color: silver; cursor: pointer;">
+							<td
+								style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+								colspan="15"
+								class="expander_{{g_bill_dict.collapse_id}}"
+								onClick="expandBills({{g_bill_dict.collapse_id}})"
+							>
+								+
+							</td>
+							<td
+								style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+								colspan="15"
+								class="collapser_{{g_bill_dict.collapse_id}}"
+								onClick="collapseBills({{g_bill_dict.collapse_id}})"
+							>
+								-
+							</td>
+						</tr>
+					{% endif %}
+					
+					<tr
+						{% if g_bill_dict.collapsible %}
+							class="collapsible_{{g_bill_dict.collapse_id}}"
+							style="display: none; background-color: silver;"
+						{% endif %}
+					>
+						<td rowspan="{{rows_high}}">
+							<a href="/g/bills/{{g_bill.id}}">{{g_bill.id}}</a>
+						</td>
+						<td rowspan="{{rows_high}}">
+							<a
+									title="{{g_bill.start_date|hh_format}}"
+							>{{g_bill.start_date|hh_format('date')}}</a>
+						</td>
+						<td rowspan="{{rows_high}}">
+							<a
+									title="{{g_bill.finish_date|hh_format}}"
+							>{{g_bill.finish_date|hh_format('date')}}</a>
+						</td>
+						<td rowspan="{{rows_high}}">
+							<a
+									title="{{g_bill.issue_date|hh_format}}"
+							>{{g_bill.issue_date|hh_format('date')}}</a>
+						</td>
+						<td rowspan="{{rows_high}}">
+							<a
+									href="/g/batches/{{g_bill.g_batch.id}}"
+							>{{g_bill.g_batch.reference}}</a>
+						</td>
+						<td rowspan="{{rows_high}}">{{g_bill.reference}}</td>
+						<td rowspan="{{rows_high}}">{{g_bill.kwh}}</td>
+						<td rowspan="{{rows_high}}">{{g_bill.net}}</td>
+						<td rowspan="{{rows_high}}">{{g_bill.vat}}</td>
+						<td rowspan="{{rows_high}}">{{g_bill.gross}}</td>
+						<td rowspan="{{rows_high}}">
+							<a
+									href="/bill_types/{{g_bill.bill_type.id}}"
+									title="{{g_bill.bill_type.description}}"
+							>{{g_bill.bill_type.code}}</a>
+						</td>
+						{% if g_bill_dict.g_reads|length > 0 %}
+							{% for read in g_bill_dict.g_reads %}
+								{% if not loop.first %}
+									<tr
+										{% if g_bill_dict.collapsible %}
+											class="collapsible_{{g_bill_dict.collapse_id}}" 
+											style="display: none; background-color: silver;"
+										{% endif %}
+									>
+								{% endif %}
+								<td style="border-right: none;">
+									{% if read %}
+										<a
+												title="{{read.prev_date|hh_format}} {{read.msn }}"
+										>{{read.prev_value}}</a>
+									{% endif %}
+								</td>
+								<td style="border-left: none; text-align: right;">
+									{% if read %}
+										{{ read.prev_type.code }}
+									{% endif %}
+								</td>
+								<td style="border-right: none;">
+									{% if read %}
+										<a
+												title="{{read.pres_date|hh_format}} {{read.msn}}"
+										>{{read.pres_value}}</a>
+									{% endif %}
+								</td>
+								<td style="border-left: none; text-align: right;">
+									{% if read %}
+										{{read.pres_type.code}}
+									{% endif %}
+								</td>
+								{% if not loop.first %}
+									</tr>
+								{% endif %}
+							{% endfor %}
+						{% else %}
+							<td style="border-right: none;"></td>
+							<td style="border-left: none; text-align: right;"></td>
+							<td style="border-right: none;"></td>
+							<td style="border-left: none; text-align: right;"></td>
+						{% endif %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endfor %}
+
+	<form action="/reports/g_supply_virtual_bill">
+		<fieldset>
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+			<legend>Virtual Bills</legend>
+			From {{input_date('start', last_month_start)}} to
+			{{input_date('finish', last_month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
+	<form action="/reports/g_virtual_bills_hh">
+		<fieldset>
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+			<legend>Virtual Bills by HH</legend>
+			From {{input_date('start', last_month_start)}} to
+			{{input_date('finish', last_month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
+	<form action="/reports/g_supplies_snapshot">
+		<fieldset>
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+			<legend>Snapshot</legend>
+			At {{input_date('date', last_month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
+	<form action="/reports/g_monthly_duration">
+		<fieldset>
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+			<legend>Monthly Duration</legend>
+			<br>
+			For <input name="months" maxlength="2" size="2" value="1">
+			month(s) finishing at the end of
+			{{ input_date('finish', last_month_finish, 'month') }}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+{% endblock %}

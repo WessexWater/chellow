@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Units
+{% endblock %}
+
+{% block nav %}
+	Gas Units
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_unit in g_units %}
+				<tr>
+					<td><a href="/g/units/{{g_unit.id}}">{{g_unit.code}}</a></td>
+					<td>{{g_unit.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

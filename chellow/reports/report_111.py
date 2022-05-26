@@ -51,7 +51,7 @@ from chellow.utils import (
     req_str,
     to_utc,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):

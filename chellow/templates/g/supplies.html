@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplies
+{% endblock %}
+
+{% block nav %}
+	Gas Supplies
+{% endblock %}
+
+{% block content %}
+	<h2>Search for gas supply eras by MPRN, account number or meter serial number</h2>
+	<form action="">
+		<fieldset>
+			{{input_text('search_pattern', '')}}
+			<input type="submit" value="Search">
+		</fieldset>
+	</form>
+
+	{% if g_eras %}
+		<p>
+			Only the first {{max_results}} supply eras of the search results are shown.
+		</p>
+		<table>
+			<caption>Gas Supplies</caption>
+			<thead>
+				<tr>
+					<th>Supply</th>
+					<th>Name</th>
+					<th>MPRN</th>
+					<th>Meter Serial Number</th>
+					<th>Contract</th>
+					<th>Account</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for g_era in g_eras %}
+					<tr>
+						<td><a href="/g/supplies/{{g_era.g_supply_id}}">supply</a></td>
+						<td>{{g_era.g_supply.name}}</td>
+						<td>{{g_era.g_supply.mprn}}</td>
+						<td>{{g_era.msn}}</td>
+						<td>
+							<a
+									href="/g/supplier_contracts/{{g_era.g_contract.id}}"
+									>{{g_era.g_contract.name}}</a>
+						</td>
+						<td>
+							{{g_era.account}}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% elif request.values.search_pattern %}
+		<p>No supplies matched your search</p>
+	{% endif %}
+{% endblock %}

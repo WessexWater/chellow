@@ -23,7 +23,7 @@ from chellow.utils import (
     to_ct,
     to_utc,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def none_content(site_codes, typ, start_date, finish_date, user, file_name):

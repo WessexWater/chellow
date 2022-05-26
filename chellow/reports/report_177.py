@@ -18,7 +18,7 @@ import chellow.computer
 import chellow.dloads
 from chellow.models import Bill, Channel, Era, HhDatum, Session, Site, SiteEra, Supply
 from chellow.utils import HH, hh_format, hh_max, hh_min, req_int
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(year, month, months, supply_id, user):

@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 import chellow.dloads
 from chellow.models import Llfc, Session
 from chellow.utils import hh_format
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(user):

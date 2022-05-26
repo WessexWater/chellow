@@ -37,7 +37,7 @@ from chellow.utils import (
     req_int,
     req_str,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(running_name, finished_name, date, supply_id, mpan_cores):

@@ -43,7 +43,7 @@ from chellow.utils import (
     to_ct,
     to_utc,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 NORMAL_READ_TYPES = "C", "N", "N3"

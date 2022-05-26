@@ -32,7 +32,7 @@ from chellow.utils import (
     req_int,
     to_ct,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def _process_era(

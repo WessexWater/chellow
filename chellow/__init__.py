@@ -14,14 +14,15 @@ import chellow.bank_holidays
 import chellow.bmarketidx
 import chellow.bsuos
 import chellow.dloads
-import chellow.g_cv
+import chellow.e.views
+import chellow.gas.cv
+import chellow.gas.views
 import chellow.hh_importer
 import chellow.rcrc
 import chellow.system_price
+import chellow.testing
 import chellow.tlms
 import chellow.utils
-import chellow.views.e
-import chellow.views.home
 from chellow._version import get_versions
 from chellow.models import (
     Contract,
@@ -52,8 +53,9 @@ def create_app(testing=False):
     app.secret_key = os.urandom(24)
     start_sqlalchemy()
 
-    app.register_blueprint(chellow.views.home.home)
-    app.register_blueprint(chellow.views.e.e)
+    app.register_blueprint(chellow.views.home)
+    app.register_blueprint(chellow.e.views.e)
+    app.register_blueprint(chellow.gas.views.gas)
     chellow.utils.root_path = app.root_path
 
     api = chellow.api.api
@@ -65,10 +67,11 @@ def create_app(testing=False):
         chellow.bsuos.startup()
         chellow.system_price.startup()
         chellow.hh_importer.startup()
+        chellow.testing.startup()
         chellow.tlms.startup()
         chellow.bank_holidays.startup()
         chellow.dloads.startup(app.instance_path)
-        chellow.g_cv.startup()
+        chellow.gas.cv.startup()
         chellow.bmarketidx.startup()
 
     @app.before_first_request
@@ -235,8 +238,9 @@ def create_app(testing=False):
 
         for importer in (
             chellow.bsuos.bsuos_importer,
-            chellow.g_cv.g_cv_importer,
+            chellow.gas.cv.cv_importer,
             chellow.bmarketidx.bmarketidx_importer,
+            chellow.testing.tester,
         ):
             if importer is not None and importer.global_alert is not None:
                 global_alerts.append(importer.global_alert)

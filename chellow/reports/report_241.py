@@ -17,7 +17,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.computer
 from chellow.models import Era, Session, Site, SiteEra, Supply
 from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(

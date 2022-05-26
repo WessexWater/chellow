@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	DNs &raquo; {{g_exit_zone.g_ldz.g_dn.code}} &raquo;
+ 	LDZ {{g_exit_zone.g_ldz.code}} &raquo; Exit Zone {{g_exit_zone.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/dns">DNs</a> &raquo;
+	<a href="/g/dns/{{g_exit_zone.g_ldz.g_dn.id}}">{{g_exit_zone.g_ldz.g_dn.code}}</a>
+ 	&raquo; LDZ
+	<a href="/g/ldzs/{{g_exit_zone.g_ldz.id}}">{{g_exit_zone.g_ldz.code}}</a>
+	&raquo; Exit Zone {{g_exit_zone.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_exit_zone.code}}</td>
+		</tr>
+	</table>
+{% endblock %}

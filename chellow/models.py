@@ -170,6 +170,22 @@ def get_non_core_contract_id(name):
             sess.close()
 
 
+@lru_cache()
+def get_g_industry_contract_id(name):
+    sess = None
+    try:
+        sess = Session()
+        cont = sess.execute(
+            select(GContract).where(
+                GContract.is_industry == true(), GContract.name == name
+            )
+        ).scalar_one()
+        return cont.id
+    finally:
+        if sess is not None:
+            sess.close()
+
+
 @event.listens_for(Engine, "handle_error")
 def handle_exception(context):
     msg = "could not serialize access due to read/write dependencies among transactions"
@@ -1926,8 +1942,7 @@ class Site(Base, PersistentClass):
         except IntegrityError as e:
             sess.rollback()
             if (
-                "duplicate key value violates unique constraint "
-                + '"g_supply_mprn_key"'
+                'duplicate key value violates unique constraint "g_supply_mprn_key"'
                 in str(e)
             ):
                 raise BadRequest("There's already a gas supply with that MPRN.")
@@ -4616,7 +4631,7 @@ class Report(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
     script = Column(Text, nullable=False)
-    template = Column(Text)
+    template = Column(Text, nullable=False)
 
     def __init__(self, name, script, template):
         self.name = name
@@ -4626,10 +4641,14 @@ class Report(Base, PersistentClass):
     def update(self, name, script, template):
         self.name = name
         self.script = script
-        if template is not None and len(template.strip()) == 0:
-            template = None
-
         self.template = template
+
+    @classmethod
+    def insert(cls, sess, name, script, template):
+        report = cls(name, script, template)
+        sess.add(report)
+        sess.flush()
+        return report
 
 
 class SiteGroup:
@@ -5650,6 +5669,7 @@ class GReadingFrequency(Base, PersistentClass):
 class GContract(Base, PersistentClass):
     __tablename__ = "g_contract"
     id = Column("id", Integer, primary_key=True)
+    is_industry = Column(Boolean, nullable=False, index=True)
     name = Column(String, nullable=False)
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
@@ -5660,6 +5680,7 @@ class GContract(Base, PersistentClass):
         primaryjoin="GContract.id==GRateScript.g_contract_id",
     )
     g_batches = relationship("GBatch", backref="g_contract")
+    __table_args__ = (UniqueConstraint("is_industry", "name"),)
 
     start_g_rate_script_id = Column(
         Integer,
@@ -5685,7 +5706,8 @@ class GContract(Base, PersistentClass):
         "GRateScript", primaryjoin="GRateScript.id==GContract.finish_g_rate_script_id"
     )
 
-    def __init__(self, name, charge_script, properties):
+    def __init__(self, is_industry, name, charge_script, properties):
+        self.is_industry = is_industry
         self.update(name, charge_script, properties)
         self.update_state({})
 
@@ -5778,10 +5800,8 @@ class GContract(Base, PersistentClass):
         )
         if len(eras_before) > 0:
             raise BadRequest(
-                "The era with MPRN "
-                + eras_before[0].g_supply.mprn
-                + " exists before the start of this contract, and is "
-                + "attached to this contract."
+                f"The era with MPRN {eras_before[0].g_supply.mprn} exists before the "
+                f"start of this contract, and is attached to this contract."
             )
 
         if self.finish_g_rate_script.finish_date is not None:
@@ -5795,10 +5815,8 @@ class GContract(Base, PersistentClass):
             )
             if len(eras_after) > 0:
                 raise BadRequest(
-                    "The era with MPRN "
-                    + eras_after[0].g_supply.mprn
-                    + " exists after the start of this contract, and is "
-                    + "attached to this contract."
+                    f"The era with MPRN {eras_after[0].g_supply.mprn} exists after the "
+                    f"start of this contract, and is attached to this contract."
                 )
 
     def delete(self, sess):
@@ -5869,13 +5887,8 @@ class GContract(Base, PersistentClass):
         else:
             if hh_after(start_date, scripts[-1].finish_date):
                 raise BadRequest(
-                    "For the gas contract "
-                    + str(self.id)
-                    + " called "
-                    + str(self.name)
-                    + ", the start date "
-                    + str(start_date)
-                    + " is after the last rate script."
+                    f"For the gas contract {self.id} called {self.name}, the start "
+                    f"date {start_date} is after the last rate script."
                 )
 
             covered_script = self.find_g_rate_script_at(sess, start_date)
@@ -5884,13 +5897,13 @@ class GContract(Base, PersistentClass):
             else:
                 if covered_script.start_date == covered_script.finish_date:
                     raise BadRequest(
-                        "The start date falls on a rate script which is only "
-                        "half an hour in length, and so cannot be divided."
+                        "The start date falls on a rate script which is only half an "
+                        "hour in length, and so cannot be divided."
                     )
                 if start_date == covered_script.start_date:
                     raise BadRequest(
-                        "The start date is the same as the start date of an "
-                        "existing rate script."
+                        "The start date is the same as the start date of an existing "
+                        "rate script."
                     )
 
                 finish_date = covered_script.finish_date
@@ -5935,14 +5948,21 @@ class GContract(Base, PersistentClass):
     def get_g_batch_by_reference(self, sess, reference):
         batch = self.find_g_batch_by_reference(sess, reference)
         if batch is None:
-            raise BadRequest("Can't find the batch with reference " + str(reference))
+            raise BadRequest(f"Can't find the batch with reference {reference}")
         return batch
 
     @staticmethod
     def insert(
-        sess, name, charge_script, properties, start_date, finish_date, rate_script
+        sess,
+        is_industry,
+        name,
+        charge_script,
+        properties,
+        start_date,
+        finish_date,
+        rate_script,
     ):
-        contract = GContract(name, charge_script, properties)
+        contract = GContract(is_industry, name, charge_script, properties)
         sess.add(contract)
         sess.flush()
         rscript = contract.insert_g_rate_script(sess, start_date, rate_script)
@@ -5951,31 +5971,99 @@ class GContract(Base, PersistentClass):
         )
         return contract
 
+    @classmethod
+    def insert_industry(
+        cls,
+        sess,
+        name,
+        charge_script,
+        properties,
+        start_date,
+        finish_date,
+        rate_script,
+    ):
+        return cls.insert(
+            sess,
+            True,
+            name,
+            charge_script,
+            properties,
+            start_date,
+            finish_date,
+            rate_script,
+        )
+
+    @classmethod
+    def insert_supplier(
+        cls,
+        sess,
+        name,
+        charge_script,
+        properties,
+        start_date,
+        finish_date,
+        rate_script,
+    ):
+        return cls.insert(
+            sess,
+            False,
+            name,
+            charge_script,
+            properties,
+            start_date,
+            finish_date,
+            rate_script,
+        )
+
     @staticmethod
-    def get_by_id(sess, cid):
-        cont = GContract.find_by_id(sess, cid)
+    def get_supplier_by_id(sess, oid):
+        return sess.execute(
+            select(GContract).where(
+                GContract.id == oid, GContract.is_industry == false()
+            )
+        ).scalar_one()
+
+    @staticmethod
+    def get_industry_by_id(sess, oid):
+        return sess.execute(
+            select(GContract).where(
+                GContract.id == oid, GContract.is_industry == true()
+            )
+        ).scalar_one()
+
+    @classmethod
+    def get_industry_by_name(cls, sess, name):
+        cont = cls.find_industry_by_name(sess, name)
         if cont is None:
             raise BadRequest(
-                "There isn't a gas supplier contract with the id '" + str(cid) + "'."
+                f"There isn't a gas industry contract with the name '{name}'."
             )
         return cont
 
     @staticmethod
-    def find_by_id(sess, cid):
-        return sess.query(GContract).filter(GContract.id == cid).first()
+    def find_industry_by_name(sess, name):
+        return sess.execute(
+            select(GContract).where(
+                GContract.is_industry == true(), GContract.name == name
+            )
+        ).scalar_one_or_none()
 
-    @staticmethod
-    def get_by_name(sess, name):
-        cont = GContract.find_by_name(sess, name)
+    @classmethod
+    def get_supplier_by_name(cls, sess, name):
+        cont = cls.find_supplier_by_name(sess, name)
         if cont is None:
             raise BadRequest(
-                "There isn't a gas supplier contract with the name '" + str(name) + "'."
+                f"There isn't a gas supplier contract with the name '{name}'."
             )
         return cont
 
     @staticmethod
-    def find_by_name(sess, name):
-        return sess.query(GContract).filter(GContract.name == name).first()
+    def find_supplier_by_name(sess, name):
+        return sess.execute(
+            select(GContract).where(
+                GContract.is_industry == false(), GContract.name == name
+            )
+        ).scalar_one_or_none()
 
 
 class GRateScript(Base, PersistentClass):
@@ -6059,7 +6147,7 @@ class GDn(Base, PersistentClass):
         code = code.strip()
         dn = sess.query(GDn).filter_by(code=code).first()
         if dn is None:
-            raise BadRequest("The GDN with code " + code + " can't be found.")
+            raise BadRequest(f"The GDN with code {code} can't be found.")
         return dn
 
 
@@ -6084,7 +6172,7 @@ class GLdz(Base, PersistentClass):
         code = code.strip()
         typ = sess.query(GLdz).filter_by(code=code).first()
         if typ is None:
-            raise BadRequest("The LDZ with code " + code + " can't be found.")
+            raise BadRequest(f"The LDZ with code {code} can't be found.")
         return typ
 
 
@@ -6481,6 +6569,9 @@ def db_init(sess, root_path):
     sess.commit()
     sess.flush()
 
+    for name in ("ccl", "cv", "dn", "uig", "nts_commodity"):
+        GContract.insert_industry(sess, name)
+
     sess.execute(f"alter database {db_name} set default_transaction_deferrable = on")
     sess.execute(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'")
     sess.commit()
@@ -6843,6 +6934,44 @@ def db_upgrade_36_to_37(sess, root_path):
             contract.insert_rate_script(sess, script[0], loads(script[2]))
 
 
+def db_upgrade_37_to_38(sess, root_path):
+    sess.execute("ALTER TABLE g_contract ADD is_industry boolean;")
+    sess.execute("UPDATE g_contract SET is_industry = false;")
+
+    sess.execute("ALTER TABLE g_contract ALTER is_industry SET NOT NULL;")
+    sess.execute("ALTER TABLE g_contract ADD UNIQUE (is_industry, name);")
+
+    for name in ("g_dn", "g_ccl", "g_ug", "g_nts_commodity"):
+        scripts = get_file_scripts(name)
+        g_contract = GContract.insert(
+            sess, True, name[2:], "", {}, scripts[0][0], None, loads(scripts[0][2])
+        )
+        for script in scripts[1:]:
+            g_contract.insert_g_rate_script(sess, script[0], loads(script[2]))
+
+    old_cv_contract = Contract.get_non_core_by_name(sess, "g_cv")
+    rsl = list(
+        sess.execute(
+            select(RateScript)
+            .where(RateScript.contract == old_cv_contract)
+            .order_by(RateScript.start_date)
+        ).scalars()
+    )
+
+    cv_contract = GContract.insert(
+        sess,
+        True,
+        "cv",
+        old_cv_contract.charge_script,
+        old_cv_contract.make_properties(),
+        rsl[0].start_date,
+        rsl[-1].finish_date,
+        loads(rsl[0].script),
+    )
+    for rs in rsl[1:]:
+        cv_contract.insert_g_rate_script(sess, rs.start_date, loads(rs.script))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6865,6 +6994,7 @@ upgrade_funcs.extend(
         db_upgrade_34_to_35,
         db_upgrade_35_to_36,
         db_upgrade_36_to_37,
+        db_upgrade_37_to_38,
     ]
 )
 

@@ -55,7 +55,7 @@ from chellow.utils import (
     to_utc,
     utc_datetime_now,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}

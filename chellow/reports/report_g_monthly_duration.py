@@ -16,7 +16,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.computer
 import chellow.dloads
 from chellow.computer import contract_func
-from chellow.g_engine import GDataSource
+from chellow.gas.engine import GDataSource
 from chellow.models import (
     GBill,
     GContract,
@@ -36,7 +36,7 @@ from chellow.utils import (
     req_bool,
     req_int,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}

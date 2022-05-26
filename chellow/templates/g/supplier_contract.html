@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplier Contracts &raquo; {{contract.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+ 	{{contract.name}} [<a href="/g/supplier_contracts/{{contract.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tbody>
+			<tr>
+				<th>Name</th>
+				<td>{{contract.name}}</td>
+			</tr>
+			<tr>
+				<th>Start Date</th>
+				<td>{{contract.start_g_rate_script.start_date|hh_format}}</td>
+			</tr>
+			<tr>
+				<th>Finish Date</th>
+				<td>{{contract.finish_g_rate_script.finish_date|hh_format}}</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table>
+		<caption>
+			Rate Scripts
+		 	[<a href="/g/supplier_contracts/{{contract.id}}/add_rate_script">add</a>]
+		</caption>
+		<thead>
+			<tr>
+				<th></th>
+				<th>From</th>
+				<th>To</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for rate_script in rate_scripts %}
+				<tr>
+					<td>
+						<a href="/g/supplier_rate_scripts/{{rate_script.id}}">view</a>
+					</td>
+					<td>{{rate_script.start_date|hh_format}}</td>
+					<td>{{rate_script.finish_date|hh_format}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<ul>
+		<li>
+			<a href="/g/batches?g_contract_id={{contract.id}}">Batches</a>
+		</li>
+	</ul>
+
+	<h3>CSV Downloads</h3>
+
+	<form action="/reports/g_virtual_bills">
+		<fieldset>
+			<input type="hidden" name="g_contract_id" value="{{contract.id}}">
+			<legend>Download Supply Level Virtual Bills</legend>
+			<label>From</label> {{ input_date('start', month_start) }}
+			<label>To</label> {{ input_date('finish', month_finish) }}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
+	<h3>Script</h3>
+	<pre>{{ contract.charge_script }}</pre>
+
+	<h3 id="properties">Properties</h3>
+
+	<pre>{{contract.properties}}</pre>
+{% endblock %}

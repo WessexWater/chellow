@@ -33,7 +33,7 @@ from chellow.models import (
     Supply,
 )
 from chellow.utils import HH, hh_format, hh_max, hh_min, req_int
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(year, supply_id, user):

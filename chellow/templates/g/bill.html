@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Supplier Contracts &raquo; {{g_bill.g_batch.g_contract.name}} &raquo;
+ 	Batches &raquo; {{g_bill.g_batch.reference}} &raquo; {{g_bill.reference}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+	<a
+			href="/g/supplier_contracts/{{g_bill.g_batch.g_contract.id}}"
+			>{{g_bill.g_batch.g_contract.name}}</a> &raquo;
+	<a
+	 		href="/g/batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
+			>Batches</a> &raquo;
+	<a
+	 		href="/g/batches/{{g_bill.g_batch.id}}"
+			>{{g_bill.g_batch.reference}}</a> &raquo; Bill {{g_bill.id}}
+	[<a href="/g/bills/{{g_bill.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Supply</th>
+				<th>Reference</th>
+				<th>Account</th>
+				<th>Issue Date</th>
+				<th>From</th>
+				<th>To</th>
+				<th>kWh</th>
+				<th>Net GBP</th>
+				<th>VAT GBP</th>
+				<th>Gross GBP</th>
+				<th>Type</th>
+				<th>Check</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><a href="/g/supplies/{{g_bill.g_supply.id}}">Supply</a></td>
+				<td>{{g_bill.reference}}</td>
+				<td>{{g_bill.account}}</td>
+				<td>{{g_bill.issue_date|hh_format}}</td>
+				<td>{{g_bill.start_date|hh_format}}</td>
+				<td>{{g_bill.finish_date|hh_format}}</td>
+				<td>{{g_bill.kwh}}</td>
+				<td>{{g_bill.net}}</td>
+				<td>{{g_bill.vat}}</td>
+				<td>{{g_bill.gross}}</td>
+				<td>
+					<a
+						href="/bill_types/{{g_bill.bill_type.id}}"
+						title="{{g_bill.bill_type.description}}"
+						>{{g_bill.bill_type.code}}</a>
+				</td>
+				<td><a href="/reports/429?g_bill_id={{g_bill.id}}">Check</a></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table>
+		<caption>Reads [<a href="/g/bills/{{g_bill.id}}/add_read">add</a>]</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">Edit</th>
+				<th rowspan="2">MSN</th>
+				<th rowspan="2">Unit</th>
+				<th rowspan="2">Correction Factor</th>
+				<th rowspan="2">Calorific Value</th>
+				<th colspan="3">Previous</th>
+				<th colspan="3">Present</th>
+			</th>
+			</tr>
+			<tr>
+				<th>Date</th>
+				<th>Value</th>
+				<th>Type</th>
+				<th>Date</th>
+				<th>Value</th>
+				<th>Type</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_read in g_reads %}
+				<tr>
+					<td>[<a href="/g/reads/{{g_read.id}}/edit">edit</a>]</td>
+					<td>{{g_read.msn}}</td>
+					<td>{{g_read.g_unit.code}}</td>
+					<td>{{g_read.correction_factor}}</td>
+					<td>{{g_read.calorific_value}}</td>
+					<td>{{g_read.prev_date|hh_format}}</td>
+					<td>{{g_read.prev_value}}
+					<td>
+						<a
+								title="{{g_read.prev_type.description}}"
+								href="/g/read_types/{{g_read.prev_type.id}}"
+								>{{g_read.prev_type.code}}</a>
+					</td>
+					<td>{{g_read.pres_date|hh_format}}</td>
+					<td>{{g_read.pres_value}}</td>
+					<td>
+						<a
+								title="{{g_read.pres_type.description}}"
+								href="/g/read_types/{{g_read.pres_type.id}}"
+								>{{g_read.pres_type.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>Raw Bill</h2>
+
+	<pre>{{g_bill.raw_lines}}</pre>
+
+	<table>
+		<caption>Breakdown</caption>
+		<thead>
+			<tr>
+				<th>element</th>
+				{% for col in column_list %}
+					<th>{{col}}</th>
+				{% endfor %}
+			</tr>  
+		</thead>
+		<tbody>
+			{% for row in row_list %}
+				<tr>
+					<td>{{row}}</td>
+					{% for col in column_list %}
+						<td>{{grid[row][col]}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<pre>{{g_bill.breakdown}}</pre>
+
+{% endblock %}

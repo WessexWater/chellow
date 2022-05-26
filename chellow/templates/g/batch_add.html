@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Contracts &raquo; {{g_contract.name}} &raquo; Batches &gt; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Contracts</a> &raquo;
+	<a href="/g/supplier_contracts/{{g_contract.id}}">{{g_contract.name}}</a> &raquo;
+	<a href="/g/batches?g_contract_id={{g_contract.id}}">Batches</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<form action="/g/supplier_contracts/{{g_contract.id}}/add_batch" method="post">
+		<fieldset>
+			<legend>Add a batch</legend>
+			<label>Reference</label> {{input_text('reference', '')}}
+			<label>Description</label> {{input_text('description', '')}}
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
+	<table>
+		<caption>Existing Batches</caption>
+		<thead>
+			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_batch in g_batches %}
+				<tr>
+					<td>{{g_batch.reference}}</td>
+					<td>{{g_batch.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}

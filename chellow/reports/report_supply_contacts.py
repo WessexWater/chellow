@@ -22,7 +22,7 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 FNAME = "supply_contacts"

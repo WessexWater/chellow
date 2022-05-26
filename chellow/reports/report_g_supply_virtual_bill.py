@@ -12,10 +12,10 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 from chellow.computer import forecast_date
-from chellow.g_engine import GDataSource, g_contract_func
+from chellow.gas.engine import GDataSource, g_contract_func
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(g_supply_id, file_name, start_date, finish_date, user):
@@ -24,7 +24,7 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
     try:
         sess = Session()
         running_name, finished_name = chellow.dloads.make_names(
-            "g_supply_virtual_bill_" + str(g_supply_id) + ".csv", user
+            f"g_supply_virtual_bill_{g_supply_id}.csv", user
         )
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Industry Contracts &raquo; {{contract.name}} &raquo; Automatic Importer
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/industry_contracts">Industry Contracts</a> &raquo;
+	<a href="/g/industry_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+ 	Automatic Importer
+{% endblock %}
+
+{% block content %}
+	<p>
+		<a href="/g/industry_contracts/{{contract.id}}/auto_importer">Refresh page</a>
+	</p>
+	{% if importer %}
+		<table>
+			<tr>
+				<th>Is Locked?</th>
+				<td>{{importer.is_locked()}}</td>
+			</tr>
+		</table>
+		<form action="/g/industry_contracts/{{contract.id}}/auto_importer" method="post">
+			<fieldset {% if importer.is_locked() %}disabled{% endif %}>
+				<legend>Import Now</legend>
+				<input type="submit" value="Import" name="now">
+			</fieldset>
+		</form>
+
+		<h4>Log</h4>
+		<ul>
+			{% for message in importer.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>Importer not present.</p>
+	{% endif %}
+
+{% endblock %}

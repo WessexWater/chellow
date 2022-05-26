@@ -23,7 +23,7 @@ from chellow.utils import (
     req_str,
     to_ct,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def csv_str(row):

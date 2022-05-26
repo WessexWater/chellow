@@ -10,60 +10,39 @@
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.confirm_delete %}
-		<form method="delete">
+		<form method="post" action="/local_reports/{{report.id}}">
 			<fieldset>
 				<legend>Are you sure you want to delete this report?</legend>	
+				<a href="/local_reports/{{report.id}}">Cancel</a>
 				<input type="submit" value="Delete">
-				<input type="reset" value="Cancel" onClick="window.location='/local_reports/{{report.id}}'" />
 			</fieldset>
 		</form>
-	{% else %}
-		<h2>Minority Report</h2>	
 
+	{% else %}
 		<ul>
 			<li>
 				<a href="{{report.id}}/output">Output</a>
 			</li>
 		</ul>	
 
-		<form method="post">
+		<form method="post" action="/local_reports/{{report.id}}">
 			<fieldset>
 				<legend>Update Report</legend>
-				<label>Name</label>
-				<input name="name" size="100"
-					{% if request.args['name'] %}
-						value="{{request.args['name']}}"
-					{% else %}
-						value="{{report.name}}"
-					{% endif %}
-				>
+				<label>Name</label> {{input_text("name", report.name, size=100)}}
 
 				<label>Script</label>
-
-				<textarea name="script" cols="80" rows="50">
-					{%- if request.values['script'] -%}
-						{{request.values['script']}}
-					{%- else -%}
-						{{report.script}}
-					{%- endif -%}
-				</textarea>
+				{{input_textarea('script', report.script, 50, 88, show_pos=True)}}
 
 				<label>Template</label>
-				<textarea name="template" cols="80" rows="50">
-					{%- if request.values['template'] -%}
-						{{request.values['template']}}
-					{%- else -%}
-						{{report.template}}
-					{%- endif -%}
-				</textarea>
+				{{input_textarea('template', report.template, 50, 88, show_pos=True)}}
+
 				<input type="submit" value="Save">
 			</fieldset>
 		</form>
 
-		<form>
+		<form action="/local_reports/{{report.id}}">
 			<fieldset>
 				<legend>Delete this report</legend>	
-				<input type="hidden" name="view" value="Delete">
 				<input type="submit" name="confirm_delete" value="Delete">
 			</fieldset>
 		</form>

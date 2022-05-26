@@ -24,7 +24,7 @@ from chellow.utils import (
     req_int,
     to_utc,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def _make_sites(sess, year_start, year_finish, site_id, source_codes):

@@ -18,7 +18,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.dloads
 from chellow.models import Llfc, Party, Session
 from chellow.utils import ct_datetime, ct_datetime_now, hh_format, req_int, to_utc
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 LV_NET = ("LV", False)

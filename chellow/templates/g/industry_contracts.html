@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Industry Contracts
+{% endblock %}
+
+{% block nav %}
+	Gas Industry Contracts [<a href="/g/industry_contracts/add">add</a>]
+{% endblock %}
+
+{% block content %}
+
+	<table>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_contract in contracts %}
+				<tr>
+					<td>
+						<a href="/g/industry_contracts/{{g_contract.id}}">{{g_contract.name}}</a>
+					</td>
+					<td>
+						{{g_contract.start_g_rate_script.start_date|hh_format}}
+					</td>
+					<td>
+						{{g_contract.finish_g_rate_script.finish_date|hh_format}}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}

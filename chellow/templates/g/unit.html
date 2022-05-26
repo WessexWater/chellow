@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Units &raquo; {{g_unit.code}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/units">Gas Units</a> &raquo; {{g_unit.code}}
+{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>Code</th>
+			<td>{{g_unit.code}}</td>
+		</tr>
+		<tr>
+			<th>Description</th>
+			<td>{{g_unit.description}}</td>
+		</tr>
+		<tr>
+			<th>Factor</th>
+			<td>{{g_unit.factor}}</td>
+		</tr>
+	</table>
+{% endblock %}

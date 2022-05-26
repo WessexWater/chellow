@@ -12,7 +12,7 @@ from sqlalchemy.orm import joinedload
 import chellow.dloads
 from chellow.models import Era, Session, Site, SiteEra, Supply
 from chellow.utils import csv_make_val, req_date, req_int, req_str
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 METER_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3, "": 4}

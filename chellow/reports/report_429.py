@@ -16,10 +16,10 @@ from sqlalchemy.sql.expression import null, true
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-import chellow.g_engine
+import chellow.gas.engine
 from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra, User
 from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(g_batch_id, g_bill_id, user_id):
@@ -49,7 +49,7 @@ def content(g_batch_id, g_bill_id, user_id):
 
         g_contract = g_batch.g_contract
 
-        vbf = chellow.g_engine.g_contract_func(
+        vbf = chellow.gas.engine.g_contract_func(
             report_context, g_contract, "virtual_bill"
         )
         if vbf is None:
@@ -72,7 +72,7 @@ def content(g_batch_id, g_bill_id, user_id):
             "covered_finish",
             "covered_bill_ids",
         ]
-        bill_titles = chellow.g_engine.g_contract_func(
+        bill_titles = chellow.gas.engine.g_contract_func(
             report_context, g_contract, "virtual_bill_titles"
         )()
 
@@ -282,7 +282,7 @@ def _process_g_bill_ids(
         chunk_start = hh_max(vals["covered_start"], g_era.start_date)
         chunk_finish = hh_min(vals["covered_finish"], g_era.finish_date)
 
-        data_source = chellow.g_engine.GDataSource(
+        data_source = chellow.gas.engine.GDataSource(
             sess,
             chunk_start,
             chunk_finish,

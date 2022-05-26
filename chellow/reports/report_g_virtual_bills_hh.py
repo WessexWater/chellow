@@ -11,10 +11,10 @@ from sqlalchemy.sql.expression import null, true
 
 import chellow.computer
 from chellow.computer import contract_func
-from chellow.g_engine import GDataSource
+from chellow.gas.engine import GDataSource
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_format, hh_range, req_date, req_int
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(g_supply_id, start_date, finish_date, user):
@@ -27,7 +27,7 @@ def content(g_supply_id, start_date, finish_date, user):
 
         prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(
-            "g_supply_virtual_bills_hh_" + str(g_supply_id) + ".csv", user
+            f"g_supply_virtual_bills_hh_{g_supply_id}.csv", user
         )
         f = open(running_name, mode="w", newline="")
         w = csv.writer(f, lineterminator="\n")

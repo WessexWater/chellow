@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Gas Read Types
+{% endblock %}
+
+{% block nav %}
+	Gas Read Types
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_read_type in g_read_types %}
+				<tr>
+					<td><a href="/g/read_types/{{g_read_type.id}}">{{g_read_type.code}}</a></td>
+					<td>{{g_read_type.description}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

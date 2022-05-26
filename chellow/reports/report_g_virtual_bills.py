@@ -15,7 +15,7 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 from chellow.computer import contract_func, forecast_date
-from chellow.g_engine import GDataSource
+from chellow.gas.engine import GDataSource
 from chellow.models import GContract, GEra, Session, Site, SiteGEra
 from chellow.utils import (
     HH,
@@ -27,7 +27,7 @@ from chellow.utils import (
     req_int,
     utc_datetime,
 )
-from chellow.views.home import chellow_redirect
+from chellow.views import chellow_redirect
 
 
 def content(start_date, finish_date, g_contract_id, user):
