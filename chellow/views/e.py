@@ -1107,7 +1107,7 @@ def dc_contract_edit_post(contract_id):
             g.sess.commit()
             return chellow_redirect("/dc_contracts", 303)
         else:
-            party_id = req_str("party_id")
+            party_id = req_int("party_id")
             name = req_str("name")
             charge_script = req_str("charge_script")
             properties = req_zish("properties")

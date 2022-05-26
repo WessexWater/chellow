@@ -193,7 +193,7 @@ def handle_exception(context):
 class PersistentClass:
     @classmethod
     def get_by_id(cls, sess, oid):
-        obj = sess.query(cls).get(oid)
+        obj = sess.execute(select(cls).where(cls.id == oid)).scalar_one_or_none()
         if obj is None:
             raise NotFound(f"There isn't a {cls.__name__} with the id {oid}")
         return obj

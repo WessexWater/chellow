@@ -27,6 +27,7 @@ from chellow.models import (
     Session,
     SiteEra,
     Supply,
+    User,
 )
 from chellow.utils import (
     HH,
@@ -428,11 +429,12 @@ def _process(sess, caches, f, scenario_props):
         sess.rollback()
 
 
-def content(scenario_props, user):
+def content(scenario_props, user_id):
     caches = {}
     f = sess = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
         mpan_cores = scenario_props.get("mpan_cores")
         filter_str = "" if mpan_cores is None else "_filter"
         running_name, finished_name = chellow.dloads.make_names(
@@ -478,16 +480,12 @@ def do_post(sess):
         start_date = req_hh_date("start")
         finish_date = req_hh_date("finish")
 
+        mpan_cores = None
         if "mpan_cores" in request.values:
             mpan_cores_str = req_str("mpan_cores")
-            mpan_cores = mpan_cores_str.splitlines()
-            if len(mpan_cores) == 0:
-                mpan_cores = None
-            else:
-                for i in range(len(mpan_cores)):
-                    mpan_cores[i] = parse_mpan_core(mpan_cores[i])
-        else:
-            mpan_cores = None
+            mpan_cores_lines = mpan_cores_str.splitlines()
+            if len(mpan_cores_lines) > 0:
+                mpan_cores = [parse_mpan_core(m) for m in mpan_cores_lines]
 
         if "supply_id" in request.values:
             supply_id = req_int("supply_id")
@@ -495,9 +493,8 @@ def do_post(sess):
             if mpan_cores is None:
                 mpan_cores = []
             era = supply.eras[-1]
-            imp_mpan_core = era.imp_mpan_core
-            exp_mpan_core = era.exp_mpan_core
-            mpan_cores.append(imp_mpan_core if imp_mpan_core is None else exp_mpan_core)
+            imp_mpan_core, exp_mpan_core = era.imp_mpan_core, era.exp_mpan_core
+            mpan_cores.append(exp_mpan_core if imp_mpan_core is None else imp_mpan_core)
 
         start_date_ct = to_ct(start_date)
         finish_date_ct = to_ct(finish_date)
@@ -516,6 +513,6 @@ def do_post(sess):
         }
         base_name.append(hh_format(start_date).replace(" ", "_").replace(":", "_"))
 
-    thread = threading.Thread(target=content, args=(scenario_props, g.user))
+    thread = threading.Thread(target=content, args=(scenario_props, g.user.id))
     thread.start()
     return chellow_redirect("/downloads", 303)
