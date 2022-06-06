@@ -1,8 +1,9 @@
+from collections import defaultdict
 from decimal import Decimal
 from io import BytesIO
 
-from chellow.bill_parser_sse_edi import Parser, _process_MTR
-from chellow.utils import ct_datetime, to_utc
+from chellow.bill_parser_sse_edi import Parser, _process_CCD2, _process_MTR
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_missing_mpan_core(mocker, sess):
@@ -38,6 +39,49 @@ def test_parser_REF(mocker, sess):
     f = BytesIO(b"\n".join(n.encode("utf8") for n in file_lines))
     parser = Parser(f)
     parser.make_raw_bills()
+
+
+def test_process_CCD2(mocker, sess):
+
+    headers = {"reads": [], "breakdown": defaultdict(int), "kwh": Decimal(0)}
+    elements = {
+        "TMOD": ["0001"],
+        "MTNR": ["x"],
+        "MLOC": ["228477911812004111222"],
+        "PRDT": ["201001"],
+        "PVDT": ["200901"],
+        "PRRD": ["10", "00", "0", "00"],
+        "ADJF": ["", "0"],
+        "CONA": ["0"],
+        "NUCT": ["0"],
+        "CPPU": ["0"],
+        "CTOT": ["0"],
+    }
+    _process_CCD2(elements, headers)
+    expected_headers = {
+        "reads": [
+            {
+                "msn": "x",
+                "mpan": "04 111 222 22 8477 9118 120",
+                "coefficient": Decimal("0"),
+                "units": "kWh",
+                "tpr_code": "00001",
+                "prev_date": utc_datetime(2020, 9, 1, 22, 30),
+                "prev_value": Decimal("0"),
+                "prev_type_code": "N",
+                "pres_date": utc_datetime(2020, 10, 1, 22, 30),
+                "pres_value": Decimal("10"),
+                "pres_type_code": "N",
+            }
+        ],
+        "breakdown": {
+            "00001-kwh": Decimal("0"),
+            "00001-rate": {Decimal("0")},
+            "00001-gbp": Decimal("0"),
+        },
+        "kwh": Decimal("0"),
+    }
+    assert headers == expected_headers
 
 
 def test_process_MTR_ebatch(mocker, sess):

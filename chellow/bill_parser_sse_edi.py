@@ -233,7 +233,7 @@ def _process_CCD1(elements, headers):
     mloc = elements["MLOC"]
 
     mpan = mloc[0]
-    mpan_core = f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}"
+    mpan_core = parse_mpan_core(f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}")
     headers["mpan_core"] = mpan_core
     mpan = f"{mpan[13:15]} {mpan[15:18]} {mpan[18:]} {mpan_core}"
 
@@ -308,7 +308,7 @@ def _process_CCD2(elements, headers):
     mloc = elements["MLOC"]
 
     mpan = mloc[0]
-    mpan_core = f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}"
+    mpan_core = parse_mpan_core(f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}")
     mpan = f"{mpan[13:15]} {mpan[15:18]} {mpan[18:]} {mpan_core}"
 
     prdt = elements["PRDT"]
