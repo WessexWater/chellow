@@ -6972,6 +6972,16 @@ def db_upgrade_37_to_38(sess, root_path):
         cv_contract.insert_g_rate_script(sess, rs.start_date, loads(rs.script))
 
 
+def db_upgrade_38_to_39(sess, root_path):
+    for name in ("aahedc", "ccl", "triad_dates", "triad_rates"):
+        scripts = get_file_scripts(name)
+        contract = Contract.insert_non_core(
+            sess, name, "", {}, scripts[0][0], None, loads(scripts[0][2])
+        )
+        for script in scripts[1:]:
+            contract.insert_rate_script(sess, script[0], loads(script[2]))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6995,6 +7005,7 @@ upgrade_funcs.extend(
         db_upgrade_35_to_36,
         db_upgrade_36_to_37,
         db_upgrade_37_to_38,
+        db_upgrade_38_to_39,
     ]
 )
 
