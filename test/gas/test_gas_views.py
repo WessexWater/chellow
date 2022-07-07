@@ -533,6 +533,24 @@ def test_batch_add_post(client, sess):
     match(response, 303, "/g/batches/1")
 
 
+def test_industry_contracts(client, sess):
+    contract = GContract.insert_industry(
+        sess,
+        "Fusion 2020",
+        "",
+        {},
+        utc_datetime(2019, 1, 1),
+        None,
+        {},
+    )
+    contract.insert_g_rate_script(sess, utc_datetime(2019, 2, 1), {})
+    sess.commit()
+
+    response = client.get("/g/industry_contracts")
+
+    match(response, 200, r"<td>\s*2019-01-01 00:00\s*</td>\s*<td>\s*</td>")
+
+
 def test_supplier_contracts(client, sess):
     GContract.insert_supplier(
         sess,
