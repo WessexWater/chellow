@@ -548,7 +548,7 @@ def test_industry_contracts(client, sess):
 
     response = client.get("/g/industry_contracts")
 
-    match(response, 200, r"<td>\s*2019-01-01 00:00\s*</td>\s*<td>\s*</td>")
+    match(response, 200, r"<td>\s*2019-01-01 00:00\s*</td>\s*<td>\s*Ongoing\s*</td>")
 
 
 def test_supplier_contracts(client, sess):

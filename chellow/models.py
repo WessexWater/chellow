@@ -5919,8 +5919,8 @@ class GContract(Base, PersistentClass):
             .order_by(GRateScript.start_date)
             .all()
         )
-        self.g_start_rate_script = rscripts[0]
-        self.g_finish_rate_script = rscripts[-1]
+        self.start_g_rate_script = rscripts[0]
+        self.finish_g_rate_script = rscripts[-1]
         sess.flush()
         return new_script
 
