@@ -414,7 +414,7 @@ def local_reports_home():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config.make_properties()
     report_id = properties["local_reports_id"]
-    return local_report_output_post(report_id)
+    return local_report_output_get(report_id)
 
 
 @home.errorhandler(500)
