@@ -57,7 +57,6 @@ from zish import ZishException, dumps, loads
 from chellow.utils import (
     HH,
     ct_datetime,
-    get_file_scripts,
     hh_after,
     hh_before,
     hh_format,
@@ -6911,6 +6910,7 @@ def db_upgrade_35_to_36(sess, root_path):
 
 
 def db_upgrade_36_to_37(sess, root_path):
+    """
     for dno in (
         sess.query(Party)
         .join(MarketRole)
@@ -6932,9 +6932,11 @@ def db_upgrade_36_to_37(sess, root_path):
             )
         for script in scripts[1:]:
             contract.insert_rate_script(sess, script[0], loads(script[2]))
+    """
 
 
 def db_upgrade_37_to_38(sess, root_path):
+    """
     sess.execute("ALTER TABLE g_contract ADD is_industry boolean;")
     sess.execute("UPDATE g_contract SET is_industry = false;")
 
@@ -6970,9 +6972,11 @@ def db_upgrade_37_to_38(sess, root_path):
     )
     for rs in rsl[1:]:
         cv_contract.insert_g_rate_script(sess, rs.start_date, loads(rs.script))
+    """
 
 
 def db_upgrade_38_to_39(sess, root_path):
+    """
     for name in ("aahedc", "ccl", "triad_dates", "triad_rates"):
         scripts = get_file_scripts(name)
         contract = Contract.insert_non_core(
@@ -6980,6 +6984,7 @@ def db_upgrade_38_to_39(sess, root_path):
         )
         for script in scripts[1:]:
             contract.insert_rate_script(sess, script[0], loads(script[2]))
+    """
 
 
 upgrade_funcs = [None] * 18

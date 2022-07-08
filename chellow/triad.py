@@ -1,14 +1,14 @@
 from dateutil.relativedelta import relativedelta
 
+from sqlalchemy import null, or_, select
+
 import chellow.computer
 import chellow.duos
+from chellow.models import RateScript, get_non_core_contract_id
 from chellow.utils import (
     c_months_u,
     ct_datetime,
-    get_file_rates,
-    get_file_scripts,
     hh_after,
-    hh_before,
     hh_min,
     to_ct,
     to_utc,
@@ -16,12 +16,14 @@ from chellow.utils import (
 
 
 def hh(ds, rate_period="monthly", est_kw=None):
+    dates_db_id = get_non_core_contract_id("triad_dates")
+    rates_db_id = get_non_core_contract_id("triad_rates")
     for hh in ds.hh_data:
         if hh["ct-is-month-end"]:
-            _process_hh(ds, rate_period, est_kw, hh)
+            _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh)
 
 
-def _process_hh(ds, rate_period, est_kw, hh):
+def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
     month_start, month_finish = next(
         c_months_u(start_year=hh["ct-year"], start_month=hh["ct-month"])
     )
@@ -37,9 +39,7 @@ def _process_hh(ds, rate_period, est_kw, hh):
 
     est_triad_kws = []
     earliest_triad = None
-    for dt in get_file_rates(ds.caches, "triad_dates", last_financial_year_start)[
-        "triad_dates"
-    ]:
+    for dt in ds.hh_rate(dates_db_id, last_financial_year_start)["triad_dates"]:
         triad_hh = None
         earliest_triad = hh_min(earliest_triad, dt)
         try:
@@ -93,9 +93,9 @@ def _process_hh(ds, rate_period, est_kw, hh):
     polarity = "import" if ds.llfc.is_import else "export"
     gsp_group_code = ds.gsp_group_code
     rate = float(
-        get_file_rates(ds.caches, "triad_rates", month_start)["triad_gbp_per_gsp_kw"][
-            polarity
-        ][gsp_group_code]
+        ds.hh_rate(rates_db_id, month_start)["triad_gbp_per_gsp_kw"][polarity][
+            gsp_group_code
+        ]
     )
 
     hh["triad-estimate-rate"] = rate
@@ -126,9 +126,7 @@ def _process_hh(ds, rate_period, est_kw, hh):
 
     if hh["ct-month"] == 3:
         triad_kws = []
-        for t_date in get_file_rates(ds.caches, "triad_dates", month_start)[
-            "triad_dates"
-        ]:
+        for t_date in ds.hh_rate(dates_db_id, month_start)["triad_dates"]:
             try:
                 d = next(ds.get_data_sources(t_date, t_date))
                 if (
@@ -187,26 +185,32 @@ def _process_hh(ds, rate_period, est_kw, hh):
         polarity = "import" if ds.llfc.is_import else "export"
         gsp_group_code = ds.gsp_group_code
         tot_rate = 0
-        for start_date, finish_date, script in get_file_scripts("triad_rates"):
-            if start_date <= financial_year_finish and not hh_before(
-                finish_date, financial_year_start
-            ):
-                start_month = to_ct(start_date).month
-                if start_month < 4:
-                    start_month += 12
+        for rs in ds.sess.execute(
+            select(RateScript).where(
+                RateScript.contract_id == rates_db_id,
+                RateScript.start_date <= financial_year_finish,
+                or_(
+                    RateScript.finish_date == null(),
+                    RateScript.finish_date >= financial_year_start,
+                ),
+            )
+        ).scalars():
+            start_month = to_ct(rs.start_date).month
+            if start_month < 4:
+                start_month += 12
 
-                if finish_date is None:
-                    finish_month = 3
-                else:
-                    finish_month = to_ct(finish_date).month
+            if rs.finish_date is None:
+                finish_month = 3
+            else:
+                finish_month = to_ct(rs.finish_date).month
 
-                if finish_month < 4:
-                    finish_month += 12
+            if finish_month < 4:
+                finish_month += 12
 
-                rt = get_file_rates(ds.caches, "triad_rates", start_date)[
-                    "triad_gbp_per_gsp_kw"
-                ][polarity][gsp_group_code]
-                tot_rate += (finish_month - start_month + 1) * float(rt)
+            rt = ds.hh_rate(rates_db_id, rs.start_date)["triad_gbp_per_gsp_kw"][
+                polarity
+            ][gsp_group_code]
+            tot_rate += (finish_month - start_month + 1) * float(rt)
 
         rate = tot_rate / 12
         hh["triad-actual-rate"] = rate

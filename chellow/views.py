@@ -51,7 +51,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.attributes import flag_modified
 
-from werkzeug.exceptions import BadRequest, NotFound
+from werkzeug.exceptions import BadRequest
 
 import chellow.bank_holidays
 import chellow.bill_importer
@@ -106,7 +106,6 @@ from chellow.utils import (
     c_months_u,
     csv_make_val,
     ct_datetime_now,
-    get_file_scripts,
     hh_range,
     parse_mpan_core,
     req_bool,
@@ -118,7 +117,6 @@ from chellow.utils import (
     req_zish,
     send_response,
     to_ct,
-    to_utc,
     utc_datetime,
     utc_datetime_now,
 )
@@ -2126,53 +2124,6 @@ def user_roles_get():
 def bill_type_get(type_id):
     bill_type = BillType.get_by_id(g.sess, type_id)
     return render_template("bill_type.html", bill_type=bill_type)
-
-
-@home.route("/industry_contracts")
-def industry_contracts_get():
-    contracts = []
-    contracts_path = os.path.join(current_app.root_path, "rate_scripts")
-
-    for contract_code in sorted(os.listdir(contracts_path)):
-        try:
-            int(contract_code)
-            continue
-        except ValueError:
-            scripts = get_file_scripts(contract_code)
-            contracts.append(
-                {
-                    "code": contract_code,
-                    "start_date": scripts[0][0],
-                    "finish_date": scripts[-1][1],
-                }
-            )
-
-    return render_template("industry_contracts.html", contracts=contracts)
-
-
-@home.route("/industry_contracts/<contract_code>")
-def industry_contract_get(contract_code):
-    rate_scripts = get_file_scripts(contract_code)[::-1]
-    return render_template(
-        "industry_contract.html", rate_scripts=rate_scripts, contract_code=contract_code
-    )
-
-
-@home.route("/industry_contracts/<contract_code>/rate_scripts/<start_date_str>")
-def industry_rate_script_get(contract_code, start_date_str):
-    rate_script = None
-    start_date = to_utc(Datetime.strptime(start_date_str, "%Y%m%d%H%M"))
-    for rscript in get_file_scripts(contract_code):
-        if rscript[0] == start_date:
-            rate_script = rscript
-            break
-    if rate_script is None:
-        raise NotFound()
-    return render_template(
-        "industry_rate_script.html",
-        contract_code=contract_code,
-        rate_script=rate_script,
-    )
 
 
 @home.route("/sites/<int:site_id>/gen_graph")
