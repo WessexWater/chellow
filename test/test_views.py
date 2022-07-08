@@ -37,6 +37,34 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_local_report_home(client, sess):
+    script = """from flask import render_template_string
+
+def do_get():
+    return render_template_string(template)
+"""
+
+    template = """{% extends "base.html"%}
+
+{% block content %}
+  <p>Marcus Aurelius</p>
+{% endblock %}
+"""
+
+    report = Report.insert(sess, "Emperor", script, template)
+    config = sess.execute(
+        select(Contract).where(Contract.name == "configuration")
+    ).scalar_one()
+    props = config.make_properties()
+    props["local_reports_id"] = report.id
+    config.properties = props
+    sess.commit()
+
+    response = client.get("/local_reports_home")
+
+    match(response, 200)
+
+
 def test_local_report_post_delete(client, sess):
     report = Report.insert(sess, "Gray", "", "")
     sess.commit()
