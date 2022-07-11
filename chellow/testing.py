@@ -56,7 +56,7 @@ class Tester(threading.Thread):
                         _test_report(self.log, sess, report)
                         sess.rollback()  # Avoid long-running transaction
                 except BaseException:
-                    self.log(f"Outer problem {traceback.format_exc()}")
+                    self.log(traceback.format_exc())
                     self.global_alert = "Automatic tester: A test has failed"
                     sess.rollback()
                 finally:
