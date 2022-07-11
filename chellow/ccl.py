@@ -12,9 +12,9 @@ def ccl(data_source):
             rate = ccl_cache[hh["start-date"]]
         except KeyError:
             hh_start = hh["start-date"]
-            db_id = get_non_core_contract_id("aahedc")
+            db_id = get_non_core_contract_id("ccl")
             rates = data_source.hh_rate(db_id, hh_start)
-            rate = ccl_cache[hh_start] = rates["ccl_gbp_per_gsp_kwh"]
+            rate = ccl_cache[hh_start] = float(rates["ccl_gbp_per_msp_kwh"])
 
         hh["ccl-kwh"] = hh["msp-kwh"]
         hh["ccl-rate"] = rate
