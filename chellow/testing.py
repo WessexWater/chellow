@@ -6,6 +6,7 @@ import traceback
 from sqlalchemy.sql.expression import select
 
 from chellow.models import (
+    Contract,
     Report,
     Session,
 )
@@ -55,6 +56,11 @@ class Tester(threading.Thread):
                     ).scalars():
                         _test_report(self.log, sess, report)
                         sess.rollback()  # Avoid long-running transaction
+                    for contract in sess.execute(
+                        select(Contract).order_by(Contract.id)
+                    ).scalars():
+                        _test_contract(self.log, sess, contract)
+                        sess.rollback()  # Avoid long-running transaction
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Automatic tester: A test has failed"
@@ -70,9 +76,21 @@ class Tester(threading.Thread):
 
 
 def _test_report(logger, sess, report):
-    logger(f"Staring to test local report {report.id} {report.name}.")
+    logger(f"Starting to test local report {report.id} {report.name}.")
     code = compile(report.script, "<string>", "exec")
     ns = {"report_id": report.id, "template": report.template}
+    exec(code, ns)
+    if "test" in ns:
+        ns["test"]()
+
+
+def _test_contract(logger, sess, contract):
+    logger(
+        f"Starting to test {contract.market_role.description} contract {contract.id} "
+        f"{contract.name}."
+    )
+    code = compile(contract.charge_script, "<string>", "exec")
+    ns = {"db_id": contract.id}
     exec(code, ns)
     if "test" in ns:
         ns["test"]()
