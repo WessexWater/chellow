@@ -4036,8 +4036,7 @@ def supplier_bill_edit_post(bill_id):
             vat = req_decimal("vat")
             gross = req_decimal("gross")
             type_id = req_int("bill_type_id")
-            breakdown_str = req_str("breakdown")
-            breakdown = loads(breakdown_str)
+            breakdown = req_zish("breakdown")
             bill_type = BillType.get_by_id(g.sess, type_id)
 
             bill.update(
