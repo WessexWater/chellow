@@ -451,6 +451,12 @@ def _process_supply(
                         covered_bdown[k].update(set(v))
                     except KeyError:
                         covered_bdown[k] = set(v)
+                    except AttributeError as e:
+                        raise BadRequest(
+                            f"For key {k} in {[b.id for b in covered_bills.values()]} "
+                            f"the value {v} can't be added to the existing value "
+                            f"{covered_bdown[k]}. {e}"
+                        )
                 else:
                     if isinstance(v, Decimal):
                         v = float(v)
