@@ -6,7 +6,7 @@ from werkzeug.exceptions import BadRequest
 
 import xlrd.sheet
 
-import chellow.bill_parser_engie_xls
+import chellow.e.bill_parsers.engie_xls
 from chellow.utils import utc_datetime
 
 
@@ -52,7 +52,9 @@ def test_parse_row(mocker):
     datemode = 0
     title_row = ["To Date"]
 
-    bill = chellow.bill_parser_engie_xls._parse_row(row, row_index, datemode, title_row)
+    bill = chellow.e.bill_parsers.engie_xls._parse_row(
+        row, row_index, datemode, title_row
+    )
     assert bill["finish_date"] == utc_datetime(2019, 3, 31, 22, 30)
 
 
@@ -62,7 +64,7 @@ def test_bd_add():
     val = None
 
     with pytest.raises(BadRequest):
-        chellow.bill_parser_engie_xls._bd_add(bd, el_name, val)
+        chellow.e.bill_parsers.engie_xls._bd_add(bd, el_name, val)
 
 
 def test_bill_parser_engie_xls_billed_kwh(mocker):
@@ -108,5 +110,5 @@ def test_bill_parser_engie_xls_billed_kwh(mocker):
         row.append(v)
 
     datemode = mocker.Mock()
-    bill = chellow.bill_parser_engie_xls._parse_row(row, 1, datemode, [])
+    bill = chellow.e.bill_parsers.engie_xls._parse_row(row, 1, datemode, [])
     assert bill["kwh"] == Decimal("27997.33")

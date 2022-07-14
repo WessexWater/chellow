@@ -54,18 +54,18 @@ from sqlalchemy.orm.attributes import flag_modified
 from werkzeug.exceptions import BadRequest
 
 import chellow.bank_holidays
-import chellow.bill_importer
-import chellow.bsuos
-import chellow.computer
 import chellow.dloads
+import chellow.e.bill_importer
+import chellow.e.bsuos
+import chellow.e.computer
+import chellow.e.hh_importer
+import chellow.e.laf_import
+import chellow.e.mdd_importer
+import chellow.e.rcrc
+import chellow.e.system_price
+import chellow.e.tlms
 import chellow.edi_lib
 import chellow.general_import
-import chellow.hh_importer
-import chellow.laf_import
-import chellow.mdd_importer
-import chellow.rcrc
-import chellow.system_price
-import chellow.tlms
 from chellow.models import (
     BillType,
     Channel,

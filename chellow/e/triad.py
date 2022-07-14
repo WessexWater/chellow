@@ -2,8 +2,8 @@ from dateutil.relativedelta import relativedelta
 
 from sqlalchemy import null, or_, select
 
-import chellow.computer
-import chellow.duos
+import chellow.e.computer
+import chellow.e.duos
 from chellow.models import RateScript, get_non_core_contract_id
 from chellow.utils import (
     c_months_u,

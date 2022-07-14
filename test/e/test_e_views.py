@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from utils import match
 
-from chellow import hh_importer
+from chellow.e import hh_importer
 from chellow.e.views import (
     csv_supplies_duration_get,
     get_era_bundles,
@@ -395,7 +395,7 @@ def test_dc_auto_importer_post(mocker, sess, client):
     )
     sess.commit()
 
-    mocker.patch("chellow.e.views.chellow.hh_importer")
+    mocker.patch("chellow.e.views.chellow.e.hh_importer")
 
     response = client.post(f"/e/dc_contracts/{contract.id}/auto_importer")
 

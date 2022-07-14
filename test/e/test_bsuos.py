@@ -1,4 +1,4 @@
-from chellow.bsuos import _find_file_type, _process_url
+from chellow.e.bsuos import _find_file_type, _process_url
 
 
 def test_find_file_type_csv():
@@ -18,7 +18,7 @@ def test_process_url_csv(mocker, sess):
     res.status_code = 200
     res.reason = "okay"
     res.headers = {"Content-Disposition": 'filename="bsuos.csv"'}
-    mocker.patch("chellow.bsuos.requests.get", return_value=res)
+    mocker.patch("chellow.e.bsuos.requests.get", return_value=res)
     logger = mocker.Mock()
     contract = mocker.Mock()
     url = mocker.Mock()

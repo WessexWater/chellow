@@ -2,7 +2,7 @@ from decimal import Decimal
 from io import BytesIO
 
 
-from chellow.bill_parser_engie_edi import (
+from chellow.e.bill_parsers.engie_edi import (
     CODE_FUNCS,
     Parser,
     _process_BCD,

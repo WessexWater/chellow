@@ -1,4 +1,4 @@
-import chellow.computer
+import chellow.e.computer
 import chellow.reports.report_181
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
@@ -19,9 +19,9 @@ def test_write_sites(mocker):
 
     ms = mocker.patch("chellow.reports.report_181._make_sites", autospec=True)
     ms.return_value = [site]
-    de = mocker.patch("chellow.computer.displaced_era", autospec=True)
+    de = mocker.patch("chellow.e.computer.displaced_era", autospec=True)
     de.return_value = era
-    ss = mocker.patch("chellow.computer.SiteSource", autospec=True)
+    ss = mocker.patch("chellow.e.computer.SiteSource", autospec=True)
     ss_instance = ss.return_value
     ss_instance.hh_data = [
         {
@@ -46,10 +46,10 @@ def test_write_sites(mocker):
 
     ss_instance.supplier_bill_hhs = {month_start: {}}
 
-    mocker.patch("chellow.duos.duos_vb", autospec=True)
-    mocker.patch("chellow.triad.hh", autospec=True)
+    mocker.patch("chellow.e.duos.duos_vb", autospec=True)
+    mocker.patch("chellow.e.triad.hh", autospec=True)
 
-    forecast_date = chellow.computer.forecast_date()
+    forecast_date = chellow.e.computer.forecast_date()
 
     chellow.reports.report_181._write_sites(sess, caches, writer, year, site_id)
 

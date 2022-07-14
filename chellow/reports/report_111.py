@@ -20,8 +20,8 @@ from werkzeug.exceptions import BadRequest
 
 from zish import ZishLocationException, loads
 
-import chellow.computer
 import chellow.dloads
+import chellow.e.computer
 from chellow.models import (
     Batch,
     Bill,
@@ -549,7 +549,7 @@ def _process_supply(
                 )
                 data_source = data_sources[ds_key]
             except KeyError:
-                data_source = data_sources[ds_key] = chellow.computer.SupplySource(
+                data_source = data_sources[ds_key] = chellow.e.computer.SupplySource(
                     sess,
                     chunk_start,
                     chunk_finish,
@@ -564,7 +564,7 @@ def _process_supply(
             if data_source.measurement_type == "hh":
                 metered_kwh += sum(h["msp-kwh"] for h in data_source.hh_data)
             else:
-                ds = chellow.computer.SupplySource(
+                ds = chellow.e.computer.SupplySource(
                     sess,
                     chunk_start,
                     chunk_finish,

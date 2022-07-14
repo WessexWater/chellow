@@ -2,7 +2,7 @@ import pytest
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.bill_parser_haven_csv
+from chellow.e.bill_parsers.haven_csv import _process_READING, _process_line, _to_date
 from chellow.utils import ct_datetime, to_utc
 
 
@@ -12,7 +12,7 @@ def test_process_line_unknown_code(mocker):
     headers = {}
 
     with pytest.raises(BadRequest, match=code):
-        chellow.bill_parser_haven_csv._process_line(code, row, headers)
+        _process_line(code, row, headers)
 
 
 def test_process_line_SUMMARY():
@@ -20,13 +20,13 @@ def test_process_line_SUMMARY():
     row = []
     headers = {}
 
-    chellow.bill_parser_haven_csv._process_line(code, row, headers)
+    _process_line(code, row, headers)
 
 
 def test_to_date():
     date_str = "20200430"
     row = [date_str]
-    dt = chellow.bill_parser_haven_csv._to_date(row, 0)
+    dt = _to_date(row, 0)
     assert dt == to_utc(ct_datetime(2020, 4, 30))
 
 
@@ -56,7 +56,7 @@ def test_process_READING_unknown_unit():
     headers = {}
 
     with pytest.raises(BadRequest, match=units):
-        chellow.bill_parser_haven_csv._process_READING(row, headers)
+        _process_READING(row, headers)
 
 
 def test_process_READING_success():
@@ -83,4 +83,4 @@ def test_process_READING_success():
     ]
     headers = {"reads": []}
 
-    chellow.bill_parser_haven_csv._process_READING(row, headers)
+    _process_READING(row, headers)

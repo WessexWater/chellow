@@ -1,4 +1,4 @@
-from chellow.hh_importer import https_handler
+from chellow.e.hh_importer import https_handler
 from chellow.models import (
     Comm,
     Contract,
@@ -119,7 +119,7 @@ def test_https_handler(mocker, sess):
 
     sess.commit()
 
-    mock_requests = mocker.patch("chellow.hh_importer.requests")
+    mock_requests = mocker.patch("chellow.e.hh_importer.requests")
     mock_response = mocker.Mock()
     mock_requests.get.return_value = mock_response
     mock_response.json.return_value = {

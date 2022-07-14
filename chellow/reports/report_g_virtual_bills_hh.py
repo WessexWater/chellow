@@ -9,8 +9,8 @@ from flask import g
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
-import chellow.computer
-from chellow.computer import contract_func
+import chellow.e.computer
+from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_format, hh_range, req_date, req_int
@@ -23,7 +23,7 @@ def content(g_supply_id, start_date, finish_date, user):
         sess = Session()
         g_supply = GSupply.get_by_id(sess, g_supply_id)
 
-        forecast_date = chellow.computer.forecast_date()
+        forecast_date = chellow.e.computer.forecast_date()
 
         prev_titles = None
         running_name, finished_name = chellow.dloads.make_names(

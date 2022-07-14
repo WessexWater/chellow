@@ -14,7 +14,7 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 import chellow.bank_holidays
-from chellow.computer import hh_rate
+from chellow.e.computer import hh_rate
 from chellow.models import (
     BillType,
     Contract,

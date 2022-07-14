@@ -10,9 +10,9 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
-from chellow.computer import SupplySource, contract_func
+import chellow.e.computer
+from chellow.e.computer import SupplySource, contract_func
 from chellow.models import (
     Contract,
     Era,
@@ -103,7 +103,7 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
     caches = {}
     writer = csv.writer(f, lineterminator="\n")
     contract = Contract.get_supplier_by_id(sess, contract_id)
-    forecast_date = chellow.computer.forecast_date()
+    forecast_date = chellow.e.computer.forecast_date()
 
     start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
 

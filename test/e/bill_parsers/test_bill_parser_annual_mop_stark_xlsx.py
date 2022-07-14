@@ -4,7 +4,7 @@ from io import BytesIO
 
 from openpyxl import Workbook
 
-from chellow.bill_parser_annual_mop_stark_xlsx import Parser
+from chellow.e.bill_parsers.annual_mop_stark_xlsx import Parser
 from chellow.utils import utc_datetime
 
 

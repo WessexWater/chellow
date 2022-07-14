@@ -3,7 +3,18 @@ from io import BytesIO
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.bill_parser_haven_edi
+from chellow.e.bill_parsers.haven_edi import (
+    BillElement,
+    Parser,
+    _process_BTL,
+    _process_CCD1,
+    _process_CCD3,
+    _process_CLO,
+    _process_MAN,
+    _process_MHD,
+    _process_MTR,
+    _process_segment,
+)
 from chellow.utils import utc_datetime
 
 
@@ -14,7 +25,7 @@ def test_process_BTL_zeroes(mocker):
         "TBTL": ["0"],
     }
     headers = {}
-    chellow.bill_parser_haven_edi._process_BTL(elements, headers)
+    _process_BTL(elements, headers)
     expected_headers = {
         "net": Decimal("0.00"),
         "vat": Decimal("0.00"),
@@ -31,7 +42,7 @@ def test_process_BTL_non_zeroes(mocker):
         "TBTL": ["10"],
     }
     headers = {}
-    chellow.bill_parser_haven_edi._process_BTL(elements, headers)
+    _process_BTL(elements, headers)
     expected_headers = {
         "net": Decimal("0.11"),
         "vat": Decimal("0.12"),
@@ -43,12 +54,12 @@ def test_process_BTL_non_zeroes(mocker):
 def test_process_MTR_UTLHDR(mocker):
     elements = {}
     headers = {"message_type": "UTLHDR", "breakdown": {}}
-    bill = chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    bill = _process_MTR(elements, headers)
     assert bill is None
 
 
 def test_process_MTR_UTLBIL(mocker):
-    MockSupply = mocker.patch("chellow.bill_parser_haven_edi.Supply", autospec=True)
+    MockSupply = mocker.patch("chellow.e.bill_parsers.haven_edi.Supply", autospec=True)
     mock_supply = mocker.Mock()
     MockSupply.get_by_mpan_core.return_value = mock_supply
     mock_era = mocker.Mock()
@@ -63,7 +74,7 @@ def test_process_MTR_UTLBIL(mocker):
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -102,7 +113,7 @@ def test_process_MTR_UTLBIL(mocker):
         "sess": sess,
         "message_type": "UTLBIL",
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -142,12 +153,12 @@ def test_process_MTR_UTLBIL(mocker):
         ],
         "bill_type_code": "N",
     }
-    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    _process_MTR(elements, headers)
     assert headers == expected_headers
 
 
 def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
-    MockSupply = mocker.patch("chellow.bill_parser_haven_edi.Supply", autospec=True)
+    MockSupply = mocker.patch("chellow.e.bill_parsers.haven_edi.Supply", autospec=True)
     mock_supply = mocker.Mock()
     MockSupply.get_by_mpan_core.return_value = mock_supply
     mock_era = mocker.Mock()
@@ -162,14 +173,14 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
                 titles=None,
                 desc="Night",
             ),
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -208,14 +219,14 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
         "sess": sess,
         "message_type": "UTLBIL",
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
                 titles=None,
                 desc="Night",
             ),
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -255,12 +266,12 @@ def test_process_MTR_UTLBIL_multiple_charges_one_tpr(mocker):
         ],
         "bill_type_code": "N",
     }
-    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    _process_MTR(elements, headers)
     assert headers == expected_headers
 
 
 def test_process_MTR_UTLBIL_unmetered(mocker):
-    MockSupply = mocker.patch("chellow.bill_parser_haven_edi.Supply", autospec=True)
+    MockSupply = mocker.patch("chellow.e.bill_parsers.haven_edi.Supply", autospec=True)
     mock_supply = mocker.Mock()
     MockSupply.get_by_mpan_core.return_value = mock_supply
     mock_era = mocker.Mock()
@@ -280,7 +291,7 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
         "message_type": "UTLBIL",
         "breakdown": {},
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -305,7 +316,7 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
         "sess": sess,
         "message_type": "UTLBIL",
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal(gbp),
                 rate=Decimal("0.0001"),
                 cons=Decimal(cons),
@@ -334,7 +345,7 @@ def test_process_MTR_UTLBIL_unmetered(mocker):
         "reads": [],
         "bill_type_code": "N",
     }
-    chellow.bill_parser_haven_edi._process_MTR(elements, headers)
+    _process_MTR(elements, headers)
     assert headers == expected_headers
 
 
@@ -344,7 +355,7 @@ def test_process_MAN(mocker):
     }
 
     headers = {}
-    chellow.bill_parser_haven_edi._process_MAN(elements, headers)
+    _process_MAN(elements, headers)
     expected_headers = {"mpan_core": "20 0000 0000 006"}
     assert headers == expected_headers
 
@@ -355,7 +366,7 @@ def test_process_MHD(mocker):
 
     sess = mocker.Mock()
     headers = {"sess": sess}
-    chellow.bill_parser_haven_edi._process_MHD(elements, headers)
+    _process_MHD(elements, headers)
     expected_headers = {
         "message_type": message_type,
         "reads": [],
@@ -369,7 +380,7 @@ def test_process_MHD(mocker):
     assert type(headers["breakdown"]) == type(expected_headers)
 
 
-def test_process_CCD_3(mocker):
+def test_process_CCD3(mocker):
     elements = {
         "CCDE": ["3", "", "NRG"],
         "TCOD": ["NIGHT", "Night"],
@@ -383,12 +394,12 @@ def test_process_CCD_3(mocker):
         "kwh": Decimal("0"),
     }
 
-    chellow.bill_parser_haven_edi._process_CCD_3(elements, headers)
+    _process_CCD3(elements, headers)
 
     expected_headers = {
         "kwh": Decimal("0"),
         "bill_elements": [
-            chellow.bill_parser_haven_edi.BillElement(
+            BillElement(
                 gbp=Decimal("0.00"),
                 rate=Decimal("0.0001"),
                 cons=Decimal("0"),
@@ -421,7 +432,7 @@ def test_process_CCD_1(mocker):
         "reads": [],
     }
 
-    chellow.bill_parser_haven_edi._process_CCD_1(elements, headers)
+    _process_CCD1(elements, headers)
 
     expected_headers = {
         "reads": [
@@ -450,7 +461,7 @@ def test_process_CLO(mocker):
 
     headers = {}
 
-    chellow.bill_parser_haven_edi._process_CLO(elements, headers)
+    _process_CLO(elements, headers)
 
     expected_headers = {
         "account": "",
@@ -459,7 +470,9 @@ def test_process_CLO(mocker):
 
 
 def test_process_segment_error(mocker):
-    mocker.patch("chellow.bill_parser_haven_edi._process_MTR", side_effect=BadRequest())
+    mocker.patch(
+        "chellow.e.bill_parsers.haven_edi._process_MTR", side_effect=BadRequest()
+    )
 
     code = "MTR"
     elements = []
@@ -495,9 +508,7 @@ def test_process_segment_error(mocker):
     }
     line_number = 13
 
-    bill = chellow.bill_parser_haven_edi._process_segment(
-        code, elements, line, headers, line_number
-    )
+    bill = _process_segment(code, elements, line, headers, line_number)
 
     expected_bill = {
         "bill_type_code": bill_type_code,
@@ -526,5 +537,5 @@ def test_Parser(mocker, sess):
         "MTR=6'",
     ]
     f = BytesIO(b"\n".join(n.encode("utf8") for n in file_lines))
-    parser = chellow.bill_parser_haven_edi.Parser(f)
+    parser = Parser(f)
     parser.make_raw_bills()

@@ -1,5 +1,5 @@
-from chellow.ccl import ccl
-from chellow.computer import SupplySource
+from chellow.e.ccl import ccl
+from chellow.e.computer import SupplySource
 from chellow.models import (
     Comm,
     Contract,

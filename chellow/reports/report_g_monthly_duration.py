@@ -13,9 +13,9 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
-from chellow.computer import contract_func
+import chellow.e.computer
+from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource
 from chellow.models import (
     GBill,
@@ -73,7 +73,7 @@ def content(
             "months",
         ]
 
-        forecast_from = chellow.computer.forecast_date()
+        forecast_from = chellow.e.computer.forecast_date()
 
         sites = (
             sess.query(Site)
@@ -139,15 +139,13 @@ def content(
         if g_supply_id is not None:
             conts = conts.filter(GEra.g_supply_id == g_supply_id)
         for cont in conts:
-            title_func = chellow.computer.contract_func(
+            title_func = chellow.e.computer.contract_func(
                 report_context, cont, "virtual_bill_titles"
             )
             if title_func is None:
                 raise Exception(
-                    "For the contract "
-                    + cont.name
-                    + " there doesn't seem "
-                    + "to be a 'virtual_bill_titles' function."
+                    f"For the contract {cont.name} there doesn't seem to be "
+                    f"a 'virtual_bill_titles' function."
                 )
             for title in title_func():
                 if title not in vb_titles:

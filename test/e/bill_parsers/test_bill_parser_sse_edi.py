@@ -2,7 +2,7 @@ from collections import defaultdict
 from decimal import Decimal
 from io import BytesIO
 
-from chellow.bill_parser_sse_edi import Parser, _process_CCD2, _process_MTR
+from chellow.e.bill_parsers.sse_edi import Parser, _process_CCD2, _process_MTR
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 

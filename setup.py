@@ -28,7 +28,13 @@ setup(
     author_email="tlocke@tlocke.org.uk",
     url="https://github.com/WessexWater/chellow",
     cmdclass=versioneer.get_cmdclass(),
-    packages=["chellow", "chellow.reports", "chellow.gas", "chellow.e"],
+    packages=[
+        "chellow",
+        "chellow.reports",
+        "chellow.gas",
+        "chellow.e",
+        "chellow.e.bill_parsers",
+    ],
     package_data={
         "chellow": [
             "non_core_contracts/*/*.zish",

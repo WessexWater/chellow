@@ -11,9 +11,9 @@ from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
-import chellow.duos
+import chellow.e.computer
+import chellow.e.duos
 from chellow.models import (
     Bill,
     BillType,
@@ -83,7 +83,7 @@ def mpan_bit(
         gsp_kwh = None
         msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
 
-        supply_source = chellow.computer.SupplySource(
+        supply_source = chellow.e.computer.SupplySource(
             sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
         )
 
@@ -117,7 +117,7 @@ def mpan_bit(
     else:
         gsp_kwh = msp_kwh = md_kw = md_kva = non_actual_msp_kwh = num_bad = kva = 0
         era_maps = scenario_props.get("era_maps", {})
-        supply_source = chellow.computer.SupplySource(
+        supply_source = chellow.e.computer.SupplySource(
             sess,
             chunk_start,
             chunk_finish,
@@ -128,7 +128,7 @@ def mpan_bit(
             era_maps=era_maps,
         )
 
-        chellow.duos.duos_vb(supply_source)
+        chellow.e.duos.duos_vb(supply_source)
         for hh in supply_source.hh_data:
             gsp_kwh += hh["gsp-kwh"]
             hh_msp_kwh = hh["msp-kwh"]
@@ -179,7 +179,7 @@ def _process(sess, caches, f, scenario_props):
         forecast_from = None
 
     if forecast_from is None:
-        forecast_from = chellow.computer.forecast_date()
+        forecast_from = chellow.e.computer.forecast_date()
     else:
         forecast_from = to_utc(forecast_from)
 

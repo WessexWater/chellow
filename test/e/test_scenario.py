@@ -1,4 +1,4 @@
-from chellow.scenario import make_site_deltas
+from chellow.e.scenario import make_site_deltas
 from chellow.utils import utc_datetime
 
 
@@ -26,7 +26,7 @@ def test_make_site_deltas(mocker):
     forecast_from = utc_datetime(2019, 4, 1)
     supply_id = None
 
-    ss = mocker.patch("chellow.scenario.SiteSource", autospec=True)
+    ss = mocker.patch("chellow.e.scenario.SiteSource", autospec=True)
     ss_instance = ss.return_value
     ss_instance.hh_data = [
         {
@@ -38,10 +38,10 @@ def test_make_site_deltas(mocker):
         }
     ]
 
-    se = mocker.patch("chellow.scenario.SiteEra", autospec=True)
+    se = mocker.patch("chellow.e.scenario.SiteEra", autospec=True)
     se.site = mocker.Mock()
 
-    sup_s = mocker.patch("chellow.scenario.SupplySource", autospec=True)
+    sup_s = mocker.patch("chellow.e.scenario.SupplySource", autospec=True)
     sup_s_instance = sup_s.return_value
     sup_s_instance.hh_data = {}
 
@@ -102,7 +102,7 @@ def test_make_site_deltas_nhh(mocker):
     forecast_from = utc_datetime(2019, 4, 1)
     supply_id = None
 
-    ss = mocker.patch("chellow.scenario.SiteSource", autospec=True)
+    ss = mocker.patch("chellow.e.scenario.SiteSource", autospec=True)
     ss_instance = ss.return_value
     ss_instance.hh_data = [
         {
@@ -114,10 +114,10 @@ def test_make_site_deltas_nhh(mocker):
         }
     ]
 
-    se = mocker.patch("chellow.scenario.SiteEra", autospec=True)
+    se = mocker.patch("chellow.e.scenario.SiteEra", autospec=True)
     se.site = mocker.Mock()
 
-    sup_s = mocker.patch("chellow.scenario.SupplySource", autospec=True)
+    sup_s = mocker.patch("chellow.e.scenario.SupplySource", autospec=True)
     sup_s_instance = sup_s.return_value
     hh_start_date = utc_datetime(2019, 3, 1)
     sup_s_instance.hh_data = [{"start-date": hh_start_date, "msp-kwh": 10}]

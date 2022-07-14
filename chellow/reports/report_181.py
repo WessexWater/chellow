@@ -10,10 +10,10 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
-import chellow.duos
-import chellow.triad
+import chellow.e.computer
+import chellow.e.duos
+import chellow.e.triad
 from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
 from chellow.utils import (
     HH,
@@ -79,7 +79,7 @@ def _write_sites(sess, caches, writer, year, site_id):
     march_start_utc = to_utc(march_start_ct)
     year_start = to_utc(ct_datetime(year - 1, 4, 1))
 
-    forecast_date = chellow.computer.forecast_date()
+    forecast_date = chellow.e.computer.forecast_date()
 
     sites = _make_sites(sess, year_start, march_finish_utc, site_id, ("gen", "gen-net"))
 
@@ -99,7 +99,7 @@ def _write_sites(sess, caches, writer, year, site_id):
         for month_start, month_finish in sorted(
             c_months_u(start_year=year - 1, start_month=4, months=12), reverse=True
         ):
-            displaced_era = chellow.computer.displaced_era(
+            displaced_era = chellow.e.computer.displaced_era(
                 sess, caches, site, month_start, month_finish, forecast_date
             )
             if displaced_era is not None:
@@ -108,7 +108,7 @@ def _write_sites(sess, caches, writer, year, site_id):
         if displaced_era is None:
             break
 
-        site_ds = chellow.computer.SiteSource(
+        site_ds = chellow.e.computer.SiteSource(
             sess,
             site,
             march_start_utc,
@@ -117,8 +117,8 @@ def _write_sites(sess, caches, writer, year, site_id):
             caches,
             displaced_era,
         )
-        chellow.duos.duos_vb(site_ds)
-        chellow.triad.hh(site_ds)
+        chellow.e.duos.duos_vb(site_ds)
+        chellow.e.triad.hh(site_ds)
 
         for hh in site_ds.hh_data:
             bill_hh = site_ds.supplier_bill_hhs[hh["start-date"]]

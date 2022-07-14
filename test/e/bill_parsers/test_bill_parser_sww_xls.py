@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import xlrd.sheet
 
-import chellow.bill_parser_sww_xls
+from chellow.e.bill_parsers.sww_xls import _parse_row
 from chellow.utils import utc_datetime
 
 
@@ -126,7 +126,7 @@ def test_parse_row(mocker):
         cell.value = title
         title_row.append(cell)
 
-    bill = chellow.bill_parser_sww_xls._parse_row(row, row_index, datemode, title_row)
+    bill = _parse_row(row, row_index, datemode, title_row)
 
     bill_start_date = utc_datetime(2019, 4, 1)
     assert bill["start_date"] == bill_start_date

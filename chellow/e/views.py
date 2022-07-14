@@ -25,8 +25,8 @@ from werkzeug.exceptions import BadRequest, NotFound
 
 from zish import dumps, loads
 
-import chellow.dno_rate_parser
-import chellow.mdd_importer
+import chellow.e.dno_rate_parser
+import chellow.e.mdd_importer
 from chellow.models import (
     Batch,
     BatchFile,
@@ -461,7 +461,7 @@ def cop_get(cop_id):
 @e.route("/dc_contracts/<int:contract_id>/auto_importer")
 def dc_auto_importer_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
-    task = chellow.hh_importer.get_hh_import_task(contract)
+    task = chellow.e.hh_importer.get_hh_import_task(contract)
     return render_template("dc_auto_importer.html", contract=contract, task=task)
 
 
@@ -469,7 +469,7 @@ def dc_auto_importer_get(contract_id):
 def dc_auto_importer_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
-        task = chellow.hh_importer.get_hh_import_task(contract)
+        task = chellow.e.hh_importer.get_hh_import_task(contract)
         task.go()
         return chellow_redirect(f"/dc_contracts/{contract.id}/auto_importer", 303)
     except BadRequest as e:
@@ -986,7 +986,7 @@ def dc_contracts_add_post():
             g.sess, name, participant, "{}", {}, start_date, None, {}
         )
         g.sess.commit()
-        chellow.hh_importer.startup_contract(contract.id)
+        chellow.e.hh_importer.startup_contract(contract.id)
         return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
@@ -1357,7 +1357,7 @@ def dno_rate_script_edit_post(dno_rate_script_id):
             gsp_group_id = req_int("gsp_group_id")
             gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
 
-            rates = chellow.dno_rate_parser.find_rates(
+            rates = chellow.e.dno_rate_parser.find_rates(
                 file_item.filename, BytesIO(file_item.read())
             )
             script_rates = loads(rate_script.script)
@@ -1950,7 +1950,9 @@ def laf_imports_post():
         return make_response(
             render_template(
                 "laf_imports.html",
-                process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+                process_ids=sorted(
+                    chellow.e.laf_import.get_process_ids(), reverse=True
+                ),
                 properties=props.get("laf_importer", {}),
             ),
             400,
@@ -2047,7 +2049,7 @@ def mdd_imports_get():
     mdd_version = properties.get("mdd_version")
     return render_template(
         "mdd_imports.html",
-        process_ids=sorted(chellow.mdd_importer.get_process_ids(), reverse=True),
+        process_ids=sorted(chellow.e.mdd_importer.get_process_ids(), reverse=True),
         mdd_version=mdd_version,
     )
 
@@ -2061,13 +2063,13 @@ def mdd_imports_post():
             raise BadRequest("The file name should have the extension '.csv'.")
         f = BytesIO(file_item.stream.read())
         f.seek(0)
-        proc_id = chellow.mdd_importer.start_process(f)
+        proc_id = chellow.e.mdd_importer.start_process(f)
         return chellow_redirect(f"/mdd_imports/{proc_id}", 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
             "mdd_imports.html",
-            process_ids=sorted(chellow.mdd_importer.get_process_ids(), reverse=True),
+            process_ids=sorted(chellow.e.mdd_importer.get_process_ids(), reverse=True),
         )
 
 
@@ -2210,7 +2212,7 @@ def mop_batch_get(batch_id):
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
     importer_ids = sorted(
-        chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+        chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
     )
     fields = {"batch": batch, "bills": bills, "importer_ids": importer_ids}
     if "batch_reports" in properties:
@@ -2226,7 +2228,7 @@ def mop_batch_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
         if "import_bills" in request.values:
-            import_id = chellow.bill_importer.start_bill_import(batch)
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
         elif "delete_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
@@ -2240,9 +2242,9 @@ def mop_batch_post(batch_id):
     except BadRequest as e:
         flash(e.description)
         importer_ids = sorted(
-            chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+            chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
         )
-        parser_names = chellow.bill_importer.find_parser_names()
+        parser_names = chellow.e.bill_importer.find_parser_names()
         return make_response(
             render_template(
                 "mop_batch.html",
@@ -2529,7 +2531,7 @@ def mop_bill_edit_post(bill_id):
 
 @e.route("/mop_bill_imports/<int:import_id>")
 def mop_bill_import_get(import_id):
-    importer = chellow.bill_importer.get_bill_import(import_id)
+    importer = chellow.e.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
     fields = {"batch": batch}
     if importer is not None:

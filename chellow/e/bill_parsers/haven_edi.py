@@ -393,13 +393,13 @@ def _process_CCD(elements, headers):
     consumption_charge_indicator = ccde[0]
 
     if consumption_charge_indicator == "1":
-        _process_CCD_1(elements, headers)
+        _process_CCD1(elements, headers)
 
     elif consumption_charge_indicator == "2":
-        _process_CCD_2(elements, headers)
+        _process_CCD2(elements, headers)
 
     elif consumption_charge_indicator == "3":
-        _process_CCD_3(elements, headers)
+        _process_CCD3(elements, headers)
 
     elif consumption_charge_indicator == "4":
         tmod_1 = elements["TMOD"][0]
@@ -443,7 +443,7 @@ def _process_CCD(elements, headers):
         breakdown[eln_gbp] = net
 
 
-def _process_CCD_1(elements, headers):
+def _process_CCD1(elements, headers):
     pres_read_date = _to_date(elements["PRDT"][0]) + relativedelta(days=1) - HH
 
     prev_read_date = _to_date(elements["PVDT"][0]) + relativedelta(days=1) - HH
@@ -496,7 +496,7 @@ def _process_CCD_1(elements, headers):
     )
 
 
-def _process_CCD_2(elements, headers):
+def _process_CCD2(elements, headers):
     tmod_1 = elements["TMOD"][0]
     try:
         titles = TMOD_MAP[tmod_1]
@@ -531,7 +531,7 @@ def _process_CCD_2(elements, headers):
     )
 
 
-def _process_CCD_3(elements, headers):
+def _process_CCD3(elements, headers):
     tcod = elements["TCOD"]
 
     tmod_1 = elements["TMOD"][0]

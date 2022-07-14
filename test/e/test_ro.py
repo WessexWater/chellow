@@ -1,4 +1,5 @@
-from chellow.computer import SupplySource
+from chellow.e.computer import SupplySource
+from chellow.e.ro import hh
 from chellow.models import (
     Comm,
     Contract,
@@ -22,7 +23,6 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.ro import hh
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 

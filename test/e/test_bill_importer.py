@@ -1,11 +1,11 @@
 from flask import g, render_template
 
-import chellow.bill_importer
+from chellow.e.bill_importer import BillImport
 
 
 def test_status(mocker):
     batch = mocker.Mock()
-    bill_import = chellow.bill_importer.BillImport(batch)
+    bill_import = BillImport(batch)
     bill_import.isAlive = mocker.Mock(return_value=True)
     bill_import.status()
 

@@ -1,5 +1,5 @@
+from chellow.e.system_price import _process
 from chellow.models import Contract, MarketRole, Participant
-from chellow.system_price import _process
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
@@ -45,7 +45,7 @@ def test_process(sess, mocker):
         mock_response.content = f.read()
     mock_response.status_code = 200
     mock_response.reason = "OK"
-    mocker.patch("chellow.system_price.requests", mock_requests)
+    mocker.patch("chellow.e.system_price.requests", mock_requests)
 
     _process(log_f, sess)
 

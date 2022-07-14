@@ -14,7 +14,7 @@ from sqlalchemy.sql.expression import null, true
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-from chellow.computer import contract_func, forecast_date
+from chellow.e.computer import contract_func, forecast_date
 from chellow.gas.engine import GDataSource
 from chellow.models import GContract, GEra, Session, Site, SiteGEra
 from chellow.utils import (

@@ -1,7 +1,7 @@
 from io import BytesIO
 from zipfile import ZipFile
 
-from chellow.mdd_importer import (
+from chellow.e.mdd_importer import (
     MddImporter,
     _import_MTC_in_PES_Area,
     _import_Meter_Timeswitch_Class,

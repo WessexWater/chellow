@@ -11,17 +11,17 @@ from zish import ZishException, dumps
 
 import chellow.api
 import chellow.bank_holidays
-import chellow.bmarketidx
-import chellow.bsuos
 import chellow.dloads
+import chellow.e.bmarketidx
+import chellow.e.bsuos
+import chellow.e.hh_importer
+import chellow.e.rcrc
+import chellow.e.system_price
+import chellow.e.tlms
 import chellow.e.views
 import chellow.gas.cv
 import chellow.gas.views
-import chellow.hh_importer
-import chellow.rcrc
-import chellow.system_price
 import chellow.testing
-import chellow.tlms
 import chellow.utils
 from chellow._version import get_versions
 from chellow.models import (
@@ -63,16 +63,21 @@ def create_app(testing=False):
 
     if not testing:
         db_upgrade(app.root_path)
-        chellow.rcrc.startup()
-        chellow.bsuos.startup()
-        chellow.system_price.startup()
-        chellow.hh_importer.startup()
-        chellow.testing.startup()
-        chellow.tlms.startup()
-        chellow.bank_holidays.startup()
         chellow.dloads.startup(app.instance_path)
-        chellow.gas.cv.startup()
-        chellow.bmarketidx.startup()
+
+    for importer in (
+        chellow.e.rcrc,
+        chellow.e.bsuos,
+        chellow.e.system_price,
+        chellow.e.hh_importer,
+        chellow.testing,
+        chellow.e.tlms,
+        chellow.bank_holidays,
+        chellow.gas.cv,
+        chellow.e.bmarketidx,
+    ):
+        if not testing:
+            importer.startup()
 
     @app.before_first_request
     def before_first_request():
@@ -225,7 +230,7 @@ def create_app(testing=False):
     @app.context_processor
     def chellow_context_processor():
         global_alerts = []
-        for task in chellow.hh_importer.tasks.values():
+        for task in chellow.e.hh_importer.tasks.values():
             if task.is_error:
                 try:
                     contract = Contract.get_by_id(g.sess, task.contract_id)
@@ -237,9 +242,9 @@ def create_app(testing=False):
                     pass
 
         for importer in (
-            chellow.bsuos.bsuos_importer,
+            chellow.e.bsuos.bsuos_importer,
             chellow.gas.cv.cv_importer,
-            chellow.bmarketidx.bmarketidx_importer,
+            chellow.e.bmarketidx.bmarketidx_importer,
             chellow.testing.tester,
         ):
             if importer is not None and importer.global_alert is not None:

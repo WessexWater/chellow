@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-import chellow.rcrc
+import chellow.e.rcrc
 from chellow.utils import utc_datetime
 
 
@@ -21,7 +21,7 @@ def test_find_month(mocker):
         "01/08/2021,R2,5,-1.28305913589198066773000021177835039894",
         "01/08/2021,R2,6,-.6408956777419324991224936393556405604168",
     )
-    month_rcrcs = chellow.rcrc._find_month(lines, month_start, month_finish)
+    month_rcrcs = chellow.e.rcrc._find_month(lines, month_start, month_finish)
     assert month_rcrcs == {
         "01 00:00 Z": Decimal("2.1271484975872792834093396067986896815"),
         "01 00:30 Z": Decimal("-0.4065095844876174993727440865488313478716"),

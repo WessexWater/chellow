@@ -10,10 +10,10 @@ from flask import g, request
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
-import chellow.computer
 import chellow.dloads
-import chellow.duos
-import chellow.triad
+import chellow.e.computer
+import chellow.e.duos
+import chellow.e.triad
 from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
 from chellow.utils import (
     HH,

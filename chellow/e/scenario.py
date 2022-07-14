@@ -7,7 +7,7 @@ from sqlalchemy import null, or_, true
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.computer import SiteSource, SupplySource
+from chellow.e.computer import SiteSource, SupplySource
 from chellow.models import Era, Pc, SiteEra, Source, Supply
 from chellow.utils import (
     c_months_u,

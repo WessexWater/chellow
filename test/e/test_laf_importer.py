@@ -2,7 +2,7 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 from zipfile import ZipFile
 
-import chellow.laf_import
+import chellow.e.laf_import
 from chellow.models import (
     Contract,
     MarketRole,
@@ -42,7 +42,7 @@ SPL|1|1.074
 ZPT|40672767|423780412"""
     )
     csv_dt = utc_datetime(2021, 9, 1)
-    actual = list(chellow.laf_import.laf_days(sess, progress, csv_file, csv_dt))
+    actual = list(chellow.e.laf_import.laf_days(sess, progress, csv_file, csv_dt))
     expected = [([1], [utc_datetime(2021, 9, 21, 23, 0)], [Decimal("1.074")])]
     assert actual == expected
 
@@ -57,7 +57,7 @@ def test_process_empty_file(sess):
     zf.writestr("llfipnl20210922.ptf", "")
     zf.close()
     f.seek(0)
-    chellow.laf_import._process(sess, progress, f)
+    chellow.e.laf_import._process(sess, progress, f)
 
 
 def test_process(sess):
@@ -91,4 +91,4 @@ ZPT|40672767|423780412"""
     zf.writestr("llfipnl20210922.ptf", csv_str)
     zf.close()
     f.seek(0)
-    chellow.laf_import._process(sess, progress, f)
+    chellow.e.laf_import._process(sess, progress, f)

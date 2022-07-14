@@ -1,11 +1,11 @@
 from decimal import Decimal
 
-from chellow.aahedc import hh
+from chellow.e.aahedc import hh
 from chellow.utils import ct_datetime, to_utc
 
 
 def test_hh(sess, mocker):
-    mocker.patch("chellow.aahedc.get_non_core_contract_id", return_value=0)
+    mocker.patch("chellow.e.aahedc.get_non_core_contract_id", return_value=0)
     mock_ss = mocker.Mock()
     mock_ss.caches = {}
     datum = {"gsp-kwh": 1, "start-date": to_utc(ct_datetime(2020, 1, 1))}

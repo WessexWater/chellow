@@ -8,7 +8,7 @@ from pkgutil import iter_modules
 from werkzeug.exceptions import BadRequest
 
 import chellow
-import chellow.bill_parser_engie_xls
+import chellow.e.bill_parsers.engie_xls
 from chellow.models import (
     Batch,
     BatchFile,

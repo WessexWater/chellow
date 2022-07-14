@@ -142,7 +142,7 @@ def test_process_supply(sess):
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     supplier_charge_script = """
-import chellow.ccl
+import chellow.e.ccl
 from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill(ds):
@@ -283,7 +283,7 @@ def virtual_bill(ds):
     supply_id = supply.id
     bill_ids = {bill.id}
     forecast_date = utc_datetime(2020, 7, 10)
-    vbf = chellow.computer.contract_func(
+    vbf = chellow.e.computer.contract_func(
         report_context, supplier_contract, "virtual_bill"
     )
     virtual_bill_titles = [

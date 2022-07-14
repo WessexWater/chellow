@@ -2,7 +2,7 @@ from collections import defaultdict
 
 import pytest
 
-import chellow.duos
+import chellow.e.duos
 from chellow.models import (
     Comm,
     Contract,
@@ -110,7 +110,7 @@ def test_duos_availability_from_to(mocker, sess):
         "imp-msp-kvarh": 0,
         "exp-msp-kvarh": 0,
     }
-    chellow.duos.datum_2010_04_01(ds, hh)
+    chellow.e.duos.datum_2010_04_01(ds, hh)
 
     ds.get_data_sources.assert_called_with(month_from, month_to)
 
@@ -183,7 +183,7 @@ def test_lafs_hist(mocker, sess):
         "imp-msp-kvarh": 0,
         "exp-msp-kvarh": 0,
     }
-    chellow.duos.datum_2012_02_23(ds, hh)
+    chellow.e.duos.datum_2012_02_23(ds, hh)
 
     assert caches["dno"]["22"]["lafs"]["510"][start_date] == hist_laf
 
@@ -259,7 +259,7 @@ def test_lafs_forecast_none(mocker, sess):
         match="Missing LAF for DNO 22 and LLFC 510 and timestamps 2019-02-28 23:30, "
         "2018-02-28 23:30 and 2018-02-28 23:30",
     ):
-        chellow.duos.datum_2012_02_23(ds, hh)
+        chellow.e.duos.datum_2012_02_23(ds, hh)
 
 
 def test_lafs_forecast(mocker, sess):
@@ -332,7 +332,7 @@ def test_lafs_forecast(mocker, sess):
         "imp-msp-kvarh": 0,
         "exp-msp-kvarh": 0,
     }
-    chellow.duos.datum_2012_02_23(ds, hh)
+    chellow.e.duos.datum_2012_02_23(ds, hh)
 
 
 def test_SiteSource(sess):
@@ -477,7 +477,7 @@ def test_SiteSource(sess):
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     finish_date = utc_datetime(2009, 8, 31, 22, 30)
     forecast_date = utc_datetime(2019, 8, 31, 22, 30)
-    ss = chellow.computer.SiteSource(
+    ss = chellow.e.computer.SiteSource(
         sess, site, start_date, finish_date, forecast_date, caches, era=era
     )
-    chellow.duos.duos_vb(ss)
+    chellow.e.duos.duos_vb(ss)

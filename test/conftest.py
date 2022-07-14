@@ -34,8 +34,8 @@ def fresh_db():
 @pytest.fixture
 def app():
     fresh_db()
-    chellow.bill_importer.import_id = 0
-    chellow.bill_importer.imports.clear()
+    chellow.e.bill_importer.import_id = 0
+    chellow.e.bill_importer.imports.clear()
     return create_app(testing=True)
 
 

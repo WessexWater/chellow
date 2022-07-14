@@ -10,6 +10,7 @@ from utils import match
 
 from zish import loads
 
+from chellow.e.scenario import make_site_deltas
 from chellow.models import (
     BillType,
     Comm,
@@ -39,7 +40,6 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.reports.report_247 import _make_calcs, content
-from chellow.scenario import make_site_deltas
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
@@ -387,7 +387,7 @@ def virtual_bill(ds):
     comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
-import chellow.ccl
+import chellow.e.ccl
 from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
@@ -1564,7 +1564,7 @@ def virtual_bill(ds):
     comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
-import chellow.ccl
+import chellow.e.ccl
 from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
@@ -1895,7 +1895,7 @@ def virtual_bill(ds):
     comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
-import chellow.ccl
+import chellow.e.ccl
 from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
@@ -2770,7 +2770,7 @@ def virtual_bill(ds):
     comm = Comm.get_by_code(sess, "GSM")
 
     supplier_charge_script = """
-import chellow.ccl
+import chellow.e.ccl
 from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():

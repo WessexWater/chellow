@@ -22,9 +22,7 @@ from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dno_rate_parser
 import chellow.gas.bill_import
-import chellow.mdd_importer
 from chellow.models import (
     BillType,
     Contract,

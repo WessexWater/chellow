@@ -1,7 +1,7 @@
 from io import BytesIO
 
 import chellow
-import chellow.bill_parser_csv
+import chellow.e.bill_parsers.csv
 
 
 def test_bill_parser_csv():
@@ -112,7 +112,7 @@ def test_bill_parser_csv():
         line = ",".join(vals)
         f.write(f"{line}\n".encode("utf8"))
     f.seek(0)
-    parser = chellow.bill_parser_csv.Parser(f)
+    parser = chellow.e.bill_parsers.csv.Parser(f)
     for bill in parser.make_raw_bills():
         for read in bill["reads"]:
             for k in ("prev_date", "pres_date"):

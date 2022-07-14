@@ -17,9 +17,10 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
-from chellow.computer import SupplySource, contract_func, datum_range, displaced_era
+import chellow.e.computer
+from chellow.e.computer import SupplySource, contract_func, datum_range, displaced_era
+from chellow.e.scenario import make_site_deltas
 from chellow.models import (
     Bill,
     Contract,
@@ -38,7 +39,6 @@ from chellow.models import (
     Tpr,
     User,
 )
-from chellow.scenario import make_site_deltas
 from chellow.utils import (
     HH,
     PropDict,
@@ -124,7 +124,7 @@ def _process_site(
     )
 
     site_month_data = defaultdict(int)
-    site_ds = chellow.computer.SiteSource(
+    site_ds = chellow.e.computer.SiteSource(
         sess,
         site,
         start_date,
@@ -162,7 +162,7 @@ def _process_site(
         )
 
         disp_supplier_contract = displaced_era.imp_supplier_contract
-        disp_vb_function = chellow.computer.contract_func(
+        disp_vb_function = chellow.e.computer.contract_func(
             report_context, disp_supplier_contract, "displaced_virtual_bill"
         )
         if disp_vb_function is None:
@@ -741,7 +741,7 @@ def content(
             forecast_from = None
 
         if forecast_from is None:
-            forecast_from = chellow.computer.forecast_date()
+            forecast_from = chellow.e.computer.forecast_date()
         else:
             forecast_from = to_utc(forecast_from)
 
@@ -896,7 +896,7 @@ def content(
             if supply_id is not None:
                 conts = conts.filter(Era.supply_id == supply_id)
             for cont in conts:
-                title_func = chellow.computer.contract_func(
+                title_func = chellow.e.computer.contract_func(
                     report_context, cont, "virtual_bill_titles"
                 )
                 if title_func is None:
