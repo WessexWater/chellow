@@ -1,14 +1,11 @@
 from collections import defaultdict
-from datetime import datetime as Datetime
-from decimal import Decimal, InvalidOperation
-from io import StringIO
+from decimal import Decimal
 
-from dateutil.relativedelta import relativedelta
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import EdiParser, SEGMENTS
-from chellow.utils import HH, to_ct, to_utc
+from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
+from chellow.utils import HH
 
 
 read_type_map = {
@@ -84,351 +81,333 @@ TCOD_MAP = {
 }
 
 
-def _to_date(component):
-    return to_utc(to_ct(Datetime.strptime(component, "%y%m%d")))
+def _process_BCD(elements, headers):
+    issue_date = to_date(elements["IVDT"][0])
+    reference = elements["INVN"][0]
+    bill_type_code = elements["BTCD"][0]
+
+    headers["issue_date"] = issue_date
+    headers["bill_type_code"] = bill_type_code
+    headers["reference"] = reference
 
 
-def _to_decimal(components, divisor=None):
-    comp_0 = components[0]
+def _process_CCD1(elements, headers):
+    pres_read_date = to_finish_date(elements["PRDT"][0])
+
+    prev_read_date = to_finish_date(elements["PVDT"][0])
+
+    m = elements["MLOC"][0]
+    mpan = " ".join((m[13:15], m[15:18], m[18:], m[:2], m[2:6], m[6:10], m[10:13]))
+
+    prrd = elements["PRRD"]
+    pres_read_type = read_type_map[prrd[1]]
+    prev_read_type = read_type_map[prrd[3]]
+
+    coefficient = Decimal(elements["ADJF"][1]) / Decimal(100000)
+    pres_reading_value = Decimal(prrd[0])
+    prev_reading_value = Decimal(prrd[2])
+    msn = elements["MTNR"][0]
+    tpr_code = elements["TMOD"][0]
+    if tpr_code == "kW":
+        units = "kW"
+        tpr_code = None
+    elif tpr_code == "kVA":
+        units = "kVA"
+        tpr_code = None
+    else:
+        units = "kWh"
 
     try:
-        result = Decimal(comp_0)
-    except InvalidOperation as e:
-        raise BadRequest(
-            "Can't parse '"
-            + str(comp_0)
-            + "' of "
-            + str(components)
-            + " as a decimal:"
-            + str(e)
-        )
+        reads = headers["reads"]
+    except KeyError:
+        reads = headers["reads"] = []
 
-    if len(components) > 1 and components[-1] == "R":
-        result *= Decimal("-1")
+    reads.append(
+        {
+            "msn": msn,
+            "mpan": mpan,
+            "coefficient": coefficient,
+            "units": units,
+            "tpr_code": tpr_code,
+            "prev_date": prev_read_date,
+            "prev_value": prev_reading_value,
+            "prev_type_code": prev_read_type,
+            "pres_date": pres_read_date,
+            "pres_value": pres_reading_value,
+            "pres_type_code": pres_read_type,
+        }
+    )
 
-    if divisor is not None:
-        result /= Decimal(divisor)
 
-    return result
+def _process_CCD2(elements, headers):
+    breakdown = defaultdict(int)
+
+    element_code = elements["TCOD"][0]
+    try:
+        eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
+    except KeyError:
+        raise BadRequest(f"Can't find the element code {element_code} in the TCOD_MAP.")
+
+    m = elements["MLOC"][0]
+    mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
+
+    cons = elements["CONS"]
+    kwh = Decimal("0")
+    if eln_cons is not None and len(cons[0]) > 0:
+        el_cons = to_decimal(cons) / Decimal("1000")
+        if eln_gbp == "duos-availability-gbp":
+            breakdown[eln_cons] = [el_cons]
+        else:
+            breakdown[eln_cons] = kwh = el_cons
+
+    if eln_rate is not None:
+        rate = to_decimal(elements["BPRI"]) / Decimal("100000")
+        breakdown[eln_rate] = [rate]
+
+    start_date = to_date(elements["CSDT"][0])
+    headers["bill_start_date"] = start_date
+
+    finish_date = to_date(elements["CEDT"][0]) - HH
+    headers["bill_finish_date"] = finish_date
+
+    if "CTOT" in elements:
+        net = Decimal("0.00") + to_decimal(elements["CTOT"]) / Decimal("100")
+    else:
+        net = Decimal("0.00")
+
+    breakdown[eln_gbp] = net
+
+    headers["mpan_core"] = mpan_core
+
+    try:
+        reads = headers["reads"]
+        del headers["reads"][:]
+    except KeyError:
+        reads = []
+
+    return {
+        "bill_type_code": headers["bill_type_code"],
+        "reference": headers["reference"] + "_" + eln_gbp[:-4],
+        "issue_date": headers["issue_date"],
+        "mpan_core": mpan_core,
+        "account": mpan_core,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0"),
+        "net": net,
+        "vat": Decimal("0.00"),
+        "gross": net,
+        "breakdown": breakdown,
+        "reads": reads,
+    }
 
 
-def _find_elements(code, elements):
-    segment_name = code + elements[1][0] if code == "CCD" else code
-    elem_codes = [m["code"] for m in SEGMENTS[segment_name]["elements"]]
-    return dict(zip(elem_codes, elements))
+def _process_CCD3(elements, headers):
+    breakdown = defaultdict(int)
+
+    element_code = elements["TCOD"][0]
+    try:
+        eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
+    except KeyError:
+        raise BadRequest(f"Can't find the element code {element_code} in the TCOD_MAP.")
+
+    m = elements["MLOC"][0]
+    mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
+
+    cons = elements["CONS"]
+    if eln_cons is not None and len(cons[0]) > 0:
+        el_cons = to_decimal(cons) / Decimal("1000")
+        breakdown[eln_cons] = kwh = el_cons
+    else:
+        kwh = Decimal("0")
+
+    if eln_rate is not None:
+        rate = to_decimal(elements["BPRI"]) / Decimal("100000")
+        breakdown[eln_rate] = [rate]
+
+    start_date = to_date(elements["CSDT"][0])
+    headers["bill_start_date"] = start_date
+
+    finish_date = to_date(elements["CEDT"][0]) - HH
+    headers["bill_finish_date"] = finish_date
+
+    if "CTOT" in elements:
+        net = Decimal("0.00") + to_decimal(elements["CTOT"]) / Decimal("100")
+    else:
+        net = Decimal("0.00")
+
+    breakdown[eln_gbp] = net
+
+    headers["mpan_core"] = mpan_core
+
+    try:
+        reads = headers["reads"]
+        del headers["reads"][:]
+    except KeyError:
+        reads = []
+
+    return {
+        "bill_type_code": headers["bill_type_code"],
+        "issue_date": headers["issue_date"],
+        "reference": headers["reference"],
+        "mpan_core": mpan_core,
+        "account": mpan_core,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "net": net,
+        "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0"),
+        "vat": Decimal("0.00"),
+        "gross": net,
+        "breakdown": breakdown,
+        "reads": reads,
+    }
+
+
+def _process_CCD4(elements, headers):
+    breakdown = defaultdict(int)
+
+    element_code = elements["TCOD"][0]
+    try:
+        eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
+    except KeyError:
+        raise BadRequest(f"Can't find the element code {element_code} in the TCOD_MAP.")
+
+    m = elements["MLOC"][0]
+    mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
+
+    cons = elements["CONS"]
+    if eln_cons is not None and len(cons[0]) > 0:
+        el_cons = to_decimal(cons, "1000")
+        breakdown[eln_cons] = kwh = el_cons
+
+    if eln_rate is not None:
+        rate = to_decimal(elements["BPRI"], "100000")
+        breakdown[eln_rate] = [rate]
+
+    start_date = to_date(elements["CSDT"][0])
+    headers["bill_start_date"] = start_date
+
+    finish_date = to_date(elements["CEDT"][0]) - HH
+    headers["bill_finish_date"] = finish_date
+
+    if "CTOT" in elements:
+        net = Decimal("0.00") + to_decimal(elements["CTOT"], "100")
+    else:
+        net = Decimal("0.00")
+
+    breakdown[eln_gbp] = net
+
+    headers["mpan_core"] = mpan_core
+
+    try:
+        reads = headers["reads"]
+        del headers["reads"][:]
+    except KeyError:
+        reads = []
+
+    return {
+        "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0.00"),
+        "reference": headers["reference"] + "_" + eln_gbp[:-4],
+        "issue_date": headers["issue_date"],
+        "mpan_core": mpan_core,
+        "account": mpan_core,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "net": net,
+        "vat": Decimal("0.00"),
+        "gross": net,
+        "breakdown": breakdown,
+        "reads": reads,
+        "bill_type_code": headers["bill_type_code"],
+    }
+
+
+def _process_MHD(elements, headers):
+    message_type = elements["TYPE"][0]
+    if message_type == "UTLBIL":
+        pass
+
+
+def _process_MTR(elements, headers):
+    headers.clear()
+
+
+def _process_VAT(elements, headers):
+    vat = Decimal("0.00") + to_decimal(elements["UVTT"]) / Decimal("100")
+
+    return {
+        "bill_type_code": headers["bill_type_code"],
+        "account": headers["mpan_core"],
+        "mpan_core": headers["mpan_core"],
+        "reference": headers["reference"] + "_vat",
+        "issue_date": headers["issue_date"],
+        "start_date": headers["bill_start_date"],
+        "finish_date": headers["bill_finish_date"],
+        "kwh": Decimal("0.00"),
+        "net": Decimal("0.00"),
+        "vat": vat,
+        "gross": vat,
+        "breakdown": {},
+        "reads": [],
+    }
+
+
+def _process_NOOP(elements, headers):
+    pass
+
+
+CODE_FUNCS = {
+    "BCD": _process_BCD,
+    "BTL": _process_NOOP,
+    "CCD1": _process_CCD1,
+    "CCD2": _process_CCD2,
+    "CCD3": _process_CCD3,
+    "CCD4": _process_CCD4,
+    "CDT": _process_NOOP,
+    "CLO": _process_NOOP,
+    "DNA": _process_NOOP,
+    "END": _process_NOOP,
+    "FIL": _process_NOOP,
+    "MAN": _process_NOOP,
+    "MHD": _process_MHD,
+    "MTR": _process_MTR,
+    "SDT": _process_NOOP,
+    "STX": _process_NOOP,
+    "TYP": _process_NOOP,
+    "TTL": _process_NOOP,
+    "VAT": _process_VAT,
+    "VTS": _process_NOOP,
+}
 
 
 class Parser:
     def __init__(self, f):
-        self.parser = EdiParser(StringIO(str(f.read(), "utf-8", errors="ignore")))
+        self.edi_str = str(f.read(), "utf-8", errors="ignore")
         self.line_number = None
 
     def make_raw_bills(self):
-        raw_bills = []
+        bills = []
         headers = {}
-        for self.line_number, code in enumerate(self.parser):
-            elements = _find_elements(code, self.parser.elements)
-            line = self.parser.line
+        bill = None
+        for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
+
             try:
-                bill = _process_segment(code, elements, line, headers)
+                func = CODE_FUNCS[seg_name]
+            except KeyError:
+                raise BadRequest(f"Code {seg_name} not recognized.")
+
+            try:
+                bill = func(elements, headers)
             except BadRequest as e:
-                raise BadRequest("Can't parse the line: " + line + " :" + e.description)
+                raise BadRequest(
+                    f"{e.description} on line {self.line_number} line {line} "
+                    f"seg_name {seg_name} elements {elements}"
+                )
+
+            if "breakdown" in headers:
+                headers["breakdown"]["raw-lines"].append(line)
+
             if bill is not None:
-                raw_bills.append(bill)
-        return raw_bills
+                bills.append(bill)
 
-
-def _process_segment(code, elements, line, headers):
-    if code == "BCD":
-        issue_date = _to_date(elements["IVDT"][0])
-        reference = elements["INVN"][0]
-        bill_type_code = elements["BTCD"][0]
-
-        sumo = elements["SUMO"]
-        start_date = _to_date(sumo[0])
-        finish_date = _to_date(sumo[1]) + relativedelta(days=1) - HH
-
-        headers["issue_date"] = issue_date
-        headers["bill_type_code"] = bill_type_code
-        headers["reference"] = reference
-
-    elif code == "MHD":
-        message_type = elements["TYPE"][0]
-        if message_type == "UTLBIL":
-            pass
-
-    elif code == "CCD":
-        consumption_charge_indicator = elements["CCDE"][0]
-
-        if consumption_charge_indicator == "1":
-            pres_read_date = _to_date(elements["PRDT"][0]) + relativedelta(days=1) - HH
-
-            prev_read_date = _to_date(elements["PVDT"][0]) + relativedelta(days=1) - HH
-
-            m = elements["MLOC"][0]
-            mpan = " ".join(
-                (m[13:15], m[15:18], m[18:], m[:2], m[2:6], m[6:10], m[10:13])
-            )
-
-            prrd = elements["PRRD"]
-            pres_read_type = read_type_map[prrd[1]]
-            prev_read_type = read_type_map[prrd[3]]
-
-            coefficient = Decimal(elements["ADJF"][1]) / Decimal(100000)
-            pres_reading_value = Decimal(prrd[0])
-            prev_reading_value = Decimal(prrd[2])
-            msn = elements["MTNR"][0]
-            tpr_code = elements["TMOD"][0]
-            if tpr_code == "kW":
-                units = "kW"
-                tpr_code = None
-            elif tpr_code == "kVA":
-                units = "kVA"
-                tpr_code = None
-            else:
-                units = "kWh"
-                kwh = _to_decimal(elements["CONS"], "1000")
-
-            try:
-                reads = headers["reads"]
-            except KeyError:
-                reads = headers["reads"] = []
-
-            reads.append(
-                {
-                    "msn": msn,
-                    "mpan": mpan,
-                    "coefficient": coefficient,
-                    "units": units,
-                    "tpr_code": tpr_code,
-                    "prev_date": prev_read_date,
-                    "prev_value": prev_reading_value,
-                    "prev_type_code": prev_read_type,
-                    "pres_date": pres_read_date,
-                    "pres_value": pres_reading_value,
-                    "pres_type_code": pres_read_type,
-                }
-            )
-
-        elif consumption_charge_indicator == "2":
-            breakdown = defaultdict(int, {"raw-lines": line})
-
-            element_code = elements["TCOD"][0]
-            try:
-                eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
-            except KeyError:
-                raise BadRequest(
-                    "Can't find the element code " + element_code + " in the TCOD_MAP."
-                )
-
-            m = elements["MLOC"][0]
-            mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
-
-            cons = elements["CONS"]
-            kwh = Decimal("0")
-            if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, "1000")
-                breakdown[eln_cons] = kwh = el_cons
-
-            if eln_rate is not None:
-                rate = _to_decimal(elements["BPRI"], "100000")
-                breakdown[eln_rate] = [rate]
-
-            start_date = _to_date(elements["CSDT"][0])
-            headers["bill_start_date"] = start_date
-
-            finish_date = _to_date(elements["CEDT"][0]) - HH
-            headers["bill_finish_date"] = finish_date
-
-            if "CTOT" in elements:
-                net = Decimal("0.00") + _to_decimal(elements["CTOT"], "100")
-            else:
-                net = Decimal("0.00")
-
-            breakdown[eln_gbp] = net
-
-            headers["mpan_core"] = mpan_core
-
-            try:
-                reads = headers["reads"]
-                del headers["reads"][:]
-            except KeyError:
-                reads = []
-
-            return {
-                "bill_type_code": headers["bill_type_code"],
-                "reference": headers["reference"] + "_" + eln_gbp[:-4],
-                "issue_date": headers["issue_date"],
-                "mpan_core": mpan_core,
-                "account": mpan_core,
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0"),
-                "net": net,
-                "vat": Decimal("0.00"),
-                "gross": net,
-                "breakdown": breakdown,
-                "reads": reads,
-            }
-
-        elif consumption_charge_indicator == "3":
-            breakdown = defaultdict(int, {"raw-lines": line})
-
-            element_code = elements["TCOD"][0]
-            try:
-                eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
-            except KeyError:
-                raise BadRequest(
-                    "Can't find the element code " + element_code + " in the TCOD_MAP."
-                )
-
-            m = elements["MLOC"][0]
-            mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
-
-            cons = elements["CONS"]
-            if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, "1000")
-                breakdown[eln_cons] = kwh = el_cons
-            else:
-                kwh = Decimal("0")
-
-            if eln_rate is not None:
-                rate = _to_decimal(elements["BPRI"], "100000")
-                breakdown[eln_rate] = [rate]
-
-            start_date = _to_date(elements["CSDT"][0])
-            headers["bill_start_date"] = start_date
-
-            finish_date = _to_date(elements["CEDT"][0]) - HH
-            headers["bill_finish_date"] = finish_date
-
-            if "CTOT" in elements:
-                net = Decimal("0.00") + _to_decimal(elements["CTOT"], "100")
-            else:
-                net = Decimal("0.00")
-
-            breakdown[eln_gbp] = net
-
-            headers["mpan_core"] = mpan_core
-
-            try:
-                reads = headers["reads"]
-                del headers["reads"][:]
-            except KeyError:
-                reads = []
-
-            return {
-                "bill_type_code": headers["bill_type_code"],
-                "issue_date": headers["issue_date"],
-                "reference": headers["reference"],
-                "mpan_core": mpan_core,
-                "account": mpan_core,
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "net": net,
-                "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0"),
-                "vat": Decimal("0.00"),
-                "gross": net,
-                "breakdown": breakdown,
-                "reads": reads,
-            }
-
-        elif consumption_charge_indicator == "4":
-            breakdown = defaultdict(int, {"raw-lines": line})
-
-            element_code = elements["TCOD"][0]
-            try:
-                eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
-            except KeyError:
-                raise BadRequest(
-                    "Can't find the element code " + element_code + " in the TCOD_MAP."
-                )
-
-            m = elements["MLOC"][0]
-            mpan_core = " ".join((m[:2], m[2:6], m[6:10], m[10:]))
-
-            cons = elements["CONS"]
-            if eln_cons is not None and len(cons[0]) > 0:
-                el_cons = _to_decimal(cons, "1000")
-                breakdown[eln_cons] = kwh = el_cons
-
-            if eln_rate is not None:
-                rate = _to_decimal(elements["BPRI"], "100000")
-                breakdown[eln_rate] = [rate]
-
-            start_date = _to_date(elements["CSDT"][0])
-            headers["bill_start_date"] = start_date
-
-            finish_date = _to_date(elements["CEDT"][0]) - HH
-            headers["bill_finish_date"] = finish_date
-
-            if "CTOT" in elements:
-                net = Decimal("0.00") + _to_decimal(elements["CTOT"], "100")
-            else:
-                net = Decimal("0.00")
-
-            breakdown[eln_gbp] = net
-
-            headers["mpan_core"] = mpan_core
-
-            try:
-                reads = headers["reads"]
-                del headers["reads"][:]
-            except KeyError:
-                reads = []
-
-            return {
-                "kwh": kwh if eln_gbp == "ro-gbp" else Decimal("0.00"),
-                "reference": headers["reference"] + "_" + eln_gbp[:-4],
-                "issue_date": headers["issue_date"],
-                "mpan_core": mpan_core,
-                "account": mpan_core,
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "net": net,
-                "vat": Decimal("0.00"),
-                "gross": net,
-                "breakdown": breakdown,
-                "reads": reads,
-                "bill_type_code": headers["bill_type_code"],
-            }
-
-    elif code == "MTR":
-        headers.clear()
-
-    elif code == "MAN":
-        pass
-
-    elif code == "VAT":
-        vat = Decimal("0.00") + _to_decimal(elements["UVTT"], "100")
-
-        return {
-            "bill_type_code": headers["bill_type_code"],
-            "account": headers["mpan_core"],
-            "mpan_core": headers["mpan_core"],
-            "reference": headers["reference"] + "_vat",
-            "issue_date": headers["issue_date"],
-            "start_date": headers["bill_start_date"],
-            "finish_date": headers["bill_finish_date"],
-            "kwh": Decimal("0.00"),
-            "net": Decimal("0.00"),
-            "vat": vat,
-            "gross": vat,
-            "breakdown": {},
-            "reads": [],
-        }
-
-
-def _get_element(elements, index, line):
-    try:
-        return elements[index]
-    except IndexError:
-        raise BadRequest(
-            "The index "
-            + str(index)
-            + " is past the end of the elements "
-            + str(elements)
-            + " and line "
-            + line
-            + "."
-        )
+        return bills
