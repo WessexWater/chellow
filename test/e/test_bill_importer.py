@@ -1,6 +1,6 @@
 from flask import g, render_template
 
-from chellow.e.bill_importer import BillImport
+from chellow.e.bill_importer import BillImport, find_parser_names
 
 
 def test_status(mocker):
@@ -20,3 +20,7 @@ def test_supplier_bill_import_html(mocker, app):
             render_template(
                 "/e/supplier_bill_import.html", batch=batch, failed_bills=failed_bills
             )
+
+
+def test_find_parser_names():
+    assert len(find_parser_names()) > 0

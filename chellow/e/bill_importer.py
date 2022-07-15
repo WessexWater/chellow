@@ -27,11 +27,7 @@ imports = {}
 
 
 def find_parser_names():
-    return [
-        name[12:]
-        for _, name, _ in iter_modules(chellow.__path__)
-        if name.startswith("bill_parser_")
-    ]
+    return [name for _, name, _ in iter_modules(chellow.e.bill_parsers.__path__)]
 
 
 class BillImport(threading.Thread):
