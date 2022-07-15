@@ -1859,6 +1859,35 @@ def test_supplier_batch_get(sess, client):
     match(response, 200)
 
 
+def test_supplier_batch_post(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+    data = {"import_bills": "Import"}
+    response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
+    match(response, 303)
+
+    response = client.get("/e/supplier_bill_imports/0")
+    match(
+        response,
+        200,
+        r"All the bills have been successfully loaded and attached to the batch\.",
+    )
+
+
 def test_supplier_batch_upload_file_get(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")

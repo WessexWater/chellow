@@ -8,6 +8,7 @@ import pytest
 
 from requests.auth import _basic_auth_str
 
+
 import chellow.models
 from chellow import create_app
 from chellow.models import Session, User, UserRole, stop_sqlalchemy

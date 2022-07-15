@@ -176,7 +176,7 @@ def _process_batch_file(sess, batch_file, log_f):
         raise BadRequest("File has zero length")
 
     try:
-        imp_mod = importlib.import_module(f"chellow.bill_parser_{parser_name}")
+        imp_mod = importlib.import_module(f"chellow.e.bill_parsers.{parser_name}")
     except ImportError:
         raise BadRequest(f"Can't find a parser with the name '{parser_name}'.")
 
