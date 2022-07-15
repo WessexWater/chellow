@@ -1,4 +1,6 @@
-from chellow.e.hh_importer import https_handler
+from io import StringIO
+
+from chellow.e.hh_importer import HhDataImportProcess, https_handler
 from chellow.models import (
     Comm,
     Contract,
@@ -154,3 +156,46 @@ def test_https_handler(mocker, sess):
     ]
     assert log == expected_log
     mock_requests.get.assert_called_once()
+
+
+def test_HhDataImportProcess(sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AB Industries")
+    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "FDC Ltd.", valid_from, None, None)
+    dc_contract = Contract.insert_dc(
+        sess,
+        "Fusion DC 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    sess.commit()
+
+    process_id = 0
+    content = "#F2"
+    istream = StringIO(content)
+    file_name = "afile.df2"
+    file_size = len(content)
+    importer = HhDataImportProcess(
+        dc_contract.id, process_id, istream, file_name, file_size
+    )
+    importer.run()
+
+    assert importer.messages == []

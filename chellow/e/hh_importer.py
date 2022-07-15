@@ -66,9 +66,8 @@ class HhDataImportProcess(threading.Thread):
             sess.rollback()
             properties = contract.make_properties()
             mpan_map = properties.get("mpan_map", {})
-            parser_module = importlib.import_module(
-                "chellow.hh_parser_" + self.conv_ext[0][1:].replace(".", "_")
-            )
+            mod_name = self.conv_ext[0][1:].replace(".", "_")
+            parser_module = importlib.import_module(f"chellow.e.hh_parser_{mod_name}")
             self.converter = parser_module.create_parser(self.istream, mpan_map)
             sess.rollback()
             HhDatum.insert(sess, self.converter, contract)
@@ -76,7 +75,7 @@ class HhDataImportProcess(threading.Thread):
         except BadRequest as e:
             self.messages.append(e.description)
         except BaseException:
-            self.messages.append("Outer problem " + traceback.format_exc())
+            self.messages.append(f"Outer problem {traceback.format_exc()}")
         finally:
             if sess is not None:
                 sess.close()
