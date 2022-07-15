@@ -3554,7 +3554,7 @@ def supplier_batch_get(batch_id):
         batch_reports = None
 
     importer_ids = sorted(
-        chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+        chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
     )
     return render_template(
         "supplier_batch.html",
