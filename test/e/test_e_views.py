@@ -1881,6 +1881,29 @@ def test_supplier_batch_upload_file_get(sess, client):
     match(response, 200)
 
 
+def test_supplier_batch_file_edit_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch_file = batch.insert_file(sess, "afile.csv", b"", "csv")
+    sess.commit()
+
+    response = client.get(f"/e/supplier_batch_files/{batch_file.id}/edit")
+    match(response, 200)
+
+
 def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")

@@ -3757,7 +3757,7 @@ def supplier_batch_file_download_get(file_id):
 @e.route("/supplier_batch_files/<int:file_id>/edit")
 def supplier_batch_file_edit_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
-    parser_names = chellow.bill_importer.find_parser_names()
+    parser_names = chellow.e.bill_importer.find_parser_names()
     return render_template(
         "supplier_batch_file_edit.html",
         batch_file=batch_file,

@@ -913,11 +913,8 @@ class Batch(Base, PersistentClass):
         except SQLAlchemyError:
             sess.rollback()
             raise BadRequest(
-                "There's already a batch attached to the contract "
-                + self.contract.name
-                + " with the reference "
-                + reference
-                + "."
+                f"There's already a batch attached to the contract "
+                f"{self.contract.name} with the reference {reference}."
             )
 
     def delete(self, sess):
