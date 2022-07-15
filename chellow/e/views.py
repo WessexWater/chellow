@@ -3686,7 +3686,7 @@ def supplier_batch_post(batch_id):
 @e.route("/supplier_batches/<int:batch_id>/upload_file")
 def supplier_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-    parser_names = chellow.bill_importer.find_parser_names()
+    parser_names = chellow.e.bill_importer.find_parser_names()
     bf = (
         g.sess.query(BatchFile)
         .join(Batch)
