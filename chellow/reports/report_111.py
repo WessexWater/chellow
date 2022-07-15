@@ -21,7 +21,7 @@ from werkzeug.exceptions import BadRequest
 from zish import ZishLocationException, loads
 
 import chellow.dloads
-import chellow.e.computer
+from chellow.e.computer import contract_func
 from chellow.models import (
     Batch,
     Bill,
@@ -102,7 +102,7 @@ def content(
     fname_additional,
 ):
     caches = {}
-    tmp_file = sess = supply_id = None
+    tmp_file = sess = supply_id = report_run = None
     forecast_date = to_utc(Datetime.max)
 
     try:
@@ -158,13 +158,13 @@ def content(
                 Bill.finish_date >= start_date,
             )
 
-        vbf = chellow.computer.contract_func(caches, contract, "virtual_bill")
+        vbf = contract_func(caches, contract, "virtual_bill")
         if vbf is None:
             raise BadRequest(
                 f"The contract {contract.name} doesn't have a function virtual_bill."
             )
 
-        virtual_bill_titles_func = chellow.computer.contract_func(
+        virtual_bill_titles_func = contract_func(
             caches, contract, "virtual_bill_titles"
         )
         if virtual_bill_titles_func is None:
@@ -243,8 +243,9 @@ def content(
     finally:
         if sess is not None:
             sess.close()
-        tmp_file.close()
-        os.rename(running_name, finished_name)
+        if tmp_file is not None:
+            tmp_file.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
