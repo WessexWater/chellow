@@ -260,7 +260,13 @@ def _process_site(
                         f"The supplier contract {imp_supplier_contract.name} "
                         " doesn't have the virtual_bill() function."
                     )
-                import_vb_function(imp_ss)
+                try:
+                    import_vb_function(imp_ss)
+                except AttributeError as e:
+                    raise BadRequest(
+                        f"Problem with virtual bill of supplier contract "
+                        f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
+                    )
 
             kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
             imp_supplier_bill = imp_ss.supplier_bill
@@ -305,7 +311,13 @@ def _process_site(
                 export_vb_function = contract_func(
                     report_context, exp_supplier_contract, "virtual_bill"
                 )
-                export_vb_function(exp_ss)
+                try:
+                    export_vb_function(exp_ss)
+                except AttributeError as e:
+                    raise BadRequest(
+                        f"Problem with virtual bill of supplier contract "
+                        f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
+                    )
 
             kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
             exp_supplier_bill = exp_ss.supplier_bill
@@ -343,15 +355,26 @@ def _process_site(
 
         sss = exp_ss if imp_ss is None else imp_ss
         dc_contract = sss.dc_contract
-        if dc_contract is not None:
-            sss.contract_func(dc_contract, "virtual_bill")(sss)
+        dc_vb_func = sss.contract_func(dc_contract, "virtual_bill")
+        try:
+            dc_vb_func(sss)
+        except AttributeError as e:
+            raise BadRequest(
+                f"Problem with virtual bill of DC contract {dc_contract.id} {e} "
+                f"{traceback.format_exc()}"
+            )
         dc_bill = sss.dc_bill
         gbp = dc_bill["net-gbp"]
 
         mop_contract = sss.mop_contract
-        if mop_contract is not None:
-            mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
+        mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
+        try:
             mop_bill_function(sss)
+        except (AttributeError, NameError) as e:
+            raise BadRequest(
+                f"Problem with virtual bill of MOP contract {mop_contract.id} {e} "
+                f"{traceback.format_exc()}"
+            )
         mop_bill = sss.mop_bill
         gbp += mop_bill["net-gbp"]
 

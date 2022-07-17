@@ -44,14 +44,14 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
         earliest_triad = hh_min(earliest_triad, dt)
         try:
             d = next(ds.get_data_sources(dt, dt, financial_year_start))
-            chellow.duos.duos_vb(d)
+            chellow.e.duos.duos_vb(d)
             triad_hh = d.hh_data[0]
 
             while dt < financial_year_start:
                 dt += relativedelta(years=1)
 
             for d in ds.get_data_sources(dt, dt, financial_year_start):
-                chellow.duos.duos_vb(d)
+                chellow.e.duos.duos_vb(d)
                 datum = d.hh_data[0]
                 triad_hh["laf"] = datum["laf"]
                 triad_hh["gsp-kw"] = datum["laf"] * triad_hh["msp-kw"]
@@ -133,7 +133,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
                     ds.supplier_contract is None
                     or d.supplier_contract == ds.supplier_contract
                 ):
-                    chellow.duos.duos_vb(d)
+                    chellow.e.duos.duos_vb(d)
                     thh = d.hh_data[0]
                 else:
                     thh = {
@@ -163,7 +163,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
                     ds.supplier_contract is None
                     or d.supplier_contract == ds.supplier_contract
                 ):
-                    chellow.duos.duos_vb(d)
+                    chellow.e.duos.duos_vb(d)
                     thh["laf"] = d.hh_data[0]["laf"]
                     thh["gsp-kw"] = thh["laf"] * thh["msp-kw"]
             except StopIteration:
