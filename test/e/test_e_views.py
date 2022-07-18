@@ -2209,6 +2209,28 @@ def test_supplier_contract_add_rate_script(client, sess):
     assert finish_rate_script.finish_date is None
 
 
+def test_supplier_rate_script_edit_get(client, sess):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    rate_script = supplier_contract.rate_scripts[0]
+    sess.commit()
+
+    response = client.get(f"/e/supplier_rate_scripts/{rate_script.id}/edit")
+    match(response, 200)
+
+
 def test_supply_edit_post(client, sess):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

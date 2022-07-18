@@ -4156,7 +4156,7 @@ def supplier_rate_script_get(rate_script_id):
 @e.route("/supplier_rate_scripts/<int:rate_script_id>/edit")
 def supplier_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
-    rs_example_func = chellow.computer.contract_func(
+    rs_example_func = chellow.e.computer.contract_func(
         {}, rate_script.contract, "rate_script_example"
     )
     rs_example = None if rs_example_func is None else rs_example_func()
