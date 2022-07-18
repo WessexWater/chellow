@@ -3664,14 +3664,14 @@ def supplier_batch_post(batch_id):
         elif "delete_import_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
             g.sess.commit()
-            import_id = chellow.bill_importer.start_bill_import(batch)
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/supplier_bill_imports/{import_id}", 303)
     except BadRequest as e:
         flash(e.description)
         importer_ids = sorted(
-            chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+            chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
         )
-        parser_names = chellow.bill_importer.find_parser_names()
+        parser_names = chellow.e.bill_importer.find_parser_names()
         return make_response(
             render_template(
                 "supplier_batch.html",
