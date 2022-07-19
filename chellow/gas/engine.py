@@ -216,14 +216,17 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
         d_cache[finish_date] = datum_tuple
         return datum_tuple
 
+    def g_rates(self, g_contract_id_or_name, date):
+        return g_rates(self.sess, self.caches, g_contract_id_or_name, date)
+
 
 ACTUAL_READ_TYPES = ["A", "C", "S"]
 CORRECTION_FACTOR = 1.02264
 
 
-def g_rates(sess, caches, g_contract_id, date):
+def g_rates(sess, caches, g_contract_id_or_name, date):
     try:
-        return caches["g_engine"]["rates"][g_contract_id][date]
+        return caches["g_engine"]["rates"][g_contract_id_or_name][date]
     except KeyError:
         try:
             ccache = caches["g_engine"]
@@ -236,16 +239,22 @@ def g_rates(sess, caches, g_contract_id, date):
             rss_cache = ccache["rates"] = {}
 
         try:
-            cont_cache = rss_cache[g_contract_id]
+            cont_cache = rss_cache[g_contract_id_or_name]
         except KeyError:
-            cont_cache = rss_cache[g_contract_id] = {}
+            cont_cache = rss_cache[g_contract_id_or_name] = {}
 
         try:
             return cont_cache[date]
         except KeyError:
+            if isinstance(g_contract_id_or_name, int):
+                g_contract = GContract.get_by_id(sess, g_contract_id_or_name)
+            elif isinstance(g_contract_id_or_name, str):
+                g_contract = GContract.get_by_name(sess, g_contract_id_or_name)
+            else:
+                raise BadRequest("g_contract_id_or_name must be an int or str")
+
             month_after = date + relativedelta(months=1) + relativedelta(days=1)
             month_before = date - relativedelta(months=1) - relativedelta(days=1)
-            g_contract = GContract.get_by_id(sess, g_contract_id)
 
             rs = sess.execute(
                 select(GRateScript).where(
