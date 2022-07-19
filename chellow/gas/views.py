@@ -343,7 +343,7 @@ def batch_add_get(g_contract_id):
         select(GBatch)
         .where(GBatch.g_contract == g_contract)
         .order_by(GBatch.reference.desc())
-    )
+    ).scalars()
     return render_template("batch_add.html", g_contract=g_contract, g_batches=g_batches)
 
 

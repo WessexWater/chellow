@@ -20,7 +20,7 @@ from chellow.models import (
     insert_g_reading_frequencies,
     insert_g_units,
 )
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_batch_get_empty(client, sess):
@@ -105,6 +105,23 @@ def test_batch_get(client, sess):
     response = client.get(f"/g/batches/{g_batch.id}")
 
     match(response, 200)
+
+
+def test_batch_add_get(client, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
+    g_contract = GContract.insert(
+        sess, False, "Fusion 2020", "", {}, valid_from, None, {}
+    )
+
+    batch_reference = "b1"
+    batch_description = "Jan batch"
+    g_contract.insert_g_batch(sess, batch_reference, batch_description)
+
+    sess.commit()
+
+    response = client.get(f"/g/supplier_contracts/{g_contract.id}/add_batch")
+
+    match(response, 200, rf"{batch_reference}", rf"{batch_description}")
 
 
 def test_bill_get(client, sess):
