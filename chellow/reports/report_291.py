@@ -10,7 +10,8 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
+import chellow.dloads
+from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import (
     Era,
     MeasurementRequirement,
@@ -38,7 +39,7 @@ def content(supply_id, file_name, start_date, finish_date, user):
 
         supply = Supply.get_by_id(sess, supply_id)
 
-        forecast_date = chellow.computer.forecast_date()
+        forecast_dt = forecast_date()
 
         prev_titles = None
 
@@ -61,11 +62,11 @@ def content(supply_id, file_name, start_date, finish_date, user):
                 .one()
             )
 
-            ds = chellow.computer.SupplySource(
+            ds = SupplySource(
                 sess,
                 chunk_start,
                 chunk_finish,
-                forecast_date,
+                forecast_dt,
                 era,
                 era.imp_supplier_contract is not None,
                 caches,
@@ -160,8 +161,8 @@ def content(supply_id, file_name, start_date, finish_date, user):
                     output_line.extend([k, bill[k]])
 
             if era.exp_supplier_contract is not None:
-                ds = chellow.computer.SupplySource(
-                    sess, chunk_start, chunk_finish, forecast_date, era, False, caches
+                ds = SupplySource(
+                    sess, chunk_start, chunk_finish, forecast_dt, era, False, caches
                 )
 
                 output_line.append("")
