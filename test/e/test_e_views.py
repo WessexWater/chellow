@@ -306,6 +306,28 @@ def test_csv_sites_duration_get(client):
     match(response, 200)
 
 
+def test_dc_batch_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant.insert_party(sess, market_role_C, "Fusion", valid_from, None, None)
+    contract = Contract.insert_dc(
+        sess,
+        "Fusion DC",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    batch = contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    response = client.get(f"/e/dc_batches/{batch.id}")
+    match(response, 200)
+
+
 def test_dc_contract_edit_post_error(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")

@@ -502,7 +502,7 @@ def dc_batch_get(batch_id):
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
     importer_ids = sorted(
-        chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+        chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
     )
     fields = {"batch": batch, "bills": bills, "importer_ids": importer_ids}
     if "batch_reports" in properties:
@@ -568,7 +568,7 @@ def dc_batch_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
         if "import_bills" in request.values:
-            import_id = chellow.bill_importer.start_bill_import(batch)
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)
         elif "delete_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch == batch).delete(False)
@@ -577,14 +577,14 @@ def dc_batch_post(batch_id):
         elif "delete_import_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch == batch).delete(False)
             g.sess.commit()
-            import_id = chellow.bill_importer.start_bill_import(batch)
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/dc_bill_imports/{import_id}", 303)
     except BadRequest as e:
         flash(e.description)
         importer_ids = sorted(
-            chellow.bill_importer.get_bill_import_ids(batch), reverse=True
+            chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
         )
-        parser_names = chellow.bill_importer.find_parser_names()
+        parser_names = chellow.e.bill_importer.find_parser_names()
         return make_response(
             render_template(
                 "dc_batch.html",
