@@ -7,6 +7,7 @@ from sqlalchemy.sql.expression import select
 
 from chellow.models import (
     Contract,
+    GContract,
     Report,
     Session,
 )
@@ -61,6 +62,11 @@ class Tester(threading.Thread):
                     ).scalars():
                         _test_contract(self.log, sess, contract)
                         sess.rollback()  # Avoid long-running transaction
+                    for g_contract in sess.execute(
+                        select(GContract).order_by(GContract.id)
+                    ).scalars():
+                        _test_g_contract(self.log, sess, g_contract)
+                        sess.rollback()  # Avoid long-running transaction
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Automatic tester: A test has failed"
@@ -91,6 +97,18 @@ def _test_contract(logger, sess, contract):
     )
     code = compile(contract.charge_script, "<string>", "exec")
     ns = {"db_id": contract.id}
+    exec(code, ns)
+    if "test" in ns:
+        ns["test"]()
+
+
+def _test_g_contract(logger, sess, g_contract):
+    logger(
+        f"Starting to test gas {'industry' if g_contract.is_industry else 'supplier'} "
+        f"contract {g_contract.id} {g_contract.name}."
+    )
+    code = compile(g_contract.charge_script, "<string>", "exec")
+    ns = {"db_id": g_contract.id, "properties": g_contract.make_properties()}
     exec(code, ns)
     if "test" in ns:
         ns["test"]()
