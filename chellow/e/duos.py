@@ -708,51 +708,42 @@ def datum_2012_02_23(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-            dno_code = ds.dno_code
-            if dno_code in ("88", "99"):
-                laf_cache_llfc[start_date] = 1
-            else:
 
-                for (laf,) in ds.sess.execute(
-                    select(Laf)
-                    .join(Llfc)
-                    .join(Party)
-                    .where(
-                        Party.dno_code == ds.dno_code,
-                        Llfc.code == ds.llfc_code,
-                        Laf.timestamp >= ds.start_date,
-                        Laf.timestamp <= ds.finish_date,
-                    )
-                ):
-                    laf_cache_llfc[laf.timestamp] = float(laf.value)
+            for laf_obj in ds.sess.execute(
+                select(Laf)
+                .join(Llfc)
+                .join(Party)
+                .where(
+                    Party.dno_code == ds.dno_code,
+                    Llfc.code == ds.llfc_code,
+                    Laf.timestamp >= ds.start_date,
+                    Laf.timestamp <= ds.finish_date,
+                )
+            ).scalars():
+                laf_cache_llfc[laf_obj.timestamp] = float(laf_obj.value)
 
-            try:
-                laf = laf_cache_llfc[start_date]
-            except KeyError:
-                for cand in (hh["hist-start"], ds.forecast_date):
-                    laf_obj = ds.sess.execute(
-                        select(Laf)
-                        .join(Llfc)
-                        .join(Party)
-                        .where(
-                            Party.dno_code == ds.dno_code,
-                            Llfc.code == ds.llfc_code,
-                            Laf.timestamp == cand,
-                        )
-                    ).scalar_one_or_none()
-                    if laf_obj is not None:
-                        laf_cache_llfc[start_date] = float(laf_obj.value)
-                        break
+            lafs = {}
+            for laf_obj in ds.sess.execute(
+                select(Laf)
+                .join(Llfc)
+                .join(Party)
+                .where(
+                    Party.dno_code == ds.dno_code,
+                    Llfc.code == ds.llfc_code,
+                    Laf.timestamp >= ds.history_start,
+                    Laf.timestamp <= ds.history_finish,
+                )
+            ).scalars():
+                lafs[laf_obj.timestamp] = float(laf_obj.value)
 
-                try:
-                    laf = laf_cache_llfc[start_date]
-                except KeyError:
-                    raise BadRequest(
-                        f"Missing LAF for DNO {ds.dno_code} and LLFC {ds.llfc_code} "
-                        f"and timestamps {hh_format(start_date)}, "
-                        f"{hh_format(hh['hist-start'])} and "
-                        f"{hh_format(ds.forecast_date)}"
-                    )
+            for h in ds.hh_data:
+                hstart = h["start-date"]
+                if hstart not in laf_cache_llfc:
+                    hist_hstart = h["hist-start"]
+                    laf_value = lafs[hist_hstart] if hist_hstart in lafs else 1
+                    laf_cache_llfc[hstart] = laf_value
+
+            laf = laf_cache_llfc[start_date]
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]

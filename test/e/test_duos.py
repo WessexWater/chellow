@@ -1,7 +1,5 @@
 from collections import defaultdict
 
-import pytest
-
 import chellow.e.duos
 from chellow.models import (
     Comm,
@@ -30,7 +28,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import BadRequest, ct_datetime, hh_range, to_utc, utc_datetime
+from chellow.utils import ct_datetime, hh_range, to_utc, utc_datetime
 
 
 def test_duos_availability_from_to(mocker, sess):
@@ -116,24 +114,14 @@ def test_duos_availability_from_to(mocker, sess):
 
 
 def test_lafs_hist(mocker, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     caches = {"dno": {"22": {}}}
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     insert_voltage_levels(sess)
-    voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        to_utc(ct_datetime(1996, 1, 1)),
-        None,
-    )
+    vl = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(sess, "510", "5", vl, False, True, valid_from, None)
 
     hist_laf = 1.5
     start_date = to_utc(ct_datetime(2019, 2, 28, 23, 30))
@@ -145,6 +133,8 @@ def test_lafs_hist(mocker, sess):
     ds = mocker.Mock()
     ds.start_date = start_date
     ds.finish_date = start_date
+    ds.history_start = hist_date
+    ds.history_finish = hist_date
     ds.dno_code = "22"
     ds.gsp_group_code = "_L"
     ds.llfc_code = "510"
@@ -155,7 +145,6 @@ def test_lafs_hist(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
-    ds.hh_data = []
     dno_rates = {
         "_L": {
             "bands": {},
@@ -180,16 +169,21 @@ def test_lafs_hist(mocker, sess):
         "ct-year": 2019,
         "ct-month": 2,
         "msp-kwh": 0,
+        "msp-kw": 0,
         "imp-msp-kvarh": 0,
+        "imp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
+        "exp-msp-kvar": 0,
     }
+    ds.hh_data = [hh]
     chellow.e.duos.datum_2012_02_23(ds, hh)
 
     assert caches["dno"]["22"]["lafs"]["510"][start_date] == hist_laf
 
 
 def test_lafs_forecast_none(mocker, sess):
-    caches = {"dno": {"22": {}}}
+    dno_code = "22"
+    caches = {"dno": {dno_code: {}}}
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
     dno = participant.insert_party(
@@ -197,9 +191,10 @@ def test_lafs_forecast_none(mocker, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc_code = "510"
     dno.insert_llfc(
         sess,
-        "510",
+        llfc_code,
         "PC 5-8 & HH HV",
         voltage_level,
         False,
@@ -217,9 +212,11 @@ def test_lafs_forecast_none(mocker, sess):
     ds.forecast_date = hist_date
     ds.start_date = start_date
     ds.finish_date = start_date
-    ds.dno_code = "22"
+    ds.history_start = hist_date
+    ds.history_finish = hist_date
+    ds.dno_code = dno_code
     ds.gsp_group_code = "_L"
-    ds.llfc_code = "510"
+    ds.llfc_code = llfc_code
     ds.is_displaced = False
     ds.sc = 0
     ds.supplier_bill = defaultdict(int)
@@ -231,7 +228,7 @@ def test_lafs_forecast_none(mocker, sess):
         "_L": {
             "bands": {},
             "tariffs": {
-                "510": {
+                llfc_code: {
                     "gbp-per-kvarh": 0,
                     "green-gbp-per-kwh": 0,
                     "gbp-per-mpan-per-day": 0,
@@ -251,36 +248,27 @@ def test_lafs_forecast_none(mocker, sess):
         "ct-year": 2019,
         "ct-month": 2,
         "msp-kwh": 0,
+        "msp-kw": 0,
         "imp-msp-kvarh": 0,
+        "imp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
+        "exp-msp-kvar": 0,
     }
-    with pytest.raises(
-        BadRequest,
-        match="Missing LAF for DNO 22 and LLFC 510 and timestamps 2019-02-28 23:30, "
-        "2018-02-28 23:30 and 2018-02-28 23:30",
-    ):
-        chellow.e.duos.datum_2012_02_23(ds, hh)
+    ds.hh_data = [hh]
+    chellow.e.duos.datum_2012_02_23(ds, hh)
+
+    assert caches["dno"][dno_code]["lafs"][llfc_code][start_date] == 1
 
 
 def test_lafs_forecast(mocker, sess):
+    valid_from = to_utc(ct_datetime(2000, 1, 1))
     caches = {"dno": {"22": {}}}
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", to_utc(ct_datetime(2000, 1, 1)), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
     insert_voltage_levels(sess)
-    voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        to_utc(ct_datetime(1996, 1, 1)),
-        None,
-    )
+    vl = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(sess, "510", "HV", vl, False, True, valid_from, None)
 
     forecast_date = to_utc(ct_datetime(2018, 5, 31, 23, 30))
     llfc.insert_laf(sess, forecast_date, 1.4)
@@ -293,6 +281,8 @@ def test_lafs_forecast(mocker, sess):
     ds = mocker.Mock()
     ds.start_date = start_date
     ds.finish_date = start_date
+    ds.history_start = hist_date
+    ds.history_finish = hist_date
     ds.forecast_date = forecast_date
     ds.dno_code = "22"
     ds.gsp_group_code = "_L"
@@ -304,7 +294,6 @@ def test_lafs_forecast(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
-    ds.hh_data = []
     dno_rates = {
         "_L": {
             "bands": {},
@@ -329,9 +318,13 @@ def test_lafs_forecast(mocker, sess):
         "ct-year": 2019,
         "ct-month": 2,
         "msp-kwh": 0,
+        "msp-kw": 0,
         "imp-msp-kvarh": 0,
+        "imp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
+        "exp-msp-kvar": 0,
     }
+    ds.hh_data = [hh]
     chellow.e.duos.datum_2012_02_23(ds, hh)
 
 
