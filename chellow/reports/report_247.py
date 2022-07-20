@@ -1124,6 +1124,9 @@ def _make_calcs(
     ):
 
         supply = era.supply
+        if data_source_bill is not None and supply.dno.dno_code in ("88", "99"):
+            continue
+
         if supply.generator_type is not None:
             site_gen_types.add(supply.generator_type.code)
 
