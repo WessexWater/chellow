@@ -188,7 +188,13 @@ def create_app(testing=False):
                 and (
                     method in ("GET", "HEAD")
                     or path
-                    in ("/reports/169", "/reports/187", "/reports/247", "/reports/111")
+                    in (
+                        "/reports/169",
+                        "/reports/187",
+                        "/reports/247",
+                        "/reports/111",
+                        "/reports/149",
+                    )
                 )
                 and path not in ("/system",)
             ):
