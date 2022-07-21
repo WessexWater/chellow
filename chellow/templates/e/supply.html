@@ -782,8 +782,12 @@
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
 			<legend>Monthly Duration</legend>
-			<label>Months Long</label> <input name="months" maxlength="2" size="2" value="1">
-			<label>Final Month</label> {{ input_date('finish', last_month_finish, 'month') }}
+			<label>Months Long</label>
+			{{ input_number('months', initial='1', size='2', maxlength='2', required=True) }}
+			<label>Final Month</label>
+			{{ input_date('finish', last_month_finish, 'month') }}
+			<label>Include bill check tabs?</label>
+			{{input_checkbox('is_bill_check')}}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
