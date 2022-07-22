@@ -5,16 +5,14 @@ import traceback
 
 from flask import g
 
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, select
 
 import chellow.dloads
 from chellow.models import (
     Batch,
     Bill,
-    Contract,
     GBatch,
     GBill,
-    GContract,
     Session,
     User,
 )
@@ -43,14 +41,13 @@ def content(user_id):
             "gross_gbp",
             "kwh",
             "min_start_date",
+            "max_finish_date",
         )
         writer.writerow(titles)
 
-        for batch, contract in (
-            sess.query(Batch, Contract)
-            .join(Contract)
-            .order_by(Batch.contract_id, Batch.reference)
-        ):
+        for batch in sess.execute(
+            select(Batch).order_by(Batch.contract_id, Batch.reference)
+        ).scalars():
 
             (
                 num_bills,
@@ -59,18 +56,18 @@ def content(user_id):
                 sum_gross_gbp,
                 sum_kwh,
                 min_start_date,
-            ) = (
-                sess.query(
+                max_finish_date,
+            ) = sess.execute(
+                select(
                     func.count(Bill.id),
                     func.sum(Bill.net),
                     func.sum(Bill.vat),
                     func.sum(Bill.gross),
                     func.sum(Bill.kwh),
                     func.min(Bill.start_date),
-                )
-                .filter(Bill.batch == batch)
-                .one()
-            )
+                    func.max(Bill.finish_date),
+                ).where(Bill.batch == batch)
+            ).one()
 
             if sum_net_gbp is None:
                 sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
@@ -79,13 +76,14 @@ def content(user_id):
                 "chellow_id": batch.id,
                 "reference": batch.reference,
                 "description": batch.description,
-                "contract_name": contract.name,
+                "contract_name": batch.contract.name,
                 "num_bills": num_bills,
                 "net_gbp": sum_net_gbp,
                 "vat_gbp": sum_vat_gbp,
                 "gross_gbp": sum_gross_gbp,
                 "kwh": sum_kwh,
                 "min_start_date": min_start_date,
+                "max_finish_date": max_finish_date,
             }
 
             writer.writerow(csv_make_val(vals[t]) for t in titles)
@@ -93,11 +91,9 @@ def content(user_id):
             # Avoid a long-running transaction
             sess.rollback()
 
-        for g_batch, g_contract in (
-            sess.query(GBatch, GContract)
-            .join(GContract)
-            .order_by(GBatch.g_contract_id, GBatch.reference)
-        ):
+        for g_batch in sess.execute(
+            select(GBatch).order_by(GBatch.g_contract_id, GBatch.reference)
+        ).scalars():
 
             (
                 num_bills,
@@ -106,18 +102,18 @@ def content(user_id):
                 sum_gross_gbp,
                 sum_kwh,
                 min_start_date,
-            ) = (
-                sess.query(
+                max_finish_date,
+            ) = sess.execute(
+                select(
                     func.count(GBill.id),
                     func.sum(GBill.net),
                     func.sum(GBill.vat),
                     func.sum(GBill.gross),
                     func.sum(GBill.kwh),
                     func.min(GBill.start_date),
-                )
-                .filter(GBill.g_batch == g_batch)
-                .one()
-            )
+                    func.max(GBill.finish_date),
+                ).where(GBill.g_batch == g_batch)
+            ).one()
 
             if sum_net_gbp is None:
                 sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
@@ -126,13 +122,14 @@ def content(user_id):
                 "chellow_id": g_batch.id,
                 "reference": g_batch.reference,
                 "description": g_batch.description,
-                "contract_name": g_contract.name,
+                "contract_name": g_batch.g_contract.name,
                 "num_bills": num_bills,
                 "net_gbp": sum_net_gbp,
                 "vat_gbp": sum_vat_gbp,
                 "gross_gbp": sum_gross_gbp,
                 "kwh": sum_kwh,
                 "min_start_date": min_start_date,
+                "max_finish_date": max_finish_date,
             }
 
             writer.writerow(csv_make_val(vals[t]) for t in titles)
