@@ -293,7 +293,7 @@ def g_rates(sess, caches, g_contract_id_or_name, date):
             prefix = "industry" if g_contract.is_industry else "supplier"
 
             vals = PropDict(
-                f"the rate script {chellow.utils.url_root}g/{prefix}_rate_scripts/"
+                f"the rate script {chellow.utils.url_root}/g/{prefix}_rate_scripts/"
                 f"{rs.id} ",
                 loads(rs.script),
                 [],

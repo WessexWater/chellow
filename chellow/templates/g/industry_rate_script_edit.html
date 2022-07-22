@@ -44,6 +44,23 @@
 			</fieldset>
 		</form>
 
+		{% if g_rate_script.g_contract.name == 'dn' %}
+
+			<form enctype="multipart/form-data" method="post"
+					action="/g/industry_rate_scripts/{{g_rate_script.id}}/edit">
+				<fieldset>
+					<legend>DN Rate Importer</legend>	
+					<label>
+						<a href="https://www.gasgovernance.co.uk/DNcharges">Charges Spreadsheet</a>
+					</label>
+					<input type="file" name="dn_file" size="45"
+							value="{{request.values.import_file}}">
+					<input type="submit" name="import" value="Import">
+				</fieldset>
+			</form>
+
+		{% endif %}
+
 		<form action="/g/industry_rate_scripts/{{g_rate_script.id}}/edit">
 			<fieldset>
 				<legend>Delete this Rate Script</legend>	

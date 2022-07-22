@@ -2,7 +2,7 @@ import csv
 from collections import defaultdict
 from datetime import datetime as Datetime
 from importlib import import_module
-from io import StringIO
+from io import BytesIO, StringIO
 
 
 from dateutil.relativedelta import relativedelta
@@ -23,6 +23,7 @@ from sqlalchemy.orm import joinedload
 from werkzeug.exceptions import BadRequest
 
 import chellow.gas.bill_import
+import chellow.gas.dn_rate_parser
 from chellow.models import (
     BillType,
     Contract,
@@ -1251,6 +1252,21 @@ def industry_rate_script_edit_post(g_rate_script_id):
             g_contract.delete_g_rate_script(g.sess, g_rate_script)
             g.sess.commit()
             return chellow_redirect(f"/industry_contracts/{g_contract.id}", 303)
+        elif "import" in request.form:
+            file_item = req_file("dn_file")
+
+            rates = chellow.gas.dn_rate_parser.find_rates(
+                file_item.filename, BytesIO(file_item.read())
+            )
+            g_contract.update_g_rate_script(
+                g.sess,
+                g_rate_script,
+                g_rate_script.start_date,
+                g_rate_script.finish_date,
+                rates,
+            )
+            g.sess.commit()
+            return chellow_redirect(f"/industry_rate_scripts/{g_rate_script.id}", 303)
         else:
             script = req_zish("script")
             start_date = req_date("start")
