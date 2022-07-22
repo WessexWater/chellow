@@ -2309,7 +2309,7 @@ def mop_batch_csv_get(batch_id):
 @e.route("/mop_batches/<int:batch_id>/upload_file")
 def mop_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-    parser_names = chellow.bill_importer.find_parser_names()
+    parser_names = chellow.e.bill_importer.find_parser_names()
 
     return render_template(
         "mop_batch_upload_file.html", batch=batch, parser_names=parser_names
@@ -2333,7 +2333,7 @@ def mop_batch_upload_file_post(batch_id):
         )
     except BadRequest as e:
         flash(e.description)
-        parser_names = chellow.bill_importer.find_parser_names()
+        parser_names = chellow.e.bill_importer.find_parser_names()
         return make_response(
             render_template(
                 "mop_batch_upload_file.html", batch=batch, parser_names=parser_names

@@ -1496,6 +1496,24 @@ def test_mop_batch_import_bills_full(sess, client):
     )
 
 
+def test_mop_batch_upload_file_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
+    )
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, valid_from, None, {}
+    )
+    batch = mop_contract.insert_batch(sess, "b1", "batch 1")
+    batch.insert_file(sess, "bills.csv", b"a bill", "csv")
+    sess.commit()
+
+    response = client.get(f"/e/mop_batches/{batch.id}/upload_file")
+    match(response, 200)
+
+
 def test_mop_batch_upload_file_post(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
