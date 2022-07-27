@@ -363,6 +363,20 @@ def test_dc_batch_file_get(sess, client):
     match(response, 200)
 
 
+def test_dc_batch_file_edit_get(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
+    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
+    sess.commit()
+
+    response = client.get(f"/e/dc_batch_files/{batch_file.id}/edit")
+    match(response, 200)
+
+
 def test_dc_contract_edit_post_error(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
