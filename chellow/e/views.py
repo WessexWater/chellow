@@ -708,7 +708,7 @@ def dc_batch_upload_file_post(batch_id):
 def dc_batch_file_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
     importer_ids = sorted(
-        chellow.bill_importer.get_bill_import_ids(batch_file), reverse=True
+        chellow.e.bill_importer.get_bill_import_ids(batch_file), reverse=True
     )
     return render_template(
         "dc_batch_file.html", batch_file=batch_file, importer_ids=importer_ids
