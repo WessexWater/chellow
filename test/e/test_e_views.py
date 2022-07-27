@@ -512,6 +512,29 @@ def test_dc_rate_script_add_post(sess, client):
     match(response, 303, r"/dc_rate_scripts/3")
 
 
+def test_dc_bill_import(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, valid_from, None, {}
+    )
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    data = {"import_bills": "Import Bills"}
+    response = client.post(f"/e/dc_batches/{batch.id}", data=data)
+    match(response, 303, r"/dc_bill_imports/0")
+
+    response = client.get("/e/dc_bill_imports/0")
+    match(
+        response,
+        200,
+        r"All the bills have been successfully loaded and attached to the batch\.",
+    )
+
+
 def test_dtc_meter_types(client):
     response = client.get("/e/dtc_meter_types")
 

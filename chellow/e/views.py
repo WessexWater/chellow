@@ -832,7 +832,7 @@ def dc_bill_add_post(batch_id):
 
 @e.route("/dc_bill_imports/<int:import_id>")
 def dc_bill_import_get(import_id):
-    importer = chellow.bill_importer.get_bill_import(import_id)
+    importer = chellow.e.bill_importer.get_bill_import(import_id)
     batch = Batch.get_by_id(g.sess, importer.batch_id)
     fields = {"batch": batch}
     if importer is not None:

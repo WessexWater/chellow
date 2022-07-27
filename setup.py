@@ -61,7 +61,8 @@ setup(
     install_requires=[
         "odio==0.0.22",
         "pg8000==1.24.1",
-        "Flask==2.1.1",
+        "werkzeug==2.0.*",
+        "Flask==2.1.2",
         "SQLAlchemy==1.4.34",
         "flask-restx==0.5.1",
         "openpyxl==3.0.9",
