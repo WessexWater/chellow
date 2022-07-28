@@ -12,44 +12,6 @@ from chellow.models import Session
 from chellow.utils import hh_format, parse_mpan_core, to_utc
 
 
-def get_ct_date(row, idx):
-    cell = get_cell(row, idx)
-    val = cell.value
-    if not isinstance(val, Datetime):
-        raise BadRequest(f"Problem reading {val} as a timestamp at {cell.coordinate}.")
-    return val
-
-
-def get_start_date(row, idx):
-    dt = get_ct_date(row, idx)
-    return None if dt is None else to_utc(dt)
-
-
-def get_cell(row, idx):
-    try:
-        return row[idx]
-    except IndexError:
-        raise BadRequest(
-            f"For the row {row}, the index is {idx} which is beyond the end of the row."
-        )
-
-
-def get_str(row, idx):
-    return get_cell(row, idx).value.strip()
-
-
-def get_dec(row, idx):
-    cell = get_cell(row, idx)
-    try:
-        return Decimal(str(cell.value))
-    except decimal.InvalidOperation as e:
-        raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
-
-
-def get_int(row, idx):
-    return int(get_cell(row, idx).value)
-
-
 class Parser:
     def __init__(self, f):
         self.book = load_workbook(f, data_only=True)
@@ -70,45 +32,79 @@ class Parser:
             self._title_line = line
         return line
 
+    def get_ct_date(self, col, row):
+        cell = self.get_cell(col, row)
+        val = cell.value
+        if not isinstance(val, Datetime):
+            raise BadRequest(
+                f"Problem reading {val} as a timestamp at {cell.coordinate}."
+            )
+        return val
+
+    def get_start_date(self, col, row):
+        dt = self.get_ct_date(col, row)
+        return None if dt is None else to_utc(dt)
+
+    def get_cell(self, col, row):
+        try:
+            coordinates = f"{col}{row}"
+            return self.sheet[coordinates]
+        except IndexError:
+            raise BadRequest(
+                f"Can't find the cell {coordinates} on sheet {self.sheet}."
+            )
+
+    def get_str(self, col, row):
+        return self.get_cell(col, row).value.strip()
+
+    def get_dec(self, col, row):
+        cell = self.get_cell(col, row)
+        try:
+            return Decimal(str(cell.value))
+        except decimal.InvalidOperation as e:
+            raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
+
+    def get_int(self, col, row):
+        return int(self.get_cell(col, row).value)
+
     def make_raw_bills(self):
         row_index = None
         sess = None
         try:
             sess = Session()
             bills = []
-            issue_date_str = get_str(self.sheet[7], 0)
+            issue_date_str = self.get_str("A", 7)
             issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
-            for row_index in range(12, len(self.sheet["A"]) + 1):
-                row = self.sheet[row_index]
-                val = get_cell(row, 1).value
+            for row in range(12, len(self.sheet["A"]) + 1):
+                val = self.get_cell("A", row).value
                 if val is None or val == "":
                     break
 
                 self._set_last_line(row_index, val)
-                mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                start_date = get_start_date(row, 3)
-                finish_date = get_start_date(row, 4) + relativedelta(
+                mpan_core = parse_mpan_core(str(self.get_int("B", row)))
+                start_date = self.get_start_date("D", row)
+                finish_date = self.get_start_date("E", row) + relativedelta(
                     hours=23, minutes=30
                 )
 
-                net = round(get_dec(row, 31), 2)
+                net = round(self.get_dec("W", row), 2)
 
-                cop_3_meters = get_int(row, 6)
-                cop_3_rate = get_dec(row, 7)
-                cop_3_gbp = get_dec(row, 8)
+                cop_3_meters = self.get_int("G", row)
+                cop_3_rate = self.get_dec("H", row)
+                cop_3_gbp = self.get_dec("I", row)
 
                 # Cop 5 meters
-                get_int(row, 9)
-                cop_5_rate = get_dec(row, 10)
-                cop_5_gbp = get_dec(row, 11)
+                self.get_int("J", row)
+                cop_5_rate = self.get_dec("K", row)
+                cop_5_gbp = self.get_dec("L", row)
 
-                ad_hoc_visits = get_dec(row, 21)
-                ad_hoc_rate = get_dec(row, 22)
-                ad_hoc_gbp = get_dec(row, 23)
+                ad_hoc_visits = self.get_dec("P", row)
+                ad_hoc_rate = self.get_dec("Q", row)
+                ad_hoc_gbp = self.get_dec("R", row)
 
-                annual_visits = get_int(row, 27)
-                annual_rate = get_dec(row, 28)
-                annual_gbp = get_dec(row, 29)
+                annual_visits = self.get_int("S", row)
+                annual_rate = self.get_dec("T", row)
+                annual_gbp = self.get_dec("U", row)
 
                 if cop_3_meters > 0:
                     cop = "3"
@@ -132,7 +128,7 @@ class Parser:
                     "annual-visits-rate": [annual_rate],
                     "annual-visits-gbp": annual_gbp,
                 }
-                annual_date_cell = get_cell(row, 30)
+                annual_date_cell = self.get_cell("V", row)
                 annual_date_value = annual_date_cell.value
                 if annual_date_value is not None:
                     if isinstance(annual_date_value, Datetime):
@@ -166,8 +162,9 @@ class Parser:
                     }
                 )
                 sess.rollback()
+
         except BadRequest as e:
-            raise BadRequest(f"Row number: {row_index} {e.description}")
+            raise BadRequest(f"Row number: {row} {e.description}")
         finally:
             if sess is not None:
                 sess.close()
