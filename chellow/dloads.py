@@ -56,7 +56,6 @@ def make_names(base, user):
         uname = un.replace("@", "").replace(".", "").replace("\\", "")
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
-    print("dowload_path", download_path, "names", names)
     return tuple(os.path.join(download_path, name) for name in names)
 
 

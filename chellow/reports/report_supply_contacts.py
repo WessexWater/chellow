@@ -43,7 +43,6 @@ def content(user_id, report_run_id):
 
     except BaseException as e:
         msg = traceback.format_exc()
-        print(msg)
         if report_run is not None:
             report_run.update("interrupted")
             report_run.insert_row(sess, "", ["problem"], {"problem": msg}, {})

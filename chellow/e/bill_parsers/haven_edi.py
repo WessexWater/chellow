@@ -199,7 +199,6 @@ def _process_segment(code, elements, line, headers, line_number):
             _process_MAN(elements, headers)
 
     except BadRequest as e:
-        print("error", e)
         headers["errors"].append(
             f"Can't parse the line number {line_number} {line}: {e.description}"
         )
@@ -208,8 +207,6 @@ def _process_segment(code, elements, line, headers, line_number):
         bill = {}
 
         if "message_type" in headers and headers["message_type"] == "UTLBIL":
-            print("doing message type")
-            print("headers", headers)
             for k in (
                 "kwh",
                 "reference",

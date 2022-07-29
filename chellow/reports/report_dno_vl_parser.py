@@ -170,15 +170,7 @@ def content(user, file_name, file_like, dno_id):
         ss_llfcs = []
         for sheet in book.worksheets:
             title = sheet.title.strip().lower()
-            print(title)
             if title.startswith(TITLE_START):
-
-                # if llfs_sheet is None:
-                #     raise BadRequest(
-                #         f"Can't find the sheet with LLFCs in. Looking for a "
-                #        f"case-insenstive match on sheet titles begining "
-                #       with "
-                #        f"'{TITLE_START}'.")
                 ss_llfcs.extend(tab_llfcs(sheet))
 
         now_ct = ct_datetime_now()
