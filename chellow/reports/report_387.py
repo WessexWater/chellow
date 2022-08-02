@@ -9,7 +9,8 @@ from flask import g
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
 
-import chellow.computer
+import chellow.dloads
+from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import Era, Session, Site, SiteEra, Supply
 from chellow.utils import (
     csv_make_val,
@@ -23,11 +24,12 @@ from chellow.views import chellow_redirect
 
 def content(supply_id, start_date, finish_date, user):
     caches = {}
+    f = sess = None
     try:
         sess = Session()
         supply = Supply.get_by_id(sess, supply_id)
 
-        forecast_date = chellow.computer.forecast_date()
+        f_date = forecast_date()
 
         running_name, finished_name = chellow.dloads.make_names(
             f"supply_virtual_bills_hh_{supply_id}.csv", user
@@ -48,8 +50,8 @@ def content(supply_id, start_date, finish_date, user):
             )
         ).scalars():
 
-            ds = chellow.computer.SupplySource(
-                sess, era.start_date, era.start_date, forecast_date, era, True, caches
+            ds = SupplySource(
+                sess, era.start_date, era.start_date, f_date, era, True, caches
             )
 
             for t in ds.contract_func(era.mop_contract, "virtual_bill_titles")():
@@ -72,7 +74,7 @@ def content(supply_id, start_date, finish_date, user):
                     sess,
                     era.start_date,
                     era.start_date,
-                    forecast_date,
+                    f_date,
                     era,
                     False,
                     caches,
@@ -115,9 +117,7 @@ def content(supply_id, start_date, finish_date, user):
                 .where(SiteEra.era == era, SiteEra.is_physical == true())
             ).scalar_one()
 
-            ds = chellow.computer.SupplySource(
-                sess, hh_start, hh_start, forecast_date, era, True, caches
-            )
+            ds = SupplySource(sess, hh_start, hh_start, f_date, era, True, caches)
 
             vals = {
                 "mpan_core": ds.mpan_core,
@@ -140,9 +140,7 @@ def content(supply_id, start_date, finish_date, user):
                     vals[f"imp_supplier_{k}"] = v
 
             if era.exp_supplier_contract is not None:
-                ds = chellow.computer.SupplySource(
-                    sess, hh_start, hh_start, forecast_date, era, False, caches
-                )
+                ds = SupplySource(sess, hh_start, hh_start, f_date, era, False, caches)
                 ds.contract_func(era.exp_supplier_contract, "virtual_bill")(ds)
                 for k, v in ds.supplier_bill.items():
                     vals[f"exp_supplier_{k}"] = v
@@ -151,7 +149,8 @@ def content(supply_id, start_date, finish_date, user):
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
-        w.writerow([msg])
+        if f is not None:
+            f.write(msg)
     finally:
         if sess is not None:
             sess.close()
