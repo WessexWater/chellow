@@ -431,7 +431,7 @@ class GeneratorType(Base, PersistentClass):
     def get_by_code(sess, code):
         gen_type = sess.query(GeneratorType).filter_by(code=code).first()
         if gen_type is None:
-            raise BadRequest("There's no generator type with the code '" + code + "'")
+            raise BadRequest(f"There's no generator type with the code '{code}'")
         return gen_type
 
     __tablename__ = "generator_type"
@@ -6380,6 +6380,16 @@ def insert_sources(sess):
         Source.insert(sess, code, desc)
 
 
+def insert_generator_types(sess):
+    for code, desc in (
+        ("chp", "Combined heat and power."),
+        ("lm", "Load management."),
+        ("turb", "Water turbine."),
+        ("pv", "Solar Photovoltaics."),
+    ):
+        sess.add(GeneratorType(code, desc))
+
+
 def insert_voltage_levels(sess):
     for code, desc in (
         ("LV", "Low voltage"),
@@ -6402,13 +6412,7 @@ def db_init(sess, root_path):
     insert_sources(sess)
     sess.commit()
 
-    for code, desc in (
-        ("chp", "Combined heat and power."),
-        ("lm", "Load management."),
-        ("turb", "Water turbine."),
-        ("pv", "Solar Photovoltaics."),
-    ):
-        sess.add(GeneratorType(code, desc))
+    insert_generator_types(sess)
     sess.commit()
 
     for code, desc in (

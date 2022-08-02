@@ -10,8 +10,8 @@ from flask import g
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
 
-import chellow.computer
 import chellow.dloads
+from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import c_months_u, hh_format, hh_range, req_int
 from chellow.views import chellow_redirect
@@ -55,7 +55,7 @@ def content(contract_id, end_year, end_month, months, user):
         )
         start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
-        forecast_date = chellow.computer.forecast_date()
+        f_date = forecast_date()
 
         contract = Contract.get_supplier_by_id(sess, contract_id)
         sites = (
@@ -71,9 +71,7 @@ def content(contract_id, end_year, end_month, months, user):
             )
             .distinct()
         )
-        bill_titles = chellow.computer.contract_func(
-            caches, contract, "displaced_virtual_bill_titles"
-        )()
+        bill_titles = contract_func(caches, contract, "displaced_virtual_bill_titles")()
 
         for title in bill_titles:
             if title == "total-msp-kwh":
@@ -83,12 +81,12 @@ def content(contract_id, end_year, end_month, months, user):
 
         for site in sites:
             for month_start, month_finish in month_list:
-                displaced_era = chellow.computer.displaced_era(
-                    sess, caches, site, month_start, month_finish, forecast_date
+                disp_era = displaced_era(
+                    sess, caches, site, month_start, month_finish, f_date
                 )
-                if displaced_era is None:
+                if disp_era is None:
                     continue
-                supplier_contract = displaced_era.imp_supplier_contract
+                supplier_contract = disp_era.imp_supplier_contract
                 if contract is not None and contract != supplier_contract:
                     continue
 
@@ -223,16 +221,16 @@ def content(contract_id, end_year, end_month, months, user):
                 for title in ["chp", "lm", "turb", "pv"]:
                     vals.append(str(total_gen_breakdown.get(title, "")))
 
-                site_ds = chellow.computer.SiteSource(
+                site_ds = SiteSource(
                     sess,
                     site,
                     month_start,
                     month_finish,
-                    forecast_date,
+                    f_date,
                     caches,
-                    displaced_era,
+                    disp_era,
                 )
-                disp_func = chellow.computer.contract_func(
+                disp_func = contract_func(
                     caches, supplier_contract, "displaced_virtual_bill"
                 )
                 disp_func(site_ds)
@@ -251,7 +249,8 @@ def content(contract_id, end_year, end_month, months, user):
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
-        writer.writerow([msg])
+        if f is not None:
+            f.write(msg)
     finally:
         if sess is not None:
             sess.close()
