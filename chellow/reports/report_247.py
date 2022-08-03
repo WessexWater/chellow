@@ -445,6 +445,7 @@ def _process_site(
                 imp_supplier_contract_name,
                 exp_mpan_core,
                 exp_supplier_contract_name,
+                sss.era.start_date,
                 era_category,
                 source_code,
                 generator_type,
@@ -568,6 +569,7 @@ def _process_site(
                         None
                         if exp_supplier_contract is None
                         else exp_supplier_contract.name,
+                        chunk_start,
                         last_era.meter_category,
                         last_era.supply.source.code,
                         None,
@@ -848,6 +850,7 @@ def content(
             "imp-supplier-contract",
             "exp-mpan-core",
             "exp-supplier-contract",
+            "era-start-date",
             "metering-type",
             "source",
             "generator-type",
