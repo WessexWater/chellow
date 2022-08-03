@@ -505,7 +505,7 @@ def datum_2010_04_01(ds, hh):
             laf = laf_cache_llfc[start_date]
         except KeyError:
             dno_code = ds.dno_code
-            if dno_code == "99":
+            if dno_code in ("88", "99"):
                 laf_cache_llfc[start_date] = 1
             else:
 
@@ -530,10 +530,7 @@ def datum_2010_04_01(ds, hh):
             try:
                 laf = laf_cache_llfc[start_date]
             except KeyError:
-                raise BadRequest(
-                    f"Missing LAF for DNO {ds.dno_code}, LLFC {ds.llfc_code} and "
-                    f"timestamp {hh_format(start_date)}"
-                )
+                laf = laf_cache_llfc[start_date] = 1
 
     hh["laf"] = laf
     hh["gsp-kwh"] = laf * hh["msp-kwh"]
