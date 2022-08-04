@@ -1257,7 +1257,7 @@ def dc_rate_script_get(dc_rate_script_id):
 @e.route("/dc_rate_scripts/<int:dc_rate_script_id>/edit")
 def dc_rate_script_edit_get(dc_rate_script_id):
     dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
-    rs_example_func = chellow.computer.contract_func(
+    rs_example_func = chellow.e.computer.contract_func(
         {}, dc_rate_script.contract, "rate_script_example"
     )
     rs_example = None if rs_example_func is None else rs_example_func()

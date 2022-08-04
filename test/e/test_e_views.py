@@ -543,6 +543,22 @@ def test_dc_rate_script_add_post(sess, client):
     match(response, 303, r"/dc_rate_scripts/3")
 
 
+def test_dc_rate_script_edit_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    dc_rate_script = dc_contract.rate_scripts[0]
+    sess.commit()
+
+    response = client.get(f"/e/dc_rate_scripts/{dc_rate_script.id}/edit")
+
+    match(response, 200)
+
+
 def test_dc_bill_import(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
