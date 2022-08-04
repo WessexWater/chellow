@@ -180,15 +180,15 @@ def hh_rate(sess, caches, contract_id, date):
 
             market_role_code = rs.contract.market_role.code
             if market_role_code == "M":
-                seg = "mop_rate_scripts/"
+                seg = "/e/mop_rate_scripts/"
             elif market_role_code == "C":
-                seg = "dc_rate_scripts/"
+                seg = "/e/dc_rate_scripts/"
             elif market_role_code == "X":
-                seg = "supplier_rate_scripts/"
+                seg = "/e/supplier_rate_scripts/"
             elif market_role_code == "Z":
-                seg = "non_core_rate_scripts/"
+                seg = "/e/non_core_rate_scripts/"
             elif market_role_code == "R":
-                seg = "dno_rate_scripts/"
+                seg = "/e/dno_rate_scripts/"
             else:
                 raise Exception(
                     f"The market role code {market_role_code} isn't recognized."

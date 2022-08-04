@@ -115,6 +115,20 @@ def create_app(testing=False):
         )
         print(msg)
 
+        try:
+            scheme = request.headers["X-Forwarded-Proto"]
+        except KeyError:
+            config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+            props = config_contract.make_properties()
+            scheme = props.get("redirect_scheme", "http")
+
+        try:
+            host = request.headers["X-Forwarded-Host"]
+        except KeyError:
+            host = request.host
+
+        chellow.utils.url_root = scheme + "://" + host
+
     @app.before_request
     def check_permissions(*args, **kwargs):
         g.user = None

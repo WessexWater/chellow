@@ -125,19 +125,7 @@ home = Blueprint("", __name__, template_folder="templates")
 
 
 def chellow_redirect(path, code=None):
-    try:
-        scheme = request.headers["X-Forwarded-Proto"]
-    except KeyError:
-        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        props = config_contract.make_properties()
-        scheme = props.get("redirect_scheme", "http")
-
-    try:
-        host = request.headers["X-Forwarded-Host"]
-    except KeyError:
-        host = request.host
-
-    location = scheme + "://" + host + path
+    location = chellow.utils.url_root + path
     if code is None:
         return redirect(location)
     else:
