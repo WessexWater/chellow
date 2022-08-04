@@ -1711,6 +1711,22 @@ def test_mop_batch_upload_file_post(sess, client):
     assert batch_file.data == file_bytes
 
 
+def test_mop_rate_script_edit_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_M = MarketRole.insert(sess, "M", "HH Dc")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_M, "Fusion MOP", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion MOP", participant, "", {}, vf, None, {}
+    )
+    mop_rate_script = mop_contract.rate_scripts[0]
+    sess.commit()
+
+    response = client.get(f"/e/mop_rate_scripts/{mop_rate_script.id}/edit")
+
+    match(response, 200)
+
+
 def test_mtcs_get(sess, client):
     valid_from = to_utc(ct_datetime(1996, 4, 1))
     Mtc.insert(sess, "001", True, True, valid_from, None)
