@@ -1,3 +1,3 @@
 import chellow
 
-application = chellow.app
+application = chellow.create_app()

@@ -50,10 +50,10 @@ in Windows an environment variable can be set by doing:
 `set CHELLOW_PORT=8080`
 
 * Start Chellow by running `chellow start`.
-* You should now be able to visit `http://localhost/` in a browser. You should
-  be prompted to enter a username and password. Enter the admin user name
-  `admin@example.com` and the password `admin`, and then the home page should
-  appear. Change the admin password from the `users` page.
+* You should now be able to visit `http://localhost/` in a browser. You should be
+  prompted to enter a username and password. Enter the admin user name
+  `admin@example.com` and the password `admin`, and then the home page should appear.
+  Change the admin password from the `users` page.
 * Chellow can be stopped by running `chellow stop`.
 
 

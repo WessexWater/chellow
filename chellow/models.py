@@ -52,7 +52,7 @@ from sqlalchemy.sql.expression import false, true
 
 from werkzeug.exceptions import BadRequest, NotFound
 
-from zish import ZishException, dumps, loads
+from zish import dumps, loads
 
 from chellow.utils import (
     HH,
@@ -6451,73 +6451,33 @@ def db_init(sess, root_path):
     insert_energisation_statuses(sess)
     sess.commit()
 
-    contracts_path = os.path.join(root_path, "non_core_contracts")
-
-    for contract_name in sorted(os.listdir(contracts_path)):
-        contract_path = os.path.join(contracts_path, contract_name)
-        params = {"name": contract_name, "charge_script": ""}
-        for fname, attr in (
-            ("meta.zish", None),
-            ("properties.zish", "properties"),
-            ("state.zish", "state"),
-        ):
-            params.update(read_file(contract_path, fname, attr))
-        params["party"] = (
-            sess.query(Party)
-            .join(Participant)
-            .join(MarketRole)
-            .filter(
-                Participant.code == params["participant_code"], MarketRole.code == "Z"
-            )
-            .one()
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core Role")
+    participant = Participant.insert(sess, "CALB", "Coopers & Lybrand")
+    participant.insert_party(
+        sess,
+        market_role_Z,
+        "1 Embankment Place",
+        to_utc(ct_datetime(1996, 4, 1)),
+        None,
+        None,
+    )
+    for name in (
+        "aahedc",
+        "bank_holidays",
+        "bmarketidx",
+        "bsuos",
+        "ccl",
+        "configuration",
+        "rcrc",
+        "ro",
+        "system_price",
+        "tlms",
+        "triad_dates",
+        "triad_rates",
+    ):
+        Contract.insert_non_core(
+            sess, name, "", {}, to_utc(ct_datetime(2000, 1, 1)), None, {}
         )
-        del params["participant_code"]
-        contract = Contract(**params)
-        sess.add(contract)
-
-        sess.flush()
-        rscripts_path = os.path.join(contract_path, "rate_scripts")
-        if os.path.isdir(rscripts_path):
-            for rscript_fname in sorted(os.listdir(rscripts_path)):
-                try:
-                    start_str, finish_str = rscript_fname.split(".")[0].split("_")
-                except ValueError:
-                    raise Exception(
-                        f"The rate script {rscript_fname} in the directory "
-                        f"{rscripts_path} should consist of two dates separated by an "
-                        f"underscore."
-                    )
-                start_date = to_utc(Datetime.strptime(start_str, "%Y%m%d%H%M"))
-                if finish_str == "ongoing":
-                    finish_date = None
-                else:
-                    finish_date = to_utc(Datetime.strptime(finish_str, "%Y%m%d%H%M"))
-                rparams = {
-                    "start_date": start_date,
-                    "finish_date": finish_date,
-                    "contract": contract,
-                }
-                try:
-                    rparams.update(read_file(rscripts_path, rscript_fname, "script"))
-                except ZishException as e:
-                    raise Exception(
-                        f"Contract name {contract_name} rscript fname {rscript_fname} "
-                        f": {e}"
-                    )
-                sess.add(RateScript(**rparams))
-                sess.flush()
-
-            sess.flush()
-            # Assign start and finish rate scripts
-            scripts = (
-                sess.query(RateScript)
-                .filter(RateScript.contract_id == contract.id)
-                .order_by(RateScript.start_date)
-                .all()
-            )
-            contract.start_rate_script = scripts[0]
-            contract.finish_rate_script = scripts[-1]
-    sess.commit()
 
     insert_g_read_types(sess)
     sess.commit()
@@ -6569,8 +6529,10 @@ def db_init(sess, root_path):
     sess.commit()
     sess.flush()
 
-    for name in ("ccl", "cv", "dn", "uig", "nts_commodity"):
-        GContract.insert_industry(sess, name)
+    for name in ("ccl", "cv", "dn", "ug", "nts_commodity"):
+        GContract.insert_industry(
+            sess, name, "", {}, to_utc(ct_datetime(2000, 1, 1)), None, {}
+        )
 
     sess.execute(f"alter database {db_name} set default_transaction_deferrable = on")
     sess.execute(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'")
@@ -6586,7 +6548,6 @@ def db_init(sess, root_path):
             f"'serializable' but in fact it's {isolation_level}."
         )
 
-    sess.execute("create extension tablefunc")
     conf = (
         sess.query(Contract)
         .join(MarketRole)

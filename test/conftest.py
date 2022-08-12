@@ -14,6 +14,7 @@ from chellow import create_app
 from chellow.models import Session, User, UserRole, stop_sqlalchemy
 
 
+@pytest.fixture
 def fresh_db():
     stop_sqlalchemy()
     config = chellow.models.config
@@ -33,8 +34,7 @@ def fresh_db():
 
 
 @pytest.fixture
-def app():
-    fresh_db()
+def app(fresh_db):
     chellow.e.bill_importer.import_id = 0
     chellow.e.bill_importer.imports.clear()
     return create_app(testing=True)

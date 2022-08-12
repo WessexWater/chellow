@@ -306,6 +306,9 @@ def create_app(testing=False):
     return app
 
 
-versions = get_versions()
-__version__ = versions["version"]
-del get_versions
+try:
+    versions = get_versions()
+    __version__ = versions["version"]
+    del get_versions
+except ValueError:
+    __version__ = "0"
