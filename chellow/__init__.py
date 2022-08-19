@@ -47,6 +47,20 @@ TEMPLATE_FORMATS = {
 }
 
 
+def get_importer_modules():
+    return (
+        chellow.e.rcrc,
+        chellow.e.bsuos,
+        chellow.e.system_price,
+        chellow.e.hh_importer,
+        chellow.testing,
+        chellow.e.tlms,
+        chellow.bank_holidays,
+        chellow.gas.cv,
+        chellow.e.bmarketidx,
+    )
+
+
 def create_app(testing=False):
     app = Flask("chellow", instance_relative_config=True)
     app.wsgi_app = MsProxy(app.wsgi_app)
@@ -65,19 +79,9 @@ def create_app(testing=False):
         db_upgrade(app.root_path)
         chellow.dloads.startup(app.instance_path)
 
-    for importer in (
-        chellow.e.rcrc,
-        chellow.e.bsuos,
-        chellow.e.system_price,
-        chellow.e.hh_importer,
-        chellow.testing,
-        chellow.e.tlms,
-        chellow.bank_holidays,
-        chellow.gas.cv,
-        chellow.e.bmarketidx,
-    ):
+    for module in get_importer_modules():
         if not testing:
-            importer.startup()
+            module.startup()
 
     @app.before_first_request
     def before_first_request():
