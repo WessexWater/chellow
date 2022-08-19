@@ -6,6 +6,10 @@ import openpyxl
 from werkzeug.exceptions import BadRequest
 
 
+def get_rate(sheet, col, row):
+    return get_decimal(sheet, col, row) / Decimal("100")
+
+
 def get_decimal(sheet, col, row):
     return round(Decimal(get_value(sheet, col, row)), 4)
 
@@ -76,25 +80,25 @@ def _handle_SECTION(state, sheet, row, rates, networks):
                 else:
                     suffix = ""
                 over_rates = state_rates[rate_name]
-                over_rates[f"gbp_per_kwh{suffix}"] = get_decimal(sheet, col, row)
+                over_rates[f"gbp_per_kwh{suffix}"] = get_rate(sheet, col, row)
                 over_rates["exponent"] = get_decimal(sheet, col, row + 2)
             elif rate_name == "minimum_gbp_per_kwh":
-                state_rates["732000_and_over"]["minimum_gbp_per_kwh"] = get_decimal(
+                state_rates["732000_and_over"]["minimum_gbp_per_kwh"] = get_rate(
                     sheet, col, row
                 )
             elif rate_name == "minimum_gbp_per_kwh_per_day":
                 state_rates["732000_and_over"][
                     "minimum_gbp_per_kwh_per_day"
-                ] = get_decimal(sheet, col, row)
+                ] = get_rate(sheet, col, row)
             else:
-                state_rates[rate_name] = get_decimal(sheet, col, row)
+                state_rates[rate_name] = get_rate(sheet, col, row)
 
 
 def _handle_ADMIN_CHARGE(state, sheet, row, rates, networks):
     b_val = normalize_text(get_value(sheet, "B", row))
     if b_val == "supply point admin charge":
         for dn_code, col in networks.items():
-            rates["gdn"][dn_code]["cesp_administration_gbp_per_mprn"] = get_decimal(
+            rates["gdn"][dn_code]["cesp_administration_gbp_per_mprn"] = get_rate(
                 sheet, col, row
             )
 
@@ -107,7 +111,7 @@ def _handle_EXIT_CAPACITY(state, sheet, row, rates, networks):
             v = get_value(sheet, col, row)
             if v is not None:
                 rates["exit_zones"][b_val] = {
-                    "exit_capacity_gbp_per_kwh_per_day": get_decimal(sheet, col, row)
+                    "exit_capacity_gbp_per_kwh_per_day": get_rate(sheet, col, row)
                 }
 
 

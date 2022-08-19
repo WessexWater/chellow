@@ -37,7 +37,7 @@ def test_handle_EXIT_CAPACITY_rate_row(mocker):
     _handle_EXIT_CAPACITY(state, sheet, row, rates, networks)
 
     expected = {
-        "exit_zones": {"EA1": {"exit_capacity_gbp_per_kwh_per_day": Decimal("0.2")}}
+        "exit_zones": {"EA1": {"exit_capacity_gbp_per_kwh_per_day": Decimal("0.002")}}
     }
     assert rates == expected
 
@@ -57,7 +57,9 @@ def test_handle_SECTION_system_capacity_to_73200(mocker):
 
     expected = {
         "gdn": {
-            "EE": {"system_capacity": {"to_73200_gbp_per_kwh_per_day": Decimal("0.2")}}
+            "EE": {
+                "system_capacity": {"to_73200_gbp_per_kwh_per_day": Decimal("0.002")}
+            }
         }
     }
     assert rates == expected
@@ -83,7 +85,7 @@ def test_handle_SECTION_system_capacity_73200_and_over(mocker):
             "EE": {
                 "system_capacity": {
                     "732000_and_over": {
-                        "gbp_per_kwh_per_day": Decimal("0.2000"),
+                        "gbp_per_kwh_per_day": Decimal("0.002000"),
                         "exponent": Decimal("0.6000"),
                     }
                 }
@@ -111,7 +113,7 @@ def test_handle_SECTION_system_capacity_minimum(mocker):
             "EE": {
                 "system_capacity": {
                     "732000_and_over": {
-                        "minimum_gbp_per_kwh_per_day": Decimal("0.2"),
+                        "minimum_gbp_per_kwh_per_day": Decimal("0.002"),
                     }
                 }
             }
