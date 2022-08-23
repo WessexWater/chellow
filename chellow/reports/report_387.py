@@ -70,7 +70,7 @@ def content(supply_id, start_date, finish_date, user):
                         imp_supplier_titles.append(t)
 
             if era.exp_supplier_contract is not None:
-                ds = chellow.computer.SupplySource(
+                ds = SupplySource(
                     sess,
                     era.start_date,
                     era.start_date,
