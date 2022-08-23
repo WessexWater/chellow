@@ -3,116 +3,120 @@ import os
 import sys
 import threading
 import traceback
-import zipfile
 from io import StringIO
+from zipfile import ZipFile
 
 from flask import g, request
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
 
 import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import (
-    ct_datetime,
     hh_format,
     req_date,
     req_int,
     req_str,
     to_ct,
-    to_utc,
 )
 from chellow.views import chellow_redirect
 
 
-def none_content(site_codes, typ, start_date, finish_date, user, file_name):
+def _process_site(sess, zf, site, start_date, finish_date, typ):
+    start_date_str = hh_format(start_date)
+    finish_date_str = hh_format(finish_date)
+    buf = StringIO()
+    writer = csv.writer(buf, lineterminator="\n")
+    writer.writerow(
+        [
+            "Site Code",
+            "Site Name",
+            "Associated Site Codes",
+            "Sources",
+            "Generator Types",
+            "From",
+            "To",
+            "Type",
+            "Date",
+        ]
+        + list(map(str, range(1, 51)))
+    )
+    associates = " ".join(
+        s.code for s in site.find_linked_sites(sess, start_date, finish_date)
+    )
+    source_codes = set()
+    gen_types = set()
+    for supply in (
+        sess.query(Supply)
+        .join(Era)
+        .join(SiteEra)
+        .filter(
+            SiteEra.is_physical == true(),
+            SiteEra.site == site,
+            Era.start_date <= finish_date,
+            or_(Era.finish_date == null(), Era.finish_date >= start_date),
+        )
+        .distinct()
+        .options(joinedload(Supply.source), joinedload(Supply.generator_type))
+    ):
+        source_codes.add(supply.source.code)
+        gen_type = supply.generator_type
+        if gen_type is not None:
+            gen_types.add(gen_type.code)
+    source_codes_str = ", ".join(sorted(source_codes))
+    gen_types_str = ", ".join(sorted(gen_types))
+    row = None
+    for hh in site.hh_data(sess, start_date, finish_date):
+        ct_start_date = to_ct(hh["start_date"])
+        if ct_start_date.hour == 0 and ct_start_date.minute == 0:
+            if row is not None:
+                writer.writerow(row)
+            row = [
+                site.code,
+                site.name,
+                associates,
+                source_codes_str,
+                gen_types_str,
+                start_date_str,
+                finish_date_str,
+                typ,
+                ct_start_date.strftime("%Y-%m-%d"),
+            ]
+        row.append(str(round(hh[typ], 2)))
+    if row is not None:
+        writer.writerow(row)
+    zf.writestr(
+        f"{site.code}_{to_ct(finish_date).strftime('%Y%m%d%H%M')}.csv",
+        buf.getvalue(),
+    )
+
+
+def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
     sess = zf = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(file_name, user)
-        sites = (
-            sess.query(Site)
+        sites_q = (
+            select(Site)
             .join(SiteEra)
             .join(Era)
-            .filter(
+            .where(
                 SiteEra.is_physical == true(),
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
             )
+            .distinct()
         )
         if site_codes is not None:
-            sites = sites.filter(Site.code.in_(site_codes))
+            sites_q = sites_q.where(Site.code.in_(site_codes))
 
-        zf = zipfile.ZipFile(running_name, "w")
+        zf = ZipFile(running_name, "w")
 
-        start_date_str = hh_format(start_date)
-        finish_date_str = hh_format(finish_date)
-        for site in sites:
-            buf = StringIO()
-            writer = csv.writer(buf, lineterminator="\n")
-            writer.writerow(
-                [
-                    "Site Code",
-                    "Site Name",
-                    "Associated Site Codes",
-                    "Sources",
-                    "Generator Types",
-                    "From",
-                    "To",
-                    "Type",
-                    "Date",
-                ]
-                + list(map(str, range(1, 51)))
-            )
-            associates = " ".join(
-                s.code for s in site.find_linked_sites(sess, start_date, finish_date)
-            )
-            source_codes = set()
-            gen_types = set()
-            for supply in (
-                sess.query(Supply)
-                .join(Era)
-                .join(SiteEra)
-                .filter(
-                    SiteEra.is_physical == true(),
-                    SiteEra.site == site,
-                    Era.start_date <= finish_date,
-                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                )
-                .distinct()
-                .options(joinedload(Supply.source), joinedload(Supply.generator_type))
-            ):
-                source_codes.add(supply.source.code)
-                gen_type = supply.generator_type
-                if gen_type is not None:
-                    gen_types.add(gen_type.code)
-            source_codes_str = ", ".join(sorted(source_codes))
-            gen_types_str = ", ".join(sorted(gen_types))
-            row = None
-            for hh in site.hh_data(sess, start_date, finish_date):
-                ct_start_date = to_ct(hh["start_date"])
-                if ct_start_date.hour == 0 and ct_start_date.minute == 0:
-                    if row is not None:
-                        writer.writerow(row)
-                    row = [
-                        site.code,
-                        site.name,
-                        associates,
-                        source_codes_str,
-                        gen_types_str,
-                        start_date_str,
-                        finish_date_str,
-                        typ,
-                        ct_start_date.strftime("%Y-%m-%d"),
-                    ]
-                row.append(str(round(hh[typ], 2)))
-            if row is not None:
-                writer.writerow(row)
-            zf.writestr(
-                f"{site.code}_{finish_date.strftime('%Y%m%d%M%H')}.csv",
-                buf.getvalue(),
-            )
+        for site in sess.execute(sites_q).scalars():
+            _process_site(sess, zf, site, start_date, finish_date, typ)
 
             # Avoid long-running transaction
             sess.rollback()
@@ -128,10 +132,11 @@ def none_content(site_codes, typ, start_date, finish_date, user, file_name):
             os.rename(running_name, finished_name)
 
 
-def site_content(site_id, start_date, finish_date, user, file_name):
+def site_content(site_id, start_date, finish_date, user_id, file_name):
     sess = f = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(file_name, user)
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")
@@ -215,18 +220,15 @@ def site_content(site_id, start_date, finish_date, user, file_name):
 
 
 def do_post(sess):
-    start_date = req_date("start", "day")
-    finish_year = req_int("finish_year")
-    finish_month = req_int("finish_month")
-    finish_day = req_int("finish_day")
-    finish_date_ct = ct_datetime(finish_year, finish_month, finish_day, 23, 30)
-    finish_date = to_utc(finish_date_ct)
+    start_date = req_date("start")
+    finish_date = req_date("finish")
+    finish_date_ct = to_ct(finish_date)
 
     finish_date_str = finish_date_ct.strftime("%Y%m%d%H%M")
     if "site_id" in request.values:
         site_id = req_int("site_id")
         file_name = f"sites_hh_data_{site_id}_{finish_date_str}.csv"
-        args = site_id, start_date, finish_date, g.user, file_name
+        args = site_id, start_date, finish_date, g.user.id, file_name
         threading.Thread(target=site_content, args=args).start()
         return chellow_redirect("/downloads", 303)
     else:
@@ -237,6 +239,6 @@ def do_post(sess):
             site_codes = None
 
         file_name = f"sites_hh_data_{finish_date_str}_filter.zip"
-        args = site_codes, typ, start_date, finish_date, g.user, file_name
+        args = site_codes, typ, start_date, finish_date, g.user.id, file_name
         threading.Thread(target=none_content, args=args).start()
         return chellow_redirect("/downloads", 303)

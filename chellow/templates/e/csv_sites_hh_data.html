@@ -12,6 +12,7 @@
 	<form action="/reports/183" method='post'>
 		<fieldset>
 			<legend>Download</legend>	
+			<label>Type</label>
 			<select name="type">
 				<option value="used">Used</option>
 				<option value="imp_net">Imported</option>
@@ -22,8 +23,9 @@
 			</select>
 			<label>From</label> {{input_date('start', start_date)}}
 			<label>To</label> {{input_date('finish', finish_date)}}
-			<label>Site Codes (one on each line, includes all sites if left blank)</label>
-			{{input_textarea('site_codes', '', 5, 40)}}    						
+			<label>Site Codes</label>
+			{{input_textarea('site_codes', '', 5, 40,
+			  placeholder='One on each line, includes all if left blank')}}    						
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
