@@ -66,6 +66,7 @@ import chellow.e.system_price
 import chellow.e.tlms
 import chellow.edi_lib
 import chellow.general_import
+import chellow.rate_server
 from chellow.models import (
     BillType,
     Channel,
@@ -2087,6 +2088,19 @@ def non_core_auto_importer_post(contract_id):
             ),
             400,
         )
+
+
+@home.route("/rate_server")
+def rate_server_get():
+    importer = chellow.rate_server.importer
+    return render_template("rate_server.html", importer=importer)
+
+
+@home.route("/rate_server", methods=["POST"])
+def rate_server_post():
+    importer = chellow.rate_server.importer
+    importer.go()
+    return chellow_redirect("/rate_server", 303)
 
 
 @home.route("/tester")

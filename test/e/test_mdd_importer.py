@@ -1,14 +1,11 @@
-from io import BytesIO
-from zipfile import ZipFile
-
 from chellow.e.mdd_importer import (
-    MddImporter,
     _import_MTC_in_PES_Area,
     _import_Meter_Timeswitch_Class,
     _import_Valid_MTC_LLFC_Combination,
     _import_Valid_MTC_LLFC_SSC_Combination,
     _import_Valid_MTC_LLFC_SSC_PC_Combination,
     _import_Valid_MTC_SSC_Combination,
+    import_mdd,
 )
 from chellow.models import (
     Contract,
@@ -326,7 +323,132 @@ def test_import_Valid_MTC_LLFC_SSC_PC_Combination(sess):
     assert combo.valid_to == to_utc(ct_datetime(2014, 8, 20, 23, 30))
 
 
-def test_MddImporter_run(sess):
+def test_import_mdd(mocker, sess):
+    repo_url = "rateserver"
+    lookup = {
+        f"{repo_url}/contents": {
+            "json": [{"type": "dir", "url": f"{repo_url}/contents/2022"}],
+        },
+        f"{repo_url}/contents/2022": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity",
+                    "name": "electricity",
+                }
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity/mdd",
+                    "name": "mdd",
+                }
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity/mdd": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity/mdd/50",
+                    "name": "50",
+                    "path": "2022/mdd/50",
+                }
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity/mdd/50": {
+            "json": [
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Participant",
+                    "name": "Market_Participant_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Role",
+                    "name": "Market_Role_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Participant_Role",
+                    "name": "Market_Participant_Role_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Line_Loss_Factor_Class",
+                    "name": "Line_Loss_Factor_Class_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Meter_Timeswitch_Class",
+                    "name": "Meter_Timeswitch_Class_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/MTC_in_PES_Area",
+                    "name": "MTC_in_PES_Area_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/MTC_Meter_Type",
+                    "name": "MTC_Meter_Type_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Standard_Settlement_Configuration",
+                    "name": "Standard_Settlement_Configuration_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_Combination",
+                    "name": "Valid_MTC_LLFC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_SSC_Combination",
+                    "name": "Valid_MTC_SSC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_SSC_Combination",
+                    "name": "Valid_MTC_LLFC_SSC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_SSC_PC_Combination",
+                    "name": "Valid_MTC_LLFC_SSC_PC_Combination_50.csv",
+                },
+            ],
+        },
+        "download/Market_Participant": {"text": "\n"},
+        "download/Market_Role": {"text": "\n"},
+        "download/Market_Participant_Role": {"text": "\n"},
+        "download/Line_Loss_Factor_Class": {"text": "\n"},
+        "download/Meter_Timeswitch_Class": {"text": "\n"},
+        "download/MTC_in_PES_Area": {"text": "\n"},
+        "download/MTC_Meter_Type": {"text": "\n"},
+        "download/Standard_Settlement_Configuration": {"text": "\n"},
+        "download/Valid_MTC_LLFC_Combination": {"text": "\n"},
+        "download/Valid_MTC_SSC_Combination": {"text": "\n"},
+        "download/Valid_MTC_LLFC_SSC_Combination": {"text": "\n"},
+        "download/Valid_MTC_LLFC_SSC_PC_Combination": {"text": "\n"},
+    }
+
+    def mock_session_get(self, url):
+        response_data = lookup[url]
+        mock_response = mocker.Mock()
+        try:
+            mock_response.json.return_value = response_data["json"]
+        except KeyError:
+            pass
+        try:
+            mock_response.text = response_data["text"]
+        except KeyError:
+            pass
+        return mock_response
+
+    mocker.patch("chellow.e.mdd_importer.requests.Session.get", mock_session_get)
     vf = to_utc(ct_datetime(1996, 4, 1))
     MeterType.insert(sess, "C5", "A c5 meter", vf, None)
     MeterPaymentType.insert(sess, "CR", "credit", vf, None)
@@ -335,25 +457,8 @@ def test_MddImporter_run(sess):
     calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
     Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
     sess.commit()
-    f = BytesIO()
-    zf = ZipFile(f, mode="w")
-    for fname in (
-        "Market_Participant",
-        "Market_Role",
-        "Market_Participant_Role",
-        "Line_Loss_Factor_Class",
-        "Meter_Timeswitch_Class",
-        "MTC_in_PES_Area",
-        "MTC_Meter_Type",
-        "Standard_Settlement_Configuration",
-        "Valid_MTC_LLFC_Combination",
-        "Valid_MTC_SSC_Combination",
-        "Valid_MTC_LLFC_SSC_Combination",
-        "Valid_MTC_LLFC_SSC_PC_Combination",
-    ):
-        zf.writestr(f"{fname}_50.csv", "\n")
-    zf.close()
-    f.seek(0)
-    imp = MddImporter(f)
-    imp.run()
-    assert imp.error_message is None
+
+    def logger(msg):
+        pass
+
+    import_mdd(sess, repo_url, logger)

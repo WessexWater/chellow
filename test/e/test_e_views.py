@@ -1466,11 +1466,6 @@ def test_laf_imports_post(mocker, app, client):
     match(response, 400)
 
 
-def test_mdd_imports_get(sess, client):
-    response = client.get("/e/mdd_imports")
-    match(response, 200)
-
-
 def test_mop_batch_import_bills_full(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")

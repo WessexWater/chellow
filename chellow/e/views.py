@@ -26,7 +26,6 @@ from werkzeug.exceptions import BadRequest, NotFound
 from zish import dumps, loads
 
 import chellow.e.dno_rate_parser
-import chellow.e.mdd_importer
 from chellow.models import (
     Batch,
     BatchFile,
@@ -2040,50 +2039,6 @@ def market_role_get(market_role_id):
 def market_roles_get():
     market_roles = g.sess.query(MarketRole).order_by(MarketRole.code).all()
     return render_template("market_roles.html", market_roles=market_roles)
-
-
-@e.route("/mdd_imports")
-def mdd_imports_get():
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    properties = config_contract.make_properties()
-    mdd_version = properties.get("mdd_version")
-    return render_template(
-        "mdd_imports.html",
-        process_ids=sorted(chellow.e.mdd_importer.get_process_ids(), reverse=True),
-        mdd_version=mdd_version,
-    )
-
-
-@e.route("/mdd_imports", methods=["POST"])
-def mdd_imports_post():
-    try:
-        file_item = request.files["import_file"]
-        file_name = file_item.filename
-        if not file_name.endswith(".zip"):
-            raise BadRequest("The file name should have the extension '.csv'.")
-        f = BytesIO(file_item.stream.read())
-        f.seek(0)
-        proc_id = chellow.e.mdd_importer.start_process(f)
-        return chellow_redirect(f"/mdd_imports/{proc_id}", 303)
-    except BadRequest as e:
-        flash(e.description)
-        return render_template(
-            "mdd_imports.html",
-            process_ids=sorted(chellow.e.mdd_importer.get_process_ids(), reverse=True),
-        )
-
-
-@e.route("/mdd_imports/<int:import_id>")
-def mdd_import_get(import_id):
-    try:
-        proc = chellow.mdd_importer.get_process(import_id)
-        fields = proc.get_fields()
-        fields["is_alive"] = proc.is_alive()
-        fields["process_id"] = import_id
-        return render_template("mdd_import.html", **fields)
-    except BadRequest as e:
-        flash(e.description)
-        return render_template("mdd_import.html", process_id=import_id)
 
 
 @e.route("/meter_payment_types")

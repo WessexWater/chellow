@@ -1089,6 +1089,11 @@ def test_site_edit_get(sess, client, app):
     match(response, 200, *patterns)
 
 
+def test_rate_server_get(sess, client):
+    response = client.get("/rate_server")
+    match(response, 200)
+
+
 def test_site_edit_post_hh(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

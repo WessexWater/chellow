@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Rate Server Importer
+{% endblock %}
+
+{% block nav %}
+	Rate Server Importer
+{% endblock %}
+
+{% block content %}
+	{% if importer %}
+		<table>
+			<tr>
+				<th>Is Locked?</th>
+				<td>{{importer.is_locked()}}</td>
+			</tr>
+		</table>
+		<form method="post">
+			<fieldset {% if importer.is_locked() %}disabled{% endif %}>
+				<legend>Import Now</legend>
+				<input type="submit" value="Import" name="import">
+			</fieldset>
+		</form>
+
+		<h4>Log</h4>
+		<ul>
+			{% for message in importer.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+	{% else %}
+		<p>Importer not present.</p>
+	{% endif %}
+{% endblock %}

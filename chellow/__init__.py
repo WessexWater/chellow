@@ -58,6 +58,7 @@ def get_importer_modules():
         chellow.bank_holidays,
         chellow.gas.cv,
         chellow.e.bmarketidx,
+        chellow.rate_server,
     )
 
 

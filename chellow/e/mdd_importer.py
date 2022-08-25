@@ -1,10 +1,8 @@
 import csv
-import threading
-import traceback
-from collections import deque
 from datetime import datetime as Datetime, timedelta as Timedelta
 from io import StringIO
-from zipfile import ZipFile
+
+import requests
 
 from sqlalchemy import null, or_, select
 from sqlalchemy.orm import joinedload
@@ -26,22 +24,14 @@ from chellow.models import (
     Participant,
     Party,
     Pc,
-    Session,
     Ssc,
     VoltageLevel,
 )
 from chellow.utils import (
     ct_datetime,
-    hh_format,
     to_ct,
     to_utc,
-    utc_datetime_now,
 )
-
-
-process_id = 0
-process_lock = threading.Lock()
-processes = {}
 
 
 def parse_date(date_str):
@@ -695,137 +685,98 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-class MddImporter(threading.Thread):
-    def __init__(self, f):
-        threading.Thread.__init__(self)
-        self.log_lines = deque(maxlen=1000)
-        self.f = f
-        self.rd_lock = threading.Lock()
-        self.error_message = None
+def import_mdd(sess, repo_url, logger):
+    s = requests.Session()
+    s.verify = False
+    mdd_entries = {}
+    for year_entry in s.get(f"{repo_url}/contents").json():
+        if year_entry["type"] == "dir":
+            for util_entry in s.get(year_entry["url"]).json():
+                if util_entry["name"] == "electricity" and util_entry["type"] == "dir":
+                    for dl_entry in s.get(util_entry["url"]).json():
+                        if dl_entry["name"] == "mdd" and dl_entry["type"] == "dir":
+                            for mdd_entry in s.get(dl_entry["url"]).json():
+                                if mdd_entry["type"] == "dir":
+                                    mdd_entries[mdd_entry["name"]] = mdd_entry
 
-    def get_fields(self):
-        return {"log": self.log_lines, "error_message": self.error_message}
+    if len(mdd_entries) == 0:
+        raise BadRequest("Can't find any MDD versions on the rate server.")
 
-    def run(self):
-        def log_f(msg):
-            self.log_lines.appendleft(f"{hh_format(utc_datetime_now())}: {msg}")
+    mdd_entry = sorted(mdd_entries.items())[0][1]
+    mdd_version = int(mdd_entry["name"])
+    logger(f"Latest version on rate server: {mdd_version} at {mdd_entry['path']}")
 
-        sess = None
-        try:
-            sess = Session()
-            zip_file = ZipFile(self.f)
-            znames = {}
-            ctx = {}
-            version = None
+    config = Contract.get_non_core_by_name(sess, "configuration")
+    state = config.make_state()
+    current_version = state.get("mdd_version", 0)
 
-            for zname in zip_file.namelist():
-                csv_file = StringIO(zip_file.read(zname).decode("utf-8"))
-                csv_reader = iter(csv.reader(csv_file))
-                next(csv_reader)  # Skip titles
+    logger(f"Latest version in Chellow: {current_version}")
+    if mdd_version <= current_version:
+        return
 
-                table_name_elements = zname.split("_")
-                ver = int(table_name_elements[-1].split(".")[0])
-                if version is None:
-                    version = ver
+    gnames = {}
+    ctx = {}
+    version = None
 
-                if version != ver:
-                    raise BadRequest(
-                        f"There's a mixture of MDD versions in the file names. "
-                        f"Expected version {version} but found version {ver} in "
-                        f"{zname}."
-                    )
-                table_name = "_".join(table_name_elements[:-1])
-                znames[table_name] = list(csv_reader)
+    for entry in s.get(mdd_entry["url"]).json():
+        if entry["type"] == "file":
+            csv_file = StringIO(s.get(entry["download_url"]).text)
+            csv_reader = iter(csv.reader(csv_file))
+            next(csv_reader)  # Skip titles
 
-            for tname, func in [
-                ("Market_Participant", _import_Market_Participant),
-                ("Market_Role", _import_Market_Role),
-                ("Market_Participant_Role", _import_Market_Participant_Role),
-                ("Line_Loss_Factor_Class", _import_Line_Loss_Factor_Class),
-                ("Meter_Timeswitch_Class", _import_Meter_Timeswitch_Class),
-                ("MTC_in_PES_Area", _import_MTC_in_PES_Area),
-                ("MTC_Meter_Type", _import_MTC_Meter_Type),
-                (
-                    "Standard_Settlement_Configuration",
-                    _import_Standard_Settlement_Configuration,
-                ),
-                (
-                    "Valid_MTC_LLFC_Combination",
-                    _import_Valid_MTC_LLFC_Combination,
-                ),
-                (
-                    "Valid_MTC_SSC_Combination",
-                    _import_Valid_MTC_SSC_Combination,
-                ),
-                (
-                    "Valid_MTC_LLFC_SSC_Combination",
-                    _import_Valid_MTC_LLFC_SSC_Combination,
-                ),
-                (
-                    "Valid_MTC_LLFC_SSC_PC_Combination",
-                    _import_Valid_MTC_LLFC_SSC_PC_Combination,
-                ),
-            ]:
+            entry_name = entry["name"]
+            table_name_elements = entry_name.split("_")
+            ver = int(table_name_elements[-1].split(".")[0])
+            if version is None:
+                version = ver
 
-                if tname in znames:
-                    log_f(f"Found {tname} and will now import it.")
-                    func(sess, znames[tname], ctx)
-                else:
-                    raise BadRequest(f"Can't find {tname} in the ZIP file.")
+            if version != ver:
+                raise BadRequest(
+                    f"There's a mixture of MDD versions in the file names. "
+                    f"Expected version {version} but found version {ver} in "
+                    f"{entry_name}."
+                )
+            table_name = "_".join(table_name_elements[:-1])
+            gnames[table_name] = list(csv_reader)
 
-            config = Contract.get_non_core_by_name(sess, "configuration")
-            state = config.make_state()
-            state["mdd_version"] = version
-            config.update_state(state)
-            sess.commit()
+    for tname, func in [
+        ("Market_Participant", _import_Market_Participant),
+        ("Market_Role", _import_Market_Role),
+        ("Market_Participant_Role", _import_Market_Participant_Role),
+        ("Line_Loss_Factor_Class", _import_Line_Loss_Factor_Class),
+        ("Meter_Timeswitch_Class", _import_Meter_Timeswitch_Class),
+        ("MTC_in_PES_Area", _import_MTC_in_PES_Area),
+        ("MTC_Meter_Type", _import_MTC_Meter_Type),
+        (
+            "Standard_Settlement_Configuration",
+            _import_Standard_Settlement_Configuration,
+        ),
+        (
+            "Valid_MTC_LLFC_Combination",
+            _import_Valid_MTC_LLFC_Combination,
+        ),
+        (
+            "Valid_MTC_SSC_Combination",
+            _import_Valid_MTC_SSC_Combination,
+        ),
+        (
+            "Valid_MTC_LLFC_SSC_Combination",
+            _import_Valid_MTC_LLFC_SSC_Combination,
+        ),
+        (
+            "Valid_MTC_LLFC_SSC_PC_Combination",
+            _import_Valid_MTC_LLFC_SSC_PC_Combination,
+        ),
+    ]:
 
-        except BadRequest as e:
-            sess.rollback()
-            try:
-                self.rd_lock.acquire()
-                self.error_message = e.description
-            finally:
-                self.rd_lock.release()
-        except BaseException:
-            sess.rollback()
-            try:
-                self.rd_lock.acquire()
-                self.error_message = traceback.format_exc()
-            finally:
-                self.rd_lock.release()
-        finally:
-            if sess is not None:
-                sess.close()
+        if tname in gnames:
+            logger(f"Found {tname} and will now import it.")
+            func(sess, gnames[tname], ctx)
+        else:
+            raise BadRequest(f"Can't find {tname} on the rate server.")
 
-
-def start_process(f):
-    try:
-        global process_id
-        process_lock.acquire()
-        proc_id = process_id
-        process_id += 1
-    finally:
-        process_lock.release()
-
-    process = MddImporter(f)
-    processes[proc_id] = process
-    process.start()
-    return proc_id
-
-
-def get_process_ids():
-    try:
-        process_lock.acquire()
-        return processes.keys()
-    finally:
-        process_lock.release()
-
-
-def get_process(pid):
-    try:
-        process_lock.acquire()
-        return processes[pid]
-    except KeyError:
-        raise BadRequest(f"The importer with id {pid} can't be found.")
-    finally:
-        process_lock.release()
+    config = Contract.get_non_core_by_name(sess, "configuration")
+    state = config.make_state()
+    state["mdd_version"] = version
+    config.update_state(state)
+    sess.commit()
