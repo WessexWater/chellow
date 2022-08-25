@@ -9,6 +9,10 @@ from chellow.models import (
     Contract,
     Cop,
     EnergisationStatus,
+    GContract,
+    GDn,
+    GReadingFrequency,
+    GUnit,
     GspGroup,
     MarketRole,
     MeterPaymentType,
@@ -31,6 +35,8 @@ from chellow.models import (
     insert_comms,
     insert_cops,
     insert_energisation_statuses,
+    insert_g_reading_frequencies,
+    insert_g_units,
     insert_sources,
     insert_voltage_levels,
 )
@@ -528,7 +534,7 @@ def test_site_hh_data(sess, client):
     match(response, 200)
 
 
-def test_supplies_get(sess, client):
+def test_supplies_get_e(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
@@ -698,6 +704,50 @@ def test_supplies_get(sess, client):
     response = client.get("/supplies", query_string=query_string)
 
     match(response, 200)
+
+
+def test_supplies_get_g(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+
+    g_dn = GDn.insert(sess, "EE", "East of England")
+
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+
+    insert_g_units(sess)
+
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+
+    insert_g_reading_frequencies(sess)
+
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+
+    mprn = "87614362"
+    g_supply = site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
+    sess.commit()
+    query_string = {
+        "search_pattern": mprn,
+    }
+    response = client.get("/supplies", query_string=query_string)
+
+    match(response, 307, rf"/g/supplies/{g_supply.id}")
 
 
 def test_general_import_post_full(sess, client):

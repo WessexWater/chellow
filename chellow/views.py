@@ -1137,7 +1137,7 @@ limit :max_results"""
         if len(e_eras) == 1 and len(g_eras) == 0:
             return chellow_redirect(f"/e/supplies/{e_eras[0].supply.id}", 307)
         elif len(e_eras) == 0 and len(g_eras) == 1:
-            return chellow_redirect(f"/g_supplies/{g_eras[0].g_supply.id}", 307)
+            return chellow_redirect(f"/g/supplies/{g_eras[0].g_supply.id}", 307)
         else:
             return render_template(
                 "supplies.html", e_eras=e_eras, g_eras=g_eras, max_results=max_results
