@@ -37,7 +37,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import IntegrityError, ProgrammingError, SQLAlchemyError
+from sqlalchemy.exc import (
+    IntegrityError,
+    NoResultFound,
+    ProgrammingError,
+    SQLAlchemyError,
+)
 from sqlalchemy.orm import (
     aliased,
     attributes,
@@ -46,7 +51,6 @@ from sqlalchemy.orm import (
     relationship,
     sessionmaker,
 )
-from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql.expression import false, true
 
@@ -2923,14 +2927,6 @@ class MtcLlfcSsc(Base, PersistentClass):
 
 
 class Tpr(Base, PersistentClass):
-    @staticmethod
-    def get_by_code(sess, code):
-        code = code.zfill(5)
-        tpr = sess.query(Tpr).filter(Tpr.code == code).one()
-        if tpr is None:
-            raise BadRequest("The TPR code can't be found.")
-        return tpr
-
     __tablename__ = "tpr"
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -2939,6 +2935,29 @@ class Tpr(Base, PersistentClass):
     clock_intervals = relationship("ClockInterval", backref="tpr")
     measurement_requirements = relationship("MeasurementRequirement", backref="tpr")
     register_reads = relationship("RegisterRead", backref="tpr")
+
+    def __init__(self, code, is_teleswitch, is_gmt):
+        self.code = code
+        self.is_teleswitch = is_teleswitch
+        self.is_gmt = is_gmt
+
+    @classmethod
+    def insert(cls, sess, code, is_teleswitch, is_gmt):
+        tpr = cls(code, is_teleswitch, is_gmt)
+        sess.add(tpr)
+        sess.flush()
+        return tpr
+
+    @staticmethod
+    def get_by_code(sess, code):
+        full_code = code.zfill(5)
+        try:
+            tpr = sess.execute(select(Tpr).where(Tpr.code == full_code)).scalar_one()
+        except NoResultFound:
+            raise BadRequest(
+                f"A TPR with code '{code}' expanded to '{full_code}' can't be found."
+            )
+        return tpr
 
 
 class ClockInterval(Base, PersistentClass):

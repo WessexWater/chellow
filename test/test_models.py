@@ -27,6 +27,7 @@ from chellow.models import (
     Source,
     Ssc,
     Supply,
+    Tpr,
     VoltageLevel,
     _jsonize,
     insert_comms,
@@ -550,6 +551,27 @@ def test_Contract_get_next_batch_details__no_suffix(mocker):
     ref, desc = Contract.get_next_batch_details(instance, sess)
     assert ref == batch_reference
     assert desc == batch_description
+
+
+def test_Tpr_get_by_code_not_found(sess):
+    with pytest.raises(
+        BadRequest,
+        match="A TPR with code 'g' expanded to '0000g' can't be found.",
+    ):
+        Tpr.get_by_code(sess, "g")
+
+
+def test_Tpr_get_by_code_found(sess):
+    code = "00001"
+    is_teleswitch = False
+    is_gmt = True
+    Tpr.insert(sess, code, is_teleswitch, is_gmt)
+    sess.commit()
+
+    tpr = Tpr.get_by_code(sess, code)
+    assert tpr.code == code
+    assert tpr.is_teleswitch == is_teleswitch
+    assert tpr.is_gmt == is_gmt
 
 
 def test_sql_insert_GExitZone(mocker, sess):
