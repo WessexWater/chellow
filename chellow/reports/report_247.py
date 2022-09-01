@@ -191,6 +191,7 @@ def _process_site(
                 disp_supplier_contract.name,
                 None,
                 None,
+                None,
                 displaced_era.meter_category,
                 "displaced",
                 None,
