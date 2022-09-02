@@ -292,12 +292,12 @@ def supply_edit_post(g_supply_id):
         if "delete" in request.values:
             g_supply.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/g_supplies", 303)
+            return chellow_redirect("/supplies", 303)
         elif "insert_g_era" in request.values:
             start_date = req_date("start")
             g_supply.insert_g_era_at(g.sess, start_date)
             g.sess.commit()
-            return chellow_redirect("/g_supplies/" + str(g_supply.id), 303)
+            return chellow_redirect(f"/supplies/{g_supply.id}", 303)
         else:
             mprn = req_str("mprn")
             name = req_str("name")
@@ -305,7 +305,7 @@ def supply_edit_post(g_supply_id):
             g_exit_zone = GExitZone.get_by_id(g.sess, g_exit_zone_id)
             g_supply.update(mprn, name, g_exit_zone)
             g.sess.commit()
-            return chellow_redirect("/g_supplies/" + str(g_supply.id), 303)
+            return chellow_redirect(f"/supplies/{g_supply.id}", 303)
     except BadRequest as e:
         flash(e.description)
         g_eras = (

@@ -720,6 +720,55 @@ def test_supply_notes_get(client, sess):
     match(response, 200)
 
 
+def test_supply_edit_post(client, sess):
+
+    site = Site.insert(sess, "22488", "Water Works")
+
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+
+    g_contract = GContract.insert_supplier(
+        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+
+    g_supply = site.insert_g_supply(
+        sess,
+        "7y94u5",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
+
+    sess.commit()
+
+    data = {
+        "insert_g_era": "Insert",
+        "start_year": "2022",
+        "start_month": "01",
+        "start_day": "01",
+        "start_hour": "00",
+        "start_minute": "00",
+    }
+
+    response = client.post(f"/g/supplies/{g_supply.id}/edit", data=data)
+    assert response.headers["Location"] == f"http://localhost/g/supplies/{g_supply.id}"
+
+    match(response, 303)
+
+
 def test_read_edit_post_delete(sess, client):
 
     site = Site.insert(sess, "22488", "Water Works")
