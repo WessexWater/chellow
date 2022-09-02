@@ -5,32 +5,23 @@
  	Era {{g_era.start_date|hh_format}} Edit
 {% endblock %}
 
-{% block style %}
-	<style>
-		label.aligned {
-			width: 18em;
-			float: left;
-		}
-	</style>
-{% endblock %}
-
 {% block nav %}
-	<a href="/g_supplies">Gas Supplies</a> &raquo;
-	<a href="/g_supplies/{{g_era.g_supply.id}}">{{g_era.g_supply.id}}</a> &raquo;
+	<a href="/g/supplies">Gas Supplies</a> &raquo;
+	<a href="/g/supplies/{{g_era.g_supply.id}}">{{g_era.g_supply.id}}</a> &raquo;
  	Era {{g_era.start_date|hh_format}} Edit
 {% endblock %}
 
 {% block content %}
 	{% if request.method == 'GET' and request.values.delete %}
 
-		<form method="post" action="/g_eras/{{g_era.id}}/edit">
+		<form method="post" action="/g/eras/{{g_era.id}}/edit">
 			<fieldset>
 				<legend>Are you sure you want to delete this era?</legend>
 				<input type="submit" name="delete" value="Delete">
 			</fieldset>
 		</form>
 		<p>
-			<a href="/g_eras/{{g_era.id}}/edit">Cancel</a>
+			<a href="/g/eras/{{g_era.id}}/edit">Cancel</a>
 		</p>
 
 	{% else %}
@@ -58,7 +49,7 @@
 								{% if site_g_era.is_physical %}
 									Located here
 								{% else %}
-									<form method="post" action="/g_eras/{{g_era.id}}/edit">
+									<form method="post" action="/g/eras/{{g_era.id}}/edit">
 										<fieldset>
 											<input
 													type="hidden" name="site_id"
@@ -70,12 +61,10 @@
 								{% endif %}
 							</td>
 							<td>
-								<form method="post" action="/g_eras/{{g_era.id}}/edit">
+								<form method="post" action="/g/eras/{{g_era.id}}/edit">
 									<fieldset>
 										<legend>Detach from site</legend>
-										<input
-												type="hidden" name="site_id"
-												value="{{site_g_era.site.id}}">
+										<input type="hidden" name="site_id" value="{{site_g_era.site.id}}">
 										<input type="submit" name="detach" value="Detach">
 									</fieldset>
 								</form>
@@ -86,21 +75,18 @@
 			</tbody>
 		</table>
 			 
-		<form method="post" action="/g_eras/{{g_era.id}}/edit">
+		<form method="post" action="/g/eras/{{g_era.id}}/edit">
 			<fieldset>
 				<legend>Attach to another site</legend>
-				<label>Site Code {{input_text("site_code", '')}}</label>
+				<label>Site Code</label> {{input_text("site_code", '')}}
 				<input type="submit" name="attach" value="Attach">
 			</fieldset>
 		</form>
 
-		<form action="/g_eras/{{g_era.id}}/edit" method="post">
+		<form action="/g/eras/{{g_era.id}}/edit" method="post">
 			<fieldset>
 				<legend>Update this era</legend>
-				<fieldset>
-					<legend>Start date</legend>
-					{{input_date('start', g_era.start_date)}}
-				</fieldset>
+				<label>Start date</label> {{input_date('start', g_era.start_date)}}
 
 				<fieldset>
 					<legend>End Date</legend>
@@ -110,35 +96,30 @@
 					{{input_date('finish', g_era.finish_date)}}
 				</fieldset>
 
-				<label class="aligned">Meter Serial Number</label>
-				{{input_text('msn', g_era.msn, 16)}}
-				<label class="aligned">Correction Factor</label>
+				<label>Meter Serial Number</label> {{input_text('msn', g_era.msn, 16)}}
+				<label>Correction Factor</label>
 				{{input_text('correction_factor', g_era.correction_factor)}}
-				<label class="aligned">Units</label>
+				<label>Units</label>
 				<select name="g_unit_id">
 					{% for g_unit in g_units %}
-						{{input_option(
-							'g_unit_id', g_unit.id, g_unit.code, g_era.g_unit.id)}}
+						{{input_option('g_unit_id', g_unit.id, g_unit.code, g_era.g_unit.id)}}
 					{% endfor %}
 				</select>
-				<label class="aligned">Contract</label>
+				<label>Contract</label>
 				<select name="g_contract_id">
 					{% for g_contract in supplier_g_contracts %}
 						{{
 							input_option(
-								'g_contract_id', g_contract.id, g_contract.name,
-								g_era.g_contract.id)}}
+								'g_contract_id', g_contract.id, g_contract.name, g_era.g_contract.id)}}
 					{% endfor %}
 				</select>
-				<label class="aligned">Account</label>
-				{{input_text('account', g_era.account)}}
-				<label class="aligned">Reading Frequency</label>
+				<label>Account</label> {{input_text('account', g_era.account)}}
+				<label>Reading Frequency</label>
 				<select name="g_reading_frequency_id">
 					{% for g_reading_frequency in g_reading_frequencies %}
 						{{input_option(
 							'g_reading_frequency_id', g_reading_frequency.id,
-							g_reading_frequency.code + ' - ' +
-							g_reading_frequency.description,
+							g_reading_frequency.code + ' - ' + g_reading_frequency.description,
 							g_era.g_reading_frequency.id)}}
 					{% endfor %}
 				</select>
@@ -147,7 +128,7 @@
 		</form>
 
 		{% if g_era.g_supply.g_eras|length > 1 %}
-			<form action="/g_eras/{{g_era.id}}/edit">
+			<form action="/g/eras/{{g_era.id}}/edit">
 				<fieldset>
 					<legend>Delete this era</legend>
 					<input type="submit" name="delete" value="Delete">
