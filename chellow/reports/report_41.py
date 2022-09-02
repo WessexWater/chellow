@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import null, true
 import chellow.dloads
 import chellow.e.computer
 import chellow.e.duos
-import chellow.e.triad
+import chellow.e.tnuos
 from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
 from chellow.utils import (
     HH,
@@ -87,8 +87,8 @@ def content(year, supply_id, user):
             if supply_source is None or supply_source.mpan_core.startswith("99"):
                 return [""] * 19
 
-            chellow.duos.duos_vb(supply_source)
-            chellow.triad.hh(supply_source)
+            chellow.e.duos.duos_vb(supply_source)
+            chellow.e.tnuos.hh(supply_source)
             for hh in supply_source.hh_data:
                 bill_hh = supply_source.supplier_bill_hhs[hh["start-date"]]
                 for k in scalar_names & hh.keys():

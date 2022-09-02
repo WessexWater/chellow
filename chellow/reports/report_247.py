@@ -12,23 +12,19 @@ from flask import flash, g, make_response, render_template, request
 import odio
 
 from sqlalchemy import or_, select, true
-from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 import chellow.e.computer
-from chellow.e.computer import SupplySource, contract_func, displaced_era
-from chellow.e.scenario import ScenarioSource, make_calcs, make_site_deltas
+from chellow.e.computer import contract_func
+from chellow.e.scenario import make_calcs, make_site_deltas
 from chellow.models import (
     Bill,
     Contract,
     Era,
-    Llfc,
     MeasurementRequirement,
-    MtcParticipant,
-    Pc,
     Scenario,
     Session,
     Site,
@@ -45,7 +41,6 @@ from chellow.utils import (
     c_months_c,
     c_months_u,
     hh_format,
-    hh_max,
     hh_min,
     hh_range,
     make_val,
@@ -95,7 +90,7 @@ def _process_site(
     finish_date,
     site,
     scenario_props,
-    supply_id,
+    supply_ids,
     now,
     summary_titles,
     title_dict,
@@ -107,15 +102,14 @@ def _process_site(
     era_maps = scenario_props.get("era_maps", {})
 
     site_deltas = make_site_deltas(
-        sess, report_context, site, scenario_hh, forecast_from, supply_id
+        sess, report_context, site, scenario_hh, forecast_from, supply_ids
     )
-
     calcs, site_gen_types = make_calcs(
         sess,
         site,
         start_date,
         finish_date,
-        supply_id,
+        supply_ids,
         site_deltas,
         forecast_from,
         report_context,
@@ -463,8 +457,8 @@ def _process_site(
             era_rows.append([make_val(v) for v in out])
 
     q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
-    if supply_id is not None:
-        q = q.filter(Supply.id == supply_id)
+    if supply_ids is not None:
+        q = q.where(Supply.id.in_(supply_ids))
     for supply in sess.execute(q).scalars():
         last_era = (
             sess.execute(
@@ -697,11 +691,8 @@ class Object:
 def content(
     scenario_props,
     base_name,
-    site_id,
-    supply_id,
     user_id,
     compression,
-    site_codes,
     now,
     is_bill_check,
 ):
@@ -758,19 +749,36 @@ def content(
             forecast_from = to_utc(forecast_from)
 
         sites = sess.query(Site).distinct().order_by(Site.code)
-        if site_id is not None:
-            site = Site.get_by_id(sess, site_id)
-            sites = sites.filter(Site.id == site.id)
-            base_name.append("site")
-            base_name.append(site.code)
-        if supply_id is not None:
-            supply = Supply.get_by_id(sess, supply_id)
-            base_name.append("supply")
-            base_name.append(str(supply.id))
-            sites = sites.join(SiteEra).join(Era).filter(Era.supply == supply)
-        if len(site_codes) > 0:
-            base_name.append("sitecodes")
-            sites = sites.filter(Site.code.in_(site_codes))
+
+        mpan_cores = scenario_props["mpan_cores"]
+        supply_ids = None
+        if mpan_cores is not None:
+            supply_ids = []
+            for mpan_core in mpan_cores:
+                supply = Supply.get_by_mpan_core(sess, mpan_core)
+                supply_ids.append(supply.id)
+
+            if len(supply_ids) == 1:
+                base_name.append("supply")
+                base_name.append(str(supply.id))
+            else:
+                base_name.append("mpan_cores")
+
+            sites = (
+                sites.join(SiteEra)
+                .join(Era)
+                .join(Supply)
+                .where(Supply.id.in_(supply_ids))
+            )
+
+        site_codes = scenario_props["site_codes"]
+        if site_codes is not None:
+            if len(site_codes) == 1:
+                base_name.append("site")
+                base_name.append(site_codes[0])
+            else:
+                base_name.append("sitecodes")
+            sites = sites.where(Site.code.in_(site_codes))
 
         user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
@@ -906,8 +914,8 @@ def content(
                 .distinct()
                 .order_by(Contract.id)
             )
-            if supply_id is not None:
-                conts = conts.filter(Era.supply_id == supply_id)
+            if supply_ids is not None:
+                conts = conts.where(Supply.id.in_(supply_ids))
             for cont in conts:
                 title_func = chellow.e.computer.contract_func(
                     report_context, cont, "virtual_bill_titles"
@@ -984,7 +992,7 @@ def content(
                             finish,
                             site,
                             scenario_props,
-                            supply_id,
+                            supply_ids,
                             now,
                             summary_titles,
                             title_dict,
@@ -1001,7 +1009,7 @@ def content(
                                 finish,
                                 site,
                                 scenario_props,
-                                supply_id,
+                                supply_ids,
                                 now,
                                 summary_titles,
                                 title_dict,
@@ -1069,183 +1077,6 @@ def content(
             ef.close()
 
 
-def _make_calcs(
-    sess,
-    site,
-    start_date,
-    finish_date,
-    supply_id,
-    site_deltas,
-    forecast_from,
-    report_context,
-    era_maps,
-    data_source_bill,
-):
-    site_gen_types = set()
-    calcs = []
-    for era in (
-        sess.query(Era)
-        .join(SiteEra)
-        .join(Pc)
-        .filter(
-            SiteEra.site == site,
-            SiteEra.is_physical == true(),
-            Era.start_date <= finish_date,
-            or_(Era.finish_date == null(), Era.finish_date >= start_date),
-        )
-        .options(
-            joinedload(Era.ssc),
-            joinedload(Era.dc_contract),
-            joinedload(Era.mop_contract),
-            joinedload(Era.imp_supplier_contract),
-            joinedload(Era.exp_supplier_contract),
-            joinedload(Era.channels),
-            joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
-            joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
-            joinedload(Era.cop),
-            joinedload(Era.supply).joinedload(Supply.dno),
-            joinedload(Era.supply).joinedload(Supply.gsp_group),
-            joinedload(Era.supply).joinedload(Supply.source),
-            joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
-            joinedload(Era.pc),
-            joinedload(Era.site_eras),
-        )
-        .order_by(Era.supply_id, Era.start_date)
-    ):
-
-        supply = era.supply
-        if data_source_bill is not None and supply.dno.dno_code in ("88", "99"):
-            continue
-
-        if supply.generator_type is not None:
-            site_gen_types.add(supply.generator_type.code)
-
-        if supply_id is not None and supply.id != supply_id:
-            continue
-
-        ss_start = hh_max(era.start_date, start_date)
-        ss_finish = hh_min(era.finish_date, finish_date)
-
-        if era.imp_mpan_core is None:
-            imp_ss = None
-        else:
-            sup_deltas = site_deltas["supply_deltas"][True][supply.source.code]
-            imp_ss = SupplySource(
-                sess,
-                ss_start,
-                ss_finish,
-                forecast_from,
-                era,
-                True,
-                report_context,
-                era_maps=era_maps,
-                deltas=sup_deltas,
-                bill=data_source_bill if era.pc.code == "00" else None,
-            )
-
-        if era.exp_mpan_core is None:
-            exp_ss = None
-            measurement_type = imp_ss.measurement_type
-        else:
-            sup_deltas = site_deltas["supply_deltas"][False][supply.source.code]
-
-            exp_ss = SupplySource(
-                sess,
-                ss_start,
-                ss_finish,
-                forecast_from,
-                era,
-                False,
-                report_context,
-                era_maps=era_maps,
-                deltas=sup_deltas,
-                bill=data_source_bill if era.pc.code == "00" else None,
-            )
-            measurement_type = exp_ss.measurement_type
-
-        order = (
-            f"{meter_order[measurement_type]}_{supply.id}_"
-            f"{hh_format(era.start_date)}"
-        )
-        calcs.append((order, era.imp_mpan_core, era.exp_mpan_core, imp_ss, exp_ss))
-
-    # Check if gen deltas haven't been consumed
-    extra_sss = set()
-    for is_imp in (True, False):
-        sup_deltas = site_deltas["supply_deltas"][is_imp]["gen"]
-        if (
-            len(list(t for t in sup_deltas["site"] if start_date <= t <= finish_date))
-            > 0
-        ):
-            extra_sss.add(is_imp)
-
-    disp_era = displaced_era(
-        sess,
-        report_context,
-        site,
-        start_date,
-        finish_date,
-        forecast_from,
-        has_scenario_generation=len(extra_sss) > 0,
-    )
-
-    if len(extra_sss) > 0:
-        if True in extra_sss:
-            sup_deltas = site_deltas["supply_deltas"][True]["gen"]
-            imp_ss_name = site.code + "_extra_gen_TRUE"
-            imp_ss = ScenarioSource(
-                sess,
-                start_date,
-                finish_date,
-                True,
-                report_context,
-                sup_deltas,
-                disp_era.imp_supplier_contract,
-                imp_ss_name,
-                bill=data_source_bill,
-            )
-        else:
-            imp_ss_name = imp_ss = None
-        if False in extra_sss:
-            exp_ss_name = site.code + "_extra_gen_FALSE"
-            sup_deltas = site_deltas["supply_deltas"][False]["gen"]
-            exp_ss = ScenarioSource(
-                sess,
-                start_date,
-                finish_date,
-                False,
-                report_context,
-                sup_deltas,
-                disp_era.imp_supplier_contract,
-                imp_ss_name,
-                bill=data_source_bill,
-            )
-        else:
-            exp_ss_name = exp_ss = None
-
-        calcs.append(("0", imp_ss_name, exp_ss_name, imp_ss, exp_ss))
-
-    # Check if exp net deltas haven't been consumed
-    sup_deltas = site_deltas["supply_deltas"][False]["net"]
-    if len(list(t for t in sup_deltas["site"] if start_date <= t <= finish_date)) > 0:
-        ss_name = site.code + "_extra_net_export"
-        ss = SupplySource(
-            sess,
-            start_date,
-            finish_date,
-            forecast_from,
-            disp_era,
-            False,
-            report_context,
-            era_maps=era_maps,
-            deltas=sup_deltas,
-            bill=data_source_bill,
-        )
-
-        calcs.append(("0", None, ss_name, None, ss))
-    return calcs, disp_era, site_gen_types
-
-
 def do_post(sess):
 
     base_name = []
@@ -1274,21 +1105,32 @@ def do_post(sess):
         base_name.append("monthly_duration")
 
     try:
-        site_id = req_int("site_id") if "site_id" in request.values else None
+        site_codes = None
+        if "site_id" in request.values:
+            site_id = req_int("site_id")
+            site_codes = [Site.get_by_id(sess, site_id).code]
+
         if "site_codes" in request.values:
-            site_codes = req_str("site_codes").splitlines()
+            if site_codes is None:
+                site_codes = []
 
-            # Check sites codes are valid
-            for site_code in site_codes:
-                Site.get_by_code(sess, site_code)
+            site_codes_str = req_str("site_codes")
 
-        else:
-            site_codes = []
+            for site_code in site_codes_str.splitlines():
+                Site.get_by_code(sess, site_code)  # Check valid
+                site_codes.append(site_code)
+
+        scenario_props["site_codes"] = site_codes
 
         if "supply_id" in request.values:
             supply_id = req_int("supply_id")
+            supply = Supply.get_by_id(sess, supply_id)
+            era = supply.eras[-1]
+            imp_mpan_core, exp_mpan_core = era.imp_mpan_core, era.exp_mpan_core
+            mpan_cores = [exp_mpan_core if imp_mpan_core is None else imp_mpan_core]
         else:
-            supply_id = None
+            mpan_cores = None
+        scenario_props["mpan_cores"] = mpan_cores
 
         if "compression" in request.values:
             compression = req_bool("compression")
@@ -1302,11 +1144,8 @@ def do_post(sess):
         args = (
             scenario_props,
             base_name,
-            site_id,
-            supply_id,
             user.id,
             compression,
-            site_codes,
             now,
             is_bill_check,
         )

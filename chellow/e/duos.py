@@ -752,6 +752,8 @@ def datum_2012_02_23(ds, hh):
 
     hh["duos-reactive-kvarh"] = kvarh
 
+    hh["duos-description"] = tariff["description"]
+
     duos_reactive_rate = tariff["gbp-per-kvarh"]
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)

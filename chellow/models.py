@@ -6968,6 +6968,11 @@ def db_upgrade_38_to_39(sess, root_path):
     """
 
 
+def db_upgrade_39_to_40(sess, root_path):
+    contract = Contract.get_non_core_by_name(sess, "triad_rates")
+    contract.name = "tnuos"
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -6992,6 +6997,7 @@ upgrade_funcs.extend(
         db_upgrade_36_to_37,
         db_upgrade_37_to_38,
         db_upgrade_38_to_39,
+        db_upgrade_39_to_40,
     ]
 )
 

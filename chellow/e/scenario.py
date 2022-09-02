@@ -443,7 +443,6 @@ def make_calcs(
         calcs.append((order, era.imp_mpan_core, era.exp_mpan_core, imp_ss, exp_ss))
 
     start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
-
     for month_start, month_finish in c_months_u(
         start_year=start_date_ct.year,
         start_month=start_date_ct.month,

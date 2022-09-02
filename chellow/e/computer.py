@@ -121,9 +121,13 @@ def contract_func(caches, contract, func_name):
     return ns.get(func_name, None)
 
 
-def hh_rate(sess, caches, contract_id, date):
+def non_core_rate(sess, caches, contract_id_or_name, date):
+    return hh_rate(sess, caches, contract_id_or_name, date, market_role_code="Z")
+
+
+def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
     try:
-        return caches["computer"]["rates"][contract_id][date]
+        return caches["computer"]["rates"][market_role_code][contract_id_or_name][date]
     except KeyError:
         try:
             ccache = caches["computer"]
@@ -136,20 +140,32 @@ def hh_rate(sess, caches, contract_id, date):
             rss_cache = ccache["rates"] = {}
 
         try:
-            cont_cache = rss_cache[contract_id]
+            mr_cache = rss_cache[market_role_code]
         except KeyError:
-            cont_cache = rss_cache[contract_id] = {}
+            mr_cache = rss_cache[market_role_code] = {}
+
+        try:
+            cont_cache = mr_cache[contract_id_or_name]
+        except KeyError:
+            cont_cache = mr_cache[contract_id_or_name] = {}
 
         try:
             return cont_cache[date]
         except KeyError:
+            if market_role_code is None:
+                contract = Contract.get_by_id(sess, contract_id_or_name)
+            else:
+                contract = Contract.get_by_role_code_name(
+                    sess, market_role_code, contract_id_or_name
+                )
+
             year_after = date + YEAR
             year_before = date - YEAR
 
             rs = (
                 sess.query(RateScript)
                 .filter(
-                    RateScript.contract_id == contract_id,
+                    RateScript.contract == contract,
                     RateScript.start_date <= date,
                     or_(
                         RateScript.finish_date == null(), RateScript.finish_date >= date
@@ -161,7 +177,7 @@ def hh_rate(sess, caches, contract_id, date):
             if rs is None:
                 rs = (
                     sess.query(RateScript)
-                    .filter(RateScript.contract_id == contract_id)
+                    .filter(RateScript.contract == contract)
                     .order_by(RateScript.start_date.desc())
                     .first()
                 )
@@ -541,6 +557,11 @@ class DataSource:
             val = hh_rate(self.sess, self.caches, contract_id, date)
             self.rate_cache = self.caches["computer"]["rates"]
             return val
+
+    def non_core_rate(self, contract_name_or_id, date):
+        return hh_rate(
+            self.sess, self.caches, contract_name_or_id, date, market_role_code="Z"
+        )
 
     def _add_problem(self, problem):
         self.supplier_bill["problem"] += problem

@@ -150,6 +150,7 @@ def test_lafs_hist(mocker, sess):
             "bands": {},
             "tariffs": {
                 "510": {
+                    "description": "LV Sub Generation Site Specific",
                     "gbp-per-kvarh": 0,
                     "green-gbp-per-kwh": 0,
                     "gbp-per-mpan-per-day": 0,
@@ -229,6 +230,7 @@ def test_lafs_forecast_none(mocker, sess):
             "bands": {},
             "tariffs": {
                 llfc_code: {
+                    "description": "LV Sub Generation Site Specific",
                     "gbp-per-kvarh": 0,
                     "green-gbp-per-kwh": 0,
                     "gbp-per-mpan-per-day": 0,
@@ -299,6 +301,7 @@ def test_lafs_forecast(mocker, sess):
             "bands": {},
             "tariffs": {
                 "510": {
+                    "description": "LV Sub Generation Site Specific",
                     "gbp-per-kvarh": 0,
                     "green-gbp-per-kwh": 0,
                     "gbp-per-mpan-per-day": 0,

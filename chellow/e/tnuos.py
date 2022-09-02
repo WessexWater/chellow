@@ -4,7 +4,7 @@ from sqlalchemy import null, or_, select
 
 import chellow.e.computer
 import chellow.e.duos
-from chellow.models import RateScript, get_non_core_contract_id
+from chellow.models import Contract, RateScript
 from chellow.utils import (
     c_months_u,
     ct_datetime,
@@ -14,16 +14,31 @@ from chellow.utils import (
     to_utc,
 )
 
+BANDED_START = to_utc(ct_datetime(2023, 4, 1))
+
 
 def hh(ds, rate_period="monthly", est_kw=None):
-    dates_db_id = get_non_core_contract_id("triad_dates")
-    rates_db_id = get_non_core_contract_id("triad_rates")
+
     for hh in ds.hh_data:
         if hh["ct-is-month-end"]:
-            _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh)
+            _process_triad_hh(ds, rate_period, est_kw, hh)
+            if hh["start-date"] >= BANDED_START:
+                _process_banded_hh(ds, hh)
 
 
-def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
+def _process_banded_hh(ds, hh):
+    rates = ds.non_core_rate("tnuos", hh["start-date"])
+    lookup = rates["lookup"]
+    band = lookup[hh["duos-description"]]
+    hh["tnuos-band"] = band
+    rate = float(rates["bands"][band])
+    if band == "Unmetered":
+        hh["tnuos-gbp"] = rate / 100 * ds.sc / 12
+    else:
+        hh["tnuos-gbp"] = rate / 12
+
+
+def _process_triad_hh(ds, rate_period, est_kw, hh):
     month_start, month_finish = next(
         c_months_u(start_year=hh["ct-year"], start_month=hh["ct-month"])
     )
@@ -39,7 +54,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
 
     est_triad_kws = []
     earliest_triad = None
-    for dt in ds.hh_rate(dates_db_id, last_financial_year_start)["triad_dates"]:
+    for dt in ds.non_core_rate("triad_dates", last_financial_year_start)["triad_dates"]:
         triad_hh = None
         earliest_triad = hh_min(earliest_triad, dt)
         try:
@@ -93,7 +108,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
     polarity = "import" if ds.llfc.is_import else "export"
     gsp_group_code = ds.gsp_group_code
     rate = float(
-        ds.hh_rate(rates_db_id, month_start)["triad_gbp_per_gsp_kw"][polarity][
+        ds.non_core_rate("tnuos", month_start)["triad_gbp_per_gsp_kw"][polarity][
             gsp_group_code
         ]
     )
@@ -126,7 +141,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
 
     if hh["ct-month"] == 3:
         triad_kws = []
-        for t_date in ds.hh_rate(dates_db_id, month_start)["triad_dates"]:
+        for t_date in ds.non_core_rate("triad_dates", month_start)["triad_dates"]:
             try:
                 d = next(ds.get_data_sources(t_date, t_date))
                 if (
@@ -186,8 +201,10 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
         gsp_group_code = ds.gsp_group_code
         tot_rate = 0
         for rs in ds.sess.execute(
-            select(RateScript).where(
-                RateScript.contract_id == rates_db_id,
+            select(RateScript)
+            .join(Contract, RateScript.contract_id == Contract.id)
+            .where(
+                Contract.name == "tnuos",
                 RateScript.start_date <= financial_year_finish,
                 or_(
                     RateScript.finish_date == null(),
@@ -207,7 +224,7 @@ def _process_hh(ds, dates_db_id, rates_db_id, rate_period, est_kw, hh):
             if finish_month < 4:
                 finish_month += 12
 
-            rt = ds.hh_rate(rates_db_id, rs.start_date)["triad_gbp_per_gsp_kw"][
+            rt = ds.non_core_rate("tnuos", rs.start_date)["triad_gbp_per_gsp_kw"][
                 polarity
             ][gsp_group_code]
             tot_rate += (finish_month - start_month + 1) * float(rt)

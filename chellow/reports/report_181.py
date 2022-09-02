@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.dloads
 import chellow.e.computer
 import chellow.e.duos
-import chellow.e.triad
+import chellow.e.tnuos
 from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
 from chellow.utils import (
     HH,
@@ -118,7 +118,7 @@ def _write_sites(sess, caches, writer, year, site_id):
             displaced_era,
         )
         chellow.e.duos.duos_vb(site_ds)
-        chellow.e.triad.hh(site_ds)
+        chellow.e.tnuos.hh(site_ds)
 
         for hh in site_ds.hh_data:
             bill_hh = site_ds.supplier_bill_hhs[hh["start-date"]]

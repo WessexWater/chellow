@@ -10,7 +10,6 @@ from utils import match
 
 from zish import loads
 
-from chellow.e.scenario import make_site_deltas
 from chellow.models import (
     BillType,
     Comm,
@@ -41,7 +40,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.reports.report_247 import _make_calcs, content
+from chellow.reports.report_247 import content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
@@ -76,13 +75,13 @@ def test_with_scenario(mocker, sess, client):
     }"""
     scenario_props = loads(properties)
     scenario = Scenario.insert(sess, "New Gen", scenario_props)
+
+    site_code = "CI017"
+    site = Site.insert(sess, site_code, "Water Works")
     sess.commit()
 
     now = utc_datetime(2020, 1, 1)
     mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
-
-    site_code = "CI017"
-    site = Site.insert(sess, site_code, "Water Works")
 
     data = {
         "site_id": site.id,
@@ -97,14 +96,13 @@ def test_with_scenario(mocker, sess, client):
     base_name = ["New Gen"]
     user = User.get_by_email_address(sess, "admin@example.com")
     is_bill_check = False
+    scenario_props["site_codes"] = [site_code]
+    scenario_props["mpan_cores"] = None
     args = (
         scenario_props,
         base_name,
-        site.id,
-        None,
         user.id,
         False,
-        [],
         now,
         is_bill_check,
     )
@@ -112,221 +110,26 @@ def test_with_scenario(mocker, sess, client):
     mock_Thread.assert_called_with(target=content, args=args)
 
 
-def test_scenario_new_generation(mocker, sess):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
-    site = Site.insert(sess, "CI017", "Water Works")
-    start_date = utc_datetime(2009, 7, 31, 23, 00)
-    finish_date = utc_datetime(2009, 8, 31, 22, 30)
-    supply_id = None
-    report_context = {}
-    forecast_from = utc_datetime(2020, 1, 1)
-
-    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
-    bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
-    )
-    market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    market_role_M = MarketRole.insert(sess, "M", "Mop")
-    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
-    insert_cops(sess)
-    cop = Cop.get_by_code(sess, "5")
-    insert_comms(sess)
-    comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
-    )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    Contract.insert_dno(
-        sess,
-        dno.dno_code,
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(sess, "845", True, False, valid_from, None)
-    mtc_participant = MtcParticipant.insert(
-        sess,
-        mtc,
-        participant,
-        "HH COP5 And Above With Comms",
-        False,
-        True,
-        meter_type,
-        meter_payment_type,
-        0,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
-    insert_voltage_levels(sess)
-    voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc_imp = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
-    MtcLlfc.insert(sess, mtc_participant, llfc_imp, valid_from, None)
-    insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
-    insert_energisation_statuses(sess)
-    energisation_status = EnergisationStatus.get_by_code(sess, "E")
-    gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    site.insert_e_supply(
-        sess,
-        source,
-        None,
-        "Bob",
-        utc_datetime(2000, 1, 1),
-        None,
-        gsp_group,
-        mop_contract,
-        "773",
-        dc_contract,
-        "ghyy3",
-        "hgjeyhuw",
-        pc,
-        "845",
-        cop,
-        comm,
-        None,
-        energisation_status,
-        {},
-        "22 7867 6232 781",
-        "510",
-        imp_supplier_contract,
-        "7748",
-        361,
-        None,
-        None,
-        None,
-        None,
-        None,
-    )
-
-    sess.commit()
-
-    scenario_hh = {
-        "CI017": {
-            "generated": """
-                2009-08-01 00:00, 40
-                2009-08-15 00:00, 40"""
-        }
-    }
-
-    era_maps = {
-        utc_datetime(2000, 8, 1): {
-            "llfcs": {"22": {"new_export": "521"}},
-            "supplier_contracts": {"new_export": 4},
-        }
-    }
-
-    site_deltas = make_site_deltas(
-        sess, report_context, site, scenario_hh, forecast_from, supply_id
-    )
-    calcs, _, _ = _make_calcs(
-        sess,
-        site,
-        start_date,
-        finish_date,
-        supply_id,
-        site_deltas,
-        forecast_from,
-        report_context,
-        era_maps,
-        None,
-    )
-
-    assert calcs[1][1] == "CI017_extra_gen_TRUE"
-    assert calcs[2][2] == "CI017_extra_net_export"
-
-
 def test_without_scenario(mocker, sess):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
-    )
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -420,22 +223,11 @@ def virtual_bill(ds):
         None,
         {},
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    Contract.insert_dno(
-        sess,
-        dno.dno_code,
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -446,22 +238,15 @@ def virtual_bill(ds):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -509,11 +294,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -528,11 +313,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -617,7 +399,6 @@ def test_missing_mop_script(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -798,11 +579,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -817,11 +598,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -842,7 +620,6 @@ def test_bill_after_end_supply(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -1052,11 +829,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -1071,11 +848,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -1405,6 +1179,7 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
         sess,
         source,
@@ -1425,7 +1200,7 @@ def virtual_bill(ds):
         None,
         energisation_status,
         {},
-        "22 7867 6232 781",
+        imp_mpan_core,
         "510",
         imp_supplier_contract,
         "7748",
@@ -1464,11 +1239,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": [imp_mpan_core],
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -1483,15 +1258,11 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply.id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
-
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
 
@@ -1573,7 +1344,6 @@ def test_supply_attached_to_different_sites(mocker, sess):
     site_2 = Site.insert(sess, "CI018", "Water Works 2")
     start_date = utc_datetime(2000, 1, 1, 0, 0)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -1790,11 +1560,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site_1.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_1_id = site_1.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -1809,11 +1579,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_1_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -1898,7 +1665,6 @@ def test_supply_end_two_eras_in_month(mocker, sess):
     start_date = utc_datetime(2000, 1, 1, 0, 0)
     valid_from = to_utc(ct_datetime(2000, 1, 1))
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -2120,11 +1886,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -2139,11 +1905,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -2445,7 +2208,6 @@ def test_bill_before_begining_supply(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(1999, 12, 1)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -2673,11 +2435,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -2692,11 +2454,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -2872,7 +2631,6 @@ def test_bill_before_begining_supply_mid_month(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2000, 1, 1)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AB Industries")
@@ -3089,11 +2847,11 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -3108,11 +2866,8 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )
@@ -3196,7 +2951,6 @@ def test_displaced(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
-    supply_id = None
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -3446,11 +3200,11 @@ def displaced_virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
+        "site_codes": [site.code],
+        "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
-    site_id = site.id
     compression = False
-    site_codes = []
     now = utc_datetime(2020, 1, 1)
     is_bill_check = False
 
@@ -3465,11 +3219,8 @@ def displaced_virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        site_id,
-        supply_id,
         user.id,
         compression,
-        site_codes,
         now,
         is_bill_check,
     )

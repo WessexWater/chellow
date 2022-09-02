@@ -47,7 +47,7 @@ def test_write_sites(mocker):
     ss_instance.supplier_bill_hhs = {month_start: {}}
 
     mocker.patch("chellow.e.duos.duos_vb", autospec=True)
-    mocker.patch("chellow.e.triad.hh", autospec=True)
+    mocker.patch("chellow.e.tnuos.hh", autospec=True)
 
     forecast_date = chellow.e.computer.forecast_date()
 
