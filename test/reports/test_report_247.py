@@ -1081,9 +1081,9 @@ def virtual_bill(ds):
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
-    table = list(sheet.tables[0].rows)
+    site_table = list(sheet.tables[0].rows)
 
-    expected = [
+    site_expected = [
         [
             "creation-date",
             "site-id",
@@ -1152,7 +1152,99 @@ def virtual_bill(ds):
         ],
     ]
 
-    assert expected == table
+    assert site_expected == site_table
+
+    era_table = list(sheet.tables[1].rows)
+    print(era_table)
+    era_expected = [
+        [
+            "creation-date",
+            "imp-mpan-core",
+            "imp-supplier-contract",
+            "exp-mpan-core",
+            "exp-supplier-contract",
+            "era-start-date",
+            "metering-type",
+            "source",
+            "generator-type",
+            "supply-name",
+            "msn",
+            "pc",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "month",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+            None,
+            None,
+            None,
+            None,
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            "22 7867 6232 781",
+            "Fusion Supplier 2000",
+            None,
+            None,
+            Datetime(2009, 7, 1, 0, 0),
+            "hh",
+            "net",
+            None,
+            "Bob",
+            "hgjeyhuw",
+            "00",
+            "CI017",
+            "Water Works",
+            None,
+            Datetime(2009, 7, 31, 23, 30),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            10.0,
+            10.0,
+            10.0,
+            0.0,
+            0.0,
+        ],
+    ]
+    assert era_expected == era_table
 
 
 def test_bill_after_end_supply_with_supply_id(mocker, sess):
@@ -2611,9 +2703,9 @@ def virtual_bill(ds):
     )
 
     sheet = odio.parse_spreadsheet(mock_file)
-    table = list(sheet.tables[0].rows)
+    site_table = list(sheet.tables[0].rows)
 
-    expected = [
+    site_expected = [
         [
             "creation-date",
             "site-id",
@@ -2682,7 +2774,98 @@ def virtual_bill(ds):
         ],
     ]
 
-    assert expected == table
+    assert site_expected == site_table
+
+    era_table = list(sheet.tables[1].rows)
+    era_expected = [
+        [
+            "creation-date",
+            "imp-mpan-core",
+            "imp-supplier-contract",
+            "exp-mpan-core",
+            "exp-supplier-contract",
+            "era-start-date",
+            "metering-type",
+            "source",
+            "generator-type",
+            "supply-name",
+            "msn",
+            "pc",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "month",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+            None,
+            None,
+            None,
+            None,
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            "22 7867 6232 781",
+            "Fusion Supplier 2000",
+            None,
+            None,
+            None,
+            "hh",
+            "net",
+            None,
+            "Bob",
+            "hgjeyhuw",
+            "00",
+            "CI017",
+            "Water Works",
+            None,
+            Datetime(1999, 12, 31, 23, 30),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            10.0,
+            10.0,
+            10.0,
+            0.0,
+            0.0,
+        ],
+    ]
+    assert era_expected == era_table
 
 
 def test_bill_before_begining_supply_mid_month(mocker, sess):
