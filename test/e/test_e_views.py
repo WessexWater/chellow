@@ -11,7 +11,7 @@ from utils import match
 
 from chellow.e import hh_importer
 from chellow.e.views import (
-    csv_supplies_duration_get,
+    duration_report_get,
     get_era_bundles,
     read_add_get,
 )
@@ -285,25 +285,19 @@ def test_channel_snag_get(sess, client):
     match(response, 200, "".join(regex))
 
 
-def test_csv_supplies_duration_get(mocker):
+def test_duration_report_get(mocker):
     mock_render_template = mocker.patch(
         "chellow.e.views.render_template", autospec=True
     )
     ct_now = ct_datetime(2021, 4, 5)
-    csv_supplies_duration_get(ct_now)
-    last_month_start = to_utc(ct_datetime(2021, 3, 1))
-    last_month_finish = to_utc(ct_datetime(2021, 3, 31, 23, 30))
+    duration_report_get(ct_now)
+    month_start = to_utc(ct_datetime(2021, 3, 1))
+    month_finish = to_utc(ct_datetime(2021, 3, 31, 23, 30))
     mock_render_template.assert_called_with(
-        "csv_supplies_duration.html",
-        last_month_start=last_month_start,
-        last_month_finish=last_month_finish,
+        "duration_report.html",
+        month_start=month_start,
+        month_finish=month_finish,
     )
-
-
-def test_csv_sites_duration_get(client):
-    response = client.get("/e/csv_sites_duration")
-
-    match(response, 200)
 
 
 def test_dc_batch_get(sess, client):

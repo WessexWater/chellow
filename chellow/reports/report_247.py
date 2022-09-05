@@ -19,8 +19,8 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 import chellow.e.computer
-from chellow.e.computer import SupplySource, contract_func, datum_range, displaced_era
-from chellow.e.scenario import make_site_deltas
+from chellow.e.computer import SupplySource, contract_func, displaced_era
+from chellow.e.scenario import ScenarioSource, make_calcs, make_site_deltas
 from chellow.models import (
     Bill,
     Contract,
@@ -110,7 +110,7 @@ def _process_site(
         sess, report_context, site, scenario_hh, forecast_from, supply_id
     )
 
-    calcs, displaced_era, site_gen_types = _make_calcs(
+    calcs, site_gen_types = make_calcs(
         sess,
         site,
         start_date,
@@ -123,359 +123,344 @@ def _process_site(
         data_source_bill,
     )
 
-    site_month_data = defaultdict(int)
-    site_ds = chellow.e.computer.SiteSource(
-        sess,
-        site,
-        start_date,
-        finish_date,
-        forecast_from,
-        report_context,
-        displaced_era,
-        era_maps=era_maps,
-        deltas=site_deltas,
-        bill=data_source_bill,
-    )
-
-    if displaced_era is not None and supply_id is None:
-        month_data = {}
-        for sname in (
-            "import-net",
-            "export-net",
-            "import-gen",
-            "export-gen",
-            "import-3rd-party",
-            "export-3rd-party",
-            "msp",
-            "used",
-            "used-3rd-party",
-            "billed-import-net",
-        ):
-            for xname in ("kwh", "gbp"):
-                month_data[sname + "-" + xname] = 0
-        month_data["billed-supplier-import-net-gbp"] = None
-        month_data["billed-dc-import-net-gbp"] = None
-        month_data["billed-mop-import-net-gbp"] = None
-
-        month_data["used-kwh"] = month_data["displaced-kwh"] = sum(
-            hh["msp-kwh"] for hh in site_ds.hh_data
-        )
-
-        disp_supplier_contract = displaced_era.imp_supplier_contract
-        disp_vb_function = chellow.e.computer.contract_func(
-            report_context, disp_supplier_contract, "displaced_virtual_bill"
-        )
-        if disp_vb_function is None:
-            raise BadRequest(
-                f"The supplier contract {disp_supplier_contract.name} "
-                f" doesn't have the displaced_virtual_bill() function."
-            )
-        disp_vb_function(site_ds)
-        disp_supplier_bill = site_ds.supplier_bill
-
-        try:
-            gbp = disp_supplier_bill["net-gbp"]
-        except KeyError:
-            disp_supplier_bill["problem"] += (
-                f"For the supply {site_ds.mpan_core} the virtual bill "
-                f"{disp_supplier_bill} from the contract {disp_supplier_contract.name} "
-                f" does not contain the net-gbp key."
-            )
-
-        month_data["used-gbp"] = month_data["displaced-gbp"] = gbp
-
-        out = (
-            [
-                now,
-                None,
-                disp_supplier_contract.name,
-                None,
-                None,
-                None,
-                displaced_era.meter_category,
-                "displaced",
-                None,
-                None,
-                None,
-                None,
-                site.code,
-                site.name,
-                "",
-                finish_date,
-            ]
-            + [month_data[t] for t in summary_titles]
-            + [None]
-            + [None] * len(title_dict["mop"])
-            + [None]
-            + [None] * len(title_dict["dc"])
-            + [None]
-            + make_bill_row(title_dict["imp-supplier"], disp_supplier_bill)
-        )
-
-        era_rows.append([make_val(v) for v in out])
-        for k, v in month_data.items():
-            if v is not None:
-                site_month_data[k] += v
-
     site_category = None
     site_sources = set()
     normal_reads = set()
+    site_month_data = defaultdict(int)
     for i, (order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss) in enumerate(
         sorted(calcs, key=str)
     ):
-        if imp_ss is None:
-            source_code = exp_ss.source_code
-            supply = exp_ss.supply
+        if imp_mpan_core == "displaced":
+            month_data = {}
+            for sname in (
+                "import-net",
+                "export-net",
+                "import-gen",
+                "export-gen",
+                "import-3rd-party",
+                "export-3rd-party",
+                "msp",
+                "used",
+                "used-3rd-party",
+                "billed-import-net",
+            ):
+                for xname in ("kwh", "gbp"):
+                    month_data[sname + "-" + xname] = 0
+            month_data["billed-supplier-import-net-gbp"] = None
+            month_data["billed-dc-import-net-gbp"] = None
+            month_data["billed-mop-import-net-gbp"] = None
+
+            month_data["used-kwh"] = month_data["displaced-kwh"] = sum(
+                hh["msp-kwh"] for hh in imp_ss.hh_data
+            )
+
+            disp_supplier_bill = imp_ss.supplier_bill
+
+            try:
+                gbp = disp_supplier_bill["net-gbp"]
+            except KeyError:
+                disp_supplier_bill["problem"] += (
+                    f"For the supply {imp_ss.mpan_core} the virtual bill "
+                    f"{disp_supplier_bill} from the contract "
+                    f"{imp_ss.supplier_contract.name} does not contain the net-gbp key."
+                )
+
+            month_data["used-gbp"] = month_data["displaced-gbp"] = gbp
+
+            out = (
+                [
+                    now,
+                    None,
+                    imp_ss.supplier_contract.name,
+                    None,
+                    None,
+                    None,
+                    imp_ss.era.meter_category,
+                    "displaced",
+                    None,
+                    None,
+                    None,
+                    None,
+                    site.code,
+                    site.name,
+                    "",
+                    finish_date,
+                ]
+                + [month_data[t] for t in summary_titles]
+                + [None]
+                + [None] * len(title_dict["mop"])
+                + [None]
+                + [None] * len(title_dict["dc"])
+                + [None]
+                + make_bill_row(title_dict["imp-supplier"], disp_supplier_bill)
+            )
+
+            era_rows.append([make_val(v) for v in out])
+            for k, v in month_data.items():
+                if v is not None:
+                    site_month_data[k] += v
         else:
-            source_code = imp_ss.source_code
-            supply = imp_ss.supply
+            if imp_ss is None:
+                source_code = exp_ss.source_code
+                supply = exp_ss.supply
+            else:
+                source_code = imp_ss.source_code
+                supply = imp_ss.supply
 
-        site_sources.add(source_code)
-        month_data = {}
-        for name in (
-            "import-net",
-            "export-net",
-            "import-gen",
-            "export-gen",
-            "import-3rd-party",
-            "export-3rd-party",
-            "displaced",
-            "used",
-            "used-3rd-party",
-            "billed-import-net",
-        ):
-            for sname in ("kwh", "gbp"):
-                month_data[name + "-" + sname] = 0
-        month_data["billed-supplier-import-net-gbp"] = 0
-        month_data["billed-dc-import-net-gbp"] = 0
-        month_data["billed-mop-import-net-gbp"] = 0
+            site_sources.add(source_code)
+            month_data = {}
+            for name in (
+                "import-net",
+                "export-net",
+                "import-gen",
+                "export-gen",
+                "import-3rd-party",
+                "export-3rd-party",
+                "displaced",
+                "used",
+                "used-3rd-party",
+                "billed-import-net",
+            ):
+                for sname in ("kwh", "gbp"):
+                    month_data[name + "-" + sname] = 0
+            month_data["billed-supplier-import-net-gbp"] = 0
+            month_data["billed-dc-import-net-gbp"] = 0
+            month_data["billed-mop-import-net-gbp"] = 0
 
-        if imp_ss is not None:
-            imp_supplier_contract = imp_ss.supplier_contract
-            if imp_supplier_contract is not None:
-                import_vb_function = contract_func(
-                    report_context, imp_supplier_contract, "virtual_bill"
-                )
-                if import_vb_function is None:
-                    raise BadRequest(
-                        f"The supplier contract {imp_supplier_contract.name} "
-                        " doesn't have the virtual_bill() function."
+            if imp_ss is not None:
+                imp_supplier_contract = imp_ss.supplier_contract
+                if imp_supplier_contract is not None:
+                    import_vb_function = contract_func(
+                        report_context, imp_supplier_contract, "virtual_bill"
                     )
+                    if import_vb_function is None:
+                        raise BadRequest(
+                            f"The supplier contract {imp_supplier_contract.name} "
+                            " doesn't have the virtual_bill() function."
+                        )
+                    try:
+                        import_vb_function(imp_ss)
+                    except AttributeError as e:
+                        raise BadRequest(
+                            f"Problem with virtual bill of supplier contract "
+                            f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
+                        )
+
+                kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
+                imp_supplier_bill = imp_ss.supplier_bill
+
                 try:
-                    import_vb_function(imp_ss)
-                except AttributeError as e:
-                    raise BadRequest(
-                        f"Problem with virtual bill of supplier contract "
-                        f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
+                    gbp = imp_supplier_bill["net-gbp"]
+                except KeyError:
+                    gbp = 0
+                    imp_supplier_bill["problem"] += (
+                        f"For the supply {imp_ss.mpan_core} the virtual bill "
+                        f"{imp_supplier_bill} from the contract "
+                        f"{imp_supplier_contract.name} does not contain the net-gbp "
+                        f"key."
                     )
 
-            kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
-            imp_supplier_bill = imp_ss.supplier_bill
-
-            try:
-                gbp = imp_supplier_bill["net-gbp"]
-            except KeyError:
-                gbp = 0
-                imp_supplier_bill["problem"] += (
-                    f"For the supply {imp_ss.mpan_core} the virtual bill "
-                    f"{imp_supplier_bill} from the contract "
-                    f"{imp_supplier_contract.name} does not contain the net-gbp key."
-                )
-
-            if source_code in ("net", "gen-net"):
-                month_data["import-net-gbp"] += gbp
-                month_data["import-net-kwh"] += kwh
-                month_data["used-gbp"] += gbp
-                month_data["used-kwh"] += kwh
-                if source_code == "gen-net":
-                    month_data["export-gen-kwh"] += kwh
-            elif source_code == "3rd-party":
-                month_data["import-3rd-party-gbp"] += gbp
-                month_data["import-3rd-party-kwh"] += kwh
-                month_data["used-3rd-party-gbp"] += gbp
-                month_data["used-3rd-party-kwh"] += kwh
-                month_data["used-gbp"] += gbp
-                month_data["used-kwh"] += kwh
-            elif source_code == "3rd-party-reverse":
-                month_data["export-3rd-party-gbp"] += gbp
-                month_data["export-3rd-party-kwh"] += kwh
-                month_data["used-3rd-party-gbp"] -= gbp
-                month_data["used-3rd-party-kwh"] -= kwh
-                month_data["used-gbp"] -= gbp
-                month_data["used-kwh"] -= kwh
-            elif source_code == "gen":
-                month_data["import-gen-kwh"] += kwh
-
-        if exp_ss is not None:
-            exp_supplier_contract = exp_ss.supplier_contract
-            if exp_supplier_contract is not None:
-                export_vb_function = contract_func(
-                    report_context, exp_supplier_contract, "virtual_bill"
-                )
-                try:
-                    export_vb_function(exp_ss)
-                except AttributeError as e:
-                    raise BadRequest(
-                        f"Problem with virtual bill of supplier contract "
-                        f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
-                    )
-
-            kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
-            exp_supplier_bill = exp_ss.supplier_bill
-            try:
-                gbp = exp_supplier_bill["net-gbp"]
-            except KeyError:
-                exp_supplier_bill["problem"] += (
-                    f"For the supply {imp_ss.mpan_core} the virtual bill "
-                    f"{imp_supplier_bill} from the contract "
-                    f"{imp_supplier_contract.name} does not contain the net-gbp key."
-                )
-
-            if source_code in ("net", "gen-net"):
-                month_data["export-net-gbp"] += gbp
-                month_data["export-net-kwh"] += kwh
-                if source_code == "gen-net":
+                if source_code in ("net", "gen-net"):
+                    month_data["import-net-gbp"] += gbp
+                    month_data["import-net-kwh"] += kwh
+                    month_data["used-gbp"] += gbp
+                    month_data["used-kwh"] += kwh
+                    if source_code == "gen-net":
+                        month_data["export-gen-kwh"] += kwh
+                elif source_code == "3rd-party":
+                    month_data["import-3rd-party-gbp"] += gbp
+                    month_data["import-3rd-party-kwh"] += kwh
+                    month_data["used-3rd-party-gbp"] += gbp
+                    month_data["used-3rd-party-kwh"] += kwh
+                    month_data["used-gbp"] += gbp
+                    month_data["used-kwh"] += kwh
+                elif source_code == "3rd-party-reverse":
+                    month_data["export-3rd-party-gbp"] += gbp
+                    month_data["export-3rd-party-kwh"] += kwh
+                    month_data["used-3rd-party-gbp"] -= gbp
+                    month_data["used-3rd-party-kwh"] -= kwh
+                    month_data["used-gbp"] -= gbp
+                    month_data["used-kwh"] -= kwh
+                elif source_code == "gen":
                     month_data["import-gen-kwh"] += kwh
 
-            elif source_code == "3rd-party":
-                month_data["export-3rd-party-gbp"] += gbp
-                month_data["export-3rd-party-kwh"] += kwh
-                month_data["used-3rd-party-gbp"] -= gbp
-                month_data["used-3rd-party-kwh"] -= kwh
-                month_data["used-gbp"] -= gbp
-                month_data["used-kwh"] -= kwh
-            elif source_code == "3rd-party-reverse":
+            if exp_ss is not None:
+                exp_supplier_contract = exp_ss.supplier_contract
+                if exp_supplier_contract is not None:
+                    export_vb_function = contract_func(
+                        report_context, exp_supplier_contract, "virtual_bill"
+                    )
+                    try:
+                        export_vb_function(exp_ss)
+                    except AttributeError as e:
+                        raise BadRequest(
+                            f"Problem with virtual bill of supplier contract "
+                            f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
+                        )
+
+                kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
+                exp_supplier_bill = exp_ss.supplier_bill
+                try:
+                    gbp = exp_supplier_bill["net-gbp"]
+                except KeyError:
+                    exp_supplier_bill["problem"] += (
+                        f"For the supply {imp_ss.mpan_core} the virtual bill "
+                        f"{imp_supplier_bill} from the contract "
+                        f"{imp_supplier_contract.name} does not contain the "
+                        f"net-gbp key."
+                    )
+
+                if source_code in ("net", "gen-net"):
+                    month_data["export-net-gbp"] += gbp
+                    month_data["export-net-kwh"] += kwh
+                    if source_code == "gen-net":
+                        month_data["import-gen-kwh"] += kwh
+
+                elif source_code == "3rd-party":
+                    month_data["export-3rd-party-gbp"] += gbp
+                    month_data["export-3rd-party-kwh"] += kwh
+                    month_data["used-3rd-party-gbp"] -= gbp
+                    month_data["used-3rd-party-kwh"] -= kwh
+                    month_data["used-gbp"] -= gbp
+                    month_data["used-kwh"] -= kwh
+                elif source_code == "3rd-party-reverse":
+                    month_data["import-3rd-party-gbp"] += gbp
+                    month_data["import-3rd-party-kwh"] += kwh
+                    month_data["used-3rd-party-gbp"] += gbp
+                    month_data["used-3rd-party-kwh"] += kwh
+                    month_data["used-gbp"] += gbp
+                    month_data["used-kwh"] += kwh
+                elif source_code == "gen":
+                    month_data["export-gen-kwh"] += kwh
+
+            sss = exp_ss if imp_ss is None else imp_ss
+            dc_contract = sss.dc_contract
+            dc_vb_func = sss.contract_func(dc_contract, "virtual_bill")
+            try:
+                dc_vb_func(sss)
+            except AttributeError as e:
+                raise BadRequest(
+                    f"Problem with virtual bill of DC contract {dc_contract.id} {e} "
+                    f"{traceback.format_exc()}"
+                )
+            dc_bill = sss.dc_bill
+            gbp = dc_bill["net-gbp"]
+
+            mop_contract = sss.mop_contract
+            mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
+            try:
+                mop_bill_function(sss)
+            except (AttributeError, NameError) as e:
+                raise BadRequest(
+                    f"Problem with virtual bill of MOP contract {mop_contract.id} {e} "
+                    f"{traceback.format_exc()}"
+                )
+            mop_bill = sss.mop_bill
+            gbp += mop_bill["net-gbp"]
+
+            if source_code in ("3rd-party", "3rd-party-reverse"):
                 month_data["import-3rd-party-gbp"] += gbp
-                month_data["import-3rd-party-kwh"] += kwh
                 month_data["used-3rd-party-gbp"] += gbp
-                month_data["used-3rd-party-kwh"] += kwh
-                month_data["used-gbp"] += gbp
-                month_data["used-kwh"] += kwh
-            elif source_code == "gen":
-                month_data["export-gen-kwh"] += kwh
+            else:
+                month_data["import-net-gbp"] += gbp
+            month_data["used-gbp"] += gbp
 
-        sss = exp_ss if imp_ss is None else imp_ss
-        dc_contract = sss.dc_contract
-        dc_vb_func = sss.contract_func(dc_contract, "virtual_bill")
-        try:
-            dc_vb_func(sss)
-        except AttributeError as e:
-            raise BadRequest(
-                f"Problem with virtual bill of DC contract {dc_contract.id} {e} "
-                f"{traceback.format_exc()}"
+            generator_type = sss.generator_type_code
+            if source_code in ("gen", "gen-net"):
+                site_gen_types.add(generator_type)
+
+            era_category = sss.measurement_type
+            if CATEGORY_ORDER[site_category] < CATEGORY_ORDER[era_category]:
+                site_category = era_category
+
+            era_associates = {
+                s.site.code for s in sss.era.site_eras if not s.is_physical
+            }
+
+            for bill in sess.query(Bill).filter(
+                Bill.supply == supply,
+                Bill.start_date <= sss.finish_date,
+                Bill.finish_date >= sss.start_date,
+            ):
+                bill_role_code = bill.batch.contract.market_role.code
+                bill_start = bill.start_date
+                bill_finish = bill.finish_date
+                bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
+                overlap_duration = (
+                    min(bill_finish, sss.finish_date) - max(bill_start, sss.start_date)
+                ).total_seconds() + (30 * 60)
+                proportion = overlap_duration / bill_duration
+                month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
+                bill_prop_gbp = proportion * float(bill.net)
+                month_data["billed-import-net-gbp"] += bill_prop_gbp
+                if bill_role_code == "X":
+                    month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
+                elif bill_role_code == "C":
+                    month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
+                elif bill_role_code == "M":
+                    month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
+                else:
+                    raise BadRequest("Role code not recognized.")
+
+            if imp_ss is None:
+                imp_supplier_contract_name = None
+                pc_code = exp_ss.pc_code
+            else:
+                if imp_supplier_contract is None:
+                    imp_supplier_contract_name = ""
+                else:
+                    imp_supplier_contract_name = imp_supplier_contract.name
+                pc_code = imp_ss.pc_code
+
+            if exp_ss is None:
+                exp_supplier_contract_name = None
+            else:
+                if exp_supplier_contract is None:
+                    exp_supplier_contract_name = ""
+                else:
+                    exp_supplier_contract_name = exp_supplier_contract.name
+
+            out = (
+                [
+                    now,
+                    imp_mpan_core,
+                    imp_supplier_contract_name,
+                    exp_mpan_core,
+                    exp_supplier_contract_name,
+                    sss.era.start_date,
+                    era_category,
+                    source_code,
+                    generator_type,
+                    sss.supply_name,
+                    sss.msn,
+                    pc_code,
+                    site.code,
+                    site.name,
+                    ",".join(sorted(list(era_associates))),
+                    finish_date,
+                ]
+                + [month_data[t] for t in summary_titles]
+                + [None]
+                + make_bill_row(title_dict["mop"], mop_bill)
+                + [None]
+                + make_bill_row(title_dict["dc"], dc_bill)
             )
-        dc_bill = sss.dc_bill
-        gbp = dc_bill["net-gbp"]
-
-        mop_contract = sss.mop_contract
-        mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
-        try:
-            mop_bill_function(sss)
-        except (AttributeError, NameError) as e:
-            raise BadRequest(
-                f"Problem with virtual bill of MOP contract {mop_contract.id} {e} "
-                f"{traceback.format_exc()}"
-            )
-        mop_bill = sss.mop_bill
-        gbp += mop_bill["net-gbp"]
-
-        if source_code in ("3rd-party", "3rd-party-reverse"):
-            month_data["import-3rd-party-gbp"] += gbp
-            month_data["used-3rd-party-gbp"] += gbp
-        else:
-            month_data["import-net-gbp"] += gbp
-        month_data["used-gbp"] += gbp
-
-        generator_type = sss.generator_type_code
-        if source_code in ("gen", "gen-net"):
-            site_gen_types.add(generator_type)
-
-        era_category = sss.measurement_type
-        if CATEGORY_ORDER[site_category] < CATEGORY_ORDER[era_category]:
-            site_category = era_category
-
-        era_associates = {s.site.code for s in sss.era.site_eras if not s.is_physical}
-
-        for bill in sess.query(Bill).filter(
-            Bill.supply == supply,
-            Bill.start_date <= sss.finish_date,
-            Bill.finish_date >= sss.start_date,
-        ):
-            bill_role_code = bill.batch.contract.market_role.code
-            bill_start = bill.start_date
-            bill_finish = bill.finish_date
-            bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
-            overlap_duration = (
-                min(bill_finish, sss.finish_date) - max(bill_start, sss.start_date)
-            ).total_seconds() + (30 * 60)
-            proportion = overlap_duration / bill_duration
-            month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
-            bill_prop_gbp = proportion * float(bill.net)
-            month_data["billed-import-net-gbp"] += bill_prop_gbp
-            if bill_role_code == "X":
-                month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
-            elif bill_role_code == "C":
-                month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
-            elif bill_role_code == "M":
-                month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
+            if imp_ss is None:
+                out += [None] * (len(title_dict["imp-supplier"]) + 1)
             else:
-                raise BadRequest("Role code not recognized.")
+                out += [None] + make_bill_row(
+                    title_dict["imp-supplier"], imp_supplier_bill
+                )
+                for n in imp_ss.normal_reads:
+                    normal_reads.add((imp_mpan_core, n))
+            if exp_ss is not None:
+                out += [None] + make_bill_row(
+                    title_dict["exp-supplier"], exp_supplier_bill
+                )
 
-        if imp_ss is None:
-            imp_supplier_contract_name = None
-            pc_code = exp_ss.pc_code
-        else:
-            if imp_supplier_contract is None:
-                imp_supplier_contract_name = ""
-            else:
-                imp_supplier_contract_name = imp_supplier_contract.name
-            pc_code = imp_ss.pc_code
-
-        if exp_ss is None:
-            exp_supplier_contract_name = None
-        else:
-            if exp_supplier_contract is None:
-                exp_supplier_contract_name = ""
-            else:
-                exp_supplier_contract_name = exp_supplier_contract.name
-
-        out = (
-            [
-                now,
-                imp_mpan_core,
-                imp_supplier_contract_name,
-                exp_mpan_core,
-                exp_supplier_contract_name,
-                sss.era.start_date,
-                era_category,
-                source_code,
-                generator_type,
-                sss.supply_name,
-                sss.msn,
-                pc_code,
-                site.code,
-                site.name,
-                ",".join(sorted(list(era_associates))),
-                finish_date,
-            ]
-            + [month_data[t] for t in summary_titles]
-            + [None]
-            + make_bill_row(title_dict["mop"], mop_bill)
-            + [None]
-            + make_bill_row(title_dict["dc"], dc_bill)
-        )
-        if imp_ss is None:
-            out += [None] * (len(title_dict["imp-supplier"]) + 1)
-        else:
-            out += [None] + make_bill_row(title_dict["imp-supplier"], imp_supplier_bill)
-            for n in imp_ss.normal_reads:
-                normal_reads.add((imp_mpan_core, n))
-        if exp_ss is not None:
-            out += [None] + make_bill_row(title_dict["exp-supplier"], exp_supplier_bill)
-
-        for k, v in month_data.items():
-            site_month_data[k] += v
-        era_rows.append([make_val(v) for v in out])
+            for k, v in month_data.items():
+                site_month_data[k] += v
+            era_rows.append([make_val(v) for v in out])
 
     q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
     if supply_id is not None:
@@ -1340,75 +1325,3 @@ def do_post(sess):
             ),
             400,
         )
-
-
-class ScenarioSource:
-    def __init__(
-        self,
-        sess,
-        start_date,
-        finish_date,
-        is_import,
-        caches,
-        deltas,
-        supplier_contract,
-        mpan_core,
-        bill=None,
-    ):
-        self.sess = sess
-        self.supply = None
-        self.mpan_core = mpan_core
-        self.supply_name = mpan_core
-        self.start_date = start_date
-        self.is_import = is_import
-        self.caches = caches
-        self.deltas = deltas
-        self.years_back = 0
-        self.source_code = "gen"
-        self.dno_code = "99"
-        self.llfc_code = "510"
-        self.voltage_level_code = "LV"
-        self.is_substation = False
-        self.gsp_group_code = "_L"
-        self.supplier_bill = {"net-gbp": 0}
-        self.dc_bill = {"net-gbp": 0}
-        self.mop_bill = {"net-gbp": 0}
-        self.supplier_contract = None
-        self.dc_contract = None
-        self.mop_contract = None
-        self.supplier_rate_sets = defaultdict(set)
-        self.is_displaced = False
-        self.sc = 0
-        self.pc_code = "00"
-        self.mop_rate_sets = defaultdict(set)
-        self.dc_rate_sets = defaultdict(set)
-        self.generator_type_code = "chp"
-        self.msn = ""
-        self.measurement_type = "hh"
-        self.bill = bill
-        self.hh_data = list(
-            d.copy()
-            for d in datum_range(
-                sess, self.caches, self.years_back, start_date, finish_date
-            )
-        )
-        if self.deltas is not None:
-            site_deltas = self.deltas["site"]
-
-            try:
-                sup_deltas = self.deltas[self.mpan_core]
-            except KeyError:
-                sup_deltas = self.deltas[self.mpan_core] = {}
-
-            for hh in self.hh_data:
-                hh_start = hh["start-date"]
-                if hh_start in sup_deltas:
-                    delt = sup_deltas[hh_start]
-                elif hh_start in site_deltas:
-                    delt = sup_deltas[hh_start] = site_deltas[hh_start]
-                    del site_deltas[hh_start]
-                else:
-                    continue
-
-                hh["msp-kwh"] += delt
-                hh["msp-kw"] += delt * 2

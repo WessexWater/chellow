@@ -58,65 +58,65 @@
 
 {% block content %}
 	<table>
-			<tr>
-					<th>Name</th>
-					<td>{{ supply.name }}</td>
-			</tr>
-			<tr>
-					<th>Source</th>
-					<td>
-							{{ supply.source.code }} - {{ supply.source.name }}
-							{% if supply.source.code == 'gen' %}
-							( {{ supply.generator_type.code }} {{ supply.generator_type.name }})
-							{% endif %}
-					</td>
-			</tr>
-			<tr>
-					<th>GSP Group</th>
-					<td>
-							{{ supply.gsp_group.code }} {{ supply.gsp_group.description }}
-					</td>
-			</tr>
-			{% if system_properties['supply_links'] %}
-			<tr>
-					<th>Links</th>
-					<td>
-							<ul>
-									{% for link in system_properties['supply_links'] %}
-									<li>
-											<a href="{{link.url}}supply_id={{site.id}}">{{link.name}}</a>
-									</li>
-									{% endfor %}
-							</ul>
-					</td>
-			</tr>
-			{% endif %}
-			<tr>
-					<th>
-							<a href="/e/supplies/{{supply.id}}/notes">Notes</a>
-					</th>
-					<td>
-							{% if note %}
-							{% if is_truncated %}
-							<div id="truncated_note">
-									{{ truncated_note }}
-							</div>
-							<div id="full_note" style="display: none;">
-									<pre style=" white-space pre-wrap;">{{ supply.note }}</pre>
-									<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
-							</div>
-							{% else %}
-							Category: {{note.category}}
-							{% if note.is_important %}
-							Important
-							{% else %}
-							Not important
-							{% endif %}
-							<pre style="display: inline;">{{note.body}}</pre>
-							{% endif %}
-							{% endif %}
-					</td>
-			</tr>
+		<tr>
+			<th>Name</th>
+			<td>{{ supply.name }}</td>
+		</tr>
+		<tr>
+			<th>Source</th>
+			<td>
+				{{ supply.source.code }} - {{ supply.source.name }}
+				{% if supply.source.code == 'gen' %}
+				( {{ supply.generator_type.code }} {{ supply.generator_type.name }})
+				{% endif %}
+			</td>
+		</tr>
+		<tr>
+			<th>GSP Group</th>
+			<td>
+				{{ supply.gsp_group.code }} {{ supply.gsp_group.description }}
+			</td>
+		</tr>
+		{% if system_properties['supply_links'] %}
+		<tr>
+			<th>Links</th>
+			<td>
+				<ul>
+					{% for link in system_properties['supply_links'] %}
+					<li>
+						<a href="{{link.url}}supply_id={{site.id}}">{{link.name}}</a>
+					</li>
+					{% endfor %}
+				</ul>
+			</td>
+		</tr>
+		{% endif %}
+		<tr>
+			<th>
+				<a href="/e/supplies/{{supply.id}}/notes">Notes</a>
+			</th>
+			<td>
+				{% if note %}
+					{% if is_truncated %}
+					<div id="truncated_note">
+						{{ truncated_note }}
+					</div>
+					<div id="full_note" style="display: none;">
+						<pre style=" white-space pre-wrap;">{{ supply.note }}</pre>
+						<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
+					</div>
+					{% else %}
+						Category: {{note.category}}
+					{% if note.is_important %}
+						Important
+					{% else %}
+						Not important
+					{% endif %}
+						<pre style="display: inline;">{{note.body}}</pre>
+					{% endif %}
+				{% endif %}
+			</td>
+		</tr>
 	</table>
 
 	{% for era_bundle in era_bundles %}
@@ -208,13 +208,13 @@
 					</td>
 					<td rowspan="4">{{era.properties}}</td>
 					<td rowspan="4">
-							<a href="/e/mop_contracts/{{era.mop_contract.id}}">{{era.mop_contract.name}}</a>
+						<a href="/e/mop_contracts/{{era.mop_contract.id}}">{{era.mop_contract.name}}</a>
 					</td>
 					<td rowspan="4">
-							{{era.mop_account}}
+						{{era.mop_account}}
 					</td>
 					<td rowspan="4">
-							<a href="/e/dc_contracts/{{era.dc_contract.id}}">{{era.dc_contract.name}}</a>
+						<a href="/e/dc_contracts/{{era.dc_contract.id}}">{{era.dc_contract.name}}</a>
 					</td>
 					<td rowspan="4">{{era.dc_account}}</td>
 					<th colspan="6">Import</th>
@@ -226,16 +226,16 @@
 							{% endfor %}
 						</td>
 						<td>
-								{% if era.imp_mpan_core %}
+							{% if era.imp_mpan_core %}
 								<a href="/e/llfcs/{{era.imp_llfc.id}}" title="{{era.imp_llfc.description}}">
-										{{era.imp_llfc.code}}
+									{{era.imp_llfc.code}}
 								</a>
-								{% endif %}
+							{% endif %}
 						</td>
 						<td>
-								{% if era.imp_mpan_core %}
+							{% if era.imp_mpan_core %}
 								<a title="{{supply.dno.dno_name}}" href="/e/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a> {{era.imp_mpan_core[3:]}}
-								{% endif %}
+							{% endif %}
 						<td>
 							{% if era.imp_mpan_core %}
 								{{ era.imp_sc }}
@@ -686,7 +686,7 @@
 				</li>
 			</ul>
 
-	<h2>CSV Downloads</h2>
+	<h2>Reports</h2>
 
 	<form action="/reports/291">
 		<fieldset>
@@ -768,7 +768,7 @@
 		</fieldset>
 	</form>
 
-	<form action="/reports/149" method=post>
+	<form action="/reports/59" method=post>
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
 			<legend>Duration</legend>

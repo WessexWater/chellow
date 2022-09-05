@@ -165,7 +165,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		</li>
 	</ul>
 
-	<h2>Electricity CSV Downloads</h2>
+	<h2>Electricity Reports</h2>
 
 	<form action="/reports/247" method="post">
 		<fieldset>
@@ -190,6 +190,18 @@ Table of site level monthly kWh, MD kWh etc.</a>
 			<br>
 			For
 			{{input_date('finish', last_month_finish, resolution='month')}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>			
+
+	<form action="/reports/59" method="post">
+		<fieldset>
+			<input type="hidden" name="site_id" value="{{site.id}}">
+			<legend>Duration</legend>
+			<label>Start Date</label>
+			{{ input_date('start', last_month_start) }}
+			<label>Finish Date</label>
+			{{ input_date('finish', last_month_finish) }}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>			

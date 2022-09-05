@@ -1,164 +1,458 @@
-from io import StringIO
+from datetime import datetime as Datetime
+from io import BytesIO
+
+import odio
+
+from utils import match
 
 from chellow.models import (
+    Comm,
+    Contract,
+    Cop,
+    EnergisationStatus,
+    GeneratorType,
+    GspGroup,
+    MarketRole,
+    MeterPaymentType,
+    MeterType,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
+    Participant,
+    Pc,
     Site,
+    Source,
+    User,
+    UserRole,
+    VoltageLevel,
+    insert_comms,
+    insert_cops,
+    insert_energisation_statuses,
+    insert_generator_types,
+    insert_sources,
+    insert_voltage_levels,
 )
-from chellow.reports.report_59 import _process, content
-from chellow.utils import ct_datetime, to_utc
+from chellow.reports.report_59 import content
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_process(mocker, sess):
-    Site.insert(sess, "CI017", "Water Works")
-    sess.commit()
-    f = StringIO()
-    start_date = to_utc(ct_datetime(2010, 1, 1))
-    finish_date = to_utc(ct_datetime(2010, 1, 31, 23, 20))
-    site_id = None
-    site_codes = None
-    _process(sess, f, start_date, finish_date, site_id, site_codes)
-    actual_str = f.getvalue()
-    expected = [
-        [
-            "site_code",
-            "site_name",
-            "associated_site_ids",
-            "sources",
-            "generator_types",
-            "from",
-            "to",
-            "imp_net_sum_kwh",
-            "imp_net_max_kw",
-            "imp_net_avg_kw",
-            "displaced_sum_kwh",
-            "displaced_max_kw",
-            "displaced_avg_kw",
-            "exp_net_sum_kwh",
-            "exp_net_max_kw",
-            "exp_net_avg_kw",
-            "used_sum_kwh",
-            "used_max_kw",
-            "used_avg_kw",
-            "exp_gen_sum_kwh",
-            "exp_gen_max_kw",
-            "exp_gen_avg_kw",
-            "imp_gen_sum_kwh",
-            "imp_gen_max_kw",
-            "imp_gen_avg_kw",
-            "metering_type",
-        ],
-        [
-            "CI017",
-            "Water Works",
-            "",
-            "",
-            "",
-            "2010-01-01 00:00",
-            "2010-01-31 23:20",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "",
-        ],
-    ]
-    expected_str = "\n".join(",".join(line) for line in expected) + "\n"
-    assert actual_str == expected_str
-
-
-def test_process_site_codes(mocker, sess):
+def test_do_post(mocker, sess, client):
     site_code = "CI017"
     Site.insert(sess, site_code, "Water Works")
     sess.commit()
-    f = StringIO()
-    start_date = to_utc(ct_datetime(2010, 1, 1))
-    finish_date = to_utc(ct_datetime(2010, 1, 31, 23, 20))
-    site_id = None
-    site_codes = [site_code]
-    _process(sess, f, start_date, finish_date, site_id, site_codes)
-    actual_str = f.getvalue()
+
+    mock_Thread = mocker.patch("chellow.reports.report_59.threading.Thread")
+
+    now = utc_datetime(2020, 1, 1)
+    mocker.patch("chellow.reports.report_59.utc_datetime_now", return_value=now)
+
+    compression = False
+    start_year = 2022
+    start_month = 8
+    start_day = 6
+    start_hour = 0
+    start_minute = 0
+    finish_year = 2022
+    finish_month = 8
+    finish_day = 6
+    finish_hour = 23
+    finish_minute = 30
+    data = {
+        "site_codes": site_code,
+        "compression": compression,
+        "start_year": start_year,
+        "start_month": start_month,
+        "start_day": start_day,
+        "start_hour": start_hour,
+        "start_minute": start_minute,
+        "finish_year": finish_year,
+        "finish_month": finish_month,
+        "finish_day": finish_day,
+        "finish_hour": finish_hour,
+        "finish_minute": finish_minute,
+    }
+
+    response = client.post("/reports/59", data=data)
+
+    match(response, 303)
+
+    base_name = ["duration", "2022-08-06_00_00"]
+
+    scenario_props = {
+        "scenario_start_year": start_year,
+        "scenario_start_month": start_month,
+        "scenario_start_day": start_day,
+        "scenario_start_hour": start_hour,
+        "scenario_start_minute": start_minute,
+        "scenario_finish_year": finish_year,
+        "scenario_finish_month": finish_month,
+        "scenario_finish_day": finish_day,
+        "scenario_finish_hour": finish_hour,
+        "scenario_finish_minute": finish_minute,
+        "mpan_cores": None,
+        "site_codes": [site_code],
+    }
+    user = User.get_by_email_address(sess, "admin@example.com")
+    is_bill_check = False
+    args = (
+        scenario_props,
+        base_name,
+        user.id,
+        compression,
+        now,
+        is_bill_check,
+    )
+
+    mock_Thread.assert_called_with(target=content, args=args)
+
+
+def test_displaced_over_two_months(mocker, sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+
+    mop_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    mop_contract = Contract.insert_mop(
+        sess,
+        "Fusion Mop Contract",
+        participant,
+        mop_charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+
+    dc_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+
+    supplier_charge_script = """
+import chellow.e.ccl
+from chellow.utils import HH, reduce_bill_hhs, utc_datetime
+
+def virtual_bill_titles():
+    return [
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
+        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
+        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['vat-gbp'] = 0
+        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+
+    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+
+def displaced_virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
+        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['vat-gbp'] = 0
+        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+
+    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        supplier_charge_script,
+        {},
+        vf,
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        vf,
+        None,
+        {},
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        vf,
+        None,
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source_net = Source.get_by_code(sess, "net")
+    source_gen = Source.get_by_code(sess, "gen")
+    insert_generator_types(sess)
+    generator_type_pv = GeneratorType.get_by_code(sess, "pv")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    site.insert_e_supply(
+        sess,
+        source_net,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    site.insert_e_supply(
+        sess,
+        source_gen,
+        generator_type_pv,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 5232 780",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
+    sess.commit()
+
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 1,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2009,
+        "scenario_finish_month": 2,
+        "scenario_finish_day": 10,
+        "scenario_finish_hour": 23,
+        "scenario_finish_minute": 30,
+        "by_hh": False,
+    }
+    base_name = ["monthly_duration"]
+    compression = False
+    now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
+
+    mock_file = BytesIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_59.open", return_value=mock_file)
+    mocker.patch(
+        "chellow.reports.report_59.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_59.os.rename")
+
+    content(
+        scenario_props,
+        base_name,
+        user.id,
+        compression,
+        now,
+        is_bill_check,
+    )
+
+    sheet = odio.parse_spreadsheet(mock_file)
+    table = list(sheet.tables[0].rows)
+
     expected = [
         [
-            "site_code",
-            "site_name",
-            "associated_site_ids",
+            "creation-date",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "start-date",
+            "finish-date",
+            "metering-type",
             "sources",
-            "generator_types",
-            "from",
-            "to",
-            "imp_net_sum_kwh",
-            "imp_net_max_kw",
-            "imp_net_avg_kw",
-            "displaced_sum_kwh",
-            "displaced_max_kw",
-            "displaced_avg_kw",
-            "exp_net_sum_kwh",
-            "exp_net_max_kw",
-            "exp_net_avg_kw",
-            "used_sum_kwh",
-            "used_max_kw",
-            "used_avg_kw",
-            "exp_gen_sum_kwh",
-            "exp_gen_max_kw",
-            "exp_gen_avg_kw",
-            "imp_gen_sum_kwh",
-            "imp_gen_max_kw",
-            "imp_gen_avg_kw",
-            "metering_type",
+            "generator-types",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
         ],
         [
+            Datetime(2020, 1, 1, 0, 0),
             "CI017",
             "Water Works",
             "",
-            "",
-            "",
-            "2010-01-01 00:00",
-            "2010-01-31 23:20",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "0",
-            "0",
-            "0.0",
-            "",
+            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 10, 23, 30),
+            "hh",
+            "gen, net",
+            "pv",
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
         ],
     ]
-    expected_str = "\n".join(",".join(line) for line in expected) + "\n"
-    assert actual_str == expected_str
+    print(table)
 
-
-def test_content(mocker, sess):
-    f = StringIO()
-    mocker.patch("chellow.reports.report_59.open", return_value=f)
-    mocker.patch("chellow.reports.report_59.os.rename")
-    start_date = to_utc(ct_datetime(2010, 1, 1))
-    finish_date = to_utc(ct_datetime(2010, 1, 31, 23, 30))
-    site_id = None
-    user = None
-    site_codes = None
-    content(start_date, finish_date, site_id, user, site_codes)
+    assert expected == table

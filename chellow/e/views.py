@@ -144,16 +144,6 @@ def csv_sites_hh_data_get():
     )
 
 
-@e.route("/csv_sites_duration")
-def csv_sites_duration_get():
-    now = utc_datetime_now()
-    month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
-    month_finish = month_start + relativedelta(months=1) - HH
-    return render_template(
-        "csv_sites_duration.html", month_start=month_start, month_finish=month_finish
-    )
-
-
 @e.route("/csv_supplies_triad")
 def csv_supplies_triad_get():
     now = Datetime.utcnow()
@@ -183,20 +173,6 @@ def csv_supplies_snapshot_get():
     return render_template(
         "csv_supplies_snapshot.html",
         default_timestamp=utc_datetime(now.year, now.month, now.day),
-    )
-
-
-@e.route("/csv_supplies_duration")
-def csv_supplies_duration_get(ct_now=None):
-    ct_now = ct_datetime_now() if ct_now is None else ct_now
-    ct_last = ct_now - relativedelta(months=1)
-    months = list(c_months_u(start_year=ct_last.year, start_month=ct_last.month))
-    last_month_start = months[0][0]
-    last_month_finish = months[0][1]
-    return render_template(
-        "csv_supplies_duration.html",
-        last_month_start=last_month_start,
-        last_month_finish=last_month_finish,
     )
 
 
@@ -1469,6 +1445,17 @@ def dtc_meter_type_get(code):
     )
 
 
+@e.route("/duration_report")
+def duration_report_get(ct_now=None):
+    ct_now = ct_datetime_now() if ct_now is None else ct_now
+    ct_last = ct_now - relativedelta(months=1)
+    months = list(c_months_u(start_year=ct_last.year, start_month=ct_last.month))
+    month_start, month_finish = months[0]
+    return render_template(
+        "duration_report.html", month_start=month_start, month_finish=month_finish
+    )
+
+
 @e.route("/energisation_statuses")
 def energisation_statuses_get():
     energisation_statuses = g.sess.query(EnergisationStatus).order_by(
@@ -1546,7 +1533,7 @@ def era_edit_post(era_id):
             supply = era.supply
             supply.delete_era(g.sess, era)
             g.sess.commit()
-            return chellow_redirect("/supplies/" + str(supply.id), 303)
+            return chellow_redirect(f"/supplies/{supply.id}", 303)
         elif "attach" in request.form:
             site_code = req_str("site_code")
             site = Site.get_by_code(g.sess, site_code)
