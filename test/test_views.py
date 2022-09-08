@@ -939,6 +939,19 @@ def test_non_core_auto_importer_get(sess, client):
     match(response, 200)
 
 
+def test_non_core_auto_importer_get_bmarketidx(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    contract = Contract.insert_non_core(sess, "bmarketidx", "", {}, vf, None, {})
+    sess.commit()
+
+    response = client.get(f"/non_core_contracts/{contract.id}/auto_importer")
+
+    match(response, 200)
+
+
 def test_non_core_auto_importer_post(mocker, sess, client):
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
