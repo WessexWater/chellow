@@ -11,14 +11,14 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
 import chellow.dloads
+from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.models import Contract, Era, Session
 from chellow.utils import c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
 from chellow.views import chellow_redirect
 
 
-def content(contract_id, end_year, end_month, months, user):
+def content(running_name, finished_name, contract_id, end_year, end_month, months):
     caches = {}
     sess = f = supply_source = None
     try:
@@ -30,17 +30,12 @@ def content(contract_id, end_year, end_month, months, user):
         )
         start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
-        forecast_date = chellow.computer.forecast_date()
-        running_name, finished_name = chellow.dloads.make_names(
-            "dc_virtual_bills.csv", user
-        )
+        f_date = forecast_date()
 
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")
 
-        bill_titles = chellow.computer.contract_func(
-            caches, contract, "virtual_bill_titles"
-        )()
+        bill_titles = contract_func(caches, contract, "virtual_bill_titles")()
         header_titles = [
             "Import MPAN Core",
             "Export MPAN Core",
@@ -48,7 +43,7 @@ def content(contract_id, end_year, end_month, months, user):
             "Finish Date",
         ]
 
-        vb_func = chellow.computer.contract_func(caches, contract, "virtual_bill")
+        vb_func = contract_func(caches, contract, "virtual_bill")
 
         writer.writerow(header_titles + bill_titles)
 
@@ -85,8 +80,8 @@ def content(contract_id, end_year, end_month, months, user):
                 hh_format(chunk_finish),
             ]
 
-            supply_source = chellow.computer.SupplySource(
-                sess, chunk_start, chunk_finish, forecast_date, era, is_import, caches
+            supply_source = SupplySource(
+                sess, chunk_start, chunk_finish, f_date, era, is_import, caches
             )
             vb_func(supply_source)
             bill = supply_source.dc_bill
@@ -108,22 +103,22 @@ def content(contract_id, end_year, end_month, months, user):
         msg = "Problem "
         if supply_source is not None:
             msg += (
-                "with supply "
-                + supply_source.mpan_core
-                + " starting at "
-                + hh_format(supply_source.start_date)
-                + " "
+                f"with supply {supply_source.mpan_core} starting at "
+                + f"{hh_format(supply_source.start_date)} "
             )
         msg += str(e)
         writer.writerow([msg])
     except BaseException:
         msg = "Problem " + traceback.format_exc() + "\n"
-        f.write(msg)
+        print(msg)
+        if f is not None:
+            f.write(msg)
     finally:
-        f.close()
-        os.rename(running_name, finished_name)
         if sess is not None:
             sess.close()
+        if f is not None:
+            f.close()
+            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -132,6 +127,9 @@ def do_get(sess):
     months = req_int("months")
     contract_id = req_int("dc_contract_id")
 
-    args = contract_id, end_year, end_month, months, g.user
+    running_name, finished_name = chellow.dloads.make_names(
+        "dc_virtual_bills.csv", g.user
+    )
+    args = running_name, finished_name, contract_id, end_year, end_month, months
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
