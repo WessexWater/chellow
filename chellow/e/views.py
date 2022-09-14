@@ -1985,31 +1985,19 @@ def llfc_edit_get(llfc_id):
 def llfc_edit_post(llfc_id):
     try:
         llfc = Llfc.get_by_id(g.sess, llfc_id)
-        if "delete" in request.values:
-            dno = llfc.dno
-            llfc.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/dnos/" + str(dno.dno_code) + "/llfcs", 303)
-        else:
-            description = req_str("description")
-            voltage_level_id = req_int("voltage_level_id")
-            voltage_level = VoltageLevel.get_by_id(g.sess, voltage_level_id)
-            is_substation = req_bool("is_substation")
-            is_import = req_bool("is_import")
-            valid_from = req_date("valid_from")
-            has_finished = req_bool("has_finished")
-            valid_to = req_date("valid_to") if has_finished else None
-            llfc.update(
-                g.sess,
-                description,
-                voltage_level,
-                is_substation,
-                is_import,
-                valid_from,
-                valid_to,
-            )
-            g.sess.commit()
-            return chellow_redirect("/llfcs/" + str(llfc.id), 303)
+        voltage_level_id = req_int("voltage_level_id")
+        voltage_level = VoltageLevel.get_by_id(g.sess, voltage_level_id)
+        is_substation = req_bool("is_substation")
+        llfc.update(
+            llfc.description,
+            voltage_level,
+            is_substation,
+            llfc.is_import,
+            llfc.valid_from,
+            llfc.valid_to,
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/llfcs/{llfc.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)

@@ -1460,6 +1460,33 @@ def test_laf_imports_post(mocker, app, client):
     match(response, 400)
 
 
+def test_llfc_eidt_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        vf,
+        None,
+    )
+    sess.commit()
+
+    data = {"voltage_level_id": voltage_level.id}
+    response = client.post(f"/e/llfcs/{llfc.id}/edit", data=data)
+    match(response, 303)
+
+
 def test_mop_batch_import_bills_full(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
