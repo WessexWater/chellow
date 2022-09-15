@@ -1217,7 +1217,6 @@ class SupplySource(DataSource):
                                 (
                                     a.start_date == b.start_date,
                                     a.finish_date == b.finish_date,
-                                    a.kwh == -1 * b.kwh,
                                     a.net == -1 * b.net,
                                     a.vat == -1 * b.vat,
                                     a.gross == -1 * b.gross,
