@@ -25,7 +25,7 @@
 					Are you sure you want to delete all the bills in this batch?
 				</legend>	
 				<input type="submit" name="delete_bills" value="Delete">
-				<a href="/supplier_batches/{{batch.id}}">Cancel</a>
+				<a href="/e/supplier_batches/{{batch.id}}">Cancel</a>
 			</fieldset>
 		</form>
 
@@ -148,9 +148,11 @@
 		<form action="/reports/111">
 			<fieldset>
 				<input type="hidden" name="batch_id" value="{{batch.id}}">
-				<legend>Download Bill Check</legend>
-				<label>MPAN Cores</label><br>
-				{{input_textarea('mpan_cores', '', 5, 40, placeholder='One on each line, includes all if left blank')}}
+				<legend>Download McBill Check</legend>
+				<label>MPAN Cores</label>
+				{{input_textarea(
+					'mpan_cores', '', 5, 40,
+					placeholder='One on each line, includes all if left blank')}}
 				<input type="submit" value="Download">
 			</fieldset>
 		</form>

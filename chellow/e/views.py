@@ -1132,7 +1132,7 @@ def dc_contracts_hh_imports_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
 
-        file_item = request.files["import_file"]
+        file_item = req_file("import_file")
         f = StringIO(str(file_item.stream.read(), "utf-8"))
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
@@ -1149,7 +1149,7 @@ def dc_contracts_hh_imports_post(contract_id):
             raise e
         else:
             flash(e.description)
-            processes = chellow.hh_importer.get_hh_import_processes(contract.id)
+            processes = chellow.e.hh_importer.get_hh_import_processes(contract.id)
             return make_response(
                 render_template(
                     "dc_contract_hh_imports.html",

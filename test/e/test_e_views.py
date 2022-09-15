@@ -445,6 +445,22 @@ def test_dc_contracts_hh_imports_get(sess, client):
     match(response, 200)
 
 
+def test_dc_contracts_hh_imports_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    sess.commit()
+
+    file_name = "hh.simple.csv"
+    f = BytesIO(b"MPAN core, Channel Type, Time, Value, Status\n")
+
+    data = {"import_file": (f, file_name)}
+    response = client.post(f"/e/dc_contracts/{contract.id}/hh_imports", data=data)
+    match(response, 303)
+
+
 def test_dc_auto_importer_get(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
