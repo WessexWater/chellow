@@ -433,6 +433,18 @@ def test_dc_contracts_add_post(sess, client):
     hh_importer.shutdown()
 
 
+def test_dc_contracts_hh_imports_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    sess.commit()
+
+    response = client.get(f"/e/dc_contracts/{contract.id}/hh_imports")
+    match(response, 200)
+
+
 def test_dc_auto_importer_get(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
