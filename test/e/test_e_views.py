@@ -7,7 +7,7 @@ from openpyxl import Workbook
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
-from utils import match
+from utils import match, match_repeat
 
 from chellow.e import hh_importer
 from chellow.e.views import (
@@ -459,6 +459,9 @@ def test_dc_contracts_hh_imports_post(sess, client):
     data = {"import_file": (f, file_name)}
     response = client.post(f"/e/dc_contracts/{contract.id}/hh_imports", data=data)
     match(response, 303)
+    match_repeat(
+        client, f"/e/dc_contracts/{contract.id}/hh_imports/0", "completed successfully"
+    )
 
 
 def test_dc_auto_importer_get(sess, client):

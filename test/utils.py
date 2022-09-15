@@ -1,5 +1,6 @@
 import re
 from itertools import zip_longest
+from time import sleep
 
 
 def match(response, status_code, *patterns):
@@ -20,3 +21,12 @@ def match_tables(table_1, table_2):
                 raise Exception(f"Two cells don't match: {c1} and {c2}")
 
     assert table_1 == table_2
+
+
+def match_repeat(client, path, match, seconds=5):
+    for _ in range(5):
+        response = client.get(path)
+        if match in response.get_data(as_text=True):
+            break
+        else:
+            sleep(1)

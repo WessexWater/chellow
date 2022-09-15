@@ -1163,7 +1163,7 @@ def dc_contracts_hh_imports_post(contract_id):
 @e.route("/dc_contracts/<int:contract_id>/hh_imports/<int:import_id>")
 def dc_contracts_hh_import_get(contract_id, import_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
-    process = chellow.hh_importer.get_hh_import_processes(contract_id)[import_id]
+    process = chellow.e.hh_importer.get_hh_import_processes(contract_id)[import_id]
     return render_template(
         "dc_contract_hh_import.html", contract=contract, process=process
     )
