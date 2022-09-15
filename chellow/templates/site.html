@@ -197,6 +197,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
 	<form action="/reports/59" method="post">
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">
+			<input type="hidden" name="compression" value="true">
 			<legend>Duration</legend>
 			<label>Start Date</label>
 			{{ input_date('start', last_month_start) }}

@@ -17,8 +17,7 @@ from sqlalchemy.sql.expression import null
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-import chellow.e.computer
-from chellow.e.computer import contract_func
+from chellow.e.computer import contract_func, forecast_date
 from chellow.e.scenario import make_calcs, make_site_deltas
 from chellow.models import (
     Bill,
@@ -223,22 +222,6 @@ def _process_site(
 
             if imp_ss is not None:
                 imp_supplier_contract = imp_ss.supplier_contract
-                if imp_supplier_contract is not None:
-                    import_vb_function = contract_func(
-                        report_context, imp_supplier_contract, "virtual_bill"
-                    )
-                    if import_vb_function is None:
-                        raise BadRequest(
-                            f"The supplier contract {imp_supplier_contract.name} "
-                            " doesn't have the virtual_bill() function."
-                        )
-                    try:
-                        import_vb_function(imp_ss)
-                    except AttributeError as e:
-                        raise BadRequest(
-                            f"Problem with virtual bill of supplier contract "
-                            f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
-                        )
 
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
                 imp_supplier_bill = imp_ss.supplier_bill
@@ -280,17 +263,6 @@ def _process_site(
 
             if exp_ss is not None:
                 exp_supplier_contract = exp_ss.supplier_contract
-                if exp_supplier_contract is not None:
-                    export_vb_function = contract_func(
-                        report_context, exp_supplier_contract, "virtual_bill"
-                    )
-                    try:
-                        export_vb_function(exp_ss)
-                    except AttributeError as e:
-                        raise BadRequest(
-                            f"Problem with virtual bill of supplier contract "
-                            f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
-                        )
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 exp_supplier_bill = exp_ss.supplier_bill
@@ -744,7 +716,7 @@ def content(
             forecast_from = None
 
         if forecast_from is None:
-            forecast_from = chellow.e.computer.forecast_date()
+            forecast_from = forecast_date()
         else:
             forecast_from = to_utc(forecast_from)
 
@@ -917,9 +889,7 @@ def content(
             if supply_ids is not None:
                 conts = conts.where(Supply.id.in_(supply_ids))
             for cont in conts:
-                title_func = chellow.e.computer.contract_func(
-                    report_context, cont, "virtual_bill_titles"
-                )
+                title_func = contract_func(report_context, cont, "virtual_bill_titles")
                 if title_func is None:
                     raise Exception(
                         f"For the contract {cont.name} there doesn't seem to be a "

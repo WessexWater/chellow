@@ -1,4 +1,5 @@
 import csv
+import traceback
 from collections import defaultdict
 from datetime import datetime as Datetime
 from io import StringIO
@@ -416,6 +417,28 @@ def make_calcs(
                 deltas=sup_deltas,
                 bill=data_source_bill if era.pc.code == "00" else None,
             )
+            imp_supplier_contract = imp_ss.supplier_contract
+            if imp_supplier_contract is not None:
+                import_vb_function = contract_func(
+                    report_context, imp_supplier_contract, "virtual_bill"
+                )
+                if import_vb_function is None:
+                    raise BadRequest(
+                        f"The supplier contract {imp_supplier_contract.name} "
+                        " doesn't have the virtual_bill() function."
+                    )
+                try:
+                    import_vb_function(imp_ss)
+                except (AttributeError, TypeError) as e:
+                    raise BadRequest(
+                        f"Problem with virtual bill of supplier contract "
+                        f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
+                    )
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"{e.description} Problem with virtual bill of supplier "
+                        f"contract {imp_supplier_contract.id} {e}"
+                    )
 
         if era.exp_mpan_core is None:
             exp_ss = None
@@ -436,6 +459,23 @@ def make_calcs(
                 bill=data_source_bill if era.pc.code == "00" else None,
             )
             measurement_type = exp_ss.measurement_type
+            exp_supplier_contract = exp_ss.supplier_contract
+            if exp_supplier_contract is not None:
+                export_vb_function = contract_func(
+                    report_context, exp_supplier_contract, "virtual_bill"
+                )
+                try:
+                    export_vb_function(exp_ss)
+                except (AttributeError, TypeError) as e:
+                    raise BadRequest(
+                        f"Problem with virtual bill of supplier contract "
+                        f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
+                    )
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"{e.description} Problem with virtual bill of supplier "
+                        f"contract {exp_supplier_contract.id}"
+                    )
 
         order = (
             f"{meter_order[measurement_type]}_{supply.id}_{hh_format(era.start_date)}"

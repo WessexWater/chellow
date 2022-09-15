@@ -672,10 +672,15 @@ def reduce_bill_hhs(bill_hhs):
                     bill[k] = v
 
             else:
-                if k in bill:
+                try:
                     bill[k] += v
-                else:
+                except KeyError:
                     bill[k] = v
+                except TypeError as e:
+                    raise BadRequest(
+                        f"For bill[{k}] {bill[k]} the value {v} can't be added on. {e} "
+                        f"{traceback.format_exc()}"
+                    )
 
     return bill
 

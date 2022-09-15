@@ -168,6 +168,8 @@ def _process_site(
                     None,
                     None,
                     None,
+                    None,
+                    None,
                     imp_ss.era.meter_category,
                     "displaced",
                     None,
@@ -223,22 +225,6 @@ def _process_site(
 
             if imp_ss is not None:
                 imp_supplier_contract = imp_ss.supplier_contract
-                if imp_supplier_contract is not None:
-                    import_vb_function = contract_func(
-                        report_context, imp_supplier_contract, "virtual_bill"
-                    )
-                    if import_vb_function is None:
-                        raise BadRequest(
-                            f"The supplier contract {imp_supplier_contract.name} "
-                            " doesn't have the virtual_bill() function."
-                        )
-                    try:
-                        import_vb_function(imp_ss)
-                    except AttributeError as e:
-                        raise BadRequest(
-                            f"Problem with virtual bill of supplier contract "
-                            f"{imp_supplier_contract.id} {e} {traceback.format_exc()}"
-                        )
 
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
                 imp_supplier_bill = imp_ss.supplier_bill
@@ -247,12 +233,13 @@ def _process_site(
                     gbp = imp_supplier_bill["net-gbp"]
                 except KeyError:
                     gbp = 0
-                    imp_supplier_bill["problem"] += (
-                        f"For the supply {imp_ss.mpan_core} the virtual bill "
-                        f"{imp_supplier_bill} from the contract "
-                        f"{imp_supplier_contract.name} does not contain the net-gbp "
-                        f"key."
-                    )
+                    if "problem" in imp_supplier_bill:
+                        imp_supplier_bill["problem"] += (
+                            f"For the supply {imp_ss.mpan_core} the virtual bill "
+                            f"{imp_supplier_bill} from the contract "
+                            f"{imp_supplier_contract.name} does not contain the "
+                            f"net-gbp key."
+                        )
 
                 if source_code in ("net", "gen-net"):
                     month_data["import-net-gbp"] += gbp
@@ -280,17 +267,6 @@ def _process_site(
 
             if exp_ss is not None:
                 exp_supplier_contract = exp_ss.supplier_contract
-                if exp_supplier_contract is not None:
-                    export_vb_function = contract_func(
-                        report_context, exp_supplier_contract, "virtual_bill"
-                    )
-                    try:
-                        export_vb_function(exp_ss)
-                    except AttributeError as e:
-                        raise BadRequest(
-                            f"Problem with virtual bill of supplier contract "
-                            f"{exp_supplier_contract.id} {e} {traceback.format_exc()}"
-                        )
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 exp_supplier_bill = exp_ss.supplier_bill
@@ -399,28 +375,34 @@ def _process_site(
             if imp_ss is None:
                 imp_supplier_contract_name = None
                 pc_code = exp_ss.pc_code
+                imp_bad_hhs = None
             else:
                 if imp_supplier_contract is None:
                     imp_supplier_contract_name = ""
                 else:
                     imp_supplier_contract_name = imp_supplier_contract.name
                 pc_code = imp_ss.pc_code
+                imp_bad_hhs = sum(1 for hh in imp_ss.hh_data if hh["status"] != "A")
 
             if exp_ss is None:
                 exp_supplier_contract_name = None
+                exp_bad_hhs = None
             else:
                 if exp_supplier_contract is None:
                     exp_supplier_contract_name = ""
                 else:
                     exp_supplier_contract_name = exp_supplier_contract.name
+                exp_bad_hhs = sum(1 for hh in exp_ss.hh_data if hh["status"] != "A")
 
             out = (
                 [
                     now,
                     imp_mpan_core,
                     imp_supplier_contract_name,
+                    imp_bad_hhs,
                     exp_mpan_core,
                     exp_supplier_contract_name,
+                    exp_bad_hhs,
                     sss.era.start_date,
                     era_category,
                     source_code,
@@ -758,7 +740,7 @@ def content(
 
         site_codes = scenario_props.get("site_codes")
 
-        sites = sess.query(Site).distinct().order_by(Site.code)
+        sites = select(Site).distinct().order_by(Site.code)
         if site_codes is not None and len(site_codes) > 0:
             base_name.append("sitecodes")
             sites = sites.where(Site.code.in_(site_codes))
@@ -768,6 +750,7 @@ def content(
             supply_ids = None
         else:
             supply_ids = [Supply.get_by_mpan_core(sess, m).id for m in mpan_cores]
+            sites = sites.join(SiteEra).join(Era).where(Era.supply_id.in_(supply_ids))
 
         user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
@@ -827,8 +810,10 @@ def content(
             "creation-date",
             "imp-mpan-core",
             "imp-supplier-contract",
+            "imp-bad_hhs",
             "exp-mpan-core",
             "exp-supplier-contract",
+            "exp-bad_hhs",
             "era-start-date",
             "metering-type",
             "source",
@@ -949,14 +934,13 @@ def content(
         bill_check_site_rows.append(site_header_titles + summary_titles)
         bill_check_era_rows.append(era_titles)
 
-        sites = sites.all()
         normal_reads = set()
 
         data_source_bill = Object()
         data_source_bill.start_date = start_date
         data_source_bill.finish_date = finish_date
 
-        for site in sites:
+        for site in sess.execute(sites).scalars():
             if by_hh:
                 sf = [(d, d) for d in hh_range(report_context, start_date, finish_date)]
             else:
@@ -1005,16 +989,16 @@ def content(
                 row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                 normal_read_rows.append(row)
 
-            write_spreadsheet(
-                rf,
-                compression,
-                site_rows,
-                era_rows,
-                normal_read_rows,
-                bill_check_site_rows,
-                bill_check_era_rows,
-                is_bill_check,
-            )
+        write_spreadsheet(
+            rf,
+            compression,
+            site_rows,
+            era_rows,
+            normal_read_rows,
+            bill_check_site_rows,
+            bill_check_era_rows,
+            is_bill_check,
+        )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")

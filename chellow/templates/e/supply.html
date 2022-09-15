@@ -771,6 +771,7 @@
 	<form action="/reports/59" method=post>
 		<fieldset>
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
+			<input type="hidden" name="compression" value="true">
 			<legend>Duration</legend>
 			<label>From</label> {{ input_date('start', last_month_start) }}
 			<label>To</label> {{ input_date('finish', last_month_finish) }}
