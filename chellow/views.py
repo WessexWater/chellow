@@ -252,11 +252,18 @@ def system_get():
         """
     ).fetchall()
 
+    if hasattr(chellow, "versions"):
+        version_number = chellow.versions["version"]
+        version_hash = chellow.versions["full-revisionid"]
+    else:
+        version_number = None
+        version_hash = None
+
     return render_template(
         "system.html",
         traces="\n".join(traces),
-        version_number=chellow.versions["version"],
-        version_hash=chellow.versions["full-revisionid"],
+        version_number=version_number,
+        version_hash=version_hash,
         pg_stats=pg_stats,
         request=request,
         virtual_memory=psutil.virtual_memory(),

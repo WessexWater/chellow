@@ -184,7 +184,7 @@ def _import_Market_Participant_Role(sess, rows, ctx):
             )
 
             if dno_code is not None:
-                contract = Contract.find_dno(sess, dno_code)
+                contract = Contract.find_dno_by_name(sess, dno_code)
                 if contract is None:
                     Contract.insert_dno(
                         sess, dno_code, participant, "", {}, valid_from, None, {}
@@ -355,6 +355,46 @@ def _import_MTC_Meter_Type(sess, rows, ctx):
         else:
             meter_type.description = description
             meter_type.valid_to = valid_to
+            sess.flush()
+
+
+def _import_MTC_Payment_Type(sess, rows, ctx):
+    meter_payment_types = dict(
+        ((v.code, v.valid_from), v)
+        for v in sess.execute(select(MeterPaymentType)).scalars()
+    )
+    for values in rows:
+        code = values[0]
+        description = values[1]
+        valid_from = parse_date(values[2])
+        valid_to = parse_to_date(values[3])
+        meter_payment_type = meter_payment_types.get((code, valid_from))
+
+        if meter_payment_type is None:
+            MeterPaymentType.insert(sess, code, description, valid_from, valid_to)
+
+        else:
+            meter_payment_type.description = description
+            meter_payment_type.valid_to = valid_to
+            sess.flush()
+
+
+def _import_Profile_Class(sess, rows, ctx):
+    for values in rows:
+        code_str = values[0]
+        code = code_str.zfill(2)
+        valid_from = parse_date(values[1])
+        name = values[2]
+        valid_to = parse_to_date(values[4])
+
+        pc = Pc.find_by_code(sess, code)
+
+        if pc is None:
+            Pc.insert(sess, code, name, valid_from, valid_to)
+
+        else:
+            pc.name = name
+            pc.valid_to = valid_to
             sess.flush()
 
 
@@ -702,7 +742,7 @@ def import_mdd(sess, repo_url, logger):
     if len(mdd_entries) == 0:
         raise BadRequest("Can't find any MDD versions on the rate server.")
 
-    mdd_entry = sorted(mdd_entries.items())[0][1]
+    mdd_entry = sorted(mdd_entries.items())[-1][1]
     mdd_version = int(mdd_entry["name"])
     logger(f"Latest version on rate server: {mdd_version} at {mdd_entry['path']}")
 
@@ -744,9 +784,10 @@ def import_mdd(sess, repo_url, logger):
         ("Market_Role", _import_Market_Role),
         ("Market_Participant_Role", _import_Market_Participant_Role),
         ("Line_Loss_Factor_Class", _import_Line_Loss_Factor_Class),
+        ("MTC_Meter_Type", _import_MTC_Meter_Type),
+        ("MTC_Payment_Type", _import_MTC_Payment_Type),
         ("Meter_Timeswitch_Class", _import_Meter_Timeswitch_Class),
         ("MTC_in_PES_Area", _import_MTC_in_PES_Area),
-        ("MTC_Meter_Type", _import_MTC_Meter_Type),
         (
             "Standard_Settlement_Configuration",
             _import_Standard_Settlement_Configuration,
@@ -763,6 +804,7 @@ def import_mdd(sess, repo_url, logger):
             "Valid_MTC_LLFC_SSC_Combination",
             _import_Valid_MTC_LLFC_SSC_Combination,
         ),
+        ("Profile_Class", _import_Profile_Class),
         (
             "Valid_MTC_LLFC_SSC_PC_Combination",
             _import_Valid_MTC_LLFC_SSC_PC_Combination,

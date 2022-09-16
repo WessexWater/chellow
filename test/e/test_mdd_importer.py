@@ -1,5 +1,6 @@
 from chellow.e.mdd_importer import (
     _import_MTC_in_PES_Area,
+    _import_Market_Participant_Role,
     _import_Meter_Timeswitch_Class,
     _import_Valid_MTC_LLFC_Combination,
     _import_Valid_MTC_LLFC_SSC_Combination,
@@ -23,6 +24,36 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_import_Market_Participant_Role_R(sess):
+    participant_code = "EDFI"
+    Participant.insert(sess, participant_code, "hyde participant")
+    market_role_code = "R"
+    MarketRole.insert(sess, market_role_code, "dno")
+    sess.commit()
+
+    rows = [
+        [
+            participant_code,
+            market_role_code,
+            "16/04/2009",
+            "17/12/2014",
+            "UK Power Networks (IDNO)",
+            "Energy House",
+            "Hazelwick Avenue",
+            "Three Bridges",
+            "Crawley",
+            "West Sussex",
+            "",
+            "",
+            "",
+            "RH10 1EX",
+            "28",
+        ]
+    ]
+    ctx = {}
+    _import_Market_Participant_Role(sess, rows, ctx)
 
 
 def test_import_Meter_Timeswitch_Class(sess):
@@ -396,6 +427,16 @@ def test_import_mdd(mocker, sess):
                 },
                 {
                     "type": "file",
+                    "download_url": "download/MTC_Payment_Type",
+                    "name": "MTC_Payment_Type_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Profile_Class",
+                    "name": "Profile_Class_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/Standard_Settlement_Configuration",
                     "name": "Standard_Settlement_Configuration_50.csv",
                 },
@@ -428,6 +469,8 @@ def test_import_mdd(mocker, sess):
         "download/Meter_Timeswitch_Class": {"text": "\n"},
         "download/MTC_in_PES_Area": {"text": "\n"},
         "download/MTC_Meter_Type": {"text": "\n"},
+        "download/MTC_Payment_Type": {"text": "\n"},
+        "download/Profile_Class": {"text": "\n"},
         "download/Standard_Settlement_Configuration": {"text": "\n"},
         "download/Valid_MTC_LLFC_Combination": {"text": "\n"},
         "download/Valid_MTC_SSC_Combination": {"text": "\n"},
@@ -460,5 +503,166 @@ def test_import_mdd(mocker, sess):
 
     def logger(msg):
         pass
+
+    import_mdd(sess, repo_url, logger)
+
+
+def test_import_mdd_two_versions(mocker, sess):
+    repo_url = "rateserver"
+    lookup = {
+        f"{repo_url}/contents": {
+            "json": [{"type": "dir", "url": f"{repo_url}/contents/2022"}],
+        },
+        f"{repo_url}/contents/2022": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity",
+                    "name": "electricity",
+                }
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity/mdd",
+                    "name": "mdd",
+                }
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity/mdd": {
+            "json": [
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity/mdd/49",
+                    "name": "49",
+                    "path": "2022/mdd/49",
+                },
+                {
+                    "type": "dir",
+                    "url": f"{repo_url}/contents/2022/electricity/mdd/50",
+                    "name": "50",
+                    "path": "2022/mdd/50",
+                },
+            ],
+        },
+        f"{repo_url}/contents/2022/electricity/mdd/50": {
+            "json": [
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Participant",
+                    "name": "Market_Participant_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Role",
+                    "name": "Market_Role_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Market_Participant_Role",
+                    "name": "Market_Participant_Role_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Line_Loss_Factor_Class",
+                    "name": "Line_Loss_Factor_Class_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Meter_Timeswitch_Class",
+                    "name": "Meter_Timeswitch_Class_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/MTC_in_PES_Area",
+                    "name": "MTC_in_PES_Area_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/MTC_Meter_Type",
+                    "name": "MTC_Meter_Type_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/MTC_Payment_Type",
+                    "name": "MTC_Payment_Type_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Profile_Class",
+                    "name": "Profile_Class_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Standard_Settlement_Configuration",
+                    "name": "Standard_Settlement_Configuration_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_Combination",
+                    "name": "Valid_MTC_LLFC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_SSC_Combination",
+                    "name": "Valid_MTC_SSC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_SSC_Combination",
+                    "name": "Valid_MTC_LLFC_SSC_Combination_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Valid_MTC_LLFC_SSC_PC_Combination",
+                    "name": "Valid_MTC_LLFC_SSC_PC_Combination_50.csv",
+                },
+            ],
+        },
+        "download/Market_Participant": {"text": "\n"},
+        "download/Market_Role": {"text": "\n"},
+        "download/Market_Participant_Role": {"text": "\n"},
+        "download/Line_Loss_Factor_Class": {"text": "\n"},
+        "download/Meter_Timeswitch_Class": {"text": "\n"},
+        "download/MTC_in_PES_Area": {"text": "\n"},
+        "download/MTC_Meter_Type": {"text": "\n"},
+        "download/MTC_Payment_Type": {"text": "\n"},
+        "download/Profile_Class": {"text": "\n"},
+        "download/Standard_Settlement_Configuration": {"text": "\n"},
+        "download/Valid_MTC_LLFC_Combination": {"text": "\n"},
+        "download/Valid_MTC_SSC_Combination": {"text": "\n"},
+        "download/Valid_MTC_LLFC_SSC_Combination": {"text": "\n"},
+        "download/Valid_MTC_LLFC_SSC_PC_Combination": {"text": "\n"},
+    }
+
+    def mock_session_get(self, url):
+        response_data = lookup[url]
+        mock_response = mocker.Mock()
+        try:
+            mock_response.json.return_value = response_data["json"]
+        except KeyError:
+            pass
+        try:
+            mock_response.text = response_data["text"]
+        except KeyError:
+            pass
+        return mock_response
+
+    mocker.patch("chellow.e.mdd_importer.requests.Session.get", mock_session_get)
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    calb_participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
+    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
+    sess.commit()
+
+    messages = []
+
+    def logger(msg):
+        messages.append(msg)
 
     import_mdd(sess, repo_url, logger)

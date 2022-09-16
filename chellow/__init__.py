@@ -270,6 +270,7 @@ def create_app(testing=False):
             chellow.e.bsuos.bsuos_importer,
             chellow.gas.cv.cv_importer,
             chellow.e.bmarketidx.bmarketidx_importer,
+            chellow.rate_server.importer,
             chellow.testing.tester,
         ):
             if importer is not None and importer.global_alert is not None:
