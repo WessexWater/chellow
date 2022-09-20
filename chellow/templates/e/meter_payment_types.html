@@ -16,6 +16,8 @@
 			<tr>
 				<th>Code</th>
 				<th>Description</th>
+				<th>Valid From</th>
+				<th>Valid To</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -26,6 +28,8 @@
 							>{{meter_payment_type.code}}</a>
 					</td>
 					<td>{{ meter_payment_type.description }}</td>
+					<td>{{meter_payment_type.valid_from|hh_format}}</td>
+					<td>{{meter_payment_type.valid_to|hh_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

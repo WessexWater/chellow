@@ -2427,6 +2427,7 @@ class MeterPaymentType(Base, PersistentClass):
     def insert(cls, sess, code, description, valid_from, valid_to):
         meter_payment_type = cls(code, description, valid_from, valid_to)
         sess.add(meter_payment_type)
+        sess.flush()
         return meter_payment_type
 
     @staticmethod
@@ -2455,7 +2456,7 @@ class MeterPaymentType(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     code = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False)
     valid_to = Column(DateTime(timezone=True))
     mtc_participants = relationship("MtcParticipant", backref="meter_payment_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)

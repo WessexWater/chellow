@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/e/meter_payment_types/">Meter Payment Types</a>
-	&raquo; {{meter_payment_type.description}}
+	<a href="/e/meter_payment_types/">Meter Payment Types</a> &raquo;
+	{{meter_payment_type.description}}
 {% endblock %}
 
 {% block content %}
@@ -19,6 +19,14 @@
 		<tr>
 			<th>Description</th>
 			<td>{{meter_payment_type.description}}</td>
+		</tr>
+		<tr>
+			<th>Valid From</th>
+			<td>{{meter_payment_type.valid_from|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Valid To</th>
+			<td>{{meter_payment_type.valid_to|hh_format}}</td>
 		</tr>
 	</table>
 
