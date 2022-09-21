@@ -11,6 +11,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
     Contract,
+    GspGroup,
     Llfc,
     MarketRole,
     MeterPaymentType,
@@ -55,6 +56,21 @@ def parse_bool(bool_str):
 
 
 VOLTAGE_MAP = {"24": {"602": {to_utc(ct_datetime(2010, 4, 1)): "LV"}}}
+
+
+def _import_GSP_Group(sess, rows, ctx):
+    for values in rows:
+        code = values[0]
+        description = values[1]
+
+        group = GspGroup.find_by_code(sess, code)
+
+        if group is None:
+            GspGroup.insert(sess, code, description)
+
+        else:
+            group.description = description
+            sess.flush()
 
 
 def _import_Line_Loss_Factor_Class(sess, rows, ctx):
@@ -780,6 +796,7 @@ def import_mdd(sess, repo_url, logger):
             gnames[table_name] = list(csv_reader)
 
     for tname, func in [
+        ("GSP_Group", _import_GSP_Group),
         ("Market_Participant", _import_Market_Participant),
         ("Market_Role", _import_Market_Role),
         ("Market_Participant_Role", _import_Market_Participant_Role),

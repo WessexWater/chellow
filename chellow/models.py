@@ -383,9 +383,15 @@ class GspGroup(Base, PersistentClass):
         return gsp_group
 
     @staticmethod
-    def get_by_code(sess, code):
+    def find_by_code(sess, code):
         code = code.strip()
-        group = sess.query(GspGroup).filter_by(code=code).first()
+        return sess.execute(
+            select(GspGroup).where(GspGroup.code == code)
+        ).scalar_one_or_none()
+
+    @staticmethod
+    def get_by_code(sess, code):
+        group = GspGroup.find_by_code(sess, code)
         if group is None:
             raise BadRequest(f"The GSP group with code {code} can't be found.")
         return group
