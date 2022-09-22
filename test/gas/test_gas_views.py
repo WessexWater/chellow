@@ -389,7 +389,7 @@ def test_bill_edit_post(sess, client):
 
     response = client.post(f"/g/bills/{g_bill.id}/edit", data=data)
 
-    match(response, 303)
+    match(response, 303, rf"/g/bills/{g_bill.id}")
 
 
 def test_bill_imports_post_full(mocker, app, client, sess):

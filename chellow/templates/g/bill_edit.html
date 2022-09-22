@@ -7,107 +7,89 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_contracts">Gas Contracts</a> &raquo;
+	<a href="/g/supplier_contracts">Gas Contracts</a> &raquo;
 	<a
-	 		href="/g_contracts/{{g_bill.g_batch.g_contract.id}}">
+	 		href="/g/supplier_contracts/{{g_bill.g_batch.g_contract.id}}">
 			{{g_bill.g_batch.g_contract.name}}</a> &raquo;
 	<a
-	 		href="/g_batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
+	 		href="/g/batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
 			>Batches</a> &raquo;
 	<a
-	 		href="/g_batches/{{g_bill.g_batch.id}}"
+	 		href="/g/batches/{{g_bill.g_batch.id}}"
 			>{{g_bill.g_batch.reference}}</a> &raquo;
-	<a href="/g_bills/{{g_bill.id}}">Bill {{g_bill.id}}</a> &raquo; Edit
+	<a href="/g/bills/{{g_bill.id}}">Bill {{g_bill.id}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
 	{% if request.values.confirm_delete %}
-		<form method="post" action="/g_bills/{{g_bill.id}}/edit">
+		<form method="post" action="/g/bills/{{g_bill.id}}/edit">
 			<fieldset>
 				<legend>Are you sure you want to delete this bill?</legend>
 				<input type="submit" name="delete" value="Delete">
 			</fieldset>
 		</form>
-		<p><a href="/g_bills/{{g_bill.id}}/edit">Cancel</a></p>
+		<p><a href="/g/bills/{{g_bill.id}}/edit">Cancel</a></p>
 	{% else %}
-		<form action="/g_bills/{{g_bill.id}}/edit" method="post">
+		<p>
+			<a href="/g/supplies/{{g_bill.g_supply.id}}">Supply</a>
+		</p>
+		<form action="/g/bills/{{g_bill.id}}/edit" method="post">
 			<fieldset>
 				<legend>Update This Bill</legend>
-				<p>
-					<a href="/g_supplies/{{g_bill.g_supply.id}}">Supply</a>
-				</p>
-				<label>
-					Reference {{input_text('reference', g_bill.reference)}}
-				</label>
-				<br>
-				<label>
-					Account {{input_text('account', g_bill.account)}}
-				</label>
-				<br><br>
-				<fieldset>
-					<legend>Issue Date</legend>
-					{{input_date('issue', g_bill.issue_date)}}
-				</fieldset>
-				<br>
-				<fieldset>
-					<legend>Start Date</legend>
-					{{input_date('start', g_bill.start_date)}}
-				</fieldset>
-				<br>
-				<fieldset>
-					<legend>Finish Date</legend>
-					{{input_date('finish', g_bill.finish_date)}}
-				</fieldset>
-				<br>
-				<label>
-					kWh {{input_text('kwh', g_bill.kwh)}}
-				</label>
-				<br>
-				<label>
-					Net GBP {{input_text('net_gbp', g_bill.net)}}
-				</label>
-				<br>
-				<label>
-					VAT GBP {{input_text('vat_gbp', g_bill.vat)}}
-				</label>
-				<br>
-				<label>
-					Gross GBP {{input_text('gross_gbp', g_bill.gross)}}
-				</label>
-				<br>
-				<label>Type
-					<select name="bill_type_id">
-						{% for type in bill_types %}
-							{{
-								input_option(
-									'type_id', type.id, type.code + ' ' + type.description,
-									initial=g_bill.bill_type.id)}}
-						{% endfor %}
-					</select>
-				</label>
-				<br><br>
-				<label>
-					Raw Lines<br>
-					{{input_textarea('raw_lines', g_bill.raw_lines, 10, 80)}}
-				</label>
-				<br>
-				<label>
-					Breakdown <br>
-					{{input_textarea('breakdown', g_bill.breakdown, 10, 80)}}
-				</label>
-				<br>
-				Example Breakdown
+				<label>Reference</label>
+			 	{{input_text('reference', g_bill.reference)}}
 
-				<pre>
+				<label>Account</label>
+			 	{{input_text('account', g_bill.account)}}
+
+				<label>Issue Date</label>
+				{{input_date('issue', g_bill.issue_date)}}
+
+				<label>Start Date</label>
+				{{input_date('start', g_bill.start_date)}}
+
+				<label>Finish Date</label>
+				{{input_date('finish', g_bill.finish_date)}}
+
+				<label>kWh</label>
+			 	{{input_text('kwh', g_bill.kwh)}}
+
+				<label>Net GBP</label>
+			 	{{input_text('net_gbp', g_bill.net)}}
+
+				<label>VAT GBP</label>
+			 	{{input_text('vat_gbp', g_bill.vat)}}
+
+				<label>Gross GBP</label>
+			 	{{input_text('gross_gbp', g_bill.gross)}}
+
+				<label>Type</label>
+				<select name="bill_type_id">
+					{% for type in bill_types %}
+						{{
+							input_option(
+								'type_id', type.id, type.code + ' ' + type.description,
+								initial=g_bill.bill_type.id)}}
+					{% endfor %}
+				</select>
+
+				<label>Raw Lines</label>
+				{{input_textarea('raw_lines', g_bill.raw_lines, 10, 80)}}
+
+				<label>Breakdown</label>
+				{{input_textarea('breakdown', g_bill.breakdown, 10, 80)}}
+				<input type="submit" name="update" value="Update">
+			</fieldset>
+		</form>
+
+		<p>Example Breakdown</p>
+
+		<pre>
 {
 	"unrestricted_kwh": 1000,
 	"unrestricted_rate": 0.1,
 	"unrestricted_gbp": 100}
-				</pre>
-				<br>
-				<input type="submit" name="update" value="Update">
-			</fieldset>
-		</form>
+		</pre>
 
 		<form action="/g_bills/{{g_bill.id}}/edit">
 			<fieldset>
