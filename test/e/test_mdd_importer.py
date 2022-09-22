@@ -392,6 +392,11 @@ def test_import_mdd(mocker, sess):
             "json": [
                 {
                     "type": "file",
+                    "download_url": "download/GSP_Group",
+                    "name": "GSP_Group_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/Market_Participant",
                     "name": "Market_Participant_50.csv",
                 },
@@ -462,6 +467,7 @@ def test_import_mdd(mocker, sess):
                 },
             ],
         },
+        "download/GSP_Group": {"text": "\n"},
         "download/Market_Participant": {"text": "\n"},
         "download/Market_Role": {"text": "\n"},
         "download/Market_Participant_Role": {"text": "\n"},
@@ -551,6 +557,11 @@ def test_import_mdd_two_versions(mocker, sess):
             "json": [
                 {
                     "type": "file",
+                    "download_url": "download/GSP_Group",
+                    "name": "GSP_Group_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/Market_Participant",
                     "name": "Market_Participant_50.csv",
                 },
@@ -621,6 +632,7 @@ def test_import_mdd_two_versions(mocker, sess):
                 },
             ],
         },
+        "download/GSP_Group": {"text": "\n"},
         "download/Market_Participant": {"text": "\n"},
         "download/Market_Role": {"text": "\n"},
         "download/Market_Participant_Role": {"text": "\n"},
