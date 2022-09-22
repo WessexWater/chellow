@@ -1940,6 +1940,11 @@ class Site(Base, PersistentClass):
         account,
         g_reading_frequency,
     ):
+        if g_contract.is_industry:
+            raise BadRequest(
+                "The gas contract must be a supplier contract rather than an industry "
+                "contract."
+            )
         g_supply = GSupply(mprn, supply_name, g_exit_zone, "")
 
         try:

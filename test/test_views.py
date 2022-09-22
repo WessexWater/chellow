@@ -1012,59 +1012,30 @@ def test_non_core_rate_script_edit_get(sess, client):
 
 
 def test_site_edit_get(sess, client, app):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
-    Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
+    Contract.insert_dc(sess, "Fusion DC 2000", participant, "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
     Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(
-        sess,
-        "845",
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     MtcParticipant.insert(
         sess,
         mtc,
@@ -1075,29 +1046,23 @@ def test_site_edit_get(sess, client, app):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    dno.insert_llfc(sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
     insert_sources(sess)
     insert_energisation_statuses(sess)
+
+    GContract.insert_industry(sess, "cv", "", {}, vf, None, {})
     sess.commit()
 
     response = client.get(f"/sites/{site.id}/edit")
     patterns = [
         r'<select name="comm_id">\s*'
-        r'<option value="3">GPRS General Packet Radio Service</option>\s*'
+        r'<option value="3">GPRS General Packet Radio Service</option>\s*',
+        r'<select name="g_contract_id">\s*</select>',
     ]
     match(response, 200, *patterns)
 

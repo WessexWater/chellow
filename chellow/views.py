@@ -747,7 +747,11 @@ def site_edit_get(site_id):
             EnergisationStatus.code
         )
         default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
-        g_contracts = g.sess.query(GContract).order_by(GContract.name)
+        g_contracts = g.sess.execute(
+            select(GContract)
+            .where(GContract.is_industry == false())
+            .order_by(GContract.name)
+        ).scalars()
         g_units = g.sess.query(GUnit).order_by(GUnit.code)
         g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code)
         g_reading_frequencies = g.sess.query(GReadingFrequency).order_by(
