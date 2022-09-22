@@ -124,6 +124,47 @@ def test_batch_add_get(client, sess):
     match(response, 200, rf"{batch_reference}", rf"{batch_description}")
 
 
+def test_batch_edit_post(sess, client):
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    g_contract = GContract.insert(
+        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "750278673"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    sess.commit()
+
+    data = {
+        "update": "Update",
+        "reference": "b2",
+        "description": "Feb batch",
+    }
+
+    response = client.post(f"/g/batches/{g_batch.id}/edit", data=data)
+
+    match(response, 303, rf"/g/batches/{g_batch.id}")
+
+
 def test_bill_get(client, sess):
 
     site = Site.insert(sess, "22488", "Water Works")

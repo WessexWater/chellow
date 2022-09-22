@@ -445,7 +445,7 @@ def batch_edit_post(g_batch_id):
             description = req_str("description")
             g_batch.update(g.sess, reference, description)
             g.sess.commit()
-            return chellow_redirect("/g_batches/" + str(g_batch.id), 303)
+            return chellow_redirect(f"/batches/{g_batch.id}", 303)
         elif "delete" in request.values:
             g_contract = g_batch.g_contract
             g_batch.delete(g.sess)
