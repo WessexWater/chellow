@@ -919,7 +919,7 @@ def read_add_get(g_bill_id):
     )
 
 
-@gas.route("/g_bills/<int:g_bill_id>/add_read", methods=["POST"])
+@gas.route("/bills/<int:g_bill_id>/add_read", methods=["POST"])
 def g_read_add_post(g_bill_id):
     try:
         g_bill = GBill.get_by_id(g.sess, g_bill_id)

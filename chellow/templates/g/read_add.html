@@ -7,21 +7,21 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_contracts">Gas Contracts</a> &raquo;
+	<a href="/g/supplier_contracts">Gas Contracts</a> &raquo;
 	<a
-	 		href="/g_contracts/{{g_bill.g_batch.g_contract.id}}"
+	 		href="/g/supplier_contracts/{{g_bill.g_batch.g_contract.id}}"
 			>{{g_bill.g_batch.g_contract.name}}</a> &raquo;
 	<a
-	 		href="/g_batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
+	 		href="/g/batches?g_contract_id={{g_bill.g_batch.g_contract.id}}"
 			>Batches</a> &raquo;
 	<a
-	 		href="/g_batches/{{g_bill.g_batch.id}}"
+	 		href="/g/batches/{{g_bill.g_batch.id}}"
 			>{{g_bill.g_batch.reference}}</a> &raquo;
-	<a href="/g_bills/{{g_bill.id}}">Bill {{g_bill.id}}</a> &raquo; Add Read
+	<a href="/g/bills/{{g_bill.id}}">Bill {{g_bill.id}}</a> &raquo; Add Read
 {% endblock %}
 
 {% block content %}
-	<form action="/g_bills/{{g_bill.id}}/add_read" method="post">
+	<form action="/g/bills/{{g_bill.id}}/add_read" method="post">
 		<fieldset>
 			<label>Meter Serial Number</label> {{input_text('msn', '')}}
 			<label>Units</label>
@@ -37,10 +37,9 @@
 			<label>Calorific Value</label> {{input_text('calorific_value', '1')}}
 			<fieldset>
 				<legend>Previous Read</legend>
-				<fieldset>
-					<legend>Date</legend>
-					{{input_date('prev_date', None)}}
-				</fieldset>
+				<label>Date</label>
+				{{input_date('prev_date', None)}}
+
 				<label>Value</label> {{input_text('prev_value', 0)}}
 				<label>Type</label>
 				<select name="prev_type_id">
@@ -53,12 +52,11 @@
 					{% endfor %}
 				</select>
 			</fieldset>
+
 			<fieldset>
 				<legend>Present Read</legend>
-				<fieldset>
-					<legend>Date</legend>
-					{{input_date('pres_date', None)}}
-				</fieldset>
+				<label>Date</label>
+				{{input_date('pres_date', None)}}
 				<label>Value</label> {{input_text('pres_value', 0)}}
 				<label>Type</label>
 				<select name="pres_type_id">

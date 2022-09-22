@@ -994,6 +994,87 @@ def test_read_add_get(sess, client):
     match(response, 200)
 
 
+def test_read_add_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+
+    g_supply = site.insert_g_supply(
+        sess,
+        "7y94u5",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+    )
+
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+
+    insert_bill_types(sess)
+
+    bill_type_n = BillType.get_by_code(sess, "N")
+
+    g_bill = g_batch.insert_g_bill(
+        sess,
+        g_supply,
+        bill_type_n,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        {},
+    )
+    insert_g_read_types(sess)
+    g_read_type_A = GReadType.get_by_code(sess, "A")
+
+    sess.commit()
+
+    data = {
+        "msn": "fjshkk",
+        "g_unit_id": g_unit_M3.id,
+        "correction_factor": 1,
+        "calorific_value": 1,
+        "prev_date_year": 2020,
+        "prev_date_month": 1,
+        "prev_date_day": 4,
+        "prev_date_hour": 0,
+        "prev_date_minute": 0,
+        "prev_value": 20,
+        "prev_type_id": g_read_type_A.id,
+        "pres_date_year": 2020,
+        "pres_date_month": 1,
+        "pres_date_day": 9,
+        "pres_date_hour": 0,
+        "pres_date_minute": 0,
+        "pres_value": 25,
+        "pres_type_id": g_read_type_A.id,
+    }
+
+    response = client.post(f"/g/bills/{g_bill.id}/add_read", data=data)
+
+    match(response, 303)
+
+
 def test_era_post_delete(sess, client):
 
     site = Site.insert(sess, "22488", "Water Works")
