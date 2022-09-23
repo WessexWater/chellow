@@ -6482,6 +6482,7 @@ def db_init(sess, root_path):
     insert_energisation_statuses(sess)
     sess.commit()
 
+    Pc.insert(sess, "00", "Half-hourly", to_utc(ct_datetime(1996, 4, 1)), None)
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core Role")
     participant = Participant.insert(sess, "CALB", "Coopers & Lybrand")
     participant.insert_party(
@@ -6504,7 +6505,7 @@ def db_init(sess, root_path):
         "system_price",
         "tlms",
         "triad_dates",
-        "triad_rates",
+        "tnuos",
     ):
         Contract.insert_non_core(
             sess, name, "", {}, to_utc(ct_datetime(2000, 1, 1)), None, {}

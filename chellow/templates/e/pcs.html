@@ -14,6 +14,8 @@
 			<tr>
 				<th>Code</th>
 				<th>Description</th>
+				<th>Valid From</th>
+				<th>Valid To</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -21,6 +23,8 @@
 				<tr>
 					<td><a href="/e/pcs/{{pc.id}}">{{pc.code}}</a></td>
 					<td>{{pc.name}}</td>
+					<td>{{pc.valid_from|hh_format}}</td>
+					<td>{{pc.valid_to|hh_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

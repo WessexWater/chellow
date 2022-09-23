@@ -1,4 +1,5 @@
 from chellow import create_app, get_importer_modules
+from chellow.models import Pc, Session
 
 
 def test_create_app(mocker, fresh_db):
@@ -15,3 +16,7 @@ def test_create_app(mocker, fresh_db):
 
     for mock_startup in mock_startups:
         mock_startup.assert_called_once()
+
+    sess = Session()
+    Pc.get_by_code(sess, "00")
+    sess.close()

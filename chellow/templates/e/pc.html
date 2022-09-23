@@ -18,5 +18,13 @@
 			<th>Description</th>
 			<td>{{pc.name}}</td>
 		</tr>
+		<tr>
+			<th>Valid From</th>
+			<td>{{pc.valid_from|hh_format}}</td>
+		</tr>
+		<tr>
+			<th>Valid To</th>
+			<td>{{pc.valid_to|hh_format}}</td>
+		</tr>
 	</table>
 {% endblock %}
