@@ -4146,7 +4146,7 @@ def supplier_contracts_get():
 @e.route("/supplier_contracts/add", methods=["POST"])
 def supplier_contract_add_post():
     try:
-        participant_id = req_str("participant_id")
+        participant_id = req_int("participant_id")
         participant = Participant.get_by_id(g.sess, participant_id)
         name = req_str("name")
         start_date = req_date("start")

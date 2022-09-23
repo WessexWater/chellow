@@ -2316,6 +2316,28 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     )
 
 
+def test_supplier_contracts_add_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    sess.commit()
+
+    data = {
+        "participant_id": participant.id,
+        "name": "Fusion Supplier 2000",
+        "charge_script": "",
+        "start_year": "2000",
+        "start_month": "1",
+        "start_day": "1",
+        "start_hour": "00",
+        "start_minute": "00",
+        "properties": "{}",
+    }
+    response = client.post("/e/supplier_contracts/add", data=data)
+    match(response, 303)
+
+
 def test_supplier_contract_edit_post_missing_properties(sess, client):
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     participant = Participant.insert(sess, "CALB", "AK Industries")
