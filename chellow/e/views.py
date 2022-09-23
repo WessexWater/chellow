@@ -940,13 +940,12 @@ def dc_bill_edit_post(bill_id):
 
 @e.route("/dc_contracts")
 def dc_contracts_get():
-    dc_contracts = (
-        g.sess.query(Contract)
+    dc_contracts = g.sess.execute(
+        select(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code == "C")
+        .where(MarketRole.code == "C")
         .order_by(Contract.name)
-        .all()
-    )
+    ).scalars()
     return render_template("dc_contracts.html", dc_contracts=dc_contracts)
 
 
@@ -987,14 +986,13 @@ def dc_contracts_add_post():
 def dc_contracts_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.execute(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code == "C")
+        .where(MarketRole.code == "C")
         .order_by(Participant.code)
-        .all()
-    )
+    ).scalars()
     return render_template(
         "dc_contracts_add.html", initial_date=initial_date, parties=parties
     )

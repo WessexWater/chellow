@@ -13,24 +13,16 @@
 		<fieldset>
 			<legend>Add a DC contract</legend>
 			<label>Participant</label>
-			<select name="party_id">
+			<select name="participant_id">
 				{% for party in parties %}
-					{{ input_option('party_id', party.id,
+					{{ input_option('participant_id', party.participant.id,
 							party.participant.code + " : " + party.name) }}
 				{% endfor %}
 			</select>
-			<label>Name</label>
-			<input name="name" value="
-				{%- if request.values.name -%}
-					{{ request.values.name }}
-				{%- endif -%}
-			">
-		<fieldset>
-			<fieldset>
-				<legend>Start Date</legend> {{ input_date('start', initial_date) }}
-			</fieldset>
+			<label>Name</label> {{ input_text('name') }}
+			<label>Start Date</label> {{ input_date('start', initial_date) }}
+
 			<input type="submit" value="Add">
-			<input type="reset" value="Reset">
 		</fieldset>
 	</form>
 
