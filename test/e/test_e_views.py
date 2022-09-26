@@ -1477,7 +1477,13 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     assert len(bundles[1]["imp_bills"]["bill_dicts"]) == 1
 
 
-def test_laf_imports_post(mocker, app, client):
+def test_laf_imports_get(client):
+    response = client.get("/e/laf_imports")
+
+    match(response, 200)
+
+
+def test_laf_imports_post(client):
     file_lines = ("",)
 
     file_name = "lafs.ptf"

@@ -1908,7 +1908,7 @@ def laf_imports_get():
     props = conf.make_properties()
     return render_template(
         "laf_imports.html",
-        process_ids=sorted(chellow.laf_import.get_process_ids(), reverse=True),
+        process_ids=sorted(chellow.e.laf_import.get_process_ids(), reverse=True),
         properties=props.get("laf_importer", {}),
     )
 
