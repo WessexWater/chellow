@@ -1925,7 +1925,7 @@ def laf_imports_post():
             f.seek(0)
             zips.append(f)
 
-        proc_id = chellow.laf_import.start_process(zips)
+        proc_id = chellow.e.laf_import.start_process(zips)
         return chellow_redirect(f"/laf_imports/{proc_id}", 303)
     except BadRequest as e:
         flash(e.description)
@@ -1946,7 +1946,7 @@ def laf_imports_post():
 @e.route("/laf_imports/<int:import_id>")
 def laf_import_get(import_id):
     try:
-        proc = chellow.laf_import.get_process(import_id)
+        proc = chellow.e.laf_import.get_process(import_id)
         fields = proc.get_fields()
         fields["is_alive"] = proc.is_alive()
         fields["process_id"] = import_id

@@ -1,6 +1,7 @@
 from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
+from zipfile import ZipFile
 
 from openpyxl import Workbook
 
@@ -1484,6 +1485,29 @@ def test_laf_imports_get(client):
 
 
 def test_laf_imports_post(client):
+    file_name = "lafs.zip"
+    """
+    file_lines = ("",)
+
+    file_bytes = "\n".join(file_lines).encode("utf8")
+    f = BytesIO(file_bytes)
+    """
+    f = BytesIO()
+    zf = ZipFile(f, mode="w")
+    zf.writestr("llfipnl20210922.ptf", "")
+    zf.close()
+    f.seek(0)
+
+    data = {"import_file": (f, file_name)}
+
+    response = client.post("/e/laf_imports", data=data)
+
+    match(response, 303)
+
+    match_repeat(client, "/e/laf_imports/0", "success")
+
+
+def test_laf_imports_post_error(client):
     file_lines = ("",)
 
     file_name = "lafs.ptf"

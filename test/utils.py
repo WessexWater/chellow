@@ -24,9 +24,12 @@ def match_tables(table_1, table_2):
 
 
 def match_repeat(client, path, match, seconds=5):
-    for _ in range(5):
+    for second in range(seconds):
         response = client.get(path)
-        if match in response.get_data(as_text=True):
+        response_str = response.get_data(as_text=True)
+        if match in response_str:
             break
+        elif second == seconds - 1:
+            assert match in response_str, response_str
         else:
             sleep(1)
