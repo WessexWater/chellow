@@ -5,15 +5,15 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_contracts">Gas Contracts</a> &raquo;
-	<a href="/g_contracts/{{g_contract.id}}">{{g_contract.name}}</a> &raquo; Edit
+	<a href="/g/industry_contracts">Gas Industry Contracts</a> &raquo;
+	<a href="/g/industry_contracts/{{g_contract.id}}">{{g_contract.name}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}
 
 	{% if request.method == 'GET' and request.values.delete %}
 
-		<form method="post" action="">
+		<form method="post" action="/g/industry_contracts/{{g_contract.id}}/edit">
 			<fieldset>
 				<legend>Are you sure you want to delete this contract?</legend>
 				<input type="submit" name="delete" value="Delete">
@@ -24,21 +24,20 @@
 		</p>
 
 	{% else %}
-		<form action="" method="post">
+		<form action="/g/industry_contracts/{{g_contract.id}}/edit" method="post">
 			<fieldset>
 				<legend>Update Contract</legend>
-				<label>Name</label>
-				{{input_text('name', g_contract.name)}}
-				Charge script
+				<label>Name</label> {{input_text('name', g_contract.name)}}
+				<label>Charge Script</label>
 				{{input_textarea(
 					'charge_script', g_contract.charge_script, 40, 80)}}
-				Properties
+					<label>Properties</label>
 				{{input_textarea('properties', g_contract.properties, 20, 80)}}
 				<input type="submit" name="update" value="Update">
 			</fieldset>
 		</form>
 
-		<form action="/g_contracts/{{g_contract.id}}/edit">
+		<form action="/g/industry_contracts/{{g_contract.id}}/edit">
 			<fieldset>
 				<legend>Delete this contract</legend>
 				<input type="submit" name="delete" value="Delete">

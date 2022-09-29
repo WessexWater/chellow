@@ -430,7 +430,7 @@ class GDataSource:
                 )
 
         cv_id = get_g_industry_contract_id("cv")
-        uig_id = get_g_industry_contract_id("uig")
+        ug_id = get_g_industry_contract_id("ug")
         hist_map = {}
 
         for i, hist_g_era in enumerate(hist_g_eras):
@@ -489,8 +489,8 @@ class GDataSource:
                 * h["avg_cv"]
                 / 3.6
             )
-            h["uig_rate"] = float(
-                g_rates(sess, self.caches, uig_id, h["start_date"])["uig_gbp_per_kwh"][
+            h["ug_rate"] = float(
+                g_rates(sess, self.caches, ug_id, h["start_date"])["ug_gbp_per_kwh"][
                     self.g_exit_zone_code
                 ]
             )

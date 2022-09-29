@@ -46,11 +46,11 @@ def test_supply(mocker, sess, client):
     GContract.insert_industry(
         sess, "cv", "", {}, utc_datetime(2000, 1, 1), None, g_cv_rate_script
     )
-    uig_rate_script = {
-        "uig_gbp_per_kwh": {"EA1": Decimal("40.1")},
+    ug_rate_script = {
+        "ug_gbp_per_kwh": {"EA1": Decimal("40.1")},
     }
     GContract.insert_industry(
-        sess, "uig", "", {}, utc_datetime(2000, 1, 1), None, uig_rate_script
+        sess, "ug", "", {}, utc_datetime(2000, 1, 1), None, ug_rate_script
     )
     ccl_rate_script = {
         "ccl_gbp_per_kwh": Decimal("0.00525288"),
