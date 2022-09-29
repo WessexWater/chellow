@@ -60,7 +60,9 @@ from zish import dumps, loads
 
 from chellow.utils import (
     HH,
+    c_months_u,
     ct_datetime,
+    ct_datetime_now,
     hh_after,
     hh_before,
     hh_format,
@@ -6433,6 +6435,12 @@ def insert_voltage_levels(sess):
 def db_init(sess, root_path):
     db_name = config["PGDATABASE"]
     log_message("Initializing database.")
+
+    ct_now = ct_datetime_now()
+    last_month_start, _ = list(
+        c_months_u(finish_year=ct_now.year, finish_month=ct_now.month, months=2)
+    )[0]
+
     insert_voltage_levels(sess)
     sess.commit()
 
@@ -6493,23 +6501,27 @@ def db_init(sess, root_path):
         None,
         None,
     )
-    for name in (
-        "aahedc",
-        "bank_holidays",
-        "bmarketidx",
-        "bsuos",
-        "ccl",
-        "configuration",
-        "rcrc",
-        "ro",
-        "system_price",
-        "tlms",
-        "triad_dates",
-        "tnuos",
+    for name, properties in (
+        ("aahedc", {}),
+        (
+            "bank_holidays",
+            {
+                "enabled": True,
+                "url": "https://www.gov.uk/bank-holidays/england-and-wales.ics",
+            },
+        ),
+        ("bmarketidx", {}),
+        ("bsuos", {}),
+        ("ccl", {}),
+        ("configuration", {}),
+        ("rcrc", {}),
+        ("ro", {}),
+        ("system_price", {}),
+        ("tlms", {}),
+        ("triad_dates", {}),
+        ("tnuos", {}),
     ):
-        Contract.insert_non_core(
-            sess, name, "", {}, to_utc(ct_datetime(2000, 1, 1)), None, {}
-        )
+        Contract.insert_non_core(sess, name, "", properties, last_month_start, None, {})
 
     insert_g_read_types(sess)
     sess.commit()
@@ -6561,10 +6573,67 @@ def db_init(sess, root_path):
     sess.commit()
     sess.flush()
 
-    for name in ("ccl", "cv", "dn", "ug", "nts_commodity"):
-        GContract.insert_industry(
-            sess, name, "", {}, to_utc(ct_datetime(2000, 1, 1)), None, {}
-        )
+    for name, props, rs in (
+        ("ccl", {}, {}),
+        (
+            "cv",
+            {
+                "enabled": True,
+                "url": "http://mip-prd-web.azurewebsites.net/DataItemViewer/"
+                "DownloadFile",
+            },
+            {},
+        ),
+        ("dn", {}, {}),
+        (
+            "ug",
+            {},
+            {
+                "ug_gbp_per_kwh": {
+                    "EA1": 0,
+                    "EA2": 0,
+                    "EA3": 0,
+                    "EA4": 0,
+                    "EM1": 0,
+                    "EM2": 0,
+                    "EM3": 0,
+                    "EM4": 0,
+                    "LC": 0,
+                    "LO": 0,
+                    "LS": 0,
+                    "LT": 0,
+                    "LW": 0,
+                    "NE1": 0,
+                    "NE2": 0,
+                    "NE3": 0,
+                    "NO1": 0,
+                    "NO2": 0,
+                    "NT1": 0,
+                    "NT2": 0,
+                    "NT3": 0,
+                    "NW1": 0,
+                    "NW2": 0,
+                    "SC1": 0,
+                    "SC2": 0,
+                    "SC4": 0,
+                    "SE1": 0,
+                    "SE2": 0,
+                    "SO1": 0,
+                    "SO2": 0,
+                    "SW1": 0,
+                    "SW2": 0,
+                    "SW3": 0,
+                    "WA1": 0,
+                    "WA2": 0,
+                    "WM1": 0,
+                    "WM2": 0,
+                    "WM3": 0,
+                },
+            },
+        ),
+        ("nts_commodity", {}, {}),
+    ):
+        GContract.insert_industry(sess, name, "", props, last_month_start, None, rs)
 
     sess.execute(f"alter database {db_name} set default_transaction_deferrable = on")
     sess.execute(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'")
