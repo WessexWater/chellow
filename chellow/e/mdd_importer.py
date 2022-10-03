@@ -741,17 +741,22 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-def import_mdd(sess, repo_url, logger):
+def import_mdd(sess, repo_url, repo_branch, logger):
+    params = {} if repo_branch is None else {"ref": repo_branch}
     s = requests.Session()
     s.verify = False
     mdd_entries = {}
-    for year_entry in s.get(f"{repo_url}/contents").json():
+
+    def entries(url):
+        return s.get(url, params=params).json()
+
+    for year_entry in entries(f"{repo_url}/contents"):
         if year_entry["type"] == "dir":
-            for util_entry in s.get(year_entry["url"]).json():
+            for util_entry in entries(year_entry["url"]):
                 if util_entry["name"] == "electricity" and util_entry["type"] == "dir":
-                    for dl_entry in s.get(util_entry["url"]).json():
+                    for dl_entry in entries(util_entry["url"]):
                         if dl_entry["name"] == "mdd" and dl_entry["type"] == "dir":
-                            for mdd_entry in s.get(dl_entry["url"]).json():
+                            for mdd_entry in entries(dl_entry["url"]):
                                 if mdd_entry["type"] == "dir":
                                     mdd_entries[mdd_entry["name"]] = mdd_entry
 

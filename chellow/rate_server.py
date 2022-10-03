@@ -7,6 +7,7 @@ import requests
 
 import chellow.e.mdd_importer
 from chellow.models import (
+    Contract,
     Session,
 )
 from chellow.utils import utc_datetime_now
@@ -51,11 +52,22 @@ class RateServer(threading.Thread):
                 try:
                     self.log("Starting to import rates from the rate server")
                     sess = Session()
+                    conf = Contract.get_non_core_by_name(sess, "configuration")
+                    props = conf.make_properties()
+                    repo_branch = props.get("rate_server_branch")
                     s = requests.Session()
                     s.verify = False
                     repo_entry = s.get(self.repo_url).json()
-                    self.log(f"Looking at {repo_entry['html_url']}")
-                    chellow.e.mdd_importer.import_mdd(sess, self.repo_url, self.log)
+                    self.log(
+                        f"Looking at {repo_entry['html_url']} and branch "
+                        f"{'default' if repo_branch is None else repo_branch}"
+                    )
+                    chellow.e.mdd_importer.import_mdd(
+                        sess, self.repo_url, repo_branch, self.log
+                    )
+                    chellow.gas.dn_rate_parser.rate_server_import(
+                        sess, self.repo_url, repo_branch, self.log
+                    )
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Rate Server: An import has failed"

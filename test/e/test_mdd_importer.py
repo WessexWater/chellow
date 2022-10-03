@@ -484,7 +484,7 @@ def test_import_mdd(mocker, sess):
         "download/Valid_MTC_LLFC_SSC_PC_Combination": {"text": "\n"},
     }
 
-    def mock_session_get(self, url):
+    def mock_session_get(self, url, params=None):
         response_data = lookup[url]
         mock_response = mocker.Mock()
         try:
@@ -510,7 +510,7 @@ def test_import_mdd(mocker, sess):
     def logger(msg):
         pass
 
-    import_mdd(sess, repo_url, logger)
+    import_mdd(sess, repo_url, None, logger)
 
 
 def test_import_mdd_two_versions(mocker, sess):
@@ -649,7 +649,7 @@ def test_import_mdd_two_versions(mocker, sess):
         "download/Valid_MTC_LLFC_SSC_PC_Combination": {"text": "\n"},
     }
 
-    def mock_session_get(self, url):
+    def mock_session_get(self, url, params=None):
         response_data = lookup[url]
         mock_response = mocker.Mock()
         try:
@@ -677,4 +677,4 @@ def test_import_mdd_two_versions(mocker, sess):
     def logger(msg):
         messages.append(msg)
 
-    import_mdd(sess, repo_url, logger)
+    import_mdd(sess, repo_url, None, logger)

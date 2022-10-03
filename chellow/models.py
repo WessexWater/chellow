@@ -6113,10 +6113,15 @@ class GRateScript(Base, PersistentClass):
         self.g_contract = g_contract
         self.start_date = start_date
         self.finish_date = finish_date
+        self.update(script)
 
-        if not isinstance(script, dict):
-            raise Exception("The script must be a dictionary.")
-        self.script = dumps(script)
+    def update(self, script_dictionary):
+        if not isinstance(script_dictionary, dict):
+            raise Exception(
+                f"The script_dictionary must be a dictionary, but found a "
+                f"{type(script_dictionary)}"
+            )
+        self.script = dumps(script_dictionary)
 
     def make_script(self):
         return loads(self.script)

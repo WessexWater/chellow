@@ -1,9 +1,21 @@
 from decimal import Decimal
 from enum import Enum, auto
+from io import BytesIO
 
 import openpyxl
 
+import requests
+
+from sqlalchemy import select
+
 from werkzeug.exceptions import BadRequest
+
+from chellow.models import GContract, GRateScript
+from chellow.utils import (
+    ct_datetime,
+    hh_format,
+    to_utc,
+)
 
 
 def get_rate(sheet, col, row):
@@ -205,7 +217,7 @@ def tab_gdn_unit_rates(sheet, rates):
         HANDLER_LOOKUP[state](state, sheet, row, rates, networks)
 
 
-def find_rates(file_name, file_like):
+def find_dn_rates(file_name, file_like):
     rates = {"a_file_name": file_name, "exit_zones": {}, "gdn": {}}
 
     book = openpyxl.load_workbook(file_like, data_only=True)
@@ -216,3 +228,116 @@ def find_rates(file_name, file_like):
             tab_gdn_unit_rates(sheet, rates)
 
     return rates
+
+
+def find_nts_1_rates(file_name, file_like):
+    return find_nts_rates(file_name, file_like, "D")
+
+
+def find_nts_2_rates(file_name, file_like):
+    return find_nts_rates(file_name, file_like, "F")
+
+
+def get_nts_rate(sheet, col, row):
+    val_raw = get_value(sheet, col, row)
+    return Decimal("0") if val_raw is None else Decimal(val_raw) / Decimal("100")
+
+
+def find_nts_rates(file_name, file_like, col):
+    rates = {"a_file_name": file_name}
+
+    book = openpyxl.load_workbook(file_like, data_only=True)
+
+    for sheet in book.worksheets:
+        title = sheet.title.strip().lower()
+        if title.startswith("nts unit rates"):
+            rates["so_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 10)
+            rates["so_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 11)
+            rates["to_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 12)
+            rates["to_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 13)
+
+    return rates
+
+
+def rate_server_import(sess, repo_url, repo_branch, logger):
+    logger("Starting to check for new DN spreadsheets")
+    params = {} if repo_branch is None else {"ref": repo_branch}
+    s = requests.Session()
+    s.verify = False
+    sheet_entries = {}
+
+    def entries(url):
+        return s.get(url, params=params).json()
+
+    for year_entry in entries(f"{repo_url}/contents"):
+        if year_entry["type"] == "dir":
+            year_sheets = sheet_entries[int(year_entry["name"])] = {}
+            for util_entry in entries(year_entry["url"]):
+                if util_entry["name"] == "gas" and util_entry["type"] == "dir":
+                    for dl_entry in entries(util_entry["url"]):
+                        if dl_entry["name"] == "dn" and dl_entry["type"] == "dir":
+                            for dn_entry in entries(dl_entry["url"]):
+                                if (
+                                    dn_entry["name"] != "README.md"
+                                    and dn_entry["type"] == "file"
+                                ):
+                                    year_sheets[dn_entry["name"]] = dn_entry
+
+    for year, year_sheets in sorted(sheet_entries.items()):
+        year_start = to_utc(ct_datetime(year, 4, 1))
+        oct_start = to_utc(ct_datetime(year, 10, 1))
+        nts_contract = GContract.get_industry_by_name(sess, "nts_commodity")
+        if year_start < nts_contract.start_g_rate_script.start_date:
+            continue
+        nts_rs_1 = sess.execute(
+            select(GRateScript).where(
+                GRateScript.g_contract == nts_contract,
+                GRateScript.start_date == year_start,
+            )
+        ).scalar_one_or_none()
+        if nts_rs_1 is None:
+            nts_rs_1 = nts_contract.insert_g_rate_script(sess, year_start, {})
+
+        nts_rs_2 = sess.execute(
+            select(GRateScript).where(
+                GRateScript.g_contract == nts_contract,
+                GRateScript.start_date == oct_start,
+            )
+        ).scalar_one_or_none()
+        if nts_rs_2 is None:
+            nts_rs_2 = nts_contract.insert_g_rate_script(sess, oct_start, {})
+
+        dn_contract = GContract.get_industry_by_name(sess, "dn")
+        dn_rs = sess.execute(
+            select(GRateScript).where(
+                GRateScript.g_contract == dn_contract,
+                GRateScript.start_date == year_start,
+            )
+        ).scalar_one_or_none()
+        if dn_rs is None:
+            dn_rs = dn_contract.insert_g_rate_script(sess, year_start, {})
+
+        if len(year_sheets) > 0:
+            _, sheet_entry = sorted(year_sheets.items())[-1]
+            file_name = sheet_entry["name"]
+
+            nts_rs_1_script = nts_rs_1.make_script()
+            if nts_rs_1_script.get("a_file_name") != file_name:
+                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
+                nts_rs_1.update(find_nts_1_rates(file_name, fl))
+                logger(f"Updated NTS rate script for {hh_format(year_start)}")
+
+            nts_rs_2_script = nts_rs_2.make_script()
+            if nts_rs_2_script.get("a_file_name") != file_name:
+                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
+                nts_rs_2.update(find_nts_1_rates(file_name, fl))
+                logger(f"Updated NTS rate script for {hh_format(oct_start)}")
+
+            dn_rs_script = dn_rs.make_script()
+            if dn_rs_script.get("a_file_name") != file_name:
+                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
+                dn_rs.update(find_dn_rates(file_name, fl))
+                logger(f"Updated DN rate script for {hh_format(year_start)}")
+
+    logger("Finished DN spreadsheets")
+    sess.commit()

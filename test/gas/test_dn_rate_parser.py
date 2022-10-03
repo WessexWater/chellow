@@ -4,7 +4,7 @@ from chellow.gas.dn_rate_parser import (
     State,
     _handle_EXIT_CAPACITY,
     _handle_SECTION,
-    find_rates,
+    find_dn_rates,
     tab_gdn_unit_rates,
 )
 
@@ -147,7 +147,7 @@ def test_tab_gdn_unit_rates(mocker):
     tab_gdn_unit_rates(sheet, rates)
 
 
-def test_find_rates(mocker):
+def test_find_dn_rates(mocker):
     mock_book = mocker.Mock()
     mock_book.worksheets = []
     mocker.patch(
@@ -155,5 +155,5 @@ def test_find_rates(mocker):
     )
     file_name = "fname.xls"
     file_like = mocker.Mock()
-    rates = find_rates(file_name, file_like)
+    rates = find_dn_rates(file_name, file_like)
     assert rates == {"a_file_name": file_name, "exit_zones": {}, "gdn": {}}
