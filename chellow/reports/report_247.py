@@ -230,12 +230,15 @@ def _process_site(
                     gbp = imp_supplier_bill["net-gbp"]
                 except KeyError:
                     gbp = 0
-                    imp_supplier_bill["problem"] += (
-                        f"For the supply {imp_ss.mpan_core} the virtual bill "
-                        f"{imp_supplier_bill} from the contract "
-                        f"{imp_supplier_contract.name} does not contain the net-gbp "
-                        f"key."
-                    )
+                    try:
+                        imp_supplier_bill["problem"] += (
+                            f"For the supply {imp_ss.mpan_core} the virtual bill "
+                            f"{imp_supplier_bill} from the contract "
+                            f"{imp_supplier_contract.name} does not contain the "
+                            f"net-gbp key."
+                        )
+                    except KeyError:
+                        pass
 
                 if source_code in ("net", "gen-net"):
                     month_data["import-net-gbp"] += gbp
