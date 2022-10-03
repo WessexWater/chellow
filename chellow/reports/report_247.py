@@ -1081,14 +1081,15 @@ def do_post(sess):
             site_codes = [Site.get_by_id(sess, site_id).code]
 
         if "site_codes" in request.values:
-            if site_codes is None:
-                site_codes = []
+            site_codes_raw_str = req_str("site_codes")
+            site_codes_str = site_codes_raw_str.strip()
+            if len(site_codes_str) > 0:
+                if site_codes is None:
+                    site_codes = []
 
-            site_codes_str = req_str("site_codes")
-
-            for site_code in site_codes_str.splitlines():
-                Site.get_by_code(sess, site_code)  # Check valid
-                site_codes.append(site_code)
+                for site_code in site_codes_str.splitlines():
+                    Site.get_by_code(sess, site_code)  # Check valid
+                    site_codes.append(site_code)
 
         scenario_props["site_codes"] = site_codes
 

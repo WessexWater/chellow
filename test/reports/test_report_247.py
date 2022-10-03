@@ -110,6 +110,51 @@ def test_with_scenario(mocker, sess, client):
     mock_Thread.assert_called_with(target=content, args=args)
 
 
+def test_do_post_without_scenario(mocker, sess, client):
+    mock_Thread = mocker.patch("chellow.reports.report_247.threading.Thread")
+
+    site_code = "CI017"
+    Site.insert(sess, site_code, "Water Works")
+    sess.commit()
+
+    now = utc_datetime(2020, 1, 1)
+    mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
+
+    data = {
+        "compression": False,
+        "finish_year": 2009,
+        "finish_month": 8,
+        "months": 1,
+        "site_codes": "",
+    }
+
+    response = client.post("/reports/247", data=data)
+
+    match(response, 303)
+
+    base_name = ["monthly_duration"]
+    user = User.get_by_email_address(sess, "admin@example.com")
+    is_bill_check = False
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 8,
+        "scenario_duration": 1,
+        "by_hh": False,
+        "site_codes": None,
+        "mpan_cores": None,
+    }
+    args = (
+        scenario_props,
+        base_name,
+        user.id,
+        False,
+        now,
+        is_bill_check,
+    )
+
+    mock_Thread.assert_called_with(target=content, args=args)
+
+
 def test_without_scenario(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
