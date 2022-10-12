@@ -83,6 +83,7 @@ from chellow.utils import (
     hh_max,
     hh_min,
     hh_range,
+    parse_hh_start,
     parse_mpan_core,
     req_bool,
     req_date,
@@ -4242,7 +4243,7 @@ def supplier_rate_script_add_post(contract_id):
         start_date = req_date("start")
         rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
-        return chellow_redirect("/supplier_rate_scripts/" + str(rate_script.id), 303)
+        return chellow_redirect(f"/supplier_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
         now = utc_datetime_now()
@@ -4253,6 +4254,34 @@ def supplier_rate_script_add_post(contract_id):
             contract=contract,
             initial_date=initial_date,
         )
+
+
+@e.route("/supplies/<int:supply_id>", methods=["POST"])
+def supply_post(supply_id):
+    try:
+        supply = Supply.get_by_id(g.sess, supply_id)
+
+        if "new_msn" in request.form:
+            start_date_str = req_str("start_date")
+            start_date = parse_hh_start(start_date_str)
+
+            msn = req_str("msn")
+            era = supply.find_era_at(g.sess, start_date)
+            if era is None:
+                raise BadRequest(f"There isn't an era at {start_date}")
+            if era.msn == msn:
+                raise BadRequest(f"The era at {start_date} already has the MSN {msn}")
+
+            if era.start_date != start_date:
+                era = supply.insert_era_at(g.sess, start_date)
+            era.msn = msn
+            g.sess.commit()
+            flash("MSN updated successfully")
+            return render_template("supply_post.html")
+
+    except BadRequest as e:
+        flash(e.description)
+        return render_template("supply_post.html")
 
 
 @e.route("/supplies/<int:supply_id>")

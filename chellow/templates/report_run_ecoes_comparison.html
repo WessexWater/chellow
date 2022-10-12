@@ -72,6 +72,7 @@
 							<th colspan="2">{{diff}}</th>
 						{% endfor %}
 						<th rowspan="2">Problem</th>
+						<th rowspan="2">Fix</th>
 					</tr>
 					<tr>
 						{% for diff in vals['diffs'] %}
@@ -118,6 +119,18 @@
 							</td>
 						{% endfor %}
 						<td>{{vals['problem']}}</td>
+						<td>
+							{% if 'msn' in vals['diffs'] %}
+								<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
+									<fieldset>
+										<input type="hidden" name="msn" value="{{vals['ecoes_msn']}}">
+										<input type="hidden" name="start_date"
+											value="{{vals['ecoes_msn_install_date']}}">
+										<input type="submit" name="new_msn" value="Fix MSN">
+									</fieldset>
+								</form>
+							{% endif %}
+						</td>
 					</tr>
 				</tbody>
 			</table>

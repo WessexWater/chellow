@@ -33,6 +33,14 @@ from chellow.views import chellow_redirect
 FNAME = "ecoes_comparison"
 
 
+def _parse_date(date_str):
+    if len(date_str) > 0:
+        day, month, year = date_str.split("/")
+        return f"{year}-{month}-{day} 00:00"
+    else:
+        return date_str
+
+
 def content(user_id, show_ignored, report_run_id):
     sess = f = report_run = None
     try:
@@ -105,7 +113,7 @@ def content(user_id, show_ignored, report_run_id):
         msg = e.description
         if report_run is not None:
             report_run.update("interrupted")
-            report_run.insert_row(sess, "", ["error"], {"error": msg}, {})
+            report_run.insert_row(sess, "", ["problem"], {"problem": msg}, {})
             sess.commit()
         if f is not None:
             f.write(msg)
@@ -114,7 +122,7 @@ def content(user_id, show_ignored, report_run_id):
         msg = traceback.format_exc()
         if report_run is not None:
             report_run.update("interrupted")
-            report_run.insert_row(sess, "", ["error"], {"error": msg}, {})
+            report_run.insert_row(sess, "", ["problem"], {"problem": msg}, {})
             sess.commit()
         sys.stderr.write(msg)
         if f is not None:
@@ -484,29 +492,31 @@ def _process(
                 "chellow_pc": chellow_pc,
                 "ecoes_mtc": ecoes["mtc"],
                 "chellow_mtc": chellow_mtc,
-                "chellow_mtc_date": ecoes["mtc-date"],
+                "chellow_mtc_date": _parse_date(ecoes["mtc-date"]),
                 "ecoes_llfc": ecoes["llfc"],
-                "ecoes_llfc_from": ecoes["llfc-from"],
+                "ecoes_llfc_from": _parse_date(ecoes["llfc-from"]),
                 "chellow_llfc": chellow_llfc,
                 "ecoes_ssc": ecoes["ssc"],
                 "chellow_ssc": chellow_ssc,
                 "ecoes_es": ecoes["energisation-status"],
                 "chellow_es": chellow_es,
                 "ecoes_supplier": ecoes["supplier"],
-                "ecoes_supplier_registration_from": ecoes["registration-from"],
+                "ecoes_supplier_registration_from": _parse_date(
+                    ecoes["registration-from"]
+                ),
                 "chellow_supplier": chellow_supplier,
                 "chellow_supplier_contract_name": chellow_supplier_contract_name,
                 "ecoes_dc": ecoes["dc"],
                 "chellow_dc": chellow_dc,
                 "ecoes_mop": ecoes["mop"],
-                "ecoes_mop_appoint_date": ecoes["mop-appoint-date"],
+                "ecoes_mop_appoint_date": _parse_date(ecoes["mop-appoint-date"]),
                 "chellow_mop": chellow_mop,
                 "ecoes_gsp_group": ecoes["gsp-group"],
-                "ecoes_gsp_effective_from": ecoes["gsp-effective-from"],
+                "ecoes_gsp_effective_from": _parse_date(ecoes["gsp-effective-from"]),
                 "chellow_gsp_group": chellow_gsp_group,
                 "ecoes_msn": ecoes["msn"],
                 "chellow_msn": chellow_msn,
-                "ecoes_msn_install_date": ecoes["meter-install-date"],
+                "ecoes_msn_install_date": _parse_date(ecoes["meter-install-date"]),
                 "ecoes_meter_type": ecoes["meter-type"],
                 "chellow_meter_type": chellow_meter_type,
                 "ignored": ignore,
