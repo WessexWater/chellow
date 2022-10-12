@@ -149,14 +149,7 @@ def _process_site(
 
             disp_supplier_bill = imp_ss.supplier_bill
 
-            try:
-                gbp = disp_supplier_bill["net-gbp"]
-            except KeyError:
-                disp_supplier_bill["problem"] += (
-                    f"For the supply {imp_ss.mpan_core} the virtual bill "
-                    f"{disp_supplier_bill} from the contract "
-                    f"{imp_ss.supplier_contract.name} does not contain the net-gbp key."
-                )
+            gbp = disp_supplier_bill.get("net-gbp", 0)
 
             month_data["used-gbp"] = month_data["displaced-gbp"] = gbp
 
@@ -229,17 +222,7 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
                 imp_supplier_bill = imp_ss.supplier_bill
 
-                try:
-                    gbp = imp_supplier_bill["net-gbp"]
-                except KeyError:
-                    gbp = 0
-                    if "problem" in imp_supplier_bill:
-                        imp_supplier_bill["problem"] += (
-                            f"For the supply {imp_ss.mpan_core} the virtual bill "
-                            f"{imp_supplier_bill} from the contract "
-                            f"{imp_supplier_contract.name} does not contain the "
-                            f"net-gbp key."
-                        )
+                gbp = imp_supplier_bill.get("net-gbp", 0)
 
                 if source_code in ("net", "gen-net"):
                     month_data["import-net-gbp"] += gbp
@@ -270,15 +253,7 @@ def _process_site(
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 exp_supplier_bill = exp_ss.supplier_bill
-                try:
-                    gbp = exp_supplier_bill["net-gbp"]
-                except KeyError:
-                    exp_supplier_bill["problem"] += (
-                        f"For the supply {imp_ss.mpan_core} the virtual bill "
-                        f"{imp_supplier_bill} from the contract "
-                        f"{imp_supplier_contract.name} does not contain the net-gbp "
-                        f"key."
-                    )
+                gbp = exp_supplier_bill.get("net-gbp", 0)
 
                 if source_code in ("net", "gen-net"):
                     month_data["export-net-gbp"] += gbp
