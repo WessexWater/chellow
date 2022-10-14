@@ -1,5 +1,5 @@
 import csv
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from io import StringIO
 
 from dateutil.relativedelta import relativedelta
@@ -128,6 +128,11 @@ class Parser:
             if is_money:
                 dec += Decimal("0.00")
             return dec
+        except InvalidOperation as e:
+            raise BadRequest(
+                f"The value '{dec_str}' can't be parsed as a decimal: {e}. It's in "
+                f"the '{dec_name}' column at position {dec_index} in {self.vals}."
+            )
         except IndexError:
             raise BadRequest(
                 f"The field '{dec_name}' can't be found. It's expected at "
