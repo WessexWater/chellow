@@ -62,6 +62,7 @@ def hh(data_source, run="DF"):
             for use_run in use_runs:
                 try:
                     h["tlm"] = tlm = float(gsp_rate[use_run]["off_taking"])
+                    break
                 except KeyError:
                     pass
 
@@ -224,12 +225,8 @@ def _process_line(cache, sess, contract, log_func, values):
         off_taking = Decimal(off_taking_str)
     except InvalidOperation as e:
         raise BadRequest(
-            "Problem parsing 'off-taking' field '"
-            + off_taking_str
-            + "' in the row "
-            + str(values)
-            + ". "
-            + str(e)
+            f"Problem parsing 'off-taking' field '{off_taking_str}' in the row "
+            f"{values}. {e}"
         )
 
     delivering = Decimal(values[5])
