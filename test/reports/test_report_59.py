@@ -212,6 +212,7 @@ def displaced_virtual_bill(ds):
         bill_hh = ds.supplier_bill_hhs[hh_start]
         bill_hh['sum-msp-kwh'] = hh['msp-kwh']
         bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
+        bill_hh['standing-gbp'] = 0.01
         bill_hh['net-gbp'] = sum(
             v for k, v in bill_hh.items() if k.endswith('gbp'))
         bill_hh['vat-gbp'] = 0
@@ -443,8 +444,8 @@ def displaced_virtual_bill(ds):
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
+            19.67999999999967,
+            19.67999999999967,
             0.0,
             0.0,
             0.0,
@@ -453,6 +454,5 @@ def displaced_virtual_bill(ds):
             0.0,
         ],
     ]
-    print(table)
 
     assert expected == table

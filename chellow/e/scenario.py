@@ -512,8 +512,8 @@ def make_calcs(
             site_ds = SiteSource(
                 sess,
                 site,
-                start_date,
-                finish_date,
+                ss_start,
+                ss_finish,
                 forecast_from,
                 report_context,
                 disp_era,

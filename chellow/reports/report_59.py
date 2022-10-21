@@ -91,6 +91,7 @@ def _process_site(
     now,
     summary_titles,
     title_dict,
+    era_titles,
     era_rows,
     site_rows,
     data_source_bill,
@@ -119,31 +120,36 @@ def _process_site(
     site_sources = set()
     normal_reads = set()
     site_month_data = defaultdict(int)
-    for i, (order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss) in enumerate(
-        sorted(calcs, key=str)
-    ):
+    for order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss in sorted(calcs, key=str):
+        vals = {
+            "creation-date": now,
+            "start-date": start_date,
+            "finish-date": finish_date,
+            "site-code": site.code,
+            "site-name": site.name,
+        }
+        for sname in (
+            "import-net",
+            "export-net",
+            "import-gen",
+            "export-gen",
+            "import-3rd-party",
+            "export-3rd-party",
+            "msp",
+            "used",
+            "used-3rd-party",
+            "billed-import-net",
+        ):
+            for xname in ("kwh", "gbp"):
+                vals[f"{sname}-{xname}"] = 0
+
         if imp_mpan_core == "displaced":
 
-            month_data = {}
-            for sname in (
-                "import-net",
-                "export-net",
-                "import-gen",
-                "export-gen",
-                "import-3rd-party",
-                "export-3rd-party",
-                "msp",
-                "used",
-                "used-3rd-party",
-                "billed-import-net",
-            ):
-                for xname in ("kwh", "gbp"):
-                    month_data[sname + "-" + xname] = 0
-            month_data["billed-supplier-import-net-gbp"] = None
-            month_data["billed-dc-import-net-gbp"] = None
-            month_data["billed-mop-import-net-gbp"] = None
+            vals["billed-supplier-import-net-gbp"] = None
+            vals["billed-dc-import-net-gbp"] = None
+            vals["billed-mop-import-net-gbp"] = None
 
-            month_data["used-kwh"] = month_data["displaced-kwh"] = sum(
+            vals["used-kwh"] = vals["displaced-kwh"] = sum(
                 hh["msp-kwh"] for hh in imp_ss.hh_data
             )
 
@@ -151,43 +157,18 @@ def _process_site(
 
             gbp = disp_supplier_bill.get("net-gbp", 0)
 
-            month_data["used-gbp"] = month_data["displaced-gbp"] = gbp
+            vals["used-gbp"] = vals["displaced-gbp"] = gbp
 
-            out = (
-                [
-                    now,
-                    None,
-                    imp_ss.supplier_contract.name,
-                    None,
-                    None,
-                    None,
-                    None,
-                    None,
-                    imp_ss.era.meter_category,
-                    "displaced",
-                    None,
-                    None,
-                    None,
-                    None,
-                    site.code,
-                    site.name,
-                    "",
-                    start_date,
-                    finish_date,
-                ]
-                + [month_data[t] for t in summary_titles]
-                + [None]
-                + [None] * len(title_dict["mop"])
-                + [None]
-                + [None] * len(title_dict["dc"])
-                + [None]
-                + make_bill_row(title_dict["imp-supplier"], disp_supplier_bill)
-            )
+            vals["imp-supplier-contract"] = imp_ss.supplier_contract.name
+            vals["metering-type"] = imp_ss.era.meter_category
+            vals["source"] = "displaced"
 
-            era_rows.append([make_val(v) for v in out])
-            for k, v in month_data.items():
-                if v is not None:
-                    site_month_data[k] += v
+            for t in title_dict["imp-supplier"]:
+                try:
+                    vals[t] = disp_supplier_bill[t]
+                except KeyError:
+                    pass
+
         else:
             if imp_ss is None:
                 source_code = exp_ss.source_code
@@ -197,86 +178,109 @@ def _process_site(
                 supply = imp_ss.supply
 
             site_sources.add(source_code)
-            month_data = {}
-            for name in (
-                "import-net",
-                "export-net",
-                "import-gen",
-                "export-gen",
-                "import-3rd-party",
-                "export-3rd-party",
-                "displaced",
-                "used",
-                "used-3rd-party",
-                "billed-import-net",
-            ):
-                for sname in ("kwh", "gbp"):
-                    month_data[name + "-" + sname] = 0
-            month_data["billed-supplier-import-net-gbp"] = 0
-            month_data["billed-dc-import-net-gbp"] = 0
-            month_data["billed-mop-import-net-gbp"] = 0
 
-            if imp_ss is not None:
+            vals["billed-supplier-import-net-gbp"] = 0
+            vals["billed-dc-import-net-gbp"] = 0
+            vals["billed-mop-import-net-gbp"] = 0
+
+            if imp_ss is None:
+                imp_bad_hhs = imp_bad_kwh = imp_supplier_contract_name = None
+            else:
                 imp_supplier_contract = imp_ss.supplier_contract
+                imp_supplier_bill = imp_ss.supplier_bill
+                if imp_supplier_contract is None:
+                    imp_supplier_contract_name = None
+                else:
+                    imp_supplier_contract_name = imp_supplier_contract.name
+                imp_bad_hhs = imp_bad_kwh = 0
+                for hh in imp_ss.hh_data:
+                    if hh["status"] != "A":
+                        imp_bad_hhs += 1
+                        imp_bad_kwh += hh["msp-kwh"]
+
+                for t in title_dict["imp-supplier"]:
+                    try:
+                        vals[t] = imp_supplier_bill[t]
+                    except KeyError:
+                        pass
+
+                for n in imp_ss.normal_reads:
+                    normal_reads.add((imp_mpan_core, n))
 
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
-                imp_supplier_bill = imp_ss.supplier_bill
 
                 gbp = imp_supplier_bill.get("net-gbp", 0)
 
                 if source_code in ("net", "gen-net"):
-                    month_data["import-net-gbp"] += gbp
-                    month_data["import-net-kwh"] += kwh
-                    month_data["used-gbp"] += gbp
-                    month_data["used-kwh"] += kwh
+                    vals["import-net-gbp"] += gbp
+                    vals["import-net-kwh"] += kwh
+                    vals["used-gbp"] += gbp
+                    vals["used-kwh"] += kwh
                     if source_code == "gen-net":
-                        month_data["export-gen-kwh"] += kwh
+                        vals["export-gen-kwh"] += kwh
                 elif source_code == "3rd-party":
-                    month_data["import-3rd-party-gbp"] += gbp
-                    month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-gbp"] += gbp
-                    month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-gbp"] += gbp
-                    month_data["used-kwh"] += kwh
+                    vals["import-3rd-party-gbp"] += gbp
+                    vals["import-3rd-party-kwh"] += kwh
+                    vals["used-3rd-party-gbp"] += gbp
+                    vals["used-3rd-party-kwh"] += kwh
+                    vals["used-gbp"] += gbp
+                    vals["used-kwh"] += kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["export-3rd-party-gbp"] += gbp
-                    month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-gbp"] -= gbp
-                    month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-gbp"] -= gbp
-                    month_data["used-kwh"] -= kwh
+                    vals["export-3rd-party-gbp"] += gbp
+                    vals["export-3rd-party-kwh"] += kwh
+                    vals["used-3rd-party-gbp"] -= gbp
+                    vals["used-3rd-party-kwh"] -= kwh
+                    vals["used-gbp"] -= gbp
+                    vals["used-kwh"] -= kwh
                 elif source_code == "gen":
-                    month_data["import-gen-kwh"] += kwh
+                    vals["import-gen-kwh"] += kwh
 
-            if exp_ss is not None:
+            if exp_ss is None:
+                exp_bad_hhs = exp_bad_kwh = exp_supplier_contract_name = None
+            else:
                 exp_supplier_contract = exp_ss.supplier_contract
+                exp_supplier_bill = exp_ss.supplier_bill
+                if exp_supplier_contract is None:
+                    exp_supplier_contract_name = ""
+                else:
+                    exp_supplier_contract_name = exp_supplier_contract.name
+                exp_bad_hhs = exp_bad_kwh = 0
+                for hh in exp_ss.hh_data:
+                    if hh["status"] != "A":
+                        exp_bad_hhs += 1
+                        exp_bad_kwh += hh["msp-kwh"]
+
+                for t in title_dict["exp-supplier"]:
+                    try:
+                        vals[t] = exp_supplier_bill[t]
+                    except KeyError:
+                        pass
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
-                exp_supplier_bill = exp_ss.supplier_bill
                 gbp = exp_supplier_bill.get("net-gbp", 0)
 
                 if source_code in ("net", "gen-net"):
-                    month_data["export-net-gbp"] += gbp
-                    month_data["export-net-kwh"] += kwh
+                    vals["export-net-gbp"] += gbp
+                    vals["export-net-kwh"] += kwh
                     if source_code == "gen-net":
-                        month_data["import-gen-kwh"] += kwh
+                        vals["import-gen-kwh"] += kwh
 
                 elif source_code == "3rd-party":
-                    month_data["export-3rd-party-gbp"] += gbp
-                    month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-gbp"] -= gbp
-                    month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-gbp"] -= gbp
-                    month_data["used-kwh"] -= kwh
+                    vals["export-3rd-party-gbp"] += gbp
+                    vals["export-3rd-party-kwh"] += kwh
+                    vals["used-3rd-party-gbp"] -= gbp
+                    vals["used-3rd-party-kwh"] -= kwh
+                    vals["used-gbp"] -= gbp
+                    vals["used-kwh"] -= kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["import-3rd-party-gbp"] += gbp
-                    month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-gbp"] += gbp
-                    month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-gbp"] += gbp
-                    month_data["used-kwh"] += kwh
+                    vals["import-3rd-party-gbp"] += gbp
+                    vals["import-3rd-party-kwh"] += kwh
+                    vals["used-3rd-party-gbp"] += gbp
+                    vals["used-3rd-party-kwh"] += kwh
+                    vals["used-gbp"] += gbp
+                    vals["used-kwh"] += kwh
                 elif source_code == "gen":
-                    month_data["export-gen-kwh"] += kwh
+                    vals["export-gen-kwh"] += kwh
 
             sss = exp_ss if imp_ss is None else imp_ss
             dc_contract = sss.dc_contract
@@ -304,11 +308,11 @@ def _process_site(
             gbp += mop_bill["net-gbp"]
 
             if source_code in ("3rd-party", "3rd-party-reverse"):
-                month_data["import-3rd-party-gbp"] += gbp
-                month_data["used-3rd-party-gbp"] += gbp
+                vals["import-3rd-party-gbp"] += gbp
+                vals["used-3rd-party-gbp"] += gbp
             else:
-                month_data["import-net-gbp"] += gbp
-            month_data["used-gbp"] += gbp
+                vals["import-net-gbp"] += gbp
+            vals["used-gbp"] += gbp
 
             generator_type = sss.generator_type_code
             if source_code in ("gen", "gen-net"):
@@ -335,84 +339,54 @@ def _process_site(
                     min(bill_finish, sss.finish_date) - max(bill_start, sss.start_date)
                 ).total_seconds() + (30 * 60)
                 proportion = overlap_duration / bill_duration
-                month_data["billed-import-net-kwh"] += proportion * float(bill.kwh)
+                vals["billed-import-net-kwh"] += proportion * float(bill.kwh)
                 bill_prop_gbp = proportion * float(bill.net)
-                month_data["billed-import-net-gbp"] += bill_prop_gbp
+                vals["billed-import-net-gbp"] += bill_prop_gbp
                 if bill_role_code == "X":
-                    month_data["billed-supplier-import-net-gbp"] += bill_prop_gbp
+                    vals["billed-supplier-import-net-gbp"] += bill_prop_gbp
                 elif bill_role_code == "C":
-                    month_data["billed-dc-import-net-gbp"] += bill_prop_gbp
+                    vals["billed-dc-import-net-gbp"] += bill_prop_gbp
                 elif bill_role_code == "M":
-                    month_data["billed-mop-import-net-gbp"] += bill_prop_gbp
+                    vals["billed-mop-import-net-gbp"] += bill_prop_gbp
                 else:
                     raise BadRequest("Role code not recognized.")
 
-            if imp_ss is None:
-                imp_supplier_contract_name = None
-                pc_code = exp_ss.pc_code
-                imp_bad_hhs = None
-            else:
-                if imp_supplier_contract is None:
-                    imp_supplier_contract_name = ""
-                else:
-                    imp_supplier_contract_name = imp_supplier_contract.name
-                pc_code = imp_ss.pc_code
-                imp_bad_hhs = sum(1 for hh in imp_ss.hh_data if hh["status"] != "A")
+            vals["imp-mpan-core"] = imp_mpan_core
+            vals["exp-mpan-core"] = exp_mpan_core
+            vals["associated-site-ids"] = era_associates
+            vals["era-start-date"] = sss.era.start_date
+            vals["era-finish-date"] = sss.era.finish_date
+            vals["imp-supplier-contract"] = imp_supplier_contract_name
+            vals["imp-non-actual-hhs"] = imp_bad_hhs
+            vals["imp-non-actual-kwh"] = imp_bad_kwh
+            vals["exp-supplier-contract"] = exp_supplier_contract_name
+            vals["exp-non-actual-hhs"] = exp_bad_hhs
+            vals["exp-non-actual-kwh"] = exp_bad_kwh
+            vals["metering-type"] = era_category
+            vals["source"] = source_code
+            vals["generator-type"] = generator_type
+            vals["supply-name"] = sss.supply_name
+            vals["msn"] = sss.msn
+            vals["pc"] = sss.pc_code
 
-            if exp_ss is None:
-                exp_supplier_contract_name = None
-                exp_bad_hhs = None
-            else:
-                if exp_supplier_contract is None:
-                    exp_supplier_contract_name = ""
-                else:
-                    exp_supplier_contract_name = exp_supplier_contract.name
-                exp_bad_hhs = sum(1 for hh in exp_ss.hh_data if hh["status"] != "A")
+            for t in title_dict["mop"]:
+                try:
+                    vals[t] = mop_bill[t]
+                except KeyError:
+                    pass
 
-            out = (
-                [
-                    now,
-                    imp_mpan_core,
-                    imp_supplier_contract_name,
-                    imp_bad_hhs,
-                    exp_mpan_core,
-                    exp_supplier_contract_name,
-                    exp_bad_hhs,
-                    sss.era.start_date,
-                    era_category,
-                    source_code,
-                    generator_type,
-                    sss.supply_name,
-                    sss.msn,
-                    pc_code,
-                    site.code,
-                    site.name,
-                    ",".join(sorted(list(era_associates))),
-                    start_date,
-                    finish_date,
-                ]
-                + [month_data[t] for t in summary_titles]
-                + [None]
-                + make_bill_row(title_dict["mop"], mop_bill)
-                + [None]
-                + make_bill_row(title_dict["dc"], dc_bill)
-            )
-            if imp_ss is None:
-                out += [None] * (len(title_dict["imp-supplier"]) + 1)
-            else:
-                out += [None] + make_bill_row(
-                    title_dict["imp-supplier"], imp_supplier_bill
-                )
-                for n in imp_ss.normal_reads:
-                    normal_reads.add((imp_mpan_core, n))
-            if exp_ss is not None:
-                out += [None] + make_bill_row(
-                    title_dict["exp-supplier"], exp_supplier_bill
-                )
+            for t in title_dict["dc"]:
+                try:
+                    vals[t] = dc_bill[t]
+                except KeyError:
+                    pass
 
-            for k, v in month_data.items():
-                site_month_data[k] += v
-            era_rows.append([make_val(v) for v in out])
+        era_rows.append([make_val(vals.get(t)) for t in era_titles])
+
+        for t in summary_titles:
+            v = vals.get(t)
+            if v is not None:
+                site_month_data[t] += v
 
     q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
     if supply_ids is not None:
@@ -783,24 +757,27 @@ def content(
 
         era_header_titles = [
             "creation-date",
+            "start-date",
+            "finish-date",
             "imp-mpan-core",
-            "imp-supplier-contract",
-            "imp-bad_hhs",
             "exp-mpan-core",
-            "exp-supplier-contract",
-            "exp-bad_hhs",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
             "era-start-date",
+            "era-finish-date",
+            "imp-supplier-contract",
+            "imp-non-actual-hhs",
+            "imp-non-actual-kwh",
+            "exp-supplier-contract",
+            "exp-non-actual-hhs",
+            "exp-non-actual-kwh",
             "metering-type",
             "source",
             "generator-type",
             "supply-name",
             "msn",
             "pc",
-            "site-id",
-            "site-name",
-            "associated-site-ids",
-            "start-date",
-            "finish-date",
         ]
         site_header_titles = [
             "creation-date",
@@ -935,6 +912,7 @@ def content(
                         now,
                         summary_titles,
                         title_dict,
+                        era_titles,
                         era_rows,
                         site_rows,
                         None,
@@ -952,6 +930,7 @@ def content(
                             now,
                             summary_titles,
                             title_dict,
+                            era_titles,
                             bill_check_era_rows,
                             bill_check_site_rows,
                             data_source_bill,
