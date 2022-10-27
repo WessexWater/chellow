@@ -2,7 +2,7 @@ from io import BytesIO
 
 from sqlalchemy import select
 
-from utils import match
+from utils import match, match_repeat
 
 from chellow.models import (
     Comm,
@@ -915,9 +915,9 @@ def test_general_import_post_full(sess, client):
 
     match(response, 303, "/general_imports/0")
 
-    response = client.get("/general_imports/0")
-
-    match(response, 200, r"The file has been imported successfully\.")
+    match_repeat(
+        client, "/general_imports/0", r"The file has been imported successfully"
+    )
     sess.rollback()
 
     assert not snag.is_ignored

@@ -2951,9 +2951,38 @@ class Tpr(Base, PersistentClass):
     register_reads = relationship("RegisterRead", backref="tpr")
 
     def __init__(self, code, is_teleswitch, is_gmt):
-        self.code = code
+        self.code = code.zfill(5)
         self.is_teleswitch = is_teleswitch
         self.is_gmt = is_gmt
+
+    def insert_clock_interval(
+        self,
+        sess,
+        day_of_week,
+        start_day,
+        start_month,
+        end_day,
+        end_month,
+        start_hour,
+        start_minute,
+        end_hour,
+        end_minute,
+    ):
+        ci = ClockInterval(
+            self,
+            day_of_week,
+            start_day,
+            start_month,
+            end_day,
+            end_month,
+            start_hour,
+            start_minute,
+            end_hour,
+            end_minute,
+        )
+        sess.add(ci)
+        sess.flush()
+        return ci
 
     @classmethod
     def insert(cls, sess, code, is_teleswitch, is_gmt):
@@ -2963,21 +2992,33 @@ class Tpr(Base, PersistentClass):
         return tpr
 
     @staticmethod
+    def find_by_code(sess, code):
+        full_code = Tpr.normalise_code(code)
+        return sess.execute(
+            select(Tpr).where(Tpr.code == full_code)
+        ).scalar_one_or_none()
+
+    @staticmethod
     def get_by_code(sess, code):
-        full_code = code.zfill(5)
-        try:
-            tpr = sess.execute(select(Tpr).where(Tpr.code == full_code)).scalar_one()
-        except NoResultFound:
+        full_code = Tpr.normalise_code(code)
+        tpr = sess.execute(
+            select(Tpr).where(Tpr.code == full_code)
+        ).scalar_one_or_none()
+        if tpr is None:
             raise BadRequest(
                 f"A TPR with code '{code}' expanded to '{full_code}' can't be found."
             )
         return tpr
 
+    @staticmethod
+    def normalise_code(code):
+        return code.zfill(5)
+
 
 class ClockInterval(Base, PersistentClass):
     __tablename__ = "clock_interval"
     id = Column(Integer, primary_key=True)
-    tpr_id = Column(Integer, ForeignKey("tpr.id"))
+    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False)
     day_of_week = Column(Integer, nullable=False)
     start_day = Column(Integer, nullable=False)
     start_month = Column(Integer, nullable=False)
@@ -2988,12 +3029,48 @@ class ClockInterval(Base, PersistentClass):
     end_hour = Column(Integer, nullable=False)
     end_minute = Column(Integer, nullable=False)
 
+    def __init__(
+        self,
+        tpr,
+        day_of_week,
+        start_day,
+        start_month,
+        end_day,
+        end_month,
+        start_hour,
+        start_minute,
+        end_hour,
+        end_minute,
+    ):
+        self.tpr = tpr
+        self.day_of_week = day_of_week
+        self.start_day = start_day
+        self.start_month = start_month
+        self.end_day = end_day
+        self.end_month = end_month
+        self.start_hour = start_hour
+        self.start_minute = start_minute
+        self.end_hour = end_hour
+        self.end_minute = end_minute
+
 
 class MeasurementRequirement(Base, PersistentClass):
     __tablename__ = "measurement_requirement"
     id = Column(Integer, primary_key=True)
-    ssc_id = Column(Integer, ForeignKey("ssc.id"))
-    tpr_id = Column(Integer, ForeignKey("tpr.id"))
+    ssc_id = Column(Integer, ForeignKey("ssc.id"), nullable=False)
+    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False)
+    __table_args__ = (UniqueConstraint("ssc_id", "tpr_id"),)
+
+    def __init__(self, ssc, tpr):
+        self.ssc = ssc
+        self.tpr = tpr
+
+    @classmethod
+    def insert(cls, sess, ssc, tpr):
+        mr = cls(ssc, tpr)
+        sess.add(mr)
+        sess.flush()
+        return mr
 
 
 class Ssc(Base, PersistentClass):
@@ -3025,7 +3102,7 @@ class Ssc(Base, PersistentClass):
 
     @staticmethod
     def find_by_code(sess, code, date):
-        code = code.strip().zfill(4)
+        code = Ssc.normalise_code(code)
         q = select(Ssc).where(Ssc.code == code)
         if date is None:
             q = q.where(Ssc.valid_to == null())
@@ -3044,6 +3121,10 @@ class Ssc(Base, PersistentClass):
                 f"The SSC with code '{code}' can't be found at {hh_format(date)}."
             )
         return ssc
+
+    @staticmethod
+    def normalise_code(code):
+        return code.strip().zfill(4)
 
 
 class MtcLlfcSscPc(Base, PersistentClass):

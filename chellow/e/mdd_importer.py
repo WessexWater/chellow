@@ -10,10 +10,12 @@ from sqlalchemy.orm import joinedload
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
+    ClockInterval,
     Contract,
     GspGroup,
     Llfc,
     MarketRole,
+    MeasurementRequirement,
     MeterPaymentType,
     MeterType,
     Mtc,
@@ -26,6 +28,7 @@ from chellow.models import (
     Party,
     Pc,
     Ssc,
+    Tpr,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -56,6 +59,60 @@ def parse_bool(bool_str):
 
 
 VOLTAGE_MAP = {"24": {"602": {to_utc(ct_datetime(2010, 4, 1)): "LV"}}}
+
+
+def _import_Clock_Interval(sess, rows, ctx):
+    cis = {
+        (
+            c.tpr.code,
+            c.day_of_week,
+            c.start_day,
+            c.start_month,
+            c.end_day,
+            c.end_month,
+            c.start_hour,
+            c.start_minute,
+            c.end_hour,
+            c.end_minute,
+        )
+        for c in sess.execute(select(ClockInterval)).scalars()
+    }
+    for values in rows:
+
+        tpr_code = values[0].zfill(5)
+        day_of_week = int(values[1])
+        start_day = int(values[2])
+        start_month = int(values[3])
+        end_day = int(values[4])
+        end_month = int(values[5])
+        start_hour, start_minute = [int(v) for v in values[6].split(":")]
+        end_hour, end_minute = [int(v) for v in values[7].split(":")]
+
+        if (
+            tpr_code,
+            day_of_week,
+            start_day,
+            start_month,
+            end_day,
+            end_month,
+            start_hour,
+            start_minute,
+            end_hour,
+            end_minute,
+        ) not in cis:
+            tpr = Tpr.get_by_code(sess, tpr_code)
+            tpr.insert_clock_interval(
+                sess,
+                day_of_week,
+                start_day,
+                start_month,
+                end_day,
+                end_month,
+                start_hour,
+                start_minute,
+                end_hour,
+                end_minute,
+            )
 
 
 def _import_GSP_Group(sess, rows, ctx):
@@ -211,6 +268,24 @@ def _import_Market_Participant_Role(sess, rows, ctx):
             party.valid_to = valid_to
             party.dno_code = dno_code
             sess.flush()
+
+
+def _import_Measurement_Requirement(sess, rows, ctx):
+    mrs = {
+        (mr.ssc.code, mr.tpr.code)
+        for mr in sess.execute(select(MeasurementRequirement)).scalars()
+    }
+    for values in rows:
+
+        ssc_code = Ssc.normalise_code(values[0])
+        tpr_code = Tpr.normalise_code(values[1])
+
+        if (ssc_code, tpr_code) not in mrs:
+            ssc = sess.execute(
+                select(Ssc).where(Ssc.code == ssc_code).order_by(Ssc.valid_from.desc())
+            ).scalar()
+            tpr = Tpr.get_by_code(sess, tpr_code)
+            MeasurementRequirement.insert(sess, ssc, tpr)
 
 
 def _import_Meter_Timeswitch_Class(sess, rows, ctx):
@@ -433,6 +508,25 @@ def _import_Standard_Settlement_Configuration(sess, rows, ctx):
             ssc.description = description
             ssc.is_import = is_import
             ssc.valid_to = valid_to
+            sess.flush()
+
+
+def _import_Time_Pattern_Regime(sess, rows, ctx):
+    for values in rows:
+        code = values[0]
+        is_teleswitch_str = values[1]
+        is_teleswitch = is_teleswitch_str == "S"
+        is_gmt_str = values[2]
+        is_gmt = is_gmt_str == "Y"
+
+        tpr = Tpr.find_by_code(sess, code)
+
+        if tpr is None:
+            Tpr.insert(sess, code, is_teleswitch, is_gmt)
+
+        else:
+            tpr.is_teleswitch = is_teleswitch
+            tpr.is_gmt = is_gmt
             sess.flush()
 
 
@@ -831,6 +925,9 @@ def import_mdd(sess, repo_url, repo_branch, logger):
             "Valid_MTC_LLFC_SSC_PC_Combination",
             _import_Valid_MTC_LLFC_SSC_PC_Combination,
         ),
+        ("Time_Pattern_Regime", _import_Time_Pattern_Regime),
+        ("Clock_Interval", _import_Clock_Interval),
+        ("Measurement_Requirement", _import_Measurement_Requirement),
     ]:
 
         if tname in gnames:

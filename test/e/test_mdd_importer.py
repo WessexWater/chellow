@@ -1,7 +1,11 @@
+from sqlalchemy import select
+
 from chellow.e.mdd_importer import (
     _import_MTC_in_PES_Area,
     _import_Market_Participant_Role,
+    _import_Measurement_Requirement,
     _import_Meter_Timeswitch_Class,
+    _import_Time_Pattern_Regime,
     _import_Valid_MTC_LLFC_Combination,
     _import_Valid_MTC_LLFC_SSC_Combination,
     _import_Valid_MTC_LLFC_SSC_PC_Combination,
@@ -11,6 +15,7 @@ from chellow.e.mdd_importer import (
 from chellow.models import (
     Contract,
     MarketRole,
+    MeasurementRequirement,
     MeterPaymentType,
     MeterType,
     Mtc,
@@ -20,6 +25,7 @@ from chellow.models import (
     Participant,
     Pc,
     Ssc,
+    Tpr,
     VoltageLevel,
     insert_voltage_levels,
 )
@@ -54,6 +60,42 @@ def test_import_Market_Participant_Role_R(sess):
     ]
     ctx = {}
     _import_Market_Participant_Role(sess, rows, ctx)
+
+
+def test_import_Measurement_Requirement(sess):
+    Ssc.insert(sess, "0001", "All", True, to_utc(ct_datetime(2000, 1, 1)), None)
+    Tpr.insert(sess, "00205", True, True)
+    rows = [["0001", "00205"]]
+    ctx = {}
+    _import_Measurement_Requirement(sess, rows, ctx)
+
+
+def test_import_Measurement_Requirement_no_ongoing_ssc(sess):
+    """Check that we get the latest SSC, even when there isn't an ongoing one"""
+    Ssc.insert(
+        sess,
+        "0001",
+        "All",
+        True,
+        to_utc(ct_datetime(2000, 1, 1)),
+        to_utc(ct_datetime(2001, 1, 1, 23, 30)),
+    )
+    latest_ssc = Ssc.insert(
+        sess,
+        "0001",
+        "All",
+        True,
+        to_utc(ct_datetime(2001, 1, 2)),
+        to_utc(ct_datetime(2002, 1, 1)),
+    )
+    Tpr.insert(sess, "00205", True, True)
+    sess.commit()
+    rows = [["0001", "00205"]]
+    ctx = {}
+    _import_Measurement_Requirement(sess, rows, ctx)
+
+    mr = sess.execute(select(MeasurementRequirement)).scalar()
+    assert mr.ssc == latest_ssc
 
 
 def test_import_Meter_Timeswitch_Class(sess):
@@ -131,6 +173,12 @@ def test_import_MTC_in_PES_Area(sess):
     ]
     ctx = {}
     _import_MTC_in_PES_Area(sess, rows, ctx)
+
+
+def test_import_Time_Pattern_Regime(sess):
+    rows = [["00001", "C", "N"]]
+    ctx = {}
+    _import_Time_Pattern_Regime(sess, rows, ctx)
 
 
 def test_import_Valid_MTC_LLFC_Combination(sess):
@@ -392,8 +440,18 @@ def test_import_mdd(mocker, sess):
             "json": [
                 {
                     "type": "file",
+                    "download_url": "download/Clock_Interval",
+                    "name": "Clock_Interval_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/GSP_Group",
                     "name": "GSP_Group_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Line_Loss_Factor_Class",
+                    "name": "Line_Loss_Factor_Class_50.csv",
                 },
                 {
                     "type": "file",
@@ -412,8 +470,8 @@ def test_import_mdd(mocker, sess):
                 },
                 {
                     "type": "file",
-                    "download_url": "download/Line_Loss_Factor_Class",
-                    "name": "Line_Loss_Factor_Class_50.csv",
+                    "download_url": "download/Measurement_Requirement",
+                    "name": "Measurement_Requirement_50.csv",
                 },
                 {
                     "type": "file",
@@ -447,6 +505,11 @@ def test_import_mdd(mocker, sess):
                 },
                 {
                     "type": "file",
+                    "download_url": "download/Time_Pattern_Regime",
+                    "name": "Time_Pattern_Regime_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/Valid_MTC_LLFC_Combination",
                     "name": "Valid_MTC_LLFC_Combination_50.csv",
                 },
@@ -467,17 +530,20 @@ def test_import_mdd(mocker, sess):
                 },
             ],
         },
+        "download/Clock_Interval": {"text": "\n"},
         "download/GSP_Group": {"text": "\n"},
+        "download/Line_Loss_Factor_Class": {"text": "\n"},
         "download/Market_Participant": {"text": "\n"},
         "download/Market_Role": {"text": "\n"},
         "download/Market_Participant_Role": {"text": "\n"},
-        "download/Line_Loss_Factor_Class": {"text": "\n"},
+        "download/Measurement_Requirement": {"text": "\n"},
         "download/Meter_Timeswitch_Class": {"text": "\n"},
         "download/MTC_in_PES_Area": {"text": "\n"},
         "download/MTC_Meter_Type": {"text": "\n"},
         "download/MTC_Payment_Type": {"text": "\n"},
         "download/Profile_Class": {"text": "\n"},
         "download/Standard_Settlement_Configuration": {"text": "\n"},
+        "download/Time_Pattern_Regime": {"text": "\n"},
         "download/Valid_MTC_LLFC_Combination": {"text": "\n"},
         "download/Valid_MTC_SSC_Combination": {"text": "\n"},
         "download/Valid_MTC_LLFC_SSC_Combination": {"text": "\n"},
@@ -557,8 +623,18 @@ def test_import_mdd_two_versions(mocker, sess):
             "json": [
                 {
                     "type": "file",
+                    "download_url": "download/Clock_Interval",
+                    "name": "Clock_Interval_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/GSP_Group",
                     "name": "GSP_Group_50.csv",
+                },
+                {
+                    "type": "file",
+                    "download_url": "download/Line_Loss_Factor_Class",
+                    "name": "Line_Loss_Factor_Class_50.csv",
                 },
                 {
                     "type": "file",
@@ -577,13 +653,13 @@ def test_import_mdd_two_versions(mocker, sess):
                 },
                 {
                     "type": "file",
-                    "download_url": "download/Line_Loss_Factor_Class",
-                    "name": "Line_Loss_Factor_Class_50.csv",
+                    "download_url": "download/Meter_Timeswitch_Class",
+                    "name": "Meter_Timeswitch_Class_50.csv",
                 },
                 {
                     "type": "file",
-                    "download_url": "download/Meter_Timeswitch_Class",
-                    "name": "Meter_Timeswitch_Class_50.csv",
+                    "download_url": "download/Measurement_Requirement",
+                    "name": "Measurement_Requirement_50.csv",
                 },
                 {
                     "type": "file",
@@ -612,6 +688,11 @@ def test_import_mdd_two_versions(mocker, sess):
                 },
                 {
                     "type": "file",
+                    "download_url": "download/Time_Pattern_Regime",
+                    "name": "Time_Pattern_Regime_50.csv",
+                },
+                {
+                    "type": "file",
                     "download_url": "download/Valid_MTC_LLFC_Combination",
                     "name": "Valid_MTC_LLFC_Combination_50.csv",
                 },
@@ -632,17 +713,20 @@ def test_import_mdd_two_versions(mocker, sess):
                 },
             ],
         },
+        "download/Clock_Interval": {"text": "\n"},
         "download/GSP_Group": {"text": "\n"},
+        "download/Line_Loss_Factor_Class": {"text": "\n"},
         "download/Market_Participant": {"text": "\n"},
         "download/Market_Role": {"text": "\n"},
         "download/Market_Participant_Role": {"text": "\n"},
-        "download/Line_Loss_Factor_Class": {"text": "\n"},
         "download/Meter_Timeswitch_Class": {"text": "\n"},
+        "download/Measurement_Requirement": {"text": "\n"},
         "download/MTC_in_PES_Area": {"text": "\n"},
         "download/MTC_Meter_Type": {"text": "\n"},
         "download/MTC_Payment_Type": {"text": "\n"},
         "download/Profile_Class": {"text": "\n"},
         "download/Standard_Settlement_Configuration": {"text": "\n"},
+        "download/Time_Pattern_Regime": {"text": "\n"},
         "download/Valid_MTC_LLFC_Combination": {"text": "\n"},
         "download/Valid_MTC_SSC_Combination": {"text": "\n"},
         "download/Valid_MTC_LLFC_SSC_Combination": {"text": "\n"},
