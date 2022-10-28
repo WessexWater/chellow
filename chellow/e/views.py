@@ -459,11 +459,18 @@ def dc_auto_importer_post(contract_id):
 def dc_batches_get():
     contract_id = req_int("dc_contract_id")
     contract = Contract.get_dc_by_id(g.sess, contract_id)
-    batches = (
-        g.sess.query(Batch)
-        .filter(Batch.contract == contract)
+    batches = g.sess.execute(
+        select(
+            Batch,
+            func.count(Bill.id),
+            func.coalesce(func.sum(Bill.net), 0),
+            func.coalesce(func.sum(Bill.vat), 0),
+            func.coalesce(func.sum(Bill.gross), 0),
+        )
+        .join(Bill, isouter=True)
+        .where(Batch.contract == contract)
+        .group_by(Batch.id)
         .order_by(Batch.reference.desc())
-        .all()
     )
     return render_template("dc_batches.html", contract=contract, batches=batches)
 
@@ -2049,11 +2056,18 @@ def meter_type_get(meter_type_id):
 def mop_batches_get():
     contract_id = req_int("mop_contract_id")
     contract = Contract.get_mop_by_id(g.sess, contract_id)
-    batches = (
-        g.sess.query(Batch)
-        .filter(Batch.contract == contract)
+    batches = g.sess.execute(
+        select(
+            Batch,
+            func.count(Bill.id),
+            func.coalesce(func.sum(Bill.net), 0),
+            func.coalesce(func.sum(Bill.vat), 0),
+            func.coalesce(func.sum(Bill.gross), 0),
+        )
+        .join(Bill, isouter=True)
+        .where(Batch.contract == contract)
+        .group_by(Batch.id)
         .order_by(Batch.reference.desc())
-        .all()
     )
     return render_template("mop_batches.html", contract=contract, batches=batches)
 
@@ -3436,9 +3450,18 @@ def supplier_batch_add_post(contract_id):
 def supplier_batches_get():
     contract_id = req_int("supplier_contract_id")
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
-    batches = (
-        g.sess.query(Batch)
-        .filter(Batch.contract == contract)
+    batches = g.sess.execute(
+        select(
+            Batch,
+            func.count(Bill.id),
+            func.coalesce(func.sum(Bill.net), 0),
+            func.coalesce(func.sum(Bill.vat), 0),
+            func.coalesce(func.sum(Bill.gross), 0),
+            func.coalesce(func.sum(Bill.kwh), 0),
+        )
+        .join(Bill, isouter=True)
+        .where(Batch.contract == contract)
+        .group_by(Batch.id)
         .order_by(Batch.reference.desc())
     )
     return render_template("supplier_batches.html", contract=contract, batches=batches)

@@ -12,18 +12,27 @@
 
 {% block content %}
 
-	<table>
+	<table class="sticky">
 		<thead>
 			<tr>
 				<th>Reference</th>
 				<th>Description</th>
+				<th>Number Of Bills</th>
+				<th>Net GBP</th>
+				<th>VAT GBP</th>
+				<th>Gross GBP</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for batch in batches %}
+			{% for row in batches %}
+				{% set batch = row[0] %}
 				<tr>
 					<td><a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a></td>
 					<td>{{ batch.description }}</td>
+					<td>{{ "{:,}".format(row[1]) }}</td>
+					<td>{{ "£{:,}".format(row[2]) }}</td>
+					<td>{{ "£{:,}".format(row[3]) }}</td>
+					<td>{{ "£{:,}".format(row[4]) }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

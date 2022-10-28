@@ -301,6 +301,28 @@ def test_duration_report_get(mocker):
     )
 
 
+def test_dc_batches_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant.insert_party(sess, market_role_C, "Fusion", valid_from, None, None)
+    contract = Contract.insert_dc(
+        sess,
+        "Fusion DC",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    response = client.get(f"/e/dc_batches?dc_contract_id={contract.id}")
+    match(response, 200)
+
+
 def test_dc_batch_get(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
@@ -1548,6 +1570,28 @@ def test_llfc_eidt_post(sess, client):
     match(response, 303)
 
 
+def test_mop_batches_get(sess, client):
+    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_M = MarketRole.insert(sess, "M", "MOP")
+    participant.insert_party(sess, market_role_M, "Fusion", valid_from, None, None)
+    contract = Contract.insert_mop(
+        sess,
+        "Fusion MOP",
+        participant,
+        "",
+        {},
+        valid_from,
+        None,
+        {},
+    )
+    contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    response = client.get(f"/e/mop_batches?mop_contract_id={contract.id}")
+    match(response, 200)
+
+
 def test_mop_batch_import_bills_full(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
@@ -2070,6 +2114,28 @@ def test_scenario_edit_post(sess, client):
     response = client.post(f"/e/scenarios/{scenario.id}/edit", data=data)
 
     match(response, 303, r"/scenarios/1")
+
+
+def test_supplier_batches_get(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
+    contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier",
+        participant,
+        "",
+        {},
+        vf,
+        None,
+        {},
+    )
+    contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    response = client.get(f"/e/supplier_batches?supplier_contract_id={contract.id}")
+    match(response, 200)
 
 
 def test_supplier_batch_get(sess, client):
