@@ -155,6 +155,23 @@ def test_do_post_without_scenario(mocker, sess, client):
     mock_Thread.assert_called_with(target=content, args=args)
 
 
+def test_do_post_error(mocker, sess, client):
+    now = utc_datetime(2020, 1, 1)
+    mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
+
+    data = {
+        "compression": False,
+        "finish_year": 2009,
+        "finish_month": 8,
+        "months": 1,
+        "site_codes": "x",
+    }
+
+    response = client.post("/reports/247", data=data)
+
+    match(response, 400)
+
+
 def test_without_scenario(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

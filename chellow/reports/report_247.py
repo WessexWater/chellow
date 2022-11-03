@@ -1106,7 +1106,7 @@ def do_post(sess):
         month_finish = Datetime(now.year, now.month, 1) - HH
         return make_response(
             render_template(
-                "ods_monthly_duration.html",
+                "e/ods_monthly_duration.html",
                 month_start=month_start,
                 month_finish=month_finish,
             ),
