@@ -37,25 +37,12 @@ setup(
     ],
     package_data={
         "chellow": [
-            "non_core_contracts/*/*.zish",
-            "non_core_contracts/*/rate_scripts/*.zish",
-            "mdd/converted/*.csv",
             "templates/*.html",
             "templates/*/*.html",
-            "templates/css/*.css",
-            "templates/js/*.js",
             "templates/*.css",
             "static/images/**",
             "static/css/**",
             "static/js/**",
-            "static/font-awesome-4.6.3/**",
-            "static/font-awesome-4.6.3/css/**",
-            "static/font-awesome-4.6.3/fonts/**",
-            "static/font-awesome-4.6.3/less/**",
-            "static/font-awesome-4.6.3/scss/**",
-            "nationalgrid/*",
-            "elexonportal/*",
-            "rate_scripts/*/*.zish",
         ]
     },
     install_requires=[
