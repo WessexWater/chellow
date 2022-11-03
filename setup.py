@@ -77,7 +77,7 @@ setup(
         "pympler==1.0.1",
         "psutil==5.9.0",
         "xlrd==2.0.1",
-        "zish==0.1.9",
+        "zish==0.1.10",
     ],
     data_files=[("config", ["config/chellow.conf"])],
     entry_points={
