@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 
 import sqlalchemy.exc
@@ -5,6 +7,7 @@ import sqlalchemy.exc
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
+    BillType,
     Comm,
     Contract,
     Cop,
@@ -30,6 +33,7 @@ from chellow.models import (
     Tpr,
     VoltageLevel,
     _jsonize,
+    insert_bill_types,
     insert_comms,
     insert_cops,
     insert_energisation_statuses,
@@ -37,6 +41,131 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_Bill_update(sess):
+    """Make sure works if all instances in the Session have expired"""
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        vf,
+        None,
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "e1msn",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = supplier_contract.insert_batch(sess, "a", "ba")
+    insert_bill_types(sess)
+    bill_type = BillType.get_by_code(sess, "N")
+
+    sess.commit()
+    sess.expire_all()
+
+    batch.insert_bill(
+        sess,
+        "xhgerol",
+        "asdgh98g",
+        to_utc(ct_datetime(2022, 3, 1)),
+        to_utc(ct_datetime(2022, 1, 1)),
+        to_utc(ct_datetime(2022, 1, 31, 23, 30)),
+        Decimal("0"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        bill_type,
+        {},
+        supply,
+    )
 
 
 def test_Era_update(sess):

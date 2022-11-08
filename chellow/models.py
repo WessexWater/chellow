@@ -30,6 +30,7 @@ from sqlalchemy import (
     and_,
     create_engine,
     event,
+    inspect,
     not_,
     null,
     or_,
@@ -780,8 +781,9 @@ class Bill(Base, PersistentClass):
         if kwh is None:
             raise Exception("kwh can't be null.")
 
-        if self.batch.contract.market_role.code != "X" and kwh != Decimal("0"):
-            raise BadRequest("kWh can only be non-zero for a supplier bill.")
+        with inspect(self).session.no_autoflush:
+            if self.batch.contract.market_role.code != "X" and kwh != Decimal("0"):
+                raise BadRequest("kWh can only be non-zero for a supplier bill.")
 
         self.kwh = kwh
 
