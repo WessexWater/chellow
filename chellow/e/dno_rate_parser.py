@@ -1,10 +1,17 @@
 import re
 from decimal import Decimal, InvalidOperation
+from io import BytesIO
 from itertools import chain
+from zipfile import ZipFile
 
 import openpyxl
 
+from sqlalchemy import select
+
 from werkzeug.exceptions import BadRequest
+
+from chellow.models import Contract, RateScript
+from chellow.utils import ct_datetime, hh_format, to_utc
 
 
 def get_value(row, idx):
@@ -115,7 +122,20 @@ def str_to_hr(hr_str):
     for sep in (":", "."):
         if sep in hr_str:
             break
-    hours, minutes = map(Decimal, hr_str.strip().split(sep))
+
+    time_strs_raw = hr_str.strip().split(sep)
+    len_time_strs_raw = len(time_strs_raw)
+    if len_time_strs_raw == 1:
+        ts = time_strs_raw[0]
+        time_strs = ts[:2], ts[2:]
+    elif len_time_strs_raw == 2:
+        time_strs = time_strs_raw
+    else:
+        raise BadRequest(f"Can't work out the hours and minutes from '{hr_str}'")
+
+    print(time_strs)
+
+    hours, minutes = map(Decimal, time_strs)
     return hours + minutes / Decimal(60)
 
 
@@ -290,8 +310,7 @@ def tab_ehv(sheet, gsp_rates):
                     )
 
                 elif period_str in (
-                    "monday to friday (including bank "
-                    "holidays) november to february",
+                    "monday to friday (including bank holidays) november to february",
                     "monday to friday nov to feb",
                 ):
                     periods.append(
@@ -318,16 +337,143 @@ def tab_ehv(sheet, gsp_rates):
 def find_rates(file_name, file_like):
     rates = {"a_file_name": file_name}
 
-    if not file_name.endswith(".xlsx"):
+    if file_name.endswith(".zip"):
+        with ZipFile(file_like) as za:
+            for zname in za.namelist():
+                if zname.endswith(".xlsx"):
+                    with za.open(zname) as f:
+                        gsp_code, gsp_rates = find_gsp_group_rates(
+                            zname, BytesIO(f.read())
+                        )
+                        rates[gsp_code] = gsp_rates
+
+    elif file_name.endswith(".xlsx"):
+        gsp_code, gsp_rates = find_gsp_group_rates(file_name, file_like)
+        rates[gsp_code] = gsp_rates
+
+    else:
         raise BadRequest(f"The file extension for {file_name} isn't recognized.")
+
+    return rates
+
+
+GSP_MAP = (
+    ("gsp a", "_A"),
+    ("gsp b", "_B"),
+    ("gsp c", "_C"),
+    ("gsp d", "_D"),
+    ("gsp e", "_E"),
+    ("gsp f", "_F"),
+    ("gsp g", "_G"),
+    ("gsp h", "_H"),
+    ("gsp j", "_J"),
+    ("gsp k", "_K"),
+    ("gsp l", "_L"),
+    ("gsp m", "_M"),
+    ("gsp n", "_N"),
+    ("gsp p", "_P"),
+    ("gsp_a", "_A"),
+    ("gsp_b", "_B"),
+    ("gsp_c", "_C"),
+    ("gsp_d", "_D"),
+    ("gsp_e", "_E"),
+    ("gsp_f", "_F"),
+    ("gsp_g", "_G"),
+    ("gsp_h", "_H"),
+    ("gsp_j", "_J"),
+    ("gsp_k", "_K"),
+    ("gsp_l", "_L"),
+    ("gsp_m", "_M"),
+    ("gsp_n", "_N"),
+    ("gsp_p", "_P"),
+    ("mide", "_E"),
+    ("sepd", "_H"),
+    ("sweb", "_L"),
+)
+
+
+def find_gsp_group_rates(file_name, file_like):
+    rates = {}
+
+    fname = file_name.lower()
+    gsp_code = None
+    for substr, code in GSP_MAP:
+        if substr in fname:
+            gsp_code = code
+            break
+
+    if gsp_code is None:
+        raise BadRequest(
+            f"Can't determine the GSP group from the file name '{file_name}'."
+        )
 
     book = openpyxl.load_workbook(file_like, data_only=True, read_only=True)
 
-    for sheet in book.worksheets:
-        title = sheet.title.strip().lower()
-        if title.startswith("annex 1 "):
-            tab_lv_hv(sheet, rates)
-        elif title.startswith("annex 2 "):
-            tab_ehv(sheet, rates)
+    try:
+        for sheet in book.worksheets:
+            title = sheet.title.strip().lower()
+            if title.startswith("annex 1 "):
+                tab_lv_hv(sheet, rates)
+            elif title.startswith("annex 2 "):
+                tab_ehv(sheet, rates)
+    except BadRequest as e:
+        raise BadRequest(f"Problem with file '{file_name}': {e.description}")
 
-    return rates
+    return gsp_code, rates
+
+
+def rate_server_import(sess, paths, logger):
+    logger("Starting to check for new DNO spreadsheets")
+    year_entries = {}
+    for path, download in paths:
+        if len(path) == 5:
+
+            year_str, utility, rate_type, dno_code, file_name = path
+            year = int(year_str)
+            try:
+                dno_entries = year_entries[year]
+            except KeyError:
+                dno_entries = year_entries[year] = {}
+
+            if utility == "electricity" and rate_type == "duos":
+
+                try:
+                    fl_entries = dno_entries[dno_code]
+                except KeyError:
+                    fl_entries = dno_entries[dno_code] = {}
+
+                fl_entries[file_name] = download
+
+    for year, dno_entries in sorted(year_entries.items()):
+        year_start = to_utc(ct_datetime(year, 4, 1))
+        for dno_code, fl_entries in sorted(dno_entries.items()):
+            contract = Contract.get_dno_by_name(sess, dno_code)
+            if year_start < contract.start_rate_script.start_date:
+                continue
+
+            rs = sess.execute(
+                select(RateScript).where(
+                    RateScript.contract == contract,
+                    RateScript.start_date == year_start,
+                )
+            ).scalar_one_or_none()
+            if rs is None:
+                rs = contract.insert_rate_script(sess, year_start, {})
+
+            file_name, fl_entry = sorted(fl_entries.items())[-1]
+
+            rs_script = rs.make_script()
+            if rs_script.get("a_file_name") != file_name:
+                fl = BytesIO(download())
+                try:
+                    rs.update(find_rates(file_name, fl))
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"Problem with year {year} DNO {dno_code}: {e.description}"
+                    )
+                logger(
+                    f"Updated DNO {dno_code} rate script for {hh_format(year_start)}"
+                )
+
+    logger("Finished DNO spreadsheets")
+    sess.commit()

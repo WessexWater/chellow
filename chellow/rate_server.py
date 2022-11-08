@@ -2,6 +2,7 @@ import atexit
 import collections
 import threading
 import traceback
+from base64 import b64decode
 
 import requests
 
@@ -54,20 +55,47 @@ class RateServer(threading.Thread):
                     sess = Session()
                     conf = Contract.get_non_core_by_name(sess, "configuration")
                     props = conf.make_properties()
-                    repo_branch = props.get("rate_server_branch")
+                    repo_branch = props.get("rate_server_branch", "main")
                     s = requests.Session()
                     s.verify = False
                     repo_entry = s.get(self.repo_url).json()
+                    if "message" in repo_entry:
+                        raise Exception(
+                            f"Message from the GitHub API: {repo_entry['message']}"
+                        )
+
                     self.log(
                         f"Looking at {repo_entry['html_url']} and branch "
                         f"{'default' if repo_branch is None else repo_branch}"
                     )
-                    chellow.e.mdd_importer.import_mdd(
-                        sess, self.repo_url, repo_branch, self.log
-                    )
-                    chellow.gas.dn_rate_parser.rate_server_import(
-                        sess, self.repo_url, repo_branch, self.log
-                    )
+                    branch_entry = s.get(
+                        f"{self.repo_url}/branches/{repo_branch}"
+                    ).json()
+
+                    tree_entry = s.get(
+                        branch_entry["commit"]["commit"]["tree"]["url"],
+                        params={"recursive": "true"},
+                    ).json()
+
+                    if tree_entry["truncated"]:
+                        raise Exception("Tree from rate server is truncated.")
+
+                    paths_list = []
+                    for sub_entry in tree_entry["tree"]:
+                        path = sub_entry["path"].split("/")
+                        if path[-1] != "README.md":
+
+                            def downloader():
+                                fl_json = s.get(sub_entry["url"]).json()
+                                return b64decode(fl_json["content"])
+
+                            paths_list.append((path, downloader))
+
+                    paths = tuple(paths_list)
+
+                    chellow.e.dno_rate_parser.rate_server_import(sess, paths, self.log)
+                    chellow.e.mdd_importer.import_mdd(sess, paths, self.log)
+                    chellow.gas.dn_rate_parser.rate_server_import(sess, paths, self.log)
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Rate Server: An import has failed"

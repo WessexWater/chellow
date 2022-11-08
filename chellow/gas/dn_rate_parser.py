@@ -4,8 +4,6 @@ from io import BytesIO
 
 import openpyxl
 
-import requests
-
 from sqlalchemy import select
 
 from werkzeug.exceptions import BadRequest
@@ -259,31 +257,24 @@ def find_nts_rates(file_name, file_like, col):
     return rates
 
 
-def rate_server_import(sess, repo_url, repo_branch, logger):
+def rate_server_import(sess, paths, logger):
     logger("Starting to check for new DN spreadsheets")
-    params = {} if repo_branch is None else {"ref": repo_branch}
-    s = requests.Session()
-    s.verify = False
-    sheet_entries = {}
 
-    def entries(url):
-        return s.get(url, params=params).json()
+    year_entries = {}
+    for path, download in paths:
+        if len(path) == 4:
 
-    for year_entry in entries(f"{repo_url}/contents"):
-        if year_entry["type"] == "dir":
-            year_sheets = sheet_entries[int(year_entry["name"])] = {}
-            for util_entry in entries(year_entry["url"]):
-                if util_entry["name"] == "gas" and util_entry["type"] == "dir":
-                    for dl_entry in entries(util_entry["url"]):
-                        if dl_entry["name"] == "dn" and dl_entry["type"] == "dir":
-                            for dn_entry in entries(dl_entry["url"]):
-                                if (
-                                    dn_entry["name"] != "README.md"
-                                    and dn_entry["type"] == "file"
-                                ):
-                                    year_sheets[dn_entry["name"]] = dn_entry
+            year_str, utility, rate_type, file_name = path
+            if utility == "gas" and rate_type == "dn":
+                year = int(year_str)
+                try:
+                    fl_entries = year_entries[year]
+                except KeyError:
+                    fl_entries = year_entries[year] = {}
 
-    for year, year_sheets in sorted(sheet_entries.items()):
+                fl_entries[file_name] = download
+
+    for year, year_sheets in sorted(year_entries.items()):
         year_start = to_utc(ct_datetime(year, 4, 1))
         oct_start = to_utc(ct_datetime(year, 10, 1))
         nts_contract = GContract.get_industry_by_name(sess, "nts_commodity")
@@ -318,25 +309,21 @@ def rate_server_import(sess, repo_url, repo_branch, logger):
             dn_rs = dn_contract.insert_g_rate_script(sess, year_start, {})
 
         if len(year_sheets) > 0:
-            _, sheet_entry = sorted(year_sheets.items())[-1]
-            file_name = sheet_entry["name"]
+            file_name, url = sorted(year_sheets.items())[-1]
 
             nts_rs_1_script = nts_rs_1.make_script()
             if nts_rs_1_script.get("a_file_name") != file_name:
-                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
-                nts_rs_1.update(find_nts_1_rates(file_name, fl))
+                nts_rs_1.update(find_nts_1_rates(file_name, BytesIO(download())))
                 logger(f"Updated NTS rate script for {hh_format(year_start)}")
 
             nts_rs_2_script = nts_rs_2.make_script()
             if nts_rs_2_script.get("a_file_name") != file_name:
-                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
-                nts_rs_2.update(find_nts_1_rates(file_name, fl))
+                nts_rs_2.update(find_nts_1_rates(file_name, BytesIO(download())))
                 logger(f"Updated NTS rate script for {hh_format(oct_start)}")
 
             dn_rs_script = dn_rs.make_script()
             if dn_rs_script.get("a_file_name") != file_name:
-                fl = BytesIO(s.get(sheet_entry["download_url"]).content)
-                dn_rs.update(find_dn_rates(file_name, fl))
+                dn_rs.update(find_dn_rates(file_name, BytesIO(download())))
                 logger(f"Updated DN rate script for {hh_format(year_start)}")
 
     logger("Finished DN spreadsheets")

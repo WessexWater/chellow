@@ -3,8 +3,6 @@ from decimal import Decimal
 from io import BytesIO
 from zipfile import ZipFile
 
-from openpyxl import Workbook
-
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
@@ -772,19 +770,16 @@ def test_dno_rate_script_edit_post(sess, client):
         sess, dno.dno_code, participant, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     rs = dno_contract.rate_scripts[0]
-    gsp_group = GspGroup.insert(sess, "_L", "South Western")
     sess.commit()
 
-    file_name = "rates.xlsx"
-    f = BytesIO()
-    wb = Workbook()
-    wb.save(f)
-    f.seek(0)
-
     data = {
-        "dno_file": (f, file_name),
-        "import": "Import",
-        "gsp_group_id": gsp_group.id,
+        "script": "{}",
+        "has_finished": "false",
+        "start_year": 2022,
+        "start_month": 10,
+        "start_day": 1,
+        "start_hour": 0,
+        "start_minute": 0,
     }
 
     response = client.post(f"/e/dno_rate_scripts/{rs.id}/edit", data=data)

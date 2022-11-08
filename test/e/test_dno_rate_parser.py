@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 import pytest
 
-from chellow.e.dno_rate_parser import to_llfcs, to_pcs
+from chellow.e.dno_rate_parser import str_to_hr, to_llfcs, to_pcs
 
 
 @pytest.mark.parametrize("llfc_str,llfc_list", [["H00-H01", ["H00", "H01"]]])
@@ -23,3 +25,9 @@ def test_to_pcs(mocker, pc_str, pc_list):
     idx = mocker.Mock()
     actual = to_pcs(row, idx)
     assert actual == pc_list
+
+
+@pytest.mark.parametrize("hr_str,hr", [["1600", Decimal("16")]])
+def test_str_to_hr(mocker, hr_str, hr):
+    actual = str_to_hr(hr_str)
+    assert actual == hr

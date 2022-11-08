@@ -1314,13 +1314,26 @@ def dno_rate_script_edit_get(dno_rate_script_id):
     dno = Party.get_dno_by_code(
         g.sess, dno_rate_script.contract.name, dno_rate_script.start_date
     )
-    gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
     return render_template(
-        "dno_rate_script_edit.html",
-        rate_script=dno_rate_script,
-        dno=dno,
-        gsp_groups=gsp_groups,
+        "dno_rate_script_edit.html", rate_script=dno_rate_script, dno=dno
     )
+
+
+@e.route("/dno_rate_scripts/<int:dno_rate_script_id>/edit", methods=["DELETE"])
+def dno_rate_script_edit_delete(dno_rate_script_id):
+    try:
+        rate_script = RateScript.get_dno_by_id(g.sess, dno_rate_script_id)
+        contract = rate_script.contract
+        dno = Party.get_dno_by_code(g.sess, contract.name, rate_script.start_date)
+        contract.delete_rate_script(g.sess, rate_script)
+        g.sess.commit()
+        res = make_response()
+        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/dnos/{dno.id}"
+    except BadRequest as e:
+        flash(e.description)
+        return render_template(
+            "dno_rate_script_edit.html", rate_script=rate_script, dno=dno
+        )
 
 
 @e.route("/dno_rate_scripts/<int:dno_rate_script_id>/edit", methods=["POST"])
@@ -1329,47 +1342,19 @@ def dno_rate_script_edit_post(dno_rate_script_id):
         rate_script = RateScript.get_dno_by_id(g.sess, dno_rate_script_id)
         contract = rate_script.contract
         dno = Party.get_dno_by_code(g.sess, contract.name, rate_script.start_date)
-        if "delete" in request.form:
-            contract.delete_rate_script(g.sess, rate_script)
-            g.sess.commit()
-            return chellow_redirect(f"/dnos/{dno.id}", 303)
-        elif "import" in request.form:
-            file_item = req_file("dno_file")
-            gsp_group_id = req_int("gsp_group_id")
-            gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
-
-            rates = chellow.e.dno_rate_parser.find_rates(
-                file_item.filename, BytesIO(file_item.read())
-            )
-            script_rates = loads(rate_script.script)
-            script_rates[gsp_group.code] = rates
-            contract.update_rate_script(
-                g.sess,
-                rate_script,
-                rate_script.start_date,
-                rate_script.finish_date,
-                script_rates,
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/dno_rate_scripts/{rate_script.id}", 303)
-        else:
-            script = req_zish("script")
-            start_date = req_date("start")
-            has_finished = req_bool("has_finished")
-            finish_date = req_date("finish") if has_finished else None
-            contract.update_rate_script(
-                g.sess, rate_script, start_date, finish_date, script
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/dno_rate_scripts/{rate_script.id}", 303)
+        script = req_zish("script")
+        start_date = req_date("start")
+        has_finished = req_bool("has_finished")
+        finish_date = req_date("finish") if has_finished else None
+        contract.update_rate_script(
+            g.sess, rate_script, start_date, finish_date, script
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/dno_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
-        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
         return render_template(
-            "dno_rate_script_edit.html",
-            rate_script=rate_script,
-            dno=dno,
-            gsp_groups=gsp_groups,
+            "dno_rate_script_edit.html", rate_script=rate_script, dno=dno
         )
 
 

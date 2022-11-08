@@ -2319,9 +2319,15 @@ class RateScript(Base, PersistentClass):
         self.contract = contract
         self.start_date = start_date
         self.finish_date = finish_date
+        self.update(script)
+
+    def update(self, script):
         if not isinstance(script, Mapping):
             raise BadRequest("A script must be a Mapping type.")
         self.script = dumps(script)
+
+    def make_script(self):
+        return loads(self.script)
 
 
 class Llfc(Base, PersistentClass):

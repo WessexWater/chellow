@@ -2,8 +2,6 @@ import csv
 from datetime import datetime as Datetime, timedelta as Timedelta
 from io import StringIO
 
-import requests
-
 from sqlalchemy import null, or_, select
 from sqlalchemy.orm import joinedload
 
@@ -835,31 +833,28 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-def import_mdd(sess, repo_url, repo_branch, logger):
-    params = {} if repo_branch is None else {"ref": repo_branch}
-    s = requests.Session()
-    s.verify = False
+def import_mdd(sess, paths, logger):
+    logger("Starting to check for a new MDD version")
     mdd_entries = {}
+    for path, download in paths:
+        if len(path) == 5:
 
-    def entries(url):
-        return s.get(url, params=params).json()
+            _, utility, rate_type, mdd_version_str, file_name = path
 
-    for year_entry in entries(f"{repo_url}/contents"):
-        if year_entry["type"] == "dir":
-            for util_entry in entries(year_entry["url"]):
-                if util_entry["name"] == "electricity" and util_entry["type"] == "dir":
-                    for dl_entry in entries(util_entry["url"]):
-                        if dl_entry["name"] == "mdd" and dl_entry["type"] == "dir":
-                            for mdd_entry in entries(dl_entry["url"]):
-                                if mdd_entry["type"] == "dir":
-                                    mdd_entries[mdd_entry["name"]] = mdd_entry
+            if utility == "electricity" and rate_type == "mdd":
+                mdd_version = int(mdd_version_str)
+                try:
+                    fl_entries = mdd_entries[mdd_version]
+                except KeyError:
+                    fl_entries = mdd_entries[mdd_version] = {}
+
+                fl_entries[file_name] = download
 
     if len(mdd_entries) == 0:
         raise BadRequest("Can't find any MDD versions on the rate server.")
 
-    mdd_entry = sorted(mdd_entries.items())[-1][1]
-    mdd_version = int(mdd_entry["name"])
-    logger(f"Latest version on rate server: {mdd_version} at {mdd_entry['path']}")
+    mdd_version, fl_entries = sorted(mdd_entries.items())[-1]
+    logger(f"Latest version on rate server: {mdd_version}.")
 
     config = Contract.get_non_core_by_name(sess, "configuration")
     state = config.make_state()
@@ -873,26 +868,23 @@ def import_mdd(sess, repo_url, repo_branch, logger):
     ctx = {}
     version = None
 
-    for entry in s.get(mdd_entry["url"]).json():
-        if entry["type"] == "file":
-            csv_file = StringIO(s.get(entry["download_url"]).text)
-            csv_reader = iter(csv.reader(csv_file))
-            next(csv_reader)  # Skip titles
+    for file_name, download in fl_entries.items():
+        csv_file = StringIO(download().decode("utf8"))
+        csv_reader = iter(csv.reader(csv_file))
+        next(csv_reader)  # Skip titles
 
-            entry_name = entry["name"]
-            table_name_elements = entry_name.split("_")
-            ver = int(table_name_elements[-1].split(".")[0])
-            if version is None:
-                version = ver
+        table_name_elements = file_name.split("_")
+        ver = int(table_name_elements[-1].split(".")[0])
+        if version is None:
+            version = ver
 
-            if version != ver:
-                raise BadRequest(
-                    f"There's a mixture of MDD versions in the file names. "
-                    f"Expected version {version} but found version {ver} in "
-                    f"{entry_name}."
-                )
-            table_name = "_".join(table_name_elements[:-1])
-            gnames[table_name] = list(csv_reader)
+        if version != ver:
+            raise BadRequest(
+                f"There's a mixture of MDD versions in the file names. Expected "
+                f"version {version} but found version {ver} in {file_name}."
+            )
+        table_name = "_".join(table_name_elements[:-1])
+        gnames[table_name] = list(csv_reader)
 
     for tname, func in [
         ("GSP_Group", _import_GSP_Group),
