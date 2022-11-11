@@ -4,6 +4,8 @@ from io import BytesIO
 
 import odio
 
+import pytest
+
 from sqlalchemy import select
 
 from utils import match
@@ -97,7 +99,6 @@ def test_with_scenario(mocker, sess, client):
     user = User.get_by_email_address(sess, "admin@example.com")
     is_bill_check = False
     scenario_props["site_codes"] = [site_code]
-    scenario_props["mpan_cores"] = None
     args = (
         scenario_props,
         base_name,
@@ -140,8 +141,6 @@ def test_do_post_without_scenario(mocker, sess, client):
         "scenario_start_month": 8,
         "scenario_duration": 1,
         "by_hh": False,
-        "site_codes": None,
-        "mpan_cores": None,
     }
     args = (
         scenario_props,
@@ -3522,3 +3521,92 @@ def displaced_virtual_bill(ds):
         ],
     ]
     assert era_expected == era_table
+
+
+def test_content_error():
+    scenario_props = {}
+    base_name = []
+    user_id = 0
+    compression = False
+    now = to_utc(ct_datetime(2020, 1, 1))
+    is_bill_check = False
+    with pytest.raises(
+        TypeError,
+        match="expected str, bytes or os.PathLike object, not NoneType",
+    ):
+        content(
+            scenario_props,
+            base_name,
+            user_id,
+            compression,
+            now,
+            is_bill_check,
+        )
+
+
+def test_content_no_mpan_cores(mocker, sess, client):
+    mock_file = BytesIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
+    mocker.patch(
+        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_247.os.rename")
+    scenario_props = {
+        "scenario_start_year": 2022,
+        "scenario_start_month": 9,
+        "scenario_duration": 1,
+    }
+    base_name = ["no_mpan_cores"]
+    user = User.get_by_email_address(sess, "admin@example.com")
+    compression = False
+    now = to_utc(ct_datetime(2020, 1, 1))
+    is_bill_check = False
+    content(
+        scenario_props,
+        base_name,
+        user.id,
+        compression,
+        now,
+        is_bill_check,
+    )
+    sheet = odio.parse_spreadsheet(mock_file)
+    table = list(sheet.tables[0].rows)
+
+    expected = [
+        [
+            "creation-date",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "month",
+            "metering-type",
+            "sources",
+            "generator-types",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+        ],
+    ]
+
+    assert expected == table

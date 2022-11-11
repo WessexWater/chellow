@@ -12,9 +12,22 @@
 {% block content %}
 	<form action="/reports/247" method="post">
 		<fieldset>
-			<label>Site Codes</label><br>
-			{{input_textarea('site_codes', '', 5, 40, placeholder='One on each line, includes all if left blank')}}    						
+			<legend>Run With Monthly Duration</legend>
 			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<label>Site Codes</label>
+			{{input_textarea('site_codes', '', 5, 40,
+			  placeholder='One on each line, includes all if left blank')}}    						
+			<input type="submit" value="Run">
+		</fieldset>	
+	</form>
+
+	<form action="/reports/59" method="post">
+		<fieldset>
+			<legend>Run With Duration</legend>
+			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<label>Site Codes</label>
+			{{input_textarea('site_codes', '', 5, 40,
+			  placeholder='One on each line, includes all if left blank')}}    						
 			<input type="submit" value="Run">
 		</fieldset>	
 	</form>
@@ -22,5 +35,7 @@
 	<h2>Properties</h2>	
 
 	<pre>{{scenario.properties}}</pre>
+
+	{% include "e/scenario_docs.html" %}
 
 {% endblock %}

@@ -20,6 +20,7 @@ from chellow.models import (
     MtcParticipant,
     Participant,
     Pc,
+    Scenario,
     Site,
     Source,
     User,
@@ -34,6 +35,56 @@ from chellow.models import (
 )
 from chellow.reports.report_59 import content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_do_post_scenario(mocker, sess, client):
+    scenario_props = {
+        "scenario_start_year": 2022,
+        "scenario_start_month": 8,
+        "scenario_start_day": 6,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2022,
+        "scenario_finish_month": 8,
+        "scenario_finish_day": 6,
+        "scenario_finish_hour": 23,
+        "scenario_finish_minute": 30,
+        "mpan_cores": None,
+        "site_codes": ["CI017"],
+    }
+    scenario = Scenario.insert(sess, "test", scenario_props)
+    sess.commit()
+
+    mock_Thread = mocker.patch("chellow.reports.report_59.threading.Thread")
+
+    now = utc_datetime(2020, 1, 1)
+    mocker.patch("chellow.reports.report_59.utc_datetime_now", return_value=now)
+
+    compression = False
+    data = {
+        "scenario_id": scenario.id,
+        "site_codes": "",
+        "compression": compression,
+    }
+
+    response = client.post("/reports/59", data=data)
+
+    match(response, 303)
+
+    base_name = ["duration", "test"]
+
+    user = User.get_by_email_address(sess, "admin@example.com")
+    is_bill_check = False
+    args = (
+        scenario_props,
+        base_name,
+        user.id,
+        compression,
+        now,
+        is_bill_check,
+    )
+
+    mock_Thread.assert_called_with(target=content, args=args)
 
 
 def test_do_post(mocker, sess, client):
@@ -89,7 +140,6 @@ def test_do_post(mocker, sess, client):
         "scenario_finish_day": finish_day,
         "scenario_finish_hour": finish_hour,
         "scenario_finish_minute": finish_minute,
-        "mpan_cores": None,
         "site_codes": [site_code],
     }
     user = User.get_by_email_address(sess, "admin@example.com")

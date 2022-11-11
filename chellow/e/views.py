@@ -3267,16 +3267,11 @@ def scenario_edit_get(scenario_id):
 def scenario_edit_post(scenario_id):
     try:
         scenario = Scenario.get_by_id(g.sess, scenario_id)
-        if "delete" in request.form:
-            scenario.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/scenarios", 303)
-        else:
-            name = req_str("name")
-            properties = req_zish("properties")
-            scenario.update(name, properties)
-            g.sess.commit()
-            return chellow_redirect(f"/scenarios/{scenario.id}", 303)
+        name = req_str("name")
+        properties = req_zish("properties")
+        scenario.update(name, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/scenarios/{scenario.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         description = e.description
@@ -3287,6 +3282,23 @@ def scenario_edit_post(scenario_id):
                 scenario=scenario,
             ),
             400,
+        )
+
+
+@e.route("/scenarios/<int:scenario_id>/edit", methods=["DELETE"])
+def scenario_edit_delete(scenario_id):
+    try:
+        scenario = Scenario.get_by_id(g.sess, scenario_id)
+        scenario.delete(g.sess)
+        g.sess.commit()
+        res = make_response()
+        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/scenarios"
+        return res
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return make_response(
+            render_template("scenario_edit.html", scenario=scenario), 400
         )
 
 

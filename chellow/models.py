@@ -4986,7 +4986,6 @@ class Scenario(Base, PersistentClass):
         for required in (
             "scenario_start_year",
             "scenario_start_month",
-            "scenario_duration",
         ):
             if required not in properties:
                 raise BadRequest(

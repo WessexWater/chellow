@@ -1,0 +1,195 @@
+<h2>Docs</h2>	
+
+<h3>Template Scenario Properties</h3>
+
+<pre>
+{
+  "scenario_start_year": 2011,  /* clock-time year, or null for current year */
+  "scenario_start_month": 1,  /* clock-time month or null for this month */
+
+  "scenario_start_day": 1,  /* used by Duration */
+  "scenario_start_hour": 1,  /* used by Duration */
+  "scenario_start_minute": 1,  /* used by Duration */
+
+  "scenario_duration": 1,  /* Number of months (used by Monthly Duration) */
+
+  "scenario_finish_year": 2011,  /* used by Duration */
+  "scenario_finish_month": 1,  /* used by Duration */
+  "scenario_finish_day": 1,  /* used by Duration */
+  "scenario_finish_hour": 1,  /* used by Duration */
+  "scenario_finish_minute": 1,  /* used by Duration */
+
+  "forecast_from": 2016-10-01T00:00:00Z,  /* omit if forecast from current month */
+
+  "by_hh": false,  /* To show a line per half hour rather than each month */
+
+  /* Run only for these supplies */
+  "mpan_cores": [
+      "22 7458 7682 127",
+  ],
+
+  /* Run only for these sites */
+  "site_codes": [
+      "XJJK4",
+  ],
+
+  /* Rates */
+
+  "rates": [
+    {
+      "contract_id": 46,
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "gbp_per_msp_kwh": 0.667
+      }
+    },
+
+    {
+      "contract_id": 3,
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2015-03-01T00:00:00Z,
+      "script": {
+        "gbp_per_gsp_kwh": 5.77
+      }
+    }
+  ],
+
+
+  "era_maps": {
+    2012-09-01T00:00:00Z: {
+      "llfcs": {
+        "20": {
+          "409": "607",
+          "090": "502"
+        },
+        "22": {
+          "711": "003",
+          "new_export": "003"
+        }
+      },
+      "pcs": {
+        "03": "00",
+        "04": "00"
+      },
+      "sscs": {
+        "0038": "0336"
+      },
+      "cops": {
+        "6c": "5"
+      },
+      "supplier_contracts": {
+        74: 3,
+        "new_export": 3,
+        9: 51
+      },
+      "sc": 400,
+      "mpan_cores": {
+        "22 8679 7237 782": "20 7568 7217 378"
+      }
+      "dnos": {
+        "22": "20"
+      },
+      "gsp_groups": {
+			  "*": "_L"
+      },
+
+      /* Properties are combined with the existing era properties, with the
+         ones here overwriting any duplicates */
+      "properties_overwrite": {
+        "comms_type": "GSM"
+      },
+
+      /* Properties are combined with the existing era properties, with the
+         ones here being overwritten by any duplicates */
+      "properties_overwritten": {
+        "meter_type": "H"
+      },
+
+      /* Use hh data  rather than register reads for AMRs */
+      "use_amr_hh_data": false
+    }
+  },
+
+
+  /* HH data to use instead of the data in the database. For each site code,
+     you can specify the hh data that's used, generated, parasitic or gen_net
+     on the site. */
+
+  "hh_data": {
+
+    /* For site code 12098 */
+
+    "12098": {
+      "used": "
+        2017-10-04 19:00, 78.0
+        2017-10-04 19:30, 74.8
+        2017-10-04 20:00, 65.3",
+      "generated": "
+        2017-10-04 19:00, 8.0
+        2017-10-04 19:30, 8.7
+        2017-10-04 20:00, 8.5",
+      "parasitic": "
+        2017-10-04 19:00, 2.0
+        2017-10-04 19:30, 2.1
+        2017-10-04 20:00, 2.0"
+    },
+
+    /* For site code 59987 */
+
+    "59987": {
+      "generated": "
+        2017-10-09 10:00, 3.0
+        2017-10-09 10:30, 2.7
+        2017-10-09 11:00, 3.5"
+    }
+  }
+}</pre>
+
+<h3>HH Data</h3>
+
+<h4>Default forecasting</h4>
+
+<p>
+	Before the <code>forecast_date</code> Chellow uses data in the database (if any), and
+ 	after that date it uses data from the same month but in the year before the
+ 	<code>forecast_date</code>.
+</p>
+
+<p>
+	If a rate script isn't found for a particular date, then the most recent rate script
+ 	is used.
+</p>
+
+<p>
+	Virtual bills can include TRIAD estimates and actuals in a variety of ways. For
+ 	example, a virtual bill may use TRIAD estimates for all months until triad dates are
+ 	available for that financial year, in which case it switches to using the actual TRIAD
+ 	for March.
+</p>
+
+<p>
+	TRIAD estimates are calculated using the actual TRIAD from the latest historical year
+ 	for which we have TRIAD dates. Historical kW and status are used, together with
+ 	current LAFs and TRIAD rates, with the result apportioned throughout each month.
+</p>
+
+
+<h4>Applying HH data in the scenario runner</h4>
+
+<p>
+	Taking 'generated' as an example, for each half-hour Chellow will calculate the
+ 	difference between the <code>scenario_generated</code> and the
+ 	<code>existing_generated</code>. If <code>scenario_generated</code> &gt;=
+ 	<code>existing_generated</code> then any <code>imported_net</code> will be reduced
+ 	first, then <code>exported_net</code> will be increased until all the difference is
+ 	exhausted. Otherwise if <code>scenario_generated</code> &lt;
+ 	<code>existing_generated</code> then <code>exported_net</code> will be reduced first,
+ 	and then <code>imported_net</code> will be increased. A similar approach is taken with
+ 	used, parasitic and gen_net kWh.
+</p>
+
+<p>
+	The method is the same for months after the <code>forecast_date</code> but with the
+	<code>existing_generated</code> being found from the default forecast.
+</p>

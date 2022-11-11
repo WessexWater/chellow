@@ -662,7 +662,12 @@ def content(
     except KeyError:
         ind_cont = report_context["contract_names"] = {}
 
-    sess = None
+    sess = rf = None
+    site_rows = []
+    era_rows = []
+    normal_read_rows = []
+    bill_check_site_rows = []
+    bill_check_era_rows = []
     try:
         sess = Session()
 
@@ -699,7 +704,7 @@ def content(
 
         sites = sess.query(Site).distinct().order_by(Site.code)
 
-        mpan_cores = scenario_props["mpan_cores"]
+        mpan_cores = scenario_props.get("mpan_cores")
         supply_ids = None
         if mpan_cores is not None:
             supply_ids = []
@@ -720,7 +725,7 @@ def content(
                 .where(Supply.id.in_(supply_ids))
             )
 
-        site_codes = scenario_props["site_codes"]
+        site_codes = scenario_props.get("site_codes")
         if site_codes is not None:
             if len(site_codes) == 1:
                 base_name.append("site")
@@ -735,13 +740,8 @@ def content(
         )
 
         rf = open(running_name, "wb")
-        site_rows = []
-        era_rows = []
-        normal_read_rows = []
-        bill_check_site_rows = []
-        bill_check_era_rows = []
 
-        for rate_script in scenario_props.get("local_rates", []):
+        for rate_script in scenario_props.get("rates", []):
             contract_id = rate_script["contract_id"]
             try:
                 cont_cache = rate_cache[contract_id]
@@ -753,7 +753,7 @@ def content(
             except KeyError:
                 raise BadRequest(
                     f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'local_rates' map."
+                    f"key of the contract {contract_id} in the 'rates' map."
                 )
 
             try:
@@ -761,7 +761,7 @@ def content(
             except KeyError:
                 raise BadRequest(
                     f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'local_rates' map."
+                    f"key of the contract {contract_id} in the 'rates' map."
                 )
 
             props = PropDict("scenario properties", rate_script["script"])
@@ -1000,28 +1000,29 @@ def content(
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(
-            rf,
-            compression,
-            site_rows,
-            era_rows,
-            normal_read_rows,
-            bill_check_site_rows,
-            bill_check_era_rows,
-            is_bill_check,
-        )
-    finally:
-        if sess is not None:
-            sess.close()
-        try:
-            rf.close()
-            os.rename(running_name, finished_name)
-        except BaseException:
+        if rf is None:
             msg = traceback.format_exc()
-            r_name, f_name = chellow.dloads.make_names("error.txt", user)
+            r_name, f_name = chellow.dloads.make_names("error.txt", None)
             ef = open(r_name, "w")
             ef.write(msg + "\n")
             ef.close()
+        else:
+            write_spreadsheet(
+                rf,
+                compression,
+                site_rows,
+                era_rows,
+                normal_read_rows,
+                bill_check_site_rows,
+                bill_check_era_rows,
+                is_bill_check,
+            )
+    finally:
+        if sess is not None:
+            sess.close()
+        if rf is not None:
+            rf.close()
+            os.rename(running_name, finished_name)
 
 
 def do_post(sess):
@@ -1052,33 +1053,30 @@ def do_post(sess):
         base_name.append("monthly_duration")
 
     try:
-        site_codes = None
         if "site_id" in request.values:
             site_id = req_int("site_id")
-            site_codes = [Site.get_by_id(sess, site_id).code]
+            scenario_props["site_codes"] = [Site.get_by_id(sess, site_id).code]
 
         if "site_codes" in request.values:
             site_codes_raw_str = req_str("site_codes")
             site_codes_str = site_codes_raw_str.strip()
             if len(site_codes_str) > 0:
-                if site_codes is None:
-                    site_codes = []
+                site_codes = []
 
                 for site_code in site_codes_str.splitlines():
                     Site.get_by_code(sess, site_code)  # Check valid
                     site_codes.append(site_code)
 
-        scenario_props["site_codes"] = site_codes
+                scenario_props["site_codes"] = site_codes
 
         if "supply_id" in request.values:
             supply_id = req_int("supply_id")
             supply = Supply.get_by_id(sess, supply_id)
             era = supply.eras[-1]
             imp_mpan_core, exp_mpan_core = era.imp_mpan_core, era.exp_mpan_core
-            mpan_cores = [exp_mpan_core if imp_mpan_core is None else imp_mpan_core]
-        else:
-            mpan_cores = None
-        scenario_props["mpan_cores"] = mpan_cores
+            scenario_props["mpan_cores"] = [
+                exp_mpan_core if imp_mpan_core is None else imp_mpan_core
+            ]
 
         if "compression" in request.values:
             compression = req_bool("compression")
@@ -1101,14 +1099,19 @@ def do_post(sess):
         return chellow_redirect("/downloads", 303)
     except BadRequest as e:
         flash(e.description)
-        now = Datetime.utcnow()
-        month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
-        month_finish = Datetime(now.year, now.month, 1) - HH
-        return make_response(
-            render_template(
-                "e/ods_monthly_duration.html",
-                month_start=month_start,
-                month_finish=month_finish,
-            ),
-            400,
-        )
+        if "scenario_id" in request.values:
+            return make_response(
+                render_template("e/scenario.html", scenario=scenario), 400
+            )
+        else:
+            now = Datetime.utcnow()
+            month_start = Datetime(now.year, now.month, 1) - relativedelta(months=1)
+            month_finish = Datetime(now.year, now.month, 1) - HH
+            return make_response(
+                render_template(
+                    "e/ods_monthly_duration.html",
+                    month_start=month_start,
+                    month_finish=month_finish,
+                ),
+                400,
+            )

@@ -4,7 +4,9 @@ import threading
 import traceback
 from collections import defaultdict
 
-from flask import g, request
+from dateutil.relativedelta import relativedelta
+
+from flask import flash, g, make_response, render_template, request
 
 import odio
 
@@ -34,7 +36,9 @@ from chellow.models import (
 from chellow.utils import (
     HH,
     PropDict,
+    c_months_u,
     ct_datetime,
+    ct_datetime_now,
     hh_format,
     hh_min,
     hh_range,
@@ -708,7 +712,7 @@ def content(
 
         rf = open(running_name, "wb")
 
-        for rate_script in scenario_props.get("local_rates", []):
+        for rate_script in scenario_props.get("rates", []):
             contract_id = rate_script["contract_id"]
             try:
                 cont_cache = rate_cache[contract_id]
@@ -720,7 +724,7 @@ def content(
             except KeyError:
                 raise BadRequest(
                     f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'local_rates' map."
+                    f"key of the contract {contract_id} in the 'rates' map."
                 )
 
             try:
@@ -728,7 +732,7 @@ def content(
             except KeyError:
                 raise BadRequest(
                     f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'local_rates' map."
+                    f"key of the contract {contract_id} in the 'rates' map."
                 )
 
             props = PropDict("scenario properties", rate_script["script"])
@@ -971,7 +975,13 @@ def content(
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
-        if rf is not None:
+        if rf is None:
+            msg = traceback.format_exc()
+            r_name, f_name = chellow.dloads.make_names("error.txt", None)
+            ef = open(r_name, "w")
+            ef.write(msg + "\n")
+            ef.close()
+        else:
             write_spreadsheet(
                 rf,
                 compression,
@@ -995,73 +1005,82 @@ def do_post(sess):
     base_name = ["duration"]
     compression = req_bool("compression")
 
-    if "scenario_id" in request.values:
-        scenario_id = req_int("scenario_id")
-        scenario = Scenario.get_by_id(sess, scenario_id)
-        scenario_props = scenario.props
-        base_name.append(scenario.name)
+    try:
 
-    else:
-        start_date = req_hh_date("start")
-        finish_date = req_hh_date("finish")
+        if "scenario_id" in request.values:
+            scenario_id = req_int("scenario_id")
+            scenario = Scenario.get_by_id(sess, scenario_id)
+            props = scenario.props
+            base_name.append(scenario.name)
 
-        mpan_cores = None
+        else:
+            start_date = req_hh_date("start")
+            finish_date = req_hh_date("finish")
+
+            start_date_ct = to_ct(start_date)
+            finish_date_ct = to_ct(finish_date)
+            props = {
+                "scenario_start_year": start_date_ct.year,
+                "scenario_start_month": start_date_ct.month,
+                "scenario_start_day": start_date_ct.day,
+                "scenario_start_hour": start_date_ct.hour,
+                "scenario_start_minute": start_date_ct.minute,
+                "scenario_finish_year": finish_date_ct.year,
+                "scenario_finish_month": finish_date_ct.month,
+                "scenario_finish_day": finish_date_ct.day,
+                "scenario_finish_hour": finish_date_ct.hour,
+                "scenario_finish_minute": finish_date_ct.minute,
+            }
+            base_name.append(hh_format(start_date).replace(" ", "_").replace(":", "_"))
+
         if "mpan_cores" in request.values:
             mpan_cores_str = req_str("mpan_cores")
             mpan_cores_lines = mpan_cores_str.splitlines()
             if len(mpan_cores_lines) > 0:
-                mpan_cores = [parse_mpan_core(m) for m in mpan_cores_lines]
+                props["mpan_cores"] = [parse_mpan_core(m) for m in mpan_cores_lines]
 
         if "supply_id" in request.values:
             supply_id = req_int("supply_id")
             supply = Supply.get_by_id(sess, supply_id)
-            if mpan_cores is None:
-                mpan_cores = []
             era = supply.eras[-1]
             imp_mpan_core, exp_mpan_core = era.imp_mpan_core, era.exp_mpan_core
-            mpan_cores.append(exp_mpan_core if imp_mpan_core is None else imp_mpan_core)
+            props["mpan_cores"] = [
+                exp_mpan_core if imp_mpan_core is None else imp_mpan_core
+            ]
 
-        site_codes = None
         if "site_codes" in request.values:
             site_codes_str = req_str("site_codes")
             site_codes_lines = site_codes_str.splitlines()
             if len(site_codes_lines) > 0:
-                site_codes = [c.strip() for c in site_codes_lines]
+                props["site_codes"] = [c.strip() for c in site_codes_lines]
 
         if "site_id" in request.values:
             site_id = req_int("site_id")
             site = Site.get_by_id(sess, site_id)
-            if site_codes is None:
-                site_codes = []
-            site_codes.append(site.code)
+            props["site_codes"] = [site.code]
 
-        start_date_ct = to_ct(start_date)
-        finish_date_ct = to_ct(finish_date)
-        scenario_props = {
-            "scenario_start_year": start_date_ct.year,
-            "scenario_start_month": start_date_ct.month,
-            "scenario_start_day": start_date_ct.day,
-            "scenario_start_hour": start_date_ct.hour,
-            "scenario_start_minute": start_date_ct.minute,
-            "scenario_finish_year": finish_date_ct.year,
-            "scenario_finish_month": finish_date_ct.month,
-            "scenario_finish_day": finish_date_ct.day,
-            "scenario_finish_hour": finish_date_ct.hour,
-            "scenario_finish_minute": finish_date_ct.minute,
-            "mpan_cores": mpan_cores,
-            "site_codes": site_codes,
-        }
-        base_name.append(hh_format(start_date).replace(" ", "_").replace(":", "_"))
-
-    now = utc_datetime_now()
-    args = (
-        scenario_props,
-        base_name,
-        g.user.id,
-        compression,
-        now,
-        False,
-    )
-    thread = threading.Thread(target=content, args=args)
-    thread.start()
-    return chellow_redirect("/downloads", 303)
+        now = utc_datetime_now()
+        args = props, base_name, g.user.id, compression, now, False
+        thread = threading.Thread(target=content, args=args)
+        thread.start()
+        return chellow_redirect("/downloads", 303)
+    except BadRequest as e:
+        flash(e.description)
+        if "scenario_id" in request.values:
+            return make_response(
+                render_template("e/scenario.html", scenario=scenario), 400
+            )
+        else:
+            ct_last = ct_datetime_now() - relativedelta(months=1)
+            months = list(
+                c_months_u(start_year=ct_last.year, start_month=ct_last.month)
+            )
+            month_start, month_finish = months[0]
+            return make_response(
+                render_template(
+                    "e/duration_report.html",
+                    month_start=month_start,
+                    month_finish=month_finish,
+                ),
+                400,
+            )
