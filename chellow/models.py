@@ -2947,7 +2947,7 @@ class MtcLlfcSsc(Base, PersistentClass):
 
 class Tpr(Base, PersistentClass):
     __tablename__ = "tpr"
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     code = Column(String, unique=True, nullable=False)
     is_teleswitch = Column(Boolean, nullable=False)
     is_gmt = Column(Boolean, nullable=False)
@@ -7146,6 +7146,17 @@ def db_upgrade_39_to_40(sess, root_path):
     contract.name = "tnuos"
 
 
+def db_upgrade_40_to_41(sess, root_path):
+    val = sess.execute("select max(id) from tpr;").scalar_one()
+    sess.execute("select setval('tpr_id_seq', :val)", {"val": val})
+
+    val = sess.execute("select max(id) from clock_interval;").scalar_one()
+    sess.execute("select setval('clock_interval_id_seq', :val)", {"val": val})
+
+    val = sess.execute("select max(id) from measurement_requirement;").scalar_one()
+    sess.execute("select setval('measurement_requirement_id_seq', :val)", {"val": val})
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7171,6 +7182,7 @@ upgrade_funcs.extend(
         db_upgrade_37_to_38,
         db_upgrade_38_to_39,
         db_upgrade_39_to_40,
+        db_upgrade_40_to_41,
     ]
 )
 
