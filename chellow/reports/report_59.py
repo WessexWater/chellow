@@ -286,6 +286,7 @@ def _process_site(
                 elif source_code == "gen":
                     vals["export-gen-kwh"] += kwh
 
+            sess.rollback()
             sss = exp_ss if imp_ss is None else imp_ss
             dc_contract = sss.dc_contract
             dc_vb_func = sss.contract_func(dc_contract, "virtual_bill")
@@ -298,6 +299,7 @@ def _process_site(
                 )
             dc_bill = sss.dc_bill
             gbp = dc_bill["net-gbp"]
+            sess.rollback()
 
             mop_contract = sss.mop_contract
             mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
@@ -310,6 +312,7 @@ def _process_site(
                 )
             mop_bill = sss.mop_bill
             gbp += mop_bill["net-gbp"]
+            sess.rollback()
 
             if source_code in ("3rd-party", "3rd-party-reverse"):
                 vals["import-3rd-party-gbp"] += gbp
@@ -946,6 +949,7 @@ def content(
             for mpan_core, r in sorted(list(normal_reads)):
                 row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                 normal_read_rows.append(row)
+            sess.rollback()
 
         write_spreadsheet(
             rf,
