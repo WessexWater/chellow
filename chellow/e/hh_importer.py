@@ -189,7 +189,8 @@ class HhImportTask(threading.Thread):
 
     def run(self):
         while not self.stopped.isSet():
-            self.import_now()
+            if not self.is_error:
+                self.import_now()
             self.going.wait(self.wait_seconds)
             self.going.clear()
 
