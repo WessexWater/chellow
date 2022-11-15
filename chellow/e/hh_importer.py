@@ -190,7 +190,8 @@ class HhImportTask(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             self.import_now()
-            self.going.wait(self.wait_seconds)
+            timeout = None if self.is_error else self.wait_seconds
+            self.going.wait(timeout=timeout)
             self.going.clear()
 
     def ftp_handler(self, sess, properties, contract):
