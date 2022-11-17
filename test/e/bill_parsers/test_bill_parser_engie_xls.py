@@ -6,7 +6,7 @@ from werkzeug.exceptions import BadRequest
 
 import xlrd.sheet
 
-import chellow.e.bill_parsers.engie_xls
+from chellow.e.bill_parsers.engie_xls import _bd_add, _make_raw_bills, _parse_row
 from chellow.utils import utc_datetime
 
 
@@ -52,9 +52,7 @@ def test_parse_row(mocker):
     datemode = 0
     title_row = ["To Date"]
 
-    bill = chellow.e.bill_parsers.engie_xls._parse_row(
-        row, row_index, datemode, title_row
-    )
+    bill = _parse_row(row, row_index, datemode, title_row)
     assert bill["finish_date"] == utc_datetime(2019, 3, 31, 22, 30)
 
 
@@ -64,7 +62,7 @@ def test_bd_add():
     val = None
 
     with pytest.raises(BadRequest):
-        chellow.e.bill_parsers.engie_xls._bd_add(bd, el_name, val)
+        _bd_add(bd, el_name, val)
 
 
 def test_bill_parser_engie_xls_billed_kwh(mocker):
@@ -110,5 +108,69 @@ def test_bill_parser_engie_xls_billed_kwh(mocker):
         row.append(v)
 
     datemode = mocker.Mock()
-    bill = chellow.e.bill_parsers.engie_xls._parse_row(row, 1, datemode, [])
+    bill = _parse_row(row, 1, datemode, [])
     assert bill["kwh"] == Decimal("27997.33")
+
+
+def test_make_raw_bills_vat(mocker):
+    row_vals = [
+        "Mistral Wind Power Ltd.",
+        "Bill Paja",
+        "886572998",
+        "Bill Paja",
+        "869987122",
+        "BA1 5TT",
+        "99708221",
+        42627,
+        42694,
+        42629,
+        "2016-08-01 - 2016-08-31",
+        "",
+        "",
+        "",
+        "Accepted",
+        "",
+        "Sales Tax",
+        "Standard VAT@20%",
+        "",
+        "",
+        "",
+        "2298132107763",
+        "",
+        "",
+        "",
+        "9224",
+        "GBP",
+        "INV",
+        "",
+        "",
+    ]
+    row = []
+    for row_val in row_vals:
+        v = mocker.Mock()
+        v.value = row_val
+        row.append(v)
+
+    datemode = mocker.Mock()
+    sheet = mocker.Mock()
+    sheet.nrows = 2
+    sheet.row = mocker.Mock(return_value=row)
+    bills = _make_raw_bills(sheet, datemode)
+    expected_bills = [
+        {
+            "bill_type_code": "N",
+            "kwh": Decimal("0"),
+            "vat": Decimal("9224.00"),
+            "net": Decimal("0.00"),
+            "reads": [],
+            "breakdown": {"raw_lines": [str(row)]},
+            "account": "22 9813 2107 763",
+            "issue_date": None,
+            "start_date": utc_datetime(2016, 7, 31, 23, 0),
+            "finish_date": utc_datetime(2016, 8, 31, 22, 30),
+            "mpan_core": "22 9813 2107 763",
+            "reference": "99708221_2",
+            "gross": Decimal("9224.00"),
+        }
+    ]
+    assert bills == expected_bills

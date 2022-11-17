@@ -18,6 +18,9 @@ ELEM_MAP = {
     "Charge - Recurring": {
         None: ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days")
     },
+    "Meter - Standard": {
+        "Energy Bill Relief Scheme": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
+    },
     "Meter - UK Electricity - AAHEDC Pass-Thru": {
         None: ["aahedc-gbp", "aahedc-rate", "aahedc-gsp-kwh"]
     },
@@ -233,10 +236,8 @@ def _parse_row(row, row_index, datemode, title_row):
         mpan_core = parse_mpan_core(str(int(val)))
     except ValueError as e:
         raise BadRequest(
-            "Can't parse the MPAN core in column 'Meter Point' with value '"
-            + str(val)
-            + "' : "
-            + str(e)
+            f"Can't parse the MPAN core in column 'Meter Point' with value '{val}' : "
+            f"{e}"
         )
 
     bill_period = get_value(row, "Bill Period")
@@ -372,6 +373,23 @@ def _parse_row(row, row_index, datemode, title_row):
     return bill
 
 
+def _make_raw_bills(sheet, datemode):
+    bills = []
+    title_row = sheet.row(0)
+    for row_index in range(1, sheet.nrows):
+        row = sheet.row(row_index)
+        if len(row) > 21:
+            val = row[21].value
+            if val not in (None, ""):
+
+                try:
+                    bills.append(_parse_row(row, row_index, datemode, title_row))
+                except BadRequest as e:
+                    raise BadRequest(f"On row {row_index + 1}: {e.description}")
+
+    return bills
+
+
 class Parser:
     def __init__(self, f):
         self.book = open_workbook(file_contents=f.read())
@@ -395,13 +413,4 @@ class Parser:
         return line
 
     def make_raw_bills(self):
-        bills = []
-        title_row = self.sheet.row(0)
-        for row_index in range(1, self.sheet.nrows):
-            row = self.sheet.row(row_index)
-            datemode = self.book.datemode
-            try:
-                bills.append(_parse_row(row, row_index, datemode, title_row))
-            except BadRequest as e:
-                raise BadRequest(f"On row {row_index + 1}: {e.description}")
-        return bills
+        return _make_raw_bills(self.sheet, self.book.datemode)
