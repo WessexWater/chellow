@@ -534,12 +534,13 @@ def bill_imports_get():
     importer_ids = sorted(
         chellow.gas.bill_import.get_bill_importer_ids(g_batch.id), reverse=True
     )
+    parser_names = chellow.gas.bill_import.find_parser_names()
 
     return render_template(
         "bill_imports.html",
         importer_ids=importer_ids,
         g_batch=g_batch,
-        parser_names=chellow.gas.bill_import.find_parser_names(),
+        parser_names=parser_names,
     )
 
 

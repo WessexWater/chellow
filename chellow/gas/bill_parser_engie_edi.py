@@ -13,6 +13,7 @@ from chellow.utils import HH, to_ct, to_utc
 READ_TYPE_MAP = {"00": "A", "01": "E"}
 
 TCOD_MAP = {
+    "Energy Bill Relief Scheme": {"PPK": "ebrs"},
     "Unidentified Gas": {"PPK": "ug"},
     "Commodity": {"PPK": "commodity"},
     "Transportation": {"PPD": "transportation_fixed", "PPK": "transportation_variable"},
@@ -159,11 +160,13 @@ def _process_CCD3(elements, headers):
     tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
 
     bpri = elements["BPRI"]
-    rate_key = f"{tpref}_rate"
-    if rate_key not in breakdown:
-        breakdown[rate_key] = set()
-    rate = Decimal(bpri[0]) / Decimal("10000000")
-    breakdown[rate_key].add(rate)
+    bpri_str = bpri[0]
+    if len(bpri_str) > 0:
+        rate_key = f"{tpref}_rate"
+        if rate_key not in breakdown:
+            breakdown[rate_key] = set()
+        rate = Decimal(bpri_str) / Decimal("10000000")
+        breakdown[rate_key].add(rate)
 
     nuct = elements["NUCT"]
 
@@ -190,7 +193,7 @@ def _process_CCD4(elements, headers):
     tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
 
     bpri = elements["BPRI"]
-    rate_key = tpref + "_rate"
+    rate_key = f"{tpref}_rate"
     if rate_key not in breakdown:
         breakdown[rate_key] = set()
     rate = Decimal(bpri[0]) / Decimal("10000000")

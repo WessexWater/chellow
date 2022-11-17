@@ -24,12 +24,14 @@ importer_id = 0
 import_lock = threading.Lock()
 importers = {}
 
+PARSER_PREFIX = "bill_parser_"
+
 
 def find_parser_names():
     return ", ".join(
-        "." + name[14:].replace("_", ".")
+        "." + name[len(PARSER_PREFIX) :].replace("_", ".")
         for module_finder, name, ispkg in iter_modules(chellow.gas.__path__)
-        if name.startswith("bill_parser_")
+        if name.startswith(PARSER_PREFIX)
     )
 
 
