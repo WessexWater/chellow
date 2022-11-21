@@ -4,7 +4,6 @@ import sys
 import threading
 import traceback
 
-from dateutil.relativedelta import relativedelta
 
 from flask import g
 
@@ -18,14 +17,14 @@ from chellow.e.computer import contract_func, forecast_date
 from chellow.gas.engine import GDataSource
 from chellow.models import GContract, GEra, Session, Site, SiteGEra
 from chellow.utils import (
-    HH,
+    c_months_u,
     hh_format,
     hh_max,
     hh_min,
     make_val,
     req_date,
     req_int,
-    utc_datetime,
+    to_ct,
 )
 from chellow.views import chellow_redirect
 
@@ -44,15 +43,21 @@ def content(start_date, finish_date, g_contract_id, user):
         g_contract = GContract.get_by_id(sess, g_contract_id)
         forecast_dt = forecast_date()
 
-        month_start = utc_datetime(start_date.year, start_date.month, 1)
-        month_finish = month_start + relativedelta(months=1) - HH
+        start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
+
+        month_pairs = c_months_u(
+            start_year=start_date_ct.year,
+            start_month=start_date_ct.month,
+            finish_year=finish_date_ct.year,
+            finish_month=finish_date_ct.month,
+        )
 
         bill_titles = contract_func(report_context, g_contract, "virtual_bill_titles")()
         writer.writerow(
             ["MPRN", "Site Code", "Site Name", "Account", "From", "To"] + bill_titles
         )
 
-        while not month_start > finish_date:
+        for month_start, month_finish in month_pairs:
             period_start = hh_max(start_date, month_start)
             period_finish = hh_min(finish_date, month_finish)
 
@@ -110,8 +115,6 @@ def content(start_date, finish_date, g_contract_id, user):
                     vals.append(str(bill[k]))
                 writer.writerow(vals)
 
-            month_start += relativedelta(months=1)
-            month_finish = month_start + relativedelta(months=1) - HH
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
