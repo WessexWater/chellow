@@ -3,10 +3,10 @@ import collections
 import threading
 import traceback
 from base64 import b64decode
+from importlib import import_module
 
 import requests
 
-import chellow.e.mdd_importer
 from chellow.models import (
     Contract,
     Session,
@@ -15,6 +15,11 @@ from chellow.utils import utc_datetime_now
 
 
 importer = None
+
+
+def download(s, url):
+    fl_json = s.get(url).json()
+    return b64decode(fl_json["content"])
 
 
 class RateServer(threading.Thread):
@@ -85,17 +90,17 @@ class RateServer(threading.Thread):
                         path = sub_entry["path"].split("/")
                         if path[-1] != "README.md":
 
-                            def downloader():
-                                fl_json = s.get(sub_entry["url"]).json()
-                                return b64decode(fl_json["content"])
-
-                            paths_list.append((path, downloader))
+                            paths_list.append((path, sub_entry["url"]))
 
                     paths = tuple(paths_list)
 
-                    chellow.e.dno_rate_parser.rate_server_import(sess, paths, self.log)
-                    chellow.e.mdd_importer.import_mdd(sess, paths, self.log)
-                    chellow.gas.dn_rate_parser.rate_server_import(sess, paths, self.log)
+                    for mod_name in (
+                        "chellow.e.dno_rate_parser",
+                        "chellow.e.mdd_importer",
+                        "chellow.gas.dn_rate_parser",
+                    ):
+                        mod = import_module(mod_name)
+                        mod.rate_server_import(sess, s, paths, self.log)
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Rate Server: An import has failed"

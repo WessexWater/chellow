@@ -10,7 +10,7 @@ from chellow.e.mdd_importer import (
     _import_Valid_MTC_LLFC_SSC_Combination,
     _import_Valid_MTC_LLFC_SSC_PC_Combination,
     _import_Valid_MTC_SSC_Combination,
-    import_mdd,
+    rate_server_import,
 )
 from chellow.models import (
     Contract,
@@ -415,8 +415,7 @@ def test_import_mdd(mocker, sess):
     def logger(msg):
         pass
 
-    def d():
-        return b"\n"
+    mocker.patch("chellow.e.mdd_importer.download", return_value=b"\n")
 
     path_list = (
         ("2022", "electricity", "mdd", "50", "Clock_Interval_50.csv"),
@@ -450,14 +449,14 @@ def test_import_mdd(mocker, sess):
             "Valid_MTC_LLFC_SSC_PC_Combination_50.csv",
         ),
     )
-    paths = tuple((p, d) for p in path_list)
+    paths = tuple((p, "") for p in path_list)
+    s = mocker.Mock()
 
-    import_mdd(sess, paths, logger)
+    rate_server_import(sess, s, paths, logger)
 
 
 def test_import_mdd_two_versions(mocker, sess):
-    def d():
-        return b"\n"
+    mocker.patch("chellow.e.mdd_importer.download", return_value=b"\n")
 
     path_list = (
         ("2022", "electricity", "mdd", "49"),
@@ -492,7 +491,7 @@ def test_import_mdd_two_versions(mocker, sess):
             "Valid_MTC_LLFC_SSC_PC_Combination_50.csv",
         ),
     )
-    paths = tuple((p, d) for p in path_list)
+    paths = tuple((p, "") for p in path_list)
 
     vf = to_utc(ct_datetime(1996, 4, 1))
     MeterType.insert(sess, "C5", "A c5 meter", vf, None)
@@ -508,4 +507,5 @@ def test_import_mdd_two_versions(mocker, sess):
     def logger(msg):
         messages.append(msg)
 
-    import_mdd(sess, paths, logger)
+    s = mocker.Mock()
+    rate_server_import(sess, s, paths, logger)

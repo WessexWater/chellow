@@ -1,8 +1,10 @@
 from decimal import Decimal
+from io import BytesIO
+from zipfile import ZipFile
 
 import pytest
 
-from chellow.e.dno_rate_parser import str_to_hr, to_llfcs, to_pcs
+from chellow.e.dno_rate_parser import find_rates, str_to_hr, to_llfcs, to_pcs
 
 
 @pytest.mark.parametrize("llfc_str,llfc_list", [["H00-H01", ["H00", "H01"]]])
@@ -31,3 +33,12 @@ def test_to_pcs(mocker, pc_str, pc_list):
 def test_str_to_hr(mocker, hr_str, hr):
     actual = str_to_hr(hr_str)
     assert actual == hr
+
+
+def test_find_rates():
+    file_name = "a.zip"
+    file_like = BytesIO()
+    with ZipFile(file_like, "w") as zf:
+        zf.writestr("b.txt", "")
+    file_like.seek(0)
+    find_rates(file_name, file_like)

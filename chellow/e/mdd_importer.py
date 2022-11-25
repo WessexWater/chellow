@@ -29,6 +29,7 @@ from chellow.models import (
     Tpr,
     VoltageLevel,
 )
+from chellow.rate_server import download
 from chellow.utils import (
     ct_datetime,
     to_ct,
@@ -833,10 +834,10 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-def import_mdd(sess, paths, logger):
+def rate_server_import(sess, s, paths, logger):
     logger("Starting to check for a new MDD version")
     mdd_entries = {}
-    for path, download in paths:
+    for path, url in paths:
         if len(path) == 5:
 
             _, utility, rate_type, mdd_version_str, file_name = path
@@ -848,7 +849,7 @@ def import_mdd(sess, paths, logger):
                 except KeyError:
                     fl_entries = mdd_entries[mdd_version] = {}
 
-                fl_entries[file_name] = download
+                fl_entries[file_name] = url
 
     if len(mdd_entries) == 0:
         raise BadRequest("Can't find any MDD versions on the rate server.")
@@ -868,8 +869,8 @@ def import_mdd(sess, paths, logger):
     ctx = {}
     version = None
 
-    for file_name, download in fl_entries.items():
-        csv_file = StringIO(download().decode("utf8"))
+    for file_name, url in fl_entries.items():
+        csv_file = StringIO(download(s, url).decode("utf8"))
         csv_reader = iter(csv.reader(csv_file))
         next(csv_reader)  # Skip titles
 

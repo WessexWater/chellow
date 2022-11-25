@@ -9,6 +9,7 @@ from sqlalchemy import select
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import GContract, GRateScript
+from chellow.rate_server import download
 from chellow.utils import (
     ct_datetime,
     hh_format,
@@ -257,11 +258,11 @@ def find_nts_rates(file_name, file_like, col):
     return rates
 
 
-def rate_server_import(sess, paths, logger):
+def rate_server_import(sess, s, paths, logger):
     logger("Starting to check for new DN spreadsheets")
 
     year_entries = {}
-    for path, download in paths:
+    for path, url in paths:
         if len(path) == 4:
 
             year_str, utility, rate_type, file_name = path
@@ -272,7 +273,7 @@ def rate_server_import(sess, paths, logger):
                 except KeyError:
                     fl_entries = year_entries[year] = {}
 
-                fl_entries[file_name] = download
+                fl_entries[file_name] = url
 
     for year, year_sheets in sorted(year_entries.items()):
         year_start = to_utc(ct_datetime(year, 4, 1))
@@ -313,17 +314,17 @@ def rate_server_import(sess, paths, logger):
 
             nts_rs_1_script = nts_rs_1.make_script()
             if nts_rs_1_script.get("a_file_name") != file_name:
-                nts_rs_1.update(find_nts_1_rates(file_name, BytesIO(download())))
+                nts_rs_1.update(find_nts_1_rates(file_name, BytesIO(download(s, url))))
                 logger(f"Updated NTS rate script for {hh_format(year_start)}")
 
             nts_rs_2_script = nts_rs_2.make_script()
             if nts_rs_2_script.get("a_file_name") != file_name:
-                nts_rs_2.update(find_nts_1_rates(file_name, BytesIO(download())))
+                nts_rs_2.update(find_nts_1_rates(file_name, BytesIO(download(s, url))))
                 logger(f"Updated NTS rate script for {hh_format(oct_start)}")
 
             dn_rs_script = dn_rs.make_script()
             if dn_rs_script.get("a_file_name") != file_name:
-                dn_rs.update(find_dn_rates(file_name, BytesIO(download())))
+                dn_rs.update(find_dn_rates(file_name, BytesIO(download(s, url))))
                 logger(f"Updated DN rate script for {hh_format(year_start)}")
 
     logger("Finished DN spreadsheets")

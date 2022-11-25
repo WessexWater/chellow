@@ -2,7 +2,7 @@ import re
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from itertools import chain
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
 import openpyxl
 
@@ -11,6 +11,7 @@ from sqlalchemy import select
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import Contract, RateScript
+from chellow.rate_server import download
 from chellow.utils import ct_datetime, hh_format, to_utc
 
 
@@ -132,8 +133,6 @@ def str_to_hr(hr_str):
         time_strs = time_strs_raw
     else:
         raise BadRequest(f"Can't work out the hours and minutes from '{hr_str}'")
-
-    print(time_strs)
 
     hours, minutes = map(Decimal, time_strs)
     return hours + minutes / Decimal(60)
@@ -338,14 +337,17 @@ def find_rates(file_name, file_like):
     rates = {"a_file_name": file_name}
 
     if file_name.endswith(".zip"):
-        with ZipFile(file_like) as za:
-            for zname in za.namelist():
-                if zname.endswith(".xlsx"):
-                    with za.open(zname) as f:
-                        gsp_code, gsp_rates = find_gsp_group_rates(
-                            zname, BytesIO(f.read())
-                        )
-                        rates[gsp_code] = gsp_rates
+        try:
+            with ZipFile(file_like) as za:
+                for zname in za.namelist():
+                    if zname.endswith(".xlsx"):
+                        with za.open(zname) as f:
+                            gsp_code, gsp_rates = find_gsp_group_rates(
+                                zname, BytesIO(f.read())
+                            )
+                            rates[gsp_code] = gsp_rates
+        except BadZipFile as e:
+            raise BadRequest(f"Problem with zip file '{file_name}'") from e
 
     elif file_name.endswith(".xlsx"):
         gsp_code, gsp_rates = find_gsp_group_rates(file_name, file_like)
@@ -422,10 +424,10 @@ def find_gsp_group_rates(file_name, file_like):
     return gsp_code, rates
 
 
-def rate_server_import(sess, paths, logger):
+def rate_server_import(sess, s, paths, logger):
     logger("Starting to check for new DNO spreadsheets")
     year_entries = {}
-    for path, download in paths:
+    for path, url in paths:
         if len(path) == 5:
 
             year_str, utility, rate_type, dno_code, file_name = path
@@ -442,7 +444,7 @@ def rate_server_import(sess, paths, logger):
                 except KeyError:
                     fl_entries = dno_entries[dno_code] = {}
 
-                fl_entries[file_name] = download
+                fl_entries[file_name] = url
 
     for year, dno_entries in sorted(year_entries.items()):
         year_start = to_utc(ct_datetime(year, 4, 1))
@@ -460,11 +462,11 @@ def rate_server_import(sess, paths, logger):
             if rs is None:
                 rs = contract.insert_rate_script(sess, year_start, {})
 
-            file_name, fl_entry = sorted(fl_entries.items())[-1]
+            file_name, url = sorted(fl_entries.items())[-1]
 
             rs_script = rs.make_script()
             if rs_script.get("a_file_name") != file_name:
-                fl = BytesIO(download())
+                fl = BytesIO(download(s, url))
                 try:
                     rs.update(find_rates(file_name, fl))
                 except BadRequest as e:
