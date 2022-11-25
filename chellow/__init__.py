@@ -80,14 +80,6 @@ def create_app(testing=False):
         db_upgrade(app.root_path)
         chellow.dloads.startup(app.instance_path)
 
-    for module in get_importer_modules():
-        if not testing:
-            module.startup()
-
-    @app.before_first_request
-    def before_first_request():
-        chellow.utils.url_root = request.url_root
-
         sess = None
         try:
             sess = Session()
@@ -100,6 +92,10 @@ def create_app(testing=False):
         finally:
             if sess is not None:
                 sess.close()
+
+    for module in get_importer_modules():
+        if not testing:
+            module.startup()
 
     @app.before_request
     def before_request():

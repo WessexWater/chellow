@@ -14,17 +14,6 @@ from chellow import create_app
 app = create_app()
 
 
-def chellow_test_setup():
-    """
-    import subprocess
-    import shutil
-    downloads_path = os.path.join(app.instance_path, 'downloads')
-    if os.path.exists(downloads_path):
-        shutil.rmtree(downloads_path)
-    subprocess.Popen(["python", "test/ftp.py"])
-    """
-
-
 def chellow_start(daemon):
     chellow_port = environ["CHELLOW_PORT"] if "CHELLOW_PORT" in environ else 80
     daemon.open()

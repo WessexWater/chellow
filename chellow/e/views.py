@@ -119,14 +119,6 @@ def asset_comparison_get():
     return render_template("asset_comparison.html", description=description)
 
 
-@e.route("/csv_crc")
-def csv_crc_get():
-    start_date = utc_datetime_now()
-    if start_date.month < 3:
-        start_date = start_date - relativedelta(years=1)
-    return render_template("csv_crc.html", start_date=start_date)
-
-
 @e.route("/csv_sites_triad")
 def csv_sites_triad_get():
     now = Datetime.utcnow()
