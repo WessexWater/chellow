@@ -1,6 +1,5 @@
-import decimal
 from datetime import datetime as Datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from dateutil.relativedelta import relativedelta
 
@@ -61,7 +60,7 @@ class Parser:
         cell = self.get_cell(col, row)
         try:
             return Decimal(str(cell.value))
-        except decimal.InvalidOperation as e:
+        except InvalidOperation as e:
             raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
 
     def get_int(self, col, row):
