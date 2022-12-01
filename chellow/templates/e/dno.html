@@ -83,8 +83,7 @@
 			<tr>
 				<td>Valid combinations of PC, LLFC, SSC and MTC for NHH supplies</td>
 				<td>
-					<a href="/e/mtc_llfc_ssc_pcs?dno_id={{dno.id}}"
-						>MTC LLFC SSC PCs</a>
+					<a href="/e/mtc_llfc_ssc_pcs?dno_id={{dno.id}}">MTC LLFC SSC PCs</a>
 				</td>
 			</tr>
 		</tbody>
@@ -111,23 +110,4 @@
 			{% endfor %}
 		</tbody>
 	</table>
-	<br>
-	<form
-			enctype="multipart/form-data" method="post"
-			action="/reports/dno_vl_parser">
-		<fieldset>
-			<legend>Voltage Level Parser</legend>	
-			<input type="hidden" name="dno_id" value="{{dno.id}}">
-			<input
-					type="file" name="dno_file" size="45"
-					value="{{request.values.import_file}}">
-			<input type="submit" value="Parse">
-		</fieldset>
-	</form>
-	<p>
-		This gadget takes a DNO rate spreadsheet for the current financial
-		year and outputs a general import file that updates the LLFC
-		voltage levels and substation flag to make Chellow match the DNO
-		spreadsheet.
-	</p>
 {% endblock %}

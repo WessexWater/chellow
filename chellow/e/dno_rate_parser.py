@@ -4,15 +4,39 @@ from io import BytesIO
 from itertools import chain
 from zipfile import BadZipFile, ZipFile
 
-import openpyxl
+from openpyxl import load_workbook
 
-from sqlalchemy import select
+from sqlalchemy import null, or_, select
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.models import Contract, RateScript
+from chellow.models import Contract, Llfc, Party, RateScript, VoltageLevel
 from chellow.rate_server import download
 from chellow.utils import ct_datetime, hh_format, to_utc
+
+
+def get_cell(sheet, col, row):
+    try:
+        coordinates = f"{col}{row}"
+        return sheet[coordinates]
+    except IndexError:
+        raise BadRequest(f"Can't find the cell {coordinates} on sheet {sheet}.")
+
+
+def get_int(sheet, col, row):
+    return int(get_cell(sheet, col, row).value)
+
+
+def get_dec(sheet, col, row):
+    cell = get_cell(sheet, col, row)
+    try:
+        return Decimal(str(cell.value))
+    except InvalidOperation as e:
+        raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
+
+
+def get_str(sheet, col, row):
+    return get_cell(sheet, col, row).value.strip()
 
 
 def get_value(row, idx):
@@ -54,10 +78,11 @@ def get_decimal(row, idx):
     return round(Decimal(get_value(row, idx)), 5)
 
 
-def to_llfcs(row, idx):
-    val = get_value(row, idx)
+def to_llfcs(val):
     llfcs = []
     if isinstance(val, str):
+        val = ",".join(val.splitlines())
+        val = val.replace("/", ",").replace("inclusive", ",")
         for v in map(str.strip, val.split(",")):
             if len(v) > 0:
                 if "-" in v:
@@ -187,7 +212,9 @@ def tab_lv_hv(sheet, gsp_rates):
             if val_0 is None or len(val_0) == 0:
                 in_tariffs = False
             else:
-                llfcs_str = ",".join(chain(to_llfcs(row, 1), to_llfcs(row, 10)))
+                llfcs_str = ",".join(
+                    chain(to_llfcs(get_value(row, 1)), to_llfcs(get_value(row, 10)))
+                )
                 pcs_str = ",".join(to_pcs(row, 2))
                 tariffs[llfcs_str + "_" + pcs_str] = {
                     "description": val_0,
@@ -335,6 +362,7 @@ def tab_ehv(sheet, gsp_rates):
 
 def find_rates(file_name, file_like):
     rates = {"a_file_name": file_name}
+    vls = []
 
     if file_name.endswith(".zip"):
         try:
@@ -342,21 +370,23 @@ def find_rates(file_name, file_like):
                 for zname in za.namelist():
                     if zname.endswith(".xlsx"):
                         with za.open(zname) as f:
-                            gsp_code, gsp_rates = find_gsp_group_rates(
+                            gsp_code, gsp_rates, gsp_vls = find_gsp_group_rates(
                                 zname, BytesIO(f.read())
                             )
                             rates[gsp_code] = gsp_rates
+                            vls.extend(gsp_vls)
         except BadZipFile as e:
             raise BadRequest(f"Problem with zip file '{file_name}'") from e
 
     elif file_name.endswith(".xlsx"):
-        gsp_code, gsp_rates = find_gsp_group_rates(file_name, file_like)
+        gsp_code, gsp_rates, gsp_vls = find_gsp_group_rates(file_name, file_like)
         rates[gsp_code] = gsp_rates
+        vls.extend(gsp_vls)
 
     else:
         raise BadRequest(f"The file extension for {file_name} isn't recognized.")
 
-    return rates
+    return rates, vls
 
 
 GSP_MAP = (
@@ -409,7 +439,9 @@ def find_gsp_group_rates(file_name, file_like):
             f"Can't determine the GSP group from the file name '{file_name}'."
         )
 
-    book = openpyxl.load_workbook(file_like, data_only=True, read_only=True)
+    book = load_workbook(file_like, data_only=True)
+
+    vls = None
 
     try:
         for sheet in book.worksheets:
@@ -418,10 +450,12 @@ def find_gsp_group_rates(file_name, file_like):
                 tab_lv_hv(sheet, rates)
             elif title.startswith("annex 2 "):
                 tab_ehv(sheet, rates)
+            elif title.startswith("annex 5 "):
+                vls = tab_llfs(sheet)
     except BadRequest as e:
         raise BadRequest(f"Problem with file '{file_name}': {e.description}")
 
-    return gsp_code, rates
+    return gsp_code, rates, vls
 
 
 def rate_server_import(sess, s, paths, logger):
@@ -447,35 +481,128 @@ def rate_server_import(sess, s, paths, logger):
                 fl_entries[file_name] = url
 
     for year, dno_entries in sorted(year_entries.items()):
-        year_start = to_utc(ct_datetime(year, 4, 1))
+        fy_start = to_utc(ct_datetime(year, 4, 1))
         for dno_code, fl_entries in sorted(dno_entries.items()):
             contract = Contract.get_dno_by_name(sess, dno_code)
-            if year_start < contract.start_rate_script.start_date:
+            if fy_start < contract.start_rate_script.start_date:
                 continue
 
             rs = sess.execute(
                 select(RateScript).where(
                     RateScript.contract == contract,
-                    RateScript.start_date == year_start,
+                    RateScript.start_date == fy_start,
                 )
             ).scalar_one_or_none()
             if rs is None:
-                rs = contract.insert_rate_script(sess, year_start, {})
+                rs = contract.insert_rate_script(sess, fy_start, {})
 
             file_name, url = sorted(fl_entries.items())[-1]
 
             rs_script = rs.make_script()
             if rs_script.get("a_file_name") != file_name:
-                fl = BytesIO(download(s, url))
                 try:
-                    rs.update(find_rates(file_name, fl))
+                    fl = BytesIO(download(s, url))
+                    rates, vls = find_rates(file_name, fl)
+                    rs.update(rates)
+                    logger(
+                        f"Updated DNO {dno_code} rate script for "
+                        f"{hh_format(fy_start)}"
+                    )
+                    update_vls(sess, logger, vls, dno_code, fy_start, rs.finish_date)
                 except BadRequest as e:
                     raise BadRequest(
                         f"Problem with year {year} DNO {dno_code}: {e.description}"
                     )
-                logger(
-                    f"Updated DNO {dno_code} rate script for {hh_format(year_start)}"
-                )
 
     logger("Finished DNO spreadsheets")
     sess.commit()
+
+
+LV_NET = ("LV", False)
+LV_SUB = ("LV", True)
+HV_NET = ("HV", False)
+HV_SUB = ("HV", True)
+EHV_NET = ("EHV", False)
+
+
+VL_LOOKUP = {
+    "Low-voltage network": LV_NET,
+    "Low Voltage Network": LV_NET,
+    "Low-voltage substation": LV_SUB,
+    "Low Voltage Substation": LV_SUB,
+    "High-voltage network": HV_NET,
+    "High Voltage Network": HV_NET,
+    "High-voltage substation": HV_SUB,
+    "High Voltage Substation": HV_SUB,
+    "Greater than 22kV connected - demand": HV_NET,
+    "Greater than 22kV connected - generation": HV_NET,
+    "33kV generic": EHV_NET,
+    "33kV generic (demand)": EHV_NET,
+    "33kV generic (generation)": EHV_NET,
+    "132/33kV generic": EHV_NET,
+    "132kV to 33kV generic": EHV_NET,
+    "132/HV connected": HV_NET,
+    "132kV generic": EHV_NET,
+    "132kV generic (demand)": EHV_NET,
+    "132kV generic (generation)": EHV_NET,
+    "132kV connected": EHV_NET,
+    "EHV connected": EHV_NET,
+    "EHV 33kV Export": EHV_NET,
+    "EHV 33kV Import": EHV_NET,
+    "132/EHV connected": EHV_NET,
+}
+
+
+def tab_llfs(sheet):
+    llfcs = []
+
+    in_llfcs = False
+    for row in range(1, len(sheet["A"]) + 1):
+        val = get_cell(sheet, "A", row).value
+        val_0 = None if val is None else " ".join(val.split())
+        if in_llfcs:
+            if val_0 is None or len(val_0) == 0:
+                in_llfcs = False
+            else:
+                vl, is_substation = VL_LOOKUP[val_0]
+                for llfc_code in to_llfcs(get_cell(sheet, "H", row).value):
+                    llfc = {
+                        "code": llfc_code,
+                        "voltage_level": vl,
+                        "is_substation": is_substation,
+                    }
+                    llfcs.append(llfc)
+
+        elif val_0 == "Metered voltage":
+            in_llfcs = True
+
+    return llfcs
+
+
+def update_vls(sess, logger, vls, dno_code, fy_start, rs_finish):
+    dno = Party.get_dno_by_code(sess, dno_code, fy_start)
+
+    for vl in vls:
+        vl_code = vl["code"]
+        q = select(Llfc).where(
+            Llfc.dno == dno,
+            Llfc.code == vl_code,
+            or_(Llfc.valid_to == null(), Llfc.valid_to >= fy_start),
+        )
+        if rs_finish is not None:
+            q = q.where(Llfc.valid_from <= rs_finish)
+        llfc = sess.execute(q).scalar_one_or_none()
+
+        if llfc is None:
+            raise BadRequest(
+                f"There is no LLFC with the code '{vl_code}' associated with the DNO "
+                f"{dno.code} from {hh_format(fy_start)} to {hh_format(rs_finish)}."
+            )
+
+        vl_voltage_level = VoltageLevel.get_by_code(sess, vl["voltage_level"])
+        llfc.voltage_level = vl_voltage_level
+
+        llfc.is_substation = vl["is_substation"]
+        if sess.is_modified(llfc):
+            logger(f"Updated LLFC {llfc.code} of DNO {dno_code}")
+            sess.flush()

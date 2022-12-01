@@ -2,18 +2,28 @@ from decimal import Decimal
 from io import BytesIO
 from zipfile import ZipFile
 
+from openpyxl import Workbook
+
 import pytest
 
-from chellow.e.dno_rate_parser import find_rates, str_to_hr, to_llfcs, to_pcs
+from chellow.e.dno_rate_parser import find_rates, str_to_hr, tab_llfs, to_llfcs, to_pcs
 
 
-@pytest.mark.parametrize("llfc_str,llfc_list", [["H00-H01", ["H00", "H01"]]])
+@pytest.mark.parametrize(
+    "llfc_str,llfc_list",
+    [
+        ["H00-H01", ["H00", "H01"]],
+        ["310 - 311 inclusive", ["310", "311"]],
+        [
+            """310
+311
+""",
+            ["310", "311"],
+        ],
+    ],
+)
 def test_to_llfcs(mocker, llfc_str, llfc_list):
-    mocker.patch("chellow.e.dno_rate_parser.get_value", return_value=llfc_str)
-
-    row = mocker.Mock()
-    idx = mocker.Mock()
-    actual = to_llfcs(row, idx)
+    actual = to_llfcs(llfc_str)
     assert actual == llfc_list
 
 
@@ -42,3 +52,34 @@ def test_find_rates():
         zf.writestr("b.txt", "")
     file_like.seek(0)
     find_rates(file_name, file_like)
+
+
+def test_tab_llfs():
+    wb = Workbook()
+    wb.create_sheet("Annex 5 LLFs")
+    sheet = wb.worksheets[1]
+    sheet.insert_rows(0, 23)
+    sheet.insert_cols(0, 9)
+    sheet["A14"].value = "Metered voltage"
+    sheet["A15"].value = "Low-voltage network"
+    sheet["H15"].value = "100,ABB"
+
+    vls = tab_llfs(sheet)
+    assert vls == [
+        {"code": "100", "voltage_level": "LV", "is_substation": False},
+        {"code": "ABB", "voltage_level": "LV", "is_substation": False},
+    ]
+
+
+def test_tab_llfs_blank():
+    wb = Workbook()
+    wb.create_sheet("Annex 5 LLFs")
+    sheet = wb.worksheets[1]
+    sheet.insert_rows(0, 23)
+    sheet.insert_cols(0, 9)
+    sheet["A14"].value = "Metered voltage"
+    sheet["A15"].value = "Low-voltage network"
+    sheet["H15"].value = None
+
+    vls = tab_llfs(sheet)
+    assert vls == []
