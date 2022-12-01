@@ -1917,7 +1917,16 @@ def site_months_get(site_id):
     finish_month = req_int("finish_month")
     site = Site.get_by_id(g.sess, site_id)
 
-    typs = ("imp_net", "exp_net", "used", "displaced", "imp_gen", "exp_gen")
+    typs = (
+        "imp_net",
+        "imp_3p",
+        "exp_net",
+        "exp_3p",
+        "used",
+        "displaced",
+        "imp_gen",
+        "exp_gen",
+    )
 
     months = []
     for month_start, month_finish in c_months_u(
