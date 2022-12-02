@@ -187,8 +187,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
 			<input type="hidden" name="months" value="1">
 			<input type="hidden" name="by_hh" value="true">
 			<legend>Monthly Duration By Half-Hour</legend>
-			<br>
-			For
+			<label>For</label>
 			{{input_date('finish', last_month_finish, resolution='month')}}
 			<input type="submit" value="Download">
 		</fieldset>
@@ -211,7 +210,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		<input type="hidden" name="site_id" value="{{site.id}}">
 		<fieldset>
 			<legend>Download Displaced TRIAD CSV</legend>
-			For financial year ending March
+			<label>For financial year ending March</label>
 			{{input_date(None, last_month_finish, resolution='year')}}
 			<input type="submit" value="Download">
 		</fieldset>
@@ -221,6 +220,7 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">
 			<legend>HH Data: 48 Column Format</legend>
+			<label>Type</label>
 			<select name="type">
 				<option value="used">Used</option>
 				<option value="imp_net">Imported</option>
@@ -229,8 +229,8 @@ Table of site level monthly kWh, MD kWh etc.</a>
 				<option value="displaced">Displaced</option>
 				<option value="exp_gen">Parasitic</option>
 			</select>
-			for {{input_text('months', '1', 2, 2)}}
-			month(s) until the end of
+			<label>Months</label> {{input_text('months', '1', 2, 2)}}
+			<label>Last Month</label>
 			{{input_date('finish', last_month_finish, resolution='month')}}
 			<input type="submit" value="Download">
 		</fieldset>
@@ -240,11 +240,9 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">
 			<legend>HH Data: HH Per Row Format</legend>
-			<p>
-				From {{input_date('start', last_month_start)}} to
-				{{input_date('finish', last_month_finish)}}
-				<input type="submit" value="Download">
-			</p>
+			<label>From</label> {{input_date('start', last_month_start)}}
+			<label>To</label> {{input_date('finish', last_month_finish)}}
+			<input type="submit" value="Download">
 		</fieldset>
 	</form>
 
