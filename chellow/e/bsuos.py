@@ -171,7 +171,7 @@ def _find_file_type(disp):
     if disp is not None:
         fields = dict(v.strip().lower().split("=") for v in disp.split(";") if "=" in v)
         if "filename" in fields:
-            filetype = fields["filename"].split(".")[-1][:-1]
+            filetype = fields["filename"].strip('"').split(".")[-1]
 
     return filetype
 

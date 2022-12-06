@@ -1,15 +1,18 @@
+import pytest
+
 from chellow.e.bsuos import _find_file_type, _process_url
 
 
-def test_find_file_type_csv():
-    filetype = "csv"
-    assert _find_file_type(f'filename="bsuos.{filetype}"') == filetype
-
-
-def test_find_file_type_xsl():
-    expected = "xls"
-    actual = _find_file_type(f'inline; filename="Current_RF_BSUoS_Data_175.{expected}"')
-    assert actual == expected
+@pytest.mark.parametrize(
+    "filename,ext",
+    [
+        ['filename="bsuos.csv"', "csv"],
+        ['inline; filename="Current_RF_BSUoS_Data_175.xls"', "xls"],
+        ["inline; filename=Current_RF_BSUoS_Data_175.xls", "xls"],
+    ],
+)
+def test_find_file_type_csv(filename, ext):
+    assert _find_file_type(filename) == ext
 
 
 def test_process_url_csv(mocker, sess):
