@@ -137,10 +137,10 @@ def to_pcs(row, idx):
 
 
 BAND_WEEKEND = {
-    "Monday to Friday": False,
-    "Weekends": True,
-    "Monday to Friday (Including Bank Holidays) All Year": False,
-    "Saturday and Sunday All Year": True,
+    "monday to friday": False,
+    "weekends": True,
+    "monday to friday (including bank holidays) all year": False,
+    "saturday and sunday all year": True,
 }
 
 
@@ -208,6 +208,7 @@ def tab_lv_hv(sheet, gsp_rates):
     for row in sheet.iter_rows():
         val = get_value(row, 0)
         val_0 = None if val is None else " ".join(val.split())
+        val_0_lower = None if val is None else val_0.lower()
         if in_tariffs:
             if val_0 is None or len(val_0) == 0:
                 in_tariffs = False
@@ -239,16 +240,16 @@ def tab_lv_hv(sheet, gsp_rates):
                     ),
                 }
 
-        elif val_0 == "Tariff name" or get_value(row, 1) == "Open LLFCs":
+        elif val_0_lower == "tariff name" or get_value(row, 1) == "Open LLFCs":
             in_tariffs = True
             title_row = row
 
-        if val_0 in BAND_WEEKEND:
+        if val_0_lower in BAND_WEEKEND:
             for i, band_name in enumerate(("red", "amber")):
                 for slot in val_to_slots(get_value(row, i + 1)):
                     bands.append(
                         {
-                            "weekend": BAND_WEEKEND[val_0],
+                            "weekend": BAND_WEEKEND[val_0_lower],
                             "start": slot["start"],
                             "finish": slot["finish"],
                             "band": band_name,

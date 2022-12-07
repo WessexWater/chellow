@@ -6,7 +6,14 @@ from openpyxl import Workbook
 
 import pytest
 
-from chellow.e.dno_rate_parser import find_rates, str_to_hr, tab_llfs, to_llfcs, to_pcs
+from chellow.e.dno_rate_parser import (
+    find_rates,
+    str_to_hr,
+    tab_llfs,
+    tab_lv_hv,
+    to_llfcs,
+    to_pcs,
+)
 
 
 @pytest.mark.parametrize(
@@ -83,3 +90,29 @@ def test_tab_llfs_blank():
 
     vls = tab_llfs(sheet)
     assert vls == []
+
+
+def test_tab_lv_hv():
+    wb = Workbook()
+    wb.create_sheet("Annex 1 LV, HV and UMS charges")
+    sheet = wb.worksheets[1]
+    sheet.insert_rows(0, 23)
+    sheet.insert_cols(0, 12)
+    sheet["A9"].value = "Saturday and Sunday\nAll year"
+    sheet["B9"].value = ""
+    sheet["C9"].value = "09:30 - 21:30"
+    sheet["E9"].value = "00:00 - 09:30\n21:20 - 24:00"
+
+    rates = {}
+    tab_lv_hv(sheet, rates)
+    assert rates == {
+        "bands": [
+            {
+                "band": "amber",
+                "finish": Decimal("21.5"),
+                "start": Decimal("9.5"),
+                "weekend": True,
+            }
+        ],
+        "tariffs": {},
+    }
