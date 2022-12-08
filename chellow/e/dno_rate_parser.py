@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal, InvalidOperation
+from enum import Enum, auto
 from io import BytesIO
 from itertools import chain
 from zipfile import BadZipFile, ZipFile
@@ -141,6 +142,7 @@ BAND_WEEKEND = {
     "weekends": True,
     "monday to friday (including bank holidays) all year": False,
     "saturday and sunday all year": True,
+    "notes": None,
 }
 
 
@@ -203,15 +205,47 @@ def tab_lv_hv(sheet, gsp_rates):
 
     bands = gsp_rates["bands"] = []
 
-    in_tariffs = False
+    class State(Enum):
+        OUTSIDE = auto()
+        BANDS = auto()
+        TARIFFS = auto()
+
+    state = State.OUTSIDE
     title_row = None
     for row in sheet.iter_rows():
         val = get_value(row, 0)
         val_0 = None if val is None else " ".join(val.split())
         val_0_lower = None if val is None else val_0.lower()
-        if in_tariffs:
+        if state == State.OUTSIDE:
+            if val_0_lower == "tariff name" or get_value(row, 1) == "Open LLFCs":
+                state = State.TARIFFS
+                title_row = row
+            elif val_0_lower == "time periods":
+                state = State.BANDS
+
+        elif state == State.BANDS:
+            try:
+                is_weekend = BAND_WEEKEND[val_0_lower]
+            except KeyError:
+                raise BadRequest(f"The key '{val_0_lower}' isn't recognised.")
+
+            if is_weekend is None:
+                state = State.OUTSIDE
+            else:
+                for i, band_name in enumerate(("red", "amber")):
+                    for slot in val_to_slots(get_value(row, i + 1)):
+                        bands.append(
+                            {
+                                "weekend": is_weekend,
+                                "start": slot["start"],
+                                "finish": slot["finish"],
+                                "band": band_name,
+                            }
+                        )
+
+        elif state == State.TARIFFS:
             if val_0 is None or len(val_0) == 0:
-                in_tariffs = False
+                state = State.OUTSIDE
             else:
                 llfcs_str = ",".join(
                     chain(to_llfcs(get_value(row, 1)), to_llfcs(get_value(row, 10)))
@@ -239,22 +273,6 @@ def tab_lv_hv(sheet, gsp_rates):
                         row, col_match(title_row, "reactive")
                     ),
                 }
-
-        elif val_0_lower == "tariff name" or get_value(row, 1) == "Open LLFCs":
-            in_tariffs = True
-            title_row = row
-
-        if val_0_lower in BAND_WEEKEND:
-            for i, band_name in enumerate(("red", "amber")):
-                for slot in val_to_slots(get_value(row, i + 1)):
-                    bands.append(
-                        {
-                            "weekend": BAND_WEEKEND[val_0_lower],
-                            "start": slot["start"],
-                            "finish": slot["finish"],
-                            "band": band_name,
-                        }
-                    )
 
 
 # State for EHV

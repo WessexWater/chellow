@@ -98,10 +98,12 @@ def test_tab_lv_hv():
     sheet = wb.worksheets[1]
     sheet.insert_rows(0, 23)
     sheet.insert_cols(0, 12)
-    sheet["A9"].value = "Saturday and Sunday\nAll year"
-    sheet["B9"].value = ""
-    sheet["C9"].value = "09:30 - 21:30"
-    sheet["E9"].value = "00:00 - 09:30\n21:20 - 24:00"
+    sheet["A5"].value = "Time periods"
+    sheet["A6"].value = "Saturday and Sunday\nAll year"
+    sheet["B6"].value = ""
+    sheet["C6"].value = "09:30 - 21:30"
+    sheet["E6"].value = "00:00 - 09:30\n21:20 - 24:00"
+    sheet["A7"].value = "Notes"
 
     rates = {}
     tab_lv_hv(sheet, rates)
