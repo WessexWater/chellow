@@ -28,7 +28,7 @@ def match_repeat(client, path, match, seconds=5):
         response = client.get(path)
         response_str = response.get_data(as_text=True)
         if match in response_str:
-            break
+            return response
         elif second == seconds - 1:
             assert match in response_str, response_str
         else:

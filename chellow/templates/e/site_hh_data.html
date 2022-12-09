@@ -1,0 +1,52 @@
+<form>
+	<fieldset>						
+		<label>Site Code </label>
+		{{input_text('site_code', site.code)}}
+		<label>Month</label>
+		{{input_date(None, None, 'month')}}
+		<input type="submit" value="Show">
+	</fieldset>
+</form>
+<table class="sticky">
+	<caption>HH Data</caption>
+	<thead>
+		<tr>
+			<th>HH Starting</th>
+			<th>Imported kWh</th>
+			<th>Used kWh</th>
+			<th>Displaced kWh</th>
+			<th>Generated kWh</th>
+			<th>Exported kWh</th>
+			<th>Parasitic kWh</th>
+			{% for supply in supplies %}
+				{% set pref = supply.name + ' '+ supply.source.code +
+				(' ' + supply.generator_type.code if
+				supply.generator_type != None else '') %}
+				<th style="border-left-width: medium;">{{pref}} Imp kWh</th>
+				<th>{{pref}} Imp Status</th>
+				<th>{{pref}} Exp kWh</th>
+				<th>{{pref}} Exp Status</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for hh in hh_data %}
+			<tr>
+				<td style="white-space: nowrap">{{hh.start_date|hh_format}}</td>
+				<td>{{hh.import_kwh}}</td>
+				<td>{{hh.used_kwh}}</td>
+				<td>{{hh.displaced_kwh}}</td>
+				<td>{{hh.generated_kwh}}</td>
+				<td>{{hh.export_kwh}}</td>
+				<td>{{hh.parasitic_kwh}}</td>
+				{% for datum in hh.supplies %}
+					<td style="border-left-width: medium;"
+						>{{datum.import_kwh}}</td>
+					<td>{{datum.import_status}}</td>
+					<td>{{datum.export_kwh}}</td>
+					<td>{{datum.export_status}}</td>
+				{% endfor %}
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

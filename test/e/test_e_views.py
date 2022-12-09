@@ -634,6 +634,33 @@ def test_dtc_meter_types(client):
     match(response, 200)
 
 
+def test_em_totals(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    sess.commit()
+
+    client.get(f"/e/sites/{site.id}/energy_management")
+
+    response = match_repeat(
+        client, f"/e/sites/{site.id}/energy_management/totals?mem_id=0", "table"
+    )
+
+    assert response.status_code == 286
+
+
 def test_era_edit_get(client, sess):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

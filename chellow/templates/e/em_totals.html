@@ -1,0 +1,23 @@
+{% if site_info.status == 'running' %}
+  <p style="color: red;">Calculating...{{random_number}}</p>
+{% else %}
+  <table>
+		<caption>Last 12 months</caption>
+		<thead>
+			<tr>
+				{% for title in site_info.titles %}
+					<th>{{title}}</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in site_info.rows %}
+				<tr>
+					{% for cell in row %}
+						<td>{{cell}}</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endif %}

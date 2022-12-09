@@ -50,7 +50,7 @@
 	</table>
 
 	{% if other_sites|length > 0 %}
-		<table class="table">
+		<table>
 			<caption>Other sites in this group</caption>
 			<tr>
 				<th>Code</th>
@@ -68,7 +68,7 @@
 		</table>
 	{% endif %}
 
-	<table class="table">
+	<table>
 		<caption>Electricity supplies that power this site</caption>
 		<thead>
 			<tr>
@@ -162,6 +162,9 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		</li>
 		<li>
 			<a href="/sites/{{site.id}}/site_snags">Site Snags</a>
+		</li>
+		<li>
+			<a href="/e/sites/{{site.id}}/energy_management">Energy Managment Summary</a>
 		</li>
 	</ul>
 

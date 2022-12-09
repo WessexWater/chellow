@@ -8,7 +8,7 @@ from types import MappingProxyType
 
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import Float, cast, or_
+from sqlalchemy import Float, cast, or_, select
 from sqlalchemy.orm import aliased, joinedload
 from sqlalchemy.sql.expression import false, null
 
@@ -582,6 +582,7 @@ class SiteSource(DataSource):
         era_maps=None,
         deltas=None,
         bill=None,
+        exclude_virtual=False,
     ):
         DataSource.__init__(
             self,
@@ -673,21 +674,24 @@ class SiteSource(DataSource):
             self.ssc = self.era.ssc
             self.ssc_code = None if self.ssc is None else self.ssc.code
 
-        self.era_ids = set(
-            s.id
-            for s in sess.query(Era)
+        era_q = (
+            select(Era.id)
             .join(SiteEra)
             .join(Supply)
             .join(Source)
-            .filter(
+            .where(
                 SiteEra.site == site,
                 Era.start_date <= self.history_finish,
                 SiteEra.is_physical,
                 Source.code != "sub",
                 or_(Era.finish_date == null(), Era.finish_date >= self.history_start),
             )
-            .all()
         )
+        if exclude_virtual:
+            era_q = era_q.join(Party).where(Party.dno_code != "88")
+
+        self.era_ids = set(sess.execute(era_q).scalars())
+
         if len(self.era_ids) == 0:
             rs = iter([])
         else:

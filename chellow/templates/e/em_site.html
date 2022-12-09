@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Sites &raquo; {{site.code}} &raquo; Energy Management
+{% endblock %}
+
+{% block nav %}
+  <a href="/sites">Sites</a> &raquo;
+  <a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a> &raquo; Energy Management
+{% endblock %}
+
+{% block content %}
+	<p>
+		On this page only supplies that are physically present are looked at, and virtual
+		supplies are ignored. This makes it useful for engineering and energy management
+		purposes, whereas virtual supplies are there for accounting purposes.
+	</p>
+
+	<table>
+		<caption>Supplies That Currently Power This Site</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Name</th>
+				<th>Source</th>
+				<th>Generator Type</th>
+				<th>DNO</th>
+				<th>Import MPAN core</th>
+				<th>Export MPAN core</th>
+				<th>Physical Location</th>
+				<th>Also Supplies</th>
+				<th>Meter Category</th>
+				<th>Meter Serial Number</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for era in eras %}
+				{% set supply = era.supply %}
+				<tr>
+					<td>
+						<a href="/e/supplies/{{supply.id}}">view</a>
+					</td>
+					<td>{{supply.name}}</td>
+					<td>{{supply.source.code}}</td>
+					<td>{{supply.generator_type.code}}</td>
+					<td><a href="/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a></td>
+					<td>
+						{% if era.imp_mpan_core %}
+							{{era.imp_mpan_core}}
+						{% endif %}
+					</td>
+					<td>
+						{% if era.exp_mpan_core %}
+							{{era.exp_mpan_core}}
+						{% endif %}
+					</td>
+					<td>
+						{% for site_era in supply.eras[-1].site_eras %}
+							{% if site_era.is_physical %}
+								{% if site_era.site_id == site.id %}
+									this site
+								{% else %}
+									<a href="/e/sites/{{site_era.site_id}}">{{site_era.site.code}}</a>
+								{% endif %}
+							{% endif %}
+						{% endfor %}
+					</td>
+					<td>
+						{% for osite in supply.eras[-1].other_sites %}
+							<a href="/reports/5/output/?site_id={{osite.id}}">{{osite.code}}</a>
+						{% endfor %}
+					</td>
+					<td>{{era.meter_category}}</td>
+					<td>{{era.msn}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<ul>
+		<li>
+			<a href="/e/sites/{{site.id}}/energy_management/months?finish_year={{last_month.year}}&finish_month={{last_month.month}}">Site Data By Month</a>
+		</li>
+		<li>
+			<a href="/e/sites/{{site.id}}/energy_management/hh_data?year={{now.year}}&month={{now.month}}">HH Data</a>
+		</li>
+	</ul>
+
+	<div
+			hx-get="/e/sites/{{site.id}}/energy_management/totals?mem_id={{mem_id}}"
+		 	hx-trigger="every 3s">
+  </div>
+
+  <h3>External Links</h3>
+
+  <ul>
+    <li>
+      <a href="http://intranet/Apps/SiteFile/SitePage.asp?SiteId={{site.code}}">Site Information File</a>
+    </li>
+    <li>
+      <a href="http://flow/surface/Pages/Site.aspx?BOType=2&amp;BOInstance={{site.code}}">The Portal</a>
+    </li>
+  </ul>
+
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}
+	Sites &raquo; {{site.code}} {{site.name}} &raquo; Energy Management &raquo;
+	Monthly figures
+{% endblock %}
+
+{% block inner_head %}
+	<style>
+		colgroup.gray {
+			background: silver;
+		}
+
+		tr.error {
+			color: red;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="/sites">Sites</a> &raquo;
+	<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a> &raquo;
+	<a href="/e/sites/{{site.id}}/energy_management">Energy Management</a> &raquo;
+ 	Monthly Figures
+{% endblock %}
+
+{% block content %}
+	<form action="/e/sites/{{site.id}}/energy_management/months">
+		<fieldset>
+			<label>For 12 months finishing at the end of</label>
+		 	{{input_date('finish', resolution='month')}}
+			<input type="submit" value="Show">
+		</fieldset>
+	</form>
+
+	<p>
+		This is a table of inflows and outflows of electricity from the site from the public
+		electricity network, from generators and from third parties. The 'used' quantity is
+		found by taking the sum of all the imports and subtracting all the exports. The
+		'displaced' quantity is: generated - parasitic - export_to_network. Virtual supplies
+		are excluded as they aren't so useful for energy management and engineering
+		purposes.
+	</p>
+
+
+	<table>
+		<caption>Months</caption>
+		<colgroup>
+		<colgroup class="gray" span="3">
+		<colgroup span="3">
+		<colgroup class="gray" span="3">
+		<colgroup span="3">
+		<colgroup class="gray" span="3">
+		<colgroup span="3">
+		<tfoot>
+			<tr>
+				{% set total = months[-1] %}
+				<th>For all months</th>
+				<th>{{"{:,.1f}".format(total.used.md)}}</th>
+				<th>
+					{% if total.used.md_date %}
+						{{total.used.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.used.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.displaced.md)}}</th>
+				<th>
+					{% if total.displaced.md_date %}
+						{{total.displaced.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.displaced.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.imp_net.md)}}</th>
+				<th>
+					{% if total.imp_net.md_date %}
+						{{total.imp_net.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.imp_net.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.imp_3p.md)}}</th>
+				<th>
+					{% if total.imp_3p.md_date %}
+						{{total.imp_3p.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.imp_3p.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.imp_gen.md)}}</th>
+				<th>
+					{% if total.imp_gen.md_date %}
+						{{total.imp_gen.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.imp_gen.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.exp_net.md)}}</th>
+				<th>
+					{% if total.exp_net.md_date %}
+						{{total.exp_net.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.exp_net.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.exp_3p.md)}}</th>
+				<th>
+					{% if total.exp_3p.md_date %}
+						{{months[-1].exp_3p.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.exp_3p.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.exp_gen.md)}}</th>
+				<th>
+					{% if total.exp_gen.md_date %}
+						{{total.exp_gen.md_date|hh_format}}
+					{% endif %}
+				</th>
+				<th>{{"{:,.1f}".format(total.exp_gen.kwh)}}</th>
+			</tr>
+		</tfoot>
+		<thead>
+			<tr>
+				<th rowspan="3">Month</th>
+				<th rowspan="2" colspan="3">Used</th>
+				<th rowspan="2" colspan="3">Displaced</th>
+				<th colspan="9">Import</th>
+				<th colspan="9">Export</th>
+				<th rowspan="3">Data quality</th>
+			</tr>
+			<tr>
+				<th colspan="3">Import Net</th>
+				<th colspan="3">Import 3rd Party</th>
+				<th colspan="3">Generated</th>
+				<th colspan="3">Export Net</th>
+				<th colspan="3">Export 3rd Party</th>
+				<th colspan="3">Parasitic</th>
+			</tr>
+			<tr>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+				<th>MD / kW</th>
+				<th>Date of MD</th>
+				<th>kWh</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for month in months[:-1] %}
+				<tr
+					{%- if month.has_site_snags -%}
+						class="error"
+					{%- endif -%}
+				>
+					<td>{{month.start_date|hh_format('date')}}</td>
+
+					<td>{{ "{:,.1f}".format(month.used.md) }}</td>
+					<td>
+						{% if month.used.md_date %}
+							{{month.used.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.used.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.displaced.md)}}</td>
+					<td>
+						{% if month.displaced.md_date %}
+							{{month.displaced.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.displaced.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.imp_net.md)}}</td>
+					<td>
+						{% if month.imp_net.md_date %}
+							{{month.imp_net.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.imp_net.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.imp_3p.md)}}</td>
+					<td>
+						{% if month.imp_3p.md_date %}
+							{{month.imp_3p.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.imp_3p.kwh)}}</td>
+
+
+					<td>{{ "{:,.1f}".format(month.imp_gen.md)}}</td>
+					<td>
+						{% if month.imp_gen.md_date %}
+							{{month.imp_gen.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.imp_gen.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.exp_net.md)}}</td>
+					<td>
+						{% if month.exp_net.md_date %}
+							{{month.exp_net.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.exp_net.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.exp_3p.md)}}</td>
+					<td>
+						{% if month.exp_3p.md_date %}
+							{{month.exp_3p.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.exp_3p.kwh)}}</td>
+
+					<td>{{ "{:,.1f}".format(month.exp_gen.md)}}</td>
+					<td>
+						{% if month.exp_gen.md_date %}
+							{{month.exp_gen.md_date|hh_format}}
+						{% endif %}
+					</td>
+					<td>{{ "{:,.1f}".format(month.exp_gen.kwh)}}</td>
+
+					<td>
+						{% if month.has_site_snags %}
+							See <a href="/sites/{{site.id}}/gen_graph?months=1&amp;finish_year={{month.start_date_ct.year}}&amp;finish_month={{month.start_date_ct.month}}">generation graph</a> for errors.
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

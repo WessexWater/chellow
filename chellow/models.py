@@ -1735,7 +1735,7 @@ class Site(Base, PersistentClass):
         sess.delete(self)
         sess.flush()
 
-    def hh_data(self, sess, start_date, finish_date):
+    def hh_data(self, sess, start_date, finish_date, exclude_virtual=False):
         cache = {}
         keys = {
             "net": {True: ["imp_net"], False: ["exp_net"]},
@@ -1746,14 +1746,13 @@ class Site(Base, PersistentClass):
         }
         data = []
 
-        channel_ids = list(
-            cid[0]
-            for cid in sess.query(Channel.id)
+        channel_q = (
+            select(Channel.id)
             .join(Era)
             .join(SiteEra)
             .join(Supply)
             .join(Source)
-            .filter(
+            .where(
                 SiteEra.site == self,
                 SiteEra.is_physical == true(),
                 Era.start_date <= finish_date,
@@ -1762,6 +1761,10 @@ class Site(Base, PersistentClass):
                 Channel.channel_type == "ACTIVE",
             )
         )
+        if exclude_virtual:
+            channel_q = channel_q.join(Party).where(Party.dno_code != "88")
+
+        channel_ids = list(sess.execute(channel_q).scalars())
 
         db_data = iter(
             sess.query(

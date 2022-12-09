@@ -1,9 +1,11 @@
 import csv
 import os
+import threading
 from collections import defaultdict
 from datetime import datetime as Datetime
 from io import BytesIO, StringIO
 from itertools import chain, islice
+from random import random
 
 
 from dateutil.relativedelta import relativedelta
@@ -26,6 +28,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from zish import dumps, loads
 
 import chellow.e.dno_rate_parser
+from chellow.e.energy_management import totals_runner
 from chellow.models import (
     Batch,
     BatchFile,
@@ -93,6 +96,7 @@ from chellow.utils import (
     req_int,
     req_str,
     req_zish,
+    to_ct,
     to_utc,
     utc_datetime,
     utc_datetime_now,
@@ -3279,6 +3283,43 @@ def scenario_edit_delete(scenario_id):
         )
 
 
+@e.route("/sites/<int:site_id>/energy_management")
+def site_energy_management_get(site_id):
+    site = Site.get_by_id(g.sess, site_id)
+
+    now = utc_datetime_now()
+    last_month = now - relativedelta(months=1)
+
+    eras = g.sess.execute(
+        select(Era)
+        .join(SiteEra)
+        .join(Supply)
+        .join(Party)
+        .where(
+            SiteEra.site == site,
+            Era.finish_date == null(),
+            Party.dno_code != "88",
+        )
+    ).scalars()
+
+    mem_id = chellow.dloads.get_mem_id()
+    chellow.dloads.put_mem_val(mem_id, {"status": "running"})
+    if "start_year" in request.values:
+        start_date = req_date("start")
+    else:
+        start_date = None
+    threading.Thread(target=totals_runner, args=(mem_id, site.id, start_date)).start()
+
+    return render_template(
+        "em_site.html",
+        site=site,
+        eras=eras,
+        now=now,
+        last_month=last_month,
+        mem_id=mem_id,
+    )
+
+
 @e.route("/site_snags")
 def site_snags_get():
     snags = (
@@ -3354,6 +3395,198 @@ def site_snags_edit_post():
 def site_snag_get(snag_id):
     snag = Snag.get_by_id(g.sess, snag_id)
     return render_template("site_snag.html", snag=snag)
+
+
+@e.route("/sites/<int:site_id>/energy_management/hh_data")
+def site_energy_management_hh_data_get(site_id):
+    caches = {}
+    site = Site.get_by_id(g.sess, site_id)
+
+    year = req_int("year")
+    month = req_int("month")
+    start_date, finish_date = next(
+        c_months_u(start_year=year, start_month=month, months=1)
+    )
+
+    supplies = g.sess.execute(
+        select(Supply)
+        .join(Era)
+        .join(SiteEra)
+        .join(Source)
+        .join(Party)
+        .where(
+            SiteEra.site == site,
+            SiteEra.is_physical == true(),
+            Era.start_date <= finish_date,
+            or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            Source.code != "sub",
+            Party.dno_code != "88",
+        )
+        .order_by(Supply.id)
+        .distinct()
+        .options(joinedload(Supply.source), joinedload(Supply.generator_type))
+    ).scalars()
+
+    data = iter(
+        g.sess.query(HhDatum)
+        .join(Channel)
+        .join(Era)
+        .filter(
+            Channel.channel_type == "ACTIVE",
+            Era.supply_id.in_([s.id for s in supplies]),
+            HhDatum.start_date >= start_date,
+            HhDatum.start_date <= finish_date,
+        )
+        .order_by(HhDatum.start_date, Era.supply_id)
+        .options(
+            joinedload(HhDatum.channel)
+            .joinedload(Channel.era)
+            .joinedload(Era.supply)
+            .joinedload(Supply.source)
+        )
+    )
+    datum = next(data, None)
+
+    hh_data = []
+    for hh_date in hh_range(caches, start_date, finish_date):
+        sups = []
+        hh_dict = {
+            "start_date": hh_date,
+            "supplies": sups,
+            "export_kwh": 0,
+            "import_kwh": 0,
+            "parasitic_kwh": 0,
+            "generated_kwh": 0,
+            "third_party_import_kwh": 0,
+            "third_party_export_kwh": 0,
+        }
+        hh_data.append(hh_dict)
+        for supply in supplies:
+            sup_hh = {}
+            sups.append(sup_hh)
+            while (
+                datum is not None
+                and datum.start_date == hh_date
+                and datum.channel.era.supply_id == supply.id
+            ):
+                channel = datum.channel
+                imp_related = channel.imp_related
+                hh_float_value = float(datum.value)
+                source_code = channel.era.supply.source.code
+
+                prefix = "import_" if imp_related else "export_"
+                sup_hh[prefix + "kwh"] = datum.value
+                sup_hh[prefix + "status"] = datum.status
+
+                if not imp_related and source_code in ("net", "gen-net"):
+                    hh_dict["export_kwh"] += hh_float_value
+                if imp_related and source_code in ("net", "gen-net"):
+                    hh_dict["import_kwh"] += hh_float_value
+                if (imp_related and source_code == "gen") or (
+                    not imp_related and source_code == "gen-net"
+                ):
+                    hh_dict["generated_kwh"] += hh_float_value
+                if (not imp_related and source_code == "gen") or (
+                    imp_related and source_code == "gen-net"
+                ):
+                    hh_dict["parasitic_kwh"] += hh_float_value
+                if (imp_related and source_code == "3rd-party") or (
+                    not imp_related and source_code == "3rd-party-reverse"
+                ):
+                    hh_dict["third_party_import_kwh"] += hh_float_value
+                if (not imp_related and source_code == "3rd-party") or (
+                    imp_related and source_code == "3rd-party-reverse"
+                ):
+                    hh_dict["third_party_export_kwh"] += hh_float_value
+                datum = next(data, None)
+
+        hh_dict["displaced_kwh"] = (
+            hh_dict["generated_kwh"] - hh_dict["export_kwh"] - hh_dict["parasitic_kwh"]
+        )
+        hh_dict["used_kwh"] = sum(
+            (
+                hh_dict["import_kwh"],
+                hh_dict["displaced_kwh"],
+                hh_dict["third_party_import_kwh"] - hh_dict["third_party_export_kwh"],
+            )
+        )
+
+    return render_template(
+        "em_hh_data.html", site=site, supplies=supplies, hh_data=hh_data
+    )
+
+
+@e.route("/sites/<int:site_id>/energy_management/months")
+def site_energy_management_months_get(site_id):
+    finish_year = req_int("finish_year")
+    finish_month = req_int("finish_month")
+    site = Site.get_by_id(g.sess, site_id)
+
+    typs = (
+        "imp_net",
+        "imp_3p",
+        "exp_net",
+        "exp_3p",
+        "used",
+        "displaced",
+        "imp_gen",
+        "exp_gen",
+    )
+
+    months = []
+    for month_start, month_finish in c_months_u(
+        finish_year=finish_year, finish_month=finish_month, months=12
+    ):
+        month = dict((typ, {"md": 0, "md_date": None, "kwh": 0}) for typ in typs)
+        month["start_date"] = month_start
+        month["start_date_ct"] = to_ct(month_start)
+        months.append(month)
+
+        for hh in site.hh_data(g.sess, month_start, month_finish, exclude_virtual=True):
+            for tp in typs:
+                if hh[tp] * 2 > month[tp]["md"]:
+                    month[tp]["md"] = hh[tp] * 2
+                    month[tp]["md_date"] = hh["start_date"]
+                month[tp]["kwh"] += hh[tp]
+
+        month["has_site_snags"] = (
+            g.sess.query(Snag)
+            .filter(
+                Snag.site == site,
+                Snag.start_date <= month_finish,
+                or_(Snag.finish_date == null(), Snag.finish_date > month_start),
+            )
+            .count()
+            > 0
+        )
+
+    totals = dict((typ, {"md": 0, "md_date": None, "kwh": 0}) for typ in typs)
+
+    for month in months:
+        for typ in typs:
+            if month[typ]["md"] > totals[typ]["md"]:
+                totals[typ]["md"] = month[typ]["md"]
+                totals[typ]["md_date"] = month[typ]["md_date"]
+            totals[typ]["kwh"] += month[typ]["kwh"]
+
+    months.append(totals)
+
+    return render_template("em_months.html", site=site, months=months)
+
+
+@e.route("/sites/<int:site_id>/energy_management/totals")
+def em_totals(site_id):
+    mem_id = req_int("mem_id")
+    site_info = chellow.dloads.get_mem_val(mem_id)
+    random_number = random()
+
+    status_code = 200 if site_info["status"] == "running" else 286
+    return make_response(
+        render_template(
+            "em_totals.html", site_info=site_info, random_number=random_number
+        ),
+        status_code,
+    )
 
 
 @e.route("/sources")
