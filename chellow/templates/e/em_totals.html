@@ -1,5 +1,15 @@
-{% if site_info.status == 'running' %}
-  <p style="color: red;">Calculating...{{random_number}}</p>
+{% if site_info is none %}
+	<div
+			hx-get="/e/sites/{{site.id}}/energy_management/totals?mem_id={{mem_id}}"
+		 	hx-trigger="every 3s">
+  </div>
+{% elif site_info.status == 'running' %}
+	<label>
+		Calculating:
+		<progress value="{{site_info.progress}}" max="12">
+			{{site_info.progress}} months
+		</progress>
+	</label>
 {% else %}
   <table>
 		<caption>Last 12 months</caption>

@@ -33,7 +33,7 @@ def totals_runner(mem_id, site_id, start_date):
     log_list = []
     problem = ""
 
-    jval = {"titles": titles, "rows": [], "status": "finished", "log": log_list}
+    jval = {"titles": titles, "rows": [], "status": "running", "log": log_list}
     try:
         sess = Session()
         site = Site.get_by_id(sess, site_id)
@@ -56,9 +56,12 @@ def totals_runner(mem_id, site_id, start_date):
             start_year = start_date.year
             start_month = start_date.month
 
-        for month_start, month_finish in c_months_u(
-            start_year=start_year, start_month=start_month, months=12
+        for progress, (month_start, month_finish) in enumerate(
+            c_months_u(start_year=start_year, start_month=start_month, months=12)
         ):
+            jval["progress"] = progress
+            put_mem_val(mem_id, jval)
+
             for era in sess.execute(
                 select(Era)
                 .join(SiteEra)
@@ -288,4 +291,5 @@ def totals_runner(mem_id, site_id, start_date):
         except BaseException:
             jval["problem"] = "\nProblem closing session."
         finally:
+            jval["status"] = "finished"
             put_mem_val(mem_id, jval)

@@ -3302,21 +3302,12 @@ def site_energy_management_get(site_id):
         )
     ).scalars()
 
-    mem_id = chellow.dloads.get_mem_id()
-    chellow.dloads.put_mem_val(mem_id, {"status": "running"})
-    if "start_year" in request.values:
-        start_date = req_date("start")
-    else:
-        start_date = None
-    threading.Thread(target=totals_runner, args=(mem_id, site.id, start_date)).start()
-
     return render_template(
         "em_site.html",
         site=site,
         eras=eras,
         now=now,
         last_month=last_month,
-        mem_id=mem_id,
     )
 
 
@@ -3576,17 +3567,40 @@ def site_energy_management_months_get(site_id):
 
 @e.route("/sites/<int:site_id>/energy_management/totals")
 def em_totals(site_id):
-    mem_id = req_int("mem_id")
-    site_info = chellow.dloads.get_mem_val(mem_id)
-    random_number = random()
+    site = Site.get_by_id(g.sess, site_id)
 
-    status_code = 200 if site_info["status"] == "running" else 286
-    return make_response(
-        render_template(
-            "em_totals.html", site_info=site_info, random_number=random_number
-        ),
-        status_code,
-    )
+    if "mem_id" in request.values:
+
+        mem_id = req_int("mem_id")
+        site_info = chellow.dloads.get_mem_val(mem_id)
+        random_number = random()
+
+        status_code = 200 if site_info["status"] == "running" else 286
+        return make_response(
+            render_template(
+                "em_totals.html",
+                site=site,
+                site_info=site_info,
+                random_number=random_number,
+            ),
+            status_code,
+        )
+
+    else:
+        mem_id = chellow.dloads.get_mem_id()
+        chellow.dloads.put_mem_val(mem_id, {"status": "running", "progress": 0})
+
+        if "start_year" in request.values:
+            start_date = req_date("start")
+        else:
+            start_date = None
+
+        args = mem_id, site.id, start_date
+        threading.Thread(target=totals_runner, args=args).start()
+
+        return render_template(
+            "em_totals.html", site=site, site_info=None, mem_id=mem_id
+        )
 
 
 @e.route("/sources")

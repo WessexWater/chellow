@@ -86,10 +86,12 @@
 		</li>
 	</ul>
 
-	<div
-			hx-get="/e/sites/{{site.id}}/energy_management/totals?mem_id={{mem_id}}"
-		 	hx-trigger="every 3s">
-  </div>
+	<form hx-get="/e/sites/{{site.id}}/energy_management/totals">
+		<fieldset>
+			<legend>Calculate virtual bills for the last 12 months</legend>
+			<button>Calculate</button>
+		</fieldset>
+  </form>
 
   <h3>External Links</h3>
 
