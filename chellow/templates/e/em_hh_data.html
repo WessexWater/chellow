@@ -46,12 +46,12 @@
 			{% for hh in hh_data %}
 				<tr>
 					<td style="white-space: nowrap">{{hh.start_date|hh_format}}</td>
-					<td>{{hh.import_kwh}}</td>
-					<td>{{hh.used_kwh}}</td>
-					<td>{{hh.displaced_kwh}}</td>
-					<td>{{hh.generated_kwh}}</td>
-					<td>{{hh.export_kwh}}</td>
-					<td>{{hh.parasitic_kwh}}</td>
+					<td>{{"{:,.1f}".format(hh.import_kwh)}}</td>
+					<td>{{"{:,.1f}".format(hh.used_kwh)}}</td>
+					<td>{{"{:,.1f}".format(hh.displaced_kwh)}}</td>
+					<td>{{"{:,.1f}".format(hh.generated_kwh)}}</td>
+					<td>{{"{:,.1f}".format(hh.export_kwh)}}</td>
+					<td>{{"{:,.1f}".format(hh.parasitic_kwh)}}</td>
 					{% for datum in hh.supplies %}
 						<td style="border-left-width: medium;"
 							>{{datum.import_kwh}}</td>

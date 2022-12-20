@@ -3389,7 +3389,7 @@ def site_snag_get(snag_id):
 
 
 @e.route("/sites/<int:site_id>/energy_management/hh_data")
-def site_energy_management_hh_data_get(site_id):
+def em_hh_data_get(site_id):
     caches = {}
     site = Site.get_by_id(g.sess, site_id)
 
@@ -3399,24 +3399,28 @@ def site_energy_management_hh_data_get(site_id):
         c_months_u(start_year=year, start_month=month, months=1)
     )
 
-    supplies = g.sess.execute(
-        select(Supply)
-        .join(Era)
-        .join(SiteEra)
-        .join(Source)
-        .join(Party)
-        .where(
-            SiteEra.site == site,
-            SiteEra.is_physical == true(),
-            Era.start_date <= finish_date,
-            or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            Source.code != "sub",
-            Party.dno_code != "88",
+    supplies = (
+        g.sess.execute(
+            select(Supply)
+            .join(Era)
+            .join(SiteEra)
+            .join(Source)
+            .join(Party)
+            .where(
+                SiteEra.site == site,
+                SiteEra.is_physical == true(),
+                Era.start_date <= finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                Source.code != "sub",
+                Party.dno_code != "88",
+            )
+            .order_by(Supply.id)
+            .distinct()
+            .options(joinedload(Supply.source), joinedload(Supply.generator_type))
         )
-        .order_by(Supply.id)
-        .distinct()
-        .options(joinedload(Supply.source), joinedload(Supply.generator_type))
-    ).scalars()
+        .scalars()
+        .all()
+    )
 
     data = iter(
         g.sess.query(HhDatum)
