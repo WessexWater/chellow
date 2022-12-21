@@ -186,5 +186,5 @@ def test_process_banded_hh_ums(sess):
         "hist-kwh": 0,
         "duos-description": "Unmetered",
         "tnuos-band": "Unmetered",
-        "tnuos-gbp": 0.30083333333333332,
+        "tnuos-gbp": 0.00989041095890411,
     }

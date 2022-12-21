@@ -97,6 +97,7 @@ class RateServer(threading.Thread):
                     for mod_name in (
                         "chellow.e.dno_rate_parser",
                         "chellow.e.mdd_importer",
+                        "chellow.e.tnuos",
                         "chellow.gas.dn_rate_parser",
                     ):
                         mod = import_module(mod_name)

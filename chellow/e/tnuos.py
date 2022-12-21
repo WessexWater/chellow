@@ -1,14 +1,23 @@
+from decimal import Decimal, InvalidOperation
+from io import BytesIO
+
 from dateutil.relativedelta import relativedelta
 
+from openpyxl import load_workbook
+
 from sqlalchemy import null, or_, select
+
+from werkzeug.exceptions import BadRequest
 
 import chellow.e.computer
 import chellow.e.duos
 from chellow.models import Contract, RateScript
+from chellow.rate_server import download
 from chellow.utils import (
     c_months_u,
     ct_datetime,
     hh_after,
+    hh_format,
     hh_min,
     to_ct,
     to_utc,
@@ -20,10 +29,12 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 def hh(ds, rate_period="monthly", est_kw=None):
 
     for hh in ds.hh_data:
-        if hh["ct-is-month-end"]:
-            _process_triad_hh(ds, rate_period, est_kw, hh)
-            if hh["start-date"] >= BANDED_START:
+        if hh["start-date"] >= BANDED_START:
+            if hh["ct-decimal-hour"] == 12:
                 _process_banded_hh(ds, hh)
+        else:
+            if hh["ct-is-month-end"]:
+                _process_triad_hh(ds, rate_period, est_kw, hh)
 
 
 def _process_banded_hh(ds, hh):
@@ -33,9 +44,9 @@ def _process_banded_hh(ds, hh):
     hh["tnuos-band"] = band
     rate = float(rates["bands"][band])
     if band == "Unmetered":
-        hh["tnuos-gbp"] = rate / 100 * ds.sc / 12
+        hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
     else:
-        hh["tnuos-gbp"] = rate / 12
+        hh["tnuos-gbp"] = rate
 
 
 def _process_triad_hh(ds, rate_period, est_kw, hh):
@@ -257,3 +268,120 @@ def _process_triad_hh(ds, rate_period, est_kw, hh):
         hh["triad-all-estimates-gbp"] = (
             est_triad_gbp / total_intervals * est_intervals * -1
         )
+
+
+def get_cell(sheet, col, row):
+    try:
+        coordinates = f"{col}{row}"
+        return sheet[coordinates]
+    except IndexError:
+        raise BadRequest(f"Can't find the cell {coordinates} on sheet {sheet}.")
+
+
+def get_int(sheet, col, row):
+    return int(get_cell(sheet, col, row).value)
+
+
+def get_dec(sheet, col, row):
+    cell = get_cell(sheet, col, row)
+    try:
+        return Decimal(str(cell.value))
+    except InvalidOperation as e:
+        raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
+
+
+def get_str(sheet, col, row):
+    return get_cell(sheet, col, row).value.strip()
+
+
+def get_value(row, idx):
+    val = row[idx].value
+    if isinstance(val, str):
+        return val.strip()
+    else:
+        return val
+
+
+def find_bands(file_like):
+    book = load_workbook(file_like, data_only=True)
+
+    tabs = {sheet.title.strip(): sheet for sheet in book.worksheets}
+
+    tab_name = "T10"
+    try:
+        sheet = tabs[tab_name]
+    except KeyError:
+        raise BadRequest(f"Can't find the tab named '{tab_name}'")
+
+    bands = {}
+
+    in_bands = False
+    for row in range(1, len(sheet["B"]) + 1):
+        val = get_cell(sheet, "B", row).value
+        val_0 = None if val is None else " ".join(val.split())
+        if in_bands:
+            if val_0 is None or len(val_0) == 0 or val_0 == "Demand Residual (£m)":
+                in_bands = False
+            elif val_0 != "Unmetered demand":
+                bands[val_0] = get_dec(sheet, "E", row)
+
+        elif val_0 == "Band":
+            in_bands = True
+
+    return bands
+
+
+def rate_server_import(sess, s, paths, logger):
+    logger("Starting to check for new TNUoS spreadsheets")
+    year_entries = {}
+    for path, url in paths:
+        if len(path) == 4:
+
+            year_str, utility, rate_type, file_name = path
+            year = int(year_str)
+
+            if utility == "electricity" and rate_type == "tnuos":
+
+                try:
+                    fl_entries = year_entries[year]
+                except KeyError:
+                    fl_entries = year_entries[year] = {}
+
+                fl_entries[file_name] = url
+
+    contract = Contract.get_non_core_by_name(sess, "tnuos")
+    for year, fl_entries in sorted(year_entries.items()):
+        fy_start = to_utc(ct_datetime(year, 4, 1))
+        if fy_start < contract.start_rate_script.start_date:
+            continue
+
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == fy_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, fy_start, {})
+
+        file_name, url = sorted(fl_entries.items())[-1]
+
+        rs_script = rs.make_script()
+        if rs_script.get("a_file_name") != file_name:
+            try:
+                fl = BytesIO(download(s, url))
+                try:
+                    bands = find_bands(fl)
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"Problem with file '{file_name}': {e.description}"
+                    )
+                rs_script["bands"] = bands
+                rs_script["a_file_name"] = file_name
+                rs.update(rs_script)
+                logger(f"Updated TNUoS rate script for " f"{hh_format(fy_start)}")
+            except BadRequest as e:
+                raise BadRequest(f"Problem with year {year}: {e.description}")
+
+    logger("Finished TNUoS spreadsheets")
+    sess.commit()
