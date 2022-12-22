@@ -6483,6 +6483,21 @@ def insert_cops(sess):
         ("6c", "CoP 6c 250 day memory"),
         ("6d", "CoP 6d 450 day memory"),
         ("7", "CoP 7"),
+        ("8", "CoP 8"),
+        ("9", "CoP 9"),
+        ("10", "CoP 10"),
+        ("A", "CoP A"),
+        ("B", "CoP B"),
+        ("C", "CoP C"),
+        ("D", "CoP D"),
+        ("E", "CoP E"),
+        ("F", "CoP F"),
+        ("G", "CoP G"),
+        ("H", "CoP H"),
+        ("J", "CoP J"),
+        ("K1", "CoP K1"),
+        ("K2", "CoP K2"),
+        ("N", "Where a dispensation applies or installation is not CoP compliant"),
     ):
         Cop.insert(sess, code, desc)
 
@@ -7165,6 +7180,27 @@ def db_upgrade_40_to_41(sess, root_path):
     sess.execute("select setval('measurement_requirement_id_seq', :val)", {"val": val})
 
 
+def db_upgrade_41_to_42(sess, root_path):
+    for code, desc in (
+        ("8", "CoP 8"),
+        ("9", "CoP 9"),
+        ("10", "CoP 10"),
+        ("A", "CoP A"),
+        ("B", "CoP B"),
+        ("C", "CoP C"),
+        ("D", "CoP D"),
+        ("E", "CoP E"),
+        ("F", "CoP F"),
+        ("G", "CoP G"),
+        ("H", "CoP H"),
+        ("J", "CoP J"),
+        ("K1", "CoP K1"),
+        ("K2", "CoP K2"),
+        ("N", "Where a dispensation applies or installation is not CoP compliant"),
+    ):
+        Cop.insert(sess, code, desc)
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7191,6 +7227,7 @@ upgrade_funcs.extend(
         db_upgrade_38_to_39,
         db_upgrade_39_to_40,
         db_upgrade_40_to_41,
+        db_upgrade_41_to_42,
     ]
 )
 
