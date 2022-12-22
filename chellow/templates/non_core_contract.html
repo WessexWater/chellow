@@ -10,10 +10,10 @@
 {% endblock %}
 
 {% block content %}
-	{% if contract.name != 'ro' %}
+	{% if contract.name in [
+	    'bank_holidays', 'bmarketidx', 'bsuos', 'rcrc', 'system_price', 'tlms'] %}
 		<p>
-			<a href="/non_core_contracts/{{contract.id}}/auto_importer">Automatic
-				Importer</a>
+			<a href="/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
 		</p>
 	{% endif %}
 
