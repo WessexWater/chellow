@@ -1610,5 +1610,5 @@ def supplier_rate_script_get(g_rate_script_id):
         "supplier_rate_script.html",
         g_rate_script=g_rate_script,
         next_g_rate_script=next_g_rate_script,
-        g_previous_rate_script=previous_g_rate_script,
+        previous_g_rate_script=previous_g_rate_script,
     )

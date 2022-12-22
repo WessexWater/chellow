@@ -899,6 +899,29 @@ def test_read_edit_post_delete(sess, client):
     match(response, 303, f"/g/bills/{g_bill.id}")
 
 
+def test_supplier_rate_script_get(sess, client):
+
+    g_contract = GContract.insert(
+        sess,
+        False,
+        "Fusion 2020",
+        "",
+        {},
+        utc_datetime(2019, 1, 1),
+        utc_datetime(2019, 2, 28, 23, 30),
+        {},
+    )
+
+    g_contract.insert_g_rate_script(sess, utc_datetime(2019, 2, 1), {})
+    g_rate_script = g_contract.insert_g_rate_script(sess, utc_datetime(2019, 2, 2), {})
+
+    sess.commit()
+
+    response = client.get(f"/g/supplier_rate_scripts/{g_rate_script.id}")
+
+    match(response, 200, "Previous Rate Script")
+
+
 def test_supplier_rate_script_edit_post_delete(sess, client):
 
     g_contract = GContract.insert(
