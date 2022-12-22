@@ -23,6 +23,16 @@
 			</fieldset>
 		</form>
 
+		<p>
+			The rate server details can be set in the
+			<a href="/configuration">configuration</a> with an entry like:
+		</p>
+
+		<pre>"rate_server": {
+  "url": "https://api.github.com/repos/WessexWater/chellow-rates",
+  "branch": "main"
+},</pre>
+
 		<h4>Log</h4>
 		<ul>
 			{% for message in importer.messages %}
