@@ -1,9 +1,7 @@
 import csv
-import threading
-import traceback
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO, StringIO
 from zipfile import ZipFile
 
 # from sqlalchemy.dialects.postgresql import insert
@@ -11,80 +9,12 @@ from sqlalchemy import text
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.models import Contract, Party, Session
+from chellow.models import Contract, Party
+from chellow.rate_server import download
 from chellow.utils import hh_after, to_ct, to_utc
 
 
-process_id = 0
-process_lock = threading.Lock()
-processes = {}
-
-
-class LafImporter(threading.Thread):
-    def __init__(self, zips):
-        threading.Thread.__init__(self)
-        self.progress = {
-            "file_number": None,
-            "line_number": None,
-        }
-        self.zips = zips
-        self.rd_lock = threading.Lock()
-        self.error_message = None
-
-    def get_fields(self):
-        progress = self.progress
-        ln = progress["line_number"]
-        return {
-            "progress": f"Processing file number {progress['file_number'] + 1} "
-            + ("" if ln is None else f" line number {ln:,}"),
-            "error_message": self.error_message,
-        }
-
-    def run(self):
-        sess = None
-        try:
-            sess = Session()
-            for file_number, zfile in enumerate(self.zips):
-                self.progress["file_number"] = file_number
-                _process(sess, self.progress, zfile)
-
-        except BadRequest as e:
-            sess.rollback()
-            with self.rd_lock:
-                self.error_message = e.description
-
-        except BaseException:
-            sess.rollback()
-            with self.rd_lock:
-                self.error_message = traceback.format_exc()
-        finally:
-            if sess is not None:
-                sess.close()
-
-
-def start_process(zips):
-    global process_id
-    with process_lock:
-        proc_id = process_id
-        process_id += 1
-
-    process = LafImporter(zips)
-    processes[proc_id] = process
-    process.start()
-    return proc_id
-
-
-def get_process_ids():
-    with process_lock:
-        return processes.keys()
-
-
-def get_process(id):
-    with process_lock:
-        return processes[id]
-
-
-def _process(sess, progress, file_like):
+def _process(sess, log, set_progress, file_like):
     zip_file = ZipFile(file_like)
     name_list = zip_file.namelist()
     if len(name_list) != 1:
@@ -101,7 +31,9 @@ DO UPDATE SET (llfc_id, timestamp, value) =
     fname = name_list[0]
     csv_file = StringIO(zip_file.read(fname).decode("utf-8"))
     csv_dt = to_utc(to_ct(Datetime.strptime(fname[-12:-4], "%Y%m%d")))
-    for llfc_ids, timestamps, values in laf_days(sess, progress, csv_file, csv_dt):
+    for llfc_ids, timestamps, values in laf_days(
+        sess, log, set_progress, csv_file, csv_dt
+    ):
         sess.execute(
             stmt,
             params={"llfc_ids": llfc_ids, "timestamps": timestamps, "values": values},
@@ -112,7 +44,7 @@ DO UPDATE SET (llfc_id, timestamp, value) =
 UTC_DATETIME_MIN = to_utc(Datetime.min)
 
 
-def laf_days(sess, progress, csv_file, csv_dt):
+def laf_days(sess, log, set_progress, csv_file, csv_dt):
     llfc_ids = []
     timestamps = []
     values = []
@@ -121,7 +53,7 @@ def laf_days(sess, progress, csv_file, csv_dt):
     timestamp_cache = {}
 
     for line_number, vals in enumerate(csv.reader(csv_file, delimiter="|")):
-        progress["line_number"] = line_number
+        set_progress(f"Reached line number {line_number}")
         code = vals[0]
 
         if code == "DIS":
@@ -170,17 +102,59 @@ def laf_days(sess, progress, csv_file, csv_dt):
             values.append(Decimal(value))
 
         elif code == "ZPT":
-            earliest_list = sorted(timestamp_cache.keys())
-            if len(earliest_list) > 0:
-                conf = Contract.get_non_core_by_name(sess, "configuration")
-                props = conf.make_properties()
-                try:
-                    laf_importer = props["laf_importer"]
-                except KeyError:
-                    laf_importer = props["laf_importer"] = {}
-
-                laf_importer[dno.participant.code] = min(earliest_list)
-                conf.update_properties(props)
-                sess.commit()
             if len(llfc_ids) > 0:
                 yield llfc_ids, timestamps, values
+
+
+LAF_START = "llf"
+LAF_END = "ptf.zip"
+
+
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new LAF files")
+    participant_entries = {}
+    conf = Contract.get_non_core_by_name(sess, "configuration")
+    state = conf.make_state()
+
+    try:
+        laf_state = state["laf_importer"]
+    except KeyError:
+        laf_state = state["laf_importer"] = {}
+
+    for path, url in paths:
+        if len(path) == 4:
+
+            year_str, utility, rate_type, file_name = path
+
+            if utility == "electricity" and rate_type == "lafs":
+                # File name llfetcl20220401ptf.zip
+                if not file_name.startswith(LAF_START):
+                    raise BadRequest(f"A laf file must begin with '{LAF_START}'")
+                if not file_name.endswith(LAF_END):
+                    raise BadRequest(f"A laf file must end with '{LAF_END}'")
+
+                participant_code = file_name[3:7]
+                timestamp = file_name[7:15]
+
+                try:
+                    fl_entries = participant_entries[participant_code]
+                except KeyError:
+                    fl_entries = participant_entries[participant_code] = {}
+
+                participant_state = laf_state.get(participant_code, "")
+                if timestamp > participant_state:
+                    fl_entries[timestamp] = url
+
+    for participant_code, fl_entries in sorted(participant_entries.items()):
+        log(f"Importing files for participant code {participant_code}")
+        for timestamp, url in sorted(fl_entries.items()):
+            log(f"Importing file with timestamp {timestamp}")
+
+            fl = BytesIO(download(s, url))
+            _process(sess, log, set_progress, fl)
+            laf_state[participant_code] = timestamp
+            conf.update_state(state)
+            sess.commit()
+
+    log("Finished LAF files")
+    sess.commit()

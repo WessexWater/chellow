@@ -834,8 +834,8 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-def rate_server_import(sess, s, paths, logger):
-    logger("Starting to check for a new MDD version")
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for a new MDD version")
     mdd_entries = {}
     for path, url in paths:
         if len(path) == 5:
@@ -855,13 +855,13 @@ def rate_server_import(sess, s, paths, logger):
         raise BadRequest("Can't find any MDD versions on the rate server.")
 
     mdd_version, fl_entries = sorted(mdd_entries.items())[-1]
-    logger(f"Latest version on rate server: {mdd_version}.")
+    log(f"Latest version on rate server: {mdd_version}.")
 
     config = Contract.get_non_core_by_name(sess, "configuration")
     state = config.make_state()
     current_version = state.get("mdd_version", 0)
 
-    logger(f"Latest version in Chellow: {current_version}")
+    log(f"Latest version in Chellow: {current_version}")
     if mdd_version <= current_version:
         return
 
@@ -924,7 +924,7 @@ def rate_server_import(sess, s, paths, logger):
     ]:
 
         if tname in gnames:
-            logger(f"Found {tname} and will now import it.")
+            log(f"Found {tname} and will now import it.")
             func(sess, gnames[tname], ctx)
         else:
             raise BadRequest(f"Can't find {tname} on the rate server.")

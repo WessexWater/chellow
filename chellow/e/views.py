@@ -3,7 +3,7 @@ import os
 import threading
 from collections import defaultdict
 from datetime import datetime as Datetime
-from io import BytesIO, StringIO
+from io import StringIO
 from itertools import chain, islice
 from random import random
 
@@ -1889,60 +1889,6 @@ def lafs_get():
     )
 
     return render_template("lafs.html", dno=dno, llfc=llfc, lafs=lafs)
-
-
-@e.route("/laf_imports")
-def laf_imports_get():
-    conf = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = conf.make_properties()
-    return render_template(
-        "laf_imports.html",
-        process_ids=sorted(chellow.e.laf_import.get_process_ids(), reverse=True),
-        properties=props.get("laf_importer", {}),
-    )
-
-
-@e.route("/laf_imports", methods=["POST"])
-def laf_imports_post():
-    try:
-        zips = []
-        for file_item in request.files.values():
-            file_name = file_item.filename
-            if not file_name.endswith(".zip"):
-                raise BadRequest("The files should have the extension '.zip'.")
-            f = BytesIO(file_item.stream.read())
-            f.seek(0)
-            zips.append(f)
-
-        proc_id = chellow.e.laf_import.start_process(zips)
-        return chellow_redirect(f"/laf_imports/{proc_id}", 303)
-    except BadRequest as e:
-        flash(e.description)
-        conf = Contract.get_non_core_by_name(g.sess, "configuration")
-        props = conf.make_properties()
-        return make_response(
-            render_template(
-                "laf_imports.html",
-                process_ids=sorted(
-                    chellow.e.laf_import.get_process_ids(), reverse=True
-                ),
-                properties=props.get("laf_importer", {}),
-            ),
-            400,
-        )
-
-
-@e.route("/laf_imports/<int:import_id>")
-def laf_import_get(import_id):
-    try:
-        proc = chellow.e.laf_import.get_process(import_id)
-        fields = proc.get_fields()
-        fields["is_alive"] = proc.is_alive()
-        fields["process_id"] = import_id
-        return render_template("laf_import.html", **fields)
-    except BadRequest as e:
-        flash(e.description)
-        return render_template("laf_import.html", process_id=import_id)
 
 
 @e.route("/llfcs")

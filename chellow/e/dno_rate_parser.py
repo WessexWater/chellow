@@ -477,8 +477,8 @@ def find_gsp_group_rates(file_name, file_like):
     return gsp_code, rates, vls
 
 
-def rate_server_import(sess, s, paths, logger):
-    logger("Starting to check for new DNO spreadsheets")
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new DNO spreadsheets")
     year_entries = {}
     for path, url in paths:
         if len(path) == 5:
@@ -523,17 +523,17 @@ def rate_server_import(sess, s, paths, logger):
                     fl = BytesIO(download(s, url))
                     rates, vls = find_rates(file_name, fl)
                     rs.update(rates)
-                    logger(
+                    log(
                         f"Updated DNO {dno_code} rate script for "
                         f"{hh_format(fy_start)}"
                     )
-                    update_vls(sess, logger, vls, dno_code, fy_start, rs.finish_date)
+                    update_vls(sess, log, vls, dno_code, fy_start, rs.finish_date)
                 except BadRequest as e:
                     raise BadRequest(
                         f"Problem with year {year} DNO {dno_code}: {e.description}"
                     )
 
-    logger("Finished DNO spreadsheets")
+    log("Finished DNO spreadsheets")
     sess.commit()
 
 

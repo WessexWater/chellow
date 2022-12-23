@@ -258,8 +258,8 @@ def find_nts_rates(file_name, file_like, col):
     return rates
 
 
-def rate_server_import(sess, s, paths, logger):
-    logger("Starting to check for new DN spreadsheets")
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new DN spreadsheets")
 
     year_entries = {}
     for path, url in paths:
@@ -315,17 +315,17 @@ def rate_server_import(sess, s, paths, logger):
             nts_rs_1_script = nts_rs_1.make_script()
             if nts_rs_1_script.get("a_file_name") != file_name:
                 nts_rs_1.update(find_nts_1_rates(file_name, BytesIO(download(s, url))))
-                logger(f"Updated NTS rate script for {hh_format(year_start)}")
+                log(f"Updated NTS rate script for {hh_format(year_start)}")
 
             nts_rs_2_script = nts_rs_2.make_script()
             if nts_rs_2_script.get("a_file_name") != file_name:
                 nts_rs_2.update(find_nts_1_rates(file_name, BytesIO(download(s, url))))
-                logger(f"Updated NTS rate script for {hh_format(oct_start)}")
+                log(f"Updated NTS rate script for {hh_format(oct_start)}")
 
             dn_rs_script = dn_rs.make_script()
             if dn_rs_script.get("a_file_name") != file_name:
                 dn_rs.update(find_dn_rates(file_name, BytesIO(download(s, url))))
-                logger(f"Updated DN rate script for {hh_format(year_start)}")
+                log(f"Updated DN rate script for {hh_format(year_start)}")
 
-    logger("Finished DN spreadsheets")
+    log("Finished DN spreadsheets")
     sess.commit()

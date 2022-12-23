@@ -331,8 +331,8 @@ def find_bands(file_like):
     return bands
 
 
-def rate_server_import(sess, s, paths, logger):
-    logger("Starting to check for new TNUoS spreadsheets")
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new TNUoS spreadsheets")
     year_entries = {}
     for path, url in paths:
         if len(path) == 4:
@@ -379,9 +379,9 @@ def rate_server_import(sess, s, paths, logger):
                 rs_script["bands"] = bands
                 rs_script["a_file_name"] = file_name
                 rs.update(rs_script)
-                logger(f"Updated TNUoS rate script for " f"{hh_format(fy_start)}")
+                log(f"Updated TNUoS rate script for " f"{hh_format(fy_start)}")
             except BadRequest as e:
                 raise BadRequest(f"Problem with year {year}: {e.description}")
 
-    logger("Finished TNUoS spreadsheets")
+    log("Finished TNUoS spreadsheets")
     sess.commit()

@@ -22,7 +22,7 @@ def download(s, url):
     return b64decode(fl_json["content"])
 
 
-def run_import(sess, log):
+def run_import(sess, log, set_progress):
 
     log("Starting to import rates from the rate server")
     conf = Contract.get_non_core_by_name(sess, "configuration")
@@ -63,12 +63,13 @@ def run_import(sess, log):
 
     for mod_name in (
         "chellow.e.dno_rate_parser",
+        "chellow.e.laf_import",
         "chellow.e.mdd_importer",
         "chellow.e.tnuos",
         "chellow.gas.dn_rate_parser",
     ):
         mod = import_module(mod_name)
-        mod.rate_server_import(sess, s, paths, log)
+        mod.rate_server_import(sess, log, set_progress, s, paths)
 
 
 class RateServer(threading.Thread):
@@ -76,6 +77,7 @@ class RateServer(threading.Thread):
         super().__init__(name="Rate Server")
         self.lock = threading.RLock()
         self.messages = collections.deque(maxlen=500)
+        self.progress = ""
         self.stopped = threading.Event()
         self.going = threading.Event()
 
@@ -99,13 +101,16 @@ class RateServer(threading.Thread):
             f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
         )
 
+    def set_progress(self, progress):
+        self.progress = progress
+
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
                 sess = self.global_alert = None
                 try:
                     sess = Session()
-                    run_import(sess, self.log)
+                    run_import(sess, self.log, self.set_progress)
                 except BaseException:
                     self.log(traceback.format_exc())
                     self.global_alert = "Rate Server: An import has failed"

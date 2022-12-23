@@ -412,8 +412,8 @@ def test_import_mdd(mocker, sess):
     Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
     sess.commit()
 
-    def logger(msg):
-        pass
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
 
     mocker.patch("chellow.e.mdd_importer.download", return_value=b"\n")
 
@@ -452,7 +452,7 @@ def test_import_mdd(mocker, sess):
     paths = tuple((p, "") for p in path_list)
     s = mocker.Mock()
 
-    rate_server_import(sess, s, paths, logger)
+    rate_server_import(sess, log, set_progress, s, paths)
 
 
 def test_import_mdd_two_versions(mocker, sess):
@@ -502,10 +502,7 @@ def test_import_mdd_two_versions(mocker, sess):
     Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
     sess.commit()
 
-    messages = []
-
-    def logger(msg):
-        messages.append(msg)
-
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
     s = mocker.Mock()
-    rate_server_import(sess, s, paths, logger)
+    rate_server_import(sess, log, set_progress, s, paths)

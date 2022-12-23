@@ -33,6 +33,10 @@
   "branch": "main",
 },</pre>
 
+		{% if importer.is_locked() %}
+			<p>Progress: {{importer.progress}}</p>
+		{% endif %}
+
 		<h4>Log</h4>
 		<ul>
 			{% for message in importer.messages %}

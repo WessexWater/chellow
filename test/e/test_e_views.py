@@ -1,7 +1,6 @@
 from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
-from zipfile import ZipFile
 
 from sqlalchemy import event
 from sqlalchemy.orm import Session
@@ -1656,49 +1655,6 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
 
     assert len(bundles[0]["imp_bills"]["bill_dicts"]) == 0
     assert len(bundles[1]["imp_bills"]["bill_dicts"]) == 1
-
-
-def test_laf_imports_get(client):
-    response = client.get("/e/laf_imports")
-
-    match(response, 200)
-
-
-def test_laf_imports_post(client):
-    file_name = "lafs.zip"
-    """
-    file_lines = ("",)
-
-    file_bytes = "\n".join(file_lines).encode("utf8")
-    f = BytesIO(file_bytes)
-    """
-    f = BytesIO()
-    zf = ZipFile(f, mode="w")
-    zf.writestr("llfipnl20210922.ptf", "")
-    zf.close()
-    f.seek(0)
-
-    data = {"import_file": (f, file_name)}
-
-    response = client.post("/e/laf_imports", data=data)
-
-    match(response, 303)
-
-    match_repeat(client, "/e/laf_imports/0", "success")
-
-
-def test_laf_imports_post_error(client):
-    file_lines = ("",)
-
-    file_name = "lafs.ptf"
-    file_bytes = "\n".join(file_lines).encode("utf8")
-    f = BytesIO(file_bytes)
-
-    data = {"import_file": (f, file_name)}
-
-    response = client.post("/e/laf_imports", data=data)
-
-    match(response, 400)
 
 
 def test_llfc_eidt_post(sess, client):

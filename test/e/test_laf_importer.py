@@ -1,8 +1,10 @@
 from decimal import Decimal
 from io import BytesIO, StringIO
-from zipfile import ZipFile
+from zipfile import BadZipFile, ZipFile
 
-import chellow.e.laf_import
+import pytest
+
+from chellow.e.laf_import import _process, laf_days
 from chellow.models import (
     Contract,
     MarketRole,
@@ -13,26 +15,20 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_laf_days(sess):
-    valid_from = to_utc(ct_datetime(2000, 1, 1))
+def test_laf_days(mocker, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     participant_code = "IPNL"
     participant = Participant.insert(sess, participant_code, "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     calb_participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    calb_participant.insert_party(sess, market_role_Z, "NonCore", valid_from, None, "")
-    Contract.insert_non_core(sess, "configuration", "", {}, valid_from, None, {})
+    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
+    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
-        sess, "500", "PC 5-8 & HH HV", voltage_level, False, True, valid_from, None
-    )
+    dno.insert_llfc(sess, "500", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
     sess.commit()
-    progress = {
-        "file_number": None,
-        "line_number": None,
-    }
     csv_file = StringIO(
         """ZHD||D0265001|R|IPNL|G|CAPG|20210914142620||||OPER
 DIS|IPNL
@@ -42,44 +38,40 @@ SPL|1|1.074
 ZPT|40672767|423780412"""
     )
     csv_dt = utc_datetime(2021, 9, 1)
-    actual = list(chellow.e.laf_import.laf_days(sess, progress, csv_file, csv_dt))
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
+    actual = list(laf_days(sess, log, set_progress, csv_file, csv_dt))
     expected = [([1], [utc_datetime(2021, 9, 21, 23, 0)], [Decimal("1.074")])]
     assert actual == expected
 
 
-def test_process_empty_file(sess):
-    progress = {
-        "file_number": None,
-        "line_number": None,
-    }
+def test_process_empty_file(mocker, sess):
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
     f = BytesIO()
     zf = ZipFile(f, mode="w")
     zf.writestr("llfipnl20210922.ptf", "")
     zf.close()
     f.seek(0)
-    chellow.e.laf_import._process(sess, progress, f)
+    _process(sess, log, set_progress, f)
 
 
-def test_process(sess):
-    valid_from = to_utc(ct_datetime(2000, 1, 1))
+def test_process(mocker, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     participant_code = "IPNL"
     participant = Participant.insert(sess, participant_code, "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     calb_participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    calb_participant.insert_party(sess, market_role_Z, "NonCore", valid_from, None, "")
-    Contract.insert_non_core(sess, "configuration", "", {}, valid_from, None, {})
+    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
+    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(
-        sess, "500", "PC 5-8 & HH HV", voltage_level, False, True, valid_from, None
-    )
+    dno.insert_llfc(sess, "500", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
     sess.commit()
-    progress = {
-        "file_number": None,
-        "line_number": None,
-    }
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
     csv_str = """ZHD||D0265001|R|IPNL|G|CAPG|20210914142620||||OPER
 DIS|IPNL
 LLF|500
@@ -91,4 +83,17 @@ ZPT|40672767|423780412"""
     zf.writestr("llfipnl20210922.ptf", csv_str)
     zf.close()
     f.seek(0)
-    chellow.e.laf_import._process(sess, progress, f)
+    _process(sess, log, set_progress, f)
+
+
+def test_laf_import_error(mocker, sess):
+    file_lines = ("",)
+
+    file_bytes = "\n".join(file_lines).encode("utf8")
+    f = BytesIO(file_bytes)
+
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
+
+    with pytest.raises(BadZipFile, match="File is not a zip file"):
+        _process(sess, log, set_progress, f)
