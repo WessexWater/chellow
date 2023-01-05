@@ -113,7 +113,10 @@ class RateServer(threading.Thread):
                     run_import(sess, self.log, self.set_progress)
                 except BaseException:
                     self.log(traceback.format_exc())
-                    self.global_alert = "Rate Server: An import has failed"
+                    self.global_alert = (
+                        "There's a problem with a <a href='/rate_server'>Rate Server "
+                        "import</a>."
+                    )
                     sess.rollback()
                 finally:
                     if sess is not None:

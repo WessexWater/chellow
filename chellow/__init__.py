@@ -256,8 +256,10 @@ def create_app(testing=False):
                 try:
                     contract = Contract.get_by_id(g.sess, task.contract_id)
                     global_alerts.append(
-                        f"There's a problem with the automatic HH data importer for "
-                        f"contract '{contract.name}'."
+                        f"There's a problem with the <a "
+                        f"href='/dc_contracts/{contract.id}/automatic_importer'>"
+                        f"automatic HH data importer for contract '{contract.name}'"
+                        f"</a>.",
                     )
                 except NotFound:
                     pass

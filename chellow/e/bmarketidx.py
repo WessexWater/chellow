@@ -101,7 +101,7 @@ class BmarketidxImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = None
+                sess = self.global_alert = contract = None
                 try:
                     sess = Session()
                     self.log("Starting to check bmarketidx.")
@@ -137,9 +137,16 @@ class BmarketidxImporter(threading.Thread):
                 except BaseException:
                     self.log(f"Outer problem {traceback.format_exc()}")
                     sess.rollback()
-                    self.global_alert = (
-                        "There's a problem with the " "bmarketidx automatic importer."
-                    )
+                    if contract is None:
+                        self.global_alert = (
+                            "There's a problem with the bmarketidx automatic importer."
+                        )
+                    else:
+                        self.global_alert = (
+                            f"There's a problem with the <a "
+                            f"href='/e/non_core_contracts/{contract.id}/"
+                            f"automatic_importer'>bmarketidx automatic importer</a>."
+                        )
                 finally:
                     self.lock.release()
                     self.log("Finished checking bmarketidx rates.")

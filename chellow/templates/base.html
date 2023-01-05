@@ -330,7 +330,7 @@
 				{% if global_alerts %}
 					<ul>
 						{% for alert in global_alerts %}
-							<li class="global">{{alert}}</li>
+							<li class="global">{{alert|safe}}</li>
 						{% endfor %}
 					</ul>
 				{% endif %}

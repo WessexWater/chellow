@@ -69,7 +69,10 @@ class Tester(threading.Thread):
                         sess.rollback()  # Avoid long-running transaction
                 except BaseException:
                     self.log(traceback.format_exc())
-                    self.global_alert = "Automatic tester: A test has failed"
+                    self.global_alert = (
+                        "There's a problem with the "
+                        "<a href='/tester'>Automatic Tester</a>."
+                    )
                     sess.rollback()
                 finally:
                     if sess is not None:

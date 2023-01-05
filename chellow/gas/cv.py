@@ -65,15 +65,23 @@ class CvImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = None
+                sess = self.global_alert = g_contract = None
                 try:
                     sess = Session()
-                    fetch_cvs(sess, self.log)
+                    g_contract = GContract.get_industry_by_name(sess, "cv")
+                    fetch_cvs(sess, self.log, g_contract)
                 except BaseException:
                     self.log("Outer problem " + traceback.format_exc())
-                    self.global_alert = (
-                        "There's a problem with the gas CV automatic importer."
-                    )
+                    if g_contract is None:
+                        self.global_alert = (
+                            "There's a problem with the gas CV automatic importer."
+                        )
+                    else:
+                        self.global_alert = (
+                            f"There's a problem with the <a "
+                            f"href='/g/industry_contracts/{g_contract.id}'>gas CV "
+                            f"automatic importer</a>."
+                        )
                     sess.rollback()
                 finally:
                     if sess is not None:
@@ -85,9 +93,8 @@ class CvImporter(threading.Thread):
             self.going.clear()
 
 
-def fetch_cvs(sess, log_f):
+def fetch_cvs(sess, log_f, g_contract):
     log_f("Starting to check CV rates.")
-    g_contract = GContract.get_industry_by_name(sess, "cv")
     latest_rs = (
         sess.execute(
             select(GRateScript)

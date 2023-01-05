@@ -152,7 +152,9 @@ class BsuosImporter(threading.Thread):
                 except BaseException:
                     self.log(f"Outer problem {traceback.format_exc()}")
                     self.global_alert = (
-                        "There's a problem with the BSUoS automatic importer."
+                        f"There's a problem with the "
+                        f"<a href='/non_core_contracts/{contract.id}'>BSUoS automatic "
+                        f"importer</a>."
                     )
                     sess.rollback()
                 finally:

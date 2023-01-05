@@ -316,3 +316,8 @@ input[type = file] {
 	color: red;
 	font-weight: bold;
 }
+
+.global a:link, .global a:visited {
+	color: red;
+	text-decoration: underline;
+}
