@@ -43,6 +43,32 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_home(client, sess, mocker):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    sess.commit()
+
+    patched_hh_importer = mocker.patch("chellow.chellow.e.hh_importer")
+
+    class AnObj:
+        pass
+
+    tsk = AnObj()
+    tsk.is_error = True
+    tsk.contract_id = dc_contract.id
+    patched_hh_importer.tasks = {"a": tsk}
+
+    response = client.get("/")
+
+    match(response, 200, f"/e/dc_contracts/{dc_contract.id}/auto_importer")
+
+
 def test_local_report_home(client, sess):
     script = """from flask import render_template_string
 
