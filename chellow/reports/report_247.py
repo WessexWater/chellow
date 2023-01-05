@@ -738,6 +738,10 @@ def content(
             sites = sites.where(Site.code.in_(site_codes))
 
         user = User.get_by_id(sess, user_id)
+
+        if is_bill_check:
+            base_name.append("bill_check")
+
         running_name, finished_name = chellow.dloads.make_names(
             "_".join(base_name) + ".ods", user
         )
