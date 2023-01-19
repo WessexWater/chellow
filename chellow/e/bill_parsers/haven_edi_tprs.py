@@ -78,6 +78,9 @@ def _process_CCD1(elements, headers):
     pres_read_date = to_finish_date(prdt[0])
     prev_read_date = to_finish_date(pvdt[0])
 
+    tcod = elements["TCOD"]
+    if tcod[0] == "EBRSD":
+        return
     tmod = elements["TMOD"]
     mtnr = elements["MTNR"]
     mloc = elements["MLOC"]
@@ -208,27 +211,27 @@ def _process_CCD3(elements, headers):
     tmod = elements["TMOD"]
     tmod0 = tmod[0]
     if tmod0 == "422733":
-        prefix = kwh_prefix = "ccl-"
+        prefix = "ccl"
     elif tmod0 == "493988":
-        prefix = kwh_prefix = "reconciliation-"
+        prefix = "reconciliation"
     elif tmod0 == "700285":
-        prefix = kwh_prefix = "standing-"
+        prefix = "standing"
+    elif tmod0 == "823408":
+        prefix = "ebrs"
     else:
-        tpr_code = tmod0
-        prefix = kwh_prefix = f"{tpr_code}-"
+        prefix = tmod0
 
     if "NUCT" in elements and len(elements["NUCT"][0]) > 0:
-        breakdown[kwh_prefix + "kwh"] += _decimal(elements, "NUCT") / Decimal("1000")
-
-    rate_key = prefix + "rate"
-    if rate_key not in breakdown:
-        breakdown[rate_key] = set()
+        breakdown[f"{prefix}-kwh"] += _decimal(elements, "NUCT") / Decimal("1000")
 
     if "CPPU" in elements and len(elements["CPPU"][0]) > 0:
+        rate_key = f"{prefix}-rate"
+        if rate_key not in breakdown:
+            breakdown[rate_key] = set()
         breakdown[rate_key].add(_decimal(elements, "CPPU") / Decimal("100000"))
 
     if "CTOT" in elements:
-        breakdown[prefix + "gbp"] += _decimal(elements, "CTOT") / Decimal("100")
+        breakdown[f"{prefix}-gbp"] += _decimal(elements, "CTOT") / Decimal("100")
 
 
 def _process_CCD4(elements, headers):
