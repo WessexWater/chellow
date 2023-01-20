@@ -5,10 +5,9 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/e/supplies">Supplies</a>  &raquo;
-	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a>  &raquo;
-	<a href="/e/supplies/{{supply.id}}/notes">Notes</a>  &raquo;
-	{{note.index}} Edit
+	<a href="/e/supplies">Supplies</a> &raquo;
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo;
+	<a href="/e/supplies/{{supply.id}}/notes">Notes</a> &raquo; {{note.index}} Edit
 {% endblock %}
 
 {% block content %}
@@ -16,17 +15,21 @@
 	<form method="post">
 		<fieldset>
 			<legend>Update Supply Note</legend>
-			Category {{input_text('category', note.category)}}
-			Important? {{input_checkbox('is_important', note.is_important)}}
-			{{input_textarea('body', note.body, 30, 80)}}
-			<input type="submit" name="update" value="Update">
+			{% if note.timestamp %}
+				<label>Timestamp</label> {{ note.timestamp|hh_format }}
+			{% endif %}
+			<label>Body</label> {{input_textarea('body', note.body, 30, 80)}}
+			<input type="submit" value="Update">
 		</fieldset>
 	</form>
 
-	<form method="post">
+	<form
+	    hx-delete="/e/supplies/{{supply.id}}/notes/{{note.index}}/edit"
+			hx-confirm="Are you sure you want to delete this note?"
+	>
 		<fieldset>
 			<legend>Delete Supply Note</legend>
-			<input type="submit" name="delete" value="Delete">
+			<input type="submit" value="Delete">
 		</fieldset>
 	</form>
 

@@ -1325,6 +1325,7 @@ def dno_rate_script_edit_delete(dno_rate_script_id):
         g.sess.commit()
         res = make_response()
         res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/dnos/{dno.id}"
+        return res
     except BadRequest as e:
         flash(e.description)
         return render_template(
@@ -4528,24 +4529,17 @@ def supply_get(supply_id):
         for report_id in properties["supply_reports"]:
             batch_reports.append(Report.get_by_id(g.sess, report_id))
 
-    truncated_note = None
-    is_truncated = False
-    note = None
-    if len(supply.note.strip()) == 0:
-        note_str = "{'notes': []}"
-    else:
-        note_str = supply.note
+    note = truncated_line = None
+    supply_note = {"notes": []} if len(supply.note.strip()) == 0 else loads(supply.note)
 
-    supply_note = eval(note_str)
     notes = supply_note["notes"]
     if len(notes) > 0:
-        note = notes[0]
+        note = notes[-1]
         lines = note["body"].splitlines()
         if len(lines) > 0:
-            trunc_line = lines[0][:50]
-            if len(lines) > 1 or len(lines[0]) > len(trunc_line):
-                is_truncated = True
-                truncated_note = trunc_line
+            line0 = lines[0]
+            if len(lines) > 1 or len(line0) > 50:
+                truncated_line = line0[:50]
 
     return render_template(
         "supply.html",
@@ -4556,8 +4550,7 @@ def supply_get(supply_id):
         era_bundles=era_bundles,
         supply=supply,
         system_properties=properties,
-        is_truncated=is_truncated,
-        truncated_note=truncated_note,
+        truncated_line=truncated_line,
         note=note,
         this_month_start=this_month_start,
         batch_reports=batch_reports,
@@ -4757,10 +4750,9 @@ def supply_notes_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
 
     if len(supply.note.strip()) > 0:
-        note_str = supply.note
+        supply_note = loads(supply.note)
     else:
-        note_str = "{'notes': []}"
-    supply_note = eval(note_str)
+        supply_note = {"notes": []}
 
     return render_template("supply_notes.html", supply=supply, supply_note=supply_note)
 
@@ -4776,15 +4768,13 @@ def supply_note_add_post(supply_id):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
         body = req_str("body")
-        category = req_str("category")
-        is_important = req_bool("is_important")
         if len(supply.note.strip()) == 0:
-            supply.note = "{'notes': []}"
-        note_dict = eval(supply.note)
-        note_dict["notes"].append(
-            {"category": category, "is_important": is_important, "body": body}
-        )
-        supply.note = str(note_dict)
+            note_dict = {"notes": []}
+        else:
+            note_dict = loads(supply.note)
+
+        note_dict["notes"].append({"body": body, "timestamp": utc_datetime_now()})
+        supply.note = dumps(note_dict)
         g.sess.commit()
         return chellow_redirect(f"/supplies/{supply_id}", 303)
     except BadRequest as e:
@@ -4797,36 +4787,47 @@ def supply_note_add_post(supply_id):
 @e.route("/supplies/<int:supply_id>/notes/<int:index>/edit")
 def supply_note_edit_get(supply_id, index):
     supply = Supply.get_by_id(g.sess, supply_id)
-    supply_note = eval(supply.note)
+    supply_note = loads(supply.note)
     note = supply_note["notes"][index]
     note["index"] = index
     return render_template("supply_note_edit.html", supply=supply, note=note)
+
+
+@e.route("/supplies/<int:supply_id>/notes/<int:index>/edit", methods=["DELETE"])
+def supply_note_edit_delete(supply_id, index):
+    try:
+        supply = Supply.get_by_id(g.sess, supply_id)
+        supply_note = loads(supply.note)
+        del supply_note["notes"][index]
+        supply.note = dumps(supply_note)
+        g.sess.commit()
+        res = make_response()
+        res.headers[
+            "HX-Redirect"
+        ] = f"{chellow.utils.url_root}/e/supplies/{supply_id}/notes"
+        return res
+    except BadRequest as e:
+        flash(e.description)
+        supply_note = loads(supply.note)
+        note = supply_note["notes"][index]
+        note["index"] = index
+        return render_template("supply_note_edit.html", supply=supply, note=note)
 
 
 @e.route("/supplies/<int:supply_id>/notes/<int:index>/edit", methods=["POST"])
 def supply_note_edit_post(supply_id, index):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
-        supply_note = eval(supply.note)
-        if "delete" in request.values:
-            del supply_note["notes"][index]
-            supply.note = str(supply_note)
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply_id}/notes", 303)
-        else:
-            category = req_str("category")
-            is_important = req_bool("is_important")
-            body = req_str("body")
-            note = supply_note["notes"][index]
-            note["category"] = category
-            note["is_important"] = is_important
-            note["body"] = body
-            supply.note = str(supply_note)
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply_id}/notes", 303)
+        supply_note = loads(supply.note)
+        body = req_str("body")
+        note = supply_note["notes"][index]
+        note["body"] = body
+        supply.note = dumps(supply_note)
+        g.sess.commit()
+        return chellow_redirect(f"/supplies/{supply_id}/notes", 303)
     except BadRequest as e:
         flash(e.description)
-        supply_note = eval(supply.note)
+        supply_note = loads(supply.note)
         note = supply_note["notes"][index]
         note["index"] = index
         return render_template("supply_note_edit.html", supply=supply, note=note)

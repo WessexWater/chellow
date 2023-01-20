@@ -1,10 +1,10 @@
-import ast
 import datetime
 import math
 import operator
 import os.path
 import sys
 import traceback
+from ast import literal_eval, parse
 from binascii import hexlify, unhexlify
 from collections.abc import Mapping, Set
 from datetime import datetime as Datetime
@@ -1444,7 +1444,7 @@ class Contract(Base, PersistentClass):
         self.party = party
         self.update_properties(properties)
         try:
-            ast.parse(charge_script)
+            parse(charge_script)
         except SyntaxError as e:
             raise BadRequest(str(e))
         except NameError as e:
@@ -5841,7 +5841,7 @@ class GContract(Base, PersistentClass):
         self.name = name
 
         try:
-            ast.parse(charge_script)
+            parse(charge_script)
         except SyntaxError as e:
             raise BadRequest(str(e))
         except NameError as e:
@@ -7201,6 +7201,15 @@ def db_upgrade_41_to_42(sess, root_path):
         Cop.insert(sess, code, desc)
 
 
+def db_upgrade_42_to_43(sess, root_path):
+    for supply in sess.execute(select(Supply).order_by(Supply.id)).scalars():
+        supply_note = supply.note
+        if len(supply_note.strip()) > 0:
+            note = literal_eval(supply_note)
+            supply.note = dumps(note)
+            sess.commit()
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7228,6 +7237,7 @@ upgrade_funcs.extend(
         db_upgrade_39_to_40,
         db_upgrade_40_to_41,
         db_upgrade_41_to_42,
+        db_upgrade_42_to_43,
     ]
 )
 

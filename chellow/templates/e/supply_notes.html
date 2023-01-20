@@ -16,27 +16,19 @@
 		<thead>
 			<tr>
 				<th>Edit</th>
-				<th>Category</th>
-				<th>Importance</th>
+				<th>Timestamp</th>
 				<th>Body</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for note in supply_note.notes %}
+			{% for note in supply_note.notes|reverse %}
 				<tr>
 					<td>
-						[<a href="/e/supplies/{{supply.id}}/notes/{{loop.index0}}/edit">edit</a>]
+						[<a href="/e/supplies/{{supply.id}}/notes/{{loop.revindex0}}/edit">edit</a>]
 					</td>
-					<td>{{note.category}}</td>
+					<td>{% if note.timestamp %}{{note.timestamp|hh_format}}{% endif %}</td>
 					<td>
-						{% if note.is_important %}
-							High
-						{% else %}
-							Low
-						{% endif %}
-					</td>
-					<td>
-						<pre style=" white-space: pre-wrap;">{{note.body}}</pre>
+						<pre style="white-space: pre-wrap;">{{note.body}}</pre>
 					</td>
 				</tr>
 			{% endfor %}

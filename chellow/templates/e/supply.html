@@ -1,18 +1,7 @@
 {% extends "base.html" %}
 
 {% block inside_head %}
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<script type="text/javascript" language="javascript">
-
-		function hideText() {
-			document.getElementById('full_note').style.display='none';
-			document.getElementById('truncated_note').style.display='inline';
-		}
-
-		function showText() {
-			document.getElementById('truncated_note').style.display='none';
-			document.getElementById('full_note').style.display='inline';
-		}
 
 		function collapseBills(collapseId) {
 			var collapsibles = document.getElementsByClassName('collapsible_' + collapseId);
@@ -43,8 +32,13 @@
 				collapsers[i].style.display = 'table-cell';
 			}
 		}
-
 	</script>
+	<style>
+		details[open] summary span {
+			display: none;
+		}
+	</style>
+
 {% endblock %}
 
 {% block title %}
@@ -83,9 +77,9 @@
 			<td>
 				<ul>
 					{% for link in system_properties['supply_links'] %}
-					<li>
-						<a href="{{link.url}}supply_id={{site.id}}">{{link.name}}</a>
-					</li>
+						<li>
+							<a href="{{link.url}}supply_id={{site.id}}">{{link.name}}</a>
+						</li>
 					{% endfor %}
 				</ul>
 			</td>
@@ -97,23 +91,13 @@
 			</th>
 			<td>
 				{% if note %}
-					{% if is_truncated %}
-					<div id="truncated_note">
-						{{ truncated_note }}
-					</div>
-					<div id="full_note" style="display: none;">
-						<pre style=" white-space pre-wrap;">{{ supply.note }}</pre>
-						<a href="JavaScript:void()" onClick="hideText()" />Less...</a>
-					</div>
-					{% else %}
-						Category: {{note.category}}
-					{% if note.is_important %}
-						Important
-					{% else %}
-						Not important
-					{% endif %}
-						<pre style="display: inline;">{{note.body}}</pre>
-					{% endif %}
+					<pre style="white-space pre-wrap;">
+						{%- if note.timestamp -%}<em>{{note.timestamp|hh_format}}</em>{%- endif %}
+						{%- if truncated_line -%}
+							<details><summary><span>{{truncated_line}}</span></summary>{{note.body}}</details>
+						{%- else %} {{note.body}}
+						{%- endif -%}
+					</pre>
 				{% endif %}
 			</td>
 		</tr>
