@@ -109,9 +109,6 @@ def _process_CCD1(elements, headers):
         tpr_code = None
     else:
         units = "kWh"
-        if "CONA" in elements:
-            cona = elements["CONA"]
-            headers["kwh"] += to_decimal(cona) / Decimal("1000")
 
     headers["reads"].append(
         {
@@ -222,7 +219,10 @@ def _process_CCD3(elements, headers):
         prefix = tmod0
 
     if "NUCT" in elements and len(elements["NUCT"][0]) > 0:
-        breakdown[f"{prefix}-kwh"] += _decimal(elements, "NUCT") / Decimal("1000")
+        kwh = _decimal(elements, "NUCT") / Decimal("1000")
+        breakdown[f"{prefix}-kwh"] += kwh
+        if prefix == tmod0:
+            headers["kwh"] += kwh
 
     if "CPPU" in elements and len(elements["CPPU"][0]) > 0:
         rate_key = f"{prefix}-rate"

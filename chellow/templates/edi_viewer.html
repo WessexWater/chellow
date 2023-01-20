@@ -17,8 +17,23 @@
 		</fieldset>
 	</form>
 
+	<form method="post" action="/edi_viewer">
+		<fieldset>
+			<legend>View EDI Fragment</legend>	
+			<label>Fragment</label> {{input_textarea('edi_fragment', '', 10, 80)}}
+			<input type="submit" value="View">
+		</fieldset>
+	</form>
+
 	{% if segments %}
-		<p>Parsed {{file_name}}</p>
+		<p>
+			Parsed
+			{% if file_name %}
+				{{file_name}}
+			{% else %}
+				Fragment
+			{% endif %}
+		</p>
 		{% for segment in segments %}
 			<table>
 				<caption>{{segment.name}} - {{segment.description}}</caption>
@@ -26,7 +41,7 @@
 					<tr>
 						{% for title in segment.titles_element %}
 							<th colspan="{{title.colspan}}" rowspan="{{title.rowspan}}">
-								{{title.value}}
+								{{title.code}} {{title.value}}
 							</th>
 						{% endfor %}
 					</tr>

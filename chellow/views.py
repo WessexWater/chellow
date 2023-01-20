@@ -112,6 +112,7 @@ from chellow.utils import (
     req_bool,
     req_date,
     req_decimal,
+    req_file,
     req_hh_date,
     req_int,
     req_str,
@@ -610,11 +611,17 @@ def edi_viewer_get():
 def edi_viewer_post():
     segments = []
     try:
-        file_item = request.files["edi_file"]
-        file_name = file_item.filename
-        f = StringIO(
-            str(file_item.stream.read(), encoding="utf-8-sig", errors="ignore")
-        )
+        if "edi_file" in request.values:
+            file_item = req_file("edi_file")
+            edi_str = str(
+                file_item.stream.read(), encoding="utf-8-sig", errors="ignore"
+            )
+            file_name = file_item.filename
+        else:
+            edi_str = req_str("edi_fragment")
+            file_name = None
+
+        f = StringIO(edi_str)
         f.seek(0)
         parser = chellow.edi_lib.EdiParser(f)
         for segment_name in parser:
@@ -626,14 +633,14 @@ def edi_viewer_post():
                     seg = chellow.edi_lib.SEGMENTS[segment_name]
                 except KeyError:
                     raise BadRequest(
-                        "The segment name " + segment_name + " is not recognized."
+                        f"The segment name {segment_name} is not recognized."
                     )
             else:
                 try:
                     seg = chellow.edi_lib.SEGMENTS[segment_name]
                 except KeyError:
                     raise BadRequest(
-                        "The segment name " + segment_name + " is not recognized."
+                        f"The segment name {segment_name} is not recognized."
                     )
 
             titles_element = []
@@ -642,8 +649,8 @@ def edi_viewer_post():
             elems = seg["elements"]
             if len(elements) > len(elems):
                 raise BadRequest(
-                    "There are more elements than recognized for the "
-                    "segment " + segment_name + "."
+                    f"There are more elements than recognized for the segment "
+                    f"{segment_name}."
                 )
             for element, elem in zip(elements, elems):
                 comps = elem["components"]
@@ -651,14 +658,15 @@ def edi_viewer_post():
                 titles_element.append(
                     {
                         "value": elem["description"],
+                        "code": elem["code"],
                         "colspan": str(colspan),
                         "rowspan": "2" if colspan == 1 else "1",
                     }
                 )
                 if len(element) > len(comps):
                     raise BadRequest(
-                        "There are more components than recognized for the "
-                        "segment " + segment_name + " and element " + str(element) + "."
+                        f"There are more components than recognized for the segment "
+                        f"{segment_name} and element {element}."
                     )
 
                 for i, (title, typ) in enumerate(comps):
@@ -682,7 +690,7 @@ def edi_viewer_post():
                             else:
                                 value = t
                         else:
-                            raise BadRequest("Didn't recognize the type " + typ + ".")
+                            raise BadRequest(f"Didn't recognize the type {typ}.")
                     except IndexError:
                         value = ""
 
