@@ -150,7 +150,8 @@ def local_report_output_get(report_id):
     report = g.sess.query(Report).get(report_id)
     try:
         ns = {"report_id": report_id, "template": report.template}
-        exec(report.script, ns)
+        code = compile(report.script, f"<string report {report_id}>", "exec")
+        exec(code, ns)
         return ns["do_get"]()
     except BaseException:
         return Response(traceback.format_exc(), status=500)
@@ -161,7 +162,8 @@ def local_report_output_post(report_id):
     report = g.sess.query(Report).get(report_id)
     try:
         ns = {"report_id": report_id, "template": report.template}
-        exec(report.script, ns)
+        code = compile(report.script, f"<string report {report_id}>", "exec")
+        exec(code, ns)
         return ns["do_post"]()
     except BaseException:
         return Response(traceback.format_exc(), status=500)
