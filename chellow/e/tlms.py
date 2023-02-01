@@ -146,7 +146,6 @@ def _import_tlms(log_func):
         contract = Contract.get_non_core_by_name(sess, "tlms")
         contract_props = contract.make_properties()
         if contract_props.get("enabled", False):
-
             config = Contract.get_non_core_by_name(sess, "configuration")
             props = config.make_properties()
             scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)

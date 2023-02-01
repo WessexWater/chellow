@@ -44,7 +44,6 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
             )
             .order_by(GEra.start_date)
         ):
-
             chunk_start = hh_max(g_era.start_date, start_date)
             chunk_finish = hh_min(g_era.finish_date, finish_date)
             site = (

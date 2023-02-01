@@ -33,7 +33,6 @@ class MsProxy:
     def __call__(
         self, environ: "WSGIEnvironment", start_response: "StartResponse"
     ) -> t.Iterable[bytes]:
-
         try:
             x_proto = environ["HTTP_X_FORWARDED_PROTO"]
         except KeyError:

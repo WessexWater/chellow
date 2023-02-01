@@ -77,7 +77,6 @@ def _import_Clock_Interval(sess, rows, ctx):
         for c in sess.execute(select(ClockInterval)).scalars()
     }
     for values in rows:
-
         tpr_code = values[0].zfill(5)
         day_of_week = int(values[1])
         start_day = int(values[2])
@@ -275,7 +274,6 @@ def _import_Measurement_Requirement(sess, rows, ctx):
         for mr in sess.execute(select(MeasurementRequirement)).scalars()
     }
     for values in rows:
-
         ssc_code = Ssc.normalise_code(values[0])
         tpr_code = Tpr.normalise_code(values[1])
 
@@ -402,7 +400,6 @@ def _import_MTC_in_PES_Area(sess, rows, ctx):
             tpr_count = 0 if tpr_count_str == "" else int(tpr_count_str)
 
         if mtc_participant is None:
-
             MtcParticipant.insert(
                 sess,
                 mtc,
@@ -839,7 +836,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
     mdd_entries = {}
     for path, url in paths:
         if len(path) == 5:
-
             _, utility, rate_type, mdd_version_str, file_name = path
 
             if utility == "electricity" and rate_type == "mdd":
@@ -922,7 +918,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
         ("Clock_Interval", _import_Clock_Interval),
         ("Measurement_Requirement", _import_Measurement_Requirement),
     ]:
-
         if tname in gnames:
             log(f"Found {tname} and will now import it.")
             func(sess, gnames[tname], ctx)

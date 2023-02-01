@@ -24,7 +24,6 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_batch_get_empty(client, sess):
-
     g_contract = GContract.insert_supplier(
         sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
@@ -39,7 +38,6 @@ def test_batch_get_empty(client, sess):
 
 
 def test_batch_get(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -166,7 +164,6 @@ def test_batch_edit_post(sess, client):
 
 
 def test_bill_get(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -393,7 +390,6 @@ def test_bill_edit_post(sess, client):
 
 
 def test_bill_imports_post_full(mocker, app, client, sess):
-
     file_lines = (
         "STX=ANA:1+Marsh Gas:MARSH Gas Limited+BPAJA:Bill Paja 771+"
         "171023:867369+856123++UTLHDR'",
@@ -508,7 +504,6 @@ def test_bill_imports_post_full(mocker, app, client, sess):
     importer = next(iter(chellow.gas.bill_import.importers.values()))
 
     for _ in range(5):
-
         if importer.is_alive():
             sleep(1)
         else:
@@ -530,7 +525,6 @@ def test_bill_imports_post_full(mocker, app, client, sess):
 
 
 def test_bill_imports_post(mocker, app, client, sess):
-
     g_contract = GContract.insert(
         sess,
         False,
@@ -569,7 +563,6 @@ def test_bill_imports_post(mocker, app, client, sess):
 
 
 def test_batch_add_post(client, sess):
-
     g_contract = GContract.insert_supplier(
         sess,
         "Fusion 2020",
@@ -639,7 +632,6 @@ def test_supplies(client, sess):
 
 
 def test_supply_get(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -678,7 +670,6 @@ def test_supply_get(client, sess):
 
 
 def test_supply_note_add_get(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -721,7 +712,6 @@ def test_supply_note_add_get(client, sess):
 
 
 def test_supply_notes_get(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -762,7 +752,6 @@ def test_supply_notes_get(client, sess):
 
 
 def test_supply_edit_post(client, sess):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -811,7 +800,6 @@ def test_supply_edit_post(client, sess):
 
 
 def test_read_edit_post_delete(sess, client):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -900,7 +888,6 @@ def test_read_edit_post_delete(sess, client):
 
 
 def test_supplier_rate_script_get(sess, client):
-
     g_contract = GContract.insert(
         sess,
         False,
@@ -923,7 +910,6 @@ def test_supplier_rate_script_get(sess, client):
 
 
 def test_supplier_rate_script_edit_post_delete(sess, client):
-
     g_contract = GContract.insert(
         sess,
         False,
@@ -951,7 +937,6 @@ def test_supplier_rate_script_edit_post_delete(sess, client):
 
 
 def test_read_add_get(sess, client):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -1099,7 +1084,6 @@ def test_read_add_post(sess, client):
 
 
 def test_era_post_delete(sess, client):
-
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")

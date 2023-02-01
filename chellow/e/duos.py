@@ -508,7 +508,6 @@ def datum_2010_04_01(ds, hh):
             if dno_code in ("88", "99"):
                 laf_cache_llfc[start_date] = 1
             else:
-
                 m_start, m_finish = next(
                     c_months_u(
                         start_year=hh["ct-year"], start_month=hh["ct-month"], months=1
@@ -705,7 +704,6 @@ def datum_2012_02_23(ds, hh):
         try:
             laf = laf_cache_llfc[start_date]
         except KeyError:
-
             for laf_obj in ds.sess.execute(
                 select(Laf)
                 .join(Llfc)

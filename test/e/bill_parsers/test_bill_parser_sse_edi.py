@@ -42,7 +42,6 @@ def test_parser_REF(mocker, sess):
 
 
 def test_process_CCD2(mocker, sess):
-
     headers = {"reads": [], "breakdown": defaultdict(int), "kwh": Decimal(0)}
     elements = {
         "TMOD": ["0001"],

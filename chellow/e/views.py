@@ -3521,7 +3521,6 @@ def em_totals(site_id):
     site = Site.get_by_id(g.sess, site_id)
 
     if "mem_id" in request.values:
-
         mem_id = req_int("mem_id")
         site_info = chellow.dloads.get_mem_val(mem_id)
         random_number = random()
@@ -4631,7 +4630,6 @@ def supply_months_get(supply_id):
             .group_by(HhDatum.start_date)
         )
         for kwh, kvarh, hh_date in g.sess.execute(s):
-
             kvah = (kwh**2 + kvarh**2) ** 0.5
             if kvah > md_kvah:
                 md_kvah = kvah

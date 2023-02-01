@@ -128,7 +128,6 @@ def _process_g_bill_ids(
     titles,
     csv_writer,
 ):
-
     g_bill_id = list(sorted(g_bill_ids))[0]
     g_bill_ids.remove(g_bill_id)
     g_bill = sess.query(GBill).filter(GBill.id == g_bill_id).one()

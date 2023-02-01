@@ -482,7 +482,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
     year_entries = {}
     for path, url in paths:
         if len(path) == 5:
-
             year_str, utility, rate_type, dno_code, file_name = path
             year = int(year_str)
             try:
@@ -491,7 +490,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
                 dno_entries = year_entries[year] = {}
 
             if utility == "electricity" and rate_type == "duos":
-
                 try:
                     fl_entries = dno_entries[dno_code]
                 except KeyError:

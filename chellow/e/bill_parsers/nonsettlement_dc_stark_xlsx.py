@@ -9,17 +9,14 @@ from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
 
 def get_ct_date(title_row, row, name):
-
     return get_value(title_row, row, name)
 
 
 def get_start_date(title_row, row, name):
-
     return to_utc(get_ct_date(title_row, row, name))
 
 
 def get_finish_date(title_row, row, name):
-
     d = get_ct_date(title_row, row, name)
 
     return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
@@ -41,7 +38,6 @@ def get_value(title_row, row, name):
         )
 
     try:
-
         return row[idx].value
 
     except IndexError:
@@ -62,7 +58,6 @@ def get_dec(title_row, row, name):
 
 
 def get_int(title_row, row, name):
-
     return int(get_value(title_row, row, name))
 
 

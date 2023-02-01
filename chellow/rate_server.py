@@ -23,7 +23,6 @@ def download(s, url):
 
 
 def run_import(sess, log, set_progress):
-
     log("Starting to import rates from the rate server")
     conf = Contract.get_non_core_by_name(sess, "configuration")
     props = conf.make_properties()
@@ -56,7 +55,6 @@ def run_import(sess, log, set_progress):
     for sub_entry in tree_entry["tree"]:
         path = sub_entry["path"].split("/")
         if path[-1] != "README.md":
-
             paths_list.append((path, sub_entry["url"]))
 
     paths = tuple(paths_list)

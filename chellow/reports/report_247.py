@@ -1033,7 +1033,6 @@ def content(
 
 
 def do_post(sess):
-
     base_name = []
     now = utc_datetime_now()
 

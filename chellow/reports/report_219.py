@@ -98,7 +98,6 @@ def content(year, month, months, supply_id, user):
                     ),
                 )
             ):
-
                 era = supply.find_era_at(sess, bill.start_date)
                 if era is None:
                     eras = (
@@ -133,7 +132,6 @@ def content(year, month, months, supply_id, user):
                         joinedload(RegisterRead.present_type),
                     )
                 ):
-
                     vals = [
                         start_date,
                         finish_date,

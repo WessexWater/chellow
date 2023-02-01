@@ -71,7 +71,6 @@ class Parser:
     def make_raw_bills(self):
         raw_bills = []
         for self._line_number, row in enumerate(self.csv_reader):
-
             bill_reference = row[0]
             if bill_reference == "" or bill_reference.startswith("#"):
                 continue

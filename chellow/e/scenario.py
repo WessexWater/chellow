@@ -158,7 +158,6 @@ def make_site_deltas(
                 or_(Era.finish_date == null(), Era.finish_date >= chunk_start),
             )
         ):
-
             if supply_ids is not None and era.supply_id not in supply_ids:
                 continue
 
@@ -189,7 +188,6 @@ def make_site_deltas(
                 Source.code == "gen-net",
             )
         ):
-
             if supply_ids is not None and era.supply_id not in supply_ids:
                 continue
 
@@ -387,7 +385,6 @@ def make_calcs(
         )
         .order_by(Era.supply_id, Era.start_date)
     ):
-
         supply = era.supply
         if data_source_bill is not None and supply.dno.dno_code in ("88", "99"):
             continue

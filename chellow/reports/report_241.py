@@ -67,7 +67,6 @@ def content(
             Era.start_date <= finish_date,
             or_(Era.finish_date == null(), Era.finish_date >= start_date),
         ):
-
             if is_import:
                 cont = era.imp_supplier_contract
             else:

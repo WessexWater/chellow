@@ -49,7 +49,6 @@ def content(supply_id, start_date, finish_date, user):
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
             )
         ).scalars():
-
             ds = SupplySource(
                 sess, era.start_date, era.start_date, f_date, era, True, caches
             )

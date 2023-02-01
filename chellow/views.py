@@ -1652,7 +1652,6 @@ def report_run_row_get(row_id):
                 "covered-problem",
                 "virtual-problem",
             ):
-
                 toks = t.split("-")
                 name = toks[1]
                 try:
@@ -1681,7 +1680,6 @@ def report_run_row_get(row_id):
         )
 
     else:
-
         return render_template(
             "report_run_row.html", row=row, raw_data=raw_data, tables=tables
         )

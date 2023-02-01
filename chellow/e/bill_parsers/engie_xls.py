@@ -381,7 +381,6 @@ def _make_raw_bills(sheet, datemode):
         if len(row) > 21:
             val = row[21].value
             if val not in (None, ""):
-
                 try:
                     bills.append(_parse_row(row, row_index, datemode, title_row))
                 except BadRequest as e:

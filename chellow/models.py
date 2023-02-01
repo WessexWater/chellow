@@ -411,7 +411,6 @@ class GspGroup(Base, PersistentClass):
 
 
 class VoltageLevel(Base, PersistentClass):
-
     __tablename__ = "voltage_level"
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -603,7 +602,6 @@ class RegisterRead(Base, PersistentClass):
         present_value,
         present_type,
     ):
-
         self.bill = bill
         self.update(
             tpr,
@@ -661,7 +659,6 @@ class RegisterRead(Base, PersistentClass):
 
 
 class BatchFile(Base, PersistentClass):
-
     __tablename__ = "batch_file"
     id = Column(Integer, primary_key=True)
     batch_id = Column(
@@ -688,7 +685,6 @@ class BatchFile(Base, PersistentClass):
 
 
 class Bill(Base, PersistentClass):
-
     __tablename__ = "bill"
     id = Column(Integer, primary_key=True)
     batch_id = Column(Integer, ForeignKey("batch.id"), nullable=False, index=True)
@@ -1058,7 +1054,6 @@ class Party(Base, PersistentClass):
         valid_from,
         valid_to,
     ):
-
         if self.market_role.code == "R":
             llfc = Llfc(
                 self,
@@ -2369,7 +2364,6 @@ class Llfc(Base, PersistentClass):
     def update(
         self, description, voltage_level, is_substation, is_import, valid_from, valid_to
     ):
-
         self.description = description
         self.voltage_level = voltage_level
         self.is_substation = is_substation
@@ -2634,7 +2628,6 @@ class MtcParticipant(Base, PersistentClass):
         valid_from,
         valid_to,
     ):
-
         self.description = description
         self.has_comms = has_comms
         self.is_hh = is_hh
@@ -2731,7 +2724,6 @@ class MtcLlfc(Base, PersistentClass):
         self,
         valid_to,
     ):
-
         self.valid_to = valid_to
 
         if hh_after(self.valid_from, valid_to):
@@ -2818,7 +2810,6 @@ class MtcSsc(Base, PersistentClass):
         self,
         valid_to,
     ):
-
         self.valid_to = valid_to
 
         if hh_after(self.valid_from, valid_to):
@@ -2898,7 +2889,6 @@ class MtcLlfcSsc(Base, PersistentClass):
         self,
         valid_to,
     ):
-
         self.valid_to = valid_to
 
         if hh_after(self.valid_from, valid_to):
@@ -3485,7 +3475,6 @@ class Era(Base, PersistentClass):
         exp_supplier_account,
         exp_sc,
     ):
-
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
 
@@ -4026,7 +4015,6 @@ class Supply(Base, PersistentClass):
 
     @staticmethod
     def _settle_stripe(sess, start_date, finish_date, old_era, new_era):
-
         # move snags from old to new
         if old_era is None:
             for channel in (
@@ -4056,7 +4044,6 @@ class Supply(Base, PersistentClass):
             for channel in (
                 sess.query(Channel).filter(Channel.era == old_era).order_by(Channel.id)
             ):
-
                 snags = (
                     sess.query(Snag)
                     .filter(
@@ -4750,7 +4737,6 @@ class HhDatum(Base, PersistentClass):
 
 
 class Report(Base, PersistentClass):
-
     __tablename__ = "report"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
@@ -5226,7 +5212,6 @@ class GEra(Base, PersistentClass):
         account,
         g_reading_frequency,
     ):
-
         if hh_after(start_date, finish_date):
             raise BadRequest("The era start date can't be after the finish date.")
 
@@ -5658,7 +5643,6 @@ class GBill(Base, PersistentClass):
         pres_date,
         pres_type,
     ):
-
         read = GRegisterRead(
             self,
             msn,
@@ -5741,7 +5725,6 @@ class GBatch(Base, PersistentClass):
         raw_lines,
         breakdown,
     ):
-
         g_bill = GBill(
             self,
             g_supply,

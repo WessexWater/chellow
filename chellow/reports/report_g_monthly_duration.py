@@ -179,7 +179,6 @@ def content(
                     )
                     .order_by(GEra.id)
                 ):
-
                     g_supply = g_era.g_supply
 
                     if g_supply_id is not None and g_supply.id != g_supply_id:

@@ -31,7 +31,6 @@ STATUSES_IGNORE = (
 
 
 def _process_sites(sess, file_like, writer, props, report_run):
-
     ASSET_KEY = "asset_comparison"
     try:
         asset_props = props[ASSET_KEY]

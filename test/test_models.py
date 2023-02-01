@@ -720,7 +720,6 @@ def test_Supply_get_by_MPAN_core(sess):
     with pytest.raises(
         BadRequest, match=f"The MPAN core {mpan_core} is not set up in Chellow."
     ):
-
         Supply.get_by_mpan_core(sess, mpan_core)
 
 

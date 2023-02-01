@@ -200,7 +200,6 @@ STATE_LOOKUP = {
 
 
 def tab_gdn_unit_rates(sheet, rates):
-
     state = State.BLANK
     networks = {}
 
@@ -264,7 +263,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
     year_entries = {}
     for path, url in paths:
         if len(path) == 4:
-
             year_str, utility, rate_type, file_name = path
             if utility == "gas" and rate_type == "dn":
                 year = int(year_str)

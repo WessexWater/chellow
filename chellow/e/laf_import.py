@@ -123,7 +123,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
 
     for path, url in paths:
         if len(path) == 4:
-
             year_str, utility, rate_type, file_name = path
 
             if utility == "electricity" and rate_type == "lafs":

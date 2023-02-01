@@ -58,7 +58,6 @@ def content(running_name, finished_name, contract_id, end_year, end_month, month
             .options(joinedload(Era.channels))
             .order_by(Era.supply_id)
         ):
-
             imp_mpan_core = era.imp_mpan_core
             if imp_mpan_core is None:
                 imp_mpan_core_str = ""

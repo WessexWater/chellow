@@ -70,7 +70,6 @@ def content(contract_id, days_hidden, user):
                 Snag.id,
             )
         ):
-
             snag_start = snag.start_date
             snag_finish = snag.finish_date
             imp_mc = "" if era.imp_mpan_core is None else era.imp_mpan_core

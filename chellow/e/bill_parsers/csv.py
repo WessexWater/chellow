@@ -44,7 +44,6 @@ class Parser:
         next(iter(self.reader))  # skip title row
         blank_set = set(("",))
         for self.line_number, self.vals in enumerate(self.reader):
-
             # skip blank lines
             if len(self.vals) == 0 or set(self.vals) == blank_set:
                 continue

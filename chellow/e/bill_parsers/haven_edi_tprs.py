@@ -246,7 +246,6 @@ def _process_CCD4(elements, headers):
 
 def _process_MTR(elements, headers):
     if headers["message_type"] == "UTLBIL":
-
         if headers["mpan_core"] is None:
             sess = headers["sess"]
             era = (
@@ -337,7 +336,6 @@ class Parser:
         bill = None
         try:
             for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
-
                 try:
                     func = CODE_FUNCS[seg_name]
                 except KeyError:

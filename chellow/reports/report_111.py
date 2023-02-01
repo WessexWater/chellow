@@ -517,7 +517,6 @@ def _process_supply(
                 joinedload(Era.supply).joinedload(Supply.source),
             )
         ):
-
             chunk_start = hh_max(covered_start, era.start_date)
             chunk_finish = hh_min(covered_finish, era.finish_date)
 
@@ -758,7 +757,6 @@ def _process_supply(
             Bill.start_date <= covered_finish,
             Bill.finish_date >= covered_start,
         ):
-
             for k, v in loads(bill.breakdown).items():
                 if k.endswith("-gbp"):
                     add_gap(
@@ -778,7 +776,6 @@ def _process_supply(
     for element, elgap in sorted(gaps.items()):
         for start_date, hhgap in sorted(elgap.items()):
             if hhgap["has_virtual"] and not hhgap["has_covered"]:
-
                 if len(clumps) == 0 or not all(
                     (
                         clumps[-1]["element"] == element,

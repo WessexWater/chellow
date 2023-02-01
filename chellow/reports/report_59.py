@@ -148,7 +148,6 @@ def _process_site(
                 vals[f"{sname}-{xname}"] = 0
 
         if imp_mpan_core == "displaced":
-
             vals["billed-supplier-import-net-gbp"] = None
             vals["billed-dc-import-net-gbp"] = None
             vals["billed-mop-import-net-gbp"] = None
@@ -1005,12 +1004,10 @@ def content(
 
 
 def do_post(sess):
-
     base_name = ["duration"]
     compression = req_bool("compression")
 
     try:
-
         if "scenario_id" in request.values:
             scenario_id = req_int("scenario_id")
             scenario = Scenario.get_by_id(sess, scenario_id)

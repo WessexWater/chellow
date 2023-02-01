@@ -81,7 +81,6 @@ def totals_runner(mem_id, site_id, start_date):
                     joinedload(Era.dc_contract),
                 )
             ).scalars():
-
                 chunk_start = hh_max(era.start_date, month_start)
                 chunk_finish = hh_min(era.finish_date, month_finish)
 

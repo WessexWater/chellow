@@ -392,7 +392,6 @@ class Parser:
         headers = {}
         bill = None
         for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
-
             try:
                 func = CODE_FUNCS[seg_name]
             except KeyError:

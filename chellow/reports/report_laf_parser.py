@@ -38,7 +38,6 @@ def content(user, file_name, file_like):
 
             if code in ("LLF", "ZPT"):
                 if llfc_code is not None:
-
                     # Compress days
                     days = OrderedDict()
                     for dt, slots in llfc_data.items():

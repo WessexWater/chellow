@@ -70,7 +70,6 @@ def content(start_date, finish_date, g_contract_id, user):
                     or_(GEra.finish_date == null(), GEra.finish_date >= period_start),
                 )
             ):
-
                 chunk_start = hh_max(g_era.start_date, period_start)
                 chunk_finish = hh_min(g_era.finish_date, period_finish)
 

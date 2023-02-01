@@ -103,7 +103,6 @@ def content(year, month, months, supply_id, user):
                 Era.start_date <= month_finish,
                 or_(Era.finish_date == null(), Era.finish_date >= month_start),
             ):
-
                 generator_type = supply.generator_type
                 if generator_type is None:
                     generator_type = ""

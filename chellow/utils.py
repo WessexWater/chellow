@@ -530,7 +530,6 @@ def ct_datetime_parse(date_str, format_str):
 def u_months_u(
     start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
 ):
-
     if start_year is None:
         start = utc_datetime(finish_year, finish_month) - relativedelta(
             months=months - 1
@@ -555,7 +554,6 @@ def u_months_u(
 def c_months_u(
     start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
 ):
-
     for c_m_start_c, c_m_finish_c in c_months_c(
         start_year=start_year,
         start_month=start_month,
@@ -569,7 +567,6 @@ def c_months_u(
 def c_months_c(
     start_year=None, start_month=None, finish_year=None, finish_month=None, months=1
 ):
-
     for u_m_start_u, u_m_finish_u in u_months_u(
         start_year=start_year,
         start_month=start_month,

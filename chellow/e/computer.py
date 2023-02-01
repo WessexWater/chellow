@@ -1139,7 +1139,6 @@ class SupplySource(DataSource):
                 hist_measurement_type = "hh"
 
             if hist_measurement_type == "unmetered":
-
                 kwh = (
                     hist_era.imp_sc
                     * 60
@@ -1270,7 +1269,6 @@ class SupplySource(DataSource):
                             .filter(RegisterRead.bill == bill, RegisterRead.units == 0)
                             .order_by(RegisterRead.present_date)
                         ):
-
                             if tpr_code not in tpr_codes:
                                 self._add_problem(
                                     f"The TPR {tpr_code} from the register read does "
@@ -1299,7 +1297,6 @@ class SupplySource(DataSource):
                             kws[tpr_code] += kwh
 
                         for tpr_code, kwh in kws.items():
-
                             if (
                                 present_type in ACTUAL_READ_TYPES
                                 and previous_type in ACTUAL_READ_TYPES
@@ -1694,7 +1691,6 @@ def _make_reads(forwards, prev_reads, pres_reads):
     pres_read = next(pres_reads, None)
 
     while prev_read is not None or pres_read is not None:
-
         if prev_read is None:
             yield pres_read
             pres_read = next(pres_reads, None)
@@ -1837,8 +1833,7 @@ order by hh_datum.start_date
             )
         )
 
-        for (hist_start, status, msp_kwh, imp_kvarh, exp_kvarh) in data:
-
+        for hist_start, status, msp_kwh, imp_kvarh, exp_kvarh in data:
             datum = {
                 "imp-msp-kvarh": imp_kvarh,
                 "imp-msp-kvar": imp_kvarh * 2,

@@ -48,7 +48,6 @@ def content(user_id):
         for batch in sess.execute(
             select(Batch).order_by(Batch.contract_id, Batch.reference)
         ).scalars():
-
             (
                 num_bills,
                 sum_net_gbp,
@@ -94,7 +93,6 @@ def content(user_id):
         for g_batch in sess.execute(
             select(GBatch).order_by(GBatch.g_contract_id, GBatch.reference)
         ).scalars():
-
             (
                 num_bills,
                 sum_net_gbp,

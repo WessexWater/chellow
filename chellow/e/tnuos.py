@@ -27,7 +27,6 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 
 def hh(ds, rate_period="monthly", est_kw=None):
-
     for hh in ds.hh_data:
         if hh["start-date"] >= BANDED_START:
             if hh["ct-decimal-hour"] == 12:
@@ -302,11 +301,7 @@ def get_value(row, idx):
         return val
 
 
-def find_bands(file_like):
-    book = load_workbook(file_like, data_only=True)
-
-    tabs = {sheet.title.strip(): sheet for sheet in book.worksheets}
-
+def find_bands(tabs):
     tab_name = "T10"
     try:
         sheet = tabs[tab_name]
@@ -331,17 +326,65 @@ def find_bands(file_like):
     return bands
 
 
+def find_triad(tabs):
+    GSP_LOOKUP = {
+        1: "_P",
+        2: "_N",
+        3: "_F",
+        4: "_G",
+        5: "_M",
+        6: "_D",
+        7: "_B",
+        8: "_E",
+        9: "_A",
+        10: "_K",
+        11: "_J",
+        12: "_C",
+        13: "_H",
+        14: "_L",
+    }
+
+    tab_name = "T9"
+    try:
+        sheet = tabs[tab_name]
+    except KeyError:
+        raise BadRequest(f"Can't find the tab named '{tab_name}'")
+
+    triads = {"import": {}, "export": {}}
+
+    in_triads = False
+    for row in range(1, len(sheet["A"]) + 1):
+        val = get_cell(sheet, "A", row).value
+        if val is None:
+            val_0 = None
+        elif isinstance(val, str):
+            val_0 = " ".join(val.split())
+        else:
+            val_0 = val
+
+        if in_triads:
+            if val_0 is None or val_0 == "":
+                in_triads = False
+            else:
+                gsp_group_code = GSP_LOOKUP[val_0]
+                triads["import"][gsp_group_code] = get_dec(sheet, "C", row)
+                triads["export"][gsp_group_code] = get_dec(sheet, "E", row)
+
+        elif val_0 == "Zone":
+            in_triads = True
+
+    return triads
+
+
 def rate_server_import(sess, log, set_progress, s, paths):
     log("Starting to check for new TNUoS spreadsheets")
     year_entries = {}
     for path, url in paths:
         if len(path) == 4:
-
             year_str, utility, rate_type, file_name = path
             year = int(year_str)
 
             if utility == "electricity" and rate_type == "tnuos":
-
                 try:
                     fl_entries = year_entries[year]
                 except KeyError:
@@ -370,13 +413,17 @@ def rate_server_import(sess, log, set_progress, s, paths):
         if rs_script.get("a_file_name") != file_name:
             try:
                 fl = BytesIO(download(s, url))
+                book = load_workbook(fl, data_only=True)
+                tabs = {sheet.title.strip(): sheet for sheet in book.worksheets}
                 try:
-                    bands = find_bands(fl)
+                    bands = find_bands(tabs)
+                    triad = find_triad(tabs)
                 except BadRequest as e:
                     raise BadRequest(
                         f"Problem with file '{file_name}': {e.description}"
                     )
                 rs_script["bands"] = bands
+                rs_script["triad_gbp_per_gsp_kw"] = triad
                 rs_script["a_file_name"] = file_name
                 rs.update(rs_script)
                 log(f"Updated TNUoS rate script for " f"{hh_format(fy_start)}")

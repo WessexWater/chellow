@@ -103,7 +103,6 @@ def _process(sess, f, report_run):
         .scalars()
         .unique()
     ):
-
         for site_era in era.site_eras:
             if site_era.is_physical:
                 site = site_era.site

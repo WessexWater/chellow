@@ -106,7 +106,6 @@ def forecast_date():
 
 
 def get_data_sources(ds, start_date, finish_date, forecast_date=None):
-
     if forecast_date is None:
         forecast_date = ds.forecast_date
 
@@ -575,7 +574,6 @@ def _bill_kwh(
     hist_map,
     g_ldz_code,
 ):
-
     cf = float(hist_g_era.correction_factor)
     g_unit = hist_g_era.g_unit
     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
@@ -740,7 +738,6 @@ def _make_reads(forwards, prev_reads, pres_reads):
     prev_read = next(prev_reads, None)
     pres_read = next(pres_reads, None)
     while prev_read is not None or pres_read is not None:
-
         if prev_read is None:
             yield pres_read
             pres_read = next(pres_reads, None)

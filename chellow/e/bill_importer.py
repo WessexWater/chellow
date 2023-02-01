@@ -82,10 +82,8 @@ class BillImport(threading.Thread):
                 .filter(BatchFile.batch == batch)
                 .order_by(BatchFile.upload_timestamp)
             ):
-
                 self.parser = _process_batch_file(sess, bf, self._log)
                 for self.bill_num, raw_bill in enumerate(self.parser.make_raw_bills()):
-
                     if "error" in raw_bill:
                         self.failed_bills.append(raw_bill)
                     else:

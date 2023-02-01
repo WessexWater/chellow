@@ -214,7 +214,6 @@ class Parser:
 
         blank_set = set(("",))
         for self.line_number, row in enumerate(self.reader):
-
             # skip blank lines
             if len(row) == 0 or set(row) == blank_set:
                 continue
