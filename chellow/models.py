@@ -1437,7 +1437,6 @@ class Contract(Base, PersistentClass):
                 "contract."
             )
         self.party = party
-        self.update_properties(properties)
         try:
             parse(charge_script)
         except SyntaxError as e:
@@ -1445,6 +1444,7 @@ class Contract(Base, PersistentClass):
         except NameError as e:
             raise BadRequest(str(e))
         self.charge_script = charge_script
+        self.update_properties(properties)
 
     def update_state(self, state):
         self.state = dumps(state)

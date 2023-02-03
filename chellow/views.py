@@ -129,9 +129,12 @@ home = Blueprint("", __name__, template_folder="templates")
 def chellow_redirect(path, code=None):
     location = chellow.utils.url_root + path
     if code is None:
-        return redirect(location)
+        res = redirect(location)
     else:
-        return redirect(location, code)
+        res = redirect(location, code)
+
+    res.headers["HX-Redirect"] = location
+    return res
 
 
 @home.route("/configuration", methods=["GET"])

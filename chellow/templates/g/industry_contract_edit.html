@@ -11,37 +11,33 @@
 
 {% block content %}
 
-	{% if request.method == 'GET' and request.values.delete %}
+	<form hx-patch="/g/industry_contracts/{{g_contract.id}}/edit">
+		<fieldset>
+			<legend>Update Contract</legend>
+			<label>Name</label> {{input_text('name', g_contract.name)}}
+			<label>Charge Script</label>
+			{{input_textarea(
+				'charge_script', g_contract.charge_script, 40, 80)}}
+			<label>Properties</label>
+			{{input_textarea('properties', g_contract.properties, 20, 80)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
 
-		<form method="post" action="/g/industry_contracts/{{g_contract.id}}/edit">
-			<fieldset>
-				<legend>Are you sure you want to delete this contract?</legend>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-		<p>
-			<a href=".">Cancel</a>
-		</p>
+	<form hx-patch="/g/industry_contracts/{{g_contract.id}}/edit">
+		<fieldset>
+			<legend>Update State</legend>
+			<label>State</label>
+			{{input_textarea('state', g_contract.state, 20, 80)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
 
-	{% else %}
-		<form action="/g/industry_contracts/{{g_contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update Contract</legend>
-				<label>Name</label> {{input_text('name', g_contract.name)}}
-				<label>Charge Script</label>
-				{{input_textarea(
-					'charge_script', g_contract.charge_script, 40, 80)}}
-					<label>Properties</label>
-				{{input_textarea('properties', g_contract.properties, 20, 80)}}
-				<input type="submit" name="update" value="Update">
-			</fieldset>
-		</form>
-
-		<form action="/g/industry_contracts/{{g_contract.id}}/edit">
-			<fieldset>
-				<legend>Delete this contract</legend>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-	{% endif %}
+	<form hx-delete="/g/industry_contracts/{{g_contract.id}}/edit"
+			hx-confirm="Are you sure you want to delete this industry contract?">
+		<fieldset>
+			<legend>Delete this contract</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
 {% endblock %}

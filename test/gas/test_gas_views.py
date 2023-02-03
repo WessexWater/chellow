@@ -602,6 +602,30 @@ def test_industry_contracts(client, sess):
     match(response, 200, r"<td>\s*2019-01-01 00:00\s*</td>\s*<td>\s*Ongoing\s*</td>")
 
 
+def test_industry_contract_edit_patch(client, sess):
+    contract = GContract.insert_industry(
+        sess,
+        "Fusion 2020",
+        "",
+        {},
+        utc_datetime(2019, 1, 1),
+        None,
+        {},
+    )
+    sess.commit()
+
+    data = {
+        "name": "Fusion 2020",
+        "charge_script": "",
+        "properties": "{}",
+        "state": '{"hinderance": "sloth"}',
+    }
+    response = client.patch(f"/g/industry_contracts/{contract.id}/edit", data=data)
+    match(response, 204)
+    response = client.get(f"/g/industry_contracts/{contract.id}")
+    match(response, 200, "&#34;hinderance&#34;: &#34;sloth&#34;")
+
+
 def test_supplier_contracts(client, sess):
     GContract.insert_supplier(
         sess,

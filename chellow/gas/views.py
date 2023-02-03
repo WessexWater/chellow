@@ -1152,21 +1152,38 @@ def industry_contract_edit_get(g_contract_id):
     return render_template("industry_contract_edit.html", g_contract=g_contract)
 
 
-@gas.route("/industry_contracts/<int:g_contract_id>/edit", methods=["POST"])
-def industry_contract_edit_post(g_contract_id):
+@gas.route("/industry_contracts/<int:g_contract_id>/edit", methods=["DELETE"])
+def industry_contract_edit_delete(g_contract_id):
     try:
         g_contract = GContract.get_industry_by_id(g.sess, g_contract_id)
-        if "delete" in request.values:
-            g_contract.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/industry_contracts", 303)
+        g_contract.delete(g.sess)
+        g.sess.commit()
+        res = make_response()
+        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/g/industry_contracts"
+        return res
+    except BadRequest as e:
+        flash(e.description)
+        g.sess.rollback()
+        return make_response(
+            render_template("industry_contract_edit.html", g_contract=g_contract), 400
+        )
+
+
+@gas.route("/industry_contracts/<int:g_contract_id>/edit", methods=["PATCH"])
+def industry_contract_edit_patch(g_contract_id):
+    try:
+        g_contract = GContract.get_industry_by_id(g.sess, g_contract_id)
+        if "state" in request.values:
+            state = req_zish("state")
+            g_contract.update_state(state)
         else:
             name = req_str("name")
             charge_script = req_str("charge_script")
             properties = req_zish("properties")
             g_contract.update(name, charge_script, properties)
-            g.sess.commit()
-            return chellow_redirect(f"/industry_contracts/{g_contract.id}", 303)
+
+        g.sess.commit()
+        return chellow_redirect(f"/industry_contracts/{g_contract.id}", 204)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
