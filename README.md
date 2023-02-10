@@ -22,64 +22,76 @@ https://github.com/WessexWater/chellow.
 
 ## Installation
 
-Chellow is a Python web application (with a built-in webserver) that uses the
-PostgreSQL database. To install Chellow, follow these steps:
+Chellow is a Python web application that uses the PostgreSQL database. To install
+Chellow, follow these steps:
 
 * Install [PostgreSQL](http://www.postgresql.org/) 12
-* Install Python 3.9 (tested on the [CPython 3.9.8](http://www.python.org/)
-   interpreter)
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
-* Install Chellow: `pip install chellow`
 * Set up the following environment variables to configure Chellow:
 
-| Name | Default | Description 
-| ---- | ------- | -----------
-| `PGUSER` | `postgres` | Postgres user name
-| `PGPASSWORD` | `postgres` | Postgres password
-| `PGHOST` | `localhost` | Postgres host name
-| `PGPORT` | `5432` | Postgres port
-| `PGDATABASE` | `chellow` | Postgres database name
-| `CHELLOW_PORT` | `80` | Port that the Chellow webserver will listen on
+| Name         | Default     | Description            |
+| ------------ | ----------- | ---------------------- |
+| `PGUSER`     | `postgres`  | Postgres user name     |
+| `PGPASSWORD` | `postgres`  | Postgres password      |
+| `PGHOST`     | `localhost` | Postgres host name     |
+| `PGPORT`     | `5432`      | Postgres port          |
+| `PGDATABASE` | `chellow`   | Postgres database name |
 
 In bash an environment variable can be set by doing:
 
-`export CHELLOW_PORT=8080`
+`export PGUSER=postgres`
 
 in Windows an environment variable can be set by doing:
 
-`set CHELLOW_PORT=8080`
+`set PGUSER=postgres`
 
-* Start Chellow by running `chellow start`.
-* You should now be able to visit `http://localhost/` in a browser. You should be
+* Install Python 3.9 (tested on the [CPython 3.9.8](http://www.python.org/) interpreter)
+* Create a virtual environment: `python3 -m venv venv`
+* Activate the virtual environment: `source venv/bin/activate`
+* Install Chellow: `pip install chellow`
+* Start Chellow:`waitress-serve --host=0.0.0.0 --port=8080 --call chellow:create_app`
+* You should now be able to visit `http://localhost:8080/` in a browser. You should be
   prompted to enter a username and password. Enter the admin user name
   `admin@example.com` and the password `admin`, and then the home page should appear.
   Change the admin password from the `users` page.
-* Chellow can be stopped by running `chellow stop`.
 
 
-### Manual Upgrading
+### Manually Upgrading Chellow
 
 To upgrade to the latest version of Chellow do: `pip install --upgrade chellow`
 
 
-### Automatic Upgrading
+### Automatically Upgrading Chellow
 
-On Unix, set up a cron job to regularly call the updater script by doing:
+The bash script [chellow\_upgrader.sh](bin/chellow_upgrader.sh) will check for a new
+version of Chellow and if one's there it will stop Chellow, then do the upgrade, then
+start Chellow.
 
-`crontab -e`
 
-and entering the line:
+### Using with systemd
 
-`\* * * * * source /home/me/venv/bin/activate;chellow_updater.sh`
+Copy the following files into the `/etc/systemd/system` directory:
+
+* [chellow.service](systemd/chellow.service)
+* [chellow\_upgrader.service](systemd/chellow_upgrader.service)
+* [chellow\_upgrader.timer](systemd/chellow_upgrader.timer)
+
+and modify them as appropriate. The `chellow_upgrader.service` uses the
+`chellow_upgrader.sh` script above. The you should be able to use the following
+commands:
+
+* Start Chellow: `sudo systemctl start chellow`
+* Make Chellow run on startup: `sudo systemctl enable chellow`
+* Start the Chellow Upgrader: `sudo systemctl start chellow_upgrader.timer`
+* Make Chellow Upgrader run on startup: `sudo systemctl enable chellow_upgrader.timer`
 
 
 ### Using A Different Webserver
 
 Chellow comes bundled with the
-[Waitress](http://docs.pylonsproject.org/projects/waitress/en/latest/)
-webserver, but the is also a Python WSGI web application so Chellow can be used
-with any WSGI compliant application server, eg Gunicorn. The WSGI app that
-should be specified is `chellow.app`.
+[Waitress](http://docs.pylonsproject.org/projects/waitress/en/latest/) webserver, but
+the is also a Python WSGI web application so Chellow can be used with any WSGI compliant
+application server, eg Gunicorn. The WSGI app that should be specified is `chellow.app`.
 
 
 ##  Getting Started

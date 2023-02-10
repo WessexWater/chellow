@@ -1,7 +1,9 @@
 import os
 from datetime import datetime as Datetime
+from importlib.metadata import version
 
 from flask import Flask, Response, g, make_response, render_template, request
+
 
 from sqlalchemy import select
 
@@ -23,7 +25,6 @@ import chellow.gas.cv
 import chellow.gas.views
 import chellow.testing
 import chellow.utils
-from chellow._version import get_versions
 from chellow.models import (
     Contract,
     Session,
@@ -310,9 +311,4 @@ def create_app(testing=False):
     return app
 
 
-try:
-    versions = get_versions()
-    __version__ = versions["version"]
-    del get_versions
-except ValueError:
-    __version__ = "0"
+__version__ = version("chellow")

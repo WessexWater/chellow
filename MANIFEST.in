@@ -1,3 +1,0 @@
-include versioneer.py
-include chellow/_version.py
-include config/chellow.conf

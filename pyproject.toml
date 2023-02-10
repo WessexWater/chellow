@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chellow"
+dynamic = ["version"]
+description = "Web Application for checking UK energy bills."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+	"odio==0.0.22",
+	"pg8000==1.29.3",
+	"Flask==2.2.2",
+	"SQLAlchemy==1.4.44",
+	"flask-restx==1.0.3",
+	"openpyxl==3.0.10",
+	"python-dateutil==2.8.2",
+	"pytz==2022.6",
+	"requests==2.28.1",
+	"waitress==2.1.2",
+	"pep3143daemon==0.0.6",
+	"pip>=9.0.1",
+	"pysftp==0.2.9",
+	"pympler==1.0.1",
+	"psutil==5.9.4",
+	"xlrd==2.0.1",
+	"zish==0.1.10",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/WessexWater/chellow"
+
+[tool.hatch.version]
+path = "VERSION"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+
+[testenv]
+recreate = True
+deps =
+    flake8
+    flake8-alphabetize
+    black
+    pytest
+    pytest-mock
+allowlist_externals =
+    echo
+passenv =
+    PGPORT
+    PGUSER
+    PGHOST
+    PGPASSWORD
+setenv =
+    PGDATABASE = toxchellow
+commands =
+    black --check .
+    flake8 .
+    pytest --exitfirst test
+    echo PGPORT is {env:PGPORT:unset}
+    echo PGUSER is {env:PGUSER:unset}
+    echo Test database is {env:PGDATABASE:unset} on {env:PGHOST:unset}
+"""
