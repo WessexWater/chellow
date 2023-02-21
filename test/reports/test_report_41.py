@@ -1,6 +1,9 @@
+from io import StringIO
+
 from sqlalchemy.orm.session import Session
 
-import chellow.reports.report_41
+from chellow.models import User, UserRole
+from chellow.reports.report_41 import _make_eras, content
 from chellow.utils import utc_datetime
 
 
@@ -12,9 +15,7 @@ def test_eras(mocker):
     year_start = utc_datetime(2010, 4, 1)
     year_finish = utc_datetime(2011, 3, 31, 23, 30)
     supply_id = None
-    eras = chellow.reports.report_41._make_eras(
-        sess, year_start, year_finish, supply_id
-    )
+    eras = _make_eras(sess, year_start, year_finish, supply_id)
     desired = "".join(
         (
             "SELECT era.id AS era_id, era.supply_id AS era_supply_id, "
@@ -53,3 +54,69 @@ def test_eras(mocker):
     )
     print(desired)
     assert str(eras) == desired
+
+
+def test_content(mocker, sess):
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    sess.commit()
+
+    mock_file = StringIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_41.open", return_value=mock_file)
+    mocker.patch("chellow.reports.report_41.make_names", return_value=("a", "b"))
+    mocker.patch("chellow.reports.report_41.os.rename")
+
+    year = 2010
+    supply_id = None
+    user_id = user.id
+    content(year, supply_id, user_id)
+
+    actual = mock_file.getvalue()
+    expected = [
+        "Site Code",
+        "Site Name",
+        "Supply Name",
+        "Source",
+        "Generator Type",
+        "Import MPAN Core",
+        "Import T1 Date",
+        "Import T1 MSP kW",
+        "Import T1 Status",
+        "Import T1 LAF",
+        "Import T1 GSP kW",
+        "Import T2 Date",
+        "Import T2 MSP kW",
+        "Import T2 Status",
+        "Import T2 LAF",
+        "Import T2 GSP kW",
+        "Import T3 Date",
+        "Import T3 MSP kW",
+        "Import T3 Status",
+        "Import T3 LAF",
+        "Import T3 GSP kW",
+        "Import GSP kW",
+        "Import Rate GBP / kW",
+        "Import GBP",
+        "Export MPAN Core",
+        "Export T1 Date",
+        "Export T1 MSP kW",
+        "Export T1 Status",
+        "Export T1 LAF",
+        "Export T1 GSP kW",
+        "Export T2 Date",
+        "Export T2 MSP kW",
+        "Export T2 Status",
+        "Export T2 LAF",
+        "Export T2 GSP kW",
+        "Export T3 Date",
+        "Export T3 MSP kW",
+        "Export T3 Status",
+        "Export T3 LAF",
+        "Export T3 GSP kW",
+        "Export GSP kW",
+        "Export Rate GBP / kW",
+        "Export GBP",
+    ]
+    print(actual)
+    assert actual == ",".join(expected) + "\n"

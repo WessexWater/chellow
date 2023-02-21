@@ -10,11 +10,11 @@ from flask import g, request
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
-import chellow.dloads
-import chellow.e.computer
-import chellow.e.duos
 import chellow.e.tnuos
-from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
+from chellow.dloads import make_names
+from chellow.e.computer import SupplySource, forecast_date
+from chellow.e.duos import duos_vb
+from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply, User
 from chellow.utils import (
     HH,
     csv_make_val,
@@ -48,14 +48,13 @@ def _make_eras(sess, nov_start, year_finish, supply_id):
     return eras
 
 
-def content(year, supply_id, user):
+def content(year, supply_id, user_id):
     caches = {}
     sess = f = writer = None
     try:
         sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(
-            "supplies_triad.csv", user
-        )
+        user = User.get_by_id(sess, user_id)
+        running_name, finished_name = make_names("supplies_triad.csv", user)
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")
 
@@ -87,7 +86,7 @@ def content(year, supply_id, user):
             if supply_source is None or supply_source.mpan_core.startswith("99"):
                 return [""] * 19
 
-            chellow.e.duos.duos_vb(supply_source)
+            duos_vb(supply_source)
             chellow.e.tnuos.hh(supply_source)
             for hh in supply_source.hh_data:
                 bill_hh = supply_source.supplier_bill_hhs[hh["start-date"]]
@@ -155,7 +154,7 @@ def content(year, supply_id, user):
             )
         )
 
-        forecast_date = chellow.computer.forecast_date()
+        fdate = forecast_date()
         eras = _make_eras(sess, nov_start, march_finish, supply_id)
 
         for era in eras:
@@ -171,16 +170,16 @@ def content(year, supply_id, user):
             if imp_mpan_core is None:
                 imp_supply_source = None
             else:
-                imp_supply_source = chellow.computer.SupplySource(
-                    sess, march_start, march_finish, forecast_date, era, True, caches
+                imp_supply_source = SupplySource(
+                    sess, march_start, march_finish, fdate, era, True, caches
                 )
 
             exp_mpan_core = era.exp_mpan_core
             if exp_mpan_core is None:
                 exp_supply_source = None
             else:
-                exp_supply_source = chellow.computer.SupplySource(
-                    sess, march_start, march_finish, forecast_date, era, False, caches
+                exp_supply_source = SupplySource(
+                    sess, march_start, march_finish, fdate, era, False, caches
                 )
 
             gen_type = supply.generator_type
@@ -214,5 +213,5 @@ def content(year, supply_id, user):
 def do_get(sess):
     year = req_int("year")
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
-    threading.Thread(target=content, args=(year, supply_id, g.user)).start()
+    threading.Thread(target=content, args=(year, supply_id, g.user.id)).start()
     return chellow_redirect("/downloads", 303)
