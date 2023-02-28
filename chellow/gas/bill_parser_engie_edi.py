@@ -14,6 +14,7 @@ READ_TYPE_MAP = {"00": "A", "01": "E"}
 
 TCOD_MAP = {
     "Energy Bill Relief Scheme": {"PPK": "ebrs"},
+    "Energy Bill Relief Scheme Discount": {"PPK": "ebrs"},
     "Unidentified Gas": {"PPK": "ug"},
     "Commodity": {"PPK": "commodity"},
     "Transportation": {"PPD": "transportation_fixed", "PPK": "transportation_variable"},
