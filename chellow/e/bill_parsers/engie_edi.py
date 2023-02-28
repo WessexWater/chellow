@@ -23,7 +23,6 @@ read_type_map = {
 
 
 TCOD_MAP = {
-    "030025": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
     "345065": ("summer-weekend-gbp", "summer-weekend-rate", "summer-weekend-kwh"),
     "350293": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
     "425779": ("ro-gbp", "ro-rate", "ro-kwh"),
@@ -33,6 +32,7 @@ TCOD_MAP = {
     "117220": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
     "579387": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
     "558147": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
+    "030025": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
     "066540": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
     "154164": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
     "281170": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
@@ -42,6 +42,8 @@ TCOD_MAP = {
     "810016": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
     "839829": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
     "068476": ("day-gbp", "day-rate", "day-kwh"),
+    "133186": ("day-gbp", "day-rate", "day-kwh"),
+    "400434": ("day-gbp", "day-rate", "day-kwh"),
     "219182": (
         "duos-availability-gbp",
         "duos-availability-rate",
@@ -62,6 +64,9 @@ TCOD_MAP = {
     "661439": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "661441": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "563023": ("ebrs-gbp", None, "ebrs-kwh"),
+    "823408": ("ebrs-gbp", None, "ebrs-kwh"),
+    "871593": ("ebrs-gbp", "ebrs-rate", "ebrs-kwh"),
+    "873894": ("ebrs-gbp", "ebrs-rate", "ebrs-kwh"),
     "309707": ("fit-gbp", "fit-rate", "fit-kwh"),
     "994483": ("reconciliation-gbp", None, None),
     "544936": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
