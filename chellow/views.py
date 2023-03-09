@@ -2124,7 +2124,14 @@ def non_core_auto_importer_post(contract_id):
 @home.route("/rate_server")
 def rate_server_get():
     importer = chellow.rate_server.importer
-    return render_template("rate_server.html", importer=importer)
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+    return render_template(
+        "rate_server.html",
+        importer=importer,
+        config_state=config.make_state(),
+        config_properties=props.get("rate_server", {}),
+    )
 
 
 @home.route("/rate_server", methods=["POST"])

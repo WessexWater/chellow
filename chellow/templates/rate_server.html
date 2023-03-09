@@ -10,18 +10,74 @@
 
 {% block content %}
 	{% if importer %}
+		<ul>
+			<li><a href="#controls">Controls</a></li>
+			<li><a href="#log">Log</a></li>
+			<li><a href="#latest">Latest Imported Files</a></li>
+			<li><a href="#config">Configuration</a></li>
+		</ul>
+
+		<h4 id="controls">Controls</h4>
+
 		<table>
 			<tr>
 				<th>Is Locked?</th>
 				<td>{{importer.is_locked()}}</td>
 			</tr>
+			<tr>
+				<th>Import Now</th>
+				<td>
+					<form method="post">
+						<fieldset {% if importer.is_locked() %}disabled{% endif %}>
+							<input type="submit" value="Import" name="import">
+						</fieldset>
+					</form>
+				</td>
+			</tr>
+			{% if importer.is_locked() %}
+				<tr>
+					<th>Progress</th>
+					<td>{{importer.progress}}</td>
+				</tr>
+			{% endif %}
 		</table>
-		<form method="post">
-			<fieldset {% if importer.is_locked() %}disabled{% endif %}>
-				<legend>Import Now</legend>
-				<input type="submit" value="Import" name="import">
-			</fieldset>
-		</form>
+
+
+		<h4 id="log">Log</h4>
+
+		<ul>
+			{% for message in importer.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+		<h4 id="latest">Latest Imported Files</h4>
+
+		<table>
+			<tbody>
+				<tr>
+					<th>MDD Version</th>
+					<td>{{ config_state.mdd_version }}</td>
+				</tr>
+				<tr>
+					<th>LAF Files</th>
+					<td>
+						{% if 'laf_importer' in config_state %}
+							<table>
+								{% for code, dt in config_state.laf_importer.items() %}
+									<tr>
+										<td>{{code}}</td>
+										<td>{{dt}}</td>
+									</tr>
+								{% endfor %}
+							</table>
+						{% endif %}
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h4 id="config">Configuration</h4>
 
 		<p>
 			The rate server details can be set in the
@@ -33,16 +89,11 @@
   "branch": "main",
 },</pre>
 
-		{% if importer.is_locked() %}
-			<p>Progress: {{importer.progress}}</p>
-		{% endif %}
+		<p>
+			If <code>url</code> or <code>branch</code> are omitted, then the default is as
+			above.
+		</p>
 
-		<h4>Log</h4>
-		<ul>
-			{% for message in importer.messages %}
-				<li>{{message}}</li>
-			{% endfor %}
-		</ul>
 	{% else %}
 		<p>Importer not present.</p>
 	{% endif %}
