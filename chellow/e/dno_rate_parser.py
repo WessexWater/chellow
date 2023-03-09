@@ -437,6 +437,7 @@ GSP_MAP = (
     ("gsp_m", "_M"),
     ("gsp_n", "_N"),
     ("gsp_p", "_P"),
+    ("lond", "_C"),
     ("mide", "_E"),
     ("sepd", "_H"),
     ("sweb", "_L"),
