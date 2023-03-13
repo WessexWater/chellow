@@ -529,8 +529,14 @@ def rate_server_import(sess, log, set_progress, s, paths):
                     update_vls(sess, log, vls, dno_code, fy_start, rs.finish_date)
                 except BadRequest as e:
                     raise BadRequest(
-                        f"Problem with year {year} DNO {dno_code}: {e.description}"
+                        f"Problem with year {year} DNO {dno_code} file name "
+                        f"{file_name}: {e.description}"
                     )
+                except BaseException as e:
+                    raise BadRequest(
+                        f"Problem with year {year} DNO {dno_code} file name "
+                        f"{file_name}:"
+                    ) from e
 
     log("Finished DNO spreadsheets")
     sess.commit()
@@ -541,37 +547,41 @@ LV_SUB = ("LV", True)
 HV_NET = ("HV", False)
 HV_SUB = ("HV", True)
 EHV_NET = ("EHV", False)
+EHV_SUB = ("EHV", True)
 
 
 VL_LOOKUP = {
-    "132/33kV generic": EHV_NET,
-    "132/EHV connected": EHV_NET,
-    "132/HV connected": HV_NET,
-    "132kV connected": EHV_NET,
-    "132kV generic": EHV_NET,
-    "132kV generic (demand)": EHV_NET,
-    "132kV generic (generation)": EHV_NET,
-    "132kV generic Export": EHV_NET,
-    "132kV generic Import": EHV_NET,
-    "132kV to 33kV generic": EHV_NET,
-    "33kV generic": EHV_NET,
-    "33kV generic (demand)": EHV_NET,
-    "33kV generic (generation)": EHV_NET,
-    "33kV generic Export": EHV_NET,
-    "33kV generic Import": EHV_NET,
-    "EHV 33kV Export": EHV_NET,
-    "EHV 33kV Import": EHV_NET,
-    "EHV connected": EHV_NET,
-    "Greater than 22kV connected - demand": HV_NET,
-    "Greater than 22kV connected - generation": HV_NET,
-    "High-voltage network": HV_NET,
-    "High Voltage Network": HV_NET,
-    "High-voltage substation": HV_SUB,
-    "High Voltage Substation": HV_SUB,
-    "Low-voltage network": LV_NET,
-    "Low Voltage Network": LV_NET,
-    "Low-voltage substation": LV_SUB,
-    "Low Voltage Substation": LV_SUB,
+    "132/33kv": EHV_NET,
+    "132/33kv generic": EHV_NET,
+    "132/33kv substation": EHV_SUB,
+    "132/ehv connected": EHV_NET,
+    "132/hv connected": HV_NET,
+    "132kv connected": EHV_NET,
+    "132kv generic": EHV_NET,
+    "132kv generic (demand)": EHV_NET,
+    "132kv generic (generation)": EHV_NET,
+    "132kv generic export": EHV_NET,
+    "132kv generic import": EHV_NET,
+    "132kv to 33k generic": EHV_NET,
+    "132kv to 33kv generic": EHV_NET,
+    "33kv generic": EHV_NET,
+    "33kv generic (demand)": EHV_NET,
+    "33kv generic (generation)": EHV_NET,
+    "33kv generic export": EHV_NET,
+    "33kv generic import": EHV_NET,
+    "ehv 33kv export": EHV_NET,
+    "ehv 33kv import": EHV_NET,
+    "ehv connected": EHV_NET,
+    "greater than 22kv connected - demand": HV_NET,
+    "greater than 22kv connected - generation": HV_NET,
+    "high voltage network": HV_NET,
+    "high-voltage network": HV_NET,
+    "high voltage substation": HV_SUB,
+    "high-voltage substation": HV_SUB,
+    "low voltage network": LV_NET,
+    "low-voltage network": LV_NET,
+    "low voltage substation": LV_SUB,
+    "low-voltage substation": LV_SUB,
 }
 
 
@@ -586,7 +596,7 @@ def tab_llfs(sheet):
             if val_0 is None or len(val_0) == 0:
                 in_llfcs = False
             else:
-                vl, is_substation = VL_LOOKUP[val_0]
+                vl, is_substation = VL_LOOKUP[val_0.lower()]
                 for llfc_code in to_llfcs(get_cell(sheet, "H", row).value):
                     llfc = {
                         "code": llfc_code,

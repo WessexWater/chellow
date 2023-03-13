@@ -7,6 +7,8 @@ from importlib import import_module
 
 import requests
 
+from werkzeug.exceptions import BadRequest
+
 from chellow.models import (
     Contract,
     Session,
@@ -33,7 +35,14 @@ def run_import(sess, log, set_progress):
     repo_branch = repo_props.get("branch", "main")
     s = requests.Session()
     s.verify = False
-    repo_entry = s.get(repo_url).json()
+    repo_res = s.get(repo_url)
+    try:
+        repo_entry = repo_res.json()
+    except requests.exceptions.JSONDecodeError as e:
+        raise BadRequest(
+            f"Couldn't parse as JSON the content from {repo_url} with error {e}: "
+            f"{repo_res.text}"
+        )
     if "message" in repo_entry:
         raise Exception(f"Message from the GitHub API: {repo_entry['message']}")
 
@@ -109,8 +118,9 @@ class RateServer(threading.Thread):
                 try:
                     sess = Session()
                     run_import(sess, self.log, self.set_progress)
-                except BaseException:
-                    self.log(traceback.format_exc())
+                except BaseException as e:
+                    msg = f"{e.description} " if isinstance(e, BadRequest) else ""
+                    self.log(f"{msg}{traceback.format_exc()}")
                     self.global_alert = (
                         "There's a problem with a <a href='/rate_server'>Rate Server "
                         "import</a>."
