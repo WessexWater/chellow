@@ -54,6 +54,7 @@
 		<h4 id="latest">Latest Imported Files</h4>
 
 		<table>
+			<caption>Electricity</caption>
 			<tbody>
 				<tr>
 					<th>MDD Version</th>
@@ -90,6 +91,78 @@
 									{% set script = rs.make_script() %}
 									<tr>
 										<td>{{rs.contract.name}}</td>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<th>TNUoS Spreadsheet</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in tnuos_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<caption>Gas</caption>
+			<tbody>
+				<tr>
+					<th>NTS Spreadsheet</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in nts_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<th>DN Spreadsheet</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in dn_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
 										<td>{{rs.start_date|hh_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>

@@ -78,6 +78,7 @@ from chellow.models import (
     GContract,
     GEra,
     GExitZone,
+    GRateScript,
     GReadingFrequency,
     GUnit,
     GeneratorType,
@@ -2129,7 +2130,7 @@ def rate_server_get():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
     props = config.make_properties()
     now_ct = ct_datetime_now()
-    fy_year = now_ct.year if now_ct.year > 3 else now_ct.year - 1
+    fy_year = now_ct.year if now_ct.month > 3 else now_ct.year - 1
     fy_start = to_utc(ct_datetime(fy_year, 4, 1))
     dno_rs = g.sess.execute(
         select(RateScript)
@@ -2138,6 +2139,37 @@ def rate_server_get():
         .where(MarketRole.code == "R", RateScript.start_date >= fy_start)
         .order_by(Contract.name, RateScript.start_date.desc())
     ).scalars()
+    tnuos_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "tnuos",
+        )
+        .order_by(RateScript.start_date.desc())
+    ).scalars()
+    nts_rs = g.sess.execute(
+        select(GRateScript)
+        .join(GRateScript.g_contract)
+        .where(
+            GContract.is_industry == true(),
+            GRateScript.start_date >= fy_start,
+            GContract.name == "nts_commodity",
+        )
+        .order_by(GRateScript.start_date.desc())
+    ).scalars()
+    dn_rs = g.sess.execute(
+        select(GRateScript)
+        .join(GRateScript.g_contract)
+        .where(
+            GContract.is_industry == true(),
+            GRateScript.start_date >= fy_start,
+            GContract.name == "dn",
+        )
+        .order_by(GRateScript.start_date.desc())
+    ).scalars()
 
     return render_template(
         "rate_server.html",
@@ -2145,6 +2177,9 @@ def rate_server_get():
         config_state=config.make_state(),
         config_properties=props.get("rate_server", {}),
         dno_rs=dno_rs,
+        tnuos_rs=tnuos_rs,
+        nts_rs=nts_rs,
+        dn_rs=dn_rs,
     )
 
 
