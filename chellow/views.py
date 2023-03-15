@@ -106,6 +106,7 @@ from chellow.utils import (
     HH,
     c_months_u,
     csv_make_val,
+    ct_datetime,
     ct_datetime_now,
     hh_range,
     parse_mpan_core,
@@ -119,6 +120,7 @@ from chellow.utils import (
     req_zish,
     send_response,
     to_ct,
+    to_utc,
     utc_datetime,
     utc_datetime_now,
 )
@@ -2126,11 +2128,23 @@ def rate_server_get():
     importer = chellow.rate_server.importer
     config = Contract.get_non_core_by_name(g.sess, "configuration")
     props = config.make_properties()
+    now_ct = ct_datetime_now()
+    fy_year = now_ct.year if now_ct.year > 3 else now_ct.year - 1
+    fy_start = to_utc(ct_datetime(fy_year, 4, 1))
+    dno_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(MarketRole.code == "R", RateScript.start_date >= fy_start)
+        .order_by(Contract.name, RateScript.start_date.desc())
+    ).scalars()
+
     return render_template(
         "rate_server.html",
         importer=importer,
         config_state=config.make_state(),
         config_properties=props.get("rate_server", {}),
+        dno_rs=dno_rs,
     )
 
 
