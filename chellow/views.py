@@ -2170,6 +2170,17 @@ def rate_server_get():
         )
         .order_by(GRateScript.start_date.desc())
     ).scalars()
+    bsuos_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "bsuos",
+        )
+        .order_by(RateScript.start_date.desc())
+    ).scalars()
 
     return render_template(
         "rate_server.html",
@@ -2180,6 +2191,7 @@ def rate_server_get():
         tnuos_rs=tnuos_rs,
         nts_rs=nts_rs,
         dn_rs=dn_rs,
+        bsuos_rs=bsuos_rs,
     )
 
 

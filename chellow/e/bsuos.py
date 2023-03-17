@@ -5,12 +5,15 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 from decimal import Decimal
+from io import BytesIO
+
+from PyPDF2 import PdfReader
 
 from dateutil.relativedelta import relativedelta
 
 import requests
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
@@ -25,7 +28,8 @@ from chellow.models import (
     Session,
     get_non_core_contract_id,
 )
-from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
+from chellow.rate_server import download
+from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc, utc_datetime_now
 
 
 def hh(data_source, run="RF"):
@@ -49,14 +53,19 @@ def hh(data_source, run="RF"):
             h_start = h["start-date"]
             db_id = get_non_core_contract_id("bsuos")
 
-            rates = data_source.hh_rate(db_id, h_start)["rates_gbp_per_mwh"]
+            rates = data_source.hh_rate(db_id, h_start)
 
-            try:
-                bsuos_price_dict = rates[key_format(h_start)]
-                bsuos_price = _find_price(run, bsuos_price_dict)
-            except KeyError:
-                ds = rates.values()
-                bsuos_price = sum(_find_price(run, d) for d in ds) / len(ds)
+            if h_start >= to_utc(ct_datetime(2023, 4, 1)):
+                bsuos_price = rates["rate_gbp_per_mwh"]
+            else:
+                bsuos_rates = rates["rates_gbp_per_mwh"]
+
+                try:
+                    bsuos_price_dict = bsuos_rates[key_format(h_start)]
+                    bsuos_price = _find_price(run, bsuos_price_dict)
+                except KeyError:
+                    ds = rates.values()
+                    bsuos_price = sum(_find_price(run, d) for d in ds) / len(ds)
 
             h["bsuos-rate"] = bsuos_rate = bsuos_cache[h_start] = (
                 float(bsuos_price) / 1000
@@ -230,6 +239,8 @@ def _process_url(logger, sess, url, contract):
         hh_date_ct = to_ct(date)
         hh_date_ct += relativedelta(minutes=30 * (period - 1))
         hh_date = to_utc(hh_date_ct)
+        if hh_date >= to_utc(ct_datetime(2023, 4, 1)):
+            continue
 
         try:
             rs, rates, rts = cache[hh_date.year][hh_date.month]
@@ -341,3 +352,76 @@ def startup():
 def shutdown():
     if bsuos_importer is not None:
         bsuos_importer.stop()
+
+
+def find_rate(file_name, file_like, rate_index):
+    rate_script = {"a_file_name": file_name}
+    rates = []
+
+    reader = PdfReader(file_like)
+    for page in reader.pages:
+        for line in page.extract_text().splitlines():
+            if line.startswith("BSUoS Tariff £/MWh"):
+                for token in line.split():
+                    if token[0] == "£" and token[1] != "/":
+                        rates.append(Decimal(token[1:]))
+
+    rate_script["rate_gbp_per_mwh"] = rates[rate_index]
+    return rate_script
+
+
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new BSUoS spreadsheets")
+
+    year_entries = {}
+    for path, url in paths:
+        if len(path) == 4:
+            year_str, utility, rate_type, file_name = path
+            if utility == "electricity" and rate_type == "bsuos":
+                year = int(year_str)
+                try:
+                    fl_entries = year_entries[year]
+                except KeyError:
+                    fl_entries = year_entries[year] = {}
+
+                fl_entries[file_name] = url
+
+    for year, year_pdfs in sorted(year_entries.items()):
+        year_start = to_utc(ct_datetime(year, 4, 1))
+        oct_start = to_utc(ct_datetime(year, 10, 1))
+        contract = Contract.get_non_core_by_name(sess, "bsuos")
+        if year_start < contract.start_rate_script.start_date:
+            continue
+        rs_1 = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == year_start,
+            )
+        ).scalar_one_or_none()
+        if rs_1 is None:
+            rs_1 = contract.insert_rate_script(sess, year_start, {})
+
+        rs_2 = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == oct_start,
+            )
+        ).scalar_one_or_none()
+        if rs_2 is None:
+            rs_2 = contract.insert_rate_script(sess, oct_start, {})
+
+        if len(year_pdfs) > 0:
+            file_name, url = sorted(year_pdfs.items())[-1]
+
+            rs_1_script = rs_1.make_script()
+            if rs_1_script.get("a_file_name") != file_name:
+                rs_1.update(find_rate(file_name, BytesIO(download(s, url)), 0))
+                log(f"Updated BSUoS rate script for {hh_format(year_start)}")
+
+            rs_2_script = rs_2.make_script()
+            if rs_2_script.get("a_file_name") != file_name:
+                rs_2.update(find_rate(file_name, BytesIO(download(s, url)), 1))
+                log(f"Updated BSUoS rate script for {hh_format(oct_start)}")
+
+    log("Finished BSUoS spreadsheets")
+    sess.commit()

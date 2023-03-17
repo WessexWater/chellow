@@ -69,6 +69,7 @@ def run_import(sess, log, set_progress):
     paths = tuple(paths_list)
 
     for mod_name in (
+        "chellow.e.bsuos",
         "chellow.e.dno_rate_parser",
         "chellow.e.laf_import",
         "chellow.e.mdd_importer",

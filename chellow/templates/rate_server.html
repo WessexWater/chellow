@@ -121,6 +121,28 @@
 						</table>
 					</td>
 				</tr>
+				<tr>
+					<th>BSUoS PDF</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in bsuos_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 
