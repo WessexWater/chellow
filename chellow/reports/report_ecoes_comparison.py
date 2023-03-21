@@ -91,6 +91,10 @@ def content(user_id, show_ignored, report_run_id):
         login_j = s.post(url_prefix, data=data, allow_redirects=False).json()
         if not login_j["Success"]:
             raise BadRequest(f"Login to ECOES failed: {login_j['Messages']}")
+        elif "RedirectUrl" in login_j and "SetPassword" in login_j["RedirectUrl"]:
+            raise BadRequest(
+                "Login to ECOES failed, it looks like the password needs to be changed"
+            )
 
         r = s.get(
             f"{url_prefix}NonDomesticCustomer/ExportPortfolioMPANs?fileType=csv",
