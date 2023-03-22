@@ -4,7 +4,7 @@ from zipfile import BadZipFile, ZipFile
 
 import pytest
 
-from chellow.e.laf_import import _process, laf_days
+from chellow.e.laf_import import _process, find_participant_entries, laf_days
 from chellow.models import (
     Contract,
     MarketRole,
@@ -97,3 +97,27 @@ def test_laf_import_error(mocker, sess):
 
     with pytest.raises(BadZipFile, match="File is not a zip file"):
         _process(sess, log, set_progress, f)
+
+
+def test_find_participant_entries_empty():
+    paths = []
+    laf_cache = {}
+    actual_entries = find_participant_entries(paths, laf_cache)
+    expected_entries = {}
+    assert actual_entries == expected_entries
+
+
+def test_find_participant_entries_single():
+    paths = [(("2023", "electricity", "lafs", "llfipnl20210922.ptf.zip"), "url")]
+    laf_cache = {}
+    actual_entries = find_participant_entries(paths, laf_cache)
+    expected_entries = {"ipnl": {"20210922": "url"}}
+    assert actual_entries == expected_entries
+
+
+def test_find_participant_entries_single_in_state():
+    paths = [(("2023", "electricity", "lafs", "llfipnl20210922.ptf.zip"), "url")]
+    laf_cache = {"ipnl": "20210922"}
+    actual_entries = find_participant_entries(paths, laf_cache)
+    expected_entries = {}
+    assert actual_entries == expected_entries

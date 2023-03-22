@@ -110,17 +110,8 @@ LAF_START = "llf"
 LAF_END = "ptf.zip"
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
-    log("Starting to check for new LAF files")
+def find_participant_entries(paths, laf_state):
     participant_entries = {}
-    conf = Contract.get_non_core_by_name(sess, "configuration")
-    state = conf.make_state()
-
-    try:
-        laf_state = state["laf_importer"]
-    except KeyError:
-        laf_state = state["laf_importer"] = {}
-
     for path, url in paths:
         if len(path) == 4:
             year_str, utility, rate_type, file_name = path
@@ -135,14 +126,27 @@ def rate_server_import(sess, log, set_progress, s, paths):
                 participant_code = file_name[3:7]
                 timestamp = file_name[7:15]
 
-                try:
-                    fl_entries = participant_entries[participant_code]
-                except KeyError:
-                    fl_entries = participant_entries[participant_code] = {}
-
                 participant_state = laf_state.get(participant_code, "")
                 if timestamp > participant_state:
+                    try:
+                        fl_entries = participant_entries[participant_code]
+                    except KeyError:
+                        fl_entries = participant_entries[participant_code] = {}
                     fl_entries[timestamp] = url
+    return participant_entries
+
+
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new LAF files")
+    conf = Contract.get_non_core_by_name(sess, "configuration")
+    state = conf.make_state()
+
+    try:
+        laf_state = state["laf_importer"]
+    except KeyError:
+        laf_state = state["laf_importer"] = {}
+
+    participant_entries = find_participant_entries(paths, laf_state)
 
     for participant_code, fl_entries in sorted(participant_entries.items()):
         log(f"Importing files for participant code {participant_code}")
