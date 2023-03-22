@@ -7,9 +7,9 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
-from PyPDF2 import PdfReader
-
 from dateutil.relativedelta import relativedelta
+
+from pypdf import PdfReader
 
 import requests
 
