@@ -17,7 +17,7 @@
 				<a href="/report_runs/{{run.id}}">Cancel</a>
 			</fieldset>
 		</form>
-	{% elif run.name == 'bill_check' %}
+	{% else %}
 		<table>
 			<caption>Bill Check</caption>
 			<thead>
@@ -39,7 +39,10 @@
 					<td>{{run.title}}</td>
 					<td>{{run.state}}</td>
 					<td>{{rows|length}}</td>
-					<td>{{"%.2f"|format(summary.sum_difference)}}</td>
+					<td>
+						{% if 'sum_difference' in summary %}
+							{{"%.2f"|format(summary.sum_difference)}}</td>
+						{% endif %}
 					<td>
 						<form action="/report_runs/{{run.id}}">
 							<fieldset style="border: none;">
@@ -192,63 +195,5 @@
 				{% endfor %}
 			</tbody>
 		</table>
-	{% else %}
-		<table>
-			<caption>Report Run</caption>	
-			<thead>
-				<tr>
-					<th>Date Created</th>
-					<th>Created By</th>
-					<th>Name</th>
-					<th>Title</th>
-					<th>State</th>
-					<th>Number Of Rows</th>
-					<th>Sum Of Difference GBP</th>
-					<th>Delete</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>{{run.date_created|hh_format}}</td>
-					<td>{{run.creator}}</td>
-					<td>{{run.name}}</td>
-					<td>{{run.title}}</td>
-					<td>{{run.state}}</td>
-					<th>{{rows|length}}</th>
-					<td>{{summary.sum_difference}}</td>
-					<td>
-						<form action="/report_runs/{{run.id}}">
-							<fieldset style="border: none;">
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-
-		{% if rows|length > 0 %}
-			<table class="sticky">
-				<caption>Rows - Ordered By {{order_by}}</caption>
-				<thead>
-					<tr>
-						<th>View</th>
-						{% for title in rows[0].data.titles %}
-							<th>{{title}}</th>
-						{% endfor %}
-					</tr>
-				</thead>
-				<tbody>
-					{% for row in rows %}
-						<tr>
-							<td><a href="/report_run_rows/{{row.id}}">View</a></td>
-							{% for title in row.data.titles %}
-								<td>{{values[title]}}</td>
-							{% endfor %}
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
 	{% endif %}
 {% endblock %}

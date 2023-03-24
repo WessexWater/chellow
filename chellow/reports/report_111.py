@@ -100,6 +100,7 @@ def content(
     user_id,
     mpan_cores,
     fname_additional,
+    report_run_id,
 ):
     caches = {}
     tmp_file = sess = supply_id = report_run = None
@@ -114,7 +115,7 @@ def content(
         tmp_file = open(running_name, mode="w", newline="")
         writer = csv.writer(tmp_file, lineterminator="\n")
 
-        report_run = ReportRun.insert(sess, "bill_check", user, fname_additional, {})
+        report_run = ReportRun.get_by_id(sess, report_run_id)
 
         bills = (
             sess.query(Bill)
@@ -286,6 +287,15 @@ def do_post(sess):
             "finish_date."
         )
 
+    report_run = ReportRun.insert(
+        sess,
+        "bill_check",
+        g.user,
+        fname_additional,
+        {},
+    )
+    sess.commit()
+
     args = (
         batch_id,
         bill_id,
@@ -295,9 +305,10 @@ def do_post(sess):
         g.user.id,
         mpan_cores,
         fname_additional,
+        report_run.id,
     )
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/report_runs", 303)
+    return chellow_redirect(f"/report_runs/{report_run.id}", 303)
 
 
 def _process_supply(

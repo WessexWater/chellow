@@ -90,6 +90,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
         user.id,
         ["22 1065 3921 534"],
         "_batch_005",
+        1,
     )
 
     MockThread.assert_called_with(target=content, args=expected_args)
@@ -525,6 +526,7 @@ def virtual_bill(ds):
     )
     user_role = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "admin", user_role, None)
+    report_run = ReportRun.insert(sess, "", user, "", {})
     sess.commit()
 
     virtual_bill_titles = [
@@ -580,4 +582,5 @@ def virtual_bill(ds):
         user.id,
         [],
         "",
+        report_run.id,
     )
