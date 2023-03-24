@@ -297,7 +297,7 @@ def do_post(sess):
         fname_additional,
     )
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return chellow_redirect("/report_runs", 303)
 
 
 def _process_supply(
@@ -371,7 +371,7 @@ def _process_supply(
 
         covered_start = bill_start
         covered_finish = bill_start
-        covered_bdown = {"sum-msp-kwh": 0, "net-gbp": 0, "vat-gbp": 0}
+        covered_bdown = {"sum-msp-kwh": 0, "net-gbp": 0, "vat-gbp": 0, "problem": ""}
 
         vb_elems = set()
         enlarged = True
@@ -618,6 +618,12 @@ def _process_supply(
         for elem in vb_elems.difference(covered_elems):
             for k in long_map[elem]:
                 del virtual_bill[k]
+
+        for elem in covered_elems.difference(vb_elems):
+            covered_bdown["problem"] += (
+                f"The element {elem} is in the covered bills, but not in the "
+                f"virtual bill. "
+            )
 
         try:
             del virtual_bill["net-gbp"]
