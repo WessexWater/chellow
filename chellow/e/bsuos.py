@@ -137,22 +137,24 @@ class BsuosImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = None
+                sess = self.global_alert = s = None
                 try:
                     sess = Session()
                     self.log("Starting to check BSUoS rates.")
                     contract = Contract.get_non_core_by_name(sess, "bsuos")
                     props = contract.make_properties()
+                    s = requests.Session()
+                    s.verify = False
                     if props.get("enabled", False):
                         urls = set(props.get("urls", []))
                         if props.get("discover_urls", False):
                             sess.rollback()  # Avoid long-running transaction
-                            urls.update(_discover_urls(self.log))
+                            urls.update(_discover_urls(self.log, s))
 
                         url_list = sorted(urls)
                         self.log(f"List of URLs to process: {url_list}")
                         for url in url_list:
-                            _process_url(self.log, sess, url, contract)
+                            _process_url(self.log, sess, url, contract, s)
                     else:
                         self.log(
                             "The automatic importer is disabled. To enable it, edit "
@@ -187,10 +189,10 @@ def _find_file_type(disp):
     return filetype
 
 
-def _process_url(logger, sess, url, contract):
+def _process_url(logger, sess, url, contract, s):
     logger(f"Checking to see if there's any new data at {url}")
     sess.rollback()  # Avoid long-running transaction
-    res = requests.get(url)
+    res = s.get(url)
     content_disposition = res.headers.get("Content-Disposition")
     logger(f"Received {res.status_code} {res.reason} {content_disposition}")
     cache = {}
@@ -317,7 +319,7 @@ def _process_url(logger, sess, url, contract):
     _save_cache(sess, cache)
 
 
-def _discover_urls(logger):
+def _discover_urls(logger, s):
     host = "https://www.nationalgrideso.com"
     page = (
         f"{host}/industry-information/charging/"
@@ -325,15 +327,14 @@ def _discover_urls(logger):
     )
     logger(f"Searching for URLs on {page}")
     urls = set()
-    res = requests.get(page)
+    res = s.get(page)
     src = res.text
-    for pref in (
-        '" title="Current II BSUoS Data"',
-        '" title="Current RF BSUoS Data"',
-        '" title="Current SF BSUoS Data"',
-    ):
-        pidx = src.find(pref)
-        aidx = src.rfind("<", 0, pidx)
+
+    # <a href="/document/102541/download" target="_blank">Current RF BSUoS Data </a>
+
+    for pref in ("RF", "SF", "II"):
+        pidx = src.find(f'" target="_blank">Current {pref} BSUoS Data <')
+        aidx = src.rfind('<a href="', 0, pidx)
         urls.add(host + src[aidx + 9 : pidx])
     return urls
 

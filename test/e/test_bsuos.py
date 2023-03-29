@@ -21,8 +21,9 @@ def test_process_url_csv(mocker, sess):
     res.status_code = 200
     res.reason = "okay"
     res.headers = {"Content-Disposition": 'filename="bsuos.csv"'}
-    mocker.patch("chellow.e.bsuos.requests.get", return_value=res)
     logger = mocker.Mock()
     contract = mocker.Mock()
     url = mocker.Mock()
-    _process_url(logger, sess, url, contract)
+    s = mocker.Mock()
+    s.get = mocker.Mock(return_value=res)
+    _process_url(logger, sess, url, contract, s)
