@@ -23,11 +23,15 @@ read_type_map = {
 
 
 TCOD_MAP = {
+    "140114": ("reconciliation-gbp", None, None),
+    "255204": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
     "345065": ("summer-weekend-gbp", "summer-weekend-rate", "summer-weekend-kwh"),
     "350293": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
     "425779": ("ro-gbp", "ro-rate", "ro-kwh"),
     "534342": ("reconciliation-gbp", None, None),
+    "583174": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
     "584867": ("aahedc-gbp", "aahedc-rate", "aahedc-kwh"),
+    "946827": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
     "989534": ("bsuos-gbp", "bsuos-rate", "bsuos-kwh"),
     "117220": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
     "579387": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
@@ -107,6 +111,8 @@ def _process_CCD1(elements, headers):
     mpan = " ".join((m[13:15], m[15:18], m[18:], m[:2], m[2:6], m[6:10], m[10:13]))
 
     prrd = elements["PRRD"]
+    if len(prrd) < 4:
+        return
     pres_read_type = read_type_map[prrd[1]]
     prev_read_type = read_type_map[prrd[3]]
 
@@ -409,6 +415,11 @@ class Parser:
                     f"{e.description} on line {self.line_number} line {line} "
                     f"seg_name {seg_name} elements {elements}"
                 )
+            except BaseException as e:
+                raise BadRequest(
+                    f"{e} on line {self.line_number} line {line} "
+                    f"seg_name {seg_name} elements {elements}"
+                ) from e
 
             if "breakdown" in headers:
                 headers["breakdown"]["raw-lines"].append(line)

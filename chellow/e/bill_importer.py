@@ -145,7 +145,10 @@ class BillImport(threading.Thread):
 
         except BadRequest as e:
             sess.rollback()
-            self._log(f"Problem: {e.description}")
+            msg = f"Problem: {e.description}"
+            if e.__cause__ is not None:
+                msg += f" {traceback.format_exc()}"
+            self._log(msg)
         except BaseException:
             sess.rollback()
             self._log(f"I've encountered a problem: {traceback.format_exc()}")
