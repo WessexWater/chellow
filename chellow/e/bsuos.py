@@ -31,6 +31,27 @@ from chellow.models import (
 from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc, utc_datetime_now
 
+MAXIMA = [
+    {
+        "maximum": 15,
+        "start": to_utc(ct_datetime(2020, 6, 25)),
+        "finish": to_utc(ct_datetime(2020, 8, 31, 23, 30)),
+        "reference": "CMP345",
+    },
+    {
+        "maximum": 20,
+        "start": to_utc(ct_datetime(2022, 1, 17)),
+        "finish": to_utc(ct_datetime(2022, 3, 31, 23, 30)),
+        "reference": "CMP381",
+    },
+    {
+        "maximum": 40,
+        "start": to_utc(ct_datetime(2022, 10, 6)),
+        "finish": to_utc(ct_datetime(2023, 3, 31, 23, 30)),
+        "reference": "CMP395",
+    },
+]
+
 
 def hh(data_source, run="RF"):
     try:
@@ -56,26 +77,30 @@ def hh(data_source, run="RF"):
             rates = data_source.hh_rate(db_id, h_start)
 
             if h_start >= to_utc(ct_datetime(2023, 4, 1)):
-                bsuos_price = rates["rate_gbp_per_mwh"]
+                bsuos_price = float(rates["rate_gbp_per_mwh"])
             else:
                 bsuos_rates = rates["rates_gbp_per_mwh"]
 
+                maxi = 0
+                for max_dict in MAXIMA:
+                    if max_dict["start"] <= h_start <= max_dict["finish"]:
+                        maxi = max_dict["maximum"]
+                        break
+
                 try:
                     bsuos_price_dict = bsuos_rates[key_format(h_start)]
-                    bsuos_price = _find_price(run, bsuos_price_dict)
+                    bsuos_price = _find_price(run, bsuos_price_dict, maxi)
                 except KeyError:
                     ds = rates.values()
-                    bsuos_price = sum(_find_price(run, d) for d in ds) / len(ds)
+                    bsuos_price = sum(_find_price(run, d, maxi) for d in ds) / len(ds)
 
-            h["bsuos-rate"] = bsuos_rate = bsuos_cache[h_start] = (
-                float(bsuos_price) / 1000
-            )
+            h["bsuos-rate"] = bsuos_rate = bsuos_cache[h_start] = bsuos_price / 1000
 
         h["bsuos-kwh"] = h["nbp-kwh"]
         h["bsuos-gbp"] = h["nbp-kwh"] * bsuos_rate
 
 
-def _find_price(run, prices):
+def _find_price(run, prices, maxi):
     try:
         price = prices[run]
     except KeyError:
@@ -86,7 +111,8 @@ def _find_price(run, prices):
                 price = prices["SF"]
             except KeyError:
                 price = prices["II"]
-    return price
+
+    return min(float(price), maxi)
 
 
 def key_format(dt):
