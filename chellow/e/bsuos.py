@@ -91,7 +91,7 @@ def hh(data_source, run="RF"):
                     bsuos_price_dict = bsuos_rates[key_format(h_start)]
                     bsuos_price = _find_price(run, bsuos_price_dict, maxi)
                 except KeyError:
-                    ds = rates.values()
+                    ds = bsuos_rates.values()
                     bsuos_price = sum(_find_price(run, d, maxi) for d in ds) / len(ds)
 
             h["bsuos-rate"] = bsuos_rate = bsuos_cache[h_start] = bsuos_price / 1000
