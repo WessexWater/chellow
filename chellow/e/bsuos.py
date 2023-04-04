@@ -81,7 +81,7 @@ def hh(data_source, run="RF"):
             else:
                 bsuos_rates = rates["rates_gbp_per_mwh"]
 
-                maxi = 0
+                maxi = None
                 for max_dict in MAXIMA:
                     if max_dict["start"] <= h_start <= max_dict["finish"]:
                         maxi = max_dict["maximum"]
@@ -112,7 +112,8 @@ def _find_price(run, prices, maxi):
             except KeyError:
                 price = prices["II"]
 
-    return min(float(price), maxi)
+    float_price = float(price)
+    return float_price if maxi is None else min(float_price, maxi)
 
 
 def key_format(dt):
