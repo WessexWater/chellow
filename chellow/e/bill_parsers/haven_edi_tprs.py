@@ -207,10 +207,14 @@ def _process_CCD3(elements, headers):
 
     tmod = elements["TMOD"]
     tmod0 = tmod[0]
+    ignore_rate = ignore_kwh = False
     if tmod0 == "422733":
         prefix = "ccl"
     elif tmod0 == "493988":
         prefix = "reconciliation"
+    elif tmod0 == "761963":
+        prefix = "reconciliation"
+        ignore_rate = ignore_kwh = True
     elif tmod0 == "700285":
         prefix = "standing"
     elif tmod0 == "823408":
@@ -218,13 +222,13 @@ def _process_CCD3(elements, headers):
     else:
         prefix = tmod0
 
-    if "NUCT" in elements and len(elements["NUCT"][0]) > 0:
+    if not ignore_kwh and "NUCT" in elements and len(elements["NUCT"][0]) > 0:
         kwh = _decimal(elements, "NUCT") / Decimal("1000")
         breakdown[f"{prefix}-kwh"] += kwh
         if prefix == tmod0:
             headers["kwh"] += kwh
 
-    if "CPPU" in elements and len(elements["CPPU"][0]) > 0:
+    if not ignore_rate and "CPPU" in elements and len(elements["CPPU"][0]) > 0:
         rate_key = f"{prefix}-rate"
         if rate_key not in breakdown:
             breakdown[rate_key] = set()
