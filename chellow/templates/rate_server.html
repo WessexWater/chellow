@@ -21,20 +21,20 @@
 
 		<table>
 			<tr>
-				<th>Is Locked?</th>
-				<td>{{importer.is_locked()}}</td>
+				<th>Is Going?</th>
+				<td>{{importer.going.is_set()}}</td>
 			</tr>
 			<tr>
 				<th>Import Now</th>
 				<td>
 					<form method="post">
-						<fieldset {% if importer.is_locked() %}disabled{% endif %}>
+						<fieldset {% if importer.going.is_set() %}disabled{% endif %}>
 							<input type="submit" value="Import" name="import">
 						</fieldset>
 					</form>
 				</td>
 			</tr>
-			{% if importer.is_locked() %}
+			{% if importer.going.is_set() %}
 				<tr>
 					<th>Progress</th>
 					<td>{{importer.progress}}</td>

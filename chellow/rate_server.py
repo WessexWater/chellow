@@ -3,6 +3,7 @@ import collections
 import threading
 import traceback
 from base64 import b64decode
+from datetime import timedelta
 from importlib import import_module
 
 import requests
@@ -13,14 +14,29 @@ from chellow.models import (
     Contract,
     Session,
 )
-from chellow.utils import utc_datetime_now
+from chellow.utils import hh_format, utc_datetime_now
 
 
 importer = None
 
 
+def api_get(s, url, params=None):
+    res = s.get(url, params=params)
+    try:
+        res_j = res.json()
+    except requests.exceptions.JSONDecodeError as e:
+        raise BadRequest(
+            f"Couldn't parse as JSON the content from {url} with error {e}: "
+            f"{res.text}"
+        )
+    if "message" in res_j:
+        raise Exception(f"Message from the GitHub API: {res_j['message']}")
+
+    return res_j
+
+
 def download(s, url):
-    fl_json = s.get(url).json()
+    fl_json = api_get(s, url)
     return b64decode(fl_json["content"])
 
 
@@ -35,27 +51,20 @@ def run_import(sess, log, set_progress):
     repo_branch = repo_props.get("branch", "main")
     s = requests.Session()
     s.verify = False
-    repo_res = s.get(repo_url)
-    try:
-        repo_entry = repo_res.json()
-    except requests.exceptions.JSONDecodeError as e:
-        raise BadRequest(
-            f"Couldn't parse as JSON the content from {repo_url} with error {e}: "
-            f"{repo_res.text}"
-        )
-    if "message" in repo_entry:
-        raise Exception(f"Message from the GitHub API: {repo_entry['message']}")
+
+    repo_entry = api_get(s, repo_url)
 
     log(
         f"Looking at {repo_entry['html_url']} and branch "
         f"{'default' if repo_branch is None else repo_branch}"
     )
-    branch_entry = s.get(f"{repo_url}/branches/{repo_branch}").json()
+    branch_entry = api_get(s, f"{repo_url}/branches/{repo_branch}")
 
-    tree_entry = s.get(
+    tree_entry = api_get(
+        s,
         branch_entry["commit"]["commit"]["tree"]["url"],
         params={"recursive": "true"},
-    ).json()
+    )
 
     if tree_entry["truncated"]:
         raise Exception("Tree from rate server is truncated.")
@@ -80,14 +89,17 @@ def run_import(sess, log, set_progress):
         mod.rate_server_import(sess, log, set_progress, s, paths)
 
 
+LAST_RUN_KEY = "rate_server_last_run"
+
+
 class RateServer(threading.Thread):
     def __init__(self):
         super().__init__(name="Rate Server")
-        self.lock = threading.RLock()
         self.messages = collections.deque(maxlen=500)
         self.progress = ""
         self.stopped = threading.Event()
         self.going = threading.Event()
+        self.global_alert = None
 
     def stop(self):
         self.stopped.set()
@@ -96,13 +108,6 @@ class RateServer(threading.Thread):
 
     def go(self):
         self.going.set()
-
-    def is_locked(self):
-        if self.lock.acquire(False):
-            self.lock.release()
-            return False
-        else:
-            return True
 
     def log(self, message):
         self.messages.appendleft(
@@ -113,11 +118,37 @@ class RateServer(threading.Thread):
         self.progress = progress
 
     def run(self):
-        while not self.stopped.isSet():
-            if self.lock.acquire(False):
+        while not self.stopped.is_set():
+            sess = None
+            try:
+                sess = Session()
+                config = Contract.get_non_core_by_name(sess, "configuration")
+                state = config.make_state()
+            except BaseException as e:
+                msg = f"{e.description} " if isinstance(e, BadRequest) else ""
+                self.log(f"{msg}{traceback.format_exc()}")
+                self.global_alert = (
+                    "There's a problem with a <a href='/rate_server'>Rate Server "
+                    "import</a>."
+                )
+                sess.rollback()
+            finally:
+                if sess is not None:
+                    sess.close()
+
+            last_run = state.get(LAST_RUN_KEY)
+            if last_run is None or utc_datetime_now() - last_run > timedelta(days=1):
+                self.going.set()
+
+            if self.going.is_set():
                 sess = self.global_alert = None
                 try:
                     sess = Session()
+                    config = Contract.get_non_core_by_name(sess, "configuration")
+                    state = config.make_state()
+                    state[LAST_RUN_KEY] = utc_datetime_now()
+                    config.update_state(state)
+                    sess.commit()
                     run_import(sess, self.log, self.set_progress)
                 except BaseException as e:
                     msg = f"{e.description} " if isinstance(e, BadRequest) else ""
@@ -128,13 +159,17 @@ class RateServer(threading.Thread):
                     )
                     sess.rollback()
                 finally:
+                    self.going.clear()
                     if sess is not None:
                         sess.close()
-                    self.lock.release()
                     self.log("Finished importing rates.")
 
-            self.going.wait(60 * 60 * 24)
-            self.going.clear()
+            else:
+                self.log(
+                    f"The importer was last run at {hh_format(last_run)}. There will "
+                    f"be another import when 24 hours have elapsed since the last run."
+                )
+                self.going.wait(60 * 60)
 
 
 def get_importer():
