@@ -14,7 +14,7 @@ from chellow.models import (
     Contract,
     Session,
 )
-from chellow.utils import hh_format, utc_datetime_now
+from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 
 
 importer = None
@@ -111,7 +111,7 @@ class RateServer(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
+            f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
         )
 
     def set_progress(self, progress):
