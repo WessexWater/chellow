@@ -5,12 +5,12 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/dnos">DNOs</a> &raquo; 
-	<a href="/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; MTC LLFCs
+	<a href="/e/dnos">DNOs</a> &raquo; 
+	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; MTC LLFCs
 {% endblock %}
 
 {% block content %}
-	<table>
+	<table class="sticky">
 		<thead>
 			<tr>
 				<th>View</th>
