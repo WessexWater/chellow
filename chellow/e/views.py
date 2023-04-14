@@ -12,6 +12,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import (
     Blueprint,
+    Response,
     flash,
     g,
     make_response,
@@ -1900,6 +1901,53 @@ def llfcs_get():
     return render_template("llfcs.html", llfcs=llfcs, dno=dno)
 
 
+def _csv_response(fname, titles, rows):
+    with StringIO() as f:
+        writer = csv.writer(f)
+        writer.writerow(titles)
+        for row in rows:
+            writer.writerow([csv_make_val(v) for v in row])
+
+        return Response(
+            f.getvalue(),
+            mimetype="text/csv",
+            headers={"Content-disposition": f'attachment; filename="{fname}"'},
+        )
+
+
+@e.route("/llfcs/csv")
+def llfcs_csv_get():
+    dno_id = req_int("dno_id")
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    rows = g.sess.execute(
+        select(
+            Party.dno_code,
+            Llfc.code,
+            Llfc.description,
+            VoltageLevel.code,
+            Llfc.is_substation,
+            Llfc.is_import,
+            Llfc.valid_from,
+            Llfc.valid_to,
+        )
+        .join(Party)
+        .join(VoltageLevel)
+        .where(Llfc.dno == dno)
+        .order_by(Llfc.code)
+    ).all()
+    titles = (
+        "dno_code",
+        "code",
+        "description",
+        "voltage_level",
+        "is_substation",
+        "is_import",
+        "valid_from",
+        "valid_to",
+    )
+    return _csv_response(f"llfcs_{dno.dno_code}.csv", titles, rows)
+
+
 @e.route("/llfcs/<int:llfc_id>")
 def llfc_get(llfc_id):
     llfc = Llfc.get_by_id(g.sess, llfc_id)
@@ -2771,6 +2819,49 @@ def mtc_participants_get():
     )
 
 
+@e.route("/mtc_participants/csv")
+def mtc_participants_csv_get():
+    participant_id = req_int("participant_id")
+    participant = Participant.get_by_id(g.sess, participant_id)
+    titles = (
+        "participant_code",
+        "code",
+        "is_common",
+        "has_related_metering",
+        "description",
+        "has_comms",
+        "is_hh",
+        "meter_type",
+        "meter_payment_type",
+        "tpr_count",
+        "valid_from",
+        "valid_to",
+    )
+    rows = g.sess.execute(
+        select(
+            Participant.code,
+            Mtc.code,
+            Mtc.is_common,
+            Mtc.has_related_metering,
+            MtcParticipant.description,
+            MtcParticipant.has_comms,
+            MtcParticipant.is_hh,
+            MeterType.code,
+            MeterPaymentType.code,
+            MtcParticipant.tpr_count,
+            MtcParticipant.valid_from,
+            MtcParticipant.valid_to,
+        )
+        .join(Participant)
+        .join(Mtc)
+        .join(MeterType)
+        .join(MeterPaymentType)
+        .where(MtcParticipant.participant == participant)
+        .order_by(Mtc.code)
+    ).all()
+    return _csv_response(f"mtc_participants_{participant.code}.csv", titles, rows)
+
+
 @e.route("/mtc_participants/<int:mtc_participant_id>")
 def mtc_participant_get(mtc_participant_id):
     mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
@@ -2801,6 +2892,36 @@ def mtc_sscs_get():
     return render_template("mtc_sscs.html", mtc_sscs=mtc_sscs, dno=dno)
 
 
+@e.route("/mtc_sscs/csv")
+def mtc_sscs_csv_get():
+    participant_id = req_int("participant_id")
+    participant = Participant.get_by_id(g.sess, participant_id)
+    titles = (
+        "participant_code",
+        "mtc_code",
+        "ssc_code",
+        "valid_from",
+        "valid_to",
+    )
+    rows = g.sess.execute(
+        select(
+            Participant.code,
+            Mtc.code,
+            Ssc.code,
+            MtcSsc.valid_from,
+            MtcSsc.valid_to,
+        )
+        .select_from(MtcSsc)
+        .join(MtcParticipant)
+        .join(MtcParticipant.participant)
+        .join(Mtc)
+        .join(Ssc)
+        .where(MtcParticipant.participant == participant)
+        .order_by(Mtc.code, Ssc.code)
+    ).all()
+    return _csv_response(f"mtc_sscs_{participant.code}.csv", titles, rows)
+
+
 @e.route("/mtc_sscs/<int:mtc_ssc_id>")
 def mtc_ssc_get(mtc_ssc_id):
     mtc_ssc = MtcSsc.get_by_id(g.sess, mtc_ssc_id)
@@ -2827,6 +2948,36 @@ def mtc_llfcs_get():
     mtc_llfcs = g.sess.execute(q).scalars()
     dno = participant.get_dno(g.sess)
     return render_template("mtc_llfcs.html", mtc_llfcs=mtc_llfcs, dno=dno)
+
+
+@e.route("/mtc_llfcs/csv")
+def mtc_llfcs_csv_get():
+    participant_id = req_int("participant_id")
+    participant = Participant.get_by_id(g.sess, participant_id)
+    titles = (
+        "participant_code",
+        "mtc_code",
+        "llfc_code",
+        "valid_from",
+        "valid_to",
+    )
+    rows = g.sess.execute(
+        select(
+            Participant.code,
+            Mtc.code,
+            Llfc.code,
+            MtcLlfc.valid_from,
+            MtcLlfc.valid_to,
+        )
+        .select_from(MtcLlfc)
+        .join(MtcParticipant)
+        .join(Participant)
+        .join(Mtc)
+        .join(Llfc)
+        .where(MtcParticipant.participant == participant)
+        .order_by(Mtc.code, Llfc.code)
+    ).all()
+    return _csv_response(f"mtc_sscs_{participant.code}.csv", titles, rows)
 
 
 @e.route("/mtc_llfcs/<int:mtc_llfc_id>")
@@ -2878,6 +3029,46 @@ def mtc_llfc_ssc_pcs_get():
     return render_template("mtc_llfc_ssc_pcs.html", mtc_llfc_ssc_pcs=combos, dno=dno)
 
 
+@e.route("/mtc_llfc_ssc_pcs/csv")
+def mtc_llfc_ssc_pcs_csv_get():
+    dno_id = req_int("dno_id")
+    dno = Party.get_dno_by_id(g.sess, dno_id)
+    titles = (
+        "dno_code",
+        "pc_code",
+        "llfc_code",
+        "ssc_code",
+        "mtc_code",
+        "valid_from",
+        "valid_to",
+    )
+    rows = g.sess.execute(
+        select(
+            Party.dno_code,
+            Pc.code,
+            Llfc.code,
+            Ssc.code,
+            Mtc.code,
+            MtcLlfcSscPc.valid_from,
+            MtcLlfcSscPc.valid_to,
+        )
+        .select_from(MtcLlfcSscPc)
+        .join(Pc)
+        .join(MtcLlfcSsc)
+        .join(Llfc)
+        .join(Party)
+        .join(MtcSsc)
+        .join(Ssc)
+        .join(MtcParticipant)
+        .join(Mtc)
+        .where(Llfc.dno == dno)
+        .order_by(
+            Pc.code, Llfc.code, Ssc.code, Mtc.code, MtcLlfcSscPc.valid_from.desc()
+        )
+    ).all()
+    return _csv_response(f"mtc_llfc_ssc_pcs_{dno.dno_code}.csv", titles, rows)
+
+
 @e.route("/mtc_llfc_ssc_pcs/<int:combo_id>")
 def mtc_llfc_ssc_pc_get(combo_id):
     combo = MtcLlfcSscPc.get_by_id(g.sess, combo_id)
@@ -2913,6 +3104,40 @@ def mtc_llfc_sscs_get():
     combos = g.sess.execute(q).scalars()
     dno = participant.get_dno(g.sess)
     return render_template("mtc_llfc_sscs.html", mtc_llfc_sscs=combos, dno=dno)
+
+
+@e.route("/mtc_llfc_sscs/csv")
+def mtc_llfc_sscs_csv_get():
+    participant_id = req_int("participant_id")
+    participant = Participant.get_by_id(g.sess, participant_id)
+    titles = (
+        "participant_code",
+        "llfc_code",
+        "ssc_code",
+        "mtc_code",
+        "valid_from",
+        "valid_to",
+    )
+    rows = g.sess.execute(
+        select(
+            Participant.code,
+            Llfc.code,
+            Ssc.code,
+            Mtc.code,
+            MtcLlfcSsc.valid_from,
+            MtcLlfcSsc.valid_to,
+        )
+        .select_from(MtcLlfcSsc)
+        .join(MtcSsc)
+        .join(MtcParticipant)
+        .join(Participant)
+        .join(Mtc)
+        .join(Llfc)
+        .join(Ssc)
+        .where(MtcParticipant.participant == participant)
+        .order_by(Llfc.code, Ssc.code, Mtc.code, MtcLlfcSsc.valid_from.desc())
+    ).all()
+    return _csv_response(f"mtc_llfc_sscs_{participant.code}.csv", titles, rows)
 
 
 @e.route("/mtc_llfc_sscs/<int:combo_id>")
