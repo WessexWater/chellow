@@ -26,6 +26,7 @@
 	<form action="/e/eras/{{era.id}}/add_supplier_bill" method="post">
 		<fieldset>
 			<legend>Add Import Supplier Batch And Bill</legend>
+
 			<fieldset>
 				<legend>Batch</legend>
 				<label>Reference</label>
@@ -33,25 +34,16 @@
 				<label>Description</label>
 				{{input_text('batch_description', placeholder=next_batch_description)}}
 			</fieldset>
-			<br>
+
 			<fieldset>
 				<legend>Bill</legend>
 				<label>Reference</label> {{input_text('bill_reference', size_20)}}
 						
-				<label>Issue Date</label>
-				<fieldset>
-					{{input_date('issue')}}
-				</fieldset>
+				<label>Issue Date</label> {{input_date('issue')}}
 						
-				<label>Start Date</label>
-				<fieldset>
-					{{input_date('start', start_date)}}
-				</fieldset>
+				<label>Start Date</label> {{input_date('start', start_date)}}
 						
-				<label>Finish Date</label>
-				<fieldset>
-					{{input_date('finish')}}
-				</fieldset>
+				<label>Finish Date</label> {{input_date('finish')}}
 														
 				<label>kWh</label> {{input_text('kwh', '0')}}
 				<label>Net</label> {{input_text('net', '0.00')}}
@@ -62,11 +54,12 @@
 				<select name="bill_type_id">
 					{% for bill_type in bill_types %}
 						<p>{{normal_bill_type_id}} {{bill_type.id}}</p>
-							{{input_option('bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
+							{{input_option(
+								'bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
 					{% endfor %}
 				</select>
 				<label>Breakdown</label>
-				{{input_text('breakdown', '{}')}}
+				{{input_textarea('breakdown', '{}', 10, 80, show_pos=True)}}
 			</fieldset>
 			<input type="submit" value="Add">
 		</fieldset>

@@ -29,22 +29,16 @@
 		<form action="/e/supplier_batches/{{batch.id}}/add_bill" method="post">
 			<fieldset>
 				<legend>Add A Bill</legend>
+
 				<label>MPAN Core</label> {{input_text('mpan_core')}}
+
 				<label>Reference</label> {{input_text('reference')}}
-				<fieldset>
-					<legend>Issue Date</legend>
-					{{input_date('issue')}}
-				</fieldset>
-							
-				<fieldset>
-					<label>Start Date</label>
-					{{input_date('start', start_date)}}
-				</fieldset>
-							
-				<fieldset>
-					<label>Finish Date</label>
-					{{input_date('finish')}}
-				</fieldset>
+
+				<label>Issue Date</label> {{input_date('issue')}}
+
+				<label>Start Date</label> {{input_date('start', start_date)}}
+
+				<label>Finish Date</label> {{input_date('finish')}}
 
 				<label>kWh</label> {{input_text('kwh', '0')}}
 
@@ -61,10 +55,13 @@
 				<select name="bill_type_id">
 					{% for bill_type in bill_types %}
 						<p>{{normal_bill_type_id}} {{bill_type.id}}</p>
-						{{input_option('bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
+						{{input_option(
+							'bill_type_id', bill_type.id, bill_type.code, normal_bill_type_id)}}
 					{% endfor %}
 				</select>
-				<label>Breakdown</label> {{input_text('breakdown', '{}')}}
+
+				<label>Breakdown</label>
+				{{input_textarea('breakdown', '{}', 10, 80, show_pos=True)}}
 
 				<input type="submit" value="Add">
 			</fieldset>
