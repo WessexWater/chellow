@@ -23,6 +23,7 @@ import chellow.e.tlms
 import chellow.e.views
 import chellow.gas.cv
 import chellow.gas.views
+import chellow.national_grid
 import chellow.testing
 import chellow.utils
 from chellow.models import (
@@ -59,6 +60,7 @@ def get_importer_modules():
         chellow.bank_holidays,
         chellow.gas.cv,
         chellow.e.bmarketidx,
+        chellow.national_grid,
         chellow.rate_server,
     )
 

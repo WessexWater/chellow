@@ -42,7 +42,7 @@ def test_process_banded_hh_ums(sess):
     )
     tnuos_rate_script = {
         "lookup": {"Unmetered": "Unmetered"},
-        "bands": {"Unmetered": 1},
+        "bands": {"Unmetered": {"TDR Tariff": "1"}},
     }
     Contract.insert_non_core(
         sess,

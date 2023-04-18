@@ -66,6 +66,7 @@ import chellow.e.system_price
 import chellow.e.tlms
 import chellow.edi_lib
 import chellow.general_import
+import chellow.national_grid
 import chellow.rate_server
 from chellow.models import (
     BillType,
@@ -1975,6 +1976,42 @@ def site_months_get(site_id):
     months.append(totals)
 
     return render_template("site_months.html", site=site, months=months)
+
+
+@home.route("/national_grid")
+def national_grid_get():
+    importer = chellow.national_grid.importer
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+    now_ct = ct_datetime_now()
+    fy_year = now_ct.year if now_ct.month > 3 else now_ct.year - 1
+    fy_start = to_utc(ct_datetime(fy_year, 4, 1))
+    tnuos_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "tnuos",
+        )
+        .order_by(RateScript.start_date.desc())
+    ).scalars()
+
+    return render_template(
+        "national_grid.html",
+        importer=importer,
+        config_state=config.make_state(),
+        config_properties=props.get("rate_server", {}),
+        tnuos_rs=tnuos_rs,
+    )
+
+
+@home.route("/national_grid", methods=["POST"])
+def national_grid_post():
+    importer = chellow.national_grid.importer
+    importer.go()
+    return chellow_redirect("/national_grid", 303)
 
 
 @home.route("/non_core_contracts/<int:contract_id>/add_rate_script")

@@ -1,9 +1,7 @@
 from decimal import Decimal, InvalidOperation
-from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
-from openpyxl import load_workbook
 
 from sqlalchemy import null, or_, select
 
@@ -12,12 +10,11 @@ from werkzeug.exceptions import BadRequest
 import chellow.e.computer
 import chellow.e.duos
 from chellow.models import Contract, RateScript
-from chellow.rate_server import download
+from chellow.national_grid import api_get
 from chellow.utils import (
     c_months_u,
     ct_datetime,
     hh_after,
-    hh_format,
     hh_min,
     to_ct,
     to_utc,
@@ -39,10 +36,10 @@ def hh(ds, rate_period="monthly", est_kw=None):
 def _process_banded_hh(ds, hh):
     rates = ds.non_core_rate("tnuos", hh["start-date"])
     lookup = rates["lookup"]
-    band = lookup[hh["duos-description"]]
-    hh["tnuos-band"] = band
-    rate = float(rates["bands"][band])
-    if band == "Unmetered":
+    band_code = lookup[hh["duos-description"]]
+    hh["tnuos-band"] = band_code
+    rate = float(rates["bands"][band_code]["TDR Tariff"])
+    if band_code == "Unmetered":
         hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
     else:
         hh["tnuos-gbp"] = rate
@@ -376,25 +373,36 @@ def find_triad(tabs):
     return triads
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
-    log("Starting to check for new TNUoS spreadsheets")
-    year_entries = {}
-    for path, url in paths:
-        if len(path) == 4:
-            year_str, utility, rate_type, file_name = path
-            year = int(year_str)
-
-            if utility == "electricity" and rate_type == "tnuos":
-                try:
-                    fl_entries = year_entries[year]
-                except KeyError:
-                    fl_entries = year_entries[year] = {}
-
-                fl_entries[file_name] = url
+def national_grid_import(sess, log, set_progress, s):
+    log("Starting to check for new TNUoS TDR Tariffs")
 
     contract = Contract.get_non_core_by_name(sess, "tnuos")
-    for year, fl_entries in sorted(year_entries.items()):
-        fy_start = to_utc(ct_datetime(year, 4, 1))
+    latest_pub = "1990-01-01"
+    for rs in contract.rate_scripts:
+        script = rs.make_script()
+        for band_key, band in script.get("bands", {}).items():
+            published_date = band["Published_Date"]
+            if published_date > latest_pub:
+                latest_pub = published_date
+
+    params = {
+        "sql": f"""SELECT COUNT(*) OVER () AS _count, * FROM """
+        f""""dcca94fd-343e-4d4e-8c5d-66009dec4ad3" WHERE """
+        f""""Published_Date" >= '{latest_pub}T00:00:00.000Z' ORDER BY "_id" ASC"""
+    }
+    res_j = api_get(s, "datastore_search_sql", params=params)
+    for record in res_j["result"]["records"]:
+        # {
+        #   "_id": 1,
+        #   "Publication": "Final",
+        #   "Year_FY": 2024,
+        #   "Published_Date": "2023-02-14",
+        #   "TDR Band": "Domestic",
+        #   "TDR Tariff": 0.119264,
+        #   "Notes": "Domestic"
+        # },
+        fy_year = int(record["Year_FY"]) - 1
+        fy_start = to_utc(ct_datetime(fy_year, 4, 1))
         if fy_start < contract.start_rate_script.start_date:
             continue
 
@@ -407,28 +415,20 @@ def rate_server_import(sess, log, set_progress, s, paths):
         if rs is None:
             rs = contract.insert_rate_script(sess, fy_start, {})
 
-        file_name, url = sorted(fl_entries.items())[-1]
-
         rs_script = rs.make_script()
-        if rs_script.get("a_file_name") != file_name:
-            try:
-                fl = BytesIO(download(s, url))
-                book = load_workbook(fl, data_only=True)
-                tabs = {sheet.title.strip(): sheet for sheet in book.worksheets}
-                try:
-                    bands = find_bands(tabs)
-                    triad = find_triad(tabs)
-                except BadRequest as e:
-                    raise BadRequest(
-                        f"Problem with file '{file_name}': {e.description}"
-                    )
-                rs_script["bands"] = bands
-                rs_script["triad_gbp_per_gsp_kw"] = triad
-                rs_script["a_file_name"] = file_name
-                rs.update(rs_script)
-                log(f"Updated TNUoS rate script for " f"{hh_format(fy_start)}")
-            except BadRequest as e:
-                raise BadRequest(f"Problem with year {year}: {e.description}")
+        try:
+            bands = rs_script["bands"]
+        except KeyError:
+            bands = rs_script["bands"] = {}
 
-    log("Finished TNUoS spreadsheets")
+        record_key = record["TDR Band"]
+        record_published_date = record["Published_Date"]
+
+        band = bands.get(record_key)
+        if band is None or band["Published_Date"] != record_published_date:
+            bands[record_key] = record
+            rs.update(rs_script)
+            sess.commit()
+
+    log("Finished TNUoS TDR Tariffs")
     sess.commit()

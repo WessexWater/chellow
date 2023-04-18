@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; National Grid Importer
+{% endblock %}
+
+{% block nav %}
+	National Grid Importer
+{% endblock %}
+
+{% block content %}
+	{% if importer %}
+		<ul>
+			<li><a href="#controls">Controls</a></li>
+			<li><a href="#log">Log</a></li>
+		</ul>
+
+		<h4 id="controls">Controls</h4>
+
+		<table>
+			<tr>
+				<th>Is Going?</th>
+				<td>{{importer.going.is_set()}}</td>
+			</tr>
+			<tr>
+				<th>Import Now</th>
+				<td>
+					<form method="post">
+						<fieldset {% if importer.going.is_set() %}disabled{% endif %}>
+							<input type="submit" value="Import" name="import">
+						</fieldset>
+					</form>
+				</td>
+			</tr>
+			{% if importer.going.is_set() %}
+				<tr>
+					<th>Progress</th>
+					<td>{{importer.progress}}</td>
+				</tr>
+			{% endif %}
+		</table>
+
+
+		<h4 id="log">Log</h4>
+
+		<ul>
+			{% for message in importer.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+	{% else %}
+		<p>Importer not present.</p>
+	{% endif %}
+{% endblock %}
