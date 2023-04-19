@@ -10,9 +10,13 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
+from werkzeug.exceptions import BadRequest
+
 import chellow.dloads
+from chellow.e.computer import contract_func
+from chellow.gas.engine import GDataSource, forecast_date
 from chellow.models import GEra, GSupply, Session
-from chellow.utils import hh_format, req_date, req_int
+from chellow.utils import csv_make_val, req_date, req_int
 from chellow.views import chellow_redirect
 
 
@@ -42,8 +46,13 @@ def content(date, g_supply_id, user):
                 "Account",
                 "Supply Start",
                 "Supply Finish",
+                "reading_frequency",
+                "aq",
+                "soq",
             )
         )
+        fdate = forecast_date()
+        caches = {}
 
         g_eras = (
             sess.query(GEra, GSupply)
@@ -81,23 +90,37 @@ def content(date, g_supply_id, user):
             g_supply_start_date = sup_g_eras[0].start_date
             g_supply_finish_date = sup_g_eras[-1].finish_date
 
+            ds = GDataSource(sess, date, date, fdate, g_era, caches, None)
+            g_supplier_contract = g_era.g_contract
+            vb_function = contract_func(caches, g_supplier_contract, "virtual_bill")
+            if vb_function is None:
+                raise BadRequest(
+                    f"The contract {g_supplier_contract.name} doesn't have the "
+                    f"virtual_bill() function."
+                )
+            vb_function(ds)
+            bill = ds.bill
+
             writer.writerow(
-                ("" if value is None else str(value))
+                csv_make_val(value)
                 for value in [
-                    hh_format(date),
+                    date,
                     physical_site.code,
                     physical_site.name,
-                    ", ".join(site_codes),
-                    ", ".join(site_names),
+                    site_codes,
+                    site_names,
                     g_supply.mprn,
                     g_supply.g_exit_zone.code,
                     g_era.msn,
                     g_era.correction_factor,
                     g_era.g_unit.code,
-                    g_era.g_contract.name,
+                    g_supplier_contract.name,
                     g_era.account,
-                    hh_format(g_supply_start_date),
-                    hh_format(g_supply_finish_date, ongoing_str=""),
+                    g_supply_start_date,
+                    g_supply_finish_date,
+                    g_era.g_reading_frequency.code,
+                    bill["aq"],
+                    bill["soq"],
                 ]
             )
     except BaseException:
