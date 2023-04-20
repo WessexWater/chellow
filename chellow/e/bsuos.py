@@ -357,10 +357,8 @@ def _discover_urls(logger, s):
     res = s.get(page)
     src = res.text
 
-    # <a href="/document/102541/download" target="_blank">Current RF BSUoS Data </a>
-
     for pref in ("RF", "SF", "II"):
-        pidx = src.find(f'" target="_blank">Current {pref} BSUoS Data <')
+        pidx = src.find(f'" target="_blank">Current {pref} BSUoS Data ')
         aidx = src.rfind('<a href="', 0, pidx)
         urls.add(host + src[aidx + 9 : pidx])
     return urls
