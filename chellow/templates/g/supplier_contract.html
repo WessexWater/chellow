@@ -70,6 +70,16 @@
 		</fieldset>
 	</form>
 
+	<form action="/reports/429">
+		<fieldset>
+			<input type="hidden" name="g_contract_id" value="{{contract.id}}">
+			<legend>Download Bill Check</legend>
+			<label>From</label> {{input_date('start_date', month_start)}}
+			<label>to</label> {{input_date('finish_date', month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
 	<h3>Script</h3>
 	<pre>{{ contract.charge_script }}</pre>
 

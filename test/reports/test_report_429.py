@@ -222,7 +222,7 @@ def virtual_bill(ds):
     )
     mocker.patch("chellow.reports.report_429.os.rename")
 
-    chellow.reports.report_429.content(g_batch.id, g_bill.id, user.id)
+    chellow.reports.report_429.content(g_batch.id, g_bill.id, None, None, None, user.id)
 
     actual = mock_file.getvalue()
     expected = [
@@ -268,7 +268,7 @@ def test_batch_http(mocker, sess, client):
 
     match(response, 303)
 
-    args = g_batch.id, None, user.id
+    args = g_batch.id, None, None, None, None, user.id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)
 
 
@@ -336,5 +336,5 @@ def test_bill_http(mocker, sess, client):
 
     match(response, 303)
 
-    args = None, g_bill.id, user.id
+    args = None, g_bill.id, None, None, None, user.id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)

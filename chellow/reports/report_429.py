@@ -10,19 +10,19 @@ from itertools import combinations
 
 from flask import g, request
 
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
+from sqlalchemy import null, or_, select, true
+from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
 import chellow.gas.engine
-from chellow.models import GBatch, GBill, GEra, Session, Site, SiteGEra, User
-from chellow.utils import csv_make_val, hh_max, hh_min, req_int, to_utc
+from chellow.models import GBatch, GBill, GContract, GEra, Session, Site, SiteGEra, User
+from chellow.utils import csv_make_val, hh_max, hh_min, req_date, req_int, to_utc
 from chellow.views import chellow_redirect
 
 
-def content(g_batch_id, g_bill_id, user_id):
+def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_id):
     forecast_date = to_utc(Datetime.max)
     report_context = {}
     sess = tmp_file = None
@@ -35,19 +35,31 @@ def content(g_batch_id, g_bill_id, user_id):
         )
         tmp_file = open(running_name, "w")
         csv_writer = csv.writer(tmp_file)
+        g_bills = (
+            select(GBill)
+            .order_by(GBill.g_supply_id, GBill.reference)
+            .options(
+                joinedload(GBill.g_supply),
+                joinedload(GBill.g_batch),
+            )
+        )
         if g_batch_id is not None:
             g_batch = GBatch.get_by_id(sess, g_batch_id)
-            g_bills = (
-                sess.query(GBill)
-                .filter(GBill.g_batch == g_batch)
-                .order_by(GBill.reference)
-            )
+            g_contract = g_batch.g_contract
+            g_bills = g_bills.where(GBill.g_batch == g_batch)
+
         elif g_bill_id is not None:
             g_bill = GBill.get_by_id(sess, g_bill_id)
-            g_bills = sess.query(GBill).filter(GBill.id == g_bill.id)
-            g_batch = g_bill.g_batch
+            g_contract = g_bill.g_batch.g_contract
+            g_bills = g_bills.where(GBill.id == g_bill.id)
 
-        g_contract = g_batch.g_contract
+        elif g_contract_id is not None:
+            g_contract = GContract.get_by_id(sess, g_contract_id)
+            g_bills = g_bills.join(GBatch).where(
+                GBatch.g_contract == g_contract,
+                GBill.start_date <= finish_date,
+                GBill.finish_date >= start_date,
+            )
 
         vbf = chellow.gas.engine.g_contract_func(
             report_context, g_contract, "virtual_bill"
@@ -86,7 +98,7 @@ def content(g_batch_id, g_bill_id, user_id):
         csv_writer.writerow(titles)
 
         g_bill_map = defaultdict(set, {})
-        for b in g_bills:
+        for b in sess.execute(g_bills).scalars():
             g_bill_map[b.g_supply.id].add(b.id)
 
         for g_supply_id, g_bill_ids in g_bill_map.items():
@@ -102,11 +114,11 @@ def content(g_batch_id, g_bill_id, user_id):
                     csv_writer,
                 )
     except BadRequest as e:
-        tmp_file.write("Problem: " + e.description)
+        tmp_file.write(f"Problem: {e.description}")
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
-        tmp_file.write("Problem " + msg)
+        tmp_file.write(f"Problem {msg}")
     finally:
         try:
             if sess is not None:
@@ -262,15 +274,13 @@ def _process_g_bill_ids(
                         v = getattr(g_read, title)
                     vals[k].add(v)
 
-    for g_era in (
-        sess.query(GEra)
-        .filter(
+    for g_era in sess.execute(
+        select(GEra).where(
             GEra.g_supply == g_supply,
             GEra.start_date <= vals["covered_finish"],
             or_(GEra.finish_date == null(), GEra.finish_date >= vals["covered_start"]),
         )
-        .distinct()
-    ):
+    ).scalars():
         site = (
             sess.query(Site)
             .join(SiteGEra)
@@ -339,14 +349,21 @@ def _process_g_bill_ids(
 
 
 def do_get(sess):
+    g_batch_id = g_bill_id = g_contract_id = start_date = finish_date = None
+
     if "g_batch_id" in request.values:
         g_batch_id = req_int("g_batch_id")
-        g_bill_id = None
     elif "g_bill_id" in request.values:
         g_bill_id = req_int("g_bill_id")
-        g_batch_id = None
+    elif "g_contract_id" in request.values:
+        g_contract_id = req_int("g_contract_id")
+        start_date = req_date("start_date")
+        finish_date = req_date("finish_date")
     else:
-        raise BadRequest("The bill check needs a g_batch_id or g_bill_id.")
+        raise BadRequest(
+            "The bill check needs a g_batch_id, g_bill_id or g_contract_id."
+        )
 
-    threading.Thread(target=content, args=(g_batch_id, g_bill_id, g.user.id)).start()
+    args = g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, g.user.id
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
