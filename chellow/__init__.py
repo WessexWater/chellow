@@ -271,6 +271,7 @@ def create_app(testing=False):
             chellow.e.bsuos.bsuos_importer,
             chellow.gas.cv.cv_importer,
             chellow.e.bmarketidx.bmarketidx_importer,
+            chellow.national_grid.importer,
             chellow.rate_server.importer,
             chellow.testing.tester,
         ):

@@ -25,12 +25,11 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 def hh(ds, rate_period="monthly", est_kw=None):
     for hh in ds.hh_data:
-        if hh["start-date"] >= BANDED_START:
-            if hh["ct-decimal-hour"] == 12:
-                _process_banded_hh(ds, hh)
-        else:
-            if hh["ct-is-month-end"]:
-                _process_triad_hh(ds, rate_period, est_kw, hh)
+        if hh["ct-is-month-end"]:
+            _process_triad_hh(ds, rate_period, est_kw, hh)
+
+        if hh["start-date"] >= BANDED_START and hh["ct-decimal-hour"] == 12:
+            _process_banded_hh(ds, hh)
 
 
 def _process_banded_hh(ds, hh):
@@ -43,6 +42,19 @@ def _process_banded_hh(ds, hh):
         hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
     else:
         hh["tnuos-gbp"] = rate
+
+
+def _find_triad_rate(ds, date, polarity, gsp_group_code):
+    trt = ds.non_core_rate("tnuos", date)["triad_gbp_per_gsp_kw"][polarity][
+        gsp_group_code
+    ]
+    if isinstance(trt, Decimal):
+        rt = trt
+    elif polarity == "import":
+        rt = trt["HHTariff(Floored)_£/kW"]
+    elif polarity == "export":
+        rt = trt["Locational_£/kW"]
+    return float(rt)
 
 
 def _process_triad_hh(ds, rate_period, est_kw, hh):
@@ -114,11 +126,7 @@ def _process_triad_hh(ds, rate_period, est_kw, hh):
     hh["triad-estimate-gsp-kw"] = gsp_kw / 3
     polarity = "import" if ds.llfc.is_import else "export"
     gsp_group_code = ds.gsp_group_code
-    rate = float(
-        ds.non_core_rate("tnuos", month_start)["triad_gbp_per_gsp_kw"][polarity][
-            gsp_group_code
-        ]
-    )
+    rate = _find_triad_rate(ds, month_start, polarity, gsp_group_code)
 
     hh["triad-estimate-rate"] = rate
 
@@ -231,10 +239,9 @@ def _process_triad_hh(ds, rate_period, est_kw, hh):
             if finish_month < 4:
                 finish_month += 12
 
-            rt = ds.non_core_rate("tnuos", rs.start_date)["triad_gbp_per_gsp_kw"][
-                polarity
-            ][gsp_group_code]
-            tot_rate += (finish_month - start_month + 1) * float(rt)
+            rate = _find_triad_rate(ds, rs.start_date, polarity, gsp_group_code)
+
+            tot_rate += (finish_month - start_month + 1) * rate
 
         rate = tot_rate / 12
         hh["triad-actual-rate"] = rate
@@ -323,24 +330,25 @@ def find_bands(tabs):
     return bands
 
 
-def find_triad(tabs):
-    GSP_LOOKUP = {
-        1: "_P",
-        2: "_N",
-        3: "_F",
-        4: "_G",
-        5: "_M",
-        6: "_D",
-        7: "_B",
-        8: "_E",
-        9: "_A",
-        10: "_K",
-        11: "_J",
-        12: "_C",
-        13: "_H",
-        14: "_L",
-    }
+GSP_LOOKUP = {
+    1: "_P",
+    2: "_N",
+    3: "_F",
+    4: "_G",
+    5: "_M",
+    6: "_D",
+    7: "_B",
+    8: "_E",
+    9: "_A",
+    10: "_K",
+    11: "_J",
+    12: "_C",
+    13: "_H",
+    14: "_L",
+}
 
+
+def find_triad(tabs):
     tab_name = "T9"
     try:
         sheet = tabs[tab_name]
@@ -374,6 +382,11 @@ def find_triad(tabs):
 
 
 def national_grid_import(sess, log, set_progress, s):
+    ng_import_tdr(sess, log, set_progress, s)
+    ng_import_triad(sess, log, set_progress, s)
+
+
+def ng_import_tdr(sess, log, set_progress, s):
     log("Starting to check for new TNUoS TDR Tariffs")
 
     contract = Contract.get_non_core_by_name(sess, "tnuos")
@@ -431,4 +444,73 @@ def national_grid_import(sess, log, set_progress, s):
             sess.commit()
 
     log("Finished TNUoS TDR Tariffs")
+    sess.commit()
+
+
+def ng_import_triad(sess, log, set_progress, s):
+    log("Starting to check for new TNUoS TRIAD Tariffs")
+
+    contract = Contract.get_non_core_by_name(sess, "tnuos")
+    for polarity, datafile in (
+        ("import", "6abe8416-149c-4c78-b65b-059eea19957a"),
+        ("export", "af4501a0-6b96-4088-926c-7c7b0c499b08"),
+    ):
+        latest_pub = "1990-01-01"
+        for rs in contract.rate_scripts:
+            script = rs.make_script()
+            rates = script.get("triad_gbp_per_gsp_kw", {}).get(polarity, {})
+            for gsp_group_code, rate in rates.items():
+                if isinstance(rate, (Decimal, int)):
+                    continue
+
+                published_date = rate["Published_Date"]
+                if published_date > latest_pub:
+                    latest_pub = published_date
+
+        params = {
+            "sql": f"""SELECT COUNT(*) OVER () AS _count, * FROM "{datafile}" WHERE """
+            f""""Published_Date" >= '{latest_pub}T00:00:00.000Z' """
+            f"""ORDER BY "Published_Date" ASC"""
+        }
+        res_j = api_get(s, "datastore_search_sql", params=params)
+        for record in res_j["result"]["records"]:
+            fy_year = int(record["Year_FY"]) - 1
+            fy_start = to_utc(ct_datetime(fy_year, 4, 1))
+            if fy_start < contract.start_rate_script.start_date:
+                continue
+
+            rs = sess.execute(
+                select(RateScript).where(
+                    RateScript.contract == contract,
+                    RateScript.start_date == fy_start,
+                )
+            ).scalar_one_or_none()
+            if rs is None:
+                rs = contract.insert_rate_script(sess, fy_start, {})
+
+            rs_script = rs.make_script()
+            try:
+                tr = rs_script["triad_gbp_per_gsp_kw"]
+            except KeyError:
+                tr = rs_script["triad_gbp_per_gsp_kw"] = {}
+
+            try:
+                rates = tr[polarity]
+            except KeyError:
+                rates = tr[polarity] = {}
+
+            record_key = GSP_LOOKUP[record["Zone_No"]]
+            record_published_date = record["Published_Date"]
+
+            rate = rates.get(record_key)
+            if (
+                rate is None
+                or isinstance(rate, (Decimal, int))
+                or rate["Published_Date"] != record_published_date
+            ):
+                rates[record_key] = record
+                rs.update(rs_script)
+                sess.commit()
+
+    log("Finished TNUoS TRIAD Tariffs")
     sess.commit()
