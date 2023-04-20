@@ -1,18 +1,4 @@
-import pytest
-
-from chellow.e.bsuos import _find_file_type, _process_url
-
-
-@pytest.mark.parametrize(
-    "filename,ext",
-    [
-        ['filename="bsuos.csv"', "csv"],
-        ['inline; filename="Current_RF_BSUoS_Data_175.xls"', "xls"],
-        ["inline; filename=Current_RF_BSUoS_Data_175.xls", "xls"],
-    ],
-)
-def test_find_file_type_csv(filename, ext):
-    assert _find_file_type(filename) == ext
+from chellow.e.bsuos import _process_url
 
 
 def test_process_url_csv(mocker, sess):
@@ -20,7 +6,6 @@ def test_process_url_csv(mocker, sess):
     res.text = "Date"
     res.status_code = 200
     res.reason = "okay"
-    res.headers = {"Content-Disposition": 'filename="bsuos.csv"'}
     logger = mocker.Mock()
     contract = mocker.Mock()
     url = mocker.Mock()

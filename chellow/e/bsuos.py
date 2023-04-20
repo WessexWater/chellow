@@ -16,10 +16,6 @@ import requests
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
-from werkzeug.exceptions import BadRequest
-
-import xlrd
-
 from zish import dumps, loads
 
 from chellow.models import (
@@ -131,6 +127,17 @@ def _save_cache(sess, cache):
             del yr_cache[month]
 
 
+BASE_URL = "https://data.nationalgrideso.com/backend/dataset/"
+PATHS = (
+    "d6a4bf54-c63f-4014-a716-49fd3878ca52/resource/"
+    "0eda5e28-1dc6-48da-8663-c00e12f2a1e2/download/current_ii_bsuos_data-11.csv",
+    "d6a4bf54-c63f-4014-a716-49fd3878ca52/resource/"
+    "f0060fd0-1fc9-4288-a0b3-4af9b592b0cf/download/current_sf_bsuos_data.csv",
+    "d6a4bf54-c63f-4014-a716-49fd3878ca52/resource/"
+    "26b0f410-27d4-448a-9437-45277818b838/download/current_rf_bsuos_data.csv",
+)
+
+
 class BsuosImporter(threading.Thread):
     def __init__(self):
         super(BsuosImporter, self).__init__(name="BSUoS Importer")
@@ -173,15 +180,10 @@ class BsuosImporter(threading.Thread):
                     s = requests.Session()
                     s.verify = False
                     if props.get("enabled", False):
-                        urls = set(props.get("urls", []))
-                        if props.get("discover_urls", False):
-                            sess.rollback()  # Avoid long-running transaction
-                            urls.update(_discover_urls(self.log, s))
-
-                        url_list = sorted(urls)
-                        self.log(f"List of URLs to process: {url_list}")
-                        for url in url_list:
-                            _process_url(self.log, sess, url, contract, s)
+                        for path in PATHS:
+                            _process_url(
+                                self.log, sess, f"{BASE_URL}{path}", contract, s
+                            )
                     else:
                         self.log(
                             "The automatic importer is disabled. To enable it, edit "
@@ -205,64 +207,26 @@ class BsuosImporter(threading.Thread):
             self.going.clear()
 
 
-def _find_file_type(disp):
-    # Content-Disposition: form-data; name="fieldName"; filename="filename.jpg"
-    filetype = "csv"
-    if disp is not None:
-        fields = dict(v.strip().lower().split("=") for v in disp.split(";") if "=" in v)
-        if "filename" in fields:
-            filetype = fields["filename"].strip('"').split(".")[-1]
-
-    return filetype
-
-
 def _process_url(logger, sess, url, contract, s):
     logger(f"Checking to see if there's any new data at {url}")
     sess.rollback()  # Avoid long-running transaction
     res = s.get(url)
-    content_disposition = res.headers.get("Content-Disposition")
-    logger(f"Received {res.status_code} {res.reason} {content_disposition}")
+    logger(f"Received {res.status_code} {res.reason}")
     cache = {}
     parsed_rows = []
 
-    filetype = _find_file_type(content_disposition)
-    if filetype == "csv":
-        reader = csv.reader(res.text.splitlines())
-        next(reader)  # Skip titles
+    reader = csv.reader(res.text.splitlines())
+    next(reader)  # Skip titles
 
-        for row in reader:
-            date_str = row[0]
-            date = Datetime.strptime(date_str, "%d/%m/%Y")
-            period_str = row[1]
-            period = int(period_str)
-            price_str = row[2]
-            price = Decimal(price_str)
-            run = row[5]
-            parsed_rows.append((date, period, price, run))
-
-    elif filetype == "xls":
-        book = xlrd.open_workbook(file_contents=res.content)
-        sheet = book.sheet_by_index(0)
-
-        for row_index in range(1, sheet.nrows):
-            row = sheet.row(row_index)
-
-            date_val = row[0].value
-            if isinstance(date_val, float):
-                date = Datetime(*xlrd.xldate_as_tuple(date_val, book.datemode))
-            elif isinstance(date_val, str):
-                separator = date_val[2]
-                fmat = separator.join(("%d", "%m", "%Y"))
-                date = Datetime.strptime(date_val, fmat)
-            else:
-                raise BadRequest(f"Type of date field {date_val} not recognized.")
-
-            period = int(row[1].value)
-            price = Decimal(str(row[2].value))
-            run = row[5].value
-            parsed_rows.append((date, period, price, run))
-    else:
-        raise BadRequest(f"The file extension {filetype} is not recognised.")
+    for row in reader:
+        date_str = row[0]
+        date = Datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+        period_str = row[1]
+        period = int(period_str)
+        price_str = row[2]
+        price = Decimal(price_str)
+        run = row[5]
+        parsed_rows.append((date, period, price, run))
 
     for date, period, price, run in parsed_rows:
         hh_date_ct = to_ct(date)
@@ -344,24 +308,6 @@ def _process_url(logger, sess, url, contract, s):
             logger(f"Added rate at {hh_format(hh_date)} for run {run}.")
 
     _save_cache(sess, cache)
-
-
-def _discover_urls(logger, s):
-    host = "https://www.nationalgrideso.com"
-    page = (
-        f"{host}/industry-information/charging/"
-        "balancing-services-use-system-bsuos-charges"
-    )
-    logger(f"Searching for URLs on {page}")
-    urls = set()
-    res = s.get(page)
-    src = res.text
-
-    for pref in ("RF", "SF", "II"):
-        pidx = src.find(f'" target="_blank">Current {pref} BSUoS Data ')
-        aidx = src.rfind('<a href="', 0, pidx)
-        urls.add(host + src[aidx + 9 : pidx])
-    return urls
 
 
 def get_importer():
