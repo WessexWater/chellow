@@ -113,7 +113,7 @@ def test_set_status(mocker):
     read_list = [{"date": utc_datetime(2012, 1, 1)}]
     forecast_date = utc_datetime(2012, 3, 1)
     chellow.e.computer._set_status(hhs, read_list, forecast_date)
-    assert hhs == {utc_datetime(2012, 2, 1): {"status": "A"}}
+    assert hhs == {utc_datetime(2012, 2, 1): {"status": "E"}}
 
 
 def test_make_reads_forwards(mocker):

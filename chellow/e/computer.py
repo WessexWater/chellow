@@ -1550,15 +1550,10 @@ def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
 
 
 def _set_status(hhs, read_list, forecast_date):
-    THRESHOLD = 31 * 48 * 30 * 60
-    rl = [r for r in read_list if r["date"] <= forecast_date]
+    rl = [r["date"] for r in read_list if r["date"] <= forecast_date]
+    last_read_date = rl[-1] if len(rl) > 0 else to_utc(ct_datetime(1970, 1, 1))
     for k, v in hhs.items():
-        try:
-            periods = (abs(r["date"] - k).total_seconds() for r in rl)
-            next(p for p in periods if p <= THRESHOLD)
-            v["status"] = "A"
-        except StopIteration:
-            v["status"] = "E"
+        v["status"] = "E" if k > last_read_date else "A"
 
 
 def _read_generator(sess, supply, start, is_forwards, is_prev):
