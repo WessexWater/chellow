@@ -7,12 +7,14 @@ from io import StringIO
 
 from flask import g, request
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
 import chellow.dloads
+from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import Channel, Era, HhDatum, Session, Supply
 from chellow.utils import (
+    csv_make_val,
     ct_datetime,
     hh_range,
     parse_mpan_core,
@@ -42,9 +44,9 @@ def content(
     try:
         sess = Session()
         supplies = (
-            sess.query(Supply)
+            select(Supply)
             .join(Era)
-            .filter(
+            .where(
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 Era.start_date <= finish_date,
             )
@@ -53,15 +55,18 @@ def content(
         )
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
-            supplies = supplies.filter(Supply.id == supply.id)
+            supplies = supplies.where(Supply.id == supply.id)
             first_era = (
-                sess.query(Era)
-                .filter(
-                    Era.supply == supply,
-                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                    Era.start_date <= finish_date,
+                sess.execute(
+                    select(Era)
+                    .where(
+                        Era.supply == supply,
+                        or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                        Era.start_date <= finish_date,
+                    )
+                    .order_by(Era.start_date)
                 )
-                .order_by(Era.start_date)
+                .scalars()
                 .first()
             )
             if first_era.imp_mpan_core is None:
@@ -71,7 +76,7 @@ def content(
             base_name.append("supply_" + name_core.replace(" ", "_"))
 
         if mpan_cores is not None:
-            supplies = supplies.filter(
+            supplies = supplies.where(
                 or_(
                     Era.imp_mpan_core.in_(mpan_cores), Era.exp_mpan_core.in_(mpan_cores)
                 )
@@ -81,15 +86,17 @@ def content(
         cf = StringIO()
         writer = csv.writer(cf, lineterminator="\n")
         titles = [
-            "Import MPAN Core",
-            "Export MPAN Core",
-            "Import Related?",
-            "Channel Type",
-            "HH Start Clock-Time",
+            "import_mpan_core",
+            "export_mpan_core",
+            "is_hh",
+            "is_import_related",
+            "channel_type",
+            "hh_start_clock_time",
         ] + list(range(1, 51))
         writer.writerow(titles)
         titles_csv = cf.getvalue()
         cf.close()
+        fdate = forecast_date()
 
         running_name, finished_name = chellow.dloads.make_names(
             "_".join(base_name) + (".zip" if is_zipped else ".csv"), user
@@ -100,65 +107,83 @@ def content(
             tf = open(running_name, mode="w", newline="")
             tf.write(titles_csv)
 
-        for supply in supplies:
+        for supply in sess.execute(supplies).scalars():
             cf = StringIO()
             writer = csv.writer(cf, lineterminator="\n")
-            era = supply.find_era_at(sess, finish_date)
-            if era is None:
-                imp_mpan_core_str = exp_mpan_core_str = "NA"
-            else:
-                if era.imp_mpan_core is None:
-                    imp_mpan_core_str = "NA"
-                else:
-                    imp_mpan_core_str = era.imp_mpan_core
-                if era.exp_mpan_core is None:
-                    exp_mpan_core_str = "NA"
-                else:
-                    exp_mpan_core_str = era.exp_mpan_core
-
-            imp_related_str = "TRUE" if imp_related else "FALSE"
-
-            hh_data = iter(
-                sess.query(HhDatum)
-                .join(Channel)
-                .join(Era)
-                .filter(
+            imp_mpan_core = exp_mpan_core = is_hh = None
+            data = []
+            for era in sess.execute(
+                select(Era)
+                .where(
                     Era.supply == supply,
-                    HhDatum.start_date >= start_date,
-                    HhDatum.start_date <= finish_date,
-                    Channel.imp_related == imp_related,
-                    Channel.channel_type == channel_type,
+                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                    Era.start_date <= finish_date,
                 )
-                .order_by(HhDatum.start_date)
-            )
-            datum = next(hh_data, None)
+                .order_by(Era.start_date)
+            ).scalars():
+                if era.imp_mpan_core is not None:
+                    imp_mpan_core = era.imp_mpan_core
+                if era.exp_mpan_core is not None:
+                    exp_mpan_core = era.exp_mpan_core
+
+                if era.pc.code == "00" or len(era.channels) > 0:
+                    is_hh = True
+                    for datum in sess.execute(
+                        select(HhDatum)
+                        .join(Channel)
+                        .join(Era)
+                        .where(
+                            Era.supply == supply,
+                            HhDatum.start_date >= start_date,
+                            HhDatum.start_date <= finish_date,
+                            Channel.imp_related == imp_related,
+                            Channel.channel_type == channel_type,
+                        )
+                        .order_by(HhDatum.start_date)
+                    ).scalars():
+                        data.append((datum.start_date, datum.value))
+                else:
+                    is_hh = False
+                    ds = SupplySource(
+                        sess, start_date, finish_date, fdate, era, imp_related, cache
+                    )
+                    KEY_LOOKUP = {
+                        "ACTIVE": "msp-kwh",
+                        "REACTIVE_IMP": "imp-msp-kvarh",
+                        "REACTIVE_EXP": "exp-msp-kvarh",
+                    }
+                    for hh in ds.hh_data:
+                        data.append((hh["start-date"], hh[KEY_LOOKUP[channel_type]]))
 
             row = []
+            hh_data = iter(data)
+            datum = next(hh_data, None)
             for current_date in hh_range(cache, start_date, finish_date):
                 dt_ct = to_ct(current_date)
                 if dt_ct.hour == 0 and dt_ct.minute == 0:
                     if len(row) > 0:
-                        writer.writerow(row)
+                        writer.writerow(csv_make_val(v) for v in row)
                     row = [
-                        imp_mpan_core_str,
-                        exp_mpan_core_str,
-                        imp_related_str,
+                        imp_mpan_core,
+                        exp_mpan_core,
+                        is_hh,
+                        imp_related,
                         channel_type,
                         dt_ct.strftime("%Y-%m-%d"),
                     ]
 
-                if datum is not None and datum.start_date == current_date:
-                    row.append(datum.value)
+                if datum is not None and datum[0] == current_date:
+                    row.append(datum[1])
                     datum = next(hh_data, None)
                 else:
                     row.append(None)
 
             if len(row) > 0:
-                writer.writerow(row)
+                writer.writerow(csv_make_val(v) for v in row)
 
             if is_zipped:
                 fname = "_".join(
-                    (imp_mpan_core_str, exp_mpan_core_str, str(supply.id) + ".csv")
+                    (f"{imp_mpan_core}", f"{exp_mpan_core}", f"{supply.id}.csv")
                 )
                 zf.writestr(fname.encode("ascii"), titles_csv + cf.getvalue())
             else:

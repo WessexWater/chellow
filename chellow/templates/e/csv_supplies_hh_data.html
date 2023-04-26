@@ -26,8 +26,11 @@
 			<label>From</label> {{input_date('start', start_date)}}
 			<label>To</label> {{input_date('finish', finish_date)}}
 			<label>Zipped?</label> {{input_checkbox('is_zipped', False)}}
-			<label>MPAN Cores (one on each line, includes all supplies if left blank)</label>
-			{{input_textarea('mpan_cores', '', 5, 40)}}    						
+			<label>MPAN Cores</label>
+			{{input_textarea(
+				'mpan_cores', '', 5, 40,
+				placeholder='One on each line, includes all supplies if left blank'
+				)}}    						
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
@@ -36,10 +39,13 @@
 		<fieldset>
 			<legend>HH Per Row Format</legend>	
 			<label>From</label> {{input_date('start', start_date)}}
-			<label>to</label> {{input_date('finish', finish_date)}}
-			<label>{{input_checkbox('is_zipped', False)}} Zipped?</label> 
-			<label>MPAN Cores (one on each line, includes all supplies if left blank)</label>
-			{{input_textarea('mpan_cores', '', 5, 40)}}
+			<label>To</label> {{input_date('finish', finish_date)}}
+			<label>Zipped</label> {{input_checkbox('is_zipped', False)}}
+			<label>MPAN Cores</label>
+			{{input_textarea(
+				'mpan_cores', '', 5, 40,
+				placeholder='One on each line, includes all supplies if left blank'
+				)}}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
