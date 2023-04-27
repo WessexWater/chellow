@@ -11,7 +11,7 @@ from chellow.models import (
     Report,
     Session,
 )
-from chellow.utils import utc_datetime_now
+from chellow.utils import ct_datetime_now
 
 
 tester = None
@@ -42,7 +42,7 @@ class Tester(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
+            f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
         )
 
     def run(self):
