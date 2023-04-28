@@ -72,8 +72,13 @@ def run_import(sess, log, set_progress):
     paths_list = []
     for sub_entry in tree_entry["tree"]:
         path = sub_entry["path"].split("/")
-        if path[-1] != "README.md":
-            paths_list.append((path, sub_entry["url"]))
+        if path[-1] == "README.md":
+            continue
+        if len(path) == 1 and path[0] == "LICENSE":
+            continue
+
+        path[0] = int(path[0])
+        paths_list.append((tuple(path), sub_entry["url"]))
 
     paths = tuple(paths_list)
 
@@ -82,6 +87,7 @@ def run_import(sess, log, set_progress):
         "chellow.e.dno_rate_parser",
         "chellow.e.laf_import",
         "chellow.e.mdd_importer",
+        "chellow.e.tnuos",
         "chellow.gas.dn_rate_parser",
     ):
         mod = import_module(mod_name)

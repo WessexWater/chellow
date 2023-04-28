@@ -100,7 +100,7 @@
 					</td>
 				</tr>
 				<tr>
-					<th>TNUoS Spreadsheet</th>
+					<th>TRIAD Dates PDFs</th>
 					<td>
 						<table>
 							<thead>
@@ -110,7 +110,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								{% for rs in tnuos_rs %}
+								{% for rs in triad_dates_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
 										<td>{{rs.start_date|hh_format}}</td>

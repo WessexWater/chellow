@@ -1,7 +1,10 @@
+from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal, InvalidOperation
+from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
+from pypdf import PdfReader
 
 from sqlalchemy import null, or_, select
 
@@ -11,10 +14,12 @@ import chellow.e.computer
 import chellow.e.duos
 from chellow.models import Contract, RateScript
 from chellow.national_grid import api_get
+from chellow.rate_server import download
 from chellow.utils import (
     c_months_u,
     ct_datetime,
     hh_after,
+    hh_format,
     hh_min,
     to_ct,
     to_utc,
@@ -513,4 +518,67 @@ def ng_import_triad(sess, log, set_progress, s):
                 sess.commit()
 
     log("Finished TNUoS TRIAD Tariffs")
+    sess.commit()
+
+
+def _find_triad_dates(file_name, file_like):
+    dates = []
+    rate_script = {"a_file_name": file_name, "triad_dates": dates}
+
+    reader = PdfReader(file_like)
+    in_table = False
+    for page in reader.pages:
+        for line in page.extract_text().splitlines():
+            if in_table:
+                date_str, period_str, _ = line.split()
+                date = Datetime.strptime(date_str, "%d/%m/%Y")
+                delta = Timedelta(minutes=30) * (int(period_str) - 1)
+                dates.append(to_utc(to_ct(date + delta)))
+                if len(dates) == 3:
+                    in_table = False
+            else:
+                if "Demand (MW)" in line:
+                    in_table = True
+
+    return rate_script
+
+
+def rate_server_import(sess, log, set_progress, s, paths):
+    log("Starting to check for new TNUoS triad date PDFs")
+
+    year_entries = {}
+    for path, url in paths:
+        if len(path) == 4:
+            year, utility, rate_type, file_name = path
+            if utility == "electricity" and rate_type == "tnuos":
+                try:
+                    fl_entries = year_entries[year]
+                except KeyError:
+                    fl_entries = year_entries[year] = {}
+
+                fl_entries[file_name] = url
+
+    for year, year_pdfs in sorted(year_entries.items()):
+        year_start = to_utc(ct_datetime(year, 4, 1))
+        contract = Contract.get_non_core_by_name(sess, "triad_dates")
+        if year_start < contract.start_rate_script.start_date:
+            continue
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == year_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, year_start, {})
+
+        if len(year_pdfs) > 0:
+            file_name, url = sorted(year_pdfs.items())[-1]
+
+            rs_script = rs.make_script()
+            if rs_script.get("a_file_name") != file_name:
+                rs.update(_find_triad_dates(file_name, BytesIO(download(s, url))))
+                log(f"Updated triad dates rate script for {hh_format(year_start)}")
+
+    log("Finished TNUoS triad dates PDFs")
     sess.commit()

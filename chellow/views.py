@@ -2176,17 +2176,6 @@ def rate_server_get():
         .where(MarketRole.code == "R", RateScript.start_date >= fy_start)
         .order_by(Contract.name, RateScript.start_date.desc())
     ).scalars()
-    tnuos_rs = g.sess.execute(
-        select(RateScript)
-        .join(RateScript.contract)
-        .join(MarketRole)
-        .where(
-            MarketRole.code == "Z",
-            RateScript.start_date >= fy_start,
-            Contract.name == "tnuos",
-        )
-        .order_by(RateScript.start_date.desc())
-    ).scalars()
     nts_rs = g.sess.execute(
         select(GRateScript)
         .join(GRateScript.g_contract)
@@ -2218,6 +2207,17 @@ def rate_server_get():
         )
         .order_by(RateScript.start_date.desc())
     ).scalars()
+    triad_dates_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "triad_dates",
+        )
+        .order_by(RateScript.start_date.desc())
+    ).scalars()
 
     return render_template(
         "rate_server.html",
@@ -2225,10 +2225,10 @@ def rate_server_get():
         config_state=config.make_state(),
         config_properties=props.get("rate_server", {}),
         dno_rs=dno_rs,
-        tnuos_rs=tnuos_rs,
         nts_rs=nts_rs,
         dn_rs=dn_rs,
         bsuos_rs=bsuos_rs,
+        triad_dates_rs=triad_dates_rs,
     )
 
 

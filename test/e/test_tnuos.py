@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from chellow.e.computer import SupplySource
-from chellow.e.tnuos import _process_banded_hh, _process_triad_hh
+from chellow.e.tnuos import _find_triad_dates, _process_banded_hh, _process_triad_hh
 from chellow.models import (
     Comm,
     Contract,
@@ -407,3 +407,34 @@ def test_process_triad_hh(sess):
         "triad-estimate-months": 1,
         "triad-estimate-rate": 0.0,
     }
+
+
+def test_find_triad_dates(mocker):
+    file_name = "nail_file.pdf"
+    file_like = mocker.Mock()
+    mock_reader = mocker.Mock()
+    lines = [
+        "here is the table: ",
+        "Date  Settlement ",
+        "Period  Net System ",
+        "Demand (MW)  ",
+        "15/12/2022  35 44,561 ",
+        "17/01/2023  35 42,022 ",
+        "02/12/2022  36 39,573 ",
+        "",
+    ]
+    page = mocker.Mock()
+    page.extract_text = mocker.Mock(return_value="\n".join(lines))
+    mock_reader.pages = [page]
+
+    mocker.patch("chellow.e.tnuos.PdfReader", return_value=mock_reader)
+    actual = _find_triad_dates(file_name, file_like)
+    expected = {
+        "a_file_name": "nail_file.pdf",
+        "triad_dates": [
+            utc_datetime(2022, 12, 15, 17, 0),
+            utc_datetime(2023, 1, 17, 17, 0),
+            utc_datetime(2022, 12, 2, 17, 30),
+        ],
+    }
+    assert actual == expected
