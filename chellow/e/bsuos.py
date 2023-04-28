@@ -220,7 +220,8 @@ def _process_url(logger, sess, url, contract, s):
 
     for row in reader:
         date_str = row[0]
-        date = Datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+        date_format = "%Y-%m-%dT%H:%M:%S" if len(date_str) == 19 else "%d-%m-%y"
+        date = Datetime.strptime(date_str, date_format)
         period_str = row[1]
         period = int(period_str)
         price_str = row[2]
