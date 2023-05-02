@@ -127,7 +127,7 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-home = Blueprint("", __name__, template_folder="templates")
+home = Blueprint("home", __name__, url_prefix="", template_folder="templates")
 
 
 def chellow_redirect(path, code=None):
