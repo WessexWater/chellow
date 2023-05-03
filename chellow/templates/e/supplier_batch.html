@@ -78,7 +78,7 @@
 					<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
 					<td>{{ "£{:,}".format(sum_gross_gbp) }}</td>
 					<td>{{ "{:,}".format(sum_kwh) }}</td>
-					<td><a href="/e/supplier_batches/{{batch.id}}/csv" >Download</a></td>
+					<td><a href="/reports/bills?batch_id={{batch.id}}" >Download</a></td>
 					<td>
 						{% if batch_reports %}
 							<ul>
