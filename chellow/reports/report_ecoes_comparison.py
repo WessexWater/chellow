@@ -97,7 +97,7 @@ def content(user_id, show_ignored, report_run_id):
             )
 
         r = s.get(
-            f"{url_prefix}NonDomesticCustomer/ExportPortfolioMPANs?fileType=csv",
+            f"{url_prefix}PortfolioAccess/ExportPortfolioMPANs?fileType=csv",
             proxies=proxies,
         )
 
