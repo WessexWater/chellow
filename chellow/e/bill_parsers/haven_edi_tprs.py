@@ -29,7 +29,6 @@ def _process_BCD(elements, headers):
     invn = elements["INVN"]
     reference = invn[0]
     headers["reference"] = reference
-    headers["account"] = "SA" + reference[:9]
 
     btcd = elements["BTCD"]
     headers["bill_type_code"] = btcd[0]
@@ -248,6 +247,11 @@ def _process_CCD4(elements, headers):
         breakdown["standing-gbp"] += to_decimal(ctot) / Decimal("100")
 
 
+def _process_CLO(elements, headers):
+    cloc = elements["CLOC"]
+    headers["account"] = cloc[1]
+
+
 def _process_MTR(elements, headers):
     if headers["message_type"] == "UTLBIL":
         if headers["mpan_core"] is None:
@@ -311,7 +315,7 @@ CODE_FUNCS = {
     "CCD4": _process_CCD4,
     "CDA": _process_NOOP,
     "CDT": _process_NOOP,
-    "CLO": _process_NOOP,
+    "CLO": _process_CLO,
     "DNA": _process_NOOP,
     "END": _process_NOOP,
     "FIL": _process_NOOP,
