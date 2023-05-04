@@ -10,8 +10,8 @@ from sqlalchemy import null, or_, select
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.e.computer
 import chellow.e.duos
+from chellow.e.computer import forecast_date
 from chellow.models import Contract, RateScript
 from chellow.national_grid import api_get
 from chellow.rate_server import download
@@ -29,18 +29,57 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 
 def hh(ds, rate_period="monthly", est_kw=None):
+    default_fdate = forecast_date()
     for hh in ds.hh_data:
         if hh["ct-is-month-end"]:
             _process_triad_hh(ds, rate_period, est_kw, hh)
 
         if hh["start-date"] >= BANDED_START and hh["ct-decimal-hour"] == 12:
-            _process_banded_hh(ds, hh)
+            _process_banded_hh(ds, hh, default_fdate)
 
 
-def _process_banded_hh(ds, hh):
-    rates = ds.non_core_rate("tnuos", hh["start-date"])
-    lookup = rates["lookup"]
-    band_code = lookup[hh["duos-description"]]
+BAND_LOOKUP = {
+    "Domestic Aggregated (Related MPAN)": "Domestic",
+    "Domestic Aggregated with Residual": "Domestic",
+    "HV Generation Site Specific": "HV1",
+    "HV Generation Site Specific no RP charge": "HV1",
+    "HV Site Specific Band 1": "HV1",
+    "HV Site Specific Band 2": "HV2",
+    "HV Site Specific Band 3": "HV3",
+    "HV Site Specific Band 4": "HV4",
+    "HV Site Specific No Residual": "HV1",
+    "LV Generation Aggregated": "LV1",
+    "LV Generation Site Specific": "LV1",
+    "LV Generation Site Specific no RP charge": "LV1",
+    "LV Site Specific Band 1": "LV1",
+    "LV Site Specific Band 2": "LV2",
+    "LV Site Specific Band 3": "LV3",
+    "LV Site Specific Band 4": "LV4",
+    "LV Site Specific No Residual": "LV1",
+    "LV Sub Generation Aggregated": "LV1",
+    "LV Sub Generation Site Specific": "LV1",
+    "LV Sub Generation Site Specific no RP charge": "LV1",
+    "LV Sub Site Specific Band 1": "LV1",
+    "LV Sub Site Specific Band 2": "LV2",
+    "LV Sub Site Specific Band 3": "LV3",
+    "LV Sub Site Specific Band 4": "LV4",
+    "LV Sub Site Specific No Residual": "LV1",
+    "Non-Domestic Aggregated (related MPAN)": "LV_NoMIC_1",
+    "Non-Domestic Aggregated Band 1": "LV_NoMIC_1",
+    "Non-Domestic Aggregated Band 2": "LV_NoMIC_2",
+    "Non-Domestic Aggregated Band 3": "LV_NoMIC_3",
+    "Non-Domestic Aggregated Band 4": "LV_NoMIC_4",
+    "Non-Domestic Aggregated No Residual": "LV_NoMIC_1",
+    "Unmetered Supplies": "Unmetered",
+}
+
+
+def _process_banded_hh(ds, hh, default_fdate):
+    # Don't look beyond the default forecast date because it won't exists
+    dt = hh_min(hh["start-date"], default_fdate)
+
+    rates = ds.non_core_rate("tnuos", dt)
+    band_code = BAND_LOOKUP[hh["duos-description"]]
     hh["tnuos-band"] = band_code
     rate = float(rates["bands"][band_code]["TDR Tariff"])
     if band_code == "Unmetered":

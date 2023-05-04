@@ -24,6 +24,7 @@ from chellow.models import (
     Session,
     get_non_core_contract_id,
 )
+from chellow.national_grid import api_get
 from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc, utc_datetime_now
 
@@ -73,7 +74,12 @@ def hh(data_source, run="RF"):
             rates = data_source.hh_rate(db_id, h_start)
 
             if h_start >= to_utc(ct_datetime(2023, 4, 1)):
-                bsuos_price = float(rates["rate_gbp_per_mwh"])
+                try:
+                    bprice = rates["rate_gbp_per_mwh"]
+                except KeyError:
+                    bprice = rates["forecast_rate_gbp_per_mwh"]
+                bsuos_price = float(bprice)
+
             else:
                 bsuos_rates = rates["rates_gbp_per_mwh"]
 
@@ -397,4 +403,54 @@ def rate_server_import(sess, log, set_progress, s, paths):
                 log(f"Updated BSUoS rate script for {hh_format(oct_start)}")
 
     log("Finished BSUoS spreadsheets")
+    sess.commit()
+
+
+def national_grid_import(sess, log, set_progress, s):
+    log("Starting to check for new BSUoS forecast")
+
+    contract = Contract.get_non_core_by_name(sess, "bsuos")
+
+    block = None
+
+    params = {
+        "sql": """SELECT * FROM  "578b493e-db5c-41e3-8b52-f91c5f80389c" """
+        """ORDER BY "_id" ASC LIMIT 100 """
+    }
+    res_j = api_get(s, "datastore_search_sql", params=params)
+    for record in res_j["result"]["records"]:
+        month_start_ct = to_ct(Datetime.strptime(record["Month"], "%b-%y"))
+        if month_start_ct.month in (4, 10):
+            block = {"start_date": to_utc(month_start_ct), "cost": 0, "vol": 0}
+
+        if block is not None:
+            block["cost"] += sum(
+                float(record[t])
+                for t in (
+                    "Balancing Costs (Central) £m",
+                    "Estimated Internal BSUoS & ESO Incentive £m",
+                    "ALoMCP £m",
+                    "CMP381 Deferred Costs £m",
+                    "Winter Contingency Cost (Central) £m",
+                    "Winter Security of Supply Cost (£m)",
+                )
+            )
+            block["vol"] += float(record["Estimated BSUoS Volume (TWh)"])
+
+            if month_start_ct.month in (3, 9):
+                rs = sess.execute(
+                    select(RateScript).where(
+                        RateScript.contract == contract,
+                        RateScript.start_date == block["start_date"],
+                    )
+                ).scalar_one_or_none()
+                if rs is None:
+                    rs = contract.insert_rate_script(sess, block["start_date"], {})
+
+                rs_script = rs.make_script()
+                rs_script["forecast_rate_gbp_per_mwh"] = block["cost"] / block["vol"]
+                rs.update(rs_script)
+                sess.commit()
+
+    log("Finished BSUoS forecast")
     sess.commit()

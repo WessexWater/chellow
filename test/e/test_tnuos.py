@@ -43,7 +43,6 @@ def test_process_banded_hh_ums(sess):
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     tnuos_rate_script = {
-        "lookup": {"Unmetered": "Unmetered"},
         "bands": {"Unmetered": {"TDR Tariff": "1"}},
     }
     Contract.insert_non_core(
@@ -152,8 +151,8 @@ def test_process_banded_hh_ums(sess):
         sess, start_date, finish_date, forecast_from, era, is_import, caches
     )
     hh = ds.hh_data[0]
-    hh["duos-description"] = "Unmetered"
-    _process_banded_hh(ds, hh)
+    hh["duos-description"] = "Unmetered Supplies"
+    _process_banded_hh(ds, hh, hh["start-date"])
     assert hh == {
         "hist-start": utc_datetime(2019, 7, 31, 22, 30),
         "start-date": utc_datetime(2023, 7, 31, 22, 30),
@@ -186,7 +185,7 @@ def test_process_banded_hh_ums(sess):
         "anti-msp-kw": 0,
         "hist-imp-msp-kvarh": 0,
         "hist-kwh": 0,
-        "duos-description": "Unmetered",
+        "duos-description": "Unmetered Supplies",
         "tnuos-band": "Unmetered",
         "tnuos-gbp": 0.00989041095890411,
     }

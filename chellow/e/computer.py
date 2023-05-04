@@ -202,7 +202,7 @@ def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
             elif market_role_code == "X":
                 seg = "/e/supplier_rate_scripts/"
             elif market_role_code == "Z":
-                seg = "/e/non_core_rate_scripts/"
+                seg = "/non_core_rate_scripts/"
             elif market_role_code == "R":
                 seg = "/e/dno_rate_scripts/"
             else:

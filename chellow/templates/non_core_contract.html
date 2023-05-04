@@ -11,7 +11,7 @@
 
 {% block content %}
 	{% if contract.name in [
-	    'bank_holidays', 'bmarketidx', 'bsuos', 'rcrc', 'system_price', 'tlms'] %}
+	    'bank_holidays', 'bmarketidx', 'rcrc', 'system_price', 'tlms'] %}
 		<p>
 			<a href="/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
 		</p>
@@ -22,6 +22,17 @@
 	{% elif contract.name == 'triad_dates' %}
 		<p>
 			<a href="/rate_server">Automatic Importer</a>
+		</p>
+	{% elif contract.name == 'bsuos' %}
+		<p>
+			Automatic importers:
+			<ul>
+				<li><a href="/rate_server">Current Rates</a></li>
+				<li>
+					<a href="/non_core_contracts/{{contract.id}}/auto_importer">Old Rates</a>
+				</li>
+				<li><a href="/national_grid">Forecast Rates</a></li>
+			</ul>
 		</p>
 	{% endif %}
 
