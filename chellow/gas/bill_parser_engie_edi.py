@@ -13,6 +13,7 @@ from chellow.utils import HH, to_ct, to_utc
 READ_TYPE_MAP = {"00": "A", "01": "E"}
 
 TCOD_MAP = {
+    "Energy Bill Discount Scheme": {"PPK": "ebrs"},
     "Energy Bill Relief Scheme": {"PPK": "ebrs"},
     "Energy Bill Relief Scheme Discount": {"PPK": "ebrs"},
     "Unidentified Gas": {"PPK": "ug"},
