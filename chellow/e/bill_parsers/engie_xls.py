@@ -21,6 +21,7 @@ ELEM_MAP = {
     "Meter - Standard": {
         "Energy Bill Relief Scheme": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
         "Energy Bill Relief Scheme Discount": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
+        "Energy Bill Discount Scheme": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
     },
     "Meter - UK Electricity - AAHEDC Pass-Thru": {
         None: ["aahedc-gbp", "aahedc-rate", "aahedc-gsp-kwh"]
