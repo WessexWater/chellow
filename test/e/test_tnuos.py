@@ -187,7 +187,9 @@ def test_process_banded_hh_ums(sess):
         "hist-kwh": 0,
         "duos-description": "Unmetered Supplies",
         "tnuos-band": "Unmetered",
+        "tnuos-days": 1,
         "tnuos-gbp": 0.00989041095890411,
+        "tnuos-rate": 1.0,
     }
 
 

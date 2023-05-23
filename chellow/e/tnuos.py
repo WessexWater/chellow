@@ -75,17 +75,19 @@ BAND_LOOKUP = {
 
 
 def _process_banded_hh(ds, hh, default_fdate):
-    # Don't look beyond the default forecast date because it won't exists
+    # Don't look beyond the default forecast date because it won't exist
     dt = hh_min(hh["start-date"], default_fdate)
 
     rates = ds.non_core_rate("tnuos", dt)
     band_code = BAND_LOOKUP[hh["duos-description"]]
     hh["tnuos-band"] = band_code
     rate = float(rates["bands"][band_code]["TDR Tariff"])
+    hh["tnuos-rate"] = rate
     if band_code == "Unmetered":
         hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
     else:
         hh["tnuos-gbp"] = rate
+    hh["tnuos-days"] = 1
 
 
 def _find_triad_rate(ds, date, polarity, gsp_group_code):

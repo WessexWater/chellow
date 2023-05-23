@@ -75,7 +75,10 @@ ELEM_MAP = {
         None: ("ro-gbp", "ro-rate", "ro-msp-kwh")
     },
     "Meter - UK Electricity - TUoS": {
-        None: ("triad-gbp", "triad-rate", "triad-gsp-kw")
+        None: ("triad-gbp", "triad-rate", "triad-gsp-kw"),
+        "TNUoS Fixed": {
+            None: ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+        },
     },
     "Meter - UK Electricity - Standard": {
         None: None,
