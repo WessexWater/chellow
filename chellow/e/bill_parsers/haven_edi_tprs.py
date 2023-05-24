@@ -216,8 +216,11 @@ def _process_CCD3(elements, headers):
         ignore_rate = ignore_kwh = True
     elif tmod0 == "700285":
         prefix = "standing"
-    elif tmod0 == "823408":
+    elif tmod0 in ("823408", "504364"):
         prefix = "ebrs"
+    elif tmod0 == "893084":
+        prefix = "ebrs"
+        ignore_rate = ignore_kwh = True
     else:
         prefix = tmod0
 
