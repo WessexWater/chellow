@@ -12,10 +12,7 @@
 {% block content %}
 	<form>
 		<fieldset>						
-			<label>Site Code </label>
-			{{input_text('site_code', site.code)}}
-			<label>Month</label>
-			{{input_date(None, None, 'month')}}
+			<label>Month</label> {{input_date(None, None, 'month')}}
 			<input type="submit" value="Show">
 		</fieldset>
 	</form>
