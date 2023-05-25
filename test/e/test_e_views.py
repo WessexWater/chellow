@@ -2295,7 +2295,7 @@ def test_supplier_batch_post_import_bills(sess, client):
     sess.commit()
     data = {"import_bills": "Import"}
     response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
-    match(response, 303)
+    match(response, 200)
 
     response = client.get("/e/supplier_bill_imports/0")
     match(
@@ -2324,7 +2324,7 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
     sess.commit()
     data = {"delete_import_bills": "Import"}
     response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
-    match(response, 303)
+    match(response, 200)
 
     response = client.get("/e/supplier_bill_imports/0")
     match(

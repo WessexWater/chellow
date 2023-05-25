@@ -141,6 +141,12 @@ def chellow_redirect(path, code=None):
     return res
 
 
+def hx_redirect(path, status=None):
+    res = Response(status=status)
+    res.headers["HX-Redirect"] = chellow.utils.url_root + path
+    return res
+
+
 @home.route("/configuration", methods=["GET"])
 def configuration():
     config = Contract.get_non_core_by_name(g.sess, "configuration")

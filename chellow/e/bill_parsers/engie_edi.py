@@ -347,6 +347,7 @@ def _process_MTR(elements, headers):
 
 def _process_VAT(elements, headers):
     vat = Decimal("0.00") + to_decimal(elements["UVTT"]) / Decimal("100")
+    vat_percentage = to_decimal(elements["VATP"]) / Decimal("1000")
 
     return {
         "bill_type_code": headers["bill_type_code"],
@@ -360,7 +361,7 @@ def _process_VAT(elements, headers):
         "net": Decimal("0.00"),
         "vat": vat,
         "gross": vat,
-        "breakdown": {},
+        "breakdown": {"vat_percentage": vat_percentage},
         "reads": [],
     }
 

@@ -102,11 +102,15 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect as credirect
+from chellow.views import chellow_redirect as credirect, hx_redirect as chx_redirect
 
 
 def chellow_redirect(path, code=None):
     return credirect(f"/e{path}", code)
+
+
+def hx_redirect(path, code=None):
+    return chx_redirect(f"/e{path}", code)
 
 
 e = Blueprint("e", __name__, template_folder="templates", url_prefix="/e")
@@ -3882,30 +3886,29 @@ def supplier_batches_get():
 def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
 
-    num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh = (
-        g.sess.query(
-            func.count(Bill.id),
-            func.sum(Bill.net),
-            func.sum(Bill.vat),
-            func.sum(Bill.gross),
-            func.sum(Bill.kwh),
-        )
-        .filter(Bill.batch == batch)
-        .one()
-    )
-    if sum_net_gbp is None:
-        sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
-
-    if "bill_limit" in request.values and num_bills > req_int("bill_limit"):
-        bills = None
-    else:
-        bills = (
-            g.sess.query(Bill)
-            .filter(Bill.batch == batch)
-            .order_by(Bill.reference, Bill.start_date)
+    num_bills = sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
+    vat_breakdown = defaultdict(int)
+    bills = (
+        g.sess.execute(
+            select(Bill)
+            .where(Bill.batch == batch)
+            .order_by(Bill.reference)
             .options(joinedload(Bill.bill_type))
-            .all()
         )
+        .scalars()
+        .all()
+    )
+    for bill in bills:
+        num_bills += 1
+        sum_net_gbp += bill.net
+        sum_vat_gbp += bill.vat
+        sum_gross_gbp += bill.gross
+        sum_kwh += bill.kwh
+
+        if bill.vat != 0:
+            bd = bill.bd
+            if "vat_percentage" in bd:
+                vat_breakdown[bd["vat_percentage"]] += bill.vat
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
@@ -3929,6 +3932,7 @@ def supplier_batch_get(batch_id):
         sum_vat_gbp=sum_vat_gbp,
         sum_gross_gbp=sum_gross_gbp,
         sum_kwh=sum_kwh,
+        vat_breakdown=vat_breakdown,
         importer_ids=importer_ids,
     )
 
@@ -3969,16 +3973,16 @@ def supplier_batch_post(batch_id):
         batch = Batch.get_by_id(g.sess, batch_id)
         if "import_bills" in request.values:
             import_id = chellow.e.bill_importer.start_bill_import(batch)
-            return chellow_redirect(f"/supplier_bill_imports/{import_id}", 303)
+            return hx_redirect(f"/supplier_bill_imports/{import_id}")
         elif "delete_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
             g.sess.commit()
-            return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
+            return hx_redirect(f"/supplier_batches/{batch.id}")
         elif "delete_import_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
             g.sess.commit()
             import_id = chellow.e.bill_importer.start_bill_import(batch)
-            return chellow_redirect(f"/supplier_bill_imports/{import_id}", 303)
+            return hx_redirect(f"/supplier_bill_imports/{import_id}")
     except BadRequest as e:
         flash(e.description)
         importer_ids = sorted(

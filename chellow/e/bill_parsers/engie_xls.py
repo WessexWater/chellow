@@ -301,6 +301,11 @@ def _parse_row(row, row_index, datemode, title_row):
     product_class = get_value(row, "Product Item Class")
     if description in ("Standard VAT@20%", "Reduced VAT@5%"):
         bill["vat"] += round(amount, 2)
+        if description.endswith("20%"):
+            vat_percentage = Decimal("20")
+        else:
+            vat_percentage = Decimal("5")
+        bd["vat_percentage"] = vat_percentage
     else:
         bill["net"] += round(amount, 2)
 

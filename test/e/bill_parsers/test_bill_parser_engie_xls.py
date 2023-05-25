@@ -163,7 +163,10 @@ def test_make_raw_bills_vat(mocker):
             "vat": Decimal("9224.00"),
             "net": Decimal("0.00"),
             "reads": [],
-            "breakdown": {"raw_lines": [str(row)]},
+            "breakdown": {
+                "raw_lines": [str(row)],
+                "vat_percentage": Decimal("20"),
+            },
             "account": "22 9813 2107 763",
             "issue_date": None,
             "start_date": utc_datetime(2016, 7, 31, 23, 0),

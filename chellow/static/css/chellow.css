@@ -283,7 +283,7 @@ main ul li:before {
 	content: '- ';
 }
 
-input[type = submit] {
+input[type = submit], button {
 	color: white;
 	padding: 5px 10px;
 	border: 0;
@@ -295,12 +295,12 @@ input[type = submit] {
 	transition: background-color 230ms ease, color 230ms ease;
 }
 
-input[type = submit]:hover {
+input[type = submit]:hover, button {
 	background-color: #008EC2;
 	cursor: pointer;
 }
 
-input[type = submit]:disabled {
+input[type = submit]:disabled, button:disabled {
 	color: silver;
 	background-color: gray;
 	cursor: not-allowed;

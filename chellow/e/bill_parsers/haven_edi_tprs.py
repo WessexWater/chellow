@@ -303,6 +303,8 @@ def _process_VAT(elements, headers):
     headers["vat"] += to_decimal(uvtt) / Decimal("100")
     ucsi = elements["UCSI"]
     headers["gross"] += to_decimal(ucsi) / Decimal("100")
+    vat_percentage = to_decimal(elements["VATP"]) / Decimal("1000")
+    headers["breakdown"]["vat_percentage"] = vat_percentage
 
 
 def _process_NOOP(elements, headers):
