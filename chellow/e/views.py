@@ -3887,7 +3887,7 @@ def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
 
     num_bills = sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
-    vat_breakdown = defaultdict(int)
+    vat_breakdown = {}
     bills = (
         g.sess.execute(
             select(Bill)
@@ -3907,8 +3907,15 @@ def supplier_batch_get(batch_id):
 
         if bill.vat != 0:
             bd = bill.bd
-            if "vat_percentage" in bd:
-                vat_breakdown[bd["vat_percentage"]] += bill.vat
+            if "vat_percentage" in bd and "vat_net" in bd:
+                vat_percentage = bd["vat_percentage"]
+                try:
+                    vbd = vat_breakdown[vat_percentage]
+                except KeyError:
+                    vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+
+                vbd["vat"] += bill.vat
+                vbd["net"] += bd["vat_net"]
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()

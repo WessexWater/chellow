@@ -343,7 +343,7 @@ def test_process_MHD(mocker):
 
 
 def test_process_VAT(mocker):
-    elements = {"UVTT": ["0"], "VATP": ["20"]}
+    elements = {"UVTT": ["0"], "VATP": ["20"], "UVLA": ["4"]}
     headers = {
         "mpan_core": "22 7673 9575 6734",
         "reference": "xx2",

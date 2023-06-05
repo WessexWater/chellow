@@ -41,12 +41,18 @@
 				<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
 				<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
 				<td>
-					<table>
+					<table style="margin-top: revert;">
+						<thead>
+							<th>VAT %</th>
+							<th>Net GBP</th>
+							<th>VAT GBP</th>
+						</thead>
 						<tbody>
 							{% for k, v in vat_breakdown.items()|sort %}
 								<tr>
 									<td>{{k}}%</td>
-									<td>{{ "£{:,}".format(v) }}</td>
+									<td>{{ "£{:,}".format(v.net) }}</td>
+									<td>{{ "£{:,}".format(v.vat) }}</td>
 								</tr>
 							{% endfor %}
 						</tbody>
