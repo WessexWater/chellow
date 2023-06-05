@@ -16,7 +16,7 @@ from flask import (
     request,
 )
 
-from sqlalchemy import false, func, select, text, true
+from sqlalchemy import false, select, text, true
 from sqlalchemy.orm import joinedload
 
 
@@ -377,6 +377,11 @@ def batch_add_post(g_contract_id):
 @gas.route("/batches/<int:g_batch_id>")
 def batch_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+
+    num_bills = sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
+    vat_breakdown = {}
+    max_reads = 0
+
     g_bills = (
         g.sess.execute(
             select(GBill)
@@ -387,25 +392,28 @@ def batch_get(g_batch_id):
         .all()
     )
 
-    num_bills, sum_net_gbp, sum_vat_gbp, sum_gross_gbp, sum_kwh = (
-        g.sess.query(
-            func.count(GBill.id),
-            func.sum(GBill.net),
-            func.sum(GBill.vat),
-            func.sum(GBill.gross),
-            func.sum(GBill.kwh),
-        )
-        .filter(GBill.g_batch == g_batch)
-        .one()
-    )
+    for g_bill in g_bills:
+        num_bills += 1
+        sum_net_gbp += g_bill.net
+        sum_vat_gbp += g_bill.vat
+        sum_gross_gbp += g_bill.gross
+        sum_kwh += g_bill.kwh
+        max_reads = max(len(g_bill.g_reads), max_reads)
 
-    if sum_net_gbp is None:
-        sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
+        if g_bill.vat != 0:
+            bd = g_bill.make_breakdown()
 
-    if len(g_bills) > 0:
-        max_reads = max([len(g_bill.g_reads) for g_bill in g_bills])
-    else:
-        max_reads = 0
+            if "vat_rate" in bd:
+                vat_tuple = tuple([str(v * 100) for v in sorted(bd["vat_rate"])])
+                vat_percentage = vat_tuple[0] if len(vat_tuple) == 1 else vat_tuple
+                try:
+                    vbd = vat_breakdown[vat_percentage]
+                except KeyError:
+                    vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+
+                vbd["vat"] += g_bill.vat
+                vbd["net"] += g_bill.net
+
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
 
@@ -427,6 +435,7 @@ def batch_get(g_batch_id):
         sum_vat_gbp=sum_vat_gbp,
         sum_gross_gbp=sum_gross_gbp,
         sum_kwh=sum_kwh,
+        vat_breakdown=vat_breakdown,
     )
 
 

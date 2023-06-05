@@ -16,53 +16,64 @@
 {% endblock %}
 
 {% block content %}
-	<table class="sticky">
-		<tr>
-			<th>Reference</th>
-			<td>{{g_batch.reference}}</td>
-		</tr>
-		<tr>
-			<th>Description</th>
-			<td>{{g_batch.description}}</td>
-		</tr>
-		<tr>
-			<th>Number Of Bills</th>
-			<td>{{ "{:,}".format(num_bills) }}</td>
-		</tr>
-		<tr>
-			<th>Sum net GBP</th>
-			<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
-		</tr>
-		<tr>
-			<th>Sum VAT GBP</th>
-			<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
-		</tr>
-		<tr>
-			<th>Sum gross GBP</th>
-			<td>{{ "£{:,}".format(sum_gross_gbp) }}</td>
-		</tr>
-		<tr>
-			<th>Sum kWh</th>
-			<td>{{ "{:,}".format(sum_kwh) }}</td>
-		</tr>
-		{% if g_batch_reports %}
+	<table>
+		<thead>
 			<tr>
+				<th>Reference</th>
+				<th>Description</th>
+				<th>Number Of Bills</th>
+				<th>Sum net GBP</th>
+				<th>Sum VAT GBP</th>
+				<th>VAT Breakdown</th>
+				<th>Sum gross GBP</th>
+				<th>Sum kWh</th>
 				<th>Custom Reports</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{g_batch.reference}}</td>
+				<td>{{g_batch.description}}</td>
+				<td>{{ "{:,}".format(num_bills) }}</td>
+				<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
+				<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
 				<td>
-					<ul>
-						{% for report in g_batch_reports %}
-							<li>
-								<a
+					<table style="margin-top: revert;">
+						<thead>
+							<th>VAT %</th>
+							<th>Net GBP</th>
+							<th>VAT GBP</th>
+						</thead>
+						<tbody>
+							{% for k, v in vat_breakdown.items()|sort %}
+								<tr>
+									<td>{{k}}%</td>
+									<td>{{ "£{:,}".format(v.net) }}</td>
+									<td>{{ "£{:,}".format(v.vat) }}</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</td>
+				<td>{{ "£{:,}".format(sum_gross_gbp) }}</td>
+				<td>{{ "{:,}".format(sum_kwh) }}</td>
+				<td>
+					{% if g_batch_reports %}
+						<ul>
+							{% for report in g_batch_reports %}
+								<li>
+									<a
 										href="/local_reports/{{report.id}}/output?g_batch_id={{g_batch.id}}"
-										>{{report.name}}</a>
-							</li>
-						{% endfor %}
-					</ul>
+									>{{report.name}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
 				</td>
 			</tr>
-		{% endif %}
+		</tbody>
 	</table>
-	<br>
+
 	<ul>
 		<li><a href="/reports/429?g_batch_id={{g_batch.id}}">Check Bills</a></li>
 		<li><a href="/g/bill_imports?g_batch_id={{g_batch.id}}">Bill Imports</a></li>
