@@ -85,6 +85,8 @@ def content(running_name, finished_name, start_date, finish_date, contract_id):
                 out.append(k)
                 out.append(str(bill[k]))
             writer.writerow(out)
+
+            sess.rollback()  # Avoid long-running transactions
     except BadRequest as e:
         msg = "Problem "
         if supply_source is not None:
