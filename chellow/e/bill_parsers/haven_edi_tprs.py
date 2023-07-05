@@ -298,15 +298,29 @@ def _process_MAN(elements, headers):
 
 def _process_VAT(elements, headers):
     uvla = elements["UVLA"]
-    net = to_decimal(uvla) / Decimal("100")
+    net = Decimal("0.00") + to_decimal(uvla) / Decimal("100")
     headers["net"] += net
     uvtt = elements["UVTT"]
-    headers["vat"] += to_decimal(uvtt) / Decimal("100")
+    vat = Decimal("0.00") + to_decimal(uvtt) / Decimal("100")
+    headers["vat"] += vat
     ucsi = elements["UCSI"]
-    headers["gross"] += to_decimal(ucsi) / Decimal("100")
+    headers["gross"] += Decimal("0.00") + to_decimal(ucsi) / Decimal("100")
     vat_percentage = to_decimal(elements["VATP"]) / Decimal("1000")
-    headers["breakdown"]["vat_percentage"] = vat_percentage
-    headers["breakdown"]["vat_net"] = net
+    bd = headers["breakdown"]
+    if "vat" in bd:
+        vat_breakdown = bd["vat"]
+    else:
+        vat_breakdown = bd["vat"] = {}
+
+    try:
+        vat_values = vat_breakdown[vat_percentage]
+    except KeyError:
+        vat_values = vat_breakdown[vat_percentage] = {
+            "vat": Decimal("0.00"),
+            "net": Decimal("0.00"),
+        }
+    vat_values["vat"] += vat
+    vat_values["net"] += net
 
 
 def _process_NOOP(elements, headers):

@@ -3907,15 +3907,15 @@ def supplier_batch_get(batch_id):
 
         if bill.vat != 0:
             bd = bill.bd
-            if "vat_percentage" in bd and "vat_net" in bd:
-                vat_percentage = bd["vat_percentage"]
-                try:
-                    vbd = vat_breakdown[vat_percentage]
-                except KeyError:
-                    vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+            if "vat" in bd:
+                for vat_percentage, vat_vals in bd["vat"].items():
+                    try:
+                        vbd = vat_breakdown[vat_percentage]
+                    except KeyError:
+                        vbd = vat_breakdown[vat_percentage] = defaultdict(int)
 
-                vbd["vat"] += bill.vat
-                vbd["net"] += bd["vat_net"]
+                    vbd["vat"] += vat_vals["vat"]
+                    vbd["net"] += vat_vals["net"]
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()

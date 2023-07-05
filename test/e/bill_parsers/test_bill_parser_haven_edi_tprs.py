@@ -10,6 +10,7 @@ from chellow.e.bill_parsers.haven_edi_tprs import (
     _process_MAN,
     _process_MHD,
     _process_MTR,
+    _process_VAT,
 )
 from chellow.utils import utc_datetime
 
@@ -374,6 +375,27 @@ def test_process_CCD1_ebrs(mocker):
     _process_CCD1(elements, headers)
 
     expected_headers = {}
+    assert headers == expected_headers
+
+
+def test_process_VAT(mocker):
+    elements = {"UVLA": ["600"], "UVTT": ["150"], "UCSI": ["850"], "VATP": ["20000"]}
+    headers = {
+        "net": Decimal("0.00"),
+        "vat": Decimal("0.00"),
+        "gross": Decimal("0.00"),
+        "breakdown": defaultdict(int),
+    }
+
+    _process_VAT(elements, headers)
+    expected_headers = {
+        "net": Decimal("6.00"),
+        "vat": Decimal("1.50"),
+        "gross": Decimal("8.50"),
+        "breakdown": {
+            "vat": {Decimal("20"): {"vat": Decimal("1.50"), "net": Decimal("6.00")}}
+        },
+    }
     assert headers == expected_headers
 
 

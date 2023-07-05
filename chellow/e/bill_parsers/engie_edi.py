@@ -362,7 +362,7 @@ def _process_VAT(elements, headers):
         "net": Decimal("0.00"),
         "vat": vat,
         "gross": vat,
-        "breakdown": {"vat_percentage": vat_percentage, "vat_net": vat_net},
+        "breakdown": {"vat": {vat_percentage: {"vat": vat, "net": vat_net}}},
         "reads": [],
     }
 
