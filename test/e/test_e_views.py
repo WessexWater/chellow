@@ -2,7 +2,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
-from sqlalchemy import event
+from sqlalchemy import event, text
 from sqlalchemy.orm import Session
 
 from utils import match, match_repeat
@@ -2592,26 +2592,36 @@ def test_supplier_contract_edit_post_missing_properties(sess, client):
 
 
 def test_supplier_contract_get(client, sess):
-    sess.execute("INSERT INTO market_role (code, description) VALUES ('X', 'Supplier')")
-    sess.execute("INSERT INTO participant (code, name) VALUES ('FUSE', 'Fusion')")
     sess.execute(
-        "INSERT INTO party (market_role_id, participant_id, name, "
-        "valid_from, valid_to, dno_code) "
-        "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)"
+        text("INSERT INTO market_role (code, description) VALUES ('X', 'Supplier')")
+    )
+    sess.execute(text("INSERT INTO participant (code, name) VALUES ('FUSE', 'Fusion')"))
+    sess.execute(
+        text(
+            "INSERT INTO party (market_role_id, participant_id, name, "
+            "valid_from, valid_to, dno_code) "
+            "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)"
+        )
     )
     sess.execute(
-        "INSERT INTO contract (name, charge_script, properties, "
-        "state, market_role_id, party_id, start_rate_script_id, "
-        "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
-        "2, 2, null, null)"
+        text(
+            "INSERT INTO contract (name, charge_script, properties, "
+            "state, market_role_id, party_id, start_rate_script_id, "
+            "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
+            "2, 2, null, null)"
+        )
     )
     sess.execute(
-        "INSERT INTO rate_script (contract_id, start_date, finish_date, "
-        "script) VALUES (2, '2000-01-03', null, '{}')"
+        text(
+            "INSERT INTO rate_script (contract_id, start_date, finish_date, "
+            "script) VALUES (2, '2000-01-03', null, '{}')"
+        )
     )
     sess.execute(
-        "UPDATE contract set start_rate_script_id = 2, "
-        "finish_rate_script_id = 2 where id = 2;"
+        text(
+            "UPDATE contract set start_rate_script_id = 2, "
+            "finish_rate_script_id = 2 where id = 2;"
+        )
     )
     sess.commit()
 
@@ -2632,27 +2642,37 @@ def test_supplier_contract_get(client, sess):
 
 def test_supplier_contract_add_rate_script(client, sess):
     sess.execute(
-        "INSERT INTO market_role (code, description) " "VALUES ('X', 'Supplier')"
-    )
-    sess.execute("INSERT INTO participant (code, name) " "VALUES ('FUSE', 'Fusion')")
-    sess.execute(
-        "INSERT INTO party (market_role_id, participant_id, name, "
-        "valid_from, valid_to, dno_code) "
-        "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)"
+        text("INSERT INTO market_role (code, description) " "VALUES ('X', 'Supplier')")
     )
     sess.execute(
-        "INSERT INTO contract (name, charge_script, properties, "
-        "state, market_role_id, party_id, start_rate_script_id, "
-        "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
-        "2, 2, null, null)"
+        text("INSERT INTO participant (code, name) " "VALUES ('FUSE', 'Fusion')")
     )
     sess.execute(
-        "INSERT INTO rate_script (contract_id, start_date, finish_date, "
-        "script) VALUES (2, '2000-01-03', null, '{}')"
+        text(
+            "INSERT INTO party (market_role_id, participant_id, name, "
+            "valid_from, valid_to, dno_code) "
+            "VALUES (2, 2, 'Fusion Energy', '2000-01-01', null, null)"
+        )
     )
     sess.execute(
-        "UPDATE contract set start_rate_script_id = 2, "
-        "finish_rate_script_id = 2 where id = 2;"
+        text(
+            "INSERT INTO contract (name, charge_script, properties, "
+            "state, market_role_id, party_id, start_rate_script_id, "
+            "finish_rate_script_id) VALUES ('2020 Fusion', '{}', '{}', '{}', "
+            "2, 2, null, null)"
+        )
+    )
+    sess.execute(
+        text(
+            "INSERT INTO rate_script (contract_id, start_date, finish_date, "
+            "script) VALUES (2, '2000-01-03', null, '{}')"
+        )
+    )
+    sess.execute(
+        text(
+            "UPDATE contract set start_rate_script_id = 2, "
+            "finish_rate_script_id = 2 where id = 2;"
+        )
     )
     sess.commit()
 

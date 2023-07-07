@@ -4783,23 +4783,19 @@ def supply_months_get(supply_id):
             select(
                 cast(
                     func.max(
-                        case(
-                            [(Channel.channel_type == "ACTIVE", HhDatum.value)], else_=0
-                        )
+                        case((Channel.channel_type == "ACTIVE", HhDatum.value), else_=0)
                     ),
                     Float,
                 ).label("max_active"),
                 cast(
                     func.max(
                         case(
-                            [
-                                (
-                                    Channel.channel_type.in_(
-                                        ("REACTIVE_IMP", "REACTIVE_EXP")
-                                    ),
-                                    HhDatum.value,
-                                )
-                            ],
+                            (
+                                Channel.channel_type.in_(
+                                    ("REACTIVE_IMP", "REACTIVE_EXP")
+                                ),
+                                HhDatum.value,
+                            ),
                             else_=0,
                         )
                     ),

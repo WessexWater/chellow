@@ -4,6 +4,8 @@ from time import sleep
 
 from flask import g
 
+from sqlalchemy import text
+
 from utils import match
 
 import chellow.gas.bill_import
@@ -519,7 +521,7 @@ def test_bill_imports_post_full(mocker, app, client, sess):
 
     sess.rollback()
 
-    res = sess.execute("select breakdown from g_bill where id = 2")
+    res = sess.execute(text("select breakdown from g_bill where id = 2"))
 
     assert '"units_consumed": 771,' in next(res)[0]
 

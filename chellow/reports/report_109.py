@@ -7,7 +7,7 @@ from datetime import datetime as Datetime
 
 from flask import g
 
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from sqlalchemy.sql.expression import null
 
 import chellow.dloads
@@ -134,22 +134,24 @@ def content(contract_id, end_year, end_month, months, user):
 
                 results = iter(
                     sess.execute(
-                        "select supply.id, hh_datum.value, "
-                        "hh_datum.start_date, channel.imp_related, "
-                        "source.code, generator_type.code as "
-                        "gen_type_code from hh_datum, channel, source, "
-                        "era, supply left outer join generator_type on "
-                        "supply.generator_type_id = generator_type.id "
-                        "where hh_datum.channel_id = channel.id and "
-                        "channel.era_id = era.id and era.supply_id = "
-                        "supply.id and supply.source_id = source.id and "
-                        "channel.channel_type = 'ACTIVE' and not "
-                        "(source.code = 'net' and channel.imp_related "
-                        "is true) and hh_datum.start_date >= "
-                        ":month_start and hh_datum.start_date "
-                        "<= :month_finish and "
-                        "supply.id = any(:supply_ids) order "
-                        "by hh_datum.start_date, supply.id",
+                        text(
+                            "select supply.id, hh_datum.value, "
+                            "hh_datum.start_date, channel.imp_related, "
+                            "source.code, generator_type.code as "
+                            "gen_type_code from hh_datum, channel, source, "
+                            "era, supply left outer join generator_type on "
+                            "supply.generator_type_id = generator_type.id "
+                            "where hh_datum.channel_id = channel.id and "
+                            "channel.era_id = era.id and era.supply_id = "
+                            "supply.id and supply.source_id = source.id and "
+                            "channel.channel_type = 'ACTIVE' and not "
+                            "(source.code = 'net' and channel.imp_related "
+                            "is true) and hh_datum.start_date >= "
+                            ":month_start and hh_datum.start_date "
+                            "<= :month_finish and "
+                            "supply.id = any(:supply_ids) order "
+                            "by hh_datum.start_date, supply.id"
+                        ),
                         params={
                             "month_start": month_start,
                             "month_finish": month_finish,

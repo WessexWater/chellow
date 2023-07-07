@@ -160,7 +160,7 @@ def health():
 
 @home.route("/local_reports/<int:report_id>/output")
 def local_report_output_get(report_id):
-    report = g.sess.query(Report).get(report_id)
+    report = g.sess.execute(select(Report).where(Report.id == report_id)).scalar_one()
     try:
         ns = {"report_id": report_id, "template": report.template}
         code = compile(report.script, f"<string report {report_id}>", "exec")
@@ -240,10 +240,11 @@ def system_get():
             traces.append(f'File: "{filename}", line {lineno}, in {name}')
             if line:
                 traces.append(f"  {line.strip()}")
-    pg_stats = g.sess.execute("select * from pg_stat_activity").fetchall()
+    pg_stats = g.sess.execute(text("select * from pg_stat_activity")).fetchall()
 
     pg_indexes = g.sess.execute(
-        """
+        text(
+            """
         select
             t.relname as table_name,
             i.relname as index_name,
@@ -266,6 +267,7 @@ def system_get():
             t.relname,
             i.relname;
         """
+        )
     ).fetchall()
 
     version_number = chellow.__version__
@@ -2565,16 +2567,9 @@ def site_gen_graph_get(site_id):
         month_dict["y"] = graphs["third"]["height"] - 40
 
     title = {
-        "text": "Electricity at site "
-        + site.code
-        + " "
-        + site.name
-        + " for "
-        + str(months)
-        + " month"
-        + ("s" if months > 1 else "")
-        + " up to and including "
-        + (to_ct(finish_date) - HH).strftime("%B %Y"),
+        "text": f"Electricity at site {site.code} {site.name} for {months} "
+        f" month{'s' if months > 1 else ''} up to and including "
+        f"{(to_ct(finish_date) - HH).strftime('%B %Y')}",
         "x": 30,
         "y": 20,
     }

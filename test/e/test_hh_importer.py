@@ -151,7 +151,7 @@ def test_https_handler(mocker, sess):
         "Window start: 2020-12-14 00:00",
         "Window finish: 2020-12-21 23:30",
         "Looking at MPAN core 22 7867 6232 781.",
-        "Retrieving data from " "https://example.com/?from=14/12/2020&to=21/12/2020.",
+        "Retrieving data from https://example.com/?from=14/12/2020&to=21/12/2020.",
         "Finished loading.",
     ]
     assert log == expected_log

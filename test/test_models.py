@@ -4,6 +4,8 @@ import pytest
 
 import sqlalchemy.exc
 
+from sqlalchemy import text
+
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import (
@@ -709,8 +711,10 @@ def test_sql_insert_GExitZone(mocker, sess):
         match='null value in column "g_ldz_id" violates not-null ' "constraint",
     ):
         sess.execute(
-            "INSERT INTO g_exit_zone (id, code, g_ldz_id) VALUES "
-            "(DEFAULT, 'E1', null)"
+            text(
+                "INSERT INTO g_exit_zone (id, code, g_ldz_id) VALUES "
+                "(DEFAULT, 'E1', null)"
+            )
         )
 
 

@@ -776,6 +776,12 @@ def test_supplies_get_g(sess, client):
     match(response, 307, rf"/g/supplies/{g_supply.id}")
 
 
+def test_system(client):
+    response = client.get("/system")
+
+    match(response, 200)
+
+
 def test_general_import_post_full(sess, client):
     """General import of channel snag unignore and check the import that's
     been created.

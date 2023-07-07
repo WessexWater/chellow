@@ -8,6 +8,8 @@ import pytest
 
 from requests.auth import _basic_auth_str
 
+from sqlalchemy import text
+
 
 import chellow.models
 from chellow import create_app
@@ -73,31 +75,43 @@ def client(app, sess):
             User.insert(sess, "admin@example.com", "admin", user_role, None)
 
             sess.execute(
-                "INSERT INTO market_role (code, description) "
-                "VALUES ('Z', 'Non-core Role')"
+                text(
+                    "INSERT INTO market_role (code, description) "
+                    "VALUES ('Z', 'Non-core Role')"
+                )
             )
             sess.execute(
-                "INSERT INTO participant (code, name) " "VALUES ('NEUT', 'Neutral')"
+                text(
+                    "INSERT INTO participant (code, name) " "VALUES ('NEUT', 'Neutral')"
+                )
             )
             sess.execute(
-                "INSERT INTO party (market_role_id, participant_id, name, "
-                "valid_from, valid_to, dno_code) "
-                "VALUES (1, 1, 'Neutral Party', '2000-01-01', null, null)"
+                text(
+                    "INSERT INTO party (market_role_id, participant_id, name, "
+                    "valid_from, valid_to, dno_code) "
+                    "VALUES (1, 1, 'Neutral Party', '2000-01-01', null, null)"
+                )
             )
             sess.execute(
-                "INSERT INTO contract (name, charge_script, properties, "
-                "state, market_role_id, party_id, start_rate_script_id, "
-                "finish_rate_script_id) VALUES ('configuration', '{}', '{}', "
-                "'{}', 1, 1, null, null)"
+                text(
+                    "INSERT INTO contract (name, charge_script, properties, "
+                    "state, market_role_id, party_id, start_rate_script_id, "
+                    "finish_rate_script_id) VALUES ('configuration', '{}', '{}', "
+                    "'{}', 1, 1, null, null)"
+                )
             )
             sess.execute(
-                "INSERT INTO rate_script "
-                "(contract_id, start_date, finish_date, "
-                "script) VALUES (1, '2020-01-01', '2020-01-31', '{}')"
+                text(
+                    "INSERT INTO rate_script "
+                    "(contract_id, start_date, finish_date, "
+                    "script) VALUES (1, '2020-01-01', '2020-01-31', '{}')"
+                )
             )
             sess.execute(
-                "UPDATE contract set start_rate_script_id = 1, "
-                "finish_rate_script_id = 1 where id = 1;"
+                text(
+                    "UPDATE contract set start_rate_script_id = 1, "
+                    "finish_rate_script_id = 1 where id = 1;"
+                )
             )
             sess.commit()
 

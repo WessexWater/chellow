@@ -30,11 +30,11 @@ from sqlalchemy import (
     and_,
     create_engine,
     event,
-    inspect,
     not_,
     null,
     or_,
     select,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
@@ -777,9 +777,8 @@ class Bill(Base, PersistentClass):
         if kwh is None:
             raise Exception("kwh can't be null.")
 
-        with inspect(self).session.no_autoflush:
-            if self.batch.contract.market_role.code != "X" and kwh != Decimal("0"):
-                raise BadRequest("kWh can only be non-zero for a supplier bill.")
+        if self.batch.contract.market_role.code != "X" and kwh != Decimal("0"):
+            raise BadRequest("kWh can only be non-zero for a supplier bill.")
 
         self.kwh = kwh
 
@@ -952,21 +951,22 @@ class Batch(Base, PersistentClass):
         breakdown,
         supply,
     ):
-        bill = Bill(
-            self,
-            supply,
-            account,
-            reference,
-            issue_date,
-            start_date,
-            finish_date,
-            kwh,
-            net,
-            vat,
-            gross,
-            bill_type,
-            breakdown,
-        )
+        with sess.no_autoflush:
+            bill = Bill(
+                self,
+                supply,
+                account,
+                reference,
+                issue_date,
+                start_date,
+                finish_date,
+                kwh,
+                net,
+                vat,
+                gross,
+                bill_type,
+                breakdown,
+            )
 
         sess.add(bill)
         sess.flush()
@@ -2039,19 +2039,21 @@ class Site(Base, PersistentClass):
         )
         num_fit = len(
             sess.execute(
-                "select supply.id from supply, "
-                "era left join "
-                "(select site_era.era_id from site_era where "
-                "site_era.site_id = :site_id) as sera "
-                "on (era.id = sera.era_id) "
-                "where era.supply_id = supply.id and "
-                "era.start_date <= :finish_date and "
-                "(era.finish_date is null or era.finish_date >= :start_date) "
-                "group by supply.id having "
-                "bool_and(sera.era_id is not null) and "
-                "bool_or(era.start_date <= :start_date) and "
-                "bool_or(era.finish_date is null or "
-                "era.finish_date >= :finish_date)",
+                text(
+                    "select supply.id from supply, "
+                    "era left join "
+                    "(select site_era.era_id from site_era where "
+                    "site_era.site_id = :site_id) as sera "
+                    "on (era.id = sera.era_id) "
+                    "where era.supply_id = supply.id and "
+                    "era.start_date <= :finish_date and "
+                    "(era.finish_date is null or era.finish_date >= :start_date) "
+                    "group by supply.id having "
+                    "bool_and(sera.era_id is not null) and "
+                    "bool_or(era.start_date <= :start_date) and "
+                    "bool_or(era.finish_date is null or "
+                    "era.finish_date >= :finish_date)"
+                ),
                 {"site_id": new_site.id, "start_date": start, "finish_date": finish},
             ).fetchall()
         )
@@ -2257,12 +2259,12 @@ class RateScript(Base, PersistentClass):
     @staticmethod
     def get_by_role_code_id(sess, market_role_code, oid):
         try:
-            return (
-                sess.query(RateScript)
-                .join(Contract.rate_scripts, MarketRole)
-                .filter(RateScript.id == oid, MarketRole.code == market_role_code)
-                .one()
-            )
+            return sess.execute(
+                select(RateScript)
+                .join(Contract.rate_scripts)
+                .join(MarketRole)
+                .where(RateScript.id == oid, MarketRole.code == market_role_code)
+            ).scalar_one()
         except NoResultFound:
             raise NotFound(
                 f"There isn't a rate script with the id {oid} attached to a "
@@ -2273,12 +2275,12 @@ class RateScript(Base, PersistentClass):
     def get_dc_by_id(sess, oid):
         roles = ("C", "D")
         try:
-            return (
-                sess.query(RateScript)
-                .join(Contract.rate_scripts, MarketRole)
-                .filter(RateScript.id == oid, MarketRole.code.in_(roles))
-                .one()
-            )
+            return sess.execute(
+                select(RateScript)
+                .join(Contract.rate_scripts)
+                .join(MarketRole)
+                .where(RateScript.id == oid, MarketRole.code.in_(roles))
+            ).scalar_one()
         except NoResultFound:
             raise NotFound(
                 f"There isn't a rate script with the id {oid} attached to a contract "
@@ -3533,213 +3535,200 @@ class Era(Base, PersistentClass):
         voltage_level = None
         self.cop = cop
         self.comm = comm
-        with sess.no_autoflush:
-            mtc = Mtc.get_by_code(sess, mtc_code, start_date)
-            self.mtc_participant = MtcParticipant.get_by_values(
-                sess, mtc, self.supply.dno.participant, start_date
+
+        mtc = Mtc.get_by_code(sess, mtc_code, start_date)
+        self.mtc_participant = MtcParticipant.get_by_values(
+            sess, mtc, self.supply.dno.participant, start_date
+        )
+
+        self.start_date = start_date
+        self.finish_date = finish_date
+        self.mop_account = mop_account
+        self.mop_contract = mop_contract
+        self.dc_account = dc_account
+        self.dc_contract = dc_contract
+
+        for polarity in ["imp", "exp"]:
+            mcore_str = locs[polarity + "_mpan_core"]
+            if mcore_str is None:
+                for suf in [
+                    "mpan_core",
+                    "llfc",
+                    "supplier_contract",
+                    "supplier_account",
+                    "sc",
+                ]:
+                    setattr(self, polarity + "_" + suf, None)
+                continue
+
+            mcore = parse_mpan_core(mcore_str)
+
+            if mcore[:2] != self.supply.dno.dno_code:
+                raise BadRequest(
+                    f"The DNO code of the MPAN core {mcore} doesn't match the DNO "
+                    f"code of the supply."
+                )
+
+            setattr(self, polarity + "_mpan_core", mcore)
+
+            supplier_contract = locs[polarity + "_supplier_contract"]
+            if supplier_contract is None:
+                raise BadRequest(
+                    f"There's an {polarity} MPAN core, but no {polarity} supplier "
+                    f"contract."
+                )
+            if supplier_contract.start_date() > start_date:
+                raise BadRequest(
+                    f"For the era {self.id} the {polarity} supplier contract "
+                    f"{supplier_contract.id} starts at "
+                    f"{hh_format(supplier_contract.start_date())} which is after "
+                    f"the start of the era at {hh_format(start_date)}."
+                )
+
+            if hh_before(supplier_contract.finish_date(), finish_date):
+                raise BadRequest("The supplier contract finishes before the era.")
+            supplier_account = locs[polarity + "_supplier_account"]
+            setattr(self, f"{polarity}_supplier_contract", supplier_contract)
+            setattr(self, f"{polarity}_supplier_account", supplier_account)
+
+            llfc_code = locs[f"{polarity}_llfc_code"]
+            llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
+            if finish_date is not None and hh_before(llfc.valid_to, finish_date):
+                raise BadRequest(
+                    f"The {polarity} line loss factor {llfc_code} is only valid "
+                    f"until {hh_format(llfc.valid_to)} but the era ends at "
+                    f"{hh_format(finish_date)}."
+                )
+
+            if llfc.is_import != ("imp" == polarity):
+                raise BadRequest(
+                    f"The {polarity} line loss factor {llfc.code} is actually "
+                    "an " + ("imp" if llfc.is_import else "exp") + " one."
+                )
+            vl = llfc.voltage_level
+            if voltage_level is None:
+                voltage_level = vl
+            elif voltage_level != vl:
+                raise BadRequest(
+                    "The voltage level indicated by the Line Loss Factor "
+                    "must be the same for both the MPANs."
+                )
+            setattr(self, polarity + "_llfc", llfc)
+            sc = locs[polarity + "_sc"]
+            if sc is None:
+                raise BadRequest(
+                    f"There's an {polarity} MPAN core, but no {polarity} Supply "
+                    f"Capacity."
+                )
+
+            setattr(self, polarity + "_sc", sc)
+
+            if self.supply.dno.dno_code not in ("99", "88"):
+                if pc.code == "00":
+                    mtc_llfc = MtcLlfc.get_by_values(
+                        sess, self.mtc_participant, llfc, start_date
+                    )
+                    if finish_date is not None and hh_before(
+                        mtc_llfc.valid_to, finish_date
+                    ):
+                        raise BadRequest(
+                            f"The {polarity} combination of MTC "
+                            f"{self.mtc_participant.mtc.code} LLFC {llfc.code} is "
+                            f"only valid until {hh_format(mtc_llfc.valid_to)} but "
+                            f"the era ends at {hh_format(finish_date)}."
+                        )
+                else:
+                    mtc_ssc = MtcSsc.get_by_values(
+                        sess, self.mtc_participant, self.ssc, start_date
+                    )
+                    mtc_llfc_ssc = MtcLlfcSsc.get_by_values(
+                        sess, mtc_ssc, llfc, start_date
+                    )
+                    combo = MtcLlfcSscPc.get_by_values(
+                        sess, mtc_llfc_ssc, pc, start_date
+                    )
+                    if finish_date is not None and hh_before(
+                        combo.valid_to, finish_date
+                    ):
+                        raise BadRequest(
+                            f"The {polarity} combination of MTC "
+                            f"{self.mtc_participant.mtc.code} LLFC {llfc.code} SSC "
+                            f"{ssc.code} PC {pc.code} is only valid until "
+                            f"{hh_format(combo.valid_to)} but the era ends at "
+                            f"{hh_format(finish_date)}."
+                        )
+
+        if (
+            self.mtc_participant.meter_type.code == "C5"
+            and cop.code not in ["1", "2", "3", "4", "5"]
+            or self.mtc_participant.meter_type.code in ["6A", "6B", "6C", "6D"]
+            and cop.code.upper() != self.mtc_participant.meter_type.code
+        ):
+            raise BadRequest(
+                f"The CoP of {cop.code} is not compatible with the meter type code "
+                f"of {self.mtc_participant.meter_type.code}."
             )
 
-            self.start_date = start_date
-            self.finish_date = finish_date
-            self.mop_account = mop_account
-            self.mop_contract = mop_contract
-            self.dc_account = dc_account
-            self.dc_contract = dc_contract
+        if dc_contract.start_date() > start_date:
+            raise BadRequest("The DC contract starts after the era.")
 
-            for polarity in ["imp", "exp"]:
-                mcore_str = locs[polarity + "_mpan_core"]
-                if mcore_str is None:
-                    for suf in [
-                        "mpan_core",
-                        "llfc",
-                        "supplier_contract",
-                        "supplier_account",
-                        "sc",
-                    ]:
-                        setattr(self, polarity + "_" + suf, None)
-                    continue
+        if hh_before(dc_contract.finish_date(), finish_date):
+            raise BadRequest(
+                f"The DC contract {dc_contract.id} finishes before the era."
+            )
 
-                mcore = parse_mpan_core(mcore_str)
+        if mop_contract.start_date() > start_date:
+            raise BadRequest("The MOP contract starts after the supply era.")
 
-                if mcore[:2] != self.supply.dno.dno_code:
-                    raise BadRequest(
-                        f"The DNO code of the MPAN core {mcore} doesn't match the DNO "
-                        f"code of the supply."
-                    )
+        if hh_before(mop_contract.finish_date(), finish_date):
+            raise BadRequest(
+                f"The MOP contract {mop_contract.id} finishes before the era."
+            )
 
-                setattr(self, polarity + "_mpan_core", mcore)
+        prev_era = self.supply.find_era_at(sess, prev_hh(orig_start_date))
+        next_era = self.supply.find_era_at(sess, next_hh(orig_finish_date))
 
-                supplier_contract = locs[polarity + "_supplier_contract"]
-                if supplier_contract is None:
-                    raise BadRequest(
-                        f"There's an {polarity} MPAN core, but no {polarity} supplier "
-                        f"contract."
-                    )
-                if supplier_contract.start_date() > start_date:
-                    raise BadRequest(
-                        f"For the era {self.id} the {polarity} supplier contract "
-                        f"{supplier_contract.id} starts at "
-                        f"{hh_format(supplier_contract.start_date())} which is after "
-                        f"the start of the era at {hh_format(start_date)}."
-                    )
-
-                if hh_before(supplier_contract.finish_date(), finish_date):
-                    raise BadRequest("The supplier contract finishes before the era.")
-                supplier_account = locs[polarity + "_supplier_account"]
-                setattr(self, f"{polarity}_supplier_contract", supplier_contract)
-                setattr(self, f"{polarity}_supplier_account", supplier_account)
-
-                llfc_code = locs[f"{polarity}_llfc_code"]
-                llfc = self.supply.dno.get_llfc_by_code(sess, llfc_code, start_date)
-                if finish_date is not None and hh_before(llfc.valid_to, finish_date):
-                    raise BadRequest(
-                        f"The {polarity} line loss factor {llfc_code} is only valid "
-                        f"until {hh_format(llfc.valid_to)} but the era ends at "
-                        f"{hh_format(finish_date)}."
-                    )
-
-                if llfc.is_import != ("imp" == polarity):
-                    raise BadRequest(
-                        f"The {polarity} line loss factor {llfc.code} is actually "
-                        "an " + ("imp" if llfc.is_import else "exp") + " one."
-                    )
-                vl = llfc.voltage_level
-                if voltage_level is None:
-                    voltage_level = vl
-                elif voltage_level != vl:
-                    raise BadRequest(
-                        "The voltage level indicated by the Line Loss Factor "
-                        "must be the same for both the MPANs."
-                    )
-                setattr(self, polarity + "_llfc", llfc)
-                sc = locs[polarity + "_sc"]
-                if sc is None:
-                    raise BadRequest(
-                        f"There's an {polarity} MPAN core, but no {polarity} Supply "
-                        f"Capacity."
-                    )
-
-                setattr(self, polarity + "_sc", sc)
-
-                if self.supply.dno.dno_code not in ("99", "88"):
-                    if pc.code == "00":
-                        mtc_llfc = MtcLlfc.get_by_values(
-                            sess, self.mtc_participant, llfc, start_date
-                        )
-                        if finish_date is not None and hh_before(
-                            mtc_llfc.valid_to, finish_date
-                        ):
-                            raise BadRequest(
-                                f"The {polarity} combination of MTC "
-                                f"{self.mtc_participant.mtc.code} LLFC {llfc.code} is "
-                                f"only valid until {hh_format(mtc_llfc.valid_to)} but "
-                                f"the era ends at {hh_format(finish_date)}."
-                            )
-                    else:
-                        mtc_ssc = MtcSsc.get_by_values(
-                            sess, self.mtc_participant, self.ssc, start_date
-                        )
-                        mtc_llfc_ssc = MtcLlfcSsc.get_by_values(
-                            sess, mtc_ssc, llfc, start_date
-                        )
-                        combo = MtcLlfcSscPc.get_by_values(
-                            sess, mtc_llfc_ssc, pc, start_date
-                        )
-                        if finish_date is not None and hh_before(
-                            combo.valid_to, finish_date
-                        ):
-                            raise BadRequest(
-                                f"The {polarity} combination of MTC "
-                                f"{self.mtc_participant.mtc.code} LLFC {llfc.code} SSC "
-                                f"{ssc.code} PC {pc.code} is only valid until "
-                                f"{hh_format(combo.valid_to)} but the era ends at "
-                                f"{hh_format(finish_date)}."
-                            )
-
-            if (
-                self.mtc_participant.meter_type.code == "C5"
-                and cop.code not in ["1", "2", "3", "4", "5"]
-                or self.mtc_participant.meter_type.code in ["6A", "6B", "6C", "6D"]
-                and cop.code.upper() != self.mtc_participant.meter_type.code
-            ):
-                raise BadRequest(
-                    f"The CoP of {cop.code} is not compatible with the meter type code "
-                    f"of {self.mtc_participant.meter_type.code}."
-                )
-
-            if dc_contract.start_date() > start_date:
-                raise BadRequest("The DC contract starts after the era.")
-
-            if hh_before(dc_contract.finish_date(), finish_date):
-                raise BadRequest(
-                    f"The DC contract {dc_contract.id} finishes before the era."
-                )
-
-            if mop_contract.start_date() > start_date:
-                raise BadRequest("The MOP contract starts after the supply era.")
-
-            if hh_before(mop_contract.finish_date(), finish_date):
-                raise BadRequest(
-                    f"The MOP contract {mop_contract.id} finishes before the era."
-                )
-
-            try:
-                sess.flush()
-            except ProgrammingError as e:
+        if prev_era is not None:
+            is_overlap = False
+            if imp_mpan_core is not None:
+                prev_imp_mpan_core = prev_era.imp_mpan_core
                 if (
-                    'null value in column "start_date" violates not-null constraint'
-                    in str(e)
+                    prev_imp_mpan_core is not None
+                    and imp_mpan_core == prev_imp_mpan_core
                 ):
-                    raise BadRequest("The start date cannot be blank.")
-                else:
-                    raise e
+                    is_overlap = True
+            if not is_overlap and exp_mpan_core is not None:
+                prev_exp_mpan_core = prev_era.exp_mpan_core
+                if (
+                    prev_exp_mpan_core is not None
+                    and exp_mpan_core == prev_exp_mpan_core
+                ):
+                    is_overlap = True
+            if not is_overlap:
+                raise BadRequest(
+                    "MPAN cores can't change without an overlapping period."
+                )
 
-            prev_era = self.supply.find_era_at(sess, prev_hh(orig_start_date))
-            next_era = self.supply.find_era_at(sess, next_hh(orig_finish_date))
-
-            if prev_era is not None:
-                is_overlap = False
-                if imp_mpan_core is not None:
-                    prev_imp_mpan_core = prev_era.imp_mpan_core
-                    if (
-                        prev_imp_mpan_core is not None
-                        and imp_mpan_core == prev_imp_mpan_core
-                    ):
-                        is_overlap = True
-                if not is_overlap and exp_mpan_core is not None:
-                    prev_exp_mpan_core = prev_era.exp_mpan_core
-                    if (
-                        prev_exp_mpan_core is not None
-                        and exp_mpan_core == prev_exp_mpan_core
-                    ):
-                        is_overlap = True
-                if not is_overlap:
-                    raise BadRequest(
-                        "MPAN cores can't change without an overlapping period."
-                    )
-
-            if next_era is not None:
-                is_overlap = False
-                if imp_mpan_core is not None:
-                    next_imp_mpan_core = next_era.imp_mpan_core
-                    if (
-                        next_imp_mpan_core is not None
-                        and imp_mpan_core == next_imp_mpan_core
-                    ):
-                        is_overlap = True
-                if not is_overlap and exp_mpan_core is not None:
-                    next_exp_mpan_core = next_era.exp_mpan_core
-                    if (
-                        next_exp_mpan_core is not None
-                        and exp_mpan_core == next_exp_mpan_core
-                    ):
-                        is_overlap = True
-                if not is_overlap:
-                    raise BadRequest(
-                        "MPAN cores can't change without an overlapping period."
-                    )
-
-        sess.flush()
+        if next_era is not None:
+            is_overlap = False
+            if imp_mpan_core is not None:
+                next_imp_mpan_core = next_era.imp_mpan_core
+                if (
+                    next_imp_mpan_core is not None
+                    and imp_mpan_core == next_imp_mpan_core
+                ):
+                    is_overlap = True
+            if not is_overlap and exp_mpan_core is not None:
+                next_exp_mpan_core = next_era.exp_mpan_core
+                if (
+                    next_exp_mpan_core is not None
+                    and exp_mpan_core == next_exp_mpan_core
+                ):
+                    is_overlap = True
+            if not is_overlap:
+                raise BadRequest(
+                    "MPAN cores can't change without an overlapping period."
+                )
 
     def insert_channel(self, sess, imp_related, channel_type):
         channel = Channel(self, imp_related, channel_type)
@@ -3935,10 +3924,12 @@ class Channel(Base, PersistentClass):
 
         for b in insert_blocks:
             sess.execute(
-                "INSERT INTO hh_datum (channel_id, start_date, value, "
-                "status, last_modified) VALUES "
-                "(:channel_id, :start_date, :value, :status, "
-                "current_timestamp)",
+                text(
+                    "INSERT INTO hh_datum (channel_id, start_date, value, "
+                    "status, last_modified) VALUES "
+                    "(:channel_id, :start_date, :value, :status, "
+                    "current_timestamp)"
+                ),
                 params=b,
             )
             sess.flush()
@@ -3952,10 +3943,12 @@ class Channel(Base, PersistentClass):
             finish_date = block[-1]["start_date"]
             for dw in block:
                 sess.execute(
-                    "update hh_datum set value = :value, status = :status, "
-                    "last_modified = current_timestamp "
-                    "where channel_id = :channel_id and "
-                    "start_date = :start_date",
+                    text(
+                        "update hh_datum set value = :value, status = :status, "
+                        "last_modified = current_timestamp "
+                        "where channel_id = :channel_id and "
+                        "start_date = :start_date"
+                    ),
                     params={
                         "value": dw["value"],
                         "status": dw["status"],
@@ -4371,6 +4364,7 @@ class Supply(Base, PersistentClass):
 
         if next_era is not None:
             next_era.update_dates(sess, next_hh(finish_date), next_era.finish_date)
+        sess.flush()
 
     def insert_era_at(self, sess, start_date):
         if len(self.eras) == 0:
@@ -4513,34 +4507,35 @@ class Supply(Base, PersistentClass):
                     )
 
         sess.flush()
-        era = Era(
-            sess,
-            self,
-            start_date,
-            finish_date,
-            mop_contract,
-            mop_account,
-            dc_contract,
-            dc_account,
-            msn,
-            pc,
-            mtc,
-            cop,
-            comm,
-            ssc,
-            energisation_status,
-            properties,
-            imp_mpan_core,
-            imp_llfc_code,
-            imp_supplier_contract,
-            imp_supplier_account,
-            imp_sc,
-            exp_mpan_core,
-            exp_llfc_code,
-            exp_supplier_contract,
-            exp_supplier_account,
-            exp_sc,
-        )
+        with sess.no_autoflush:
+            era = Era(
+                sess,
+                self,
+                start_date,
+                finish_date,
+                mop_contract,
+                mop_account,
+                dc_contract,
+                dc_account,
+                msn,
+                pc,
+                mtc,
+                cop,
+                comm,
+                ssc,
+                energisation_status,
+                properties,
+                imp_mpan_core,
+                imp_llfc_code,
+                imp_supplier_contract,
+                imp_supplier_account,
+                imp_sc,
+                exp_mpan_core,
+                exp_llfc_code,
+                exp_supplier_contract,
+                exp_supplier_account,
+                exp_sc,
+            )
         sess.add(era)
         sess.flush()
 
@@ -4782,44 +4777,40 @@ class SiteGroup:
         }
         data = []
 
-        if len(self.supplies) == 0:
-            channels = []
-        else:
-            channels = (
-                sess.query(Channel)
-                .join(Era, Supply, Source)
-                .filter(
-                    Era.supply_id.in_([sup.id for sup in self.supplies]),
-                    Era.start_date <= self.finish_date,
-                    or_(Era.finish_date == null(), Era.finish_date >= self.start_date),
-                    Source.code != "sub",
-                    Channel.channel_type == "ACTIVE",
-                )
-                .all()
+        channels = sess.scalars(
+            select(Channel)
+            .join(Era)
+            .join(Supply)
+            .join(Source)
+            .where(
+                Era.supply_id.in_([sup.id for sup in self.supplies]),
+                Era.start_date <= self.finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= self.start_date),
+                Source.code != "sub",
+                Channel.channel_type == "ACTIVE",
             )
-
+        ).all()
         channel_keys = dict(
             (c.id, keys[c.era.supply.source.code][c.imp_related]) for c in channels
         )
 
-        if len(channels) == 0:
-            hh = None
-        else:
-            db_data = iter(
-                sess.execute(
+        db_data = iter(
+            sess.execute(
+                text(
                     "select start_date, value, channel_id from hh_datum "
                     "where channel_id = any(:channel_ids) "
                     "and start_date >= :start_date "
-                    "and start_date <= :finish_date order by start_date",
-                    {
-                        "channel_ids": [c.id for c in channels],
-                        "start_date": self.start_date,
-                        "finish_date": self.finish_date,
-                    },
-                )
+                    "and start_date <= :finish_date order by start_date"
+                ),
+                {
+                    "channel_ids": [c.id for c in channels],
+                    "start_date": self.start_date,
+                    "finish_date": self.finish_date,
+                },
             )
+        )
 
-            hh = next(db_data, None)
+        hh = next(db_data, None)
 
         for hh_start in hh_range(caches, self.start_date, self.finish_date):
             dd = {
@@ -4853,9 +4844,6 @@ class SiteGroup:
         )
 
     def hh_check(self, sess):
-        if len(self.supplies) == 1:
-            return
-
         resolve_1_start = resolve_1_finish = None
         snag_1_start = snag_1_finish = None
         resolve_2_start = resolve_2_finish = None
@@ -6732,14 +6720,16 @@ def db_init(sess, root_path):
     ):
         GContract.insert_industry(sess, name, "", props, last_month_start, None, rs)
 
-    sess.execute(f"alter database {db_name} set default_transaction_deferrable = on")
-    sess.execute(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'")
+    sess.execute(
+        text(f"alter database {db_name} set default_transaction_deferrable = on")
+    )
+    sess.execute(text(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'"))
     sess.commit()
     sess.close()
     engine.dispose()
 
     # Check the transaction isolation level is serializable
-    isolation_level = sess.execute("show transaction isolation level").scalar()
+    isolation_level = sess.execute(text("show transaction isolation level")).scalar()
     if isolation_level != "serializable":
         raise Exception(
             f"The transaction isolation level for database {db_name} should be "
@@ -7038,14 +7028,6 @@ def db_upgrade_34_to_35(sess, root_path):
             .where(Mtc.code == old_mtc_code, Mtc.valid_from <= old_mtc_valid_from)
             .order_by(Mtc.valid_from.desc())
         ).scalar()
-        print(
-            "supply.dno.participant",
-            supply.dno.participant.code,
-            "mtc",
-            mtc.code,
-            "valid_from",
-            old_mtc_valid_from,
-        )
         mtc_participant = sess.execute(
             select(MtcParticipant)
             .where(

@@ -8,7 +8,7 @@ from types import MappingProxyType
 
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import Float, cast, or_, select
+from sqlalchemy import Float, cast, or_, select, text
 from sqlalchemy.orm import aliased, joinedload
 from sqlalchemy.sql.expression import false, null
 
@@ -1730,7 +1730,8 @@ def _init_hh_data(sess, caches, hist_era, chunk_start, chunk_finish, is_import):
         full_channels = False
         data = iter(
             sess.execute(
-                """
+                text(
+                    """
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
 sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
 max(kwh.status),
@@ -1757,7 +1758,8 @@ where channel.era_id = :era_id and hh_datum.start_date >= :start_date
 and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
-""",
+"""
+                ),
                 params={
                     "era_id": hist_era.id,
                     "start_date": chunk_start,
@@ -1795,7 +1797,8 @@ order by hh_datum.start_date
         # new style
         data = iter(
             sess.execute(
-                """
+                text(
+                    """
 select hh_datum.start_date,
 max(kwh.status),
 sum(cast(coalesce(kwh.value, 0) as double precision)),
@@ -1818,7 +1821,8 @@ where channel.era_id = :era_id and hh_datum.start_date >= :start_date
 and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
-""",
+"""
+                ),
                 params={
                     "era_id": hist_era.id,
                     "start_date": chunk_start,

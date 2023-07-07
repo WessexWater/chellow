@@ -8,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import g, request
 
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import func, null
 
@@ -319,7 +319,8 @@ def _process(sess, f, date, supply_id, mpan_cores):
             month_mds = tuple(
                 md[0] * 2
                 for md in sess.execute(
-                    """
+                    text(
+                        """
 
 select max(hh_datum.value) as md
 from hh_datum join channel on (hh_datum.channel_id = channel.id)
@@ -332,7 +333,8 @@ group by extract(month from (hh_datum.start_date at time zone 'utc'))
 order by md desc
 limit 3
 
-""",
+"""
+                    ),
                     params=params,
                 )
             )
