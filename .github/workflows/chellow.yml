@@ -40,6 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.9
     needs: test
+    permissions:
+      id-token: write
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
@@ -53,13 +55,13 @@ jobs:
           python -m build 
       - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.pypi_password }}
 
   deploy_test:
     runs-on: ubuntu-latest
     container: python:3.9
     needs: test
+    permissions:
+      id-token: write
     if: github.ref == 'refs/heads/test'
     steps:
       - uses: actions/checkout@v3
@@ -74,5 +76,4 @@ jobs:
       - name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.test_pypi_password }}
           repository-url: https://test.pypi.org/legacy/
