@@ -67,6 +67,8 @@ from chellow.utils import (
     hh_after,
     hh_before,
     hh_format,
+    hh_max,
+    hh_min,
     hh_range,
     next_hh,
     parse_mpan_core,
@@ -4759,6 +4761,7 @@ class Report(Base, PersistentClass):
 class SiteGroup:
     EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators."
     EXPORT_GEN_GT_IMPORT = "Export to generators > import."
+    EXPORT_3P_GT_IMPORT = "Export to 3rd party > import."
 
     def __init__(self, start_date, finish_date, sites, supplies):
         self.start_date = start_date
@@ -4775,9 +4778,22 @@ class SiteGroup:
             "3rd-party": {True: ["imp_3p"], False: ["exp_3p"]},
             "3rd-party-reverse": {True: ["exp_3p"], False: ["imp_3p"]},
         }
-        data = []
 
-        channels = sess.scalars(
+        data = {
+            hh_start: {
+                "start_date": hh_start,
+                "status": "A",
+                "imp_net": 0,
+                "exp_net": 0,
+                "imp_gen": 0,
+                "exp_gen": 0,
+                "imp_3p": 0,
+                "exp_3p": 0,
+            }
+            for hh_start in hh_range(caches, self.start_date, self.finish_date)
+        }
+
+        for channel in sess.scalars(
             select(Channel)
             .join(Era)
             .join(Supply)
@@ -4789,49 +4805,48 @@ class SiteGroup:
                 Source.code != "sub",
                 Channel.channel_type == "ACTIVE",
             )
-        ).all()
-        channel_keys = dict(
-            (c.id, keys[c.era.supply.source.code][c.imp_related]) for c in channels
-        )
+        ):
+            channel_keys = keys[channel.era.supply.source.code][channel.imp_related]
 
-        db_data = iter(
-            sess.execute(
-                text(
-                    "select start_date, value, channel_id from hh_datum "
-                    "where channel_id = any(:channel_ids) "
-                    "and start_date >= :start_date "
-                    "and start_date <= :finish_date order by start_date"
-                ),
-                {
-                    "channel_ids": [c.id for c in channels],
-                    "start_date": self.start_date,
-                    "finish_date": self.finish_date,
-                },
+            chunk_start = hh_max(self.start_date, channel.era.start_date)
+            chunk_finish = hh_min(self.finish_date, channel.era.finish_date)
+
+            db_data = iter(
+                sess.execute(
+                    text(
+                        "select start_date, value, channel_id, status from hh_datum "
+                        "where channel_id = :channel_id "
+                        "and start_date >= :start_date "
+                        "and start_date <= :finish_date order by start_date"
+                    ),
+                    {
+                        "channel_id": channel.id,
+                        "start_date": chunk_start,
+                        "finish_date": chunk_finish,
+                    },
+                )
             )
-        )
 
-        hh = next(db_data, None)
+            hh = next(db_data, None)
 
-        for hh_start in hh_range(caches, self.start_date, self.finish_date):
-            dd = {
-                "start_date": hh_start,
-                "imp_net": 0,
-                "exp_net": 0,
-                "imp_gen": 0,
-                "exp_gen": 0,
-                "imp_3p": 0,
-                "exp_3p": 0,
-            }
-            data.append(dd)
-            while hh is not None and hh.start_date == hh_start:
-                for key in channel_keys[hh.channel_id]:
-                    dd[key] += hh.value
-                hh = next(db_data, None)
+            for hh_start in hh_range(caches, chunk_start, chunk_finish):
+                dd = data[hh_start]
+                if hh is not None and hh.start_date == hh_start:
+                    if dd["status"] == "A" and hh.status != "A":
+                        dd["status"] = "E"
+                    for key in channel_keys:
+                        dd[key] += hh.value
+                    hh = next(db_data, None)
+                else:
+                    if dd["status"] == "A":
+                        dd["status"] = "E"
 
-            dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_net"]
-            dd["used"] = dd["displaced"] + dd["imp_net"] + dd["imp_3p"] - dd["exp_3p"]
+                dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_net"]
+                dd["used"] = (
+                    dd["displaced"] + dd["imp_net"] + dd["imp_3p"] - dd["exp_3p"]
+                )
 
-        return data
+        return data.values()
 
     def add_snag(self, sess, description, start_date, finish_date):
         return Snag.add_snag(
@@ -4848,11 +4863,13 @@ class SiteGroup:
         snag_1_start = snag_1_finish = None
         resolve_2_start = resolve_2_finish = None
         snag_2_start = snag_2_finish = None
+        resolve_3_start = resolve_3_finish = None
+        snag_3_start = snag_3_finish = None
 
         for hh in self.hh_data(sess):
             hh_start_date = hh["start_date"]
 
-            if hh["exp_net"] > hh["imp_gen"]:
+            if hh["exp_net"] > hh["imp_gen"] and hh["status"] == "A":
                 if snag_1_start is None:
                     snag_1_start = hh_start_date
 
@@ -4881,7 +4898,7 @@ class SiteGroup:
                     )
                     snag_1_start = None
 
-            if hh["exp_gen"] > hh["imp_net"] + hh["imp_gen"]:
+            if hh["exp_gen"] > hh["imp_net"] + hh["imp_gen"] and hh["status"] == "A":
                 if snag_2_start is None:
                     snag_2_start = hh_start_date
 
@@ -4910,6 +4927,38 @@ class SiteGroup:
                     )
                     snag_2_start = None
 
+            if (
+                hh["exp_3p"] > hh["imp_net"] + hh["imp_gen"] + hh["imp_3p"]
+                and hh["status"] == "A"
+            ):
+                if snag_3_start is None:
+                    snag_3_start = hh_start_date
+
+                snag_3_finish = hh_start_date
+
+                if resolve_3_start is not None:
+                    self.delete_snag(
+                        sess,
+                        SiteGroup.EXPORT_3P_GT_IMPORT,
+                        resolve_3_start,
+                        resolve_3_finish,
+                    )
+                    resolve_3_start = None
+            else:
+                if resolve_3_start is None:
+                    resolve_3_start = hh_start_date
+
+                resolve_3_finish = hh_start_date
+
+                if snag_3_start is not None:
+                    self.add_snag(
+                        sess,
+                        SiteGroup.EXPORT_3P_GT_IMPORT,
+                        snag_3_start,
+                        snag_3_finish,
+                    )
+                    snag_3_start = None
+
         if snag_1_start is not None:
             self.add_snag(
                 sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag_1_start, snag_1_finish
@@ -4931,6 +4980,16 @@ class SiteGroup:
         if resolve_2_start is not None:
             self.delete_snag(
                 sess, SiteGroup.EXPORT_GEN_GT_IMPORT, resolve_2_start, resolve_2_finish
+            )
+
+        if snag_3_start is not None:
+            self.add_snag(
+                sess, SiteGroup.EXPORT_3P_GT_IMPORT, snag_3_start, snag_3_finish
+            )
+
+        if resolve_3_start is not None:
+            self.delete_snag(
+                sess, SiteGroup.EXPORT_3P_GT_IMPORT, resolve_3_start, resolve_3_finish
             )
 
 

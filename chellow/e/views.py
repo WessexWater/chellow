@@ -3528,9 +3528,9 @@ def site_snag_edit_post(snag_id):
 @e.route("/sites/<int:site_id>/site_snags")
 def site_site_snags_get(site_id):
     site = Site.get_by_id(g.sess, site_id)
-    snags = (
-        g.sess.query(Snag)
-        .filter(Snag.is_ignored == false(), Snag.site == site)
+    snags = g.sess.scalars(
+        select(Snag)
+        .where(Snag.is_ignored == false(), Snag.site == site)
         .order_by(Snag.start_date.desc(), Snag.id)
     )
     return render_template("site_site_snags.html", site=site, snags=snags)

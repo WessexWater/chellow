@@ -42,8 +42,8 @@
 
 		<form method="post" action="/e/channels/{{channel.id}}/edit">
 			<fieldset>
-				<label>Insert HH datum</label>	
-				<label>Start Date </label> {{input_date('start', None, 'minute')}}
+				<legend>Insert HH datum</legend>
+				<label>Start Date</label> {{input_date('start', None, 'minute')}}
 				<label>Value</label> {{input_text('value', '')}}
 				<label>Status </label>
 				<select name="status">

@@ -20,32 +20,35 @@
 		There are {{snags|length}} snag(s), over {{site_count}} site(s)
 	</p>
 
-	<table>
+	<table class="sticky">
 		<caption>Site Snags</caption>	
 		<thead>
 			<tr>
-				<th></th>
+				<th>View</th>
+				<th>Edit</th>
 				<th>Creation Date</th>
-				<th>Site ID</th>
+				<th>Site Code</th>
 				<th>Site Name</th>
 				<th>Snag Description</th>
 				<th>Start Date</th>
 				<th>Finish Date</th>
+				<th>HH Data</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for snag in snags %}
 				<tr>
-					<td>
-						<a href="/e/site_snags/{{snag.id}}">view</a>
-						[<a href="/e/site_snags/{{snag.id}}/edit">edit</a>]
-					</td>
+					<td><a href="/e/site_snags/{{snag.id}}">View</a></td>
+					<td><a href="/e/site_snags/{{snag.id}}/edit">Edit</a></td>
 					<td>{{snag.date_created|hh_format}}</td>
-					<td><a href="/e/sites/{{snag.site.id}}">{{snag.site.code}}</a></td>
+					<td><a href="/sites/{{snag.site.id}}">{{snag.site.code}}</a></td>
 					<td>{{snag.site.name}}</td>
 					<td>{{snag.description}}</td>
 					<td>{{snag.start_date|hh_format}}</td>
 					<td>{{snag.finish_date|hh_format}}</td>
+					<td>
+						<a href="/sites/{{snag.site.id}}/hh_data?year={{snag.start_date.year}}&amp;month={{snag.start_date.month}}#:~:text={{snag.start_date|hh_format|urlencode}}">HH Data</a>
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>
