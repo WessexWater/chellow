@@ -2379,6 +2379,129 @@ def test_supplier_batch_file_edit_get(sess, client):
     match(response, 200)
 
 
+def test_supplier_bill_add_post(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    sess.commit()
+
+    data = {
+        "mpan_core": "22 7867 6232 781",
+        "account": "hrghj88",
+        "reference": "74hjkgjk",
+        "issue_year": "2020",
+        "issue_month": "02",
+        "issue_day": "10",
+        "issue_hour": "00",
+        "issue_minute": "00",
+        "start_year": "2020",
+        "start_month": "02",
+        "start_day": "02",
+        "start_hour": "00",
+        "start_minute": "00",
+        "finish_year": "2020",
+        "finish_month": "03",
+        "finish_day": "01",
+        "finish_hour": "00",
+        "finish_minute": "00",
+        "kwh": "0",
+        "net": "0.0",
+        "vat": "0.0",
+        "gross": "0.0",
+        "bill_type_id": bill_type_N.id,
+        "breakdown": "",
+    }
+    response = client.post(f"/e/supplier_batches/{batch.id}/add_bill", data=data)
+    match(
+        response,
+        400,
+        "<li>Problem parsing the field breakdown as Zish: No Zish value found.</li>",
+    )
+
+
 def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")

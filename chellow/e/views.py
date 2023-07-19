@@ -4192,8 +4192,7 @@ def supplier_bill_add_post(batch_id):
         gross = req_decimal("gross")
         bill_type_id = req_int("bill_type_id")
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
-        breakdown_str = req_str("breakdown")
-        breakdown = loads(breakdown_str)
+        breakdown = req_zish("breakdown")
         bill_type = BillType.get_by_id(g.sess, bill_type_id)
         bill = batch.insert_bill(
             g.sess,
