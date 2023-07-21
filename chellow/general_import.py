@@ -689,7 +689,12 @@ def _parse_breakdown(breakdown_str):
             raise BadRequest("Problem parsing the breakdown: " + str(e))
 
 
+def _truncate_vals(vals):
+    return _truncate_vals(vals[:-1]) if len(vals) > 0 and vals[0] == "" else vals
+
+
 def general_import_bill(sess, action, vals, args):
+    vals = _truncate_vals(vals)
     if action == "insert":
         role_name = add_arg(args, "Role Name", vals, 0).lower()
         contract_name = add_arg(args, "Contract Name", vals, 1)
