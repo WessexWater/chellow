@@ -15,34 +15,41 @@ from sqlalchemy.sql.expression import null, true
 import chellow.dloads
 from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import (
+    csv_make_val,
+    ct_datetime,
     hh_format,
     req_date,
     req_int,
     req_str,
     to_ct,
+    to_utc,
 )
 from chellow.views import chellow_redirect
 
 
+def _write_row(writer, titles, vals, total):
+    vals["total"] = total
+    writer.writerow(csv_make_val(vals[t]) for t in titles)
+
+
 def _process_site(sess, zf, site, start_date, finish_date, typ):
-    start_date_str = hh_format(start_date)
-    finish_date_str = hh_format(finish_date)
     buf = StringIO()
     writer = csv.writer(buf, lineterminator="\n")
-    writer.writerow(
-        [
-            "Site Code",
-            "Site Name",
-            "Associated Site Codes",
-            "Sources",
-            "Generator Types",
-            "From",
-            "To",
-            "Type",
-            "Date",
-        ]
-        + list(map(str, range(1, 51)))
-    )
+    headers = [
+        "site_code",
+        "site_name",
+        "associated_site_codes",
+        "sources",
+        "generator_types",
+        "from",
+        "to",
+        "type",
+        "date",
+        "total",
+    ]
+    slot_titles = list(map(str, range(1, 51)))
+    titles = headers + slot_titles
+    writer.writerow(titles)
     associates = " ".join(
         s.code for s in site.find_linked_sites(sess, start_date, finish_date)
     )
@@ -65,31 +72,38 @@ def _process_site(sess, zf, site, start_date, finish_date, typ):
         gen_type = supply.generator_type
         if gen_type is not None:
             gen_types.add(gen_type.code)
-    source_codes_str = ", ".join(sorted(source_codes))
-    gen_types_str = ", ".join(sorted(gen_types))
-    row = None
+
+    vals = total = slot_count = None
     for hh in site.hh_data(sess, start_date, finish_date):
         ct_start_date = to_ct(hh["start_date"])
         if ct_start_date.hour == 0 and ct_start_date.minute == 0:
-            if row is not None:
-                writer.writerow(row)
-            row = [
-                site.code,
-                site.name,
-                associates,
-                source_codes_str,
-                gen_types_str,
-                start_date_str,
-                finish_date_str,
-                typ,
-                ct_start_date.strftime("%Y-%m-%d"),
-            ]
-        row.append(str(round(hh[typ], 2)))
-    if row is not None:
-        writer.writerow(row)
+            if vals is not None:
+                _write_row(writer, titles, vals, total)
+            vals = {
+                "site_code": site.code,
+                "site_name": site.name,
+                "associated_site_codes": associates,
+                "sources": source_codes,
+                "generator_types": gen_types,
+                "from": start_date,
+                "to": finish_date,
+                "type": typ,
+                "date": ct_start_date.strftime("%Y-%m-%d"),
+            }
+            for s in slot_titles:
+                vals[s] = None
+            total = 0
+            slot_count = 0
+
+        slot_count += 1
+        val = hh[typ]
+        total += val
+        vals[str(slot_count)] = val
+    if vals is not None:
+        _write_row(writer, titles, vals, total)
+
     zf.writestr(
-        f"{site.code}_{to_ct(finish_date).strftime('%Y%m%d%H%M')}.csv",
-        buf.getvalue(),
+        f"{site.code}_{to_ct(finish_date).strftime('%Y%m%d%H%M')}.csv", buf.getvalue()
     )
 
 
@@ -220,9 +234,13 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
 
 
 def do_post(sess):
-    start_date = req_date("start")
-    finish_date = req_date("finish")
-    finish_date_ct = to_ct(finish_date)
+    start_date = req_date("start", resolution="day")
+    finish_year = req_int("finish_year")
+    finish_month = req_int("finish_month")
+    finish_day = req_int("finish_day")
+
+    finish_date_ct = ct_datetime(finish_year, finish_month, finish_day, 23, 30)
+    finish_date = to_utc(finish_date_ct)
 
     finish_date_str = finish_date_ct.strftime("%Y%m%d%H%M")
     if "site_id" in request.values:

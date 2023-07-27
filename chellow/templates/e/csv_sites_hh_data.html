@@ -21,8 +21,8 @@
 				<option value="displaced">Displaced</option>
 				<option value="exp_gen">Parasitic</option>
 			</select>
-			<label>From</label> {{input_date('start', start_date)}}
-			<label>To</label> {{input_date('finish', finish_date)}}
+			<label>From</label> {{input_date('start', start_date, resolution='day')}}
+			<label>To</label> {{input_date('finish', finish_date, resolution='day')}}
 			<label>Site Codes</label>
 			{{input_textarea('site_codes', '', 5, 40,
 			  placeholder='One on each line, includes all if left blank')}}    						

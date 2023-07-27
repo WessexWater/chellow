@@ -23,8 +23,8 @@
 				{{input_option('channel_type', 'REACTIVE_IMP', 'REACTIVE_IMP')}}
 				{{input_option('channel_type', 'REACTIVE_EXP', 'REACTIVE_EXP')}}
 			</select>
-			<label>From</label> {{input_date('start', start_date)}}
-			<label>To</label> {{input_date('finish', finish_date)}}
+			<label>From</label> {{input_date('start', start_date, resolution='day')}}
+			<label>To</label> {{input_date('finish', finish_date, resolution='day')}}
 			<label>Zipped?</label> {{input_checkbox('is_zipped', False)}}
 			<label>MPAN Cores</label>
 			{{input_textarea(

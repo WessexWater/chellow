@@ -12,13 +12,14 @@ from sqlalchemy.sql.expression import null
 
 import chellow.dloads
 from chellow.e.computer import SupplySource, forecast_date
-from chellow.models import Channel, Era, HhDatum, Session, Supply
+from chellow.models import Channel, Era, HhDatum, Session, Supply, User
 from chellow.utils import (
     csv_make_val,
     ct_datetime,
     hh_range,
     parse_mpan_core,
     req_bool,
+    req_date,
     req_int,
     req_str,
     to_ct,
@@ -27,17 +28,22 @@ from chellow.utils import (
 from chellow.views import chellow_redirect
 
 
+def _write_row(writer, titles, vals, total):
+    vals["total"] = total
+    writer.writerow(csv_make_val(vals[t]) for t in titles)
+
+
 def content(
-    start_date_ct,
-    finish_date_ct,
+    start_date,
+    finish_date,
     imp_related,
     channel_type,
     is_zipped,
     supply_id,
     mpan_cores,
-    user,
+    user_id,
 ):
-    start_date, finish_date = to_utc(start_date_ct), to_utc(finish_date_ct)
+    finish_date_ct = to_ct(finish_date)
     zf = sess = tf = None
     base_name = ["supplies_hh_data", finish_date_ct.strftime("%Y%m%d%H%M")]
     cache = {}
@@ -56,19 +62,15 @@ def content(
         if supply_id is not None:
             supply = Supply.get_by_id(sess, supply_id)
             supplies = supplies.where(Supply.id == supply.id)
-            first_era = (
-                sess.execute(
-                    select(Era)
-                    .where(
-                        Era.supply == supply,
-                        or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                        Era.start_date <= finish_date,
-                    )
-                    .order_by(Era.start_date)
+            first_era = sess.scalars(
+                select(Era)
+                .where(
+                    Era.supply == supply,
+                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                    Era.start_date <= finish_date,
                 )
-                .scalars()
-                .first()
-            )
+                .order_by(Era.start_date)
+            ).first()
             if first_era.imp_mpan_core is None:
                 name_core = first_era.exp_mpan_core
             else:
@@ -85,18 +87,22 @@ def content(
 
         cf = StringIO()
         writer = csv.writer(cf, lineterminator="\n")
-        titles = [
+        headers = [
             "import_mpan_core",
             "export_mpan_core",
             "is_hh",
             "is_import_related",
             "channel_type",
             "hh_start_clock_time",
-        ] + list(range(1, 51))
+            "total",
+        ]
+        slot_names = [str(n) for n in range(1, 51)]
+        titles = headers + slot_names
         writer.writerow(titles)
         titles_csv = cf.getvalue()
         cf.close()
         fdate = forecast_date()
+        user = User.get_by_id(sess, user_id)
 
         running_name, finished_name = chellow.dloads.make_names(
             "_".join(base_name) + (".zip" if is_zipped else ".csv"), user
@@ -112,7 +118,7 @@ def content(
             writer = csv.writer(cf, lineterminator="\n")
             imp_mpan_core = exp_mpan_core = is_hh = None
             data = []
-            for era in sess.execute(
+            for era in sess.scalars(
                 select(Era)
                 .where(
                     Era.supply == supply,
@@ -120,7 +126,7 @@ def content(
                     Era.start_date <= finish_date,
                 )
                 .order_by(Era.start_date)
-            ).scalars():
+            ):
                 if era.imp_mpan_core is not None:
                     imp_mpan_core = era.imp_mpan_core
                 if era.exp_mpan_core is not None:
@@ -128,7 +134,7 @@ def content(
 
                 if era.pc.code == "00" or len(era.channels) > 0:
                     is_hh = True
-                    for datum in sess.execute(
+                    for datum in sess.scalars(
                         select(HhDatum)
                         .join(Channel)
                         .join(Era)
@@ -140,7 +146,7 @@ def content(
                             Channel.channel_type == channel_type,
                         )
                         .order_by(HhDatum.start_date)
-                    ).scalars():
+                    ):
                         data.append((datum.start_date, datum.value))
                 else:
                     is_hh = False
@@ -155,36 +161,39 @@ def content(
                     for hh in ds.hh_data:
                         data.append((hh["start-date"], hh[KEY_LOOKUP[channel_type]]))
 
-            row = []
+            vals = total = slot_count = None
             hh_data = iter(data)
             datum = next(hh_data, None)
             for current_date in hh_range(cache, start_date, finish_date):
                 dt_ct = to_ct(current_date)
                 if dt_ct.hour == 0 and dt_ct.minute == 0:
-                    if len(row) > 0:
-                        writer.writerow(csv_make_val(v) for v in row)
-                    row = [
-                        imp_mpan_core,
-                        exp_mpan_core,
-                        is_hh,
-                        imp_related,
-                        channel_type,
-                        dt_ct.strftime("%Y-%m-%d"),
-                    ]
+                    if vals is not None:
+                        _write_row(writer, titles, vals, total)
 
+                    vals = {
+                        "import_mpan_core": imp_mpan_core,
+                        "export_mpan_core": exp_mpan_core,
+                        "is_hh": is_hh,
+                        "is_import_related": imp_related,
+                        "channel_type": channel_type,
+                        "hh_start_clock_time": dt_ct.strftime("%Y-%m-%d"),
+                    }
+                    for slot_name in slot_names:
+                        vals[slot_name] = None
+                    total = slot_count = 0
+
+                slot_count += 1
                 if datum is not None and datum[0] == current_date:
-                    row.append(datum[1])
+                    val = datum[1]
+                    vals[str(slot_count)] = val
+                    total += val
                     datum = next(hh_data, None)
-                else:
-                    row.append(None)
 
-            if len(row) > 0:
-                writer.writerow(csv_make_val(v) for v in row)
+            if vals is not None:
+                _write_row(writer, titles, vals, total)
 
             if is_zipped:
-                fname = "_".join(
-                    (f"{imp_mpan_core}", f"{exp_mpan_core}", f"{supply.id}.csv")
-                )
+                fname = f"{imp_mpan_core}_{exp_mpan_core}_{supply.id}.csv"
                 zf.writestr(fname.encode("ascii"), titles_csv + cf.getvalue())
             else:
                 tf.write(cf.getvalue())
@@ -200,6 +209,7 @@ def content(
 
     except BaseException:
         msg = traceback.format_exc()
+        print(msg)
         if is_zipped:
             zf.writestr("error.txt", msg)
             zf.close()
@@ -228,15 +238,13 @@ def do_post(sess):
 
 
 def handle_request(mpan_cores=None):
-    start_year = req_int("start_year")
-    start_month = req_int("start_month")
-    start_day = req_int("start_day")
-    start_date_ct = ct_datetime(start_year, start_month, start_day)
+    start_date = req_date("start", resolution="day")
 
     finish_year = req_int("finish_year")
     finish_month = req_int("finish_month")
     finish_day = req_int("finish_day")
-    finish_date_ct = ct_datetime(finish_year, finish_month, finish_day, 23, 30)
+
+    finish_date = to_utc(ct_datetime(finish_year, finish_month, finish_day, 23, 30))
 
     imp_related = req_bool("imp_related")
     channel_type = req_str("channel_type")
@@ -244,14 +252,14 @@ def handle_request(mpan_cores=None):
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
     user = g.user
     args = (
-        start_date_ct,
-        finish_date_ct,
+        start_date,
+        finish_date,
         imp_related,
         channel_type,
         is_zipped,
         supply_id,
         mpan_cores,
-        user,
+        user.id,
     )
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

@@ -7,34 +7,54 @@ import traceback
 from flask import g
 
 import chellow.dloads
-from chellow.models import Session, Site
-from chellow.utils import c_months_u, req_int, req_str, to_ct
+from chellow.models import Session, Site, User
+from chellow.utils import c_months_u, csv_make_val, req_int, req_str, to_ct
 from chellow.views import chellow_redirect
 
 
-def content(start_date, finish_date, site_id, typ, user):
+def _write_row(writer, total, values, titles):
+    values["total"] = total
+    writer.writerow([csv_make_val(values[t]) for t in titles])
+
+
+def content(start_date, finish_date, site_id, typ, user_id):
     sess = f = writer = None
     try:
         sess = Session()
+
+        user = User.get_by_id(sess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
-            "site_hh_data_" + to_ct(start_date).strftime("%Y%m%d%H%M") + ".csv", user
+            f'site_hh_data_{to_ct(start_date).strftime("%Y%m%d%H%M")}.csv', user
         )
         f = open(running_name, mode="w", newline="")
         writer = csv.writer(f, lineterminator="\n")
-        writer.writerow(
-            ("Site Code", "Type", "HH Start Clock-Time") + tuple(map(str, range(1, 51)))
-        )
+        titles = ["site_code", "type", "hh_start_clock_time", "total"]
+        hr_titles = tuple(map(str, range(1, 51)))
+        titles.extend(hr_titles)
+        writer.writerow(titles)
         site = Site.get_by_id(sess, site_id)
-        line = None
+
+        vals = total = hh_num = None
         for hh in site.hh_data(sess, start_date, finish_date):
             hh_start_ct = to_ct(hh["start_date"])
             if (hh_start_ct.hour, hh_start_ct.minute) == (0, 0):
-                if line is not None:
-                    writer.writerow(line)
-                line = [site.code, typ, hh_start_ct.strftime("%Y-%m-%d")]
-            line.append(str(hh[typ]))
-        if line is not None:
-            writer.writerow(line)
+                if vals is not None:
+                    _write_row(writer, total, vals, titles)
+                vals = {
+                    "site_code": site.code,
+                    "type": typ,
+                    "hh_start_clock_time": hh_start_ct.strftime("%Y-%m-%d"),
+                }
+                for t in hr_titles:
+                    vals[t] = None
+                total = 0
+                hh_num = 1
+            val = hh[typ]
+            vals[str(hh_num)] = val
+            hh_num += 1
+            total += val
+        if vals is not None:
+            _write_row(writer, total, vals, titles)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
@@ -59,6 +79,6 @@ def do_get(sess):
 
     typ = req_str("type")
     site_id = req_int("site_id")
-    args = (start_date, finish_date, site_id, typ, g.user)
+    args = start_date, finish_date, site_id, typ, g.user.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
