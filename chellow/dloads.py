@@ -108,7 +108,7 @@ def remove_item(mem_id):
 
 
 file_deleter = None
-MAX_AGE = 60 * 60 * 24 * 7
+MAX_AGE = 60 * 60 * 24 * 14
 
 
 class FileDeleter(threading.Thread):
