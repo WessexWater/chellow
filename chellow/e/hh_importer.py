@@ -99,16 +99,19 @@ def start_hh_import_process(dc_contract_id, istream, file_name, file_size):
     return process
 
 
+lock = threading.RLock()
+
+
 class HhImportTask(threading.Thread):
     def __init__(self, contract_id):
         super().__init__(name=f"HH Automatic Import: contract {contract_id}")
-        self.lock = threading.RLock()
         self.messages = deque()
         self.contract_id = contract_id
         self.importer = None
         self.stopped = threading.Event()
         self.going = threading.Event()
         self.is_error = False
+        self.wait_seconds = 30 * 60
 
     def stop(self):
         self.stopped.set()
@@ -118,8 +121,8 @@ class HhImportTask(threading.Thread):
         self.going.set()
 
     def is_locked(self):
-        if self.lock.acquire(False):
-            self.lock.release()
+        if lock.acquire(False):
+            lock.release()
             return False
         else:
             return True
@@ -138,7 +141,6 @@ class HhImportTask(threading.Thread):
 
     def import_file(self, sess):
         found_new = False
-        self.wait_seconds = 30 * 60
 
         try:
             contract = Contract.get_dc_by_id(sess, self.contract_id)
@@ -173,7 +175,7 @@ class HhImportTask(threading.Thread):
         return found_new
 
     def import_now(self):
-        if self.lock.acquire(False):
+        if lock.acquire(False):
             sess = None
             try:
                 sess = Session()
@@ -185,7 +187,7 @@ class HhImportTask(threading.Thread):
             finally:
                 if sess is not None:
                     sess.close()
-                self.lock.release()
+                lock.release()
 
     def run(self):
         while not self.stopped.isSet():
