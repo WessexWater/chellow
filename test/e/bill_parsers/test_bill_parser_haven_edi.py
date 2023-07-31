@@ -377,7 +377,7 @@ def test_process_MHD(mocker):
         "kwh": Decimal("0"),
     }
     assert headers == expected_headers
-    assert type(headers["breakdown"]) == type(expected_headers)
+    assert type(headers["breakdown"]) is type(expected_headers)
 
 
 def test_process_CCD3(mocker):

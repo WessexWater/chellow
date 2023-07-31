@@ -3950,23 +3950,30 @@ def supplier_batch_edit_get(batch_id):
     return render_template("supplier_batch_edit.html", batch=batch)
 
 
+@e.route("/supplier_batches/<int:batch_id>/edit", methods=["DELETE"])
+def supplier_batch_edit_delete(batch_id):
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        contract_id = batch.contract.id
+        batch.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_batches?supplier_contract_id={contract_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_batch_edit.html", batch=batch), 400
+        )
+
+
 @e.route("/supplier_batches/<int:batch_id>/edit", methods=["POST"])
 def supplier_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
-        if "update" in request.values:
-            reference = req_str("reference")
-            description = req_str("description")
-            batch.update(g.sess, reference, description)
-            g.sess.commit()
-            return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
-        elif "delete" in request.values:
-            contract_id = batch.contract.id
-            batch.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect(
-                f"/supplier_batches?supplier_contract_id={contract_id}", 303
-            )
+        reference = req_str("reference")
+        description = req_str("description")
+        batch.update(g.sess, reference, description)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(

@@ -2254,6 +2254,28 @@ def test_supplier_batches_get(sess, client):
     match(response, 200)
 
 
+def test_supplier_batch_edit_delete(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        vf,
+        None,
+        {},
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    sess.commit()
+
+    response = client.delete(f"/e/supplier_batches/{batch.id}/edit")
+    match(response, 303)
+
+
 def test_supplier_batch_get(sess, client):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")

@@ -29,6 +29,7 @@ from sqlalchemy import (
     Text,
     and_,
     create_engine,
+    delete,
     event,
     not_,
     null,
@@ -932,9 +933,7 @@ class Batch(Base, PersistentClass):
             )
 
     def delete(self, sess):
-        sess.execute(
-            "delete from bill where batch_id = :batch_id", {"batch_id": self.id}
-        )
+        sess.execute(delete(Bill).where(Bill.batch == self))
         sess.delete(self)
 
     def insert_bill(
