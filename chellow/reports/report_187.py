@@ -6,13 +6,12 @@ from datetime import datetime as Datetime
 
 from flask import g, request
 
-from sqlalchemy import or_
-from sqlalchemy.sql.expression import null, true
+from sqlalchemy import null, or_, select, text, true
 
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import (
     hh_format,
     hh_range,
@@ -40,14 +39,11 @@ def csv_str(row):
     return ",".join('"' + v + '"' for v in frow) + "\n"
 
 
-def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
-    if is_zipped:
-        file_extension = ".zip"
-    else:
-        file_extension = ".csv"
+def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
+    file_extension = ".zip" if is_zipped else ".csv"
 
     base_name = (
-        "hh_data_row_" + to_ct(start_date).strftime("%Y%m%d%H%M") + file_extension
+        f'hh_data_row_{to_ct(start_date).strftime("%Y%m%d%H%M")}{file_extension}'
     )
 
     tls = ["Site Code", "Imp MPAN Core", "Exp Mpan Core", "HH Start Clock-Time"]
@@ -66,33 +62,35 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
             tls.append(polarity + " " + suffix)
 
     titles = csv_str(tls)
-
-    running_name, finished_name = chellow.dloads.make_names(base_name, user)
-
-    if is_zipped:
-        zf = zipfile.ZipFile(running_name, "w")
-    else:
-        tmp_file = open(running_name, "w")
-    sess = None
+    sess = tmp_file = None
     try:
         sess = Session()
+        user = User.get_by_id(sess, user_id)
+
+        running_name, finished_name = chellow.dloads.make_names(base_name, user)
+
+        if is_zipped:
+            zf = zipfile.ZipFile(running_name, "w")
+        else:
+            tmp_file = open(running_name, "w")
+
         caches = {}
         supplies = (
-            sess.query(Supply)
+            select(Supply)
             .join(Era)
-            .filter(
+            .where(
                 Era.start_date <= finish_date,
                 or_(Era.finish_date == null(), Era.finish_date >= start_date),
             )
-            .order_by(Era.supply_id, Era.start_date)
+            .order_by(Supply.id)
             .distinct()
         )
         if supply_id is not None:
             sup = Supply.get_by_id(sess, supply_id)
-            supplies = supplies.filter(Era.supply == sup)
+            supplies = supplies.where(Era.supply == sup)
 
         if mpan_cores is not None:
-            supplies = supplies.filter(
+            supplies = supplies.where(
                 or_(
                     Era.imp_mpan_core.in_(mpan_cores), Era.exp_mpan_core.in_(mpan_cores)
                 )
@@ -101,7 +99,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
         if not is_zipped:
             tmp_file.write(titles)
 
-        for supply in supplies:
+        for supply in sess.scalars(supplies):
             site, era = (
                 sess.query(Site, Era)
                 .join(Era.site_eras)
@@ -119,7 +117,8 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user):
             outs = []
             data = iter(
                 sess.execute(
-                    """
+                    text(
+                        """
 select hh_base.start_date,
     max(imp_active.value), max(imp_active.status),
     max(imp_active.last_modified),
@@ -162,7 +161,8 @@ where supply_id = :supply_id
     and hh_base.start_date between :start_date and :finish_date
 group by hh_base.start_date
 order by hh_base.start_date
-    """,
+    """
+                    ),
                     params={
                         "supply_id": supply.id,
                         "start_date": start_date,
@@ -222,37 +222,31 @@ order by hh_base.start_date
                 outs.append(csv_str(row))
 
             if is_zipped:
-                zf.writestr(
-                    (
-                        "hh_data_row_"
-                        + str(era.id)
-                        + "_"
-                        + str(era.imp_mpan_core)
-                        + "_"
-                        + str(era.exp_mpan_core)
-                    ).replace(" ", "")
-                    + ".csv",
-                    titles + "".join(outs),
-                )
+                fnm = f"hh_data_row_{era.id}_{era.imp_mpan_core}_{era.exp_mpan_core}"
+                zf.writestr(fnm.replace(" ", "") + ".csv", titles + "".join(outs))
             else:
                 tmp_file.write("".join(outs))
 
             # Avoid a long-running transaction
             sess.rollback()
     except BaseException:
-        msg = "Problem " + traceback.format_exc()
+        msg = f"Problem {traceback.format_exc()}"
+        print(msg)
         if is_zipped:
             zf.writestr("error.txt", msg)
         else:
-            tmp_file.write(msg)
+            if tmp_file is not None:
+                tmp_file.write(msg)
     finally:
         if sess is not None:
             sess.close()
         if is_zipped:
             zf.close()
+            os.rename(running_name, finished_name)
         else:
-            tmp_file.close()
-        os.rename(running_name, finished_name)
+            if tmp_file is not None:
+                tmp_file.close()
+                os.rename(running_name, finished_name)
 
 
 def do_post(sess):
@@ -275,10 +269,7 @@ def do_post(sess):
         raise BadRequest("The finish date can't be before the start date.")
 
     is_zipped = req_bool("is_zipped")
-    user = g.user
+    args = start_date, finish_date, supply_id, mpan_cores, is_zipped, g.user.id
 
-    threading.Thread(
-        target=content,
-        args=(start_date, finish_date, supply_id, mpan_cores, is_zipped, user),
-    ).start()
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
