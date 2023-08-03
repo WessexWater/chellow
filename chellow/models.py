@@ -130,29 +130,47 @@ Base = declarative_base()
 engine = None
 session = None
 
+rengine = None
+rsession = None
+
 
 def start_sqlalchemy():
-    global engine, session
+    global engine, session, rengine, rsession
 
     if engine is not None or session is not None:
         raise Exception("SQLAlchemy has already been started!")
 
-    engine = create_engine(db_url, isolation_level="SERIALIZABLE")
+    engine = create_engine(
+        db_url, execution_options={"isolation_level": "SERIALIZABLE"}
+    )
     session = sessionmaker(bind=engine)
     Base.metadata.create_all(bind=engine)
 
+    rengine = engine.execution_options(
+        isolation_level="SERIALIZABLE",
+        postgresql_readonly=True,
+        postgresql_deferrable=True,
+    )
+    rsession = sessionmaker(bind=rengine)
+
 
 def stop_sqlalchemy():
-    global engine, session
+    global engine, session, rengine, rsession
 
     if engine is not None:
         engine.dispose()
         engine = None
         session = None
+        rengine = None
+        rsession = None
 
 
 def Session():
     return session()
+
+
+def RSession():
+    return rsession()
 
 
 CHANNEL_TYPES = ("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP")
@@ -5008,6 +5026,7 @@ class Scenario(Base, PersistentClass):
     def insert(sess, name, properties):
         scenario = Scenario(name, properties)
         sess.add(scenario)
+        sess.flush()
         return scenario
 
     __tablename__ = "scenario"

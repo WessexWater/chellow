@@ -3,6 +3,7 @@ from io import BytesIO
 
 import odio
 
+
 from utils import match
 
 from chellow.models import (
@@ -53,7 +54,6 @@ def test_do_post_scenario(mocker, sess, client):
         "site_codes": ["CI017"],
     }
     scenario = Scenario.insert(sess, "test", scenario_props)
-    sess.commit()
 
     mock_Thread = mocker.patch("chellow.reports.report_59.threading.Thread")
 
@@ -67,6 +67,7 @@ def test_do_post_scenario(mocker, sess, client):
         "compression": compression,
     }
 
+    sess.commit()
     response = client.post("/reports/59", data=data)
 
     match(response, 303)
@@ -393,6 +394,7 @@ def displaced_virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
 
     sess.commit()
 
@@ -425,7 +427,7 @@ def displaced_virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,

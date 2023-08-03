@@ -23,8 +23,8 @@ from chellow.models import (
     Contract,
     Era,
     MeasurementRequirement,
+    RSession,
     Scenario,
-    Session,
     Site,
     SiteEra,
     Source,
@@ -654,7 +654,7 @@ def content(
     except KeyError:
         ind_cont = report_context["contract_names"] = {}
 
-    sess = rf = None
+    rsess = rf = None
     site_rows = []
     era_rows = []
     normal_read_rows = []
@@ -662,7 +662,7 @@ def content(
     bill_check_era_rows = []
 
     try:
-        sess = Session()
+        rsess = RSession()
 
         start_date = to_utc(
             ct_datetime(
@@ -704,10 +704,10 @@ def content(
         if mpan_cores is None:
             supply_ids = None
         else:
-            supply_ids = [Supply.get_by_mpan_core(sess, m).id for m in mpan_cores]
+            supply_ids = [Supply.get_by_mpan_core(rsess, m).id for m in mpan_cores]
             sites = sites.join(SiteEra).join(Era).where(Era.supply_id.in_(supply_ids))
 
-        user = User.get_by_id(sess, user_id)
+        user = User.get_by_id(rsess, user_id)
         running_name, finished_name = chellow.dloads.make_names(
             "_".join(base_name) + ".ods", user
         )
@@ -832,11 +832,11 @@ def content(
             titles = []
             title_dict[cont_type] = titles
             conts = (
-                sess.query(Contract)
+                select(Contract)
                 .join(con_attr)
                 .join(Era.supply)
                 .join(Source)
-                .filter(
+                .where(
                     Era.start_date <= finish_date,
                     or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 )
@@ -845,7 +845,7 @@ def content(
             )
             if supply_ids is not None:
                 conts = conts.where(Era.supply_id.in_(supply_ids))
-            for cont in conts:
+            for cont in rsess.scalars(conts):
                 title_func = contract_func(report_context, cont, "virtual_bill_titles")
                 if title_func is None:
                     raise Exception(
@@ -857,7 +857,7 @@ def content(
                         titles.append(title)
 
         tpr_query = (
-            sess.query(Tpr)
+            rsess.query(Tpr)
             .join(MeasurementRequirement)
             .join(Ssc)
             .join(Era)
@@ -898,7 +898,7 @@ def content(
         data_source_bill.start_date = start_date
         data_source_bill.finish_date = finish_date
 
-        for site in sess.execute(sites).scalars():
+        for site in rsess.scalars(sites):
             if by_hh:
                 sf = [(d, d) for d in hh_range(report_context, start_date, finish_date)]
             else:
@@ -907,7 +907,7 @@ def content(
             for start, finish in sf:
                 try:
                     normal_reads = normal_reads | _process_site(
-                        sess,
+                        rsess,
                         report_context,
                         forecast_from,
                         start,
@@ -925,7 +925,7 @@ def content(
                     )
                     if is_bill_check:
                         _process_site(
-                            sess,
+                            rsess,
                             report_context,
                             forecast_from,
                             start,
@@ -948,7 +948,6 @@ def content(
             for mpan_core, r in sorted(list(normal_reads)):
                 row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                 normal_read_rows.append(row)
-            sess.rollback()
 
         write_spreadsheet(
             rf,
@@ -996,8 +995,8 @@ def content(
                 is_bill_check,
             )
     finally:
-        if sess is not None:
-            sess.close()
+        if rsess is not None:
+            rsess.close()
         if rf is not None:
             rf.close()
             os.rename(running_name, finished_name)
@@ -1062,6 +1061,7 @@ def do_post(sess):
 
         now = utc_datetime_now()
         args = props, base_name, g.user.id, compression, now, False
+        sess.rollback()
         thread = threading.Thread(target=content, args=args)
         thread.start()
         return chellow_redirect("/downloads", 303)
