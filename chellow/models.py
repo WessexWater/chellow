@@ -5760,18 +5760,14 @@ class GBatch(Base, PersistentClass):
         except SQLAlchemyError:
             sess.rollback()
             raise BadRequest(
-                "There's already a batch attached to the contract "
-                + self.g_contract.name
-                + " with the reference "
-                + reference
-                + "."
+                f"There's already a batch attached to the contract "
+                f"{self.g_contract.name} with the reference {reference}."
             )
 
     def delete(self, sess):
-        sess.execute(
-            "delete from g_bill where g_batch_id = :g_batch_id", {"g_batch_id": self.id}
-        )
+        sess.execute(delete(GBill).where(GBill.g_batch == self))
         sess.delete(self)
+        sess.flush()
 
     def insert_g_bill(
         self,

@@ -58,11 +58,15 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect as credirect
+from chellow.views import chellow_redirect as credirect, hx_redirect as chx_redirect
 
 
 def chellow_redirect(path, code=None):
     return credirect(f"/g{path}", code)
+
+
+def hx_redirect(path, code=None):
+    return chx_redirect(f"/g{path}", code)
 
 
 gas = Blueprint("g", __name__, template_folder="templates", url_prefix="/g")
@@ -455,15 +459,23 @@ def batch_edit_post(g_batch_id):
             g_batch.update(g.sess, reference, description)
             g.sess.commit()
             return chellow_redirect(f"/batches/{g_batch.id}", 303)
-        elif "delete" in request.values:
-            g_contract = g_batch.g_contract
-            g_batch.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect(f"/batches?g_contract_id={g_contract.id}", 303)
         elif "delete_bills" in request.values:
             g.sess.query(GBill).filter(GBill.g_batch == g_batch).delete(False)
             g.sess.commit()
-            return chellow_redirect(f"/batches/{g_batch.id}", 303)
+            return hx_redirect(f"/batches/{g_batch.id}")
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("batch_edit.html", g_batch=g_batch), 400)
+
+
+@gas.route("/batches/<int:g_batch_id>/edit", methods=["DELETE"])
+def batch_edit_delete(g_batch_id):
+    try:
+        g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+        g_contract = g_batch.g_contract
+        g_batch.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/batches?g_contract_id={g_contract.id}")
     except BadRequest as e:
         flash(e.description)
         return make_response(render_template("batch_edit.html", g_batch=g_batch), 400)
@@ -1167,9 +1179,7 @@ def industry_contract_edit_delete(g_contract_id):
         g_contract = GContract.get_industry_by_id(g.sess, g_contract_id)
         g_contract.delete(g.sess)
         g.sess.commit()
-        res = make_response()
-        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/g/industry_contracts"
-        return res
+        return hx_redirect("/industry_contracts")
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()

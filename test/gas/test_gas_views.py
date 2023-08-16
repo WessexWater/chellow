@@ -165,6 +165,21 @@ def test_batch_edit_post(sess, client):
     match(response, 303, rf"/g/batches/{g_batch.id}")
 
 
+def test_batch_edit_delete(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    sess.commit()
+
+    response = client.delete(f"/g/batches/{g_batch.id}/edit")
+
+    match(response, 200)
+
+    assert response.headers["HX-Redirect"].endswith(
+        f"/g/batches?g_contract_id={g_contract.id}"
+    )
+
+
 def test_bill_get(client, sess):
     site = Site.insert(sess, "22488", "Water Works")
 
