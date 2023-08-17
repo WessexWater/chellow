@@ -512,7 +512,11 @@ def test_bill_imports_post_full(mocker, app, client, sess):
 
     f = BytesIO(file_bytes)
 
-    data = {"g_batch_id": str(g_batch.id), "import_file": (f, file_name)}
+    data = {
+        "g_batch_id": str(g_batch.id),
+        "import_file": (f, file_name),
+        "parser_name": "engie_edi",
+    }
 
     response = client.post("/g/bill_imports", data=data)
 
@@ -563,7 +567,12 @@ def test_bill_imports_post(mocker, app, client, sess):
 
     f = BytesIO(file_bytes)
 
-    data = {"g_batch_id": str(g_batch.id), "import_file": (f, file_name)}
+    parser_name = "engie_edi"
+    data = {
+        "g_batch_id": str(g_batch.id),
+        "import_file": (f, file_name),
+        "parser_name": parser_name,
+    }
 
     import_id = 3
 
@@ -574,7 +583,9 @@ def test_bill_imports_post(mocker, app, client, sess):
 
     response = client.post("/g/bill_imports", data=data)
 
-    mock_start_importer.assert_called_with(g.sess, g_batch.id, file_name, file_bytes)
+    mock_start_importer.assert_called_with(
+        g.sess, g_batch.id, file_name, file_bytes, parser_name
+    )
 
     match(response, 303, "/g/bill_imports/3")
 

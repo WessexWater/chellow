@@ -556,12 +556,14 @@ def bill_imports_get():
         chellow.gas.bill_import.get_bill_importer_ids(g_batch.id), reverse=True
     )
     parser_names = chellow.gas.bill_import.find_parser_names()
+    g_contract_props = g_batch.g_contract.make_properties()
 
     return render_template(
         "bill_imports.html",
         importer_ids=importer_ids,
         g_batch=g_batch,
         parser_names=parser_names,
+        default_bill_parser_name=g_contract_props.get("default_bill_parser", ""),
     )
 
 
@@ -572,8 +574,9 @@ def bill_imports_post():
         g_batch = GBatch.get_by_id(g.sess, g_batch_id)
         file_item = req_file("import_file")
         file_bytes = file_item.stream.read()
+        parser_name = req_str("parser_name")
         imp_id = chellow.gas.bill_import.start_bill_importer(
-            g.sess, g_batch.id, file_item.filename, file_bytes
+            g.sess, g_batch.id, file_item.filename, file_bytes, parser_name
         )
         return chellow_redirect(f"/bill_imports/{imp_id}", 303)
     except BadRequest as e:
@@ -581,12 +584,16 @@ def bill_imports_post():
         importer_ids = sorted(
             chellow.gas.bill_import.get_bill_importer_ids(g_batch.id), reverse=True
         )
+        g_contract_props = g_batch.g_contract.make_properties()
         return make_response(
             render_template(
                 "bill_imports.html",
                 importer_ids=importer_ids,
                 g_batch=g_batch,
                 parser_names=chellow.gas.bill_import.find_parser_names(),
+                default_bill_parser_name=g_contract_props.get(
+                    "default_bill_parser", ""
+                ),
             ),
             400,
         )

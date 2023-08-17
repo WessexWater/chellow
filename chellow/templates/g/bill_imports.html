@@ -18,13 +18,26 @@
 		<fieldset>
 			<input type="hidden" name="g_batch_id" value="{{g_batch.id}}">
 			<legend>Import Bill File</legend>
-			<input type="file" name="import_file" size="45"
+			<label>File</label> <input type="file" name="import_file" size="45"
 				value="{{request.values.import_file}}">
+
+			<label>Parser</label>
+			<select name="parser_name">
+				{% for parser_name in parser_names  %}
+					{{input_option(
+						'bill_parser_name', parser_name, parser_name,
+						initial=default_bill_parser_name)}}
+				{% endfor %}
+			</select>
+
 			<input type="submit" value="Import">
 		</fieldset>
 	</form>
 
-	<p>Valid file name extensions are {{parser_names}}.</p>
+	<p>
+		The default parser name can be set in the contract's
+		<a href="/g/supplier_contracts/{{g_batch.g_contract.id}}#properties">properties</a>.
+	</p>
 
 	<table>
 		<caption>The '.csv' Format</caption>

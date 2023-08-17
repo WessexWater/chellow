@@ -28,15 +28,15 @@ PARSER_PREFIX = "bill_parser_"
 
 
 def find_parser_names():
-    return ", ".join(
-        "." + name[len(PARSER_PREFIX) :].replace("_", ".")
+    return [
+        name[len(PARSER_PREFIX) :]
         for module_finder, name, ispkg in iter_modules(chellow.gas.__path__)
         if name.startswith(PARSER_PREFIX)
-    )
+    ]
 
 
 class GBillImporter(threading.Thread):
-    def __init__(self, sess, g_batch_id, file_name, file_bytes):
+    def __init__(self, sess, g_batch_id, file_name, file_bytes, parser_name):
         threading.Thread.__init__(self)
         global importer_id
         self.importer_id = importer_id
@@ -45,24 +45,17 @@ class GBillImporter(threading.Thread):
         self.g_batch_id = g_batch_id
         if len(file_bytes) == 0:
             raise BadRequest("File has zero length")
-        imp_mod = None
-        parts = file_name.split(".")[::-1]
-        for i in range(len(parts)):
-            nm = "bill_parser_" + "_".join(parts[: i + 1][::-1]).lower()
-            try:
-                imp_mod = nm, importlib.import_module(f"chellow.gas.{nm}")
-            except ImportError:
-                pass
 
-        if imp_mod is None:
+        self.parser_name = f"bill_parser_{parser_name}"
+        try:
+            imp_mod = importlib.import_module(f"chellow.gas.{self.parser_name}")
+        except ImportError:
             raise BadRequest(
-                f"Can't find a parser for the file '{file_name}'. The file name needs "
-                f"to have an extension that's one of the following: "
+                f"Can't find a parser called '{parser_name}'. Valid parser names are "
                 f"{find_parser_names()}."
             )
 
-        self.parser_name = imp_mod[0]
-        self.parser = imp_mod[1].Parser(file_bytes)
+        self.parser = imp_mod.Parser(file_bytes)
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
@@ -179,9 +172,9 @@ class GBillImporter(threading.Thread):
             return fields
 
 
-def start_bill_importer(sess, batch_id, file_name, file_bytes):
+def start_bill_importer(sess, batch_id, file_name, file_bytes, parser_name):
     with import_lock:
-        bi = GBillImporter(sess, batch_id, file_name, file_bytes)
+        bi = GBillImporter(sess, batch_id, file_name, file_bytes, parser_name)
         importers[bi.importer_id] = bi
         bi.start()
 
