@@ -337,7 +337,7 @@ def _parse_row(sheet, row, title_row):
         "vat": Decimal("0.00"),
         "net": Decimal("0.00"),
         "reads": [],
-        "breakdown": {"raw_lines": [str(title_row)]},
+        "breakdown": {},
         "account": mpan_core,
         "issue_date": issue_date,
         "start_date": from_date,

@@ -165,7 +165,6 @@ def test_make_raw_bills_vat():
             "net": Decimal("0.00"),
             "reads": [],
             "breakdown": {
-                "raw_lines": [str(tuple(ws.rows)[0])],
                 "vat_percentage": Decimal("20"),
             },
             "account": "22 9813 2107 763",
