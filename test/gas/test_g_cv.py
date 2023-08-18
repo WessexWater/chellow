@@ -6,7 +6,6 @@ from chellow.utils import ct_datetime, to_utc
 def test_fetch_cvs(mocker, sess):
     properties = {
         "enabled": True,
-        "url": "https://example.com",
     }
     g_contract = GContract.insert(
         sess, True, "cv", "", properties, to_utc(ct_datetime(2014, 6, 1)), None, {}
@@ -35,7 +34,7 @@ def test_fetch_cvs(mocker, sess):
 """
 
     mock_requests = mocker.patch("chellow.gas.cv.requests")
-    mock_requests.post = mocker.Mock(return_value=mock_response)
+    mock_requests.get = mocker.Mock(return_value=mock_response)
 
     messages = []
 

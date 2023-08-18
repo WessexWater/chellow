@@ -27,7 +27,7 @@ from chellow.utils import (
 
 
 def param_format(dt):
-    return dt.strftime("%Y-%m-%dT%H:%M:%S")
+    return to_ct(dt).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 cv_importer = None
@@ -113,31 +113,22 @@ def fetch_cvs(sess, log_f, g_contract):
     search_start = last_applicable_at - relativedelta(days=1)
     search_finish = now + relativedelta(days=1)
 
-    url = props["url"]
+    url = (
+        f"https://data.nationalgas.com/api/find-gas-data-download?applicableFor=N&"
+        f"dateFrom={param_format(search_start)}&dateTo={param_format(search_finish)}&"
+        f"dateType=NORMALDAY&latestFlag=Y&ids=PUBOBJ1660,PUBOB4507,PUBOB4508,PUBOB4510,"
+        f"PUBOB4509,PUBOB4511,PUBOB4512,PUBOB4513,PUBOB4514,PUBOB4515,PUBOB4516,"
+        f"PUBOB4517,PUBOB4518,PUBOB4519,PUBOB4521,PUBOB4520,PUBOB4522,PUBOBJ1661,"
+        f"PUBOBJ1662&type=CSV"
+    )
     log_f(
         f"Checking to see if data is was made available from {hh_format(search_start)} "
         f"to {hh_format(search_finish)} at {url}"
     )
 
-    res = requests.post(
-        url,
-        data={
-            "LatestValue": "true",
-            "PublicationObjectIds": "408:28,+408:5328,+408:5320,+408:5291,"
-            "+408:5366,+408:5312,+408:5346,+408:5324,+408:5316,+408:5308,"
-            "+408:5336,+408:5333,+408:5342,+408:5354,+408:82,+408:70,"
-            "+408:59,+408:38,+408:49",
-            "PublicationObjectStagingIds": "PUBOBJ1660,PUBOB4507,PUBOB4508,"
-            "PUBOB4510,PUBOB4509,PUBOB4511,PUBOB4512,PUBOB4513,PUBOB4514,"
-            "PUBOB4515,PUBOB4516,PUBOB4517,PUBOB4518,PUBOB4519,PUBOB4521,"
-            "PUBOB4520,PUBOB4522,PUBOBJ1661,PUBOBJ1662",
-            "Applicable": "applicableAt",
-            "PublicationObjectCount": "19",
-            "FromUtcDatetime": param_format(search_start),
-            "ToUtcDateTime": param_format(search_finish),
-            "FileType": "Csv",
-        },
-    )
+    s = requests.Session()
+    s.verify = False
+    res = s.get(url)
     log_f(f"Received {res.status_code} {res.reason}")
 
     cf = csv.reader(res.text.splitlines())
