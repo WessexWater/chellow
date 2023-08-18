@@ -1,9 +1,35 @@
-from io import StringIO
+from io import BytesIO, StringIO
+from zipfile import ZIP_DEFLATED, ZipFile
+
 from utils import match
 
-from chellow.models import User
+from chellow.models import (
+    Comm,
+    Contract,
+    Cop,
+    EnergisationStatus,
+    GspGroup,
+    MarketRole,
+    MeterPaymentType,
+    MeterType,
+    Mtc,
+    MtcLlfc,
+    MtcParticipant,
+    Participant,
+    Pc,
+    Site,
+    Source,
+    User,
+    UserRole,
+    VoltageLevel,
+    insert_comms,
+    insert_cops,
+    insert_energisation_statuses,
+    insert_sources,
+    insert_voltage_levels,
+)
 from chellow.reports.report_169 import content
-from chellow.utils import ct_datetime, to_utc
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_handle_request(mocker, client, sess):
@@ -132,3 +158,130 @@ def test_content(mocker, client, sess):
         "50",
     ]
     assert mock_file.getvalue() == ",".join(expected) + "\n"
+
+
+def test_content_zip(mocker, sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion Mop Contract", participant, "", {}, vf, None, {}
+    )
+
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+
+    sess.commit()
+
+    f = BytesIO()
+    zf = ZipFile(f, "w", ZIP_DEFLATED)
+    mocker.patch("chellow.reports.report_169.zipfile.ZipFile", return_value=zf)
+    mocker.patch(
+        "chellow.reports.report_169.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_169.os.rename")
+    start_date = to_utc(ct_datetime(2020, 6, 1))
+    finish_date = to_utc(ct_datetime(2020, 6, 1, 23, 30))
+    imp_related = True
+    channel_type = "ACTIVE"
+    is_zipped = True
+    supply_id = None
+    mpan_cores = None
+    user_id = user.id
+    content(
+        start_date,
+        finish_date,
+        imp_related,
+        channel_type,
+        is_zipped,
+        supply_id,
+        mpan_cores,
+        user_id,
+    )
+    with ZipFile(f, "r") as zf:
+        namelist = zf.namelist()
+        assert namelist == ["22_7867_6232_781_None_1.csv"]

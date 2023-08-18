@@ -193,8 +193,10 @@ def content(
                 _write_row(writer, titles, vals, total)
 
             if is_zipped:
-                fname = f"{imp_mpan_core}_{exp_mpan_core}_{supply.id}.csv"
-                zf.writestr(fname.encode("ascii"), titles_csv + cf.getvalue())
+                fname = f"{imp_mpan_core}_{exp_mpan_core}_{supply.id}.csv".replace(
+                    " ", "_"
+                )
+                zf.writestr(fname, titles_csv + cf.getvalue())
             else:
                 tf.write(cf.getvalue())
             cf.close()
