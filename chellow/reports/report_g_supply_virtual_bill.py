@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import null, true
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-from chellow.computer import forecast_date
+from chellow.e.computer import forecast_date
 from chellow.gas.engine import GDataSource, g_contract_func
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
 from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
@@ -94,7 +94,9 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
-        writer.writerow([traceback.format_exc()])
+        msg = traceback.format_exc()
+        print(msg)
+        writer.writerow([msg])
     finally:
         if sess is not None:
             sess.close()
