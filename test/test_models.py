@@ -151,7 +151,6 @@ def test_Bill_update(sess):
     bill_type = BillType.get_by_code(sess, "N")
 
     sess.commit()
-    sess.expire_all()
 
     batch.insert_bill(
         sess,

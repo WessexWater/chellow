@@ -932,23 +932,19 @@ class Batch(Base, PersistentClass):
 
     def __init__(self, sess, contract, reference, description):
         self.contract = contract
-        self.update(sess, reference, description)
+        self._update(sess, reference, description)
 
-    def update(self, sess, reference, description):
+    def _update(self, sess, reference, description):
         reference = reference.strip()
         if len(reference) == 0:
             raise BadRequest("The batch reference can't be blank.")
 
         self.reference = reference
         self.description = description.strip()
-        try:
-            sess.flush()
-        except SQLAlchemyError:
-            sess.rollback()
-            raise BadRequest(
-                f"There's already a batch attached to the contract "
-                f"{self.contract.name} with the reference {reference}."
-            )
+
+    def update(self, sess, reference, description):
+        self._update(sess, reference, description)
+        sess.flush()
 
     def delete(self, sess):
         sess.execute(delete(Bill).where(Bill.batch == self))
@@ -5289,24 +5285,12 @@ class GEra(Base, PersistentClass):
         self.account = account
         self.g_reading_frequency = g_reading_frequency
 
-        if g_contract.start_g_rate_script.start_date > start_date:
-            raise BadRequest("The contract starts after the era.")
+        with sess.no_autoflush:
+            if g_contract.start_g_rate_script.start_date > start_date:
+                raise BadRequest("The contract starts after the era.")
 
         if hh_before(g_contract.finish_g_rate_script.finish_date, finish_date):
             raise BadRequest("The contract finishes before the era.")
-
-        try:
-            sess.flush()
-        except ProgrammingError as e:
-            if (
-                e.orig.args[2]
-                == 'null value in column "start_date" ' + "violates not-null constraint"
-            ):
-                raise BadRequest("The start date cannot be blank.")
-            else:
-                raise e
-
-        sess.flush()
 
     def set_physical_location(self, sess, site):
         target_ssgen = (
@@ -5435,7 +5419,6 @@ class GSupply(Base, PersistentClass):
 
                 finish_date = covered_g_era.finish_date
 
-        sess.flush()
         g_era = GEra(
             sess,
             self,
@@ -5449,14 +5432,11 @@ class GSupply(Base, PersistentClass):
             g_reading_frequency,
         )
         sess.add(g_era)
-        sess.flush()
 
-        sess.flush()
         g_era.attach_site(sess, physical_site, True)
         for site in logical_sites:
             g_era.attach_site(sess, site, False)
 
-        sess.flush()
         if covered_g_era is not None:
             covered_g_era.update_dates(sess, covered_g_era.start_date, start_date - HH)
         return g_era
@@ -5746,15 +5726,18 @@ class GBatch(Base, PersistentClass):
 
     def __init__(self, sess, g_contract, reference, description):
         self.g_contract = g_contract
-        self.update(sess, reference, description)
+        self._update(sess, reference, description)
 
-    def update(self, sess, reference, description):
+    def _update(self, sess, reference, description):
         reference = reference.strip()
         if len(reference) == 0:
             raise BadRequest("The batch reference can't be blank.")
 
         self.reference = reference
         self.description = description.strip()
+
+    def update(self, sess, reference, description):
+        self._update(sess, reference, description)
         try:
             sess.flush()
         except SQLAlchemyError:
