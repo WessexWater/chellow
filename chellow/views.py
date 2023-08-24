@@ -621,8 +621,9 @@ def edi_viewer_get():
 @home.route("/edi_viewer", methods=["POST"])
 def edi_viewer_post():
     segments = []
+    file_name = None
     try:
-        if "edi_file" in request.values:
+        if "edi_file" in request.files:
             file_item = req_file("edi_file")
             edi_str = str(
                 file_item.stream.read(), encoding="utf-8-sig", errors="ignore"
@@ -630,7 +631,6 @@ def edi_viewer_post():
             file_name = file_item.filename
         else:
             edi_str = req_str("edi_fragment")
-            file_name = None
 
         f = StringIO(edi_str)
         f.seek(0)
@@ -723,8 +723,9 @@ def edi_viewer_post():
         )
     except BadRequest as e:
         flash(e.description)
-        return render_template(
-            "edi_viewer.html", segments=segments, file_name=file_name
+        return make_response(
+            render_template("edi_viewer.html", segments=segments, file_name=file_name),
+            400,
         )
 
 
