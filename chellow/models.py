@@ -507,10 +507,10 @@ class ReadType(Base, PersistentClass):
     @staticmethod
     def get_by_code(sess, code):
         code = code.strip()
-        type = sess.query(ReadType).filter_by(code=code).first()
-        if type is None:
-            raise BadRequest("The Read Type with code " + code + " can't be found.")
-        return type
+        typ = sess.query(ReadType).filter_by(code=code).first()
+        if typ is None:
+            raise BadRequest(f"The Read Type with code '{code}' can't be found.")
+        return typ
 
     __tablename__ = "read_type"
     id = Column(Integer, primary_key=True)
@@ -520,6 +520,12 @@ class ReadType(Base, PersistentClass):
     def __init__(self, code, description):
         self.code = code
         self.description = description
+
+    @classmethod
+    def insert(cls, sess, code, description):
+        read_type = cls(code, description)
+        sess.add(read_type)
+        return read_type
 
 
 class Cop(Base, PersistentClass):
@@ -606,6 +612,22 @@ class RegisterRead(Base, PersistentClass):
     present_type_id = Column(Integer, ForeignKey("read_type.id"))
     present_type = relationship(
         "ReadType", primaryjoin="ReadType.id==RegisterRead.present_type_id"
+    )
+    __table_args__ = (
+        UniqueConstraint(
+            "bill_id",
+            "msn",
+            "mpan_str",
+            "coefficient",
+            "units",
+            "tpr_id",
+            "previous_date",
+            "previous_value",
+            "previous_type_id",
+            "present_date",
+            "present_value",
+            "present_type_id",
+        ),
     )
 
     def __init__(
@@ -851,7 +873,17 @@ class Bill(Base, PersistentClass):
             pres_type,
         )
         sess.add(read)
-        sess.flush()
+        try:
+            sess.flush()
+        except IntegrityError as e:
+            if (
+                "duplicate key value violates unique constraint "
+                '"register_read_bill_id_msn_mpan_str_coefficient_units_tpr_id_key"'
+                in str(e)
+            ):
+                raise BadRequest("Duplicate register reads aren't allowed")
+            else:
+                raise
         return read
 
     def delete(self, sess):
@@ -6944,8 +6976,6 @@ def db_upgrade_27_to_28(sess, root_path):
         era.comm = Comm.get_by_code(sess, code.upper())
         sess.flush()
 
-    sess.execute("alter table era alter comm_id set not null;")
-
 
 def db_upgrade_28_to_29(sess, root_path):
     sess.execute("ALTER TABLE report_run ADD data JSONB;")
@@ -7231,6 +7261,54 @@ def db_upgrade_42_to_43(sess, root_path):
             sess.commit()
 
 
+def db_upgrade_43_to_44(sess, root_path):
+    dups = {}
+    for read in sess.scalars(select(RegisterRead)):
+        k = (
+            read.bill_id,
+            read.msn,
+            read.mpan_str,
+            read.coefficient,
+            read.units,
+            read.tpr_id,
+            read.previous_date,
+            read.previous_value,
+            read.previous_type_id,
+            read.present_date,
+            read.present_value,
+            read.present_type_id,
+        )
+        if k in dups:
+            dups[k].append(read.id)
+        else:
+            dups[k] = []
+
+    for read_ids in dups.values():
+        for read_id in read_ids:
+            read = RegisterRead.get_by_id(sess, read_id)
+            read.delete(sess)
+
+    sess.execute(
+        text(
+            """ALTER TABLE register_read ADD CONSTRAINT
+            register_read_bill_id_msn_mpan_str_coefficient_units_tpr_id_key UNIQUE (
+            bill_id,
+            msn,
+            mpan_str,
+            coefficient,
+            units,
+            tpr_id,
+            previous_date,
+            previous_value,
+            previous_type_id,
+            present_date,
+            present_value,
+            present_type_id
+        );"""
+        )
+    )
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7259,6 +7337,7 @@ upgrade_funcs.extend(
         db_upgrade_40_to_41,
         db_upgrade_41_to_42,
         db_upgrade_42_to_43,
+        db_upgrade_43_to_44,
     ]
 )
 

@@ -268,10 +268,20 @@ def _process_MTR(elements, headers):
                 headers["mpan_core"] = era.imp_mpan_core
             sess.close()
 
+        reads = headers["reads"]
         if headers["is_ebatch"]:
             for r in headers["reads"]:
                 if r["pres_type_code"] == "C":
                     r["pres_type_code"] = "E"
+
+    dup_reads = set()
+    new_reads = []
+    for r in reads:
+        k = tuple(v for n, v in sorted(r.items()))
+        if k in dup_reads:
+            continue
+        dup_reads.add(k)
+        new_reads.append(r)
 
         raw_bill = {
             "bill_type_code": headers["bill_type_code"],
@@ -286,7 +296,7 @@ def _process_MTR(elements, headers):
             "vat": headers["vat"],
             "gross": headers["gross"],
             "breakdown": headers["breakdown"],
-            "reads": headers["reads"],
+            "reads": new_reads,
         }
         return raw_bill
 

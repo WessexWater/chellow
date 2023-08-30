@@ -27,6 +27,7 @@ from chellow.models import (
     MtcSsc,
     Participant,
     Pc,
+    ReadType,
     Scenario,
     Site,
     Source,
@@ -167,6 +168,134 @@ def test_Bill_update(sess):
         {},
         supply,
     )
+
+
+def test_Bill_insert_read_duplicate(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    bill = batch.insert_bill(
+        sess,
+        "hrghj88",
+        "74hjkgjk",
+        to_utc(ct_datetime(2020, 2, 10)),
+        to_utc(ct_datetime(2020, 2, 2)),
+        to_utc(ct_datetime(2020, 3, 1)),
+        Decimal("0"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        bill_type_N,
+        {},
+        supply,
+    )
+    tpr = Tpr.insert(sess, "00001", False, True)
+    read_type = ReadType.insert(sess, "A", "Actual")
+    sess.commit()
+
+    args = (
+        sess,
+        tpr,
+        1,
+        "kWh",
+        "xxx",
+        "2000",
+        to_utc(ct_datetime(2020, 2, 10)),
+        Decimal("100"),
+        read_type,
+        to_utc(ct_datetime(2020, 3, 10)),
+        Decimal("200"),
+        read_type,
+    )
+
+    bill.insert_read(*args)
+    with pytest.raises(BadRequest, match="Duplicate register reads aren't allowed"):
+        bill.insert_read(*args)
+
+    sess.rollback()
 
 
 def test_Era_update(sess):
