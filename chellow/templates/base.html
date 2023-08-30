@@ -1,351 +1,190 @@
-{%- macro input_date(prefix, initial=None, resolution='minute') -%}
-  {% if prefix != None %}
-    {% set year_field = prefix + '_year' %}
-    {% set month_field = prefix + '_month' %}
-    {% set day_field = prefix + '_day' %}
-    {% set hour_field = prefix + '_hour' %}
-    {% set minute_field = prefix + '_minute' %}
-  {% else %}
-    {% set year_field = 'year' %}
-    {% set month_field = 'month' %}
-    {% set day_field = 'day' %}
-    {% set hour_field = 'hour' %}
-    {% set minute_field = 'minute' %}
-  {% endif %}
+{% extends "macros.html" %}
 
-  {% set initial = initial|now_if_none|to_ct %}
-	<div>
-		<input name="{{ year_field }}" maxlength="4" size="4" value="
-			{%- if request.values[year_field] -%}
-				{{ request.values[year_field] }}
-			{%- else -%}
-				{{ initial|hh_format('year') }}
-			{%- endif %}">
+{% block html %}
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			{% block head %}
+				<link rel="stylesheet" type="text/css" href="/static/css/chellow.css">
+				<script src="/static/js/htmx.min.js"></script>
+				{% if is_test %}
+					<link rel="icon" type="image/svg+xml" href="/static/images/favicon_test.svg">
+					<style>
+						{{ test_css|safe }}
+					</style>
+				{% else %}
+					<link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
+				{% endif %}
 
-		{%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
-			-<select name="{{ month_field }}">
-			{% for month in range(1, 13) -%}
-				<option value="{{ "%02i"|format(month) }}"
-					{%- if request.values[month_field] -%}
-						{%- if request.values[month_field]|int == month %} selected
-						{%- endif -%}
-					{%- else -%}
-						{%- if initial.month == month %} selected{%- endif -%}
-					{%- endif -%}>{{ "%02i"|format(month) }}</option>
-			{% endfor %}
-			</select>
-		{%- endif -%}
-
-		{% if resolution in ['day', 'hour', 'minute'] -%}
-			-<select name="{{ day_field }}">
-				{% for day in range(1, 32) -%}
-					<option value="{{ day }}"
-						{%- if request.values[day_field] -%}
-							{%- if request.values[day_field]|int == day %} selected
-							{% endif -%}
-						{% else %}
-							{%- if initial.day == day %} selected{% endif -%}
-						{%- endif %}>{{ "%02i"|format(day) }}</option>
-				{% endfor -%}
-			</select>
-		{%- endif -%}
-
-		{% if resolution in ['hour', 'minute'] %}
-			<select name="{{ hour_field }}">
-				{% for hour in range(24) %}
-					<option value="{{ hour }}"
-						{%- if request.values[hour_field] -%}
-							{%- if request.values[hour_field]|int == hour %} selected
-							{%- endif -%}
-						{%- else -%}
-							{%- if initial.hour == hour %} selected{%- endif -%}
-						{%- endif %}>{{ "%02i"|format(hour) }}</option>
-				{%- endfor %}
-			</select>
-		{%- endif -%}
-
-		{% if resolution == 'minute' -%}
-			:<select name="{{ minute_field }}">
-				{% for minute in range(0, 31, 30) -%}
-					<option value="{{ minute }}"
-						{%- if request.values[minute_field] %}
-							{%- if request.values[minute_field]|int == minute %} selected
-							{%- endif %}
-						{%- else %}
-							{%- if initial.minute == minute %} selected{% endif %}
-							{%- endif %}>{{ "%02i"|format(minute) }}</option>
-				{% endfor %}
-			</select>
-		{%- endif %}
-	</div>
-{%- endmacro -%}
-
-{%- macro input_option(name, item_id, desc, initial=None) -%}
-    <option value="{{ item_id }}"
-        {%- if request.values[name] -%}
-            {%- if request.values[name] == '' ~ item_id %} selected
-            {%- endif -%}
-        {%- else -%}
-            {%- if initial == item_id %} selected{% endif -%}
-            {%- endif -%}>{{ desc }}</option>
-{%- endmacro -%}
-
-{% macro input_text(
-  name, initial=None, size=None, maxlength=None, placeholder=None,
-  required=None, pattern=None) %}
-    <input name="{{name}}" value="
-        {%- if request.values[name] -%}
-            {{ request.values[name] }}
-        {%- elif initial is not none -%}
-            {{initial}}
-        {%- endif -%}"
-        {%- if size %} size="{{ size }}"{% endif %}
-        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
-        {%- if required %} required="required"{% endif %}
-        {%- if pattern %} pattern="{{pattern}}"{% endif %}
-        {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}>
-{%- endmacro -%}
-
-{% macro input_number(
-  name, initial=None, size=None, maxlength=None, placeholder=None,
-  required=None) %}
-    <input type="number" name="{{name}}" value="
-        {%- if request.values[name] -%}
-            {{ request.values[name] }}
-        {%- elif initial is not none -%}
-            {{initial}}
-        {%- endif -%}"
-        {%- if size %} size="{{ size }}"{% endif %}
-        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
-        {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
-        {%- if required %} required="required"{% endif %}>
-{%- endmacro -%}
-
-{% macro input_textarea(
-    name, initial, rows, cols, placeholder=None, show_pos=False) -%}
-	<div>
-		<textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
-			cols="{{ cols }}"
-			{%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}>
-			{%- if request.values[name] -%}
-				{{ request.values[name] }}
-			{%- else -%}
-				{{ initial }}
-			{%- endif -%}
-		</textarea>
-		{% if show_pos %}
-			<p id="{{name}}_pos">Line: Column:</p>
-			<script type="text/javascript">
-				var props = document.getElementById('{{name}}');
-				var cursorPos = document.getElementById('{{name}}_pos');
-
-				props.onkeyup = updateLineCharacter;
-				props.onclick = updateLineCharacter;
-
-				function updateLineCharacter() {
-					var textLines = props.value.substr(0, props.selectionStart).split("\n");
-					var line = textLines.length;
-					var column = textLines[textLines.length - 1].length + 1;
-					cursorPos.innerHTML = "Line: " + line + " Column: "+ column
-				};
-			</script>
-		{% endif %}
-	</div>
-{%- endmacro -%}
-
-{%- macro input_checkbox(name, initial) %}
-	<input type="checkbox" name="{{ name }}" value="true"
-		{%- if request.values[name] -%}
-				{%- if request.values[name] == 'true' %} checked
-				{%- endif -%}
-		{%- else -%}
-				{%- if initial == True %} checked{% endif -%}
-		{%- endif -%}>
-{%- endmacro -%}
-
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		{% block head %}
-			<link rel="stylesheet" type="text/css" href="/static/css/chellow.css">
-			<script src="/static/js/htmx.min.js"></script>
-			{% if is_test %}
-				<link rel="icon" type="image/svg+xml" href="/static/images/favicon_test.svg">
-				<style>
-					{{ test_css|safe }}
-				</style>
-			{% else %}
-				<link rel="icon" type="image/svg+xml" href="/static/images/favicon.svg">
-			{% endif %}
-
-			<meta name="viewport" content="width=device-width, initial-scale=1">
-		
-			<title>Chellow {% block title %}{% endblock %}</title>
-			<script>
-				function onHamburgerClick() {
-					var navElement = document.getElementById('hamburger');
-					if (navElement.style.display == 'block') {
-						navElement.style.display = 'none';
-					} else {
-						navElement.style.display = 'block';
+				<meta name="viewport" content="width=device-width, initial-scale=1">
+			
+				<title>Chellow {% block title %}{% endblock %}</title>
+				<script>
+					function onHamburgerClick() {
+						var navElement = document.getElementById('hamburger');
+						if (navElement.style.display == 'block') {
+							navElement.style.display = 'none';
+						} else {
+							navElement.style.display = 'block';
+						}
 					}
-				}
 
-			</script>
-			{% block inside_head %}{% endblock %}
-		{% endblock %}
-	</head>
-	<body>
-		{% block body %}
-			<header>
-				<nav>
-					<span onClick="onHamburgerClick()">&#x2630;</span>
-					<nav id="hamburger">
-						<details>
-							<summary>&#x26A1; Contracts</summary>
-							<ul>
-								<li><a href="/e/dc_contracts" title="DC">DC</a></li>
-								<li><a href="/e/mop_contracts" title="MOP">MOP</a></li>
-								<li><a href="/e/supplier_contracts" title="Supplier">Supplier</a></li>
-								<li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
-							</ul>
-						</details>
-						<details>
-							<summary>&#x270F; For Editors</summary>
-							<ul>                          
-								<li>
-									<a href="/local_reports_home" title="Local Reports">Local Reports</a>
-								</li>
-								<li>
-									<a href="/general_imports" title="General Import">General Import</a>
-								</li>
-								<li><a href="/downloads" title="Downloads">Downloads</a></li>
-								<li>
-									<a href="/reports/ecoes_comparison" title="Comparison against ECOES"
-										>Comparison against ECOES</a>
-								</li>
-								<li>
-									<a href="/reports/asset_comparison"
-										 title="Comparison against Asset DB"
-										>Comparison against Asset DB</a>
-								</li>
-								<li>
-									<a href="/local_reports" title="Edit Local Reports"
-										>Edit Local Reports</a>
-								</li>
-								<li><a href="/e/site_snags" title="Site Snags">Site Snags</a></li>
-								<li><a href="/e/scenarios" title="Scenarios">Scenarios</a></li>
-								<li><a href="/reports/batches">Batches</a></li>
-								<li><a href="/edi_viewer" title="EDI Viewer">EDI Viewer</a></li>
-								<li>
-									<a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a>
-								</li> 
-							</ul>
-						</details>
-						<details>
-							<summary>&#x1F3ED; Industry Info</summary>
-							<ul>
-								<li><a href="/e/dnos" title="DNOs">DNOs</a></li>
-								<li>
-									<a href="/e/participants" title="Market Participants"
-										>Market Participants</a>
-								</li>
-								<li><a href="/e/market_roles" title="Market Roles">Market Roles</a></li>
-								<li><a href="/e/parties" title="Parties">Parties</a></li>
-								<li><a href="/e/pcs" title="Profile Classes">Profile Classes</a></li>
-								<li>
-									<a href="/e/mtcs" title="Meter Timeswitch Classes"
-										>Meter Timeswitch Classes</a>
-								</li>
-								<li><a href="/e/meter_types" title="Meter Types">Meter Types</a></li>
-								<li>
-									<a href="/dtc_meter_types" title="DTC Meter Types">DTC Meter Types</a>
-								</li>
-								<li>
-									<a href="/e/meter_payment_types" title="Meter Payments Types"
-										>Meter Payments Types</a>
-								</li>
-								<li><a href="/e/tprs" title="TPRs">TPRs</a></li>
-								<li><a href="/e/sscs" title="SSCs">SSCs</a></li>
-								<li><a href="/e/gsp_groups" title="GSP Groups">GSP Groups</a></li>
-								<li><a href="/e/cops" title="CoPs">CoPs</a></li>
-								<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
-								<li><a href="/read_types" title="Read Types">Read Types</a></li>
-								<li>
-									<a href="/e/energisation_statuses" title="Energisation Statuses"
-										>Energisation Statuses</a></li>
-								<li><a href="/e/sources" title="Sources">Sources</a></li>
-								<li>
-									<a href="/e/generator_types" title="Generator Types"
-										>Generator Types</a>
-								</li>
-							</ul>
-						</details>
-						<details>
-							<summary>&#x1F525; Gas</summary>
-							<ul>                          
-								<li><a href="/g/supplies">Supplies</a></li>
-								<li><a href="/g/supplier_contracts">Supplier Contracts</a></li>
-								<li><a href="/g/industry_contracts">Industry Contracts</a></li>
-								<li><a href="/g/read_types">Read Types</a></li>
-								<li><a href="/g/units">Units</a></li>
-								<li><a href="/g/reports">Reports</a></li>
-								<li><a href="/g/dns">DNs</a></li>
-								<li><a href="/g/reading_frequencies">Reading Frequencies</a></li>
-							</ul>
-						</details>
-						<details>
-							<summary>&#x2699; Administration</summary>
-							<ul>                          
-								<li><a href="/users" title="Users">Users</a></li>
-								<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
-								<li><a href="/system" title="System">System</a></li>
-							</ul>
-						</details>
+				</script>
+				{% block inside_head %}{% endblock %}
+			{% endblock %}
+		</head>
+		<body>
+			{% block body %}
+				<header>
+					<nav>
+						<span onClick="onHamburgerClick()">&#x2630;</span>
+						<nav id="hamburger">
+							<details>
+								<summary>&#x26A1; Contracts</summary>
+								<ul>
+									<li><a href="/e/dc_contracts" title="DC">DC</a></li>
+									<li><a href="/e/mop_contracts" title="MOP">MOP</a></li>
+									<li><a href="/e/supplier_contracts" title="Supplier">Supplier</a></li>
+									<li><a href="/non_core_contracts" title="Non-Core">Non-Core</a></li>
+								</ul>
+							</details>
+							<details>
+								<summary>&#x270F; For Editors</summary>
+								<ul>                          
+									<li>
+										<a href="/local_reports_home" title="Local Reports">Local Reports</a>
+									</li>
+									<li>
+										<a href="/general_imports" title="General Import">General Import</a>
+									</li>
+									<li><a href="/downloads" title="Downloads">Downloads</a></li>
+									<li>
+										<a href="/reports/ecoes_comparison" title="Comparison against ECOES"
+											>Comparison against ECOES</a>
+									</li>
+									<li>
+										<a href="/reports/asset_comparison"
+											 title="Comparison against Asset DB"
+											>Comparison against Asset DB</a>
+									</li>
+									<li>
+										<a href="/local_reports" title="Edit Local Reports"
+											>Edit Local Reports</a>
+									</li>
+									<li><a href="/e/site_snags" title="Site Snags">Site Snags</a></li>
+									<li><a href="/e/scenarios" title="Scenarios">Scenarios</a></li>
+									<li><a href="/reports/batches">Batches</a></li>
+									<li><a href="/edi_viewer" title="EDI Viewer">EDI Viewer</a></li>
+									<li>
+										<a href="https://github.com/WessexWater/chellow" title="Docs">Docs</a>
+									</li> 
+								</ul>
+							</details>
+							<details>
+								<summary>&#x1F3ED; Industry Info</summary>
+								<ul>
+									<li><a href="/e/dnos" title="DNOs">DNOs</a></li>
+									<li>
+										<a href="/e/participants" title="Market Participants"
+											>Market Participants</a>
+									</li>
+									<li><a href="/e/market_roles" title="Market Roles">Market Roles</a></li>
+									<li><a href="/e/parties" title="Parties">Parties</a></li>
+									<li><a href="/e/pcs" title="Profile Classes">Profile Classes</a></li>
+									<li>
+										<a href="/e/mtcs" title="Meter Timeswitch Classes"
+											>Meter Timeswitch Classes</a>
+									</li>
+									<li><a href="/e/meter_types" title="Meter Types">Meter Types</a></li>
+									<li>
+										<a href="/dtc_meter_types" title="DTC Meter Types">DTC Meter Types</a>
+									</li>
+									<li>
+										<a href="/e/meter_payment_types" title="Meter Payments Types"
+											>Meter Payments Types</a>
+									</li>
+									<li><a href="/e/tprs" title="TPRs">TPRs</a></li>
+									<li><a href="/e/sscs" title="SSCs">SSCs</a></li>
+									<li><a href="/e/gsp_groups" title="GSP Groups">GSP Groups</a></li>
+									<li><a href="/e/cops" title="CoPs">CoPs</a></li>
+									<li><a href="/bill_types" title="Bill Types">Bill Types</a></li>
+									<li><a href="/read_types" title="Read Types">Read Types</a></li>
+									<li>
+										<a href="/e/energisation_statuses" title="Energisation Statuses"
+											>Energisation Statuses</a></li>
+									<li><a href="/e/sources" title="Sources">Sources</a></li>
+									<li>
+										<a href="/e/generator_types" title="Generator Types"
+											>Generator Types</a>
+									</li>
+								</ul>
+							</details>
+							<details>
+								<summary>&#x1F525; Gas</summary>
+								<ul>                          
+									<li><a href="/g/supplies">Supplies</a></li>
+									<li><a href="/g/supplier_contracts">Supplier Contracts</a></li>
+									<li><a href="/g/industry_contracts">Industry Contracts</a></li>
+									<li><a href="/g/read_types">Read Types</a></li>
+									<li><a href="/g/units">Units</a></li>
+									<li><a href="/g/reports">Reports</a></li>
+									<li><a href="/g/dns">DNs</a></li>
+									<li><a href="/g/reading_frequencies">Reading Frequencies</a></li>
+								</ul>
+							</details>
+							<details>
+								<summary>&#x2699; Administration</summary>
+								<ul>                          
+									<li><a href="/users" title="Users">Users</a></li>
+									<li><a href="/user_roles" title="Users Roles">Users Roles</a></li>
+									<li><a href="/system" title="System">System</a></li>
+								</ul>
+							</details>
+						</nav>
 					</nav>
+
+					<a href="/"><img src="/static/images/logo.png"></a>
+				</header>
+				<nav class="top-nav">
+					<ul>
+					{% block nav %}{% endblock %}
+					</ul>
+
+					<div>
+						<form action="/sites">
+							<input type="text" name="pattern" placeholder="Search sites" size="14"
+								><button>&#x1F50D;</button>
+						</form>
+
+						<form action="/supplies">
+							<input type="text" name="search_pattern" placeholder="Search supplies"
+								size="14"><button>&#x1F50D;</button>
+						</form>
+					</div>
 				</nav>
 
-				<a href="/"><img src="/static/images/logo.png"></a>
-			</header>
-			<nav class="top-nav">
-				<ul>
-				{% block nav %}{% endblock %}
-				</ul>
-
-				<div>
-					<form action="/sites">
-						<input type="text" name="pattern" placeholder="Search sites" size="14"
-							><button>&#x1F50D;</button>
-					</form>
-
-					<form action="/supplies">
-						<input type="text" name="search_pattern" placeholder="Search supplies"
-							size="14"><button>&#x1F50D;</button>
-					</form>
-				</div>
-			</nav>
-
-			<main>
-				{% if global_alerts %}
-					<ul>
-						{% for alert in global_alerts %}
-							<li class="global">{{alert|safe}}</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
-																										
-				{% with messages = get_flashed_messages() %}
-					{% if messages %}
+				<main>
+					{% if global_alerts %}
 						<ul>
-							{% for message in messages %}
-								<li>{{message}}</li>
+							{% for alert in global_alerts %}
+								<li class="global">{{alert|safe}}</li>
 							{% endfor %}
 						</ul>
 					{% endif %}
-				{% endwith %}
-				{% block content %}
-				{% endblock %}
-			</main>
-		{% endblock %}
-	</body>
-</html>
+																											
+					{% with messages = get_flashed_messages() %}
+						{% if messages %}
+							<ul>
+								{% for message in messages %}
+									<li>{{message}}</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					{% endwith %}
+					{% block content %}
+					{% endblock %}
+				</main>
+			{% endblock %}
+		</body>
+	</html>
+{% endblock %}

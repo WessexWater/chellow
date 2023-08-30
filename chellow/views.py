@@ -99,7 +99,6 @@ from chellow.models import (
     SiteGEra,
     Snag,
     Source,
-    Ssc,
     Supply,
     User,
     UserRole,
@@ -111,7 +110,6 @@ from chellow.utils import (
     ct_datetime,
     ct_datetime_now,
     hh_range,
-    parse_mpan_core,
     req_bool,
     req_date,
     req_decimal,
@@ -733,40 +731,6 @@ def edi_viewer_post():
 def site_edit_get(site_id):
     try:
         site = Site.get_by_id(g.sess, site_id)
-        sources = g.sess.query(Source).order_by(Source.code)
-        generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
-        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-        eras = (
-            g.sess.query(Era)
-            .join(SiteEra)
-            .filter(SiteEra.site == site)
-            .order_by(Era.start_date.desc())
-        )
-        mop_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == "M")
-            .order_by(Contract.name)
-        )
-        dc_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code.in_(("C", "D")))
-            .order_by(Contract.name)
-        )
-        supplier_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == "X")
-            .order_by(Contract.name)
-        )
-        pcs = g.sess.query(Pc).order_by(Pc.code)
-        cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
-        energisation_statuses = g.sess.query(EnergisationStatus).order_by(
-            EnergisationStatus.code
-        )
-        default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
         g_contracts = g.sess.execute(
             select(GContract)
             .where(GContract.is_industry == false())
@@ -780,18 +744,6 @@ def site_edit_get(site_id):
         return render_template(
             "site_edit.html",
             site=site,
-            sources=sources,
-            generator_types=generator_types,
-            gsp_groups=gsp_groups,
-            eras=eras,
-            energisation_statuses=energisation_statuses,
-            default_energisation_status=default_energisation_status,
-            mop_contracts=mop_contracts,
-            dc_contracts=dc_contracts,
-            supplier_contracts=supplier_contracts,
-            pcs=pcs,
-            cops=cops,
-            comms=comms,
             g_contracts=g_contracts,
             g_units=g_units,
             g_exit_zones=g_exit_zones,
@@ -803,16 +755,6 @@ def site_edit_get(site_id):
         return render_template(
             "site_edit.html",
             site=site,
-            sources=sources,
-            generator_types=generator_types,
-            gsp_groups=gsp_groups,
-            eras=eras,
-            mop_contracts=mop_contracts,
-            dc_contracts=dc_contracts,
-            supplier_contracts=supplier_contracts,
-            pcs=pcs,
-            cops=cops,
-            comms=comms,
             g_contracts=g_contracts,
             g_units=g_units,
             g_exit_zones=g_exit_zones,
@@ -837,123 +779,6 @@ def site_edit_post(site_id):
             g.sess.commit()
             flash("Site updated successfully.")
             return chellow_redirect(f"/sites/{site.id}", 303)
-
-        elif "insert_electricity" in request.form:
-            start_date = req_date("start")
-            name = req_str("name")
-            source_id = req_int("source_id")
-            source = Source.get_by_id(g.sess, source_id)
-            gsp_group_id = req_int("gsp_group_id")
-            gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
-            mop_contract_id = req_int("mop_contract_id")
-            mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
-            mop_account = req_str("mop_account")
-            dc_contract_id = req_int("dc_contract_id")
-            dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
-            dc_account = req_str("dc_account")
-            msn = req_str("msn")
-            pc_id = req_int("pc_id")
-            pc = Pc.get_by_id(g.sess, pc_id)
-            mtc_code = req_str("mtc_code")
-            cop_id = req_int("cop_id")
-            cop = Cop.get_by_id(g.sess, cop_id)
-            comm_id = req_int("comm_id")
-            comm = Comm.get_by_id(g.sess, comm_id)
-            ssc_code = req_str("ssc_code")
-            if len(ssc_code) > 0:
-                ssc = Ssc.get_by_code(g.sess, ssc_code, start_date)
-            else:
-                ssc = None
-            energisation_status_id = req_int("energisation_status_id")
-            energisation_status = EnergisationStatus.get_by_id(
-                g.sess, energisation_status_id
-            )
-            properties = req_zish("properties")
-            if "generator_type_id" in request.form:
-                generator_type_id = req_int("generator_type_id")
-                generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
-            else:
-                generator_type = None
-
-            if "imp_mpan_core" in request.form:
-                imp_mpan_core_raw = req_str("imp_mpan_core")
-                if len(imp_mpan_core_raw) == 0:
-                    imp_mpan_core = None
-                else:
-                    imp_mpan_core = parse_mpan_core(imp_mpan_core_raw)
-            else:
-                imp_mpan_core = None
-
-            if imp_mpan_core is None:
-                imp_supplier_contract = None
-                imp_supplier_account = None
-                imp_sc = None
-                imp_llfc_code = None
-            else:
-                imp_supplier_contract_id = req_int("imp_supplier_contract_id")
-                imp_supplier_contract = Contract.get_supplier_by_id(
-                    g.sess, imp_supplier_contract_id
-                )
-                imp_supplier_account = req_str("imp_supplier_account")
-                imp_sc = req_int("imp_sc")
-                imp_llfc_code = req_str("imp_llfc_code")
-
-            if "exp_mpan_core" in request.form:
-                exp_mpan_core_raw = req_str("exp_mpan_core")
-                if len(exp_mpan_core_raw) == 0:
-                    exp_mpan_core = None
-                else:
-                    exp_mpan_core = parse_mpan_core(exp_mpan_core_raw)
-            else:
-                exp_mpan_core = None
-
-            if exp_mpan_core is None:
-                exp_supplier_contract = None
-                exp_supplier_account = None
-                exp_sc = None
-                exp_llfc_code = None
-            else:
-                exp_supplier_contract_id = req_int("exp_supplier_contract_id")
-                exp_supplier_contract = Contract.get_supplier_by_id(
-                    g.sess, exp_supplier_contract_id
-                )
-                exp_supplier_account = req_str("exp_supplier_account")
-                exp_sc = req_int("exp_sc")
-                exp_llfc_code = req_str("exp_llfc_code")
-
-            supply = site.insert_e_supply(
-                g.sess,
-                source,
-                generator_type,
-                name,
-                start_date,
-                None,
-                gsp_group,
-                mop_contract,
-                mop_account,
-                dc_contract,
-                dc_account,
-                msn,
-                pc,
-                mtc_code,
-                cop,
-                comm,
-                ssc,
-                energisation_status,
-                properties,
-                imp_mpan_core,
-                imp_llfc_code,
-                imp_supplier_contract,
-                imp_supplier_account,
-                imp_sc,
-                exp_mpan_core,
-                exp_llfc_code,
-                exp_supplier_contract,
-                exp_supplier_account,
-                exp_sc,
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/e/supplies/{supply.id}", 303)
 
         elif "insert_gas" in request.form:
             name = req_str("name")

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Sites &raquo; {{site.code}} {{site.name}} &raquo; Add Electricity SUpply
+{% endblock %}
+
+{% block nav %}
+	<a href="/sites">Sites</a> &raquo;
+	<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a> &raquo;
+ 	Add Electricity Supply
+{% endblock %}
+
+{% block content %}
+	<form action="/e/sites/{{site.id}}/add_e_supply" method="post">
+		<fieldset hx-get="/e/sites/{{site.id}}/add_e_supply/form" hx-params="*"
+			 hx-trigger="load, change"
+			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id']">
+			<input type="hidden" name="source_id" value="{{request.values.source_id}}">
+			<input type="hidden" name="cop_id" value="{{request.values.cop_id}}">
+			<input type="hidden" name="comm_id" value="{{request.values.comm_id}}">
+			<input type="hidden" name="energisation_status_id"
+					value="{{request.values.energisation_status_id}}">
+			<input type="hidden" name="pc_id" value="{{request.values.pc_id}}">
+			<input type="hidden" name="dno_id" value="{{request.values.dno_id}}">
+			<input type="hidden" name="gsp_group_id" value="{{request.values.gsp_group_id}}">
+			<input type="hidden" name="mtc_participant_id"
+		 			value="{{request.values.mtc_participant_id}}">
+			<input type="hidden" name="name" value="{{request.values.name}}">
+			<input type="hidden" name="mop_contract_id"
+		 			value="{{request.values.mop_contract_id}}">
+			<input type="hidden" name="mop_account" value="{{request.values.mop_account}}">
+			<input type="hidden" name="dc_contract_id"
+		 			value="{{request.values.dc_contract_id}}">
+			<input type="hidden" name="dc_account" value="{{request.values.dc_account}}">
+			<input type="hidden" name="has_imp_mpan" value="{{request.values.has_imp_mpan}}">
+			<input type="hidden" name="imp_mpan_core"
+		 			value="{{request.values.imp_mpan_core}}">
+			<input type="hidden" name="imp_supplier_account"
+					value="{{request.values.imp_supplier_account}}">
+			<input type="hidden" name="imp_llfc_id"
+					value="{{request.values.imp_llfc_id}}">
+			<input type="hidden" name="has_exp_mpan" value="{{request.values.has_exp_mpan}}">
+			<input type="hidden" name="exp_mpan_core"
+		 			value="{{request.values.exp_mpan_core}}">
+			<input type="hidden" name="exp_supplier_account"
+					value="{{request.values.exp_supplier_account}}">
+			<input type="hidden" name="exp_llfc_id"
+					value="{{request.values.exp_llfc_id}}">
+			<input type="hidden" name="ssc_id" value="{{request.values.ssc_id}}">
+		</fieldset>
+	</form>
+{% endblock %}

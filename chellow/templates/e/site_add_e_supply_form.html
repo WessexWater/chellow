@@ -1,0 +1,174 @@
+{% extends "macros.html" %}
+
+{% block html %}
+	<legend>Add an electricity supply</legend>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<label>Messages</label>
+			<ul>
+				{% for message in messages %}
+					<li>{{message}}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	<label>Name</label> {{input_text('name', required=True)}}
+	<label>Start Date</label> {{input_date('start')}}
+	<label>Source</label>
+	<select name="source_id">
+		{% for src in sources %}
+			{{input_option('src_id', src.id, src.code + ' ' + src.name, initial=source.id)}}
+		{% endfor %}
+	</select>
+	{% if source.code in ('gen', 'gen-net') %}
+		<label>Generator</label>
+		<select name="generator_type_id">
+			{% for generator_type in generator_types %}
+				{{input_option(
+					'generator_type_id', generator_type.id,
+					generator_type.code + ' ' +
+					generator_type.description)}}
+			{% endfor %}
+		</select>
+	{% endif %}
+	<label>Meter Serial Number</label> {{input_text('msn')}}
+	<label>GSP Group</label>
+	<select name="gsp_group_id">
+		{% for gsp_group in gsp_groups %}
+			{{input_option(
+				'gsp_group_id', gsp_group.id,
+				gsp_group.code + ' ' + gsp_group.description)}}
+		{% endfor %}
+	</select>
+
+	<label>CoP</label>
+	<select name="cop_id">
+		{% for cop in cops %}
+			{{input_option('cop_id', cop.id, cop.description)}}
+		{% endfor %}
+	</select>										
+
+	<label>Comm</label>
+	<select name="comm_id">
+		{% for comm in comms %}
+			{{input_option(
+				'comm_id', comm.id, comm.code + ' ' + comm.description)}}
+		{% endfor %}
+	</select>										
+
+	<label>Energisation Status</label>
+	<select name="energisation_status_id">
+		{% for energisation_status in energisation_statuses %}
+			{{input_option(
+				'energisation_status_id', energisation_status.id,
+				energisation_status.code + ' - ' +
+				energisation_status.description,
+				initial=default_energisation_status.id)}}
+		{% endfor %}
+	</select>
+
+	<label>MOP Contract</label>
+	<select name="mop_contract_id">
+		{% for contract in mop_contracts %}
+			{{input_option(
+				'mop_contract_id', contract.id, contract.name)}}
+		{% endfor %}
+	</select>
+	<label>MOP Account</label> {{input_text('mop_account', required=True)}}
+	<label>DC Contract</label>
+	<select name="dc_contract_id">
+		{% for contract in dc_contracts %}
+			{{input_option('dc_contract_id', contract.id, contract.name)}}
+		{% endfor %}
+	</select>
+	<label>DC Account</label> {{input_text('dc_account', required=True)}}
+
+	<label>Profile Class</label>
+	<select name="pc_id">
+		{% for p in pcs %}
+			{{input_option('pc_id', p.id, p.code + ' ' + p.name, initial=pc.id)}}
+		{% endfor %}
+	</select>
+
+	<label>DNO</label>
+	<select name="dno_id">
+		{% for dno in dnos %}
+			{{input_option( 'dno_id', dno.id, dno.dno_code + ' ' + dno.name)}}
+		{% endfor %}
+	</select>
+
+	<label>SSC</label>
+	<select name="ssc_id">
+		{% for ss in sscs %}
+			{{input_option( 'ssc_id', ss.id, ss.code + ' ' + ss.description)}}
+		{% endfor %}
+	</select>
+
+	<label>MTC</label>
+	<select name="mtc_participant_id">
+		{% for mtc_participant in mtc_participants %}
+			{{input_option( 'mtc_participant_id', mtc_participant.id,
+		 			mtc_participant.mtc.code + ' ' + mtc_participant.description)}}
+		{% endfor %}
+	</select>
+
+	<label>Properties</label> {{input_textarea('properties', '{}', 10, 80)}}
+
+	<label>Has An Import MPAN?</label> {{input_checkbox('has_imp_mpan')}}
+
+	{% if request.values.has_imp_mpan == 'true' %}
+		<fieldset>
+			<legend>Import</legend>
+			<label>Mpan Core</label>
+		 	{{input_text('imp_mpan_core', '', 35, pattern='[0-9 ]*', required=True)}}
+			<label>LLFC</label>
+			<select name="imp_llfc_id">
+				{% for llfc in imp_llfcs %}
+					{{input_option('imp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description)}}
+				{% endfor %}
+			</select>
+			<label>Supply Capacity</label> {{input_number('imp_sc', '0', required=True)}}
+			<label>Supplier Contract</label>
+			<select name="imp_supplier_contract_id">
+				{% for contract in supplier_contracts %}
+					{{input_option(
+						'imp_supplier_contract_id', contract.id,
+						contract.name)}}
+				{% endfor %}
+			</select>
+			<label>Supplier Account</label>
+			{{input_text('imp_supplier_account', required=True)}}
+		</fieldset>	
+	{% endif %}
+
+	<label>Has An Export MPAN?</label> {{input_checkbox('has_exp_mpan')}}
+
+	{% if request.values.has_exp_mpan == 'true' %}
+		<fieldset>
+			<legend>Export</legend>
+			<label>Mpan Core</label>
+			{{input_text('exp_mpan_core', '', 35, pattern='[0-9 ]*', required=True)}}
+
+			<label>LLFC</label>
+			<select name="exp_llfc_id">
+				{% for llfc in exp_llfcs %}
+					{{input_option('exp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description)}}
+				{% endfor %}
+			</select>
+
+			<label>Supply Capacity</label>
+			{{input_number('exp_sc', '0', required=True)}}
+			<label>Supplier Contract</label>
+			<select name="exp_supplier_contract_id">
+				{% for contract in supplier_contracts %}
+					{{input_option(
+						'exp_supplier_contract_id', contract.id,
+						contract.name)}}
+				{% endfor %}
+			</select>
+			<label>Supplier Account</label>
+			{{input_text('exp_supplier_account', required=True)}}
+		</fieldset>
+	{% endif %}
+	<input name="insert_electricity" type="submit" value="Add">
+{% endblock %}

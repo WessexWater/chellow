@@ -2232,6 +2232,359 @@ def test_scenario_edit_post(sess, client):
     match(response, 303, r"/scenarios/1")
 
 
+def test_site_add_e_supply__form_get(client, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
+    Contract.insert_dc(sess, "Fusion DC 2000", participant, "", {}, vf, None, {})
+    insert_cops(sess)
+    insert_comms(sess)
+    Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
+    insert_sources(sess)
+    insert_energisation_statuses(sess)
+    Pc.insert(sess, "00", "", vf, None)
+
+    sess.commit()
+
+    query_string = {
+        "dno_id": "",
+        "source_id": "",
+        "pc_id": "",
+        "mtc_participant_id": "",
+    }
+    response = client.get(
+        f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string
+    )
+    patterns = [
+        r'<select name="comm_id">\s*'
+        r'<option value="3">GPRS General Packet Radio Service</option>\s*',
+    ]
+    match(response, 200, *patterns)
+
+
+def test_site_add_e_supply_post_hh(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        utc_datetime(1996, 1, 1),
+        None,
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    sess.commit()
+
+    data = {
+        "source_id": source.id,
+        "gsp_group_id": gsp_group.id,
+        "mop_contract_id": mop_contract.id,
+        "dc_contract_id": dc_contract.id,
+        "dc_account": "dc1",
+        "msn": "jjl4",
+        "pc_id": pc.id,
+        "mtc_participant_id": mtc_participant.id,
+        "cop_id": cop.id,
+        "comm_id": comm.id,
+        "ssc_id": "",
+        "properties": "{}",
+        "start_year": "2021",
+        "start_month": "01",
+        "start_day": "01",
+        "start_hour": "00",
+        "start_minute": "00",
+        "mop_account": "ma1",
+        "imp_mpan_core": "22 6644 1123 880",
+        "imp_supplier_contract_id": imp_supplier_contract.id,
+        "imp_supplier_account": "sup1",
+        "imp_sc": "200",
+        "imp_llfc_id": llfc.id,
+        "energisation_status_id": energisation_status.id,
+        "name": "main",
+    }
+    response = client.post(f"/e/sites/{site.id}/add_e_supply", data=data)
+    match(response, 303, "/e/supplies")
+
+
+def test_site_add_e_supply_post_nhh(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "03", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1, 1), None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, vf, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, vf, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, vf, None)
+    sess.commit()
+
+    data = {
+        "source_id": source.id,
+        "gsp_group_id": gsp_group.id,
+        "mop_contract_id": mop_contract.id,
+        "dc_contract_id": dc_contract.id,
+        "dc_account": "dc1",
+        "msn": "jjl4",
+        "pc_id": pc.id,
+        "mtc_participant_id": mtc_participant.id,
+        "cop_id": cop.id,
+        "comm_id": comm.id,
+        "ssc_id": ssc.id,
+        "properties": "{}",
+        "start_year": "2021",
+        "start_month": "01",
+        "start_day": "01",
+        "start_hour": "00",
+        "start_minute": "00",
+        "mop_account": "ma1",
+        "imp_mpan_core": "22 6644 1123 880",
+        "imp_supplier_contract_id": imp_supplier_contract.id,
+        "imp_supplier_account": "sup1",
+        "imp_sc": "200",
+        "imp_llfc_id": llfc.id,
+        "energisation_status_id": energisation_status.id,
+        "name": "main",
+    }
+    response = client.post(f"/e/sites/{site.id}/add_e_supply", data=data)
+    match(response, 303)
+
+
+def test_site_add_e_supply_post_fail(client, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    insert_cops(sess)
+    insert_comms(sess)
+    cop = Cop.get_by_code(sess, "5")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        "",
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno.insert_llfc(sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
+    dno.insert_llfc(sess, "521", "Export (HV)", voltage_level, False, False, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    sess.commit()
+
+    data = {
+        "source_id": str(source.id),
+        "name": "Bob",
+        "start_date_year": "2000",
+        "start_date_month": "01",
+        "start_date_day": "01",
+        "start_date_hour": "00",
+        "start_date_minute": "00",
+        "insert_electricity": "Insert Electricity",
+        "mop_contract_id": str(mop_contract.id),
+        "dc_contract_id": str(dc_contract.id),
+        "pc_id": str(pc.id),
+        "cop_id": str(cop.id),
+        "imp_supplier_contract_id": str(imp_supplier_contract.id),
+        "energisation_status_id": str(energisation_status.id),
+        "gsp_group_id": str(gsp_group.id),
+    }
+    response = client.post(f"/e/sites/{site.id}/add_e_supply", data=data)
+
+    match(response, 400)
+
+
 def test_supplier_batches_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")

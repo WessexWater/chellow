@@ -45,6 +45,20 @@ def req_int(name):
         raise BadRequest(f"Problem parsing the field {name} as an integer: {e}")
 
 
+def req_int_none(name):
+    val = req_str(name)
+    if val == "":
+        return None
+    else:
+        try:
+            return int(val)
+        except ValueError as e:
+            raise BadRequest(
+                f"Problem parsing the field '{name}' with value '{val}' as an integer: "
+                f"{e}"
+            )
+
+
 def req_zish(name):
     try:
         return loads(req_str(name))

@@ -1,0 +1,179 @@
+{%- macro input_date(prefix, initial=None, resolution='minute') -%}
+  {% if prefix != None %}
+    {% set year_field = prefix + '_year' %}
+    {% set month_field = prefix + '_month' %}
+    {% set day_field = prefix + '_day' %}
+    {% set hour_field = prefix + '_hour' %}
+    {% set minute_field = prefix + '_minute' %}
+  {% else %}
+    {% set year_field = 'year' %}
+    {% set month_field = 'month' %}
+    {% set day_field = 'day' %}
+    {% set hour_field = 'hour' %}
+    {% set minute_field = 'minute' %}
+  {% endif %}
+
+  {% set initial = initial|now_if_none|to_ct %}
+	<div>
+		<input name="{{ year_field }}" maxlength="4" size="4" value="
+			{%- if request.values[year_field] -%}
+				{{ request.values[year_field] }}
+			{%- else -%}
+				{{ initial|hh_format('year') }}
+			{%- endif %}">
+
+		{%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
+			-<select name="{{ month_field }}">
+			{% for month in range(1, 13) -%}
+				<option value="{{ "%02i"|format(month) }}"
+					{%- if request.values[month_field] -%}
+						{%- if request.values[month_field]|int == month %} selected
+						{%- endif -%}
+					{%- else -%}
+						{%- if initial.month == month %} selected{%- endif -%}
+					{%- endif -%}>{{ "%02i"|format(month) }}</option>
+			{% endfor %}
+			</select>
+		{%- endif -%}
+
+		{% if resolution in ['day', 'hour', 'minute'] -%}
+			-<select name="{{ day_field }}">
+				{% for day in range(1, 32) -%}
+					<option value="{{ day }}"
+						{%- if request.values[day_field] -%}
+							{%- if request.values[day_field]|int == day %} selected
+							{% endif -%}
+						{% else %}
+							{%- if initial.day == day %} selected{% endif -%}
+						{%- endif %}>{{ "%02i"|format(day) }}</option>
+				{% endfor -%}
+			</select>
+		{%- endif -%}
+
+		{% if resolution in ['hour', 'minute'] %}
+			<select name="{{ hour_field }}">
+				{% for hour in range(24) %}
+					<option value="{{ hour }}"
+						{%- if request.values[hour_field] -%}
+							{%- if request.values[hour_field]|int == hour %} selected
+							{%- endif -%}
+						{%- else -%}
+							{%- if initial.hour == hour %} selected{%- endif -%}
+						{%- endif %}>{{ "%02i"|format(hour) }}</option>
+				{%- endfor %}
+			</select>
+		{%- endif -%}
+
+		{% if resolution == 'minute' -%}
+			:<select name="{{ minute_field }}">
+				{% for minute in range(0, 31, 30) -%}
+					<option value="{{ minute }}"
+						{%- if request.values[minute_field] %}
+							{%- if request.values[minute_field]|int == minute %} selected
+							{%- endif %}
+						{%- else %}
+							{%- if initial.minute == minute %} selected{% endif %}
+							{%- endif %}>{{ "%02i"|format(minute) }}</option>
+				{% endfor %}
+			</select>
+		{%- endif %}
+	</div>
+{%- endmacro -%}
+
+{%- macro input_option(name, item_id, desc, initial=None) -%}
+    <option value="{{ item_id }}"
+        {%- if request.values[name] -%}
+            {%- if request.values[name] == '' ~ item_id %} selected
+            {%- endif -%}
+        {%- else -%}
+            {%- if initial == item_id %} selected{% endif -%}
+            {%- endif -%}>{{ desc }}</option>
+{%- endmacro -%}
+
+{% macro input_text(
+  name, initial=None, size=None, maxlength=None, placeholder=None,
+  required=None, pattern=None) %}
+    <input name="{{name}}" value="
+        {%- if request.values[name] -%}
+            {{ request.values[name] }}
+        {%- elif initial is not none -%}
+            {{initial}}
+        {%- endif -%}"
+        {%- if size %} size="{{ size }}"{% endif %}
+        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+        {%- if required %} required="required"{% endif %}
+        {%- if pattern %} pattern="{{pattern}}"{% endif %}
+        {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}>
+{%- endmacro -%}
+
+{% macro input_number(
+  name, initial=None, size=None, maxlength=None, placeholder=None,
+  required=None) %}
+    <input type="number" name="{{name}}" value="
+        {%- if request.values[name] -%}
+            {{ request.values[name] }}
+        {%- elif initial is not none -%}
+            {{initial}}
+        {%- endif -%}"
+        {%- if size %} size="{{ size }}"{% endif %}
+        {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
+        {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+        {%- if required %} required="required"{% endif %}>
+{%- endmacro -%}
+
+{% macro input_textarea(
+    name, initial, rows, cols, placeholder=None, show_pos=False) -%}
+	<div>
+		<textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+			cols="{{ cols }}"
+			{%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}>
+			{%- if request.values[name] -%}
+				{{ request.values[name] }}
+			{%- else -%}
+				{{ initial }}
+			{%- endif -%}
+		</textarea>
+		{% if show_pos %}
+			<p id="{{name}}_pos">Line: Column:</p>
+			<script type="text/javascript">
+				var props = document.getElementById('{{name}}');
+				var cursorPos = document.getElementById('{{name}}_pos');
+
+				props.onkeyup = updateLineCharacter;
+				props.onclick = updateLineCharacter;
+
+				function updateLineCharacter() {
+					var textLines = props.value.substr(0, props.selectionStart).split("\n");
+					var line = textLines.length;
+					var column = textLines[textLines.length - 1].length + 1;
+					cursorPos.innerHTML = "Line: " + line + " Column: "+ column
+				};
+			</script>
+		{% endif %}
+	</div>
+{%- endmacro -%}
+
+{%- macro input_checkbox(name, initial) %}
+	<input type="checkbox" name="{{ name }}" value="true"
+		{%- if request.values[name] -%}
+				{%- if request.values[name] == 'true' %} checked
+				{%- endif -%}
+		{%- else -%}
+				{%- if initial == True %} checked{% endif -%}
+		{%- endif -%}>
+{%- endmacro -%}
+
+{%- macro messages() %}
+	{% with msgs = get_flashed_messages() %}
+		{% if msgs %}
+			<ul>
+				{% for message in mgs %}
+					<li>{{message}}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+{%- endmacro -%}
+
+{% block html %}
+{% endblock %}
