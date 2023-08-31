@@ -123,6 +123,7 @@ class Parser:
     def to_decimal(self, dec_index, dec_name, is_money=False):
         try:
             dec_str = self.vals[dec_index]
+            dec_str = dec_str.replace(",", "")
             dec = Decimal(dec_str)
             if is_money:
                 dec += Decimal("0.00")
