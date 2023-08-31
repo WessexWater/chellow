@@ -77,9 +77,6 @@ def _process_CCD1(elements, headers):
     pres_read_date = to_finish_date(prdt[0])
     prev_read_date = to_finish_date(pvdt[0])
 
-    tcod = elements["TCOD"]
-    if tcod[0] == "EBRSD":
-        return
     tmod = elements["TMOD"]
     mtnr = elements["MTNR"]
     mloc = elements["MLOC"]
@@ -204,6 +201,8 @@ def _decimal(elements, element_name):
 def _process_CCD3(elements, headers):
     breakdown = headers["breakdown"]
 
+    tcod = elements["TCOD"]
+    tcod0 = tcod[1]
     tmod = elements["TMOD"]
     tmod0 = tmod[0]
     ignore_rate = ignore_kwh = False
@@ -222,7 +221,16 @@ def _process_CCD3(elements, headers):
         prefix = "ebrs"
         ignore_rate = ignore_kwh = True
     else:
-        prefix = tmod0
+        if tcod0 == "Energy and Trade Intensive Industries":
+            prefix = "ebrs"
+            ignore_rate = ignore_kwh = True
+        elif tcod0 in (
+            "Energy Bill Discount Scheme",
+            "Energy Bill Relief Scheme Discount",
+        ):
+            prefix = "ebrs"
+        else:
+            prefix = tmod0
 
     if not ignore_kwh and "NUCT" in elements and len(elements["NUCT"][0]) > 0:
         kwh = _decimal(elements, "NUCT") / Decimal("1000")
@@ -274,14 +282,14 @@ def _process_MTR(elements, headers):
                 if r["pres_type_code"] == "C":
                     r["pres_type_code"] = "E"
 
-    dup_reads = set()
-    new_reads = []
-    for r in reads:
-        k = tuple(v for n, v in sorted(r.items()))
-        if k in dup_reads:
-            continue
-        dup_reads.add(k)
-        new_reads.append(r)
+        dup_reads = set()
+        new_reads = []
+        for r in reads:
+            k = tuple(v for n, v in sorted(r.items()))
+            if k in dup_reads:
+                continue
+            dup_reads.add(k)
+            new_reads.append(r)
 
         raw_bill = {
             "bill_type_code": headers["bill_type_code"],

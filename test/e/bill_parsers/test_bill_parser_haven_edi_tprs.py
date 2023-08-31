@@ -270,33 +270,10 @@ def test_process_CCD3(mocker):
     assert headers == expected_headers
 
 
-def test_process_CCD3_ebrs(mocker):
-    elements = {
-        "CCDE": ["3", "", "NRG"],
-        "TMOD": ["823408"],
-        "CPPU": ["028381"],
-        "CTOT": ["47119"],
-        "NUCT": ["4127137"],
-    }
-
-    headers = {"kwh": Decimal("0"), "breakdown": defaultdict(int, {})}
-
-    _process_CCD3(elements, headers)
-
-    expected_headers = {
-        "kwh": Decimal("0"),
-        "breakdown": {
-            "ebrs-gbp": Decimal("471.19"),
-            "ebrs-kwh": Decimal("4127.137"),
-            "ebrs-rate": {Decimal("0.28381")},
-        },
-    }
-    assert headers == expected_headers
-
-
 def test_process_CCD3_ebrs_kwh(mocker):
     elements = {
         "CCDE": ["3", "", "NRG"],
+        "TCOD": ["R10001", "Day"],
         "TMOD": ["823408"],
         "NUCT": ["4127137"],
     }
@@ -355,26 +332,6 @@ def test_process_CCD_1(mocker):
             }
         ],
     }
-    assert headers == expected_headers
-
-
-def test_process_CCD1_ebrs(mocker):
-    elements = {
-        "PRDT": ["200301"],
-        "PVDT": ["200331"],
-        "TCOD": ["EBRSD", "Energy Bill Relief Scheme Discount"],
-        "TMOD": ["453043"],
-        "MTNR": ["hgl"],
-        "MLOC": ["2275834732592"],
-        "PRRD": ["0", "00", "1", "00"],
-        "ADJF": ["", "1"],
-    }
-
-    headers = {}
-
-    _process_CCD1(elements, headers)
-
-    expected_headers = {}
     assert headers == expected_headers
 
 

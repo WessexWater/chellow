@@ -64,7 +64,7 @@ setenv =
 commands =
     black --check .
     flake8 .
-    pytest --exitfirst -W error -W ignore::DeprecationWarning test/test_models.py
+    pytest --exitfirst -W error -W ignore::DeprecationWarning
     echo PGPORT is {env:PGPORT:unset}
     echo PGUSER is {env:PGUSER:unset}
     echo Test database is {env:PGDATABASE:unset} on {env:PGHOST:unset}
