@@ -4136,13 +4136,15 @@ class Supply(Base, PersistentClass):
                         c_params["finish_date"] = finish_date
 
                     sess.execute(
-                        "update hh_datum set channel_id = :target_channel_id "
-                        "where start_date >= :start_date and "
-                        "channel_id = :channel_id"
-                        + (
-                            ""
-                            if finish_date is None
-                            else " and start_date <= :finish_date"
+                        text(
+                            "update hh_datum set channel_id = :target_channel_id "
+                            "where start_date >= :start_date and "
+                            "channel_id = :channel_id"
+                            + (
+                                ""
+                                if finish_date is None
+                                else " and start_date <= :finish_date"
+                            )
                         ),
                         c_params,
                     )
