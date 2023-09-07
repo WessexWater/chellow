@@ -1108,6 +1108,15 @@ class Party(Base, PersistentClass):
         else:
             raise BadRequest("This party isn't a DNO.")
 
+    @classmethod
+    def insert(
+        cls, sess, participant, market_role, name, valid_from, valid_to, dno_code
+    ):
+        party = Party(participant, market_role, name, valid_from, valid_to, dno_code)
+        sess.add(party)
+        sess.flush()
+        return party
+
     @staticmethod
     def find_by_participant_role(sess, participant, market_role, valid_from):
         return sess.execute(
@@ -2260,9 +2269,9 @@ class Participant(Base, PersistentClass):
         self.name = name
 
     def insert_party(self, sess, market_role, name, valid_from, valid_to, dno_code):
-        party = Party(self, market_role, name, valid_from, valid_to, dno_code)
-        sess.add(party)
-        return party
+        return Party.insert(
+            sess, self, market_role, name, valid_from, valid_to, dno_code
+        )
 
     def get_dno(self, sess):
         return sess.execute(

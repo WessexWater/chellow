@@ -203,6 +203,7 @@ def create_app(testing=False):
                     or path
                     in (
                         "/reports/169",
+                        "/reports/183",
                         "/reports/187",
                         "/reports/247",
                         "/reports/111",
