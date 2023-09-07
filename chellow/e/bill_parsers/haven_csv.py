@@ -209,26 +209,25 @@ class Parser:
 
     def make_raw_bills(self):
         raw_bills = []
-        sess = Session()
-        headers = {"sess": sess}
+        with Session() as sess:
+            headers = {"sess": sess}
 
-        blank_set = set(("",))
-        for self.line_number, row in enumerate(self.reader):
-            # skip blank lines
-            if len(row) == 0 or set(row) == blank_set:
-                continue
+            blank_set = set(("",))
+            for self.line_number, row in enumerate(self.reader):
+                # skip blank lines
+                if len(row) == 0 or set(row) == blank_set:
+                    continue
 
-            try:
-                bill = _process_line(row[0], row[1:], headers)
-            except BadRequest as e:
-                raise BadRequest(
-                    f"Can't parse line number {self.line_number}: {row} : "
-                    f"{e.description}"
-                )
+                try:
+                    bill = _process_line(row[0], row[1:], headers)
+                except BadRequest as e:
+                    raise BadRequest(
+                        f"Can't parse line number {self.line_number}: {row} : "
+                        f"{e.description}"
+                    )
 
-            if bill is not None:
-                raw_bills.append(bill)
-        sess.close()
+                if bill is not None:
+                    raw_bills.append(bill)
         return raw_bills
 
 

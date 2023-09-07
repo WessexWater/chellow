@@ -138,60 +138,57 @@ def _save_cache(sess, cache):
 
 
 def _import_tlms(log_func):
-    sess = None
     cache = {}
-    try:
-        sess = Session()
-        log_func("Starting to check TLMs.")
-        contract = Contract.get_non_core_by_name(sess, "tlms")
-        contract_props = contract.make_properties()
-        if contract_props.get("enabled", False):
-            config = Contract.get_non_core_by_name(sess, "configuration")
-            props = config.make_properties()
-            scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-            if scripting_key is None:
-                raise BadRequest(
-                    f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be found "
-                    f"in the configuration properties."
+    with Session() as sess:
+        try:
+            log_func("Starting to check TLMs.")
+            contract = Contract.get_non_core_by_name(sess, "tlms")
+            contract_props = contract.make_properties()
+            if contract_props.get("enabled", False):
+                config = Contract.get_non_core_by_name(sess, "configuration")
+                props = config.make_properties()
+                scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+                if scripting_key is None:
+                    raise BadRequest(
+                        f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be "
+                        f"found in the configuration properties."
+                    )
+
+                url_str = (
+                    f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
                 )
 
-            url_str = (
-                f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
-            )
+                sess.rollback()  # Avoid long-running transaction
+                r = requests.get(url_str)
+                parser = csv.reader(
+                    (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
+                )
+                log_func(f"Opened {url_str}.")
 
-            sess.rollback()  # Avoid long-running transaction
-            r = requests.get(url_str)
-            parser = csv.reader(
-                (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
-            )
-            log_func(f"Opened {url_str}.")
-
-            next(parser, None)
-            for i, values in enumerate(parser):
-                if values[3] == "":
-                    for zone in GSP_GROUP_LOOKUP.keys():
-                        values[3] = zone
+                next(parser, None)
+                for i, values in enumerate(parser):
+                    if values[3] == "":
+                        for zone in GSP_GROUP_LOOKUP.keys():
+                            values[3] = zone
+                            _process_line(cache, sess, contract, log_func, values)
+                    else:
                         _process_line(cache, sess, contract, log_func, values)
-                else:
-                    _process_line(cache, sess, contract, log_func, values)
 
-            _save_cache(sess, cache)
-        else:
-            log_func(
-                "The importer is disabled. Set 'enabled' to 'true' in the properties "
-                "to enable it."
-            )
+                _save_cache(sess, cache)
+            else:
+                log_func(
+                    "The importer is disabled. Set 'enabled' to 'true' in the "
+                    "properties to enable it."
+                )
 
-    except BadRequest as e:
-        log_func(f"Problem: {e.description}")
-        sess.rollback()
-    except BaseException:
-        log_func(f"Outer problem {traceback.format_exc()}")
-        sess.rollback()
-    finally:
-        if sess is not None:
-            sess.close()
-        log_func("Finished checking TLM rates.")
+        except BadRequest as e:
+            log_func(f"Problem: {e.description}")
+            sess.rollback()
+        except BaseException:
+            log_func(f"Outer problem {traceback.format_exc()}")
+            sess.rollback()
+        finally:
+            log_func("Finished checking TLM rates.")
 
 
 GSP_GROUP_LOOKUP = {

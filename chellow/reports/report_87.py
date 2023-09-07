@@ -178,16 +178,15 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
 
 
 def content(start_date, finish_date, contract_id, user):
-    sess = f = None
+    f = None
     try:
         running_name, finished_name = chellow.dloads.make_names(
             "virtual_bills.csv", user
         )
 
         f = open(running_name, mode="w", newline="")
-        sess = Session()
-
-        create_csv(f, sess, start_date, finish_date, contract_id)
+        with Session() as sess:
+            create_csv(f, sess, start_date, finish_date, contract_id)
 
     except BadRequest as e:
         if f is None:
@@ -200,8 +199,6 @@ def content(start_date, finish_date, contract_id, user):
         else:
             f.write(traceback.format_exc())
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

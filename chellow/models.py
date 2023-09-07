@@ -182,9 +182,7 @@ def log_message(msg):
 
 @lru_cache()
 def get_non_core_contract_id(name):
-    sess = None
-    try:
-        sess = Session()
+    with Session() as sess:
         cont = (
             sess.query(Contract)
             .join(MarketRole)
@@ -192,25 +190,17 @@ def get_non_core_contract_id(name):
             .one()
         )
         return cont.id
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 @lru_cache()
 def get_g_industry_contract_id(name):
-    sess = None
-    try:
-        sess = Session()
+    with Session() as sess:
         cont = sess.execute(
             select(GContract).where(
                 GContract.is_industry == true(), GContract.name == name
             )
         ).scalar_one()
         return cont.id
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 @event.listens_for(Engine, "handle_error")
@@ -7343,9 +7333,7 @@ upgrade_funcs.extend(
 
 
 def db_upgrade(root_path):
-    sess = None
-    try:
-        sess = Session()
+    with Session() as sess:
         db_version = find_db_version(sess)
         curr_version = len(upgrade_funcs)
         if db_version is None:
@@ -7382,9 +7370,6 @@ def db_upgrade(root_path):
                 f"Successfully upgraded from database version {db_version} to "
                 f"database version {db_version + 1}."
             )
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 def find_db_version(sess):

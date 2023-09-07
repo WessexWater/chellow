@@ -42,76 +42,81 @@ def _parse_date(date_str):
 
 
 def content(user_id, show_ignored, report_run_id):
-    sess = f = report_run = None
+    f = report_run = None
     try:
-        sess = Session()
-        user = User.get_by_id(sess, user_id)
-        running_name, finished_name = chellow.dloads.make_names(f"{FNAME}.csv", user)
-        f = open(running_name, mode="w", newline="")
-        report_run = ReportRun.get_by_id(sess, report_run_id)
-
-        props = Contract.get_non_core_by_name(sess, "configuration").make_properties()
-
-        ECOES_KEY = "ecoes"
-        try:
-            ecoes_props = props[ECOES_KEY]
-        except KeyError:
-            raise BadRequest(
-                f"The property {ECOES_KEY} cannot be found in the configuration "
-                f"properties."
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+            running_name, finished_name = chellow.dloads.make_names(
+                f"{FNAME}.csv", user
             )
+            f = open(running_name, mode="w", newline="")
+            report_run = ReportRun.get_by_id(sess, report_run_id)
 
-        for key in (
-            "user_name",
-            "password",
-            "prefix",
-            "exclude_mpan_cores",
-            "ignore_mpan_cores_msn",
-        ):
+            props = Contract.get_non_core_by_name(
+                sess, "configuration"
+            ).make_properties()
+
+            ECOES_KEY = "ecoes"
             try:
-                ecoes_props[key]
+                ecoes_props = props[ECOES_KEY]
             except KeyError:
                 raise BadRequest(
-                    f"The property {key} cannot be found in the 'ecoes' section of "
-                    f"the configuration properties."
+                    f"The property {ECOES_KEY} cannot be found in the configuration "
+                    f"properties."
                 )
 
-        exclude_mpan_cores = ecoes_props["exclude_mpan_cores"]
-        ignore_mpan_cores_msn = ecoes_props["ignore_mpan_cores_msn"]
-        url_prefix = ecoes_props["prefix"]
+            for key in (
+                "user_name",
+                "password",
+                "prefix",
+                "exclude_mpan_cores",
+                "ignore_mpan_cores_msn",
+            ):
+                try:
+                    ecoes_props[key]
+                except KeyError:
+                    raise BadRequest(
+                        f"The property {key} cannot be found in the 'ecoes' section of "
+                        f"the configuration properties."
+                    )
 
-        proxies = props.get("proxies", {})
-        s = requests.Session()
-        s.verify = False
-        r = s.get(url_prefix, proxies=proxies)
-        data = {
-            "Username": ecoes_props["user_name"],
-            "Password": ecoes_props["password"],
-        }
-        login_j = s.post(url_prefix, data=data, allow_redirects=False).json()
-        if not login_j["Success"]:
-            raise BadRequest(f"Login to ECOES failed: {login_j['Messages']}")
-        elif "RedirectUrl" in login_j and "SetPassword" in login_j["RedirectUrl"]:
-            raise BadRequest(
-                "Login to ECOES failed, it looks like the password needs to be changed"
+            exclude_mpan_cores = ecoes_props["exclude_mpan_cores"]
+            ignore_mpan_cores_msn = ecoes_props["ignore_mpan_cores_msn"]
+            url_prefix = ecoes_props["prefix"]
+
+            proxies = props.get("proxies", {})
+            s = requests.Session()
+            s.verify = False
+            r = s.get(url_prefix, proxies=proxies)
+            data = {
+                "Username": ecoes_props["user_name"],
+                "Password": ecoes_props["password"],
+            }
+            login_j = s.post(url_prefix, data=data, allow_redirects=False).json()
+            if not login_j["Success"]:
+                raise BadRequest(f"Login to ECOES failed: {login_j['Messages']}")
+            elif "RedirectUrl" in login_j and "SetPassword" in login_j["RedirectUrl"]:
+                raise BadRequest(
+                    "Login to ECOES failed, it looks like the password needs to be "
+                    "changed"
+                )
+
+            r = s.get(
+                f"{url_prefix}PortfolioAccess/ExportPortfolioMPANs?fileType=csv",
+                proxies=proxies,
             )
 
-        r = s.get(
-            f"{url_prefix}PortfolioAccess/ExportPortfolioMPANs?fileType=csv",
-            proxies=proxies,
-        )
-
-        _process(
-            sess,
-            r.text.splitlines(True),
-            exclude_mpan_cores,
-            ignore_mpan_cores_msn,
-            f,
-            show_ignored,
-            report_run,
-        )
-        report_run.update("finished")
-        sess.commit()
+            _process(
+                sess,
+                r.text.splitlines(True),
+                exclude_mpan_cores,
+                ignore_mpan_cores_msn,
+                f,
+                show_ignored,
+                report_run,
+            )
+            report_run.update("finished")
+            sess.commit()
 
     except BadRequest as e:
         msg = e.description
@@ -133,8 +138,6 @@ def content(user_id, show_ignored, report_run_id):
             f.write(msg)
         raise e
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

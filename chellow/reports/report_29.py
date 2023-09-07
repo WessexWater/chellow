@@ -18,50 +18,47 @@ def _write_row(writer, total, values, titles):
 
 
 def content(start_date, finish_date, site_id, typ, user_id):
-    sess = f = writer = None
+    f = writer = None
     try:
-        sess = Session()
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+            running_name, finished_name = chellow.dloads.make_names(
+                f'site_hh_data_{to_ct(start_date).strftime("%Y%m%d%H%M")}.csv', user
+            )
+            f = open(running_name, mode="w", newline="")
+            writer = csv.writer(f, lineterminator="\n")
+            titles = ["site_code", "type", "hh_start_clock_time", "total"]
+            hr_titles = tuple(map(str, range(1, 51)))
+            titles.extend(hr_titles)
+            writer.writerow(titles)
+            site = Site.get_by_id(sess, site_id)
 
-        user = User.get_by_id(sess, user_id)
-        running_name, finished_name = chellow.dloads.make_names(
-            f'site_hh_data_{to_ct(start_date).strftime("%Y%m%d%H%M")}.csv', user
-        )
-        f = open(running_name, mode="w", newline="")
-        writer = csv.writer(f, lineterminator="\n")
-        titles = ["site_code", "type", "hh_start_clock_time", "total"]
-        hr_titles = tuple(map(str, range(1, 51)))
-        titles.extend(hr_titles)
-        writer.writerow(titles)
-        site = Site.get_by_id(sess, site_id)
-
-        vals = total = hh_num = None
-        for hh in site.hh_data(sess, start_date, finish_date):
-            hh_start_ct = to_ct(hh["start_date"])
-            if (hh_start_ct.hour, hh_start_ct.minute) == (0, 0):
-                if vals is not None:
-                    _write_row(writer, total, vals, titles)
-                vals = {
-                    "site_code": site.code,
-                    "type": typ,
-                    "hh_start_clock_time": hh_start_ct.strftime("%Y-%m-%d"),
-                }
-                for t in hr_titles:
-                    vals[t] = None
-                total = 0
-                hh_num = 1
-            val = hh[typ]
-            vals[str(hh_num)] = val
-            hh_num += 1
-            total += val
-        if vals is not None:
-            _write_row(writer, total, vals, titles)
+            vals = total = hh_num = None
+            for hh in site.hh_data(sess, start_date, finish_date):
+                hh_start_ct = to_ct(hh["start_date"])
+                if (hh_start_ct.hour, hh_start_ct.minute) == (0, 0):
+                    if vals is not None:
+                        _write_row(writer, total, vals, titles)
+                    vals = {
+                        "site_code": site.code,
+                        "type": typ,
+                        "hh_start_clock_time": hh_start_ct.strftime("%Y-%m-%d"),
+                    }
+                    for t in hr_titles:
+                        vals[t] = None
+                    total = 0
+                    hh_num = 1
+                val = hh[typ]
+                vals[str(hh_num)] = val
+                hh_num += 1
+                total += val
+            if vals is not None:
+                _write_row(writer, total, vals, titles)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         writer.writerow([msg])
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

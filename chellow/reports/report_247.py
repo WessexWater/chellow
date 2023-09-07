@@ -672,290 +672,282 @@ def content(
     bill_check_site_rows = []
     bill_check_era_rows = []
     try:
-        sess = Session()
+        with Session() as sess:
+            start_year = scenario_props["scenario_start_year"]
+            start_month = scenario_props["scenario_start_month"]
+            months = scenario_props["scenario_duration"]
 
-        start_year = scenario_props["scenario_start_year"]
-        start_month = scenario_props["scenario_start_month"]
-        months = scenario_props["scenario_duration"]
+            month_pairs = list(
+                c_months_u(
+                    start_year=start_year, start_month=start_month, months=months
+                )
+            )
+            start_date_utc = month_pairs[0][0]
+            finish_date_utc = month_pairs[-1][-1]
 
-        month_pairs = list(
-            c_months_u(start_year=start_year, start_month=start_month, months=months)
-        )
-        start_date_utc = month_pairs[0][0]
-        finish_date_utc = month_pairs[-1][-1]
-
-        base_name.append(
-            hh_format(start_date_utc)
-            .replace(" ", "_")
-            .replace(":", "")
-            .replace("-", "")
-        )
-
-        base_name.append("for")
-        base_name.append(str(months))
-        base_name.append("months")
-
-        if "forecast_from" in scenario_props:
-            forecast_from = scenario_props["forecast_from"]
-        else:
-            forecast_from = None
-
-        if forecast_from is None:
-            forecast_from = forecast_date()
-        else:
-            forecast_from = to_utc(forecast_from)
-
-        sites = sess.query(Site).distinct().order_by(Site.code)
-
-        mpan_cores = scenario_props.get("mpan_cores")
-        supply_ids = None
-        if mpan_cores is not None:
-            supply_ids = []
-            for mpan_core in mpan_cores:
-                supply = Supply.get_by_mpan_core(sess, mpan_core)
-                supply_ids.append(supply.id)
-
-            if len(supply_ids) == 1:
-                base_name.append("supply")
-                base_name.append(str(supply.id))
-            else:
-                base_name.append("mpan_cores")
-
-            sites = (
-                sites.join(SiteEra)
-                .join(Era)
-                .join(Supply)
-                .where(Supply.id.in_(supply_ids))
+            base_name.append(
+                hh_format(start_date_utc)
+                .replace(" ", "_")
+                .replace(":", "")
+                .replace("-", "")
             )
 
-        site_codes = scenario_props.get("site_codes")
-        if site_codes is not None:
-            if len(site_codes) == 1:
-                base_name.append("site")
-                base_name.append(site_codes[0])
+            base_name.append("for")
+            base_name.append(str(months))
+            base_name.append("months")
+
+            if "forecast_from" in scenario_props:
+                forecast_from = scenario_props["forecast_from"]
             else:
-                base_name.append("sitecodes")
-            sites = sites.where(Site.code.in_(site_codes))
+                forecast_from = None
 
-        user = User.get_by_id(sess, user_id)
+            if forecast_from is None:
+                forecast_from = forecast_date()
+            else:
+                forecast_from = to_utc(forecast_from)
 
-        if is_bill_check:
-            base_name.append("bill_check")
+            sites = sess.query(Site).distinct().order_by(Site.code)
 
-        running_name, finished_name = chellow.dloads.make_names(
-            "_".join(base_name) + ".ods", user
-        )
+            mpan_cores = scenario_props.get("mpan_cores")
+            supply_ids = None
+            if mpan_cores is not None:
+                supply_ids = []
+                for mpan_core in mpan_cores:
+                    supply = Supply.get_by_mpan_core(sess, mpan_core)
+                    supply_ids.append(supply.id)
 
-        rf = open(running_name, "wb")
+                if len(supply_ids) == 1:
+                    base_name.append("supply")
+                    base_name.append(str(supply.id))
+                else:
+                    base_name.append("mpan_cores")
 
-        for rate_script in scenario_props.get("rates", []):
-            contract_id = rate_script["contract_id"]
-            try:
-                cont_cache = rate_cache[contract_id]
-            except KeyError:
-                cont_cache = rate_cache[contract_id] = {}
-
-            try:
-                rate_script_start = rate_script["start_date"]
-            except KeyError:
-                raise BadRequest(
-                    f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'rates' map."
+                sites = (
+                    sites.join(SiteEra)
+                    .join(Era)
+                    .join(Supply)
+                    .where(Supply.id.in_(supply_ids))
                 )
 
-            try:
-                rate_script_start = rate_script["start_date"]
-            except KeyError:
-                raise BadRequest(
-                    f"Problem in the scenario properties. Can't find the 'start_date' "
-                    f"key of the contract {contract_id} in the 'rates' map."
-                )
+            site_codes = scenario_props.get("site_codes")
+            if site_codes is not None:
+                if len(site_codes) == 1:
+                    base_name.append("site")
+                    base_name.append(site_codes[0])
+                else:
+                    base_name.append("sitecodes")
+                sites = sites.where(Site.code.in_(site_codes))
 
-            props = PropDict("scenario properties", rate_script["script"])
-            for dt in hh_range(
-                report_context, rate_script_start, rate_script["finish_date"]
+            user = User.get_by_id(sess, user_id)
+
+            if is_bill_check:
+                base_name.append("bill_check")
+
+            running_name, finished_name = chellow.dloads.make_names(
+                "_".join(base_name) + ".ods", user
+            )
+
+            rf = open(running_name, "wb")
+
+            for rate_script in scenario_props.get("rates", []):
+                contract_id = rate_script["contract_id"]
+                try:
+                    cont_cache = rate_cache[contract_id]
+                except KeyError:
+                    cont_cache = rate_cache[contract_id] = {}
+
+                try:
+                    rate_script_start = rate_script["start_date"]
+                except KeyError:
+                    raise BadRequest(
+                        f"Problem in the scenario properties. Can't find the "
+                        f"'start_date' key of the contract {contract_id} in the "
+                        f"'rates' map."
+                    )
+
+                try:
+                    rate_script_start = rate_script["start_date"]
+                except KeyError:
+                    raise BadRequest(
+                        f"Problem in the scenario properties. Can't find the "
+                        f"'start_date' key of the contract {contract_id} in the "
+                        f"'rates' map."
+                    )
+
+                props = PropDict("scenario properties", rate_script["script"])
+                for dt in hh_range(
+                    report_context, rate_script_start, rate_script["finish_date"]
+                ):
+                    cont_cache[dt] = props
+
+            for rate_script in scenario_props.get("industry_rates", []):
+                contract_name = rate_script["contract_name"]
+                try:
+                    cont_cache = ind_cont[contract_name]
+                except KeyError:
+                    cont_cache = ind_cont[contract_name] = {}
+
+                rfinish = rate_script["finish_date"]
+                if rfinish is None:
+                    raise BadRequest(
+                        f"For the industry rate {contract_name} the finish_date can't "
+                        f"be null."
+                    )
+                for dt in hh_range(report_context, rate_script["start_date"], rfinish):
+                    cont_cache[dt] = PropDict(
+                        "scenario properties", rate_script["script"]
+                    )
+
+            by_hh = scenario_props.get("by_hh", False)
+
+            era_header_titles = [
+                "creation-date",
+                "imp-mpan-core",
+                "imp-supplier-contract",
+                "exp-mpan-core",
+                "exp-supplier-contract",
+                "era-start-date",
+                "metering-type",
+                "source",
+                "generator-type",
+                "supply-name",
+                "msn",
+                "pc",
+                "site-id",
+                "site-name",
+                "associated-site-ids",
+                "month",
+            ]
+            site_header_titles = [
+                "creation-date",
+                "site-id",
+                "site-name",
+                "associated-site-ids",
+                "month",
+                "metering-type",
+                "sources",
+                "generator-types",
+            ]
+            summary_titles = [
+                "import-net-kwh",
+                "export-net-kwh",
+                "import-gen-kwh",
+                "export-gen-kwh",
+                "import-3rd-party-kwh",
+                "export-3rd-party-kwh",
+                "displaced-kwh",
+                "used-kwh",
+                "used-3rd-party-kwh",
+                "import-net-gbp",
+                "export-net-gbp",
+                "import-gen-gbp",
+                "export-gen-gbp",
+                "import-3rd-party-gbp",
+                "export-3rd-party-gbp",
+                "displaced-gbp",
+                "used-gbp",
+                "used-3rd-party-gbp",
+                "billed-import-net-kwh",
+                "billed-import-net-gbp",
+                "billed-supplier-import-net-gbp",
+                "billed-dc-import-net-gbp",
+                "billed-mop-import-net-gbp",
+            ]
+
+            title_dict = {}
+            for cont_type, con_attr in (
+                ("mop", Era.mop_contract),
+                ("dc", Era.dc_contract),
+                ("imp-supplier", Era.imp_supplier_contract),
+                ("exp-supplier", Era.exp_supplier_contract),
             ):
-                cont_cache[dt] = props
-
-        for rate_script in scenario_props.get("industry_rates", []):
-            contract_name = rate_script["contract_name"]
-            try:
-                cont_cache = ind_cont[contract_name]
-            except KeyError:
-                cont_cache = ind_cont[contract_name] = {}
-
-            rfinish = rate_script["finish_date"]
-            if rfinish is None:
-                raise BadRequest(
-                    f"For the industry rate {contract_name} the finish_date can't be "
-                    f"null."
+                titles = []
+                title_dict[cont_type] = titles
+                conts = (
+                    sess.query(Contract)
+                    .join(con_attr)
+                    .join(Era.supply)
+                    .join(Source)
+                    .filter(
+                        Era.start_date <= finish_date_utc,
+                        or_(
+                            Era.finish_date == null(), Era.finish_date >= start_date_utc
+                        ),
+                    )
+                    .distinct()
+                    .order_by(Contract.id)
                 )
-            for dt in hh_range(report_context, rate_script["start_date"], rfinish):
-                cont_cache[dt] = PropDict("scenario properties", rate_script["script"])
+                if supply_ids is not None:
+                    conts = conts.where(Supply.id.in_(supply_ids))
+                for cont in conts:
+                    title_func = contract_func(
+                        report_context, cont, "virtual_bill_titles"
+                    )
+                    if title_func is None:
+                        raise Exception(
+                            f"For the contract {cont.name} there doesn't seem to be a "
+                            f"'virtual_bill_titles' function."
+                        )
+                    for title in title_func():
+                        if title not in titles:
+                            titles.append(title)
 
-        by_hh = scenario_props.get("by_hh", False)
-
-        era_header_titles = [
-            "creation-date",
-            "imp-mpan-core",
-            "imp-supplier-contract",
-            "exp-mpan-core",
-            "exp-supplier-contract",
-            "era-start-date",
-            "metering-type",
-            "source",
-            "generator-type",
-            "supply-name",
-            "msn",
-            "pc",
-            "site-id",
-            "site-name",
-            "associated-site-ids",
-            "month",
-        ]
-        site_header_titles = [
-            "creation-date",
-            "site-id",
-            "site-name",
-            "associated-site-ids",
-            "month",
-            "metering-type",
-            "sources",
-            "generator-types",
-        ]
-        summary_titles = [
-            "import-net-kwh",
-            "export-net-kwh",
-            "import-gen-kwh",
-            "export-gen-kwh",
-            "import-3rd-party-kwh",
-            "export-3rd-party-kwh",
-            "displaced-kwh",
-            "used-kwh",
-            "used-3rd-party-kwh",
-            "import-net-gbp",
-            "export-net-gbp",
-            "import-gen-gbp",
-            "export-gen-gbp",
-            "import-3rd-party-gbp",
-            "export-3rd-party-gbp",
-            "displaced-gbp",
-            "used-gbp",
-            "used-3rd-party-gbp",
-            "billed-import-net-kwh",
-            "billed-import-net-gbp",
-            "billed-supplier-import-net-gbp",
-            "billed-dc-import-net-gbp",
-            "billed-mop-import-net-gbp",
-        ]
-
-        title_dict = {}
-        for cont_type, con_attr in (
-            ("mop", Era.mop_contract),
-            ("dc", Era.dc_contract),
-            ("imp-supplier", Era.imp_supplier_contract),
-            ("exp-supplier", Era.exp_supplier_contract),
-        ):
-            titles = []
-            title_dict[cont_type] = titles
-            conts = (
-                sess.query(Contract)
-                .join(con_attr)
-                .join(Era.supply)
-                .join(Source)
+            tpr_query = (
+                sess.query(Tpr)
+                .join(MeasurementRequirement)
+                .join(Ssc)
+                .join(Era)
                 .filter(
                     Era.start_date <= finish_date_utc,
                     or_(Era.finish_date == null(), Era.finish_date >= start_date_utc),
                 )
+                .order_by(Tpr.code)
                 .distinct()
-                .order_by(Contract.id)
             )
-            if supply_ids is not None:
-                conts = conts.where(Supply.id.in_(supply_ids))
-            for cont in conts:
-                title_func = contract_func(report_context, cont, "virtual_bill_titles")
-                if title_func is None:
-                    raise Exception(
-                        f"For the contract {cont.name} there doesn't seem to be a "
-                        f"'virtual_bill_titles' function."
-                    )
-                for title in title_func():
-                    if title not in titles:
-                        titles.append(title)
+            for tpr in tpr_query.filter(Era.imp_supplier_contract != null()):
+                for suffix in ("-kwh", "-rate", "-gbp"):
+                    title_dict["imp-supplier"].append(tpr.code + suffix)
+            for tpr in tpr_query.filter(Era.exp_supplier_contract != null()):
+                for suffix in ("-kwh", "-rate", "-gbp"):
+                    title_dict["exp-supplier"].append(tpr.code + suffix)
 
-        tpr_query = (
-            sess.query(Tpr)
-            .join(MeasurementRequirement)
-            .join(Ssc)
-            .join(Era)
-            .filter(
-                Era.start_date <= finish_date_utc,
-                or_(Era.finish_date == null(), Era.finish_date >= start_date_utc),
+            era_titles = (
+                era_header_titles
+                + summary_titles
+                + [None]
+                + ["mop-" + t for t in title_dict["mop"]]
+                + [None]
+                + ["dc-" + t for t in title_dict["dc"]]
+                + [None]
+                + ["imp-supplier-" + t for t in title_dict["imp-supplier"]]
+                + [None]
+                + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
             )
-            .order_by(Tpr.code)
-            .distinct()
-        )
-        for tpr in tpr_query.filter(Era.imp_supplier_contract != null()):
-            for suffix in ("-kwh", "-rate", "-gbp"):
-                title_dict["imp-supplier"].append(tpr.code + suffix)
-        for tpr in tpr_query.filter(Era.exp_supplier_contract != null()):
-            for suffix in ("-kwh", "-rate", "-gbp"):
-                title_dict["exp-supplier"].append(tpr.code + suffix)
+            site_rows.append(site_header_titles + summary_titles)
+            era_rows.append(era_titles)
+            bill_check_site_rows.append(site_header_titles + summary_titles)
+            bill_check_era_rows.append(era_titles)
 
-        era_titles = (
-            era_header_titles
-            + summary_titles
-            + [None]
-            + ["mop-" + t for t in title_dict["mop"]]
-            + [None]
-            + ["dc-" + t for t in title_dict["dc"]]
-            + [None]
-            + ["imp-supplier-" + t for t in title_dict["imp-supplier"]]
-            + [None]
-            + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
-        )
-        site_rows.append(site_header_titles + summary_titles)
-        era_rows.append(era_titles)
-        bill_check_site_rows.append(site_header_titles + summary_titles)
-        bill_check_era_rows.append(era_titles)
+            sites = sites.all()
+            normal_reads = set()
 
-        sites = sites.all()
-        normal_reads = set()
+            for month_start, month_finish in month_pairs:
+                data_source_bill = Object()
+                data_source_bill.start_date = month_start
+                data_source_bill.finish_date = month_finish
 
-        for month_start, month_finish in month_pairs:
-            data_source_bill = Object()
-            data_source_bill.start_date = month_start
-            data_source_bill.finish_date = month_finish
+                for site in sites:
+                    if by_hh:
+                        sf = [
+                            (d, d)
+                            for d in hh_range(report_context, month_start, month_finish)
+                        ]
+                    else:
+                        sf = [(month_start, month_finish)]
 
-            for site in sites:
-                if by_hh:
-                    sf = [
-                        (d, d)
-                        for d in hh_range(report_context, month_start, month_finish)
-                    ]
-                else:
-                    sf = [(month_start, month_finish)]
-
-                for start, finish in sf:
-                    try:
-                        normal_reads = normal_reads | _process_site(
-                            sess,
-                            report_context,
-                            forecast_from,
-                            start,
-                            finish,
-                            site,
-                            scenario_props,
-                            supply_ids,
-                            now,
-                            summary_titles,
-                            title_dict,
-                            era_rows,
-                            site_rows,
-                            None,
-                        )
-                        if is_bill_check:
-                            _process_site(
+                    for start, finish in sf:
+                        try:
+                            normal_reads = normal_reads | _process_site(
                                 sess,
                                 report_context,
                                 forecast_from,
@@ -967,28 +959,45 @@ def content(
                                 now,
                                 summary_titles,
                                 title_dict,
-                                bill_check_era_rows,
-                                bill_check_site_rows,
-                                data_source_bill,
+                                era_rows,
+                                site_rows,
+                                None,
                             )
-                    except BadRequest as e:
-                        raise BadRequest(f"Site Code {site.code}: {e.description}")
+                            if is_bill_check:
+                                _process_site(
+                                    sess,
+                                    report_context,
+                                    forecast_from,
+                                    start,
+                                    finish,
+                                    site,
+                                    scenario_props,
+                                    supply_ids,
+                                    now,
+                                    summary_titles,
+                                    title_dict,
+                                    bill_check_era_rows,
+                                    bill_check_site_rows,
+                                    data_source_bill,
+                                )
+                        except BadRequest as e:
+                            raise BadRequest(f"Site Code {site.code}: {e.description}")
 
-            normal_read_rows = [["mpan_core", "date", "msn", "type", "registers"]]
-            for mpan_core, r in sorted(list(normal_reads)):
-                row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
-                normal_read_rows.append(row)
+                normal_read_rows = [["mpan_core", "date", "msn", "type", "registers"]]
+                for mpan_core, r in sorted(list(normal_reads)):
+                    row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
+                    normal_read_rows.append(row)
 
-            write_spreadsheet(
-                rf,
-                compression,
-                site_rows,
-                era_rows,
-                normal_read_rows,
-                bill_check_site_rows,
-                bill_check_era_rows,
-                is_bill_check,
-            )
+                write_spreadsheet(
+                    rf,
+                    compression,
+                    site_rows,
+                    era_rows,
+                    normal_read_rows,
+                    bill_check_site_rows,
+                    bill_check_era_rows,
+                    is_bill_check,
+                )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
@@ -1025,8 +1034,6 @@ def content(
                 is_bill_check,
             )
     finally:
-        if sess is not None:
-            sess.close()
         if rf is not None:
             rf.close()
             os.rename(running_name, finished_name)

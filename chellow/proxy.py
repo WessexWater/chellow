@@ -12,13 +12,10 @@ if t.TYPE_CHECKING:
 
 @lru_cache()
 def _get_proto_override():
-    sess = Session()
-    try:
+    with Session() as sess:
         config_contract = Contract.get_non_core_by_name(sess, "configuration")
         props = config_contract.make_properties()
         proto = props.get("redirect_scheme")
-    finally:
-        sess.close()
     return proto
 
 

@@ -29,17 +29,19 @@ FNAME = "supply_contacts"
 
 
 def content(user_id, report_run_id):
-    sess = f = report_run = None
+    f = report_run = None
     try:
-        sess = Session()
-        user = User.get_by_id(sess, user_id)
-        running_name, finished_name = chellow.dloads.make_names(f"{FNAME}.csv", user)
-        f = open(running_name, mode="w", newline="")
-        report_run = ReportRun.get_by_id(sess, report_run_id)
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+            running_name, finished_name = chellow.dloads.make_names(
+                f"{FNAME}.csv", user
+            )
+            f = open(running_name, mode="w", newline="")
+            report_run = ReportRun.get_by_id(sess, report_run_id)
 
-        _process(sess, f, report_run)
-        report_run.update("finished")
-        sess.commit()
+            _process(sess, f, report_run)
+            report_run.update("finished")
+            sess.commit()
 
     except BaseException as e:
         msg = traceback.format_exc()
@@ -52,8 +54,6 @@ def content(user_id, report_run_id):
             f.write(msg)
         raise e
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

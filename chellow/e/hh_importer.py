@@ -59,26 +59,24 @@ class HhDataImportProcess(threading.Thread):
         self.converter = None
 
     def run(self):
-        sess = None
-        try:
-            sess = Session()
-            contract = Contract.get_dc_by_id(sess, self.dc_contract_id)
-            sess.rollback()
-            properties = contract.make_properties()
-            mpan_map = properties.get("mpan_map", {})
-            mod_name = self.conv_ext[0][1:].replace(".", "_")
-            parser_module = importlib.import_module(f"chellow.e.hh_parser_{mod_name}")
-            self.converter = parser_module.create_parser(self.istream, mpan_map)
-            sess.rollback()
-            HhDatum.insert(sess, self.converter, contract)
-            sess.commit()
-        except BadRequest as e:
-            self.messages.append(e.description)
-        except BaseException:
-            self.messages.append(f"Outer problem {traceback.format_exc()}")
-        finally:
-            if sess is not None:
-                sess.close()
+        with Session() as sess:
+            try:
+                contract = Contract.get_dc_by_id(sess, self.dc_contract_id)
+                sess.rollback()
+                properties = contract.make_properties()
+                mpan_map = properties.get("mpan_map", {})
+                mod_name = self.conv_ext[0][1:].replace(".", "_")
+                parser_module = importlib.import_module(
+                    f"chellow.e.hh_parser_{mod_name}"
+                )
+                self.converter = parser_module.create_parser(self.istream, mpan_map)
+                sess.rollback()
+                HhDatum.insert(sess, self.converter, contract)
+                sess.commit()
+            except BadRequest as e:
+                self.messages.append(e.description)
+            except BaseException:
+                self.messages.append(f"Outer problem {traceback.format_exc()}")
 
     def get_status(self):
         return (
@@ -176,18 +174,15 @@ class HhImportTask(threading.Thread):
 
     def import_now(self):
         if lock.acquire(False):
-            sess = None
-            try:
-                sess = Session()
-                while self.import_file(sess):
-                    pass
-            except Exception:
-                self.log(f"Outer Exception {traceback.format_exc()}")
-                self.is_error = True
-            finally:
-                if sess is not None:
-                    sess.close()
-                lock.release()
+            with Session() as sess:
+                try:
+                    while self.import_file(sess):
+                        pass
+                except Exception:
+                    self.log(f"Outer Exception {traceback.format_exc()}")
+                    self.is_error = True
+                finally:
+                    lock.release()
 
     def run(self):
         while not self.stopped.isSet():
@@ -479,9 +474,7 @@ def startup():
                     "Can't start hh importer, there are still some hh imports running."
                 )
 
-    sess = None
-    try:
-        sess = Session()
+    with Session() as sess:
         for contract in (
             sess.query(Contract)
             .join(MarketRole)
@@ -489,9 +482,6 @@ def startup():
             .order_by(Contract.id)
         ):
             startup_contract(contract.id)
-    finally:
-        if sess is not None:
-            sess.close()
 
 
 @atexit.register

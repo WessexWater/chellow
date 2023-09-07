@@ -57,262 +57,265 @@ def content(
     if now is None:
         now = ct_datetime_now()
     report_context = {}
-    sess = None
     month_list = list(
         c_months_u(finish_year=finish_year, finish_month=finish_month, months=months)
     )
     start_date, finish_date = month_list[0][0], month_list[-1][-1]
 
     try:
-        sess = Session()
-        base_name = [
-            "g_monthly_duration",
-            hh_format(start_date).replace(" ", "_").replace(":", "").replace("-", ""),
-            "for",
-            str(months),
-            "months",
-        ]
+        with Session() as sess:
+            base_name = [
+                "g_monthly_duration",
+                hh_format(start_date)
+                .replace(" ", "_")
+                .replace(":", "")
+                .replace("-", ""),
+                "for",
+                str(months),
+                "months",
+            ]
 
-        forecast_from = chellow.e.computer.forecast_date()
+            forecast_from = chellow.e.computer.forecast_date()
 
-        sites = (
-            sess.query(Site)
-            .join(SiteGEra)
-            .join(GEra)
-            .filter(SiteGEra.is_physical == true())
-            .distinct()
-            .order_by(Site.code)
-        )
-        if site_id is not None:
-            site = Site.get_by_id(sess, site_id)
-            sites = sites.filter(Site.id == site.id)
-            base_name.append("site")
-            base_name.append(site.code)
-        if g_supply_id is not None:
-            g_supply = GSupply.get_by_id(sess, g_supply_id)
-            base_name.append("g_supply")
-            base_name.append(str(g_supply.id))
-            sites = sites.filter(GEra.g_supply == g_supply)
-
-        running_name, finished_name = chellow.dloads.make_names(
-            "_".join(base_name) + ".ods", user
-        )
-
-        rf = open(running_name, "wb")
-        site_rows = []
-        g_era_rows = []
-
-        era_header_titles = [
-            "creation_date",
-            "mprn",
-            "supply_name",
-            "exit_zone",
-            "msn",
-            "unit",
-            "contract",
-            "site_id",
-            "site_name",
-            "associated_site_ids",
-            "month",
-        ]
-        site_header_titles = [
-            "creation_date",
-            "site_id",
-            "site_name",
-            "associated_site_ids",
-            "month",
-        ]
-        summary_titles = ["kwh", "gbp", "billed_kwh", "billed_gbp"]
-
-        vb_titles = []
-        conts = (
-            sess.query(GContract)
-            .join(GEra)
-            .join(GSupply)
-            .filter(
-                GEra.start_date <= finish_date,
-                or_(GEra.finish_date == null(), GEra.finish_date >= start_date),
+            sites = (
+                sess.query(Site)
+                .join(SiteGEra)
+                .join(GEra)
+                .filter(SiteGEra.is_physical == true())
+                .distinct()
+                .order_by(Site.code)
             )
-            .distinct()
-            .order_by(GContract.id)
-        )
-        if g_supply_id is not None:
-            conts = conts.filter(GEra.g_supply_id == g_supply_id)
-        for cont in conts:
-            title_func = chellow.e.computer.contract_func(
-                report_context, cont, "virtual_bill_titles"
+            if site_id is not None:
+                site = Site.get_by_id(sess, site_id)
+                sites = sites.filter(Site.id == site.id)
+                base_name.append("site")
+                base_name.append(site.code)
+            if g_supply_id is not None:
+                g_supply = GSupply.get_by_id(sess, g_supply_id)
+                base_name.append("g_supply")
+                base_name.append(str(g_supply.id))
+                sites = sites.filter(GEra.g_supply == g_supply)
+
+            running_name, finished_name = chellow.dloads.make_names(
+                "_".join(base_name) + ".ods", user
             )
-            if title_func is None:
-                raise Exception(
-                    f"For the contract {cont.name} there doesn't seem to be "
-                    f"a 'virtual_bill_titles' function."
+
+            rf = open(running_name, "wb")
+            site_rows = []
+            g_era_rows = []
+
+            era_header_titles = [
+                "creation_date",
+                "mprn",
+                "supply_name",
+                "exit_zone",
+                "msn",
+                "unit",
+                "contract",
+                "site_id",
+                "site_name",
+                "associated_site_ids",
+                "month",
+            ]
+            site_header_titles = [
+                "creation_date",
+                "site_id",
+                "site_name",
+                "associated_site_ids",
+                "month",
+            ]
+            summary_titles = ["kwh", "gbp", "billed_kwh", "billed_gbp"]
+
+            vb_titles = []
+            conts = (
+                sess.query(GContract)
+                .join(GEra)
+                .join(GSupply)
+                .filter(
+                    GEra.start_date <= finish_date,
+                    or_(GEra.finish_date == null(), GEra.finish_date >= start_date),
                 )
-            for title in title_func():
-                if title not in vb_titles:
-                    vb_titles.append(title)
-
-        g_era_rows.append(era_header_titles + summary_titles + vb_titles)
-        site_rows.append(site_header_titles + summary_titles)
-
-        for month_start, month_finish in month_list:
-            for site in sites.filter(
-                GEra.start_date <= month_finish,
-                or_(GEra.finish_date == null(), GEra.finish_date >= month_start),
-            ):
-                site_kwh = site_gbp = site_billed_kwh = site_billed_gbp = 0
-
-                for g_era in (
-                    sess.query(GEra)
-                    .join(SiteGEra)
-                    .filter(
-                        SiteGEra.site == site,
-                        SiteGEra.is_physical == true(),
-                        GEra.start_date <= month_finish,
-                        or_(
-                            GEra.finish_date == null(), GEra.finish_date >= month_start
-                        ),
+                .distinct()
+                .order_by(GContract.id)
+            )
+            if g_supply_id is not None:
+                conts = conts.filter(GEra.g_supply_id == g_supply_id)
+            for cont in conts:
+                title_func = chellow.e.computer.contract_func(
+                    report_context, cont, "virtual_bill_titles"
+                )
+                if title_func is None:
+                    raise Exception(
+                        f"For the contract {cont.name} there doesn't seem to be "
+                        f"a 'virtual_bill_titles' function."
                     )
-                    .options(
-                        joinedload(GEra.g_contract),
-                        joinedload(GEra.g_supply),
-                        joinedload(GEra.g_supply).joinedload(GSupply.g_exit_zone),
-                    )
-                    .order_by(GEra.id)
+                for title in title_func():
+                    if title not in vb_titles:
+                        vb_titles.append(title)
+
+            g_era_rows.append(era_header_titles + summary_titles + vb_titles)
+            site_rows.append(site_header_titles + summary_titles)
+
+            for month_start, month_finish in month_list:
+                for site in sites.filter(
+                    GEra.start_date <= month_finish,
+                    or_(GEra.finish_date == null(), GEra.finish_date >= month_start),
                 ):
-                    g_supply = g_era.g_supply
+                    site_kwh = site_gbp = site_billed_kwh = site_billed_gbp = 0
 
-                    if g_supply_id is not None and g_supply.id != g_supply_id:
-                        continue
-
-                    ss_start = hh_max(g_era.start_date, month_start)
-                    ss_finish = hh_min(g_era.finish_date, month_finish)
-
-                    ss = GDataSource(
-                        sess,
-                        ss_start,
-                        ss_finish,
-                        forecast_from,
-                        g_era,
-                        report_context,
-                        None,
-                    )
-
-                    contract = g_era.g_contract
-                    vb_function = contract_func(
-                        report_context, contract, "virtual_bill"
-                    )
-                    if vb_function is None:
-                        raise BadRequest(
-                            "The contract "
-                            + contract.name
-                            + " doesn't have the virtual_bill() function."
+                    for g_era in (
+                        sess.query(GEra)
+                        .join(SiteGEra)
+                        .filter(
+                            SiteGEra.site == site,
+                            SiteGEra.is_physical == true(),
+                            GEra.start_date <= month_finish,
+                            or_(
+                                GEra.finish_date == null(),
+                                GEra.finish_date >= month_start,
+                            ),
                         )
-                    vb_function(ss)
-                    bill = ss.bill
-
-                    try:
-                        gbp = bill["net_gbp"]
-                    except KeyError:
-                        gbp = 0
-                        bill["problem"] += (
-                            "For the supply "
-                            + ss.mprn
-                            + " the virtual bill "
-                            + str(bill)
-                            + " from the contract "
-                            + contract.name
-                            + " does not contain the net_gbp key."
+                        .options(
+                            joinedload(GEra.g_contract),
+                            joinedload(GEra.g_supply),
+                            joinedload(GEra.g_supply).joinedload(GSupply.g_exit_zone),
                         )
-                    try:
-                        kwh = bill["kwh"]
-                    except KeyError:
-                        kwh = 0
-                        bill["problem"] += (
-                            "For the supply "
-                            + ss.mprn
-                            + " the virtual bill "
-                            + str(bill)
-                            + " from the contract "
-                            + contract.name
-                            + " does not contain the 'kwh' key."
-                        )
-
-                    billed_kwh = billed_gbp = 0
-
-                    g_era_associates = {
-                        s.site.code for s in g_era.site_g_eras if not s.is_physical
-                    }
-
-                    for g_bill in sess.query(GBill).filter(
-                        GBill.g_supply == g_supply,
-                        GBill.start_date <= ss_finish,
-                        GBill.finish_date >= ss_start,
+                        .order_by(GEra.id)
                     ):
-                        bill_start = g_bill.start_date
-                        bill_finish = g_bill.finish_date
-                        bill_duration = (bill_finish - bill_start).total_seconds() + (
-                            30 * 60
-                        )
-                        overlap_duration = (
-                            min(bill_finish, ss_finish) - max(bill_start, ss_start)
-                        ).total_seconds() + (30 * 60)
-                        overlap_proportion = overlap_duration / bill_duration
-                        billed_kwh += overlap_proportion * float(g_bill.kwh)
-                        billed_gbp += overlap_proportion * float(g_bill.net)
+                        g_supply = g_era.g_supply
 
-                    associated_site_ids = ",".join(sorted(g_era_associates))
-                    g_era_rows.append(
+                        if g_supply_id is not None and g_supply.id != g_supply_id:
+                            continue
+
+                        ss_start = hh_max(g_era.start_date, month_start)
+                        ss_finish = hh_min(g_era.finish_date, month_finish)
+
+                        ss = GDataSource(
+                            sess,
+                            ss_start,
+                            ss_finish,
+                            forecast_from,
+                            g_era,
+                            report_context,
+                            None,
+                        )
+
+                        contract = g_era.g_contract
+                        vb_function = contract_func(
+                            report_context, contract, "virtual_bill"
+                        )
+                        if vb_function is None:
+                            raise BadRequest(
+                                "The contract "
+                                + contract.name
+                                + " doesn't have the virtual_bill() function."
+                            )
+                        vb_function(ss)
+                        bill = ss.bill
+
+                        try:
+                            gbp = bill["net_gbp"]
+                        except KeyError:
+                            gbp = 0
+                            bill["problem"] += (
+                                "For the supply "
+                                + ss.mprn
+                                + " the virtual bill "
+                                + str(bill)
+                                + " from the contract "
+                                + contract.name
+                                + " does not contain the net_gbp key."
+                            )
+                        try:
+                            kwh = bill["kwh"]
+                        except KeyError:
+                            kwh = 0
+                            bill["problem"] += (
+                                "For the supply "
+                                + ss.mprn
+                                + " the virtual bill "
+                                + str(bill)
+                                + " from the contract "
+                                + contract.name
+                                + " does not contain the 'kwh' key."
+                            )
+
+                        billed_kwh = billed_gbp = 0
+
+                        g_era_associates = {
+                            s.site.code for s in g_era.site_g_eras if not s.is_physical
+                        }
+
+                        for g_bill in sess.query(GBill).filter(
+                            GBill.g_supply == g_supply,
+                            GBill.start_date <= ss_finish,
+                            GBill.finish_date >= ss_start,
+                        ):
+                            bill_start = g_bill.start_date
+                            bill_finish = g_bill.finish_date
+                            bill_duration = (
+                                bill_finish - bill_start
+                            ).total_seconds() + (30 * 60)
+                            overlap_duration = (
+                                min(bill_finish, ss_finish) - max(bill_start, ss_start)
+                            ).total_seconds() + (30 * 60)
+                            overlap_proportion = overlap_duration / bill_duration
+                            billed_kwh += overlap_proportion * float(g_bill.kwh)
+                            billed_gbp += overlap_proportion * float(g_bill.net)
+
+                        associated_site_ids = ",".join(sorted(g_era_associates))
+                        g_era_rows.append(
+                            [
+                                make_val(v)
+                                for v in [
+                                    now,
+                                    g_supply.mprn,
+                                    g_supply.name,
+                                    g_supply.g_exit_zone.code,
+                                    g_era.msn,
+                                    g_era.g_unit.code,
+                                    contract.name,
+                                    site.code,
+                                    site.name,
+                                    associated_site_ids,
+                                    month_finish,
+                                    kwh,
+                                    gbp,
+                                    billed_kwh,
+                                    billed_gbp,
+                                ]
+                            ]
+                            + [make_val(bill.get(t)) for t in vb_titles]
+                        )
+
+                        site_kwh += kwh
+                        site_gbp += gbp
+                        site_billed_kwh += billed_kwh
+                        site_billed_gbp += billed_gbp
+
+                    linked_sites = ", ".join(
+                        s.code
+                        for s in site.find_linked_sites(sess, month_start, month_finish)
+                    )
+
+                    site_rows.append(
                         [
                             make_val(v)
                             for v in [
                                 now,
-                                g_supply.mprn,
-                                g_supply.name,
-                                g_supply.g_exit_zone.code,
-                                g_era.msn,
-                                g_era.g_unit.code,
-                                contract.name,
                                 site.code,
                                 site.name,
-                                associated_site_ids,
+                                linked_sites,
                                 month_finish,
-                                kwh,
-                                gbp,
-                                billed_kwh,
-                                billed_gbp,
+                                site_kwh,
+                                site_gbp,
+                                site_billed_kwh,
+                                site_billed_gbp,
                             ]
                         ]
-                        + [make_val(bill.get(t)) for t in vb_titles]
                     )
-
-                    site_kwh += kwh
-                    site_gbp += gbp
-                    site_billed_kwh += billed_kwh
-                    site_billed_gbp += billed_gbp
-
-                linked_sites = ", ".join(
-                    s.code
-                    for s in site.find_linked_sites(sess, month_start, month_finish)
-                )
-
-                site_rows.append(
-                    [
-                        make_val(v)
-                        for v in [
-                            now,
-                            site.code,
-                            site.name,
-                            linked_sites,
-                            month_finish,
-                            site_kwh,
-                            site_gbp,
-                            site_billed_kwh,
-                            site_billed_gbp,
-                        ]
-                    ]
-                )
-                sess.rollback()
-            write_spreadsheet(rf, compression, site_rows, g_era_rows)
+                    sess.rollback()
+                write_spreadsheet(rf, compression, site_rows, g_era_rows)
 
     except BadRequest as e:
         site_rows.append(["Problem " + e.description])
@@ -323,8 +326,6 @@ def content(
         site_rows.append(["Problem " + msg])
         write_spreadsheet(rf, compression, site_rows, g_era_rows)
     finally:
-        if sess is not None:
-            sess.close()
         try:
             rf.close()
             os.rename(running_name, finished_name)

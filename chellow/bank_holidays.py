@@ -25,6 +25,66 @@ ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
 bh_importer = None
 
 
+def _run(log_f, sess):
+    log_f("Starting to check bank holidays")
+    contract = Contract.get_non_core_by_name(sess, "bank_holidays")
+    contract_props = contract.make_properties()
+
+    if contract_props.get("enabled", False):
+        url_str = contract_props["url"]
+
+        log_f(f"Downloading from {url_str}.")
+        res = requests.get(url_str)
+        log_f(" ".join(("Received", str(res.status_code), res.reason)))
+        PREFIX = "DTSTART;VALUE=DATE:"
+        hols = collections.defaultdict(list)
+        for line in res.text.splitlines():
+            if line.startswith(PREFIX):
+                dt = utc_datetime_parse(line[-8:], "%Y%m%d")
+                hols[dt.year].append(dt)
+
+        for year in sorted(hols.keys()):
+            year_start = utc_datetime(year, 1, 1)
+            year_finish = year_start + relativedelta(years=1) - HH
+            rs = (
+                sess.query(RateScript)
+                .filter(
+                    RateScript.contract == contract,
+                    RateScript.start_date == year_start,
+                )
+                .first()
+            )
+            if rs is None:
+                log_f(f"Adding a new rate script starting at {hh_format(year_start)}.")
+
+                latest_rs = (
+                    sess.query(RateScript)
+                    .filter(RateScript.contract == contract)
+                    .order_by(RateScript.start_date.desc())
+                    .first()
+                )
+
+                contract.update_rate_script(
+                    sess,
+                    latest_rs,
+                    latest_rs.start_date,
+                    year_finish,
+                    loads(latest_rs.script),
+                )
+                rs = contract.insert_rate_script(sess, year_start, {})
+
+            script = {"bank_holidays": [v.strftime("%Y-%m-%d") for v in hols[year]]}
+
+            contract.update_rate_script(sess, rs, rs.start_date, rs.finish_date, script)
+            sess.commit()
+            log_f(f"Updated rate script starting at {hh_format(year_start)}.")
+    else:
+        log_f(
+            "The automatic importer is disabled. To enable it, edit the contract "
+            "properties to set 'enabled' to True."
+        )
+
+
 class BankHolidayImporter(threading.Thread):
     def __init__(self):
         super(BankHolidayImporter, self).__init__(name="Bank Holiday Importer")
@@ -58,90 +118,12 @@ class BankHolidayImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
                 try:
-                    sess = Session()
-                    self.log("Starting to check bank holidays")
-                    contract = Contract.get_non_core_by_name(sess, "bank_holidays")
-                    contract_props = contract.make_properties()
-
-                    if contract_props.get("enabled", False):
-                        url_str = contract_props["url"]
-
-                        self.log("Downloading from " + url_str + ".")
-                        res = requests.get(url_str)
-                        self.log(
-                            " ".join(("Received", str(res.status_code), res.reason))
-                        )
-                        PREFIX = "DTSTART;VALUE=DATE:"
-                        hols = collections.defaultdict(list)
-                        for line in res.text.splitlines():
-                            if line.startswith(PREFIX):
-                                dt = utc_datetime_parse(line[-8:], "%Y%m%d")
-                                hols[dt.year].append(dt)
-
-                        for year in sorted(hols.keys()):
-                            year_start = utc_datetime(year, 1, 1)
-                            year_finish = year_start + relativedelta(years=1) - HH
-                            rs = (
-                                sess.query(RateScript)
-                                .filter(
-                                    RateScript.contract == contract,
-                                    RateScript.start_date == year_start,
-                                )
-                                .first()
-                            )
-                            if rs is None:
-                                self.log(
-                                    "Adding a new rate script starting at "
-                                    + hh_format(year_start)
-                                    + "."
-                                )
-
-                                latest_rs = (
-                                    sess.query(RateScript)
-                                    .filter(RateScript.contract == contract)
-                                    .order_by(RateScript.start_date.desc())
-                                    .first()
-                                )
-
-                                contract.update_rate_script(
-                                    sess,
-                                    latest_rs,
-                                    latest_rs.start_date,
-                                    year_finish,
-                                    loads(latest_rs.script),
-                                )
-                                rs = contract.insert_rate_script(sess, year_start, {})
-
-                            script = {
-                                "bank_holidays": [
-                                    v.strftime("%Y-%m-%d") for v in hols[year]
-                                ]
-                            }
-
-                            contract.update_rate_script(
-                                sess, rs, rs.start_date, rs.finish_date, script
-                            )
-                            sess.commit()
-                            self.log(
-                                "Updated rate script starting at "
-                                + hh_format(year_start)
-                                + "."
-                            )
-                    else:
-                        self.log(
-                            "The automatic importer is disabled. To "
-                            "enable it, edit the contract properties to "
-                            "set 'enabled' to True."
-                        )
-
+                    with Session() as sess:
+                        _run(self.log, sess)
                 except BaseException:
-                    self.log("Outer problem " + traceback.format_exc())
-                    sess.rollback()
+                    self.log(f"Outer problem {traceback.format_exc()}")
                 finally:
-                    if sess is not None:
-                        sess.close()
                     self.lock.release()
                     self.log("Finished checking bank holidays.")
 

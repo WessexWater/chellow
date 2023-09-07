@@ -66,28 +66,26 @@ class CvImporter(threading.Thread):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
                 sess = self.global_alert = g_contract = None
-                try:
-                    sess = Session()
-                    g_contract = GContract.get_industry_by_name(sess, "cv")
-                    fetch_cvs(sess, self.log, g_contract)
-                except BaseException:
-                    self.log(f"Outer problem {traceback.format_exc()}")
-                    if g_contract is None:
-                        self.global_alert = (
-                            "There's a problem with the gas CV automatic importer."
-                        )
-                    else:
-                        self.global_alert = (
-                            f"There's a problem with the <a "
-                            f"href='/g/industry_contracts/{g_contract.id}'>gas CV "
-                            f"automatic importer</a>."
-                        )
-                    sess.rollback()
-                finally:
-                    if sess is not None:
-                        sess.close()
-                    self.lock.release()
-                    self.log("Finished checking CV rates.")
+                with Session() as sess:
+                    try:
+                        g_contract = GContract.get_industry_by_name(sess, "cv")
+                        fetch_cvs(sess, self.log, g_contract)
+                    except BaseException:
+                        self.log(f"Outer problem {traceback.format_exc()}")
+                        if g_contract is None:
+                            self.global_alert = (
+                                "There's a problem with the gas CV automatic importer."
+                            )
+                        else:
+                            self.global_alert = (
+                                f"There's a problem with the <a "
+                                f"href='/g/industry_contracts/{g_contract.id}'>gas CV "
+                                f"automatic importer</a>."
+                            )
+                        sess.rollback()
+                    finally:
+                        self.lock.release()
+                        self.log("Finished checking CV rates.")
 
             self.going.wait(60 * 60 * 24)
             self.going.clear()

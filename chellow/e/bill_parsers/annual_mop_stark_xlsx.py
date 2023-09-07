@@ -8,7 +8,6 @@ from openpyxl import load_workbook
 from werkzeug.exceptions import BadRequest
 
 
-from chellow.models import Session
 from chellow.utils import parse_mpan_core, to_utc
 
 
@@ -74,9 +73,7 @@ class Parser:
         return line
 
     def make_raw_bills(self):
-        sess = None
         try:
-            sess = Session()
             bills = []
             row = next(self.sheet.iter_rows(min_row=6, max_row=6, max_col=3))
             issue_date = get_start_date(row, 2)
@@ -136,8 +133,5 @@ class Parser:
                 )
         except BadRequest as e:
             raise BadRequest(f"Row number {row[0].row}: {e.description}")
-        finally:
-            if sess is not None:
-                sess.close()
 
         return bills

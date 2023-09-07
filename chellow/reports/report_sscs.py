@@ -51,39 +51,44 @@ def content(
     mr_rows = [["ssc_code", "tpr_code"]]
     tpr_rows = [["tpr_code", "is_teleswitch", "is_gmt"]]
     try:
-        sess = Session()
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
 
-        user = User.get_by_id(sess, user_id)
+            running_name, finished_name = chellow.dloads.make_names("sscs.ods", user)
 
-        running_name, finished_name = chellow.dloads.make_names("sscs.ods", user)
+            rf = open(running_name, "wb")
 
-        rf = open(running_name, "wb")
+            for ssc in sess.scalars(select(Ssc).order_by(Ssc.code)):
+                ssc_rows.append(
+                    (
+                        ssc.code,
+                        ssc.description,
+                        ssc.is_import,
+                        ssc.valid_from,
+                        ssc.valid_to,
+                    )
+                )
+            for mr in sess.scalars(
+                select(MeasurementRequirement)
+                .join(Ssc)
+                .join(Tpr)
+                .order_by(Ssc.code, Tpr.code)
+                .options(
+                    joinedload(MeasurementRequirement.ssc),
+                    joinedload(MeasurementRequirement.tpr),
+                )
+            ):
+                mr_rows.append((mr.ssc.code, mr.tpr.code))
+            for tpr in sess.scalars(select(Tpr).order_by(Tpr.code)):
+                tpr_rows.append((tpr.code, tpr.is_teleswitch, tpr.is_gmt))
 
-        for ssc in sess.scalars(select(Ssc).order_by(Ssc.code)):
-            ssc_rows.append(
-                (ssc.code, ssc.description, ssc.is_import, ssc.valid_from, ssc.valid_to)
+            write_spreadsheet(
+                rf,
+                compression,
+                ssc_rows,
+                mr_rows,
+                tpr_rows,
             )
-        for mr in sess.scalars(
-            select(MeasurementRequirement)
-            .join(Ssc)
-            .join(Tpr)
-            .order_by(Ssc.code, Tpr.code)
-            .options(
-                joinedload(MeasurementRequirement.ssc),
-                joinedload(MeasurementRequirement.tpr),
-            )
-        ):
-            mr_rows.append((mr.ssc.code, mr.tpr.code))
-        for tpr in sess.scalars(select(Tpr).order_by(Tpr.code)):
-            tpr_rows.append((tpr.code, tpr.is_teleswitch, tpr.is_gmt))
-
-        write_spreadsheet(
-            rf,
-            compression,
-            ssc_rows,
-            mr_rows,
-            tpr_rows,
-        )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
@@ -102,8 +107,6 @@ def content(
         else:
             write_spreadsheet(rf, compression, ssc_rows, mr_rows, tpr_rows)
     finally:
-        if sess is not None:
-            sess.close()
         if rf is not None:
             rf.close()
             os.rename(running_name, finished_name)

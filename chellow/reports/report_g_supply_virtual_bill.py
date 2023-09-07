@@ -20,77 +20,76 @@ from chellow.views import chellow_redirect
 
 def content(g_supply_id, file_name, start_date, finish_date, user):
     caches = {}
-    sess = None
     try:
-        sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(
-            f"g_supply_virtual_bill_{g_supply_id}.csv", user
-        )
-        f = open(running_name, mode="w", newline="")
-        writer = csv.writer(f, lineterminator="\n")
-
-        g_supply = GSupply.get_by_id(sess, g_supply_id)
-
-        forecast_dt = forecast_date()
-
-        prev_titles = None
-
-        for g_era in (
-            sess.query(GEra)
-            .filter(
-                GEra.g_supply == g_supply,
-                GEra.start_date < finish_date,
-                or_(GEra.finish_date == null(), GEra.finish_date > start_date),
+        with Session() as sess:
+            running_name, finished_name = chellow.dloads.make_names(
+                f"g_supply_virtual_bill_{g_supply_id}.csv", user
             )
-            .order_by(GEra.start_date)
-        ):
-            chunk_start = hh_max(g_era.start_date, start_date)
-            chunk_finish = hh_min(g_era.finish_date, finish_date)
-            site = (
-                sess.query(Site)
-                .join(SiteGEra)
-                .filter(SiteGEra.g_era == g_era, SiteGEra.is_physical == true())
-                .one()
-            )
+            f = open(running_name, mode="w", newline="")
+            writer = csv.writer(f, lineterminator="\n")
 
-            ds = GDataSource(
-                sess, chunk_start, chunk_finish, forecast_dt, g_era, caches, None
-            )
+            g_supply = GSupply.get_by_id(sess, g_supply_id)
 
-            titles = ["MPRN", "Site Code", "Site Name", "Account", "From", "To", ""]
+            forecast_dt = forecast_date()
 
-            output_line = [
-                g_supply.mprn,
-                site.code,
-                site.name,
-                ds.account,
-                hh_format(ds.start_date),
-                hh_format(ds.finish_date),
-                "",
-            ]
+            prev_titles = None
 
-            contract_titles = g_contract_func(
-                caches, g_era.g_contract, "virtual_bill_titles"
-            )()
-            titles.extend(contract_titles)
+            for g_era in (
+                sess.query(GEra)
+                .filter(
+                    GEra.g_supply == g_supply,
+                    GEra.start_date < finish_date,
+                    or_(GEra.finish_date == null(), GEra.finish_date > start_date),
+                )
+                .order_by(GEra.start_date)
+            ):
+                chunk_start = hh_max(g_era.start_date, start_date)
+                chunk_finish = hh_min(g_era.finish_date, finish_date)
+                site = (
+                    sess.query(Site)
+                    .join(SiteGEra)
+                    .filter(SiteGEra.g_era == g_era, SiteGEra.is_physical == true())
+                    .one()
+                )
 
-            g_contract_func(caches, g_era.g_contract, "virtual_bill")(ds)
-            bill = ds.bill
+                ds = GDataSource(
+                    sess, chunk_start, chunk_finish, forecast_dt, g_era, caches, None
+                )
 
-            for title in contract_titles:
-                if title in bill:
-                    output_line.append(csv_make_val(bill[title]))
-                    del bill[title]
-                else:
-                    output_line.append("")
+                titles = ["MPRN", "Site Code", "Site Name", "Account", "From", "To", ""]
 
-            for k in sorted(bill.keys()):
-                output_line.extend([k, bill[k]])
+                output_line = [
+                    g_supply.mprn,
+                    site.code,
+                    site.name,
+                    ds.account,
+                    hh_format(ds.start_date),
+                    hh_format(ds.finish_date),
+                    "",
+                ]
 
-            if titles != prev_titles:
-                prev_titles = titles
-                writer.writerow([str(v) for v in titles])
-            writer.writerow(output_line)
+                contract_titles = g_contract_func(
+                    caches, g_era.g_contract, "virtual_bill_titles"
+                )()
+                titles.extend(contract_titles)
+
+                g_contract_func(caches, g_era.g_contract, "virtual_bill")(ds)
+                bill = ds.bill
+
+                for title in contract_titles:
+                    if title in bill:
+                        output_line.append(csv_make_val(bill[title]))
+                        del bill[title]
+                    else:
+                        output_line.append("")
+
+                for k in sorted(bill.keys()):
+                    output_line.extend([k, bill[k]])
+
+                if titles != prev_titles:
+                    prev_titles = titles
+                    writer.writerow([str(v) for v in titles])
+                writer.writerow(output_line)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
@@ -98,8 +97,6 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
         print(msg)
         writer.writerow([msg])
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

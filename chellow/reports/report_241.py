@@ -32,119 +32,116 @@ def content(
     user,
 ):
     caches = {}
-    sess = None
     try:
-        sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(
-            "daily_supplier_virtual_bill.csv", user
-        )
-        f = open(running_name, mode="w", newline="")
-        writer = csv.writer(f, lineterminator="\n")
-        start_date = Datetime(start_year, start_month, start_day, tzinfo=pytz.utc)
-        finish_date = (
-            Datetime(finish_year, finish_month, finish_day, tzinfo=pytz.utc)
-            + relativedelta(days=1)
-            - HH
-        )
+        with Session() as sess:
+            running_name, finished_name = chellow.dloads.make_names(
+                "daily_supplier_virtual_bill.csv", user
+            )
+            f = open(running_name, mode="w", newline="")
+            writer = csv.writer(f, lineterminator="\n")
+            start_date = Datetime(start_year, start_month, start_day, tzinfo=pytz.utc)
+            finish_date = (
+                Datetime(finish_year, finish_month, finish_day, tzinfo=pytz.utc)
+                + relativedelta(days=1)
+                - HH
+            )
 
-        supply = Supply.get_by_id(sess, supply_id)
-        forecast_date = chellow.computer.forecast_date()
-        day_start = start_date
-        header_titles = [
-            "MPAN Core",
-            "Site Code",
-            "Site Name",
-            "Account",
-            "From",
-            "To",
-            "Is Forecast?",
-        ]
+            supply = Supply.get_by_id(sess, supply_id)
+            forecast_date = chellow.computer.forecast_date()
+            day_start = start_date
+            header_titles = [
+                "MPAN Core",
+                "Site Code",
+                "Site Name",
+                "Account",
+                "From",
+                "To",
+                "Is Forecast?",
+            ]
 
-        bill_titles = []
-        # Find titles
-        for era in sess.query(Era).filter(
-            Era.supply == supply,
-            Era.start_date <= finish_date,
-            or_(Era.finish_date == null(), Era.finish_date >= start_date),
-        ):
-            if is_import:
-                cont = era.imp_supplier_contract
-            else:
-                cont = era.exp_supplier_contract
+            bill_titles = []
+            # Find titles
+            for era in sess.query(Era).filter(
+                Era.supply == supply,
+                Era.start_date <= finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            ):
+                if is_import:
+                    cont = era.imp_supplier_contract
+                else:
+                    cont = era.exp_supplier_contract
 
-            for title in chellow.computer.contract_func(
-                caches, cont, "virtual_bill_titles"
-            )():
-                if title not in bill_titles:
-                    bill_titles.append(title)
+                for title in chellow.computer.contract_func(
+                    caches, cont, "virtual_bill_titles"
+                )():
+                    if title not in bill_titles:
+                        bill_titles.append(title)
 
-            ssc = era.ssc
-            if ssc is not None:
-                for mr in ssc.measurement_requirements:
-                    for suffix in ("-kwh", "-rate", "-gbp"):
-                        title = mr.tpr.code + suffix
-                        if title not in bill_titles:
-                            bill_titles.append(title)
+                ssc = era.ssc
+                if ssc is not None:
+                    for mr in ssc.measurement_requirements:
+                        for suffix in ("-kwh", "-rate", "-gbp"):
+                            title = mr.tpr.code + suffix
+                            if title not in bill_titles:
+                                bill_titles.append(title)
 
-        writer.writerow(header_titles + bill_titles)
+            writer.writerow(header_titles + bill_titles)
 
-        while not day_start > finish_date:
-            day_finish = day_start + relativedelta(days=1) - HH
+            while not day_start > finish_date:
+                day_finish = day_start + relativedelta(days=1) - HH
 
-            for era in supply.find_eras(sess, day_start, day_finish):
-                chunk_start = hh_max(era.start_date, day_start)
-                chunk_finish = hh_min(era.finish_date, day_finish)
+                for era in supply.find_eras(sess, day_start, day_finish):
+                    chunk_start = hh_max(era.start_date, day_start)
+                    chunk_finish = hh_min(era.finish_date, day_finish)
 
-                ss = chellow.computer.SupplySource(
-                    sess,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    era,
-                    is_import,
-                    caches,
-                )
+                    ss = chellow.computer.SupplySource(
+                        sess,
+                        chunk_start,
+                        chunk_finish,
+                        forecast_date,
+                        era,
+                        is_import,
+                        caches,
+                    )
 
-                site = (
-                    sess.query(Site)
-                    .join(SiteEra)
-                    .filter(SiteEra.era == era, SiteEra.is_physical == true())
-                    .one()
-                )
-                row = [
-                    ss.mpan_core,
-                    site.code,
-                    site.name,
-                    ss.supplier_account,
-                    hh_format(ss.start_date),
-                    hh_format(ss.finish_date),
-                    ss.years_back > 0,
-                ]
+                    site = (
+                        sess.query(Site)
+                        .join(SiteEra)
+                        .filter(SiteEra.era == era, SiteEra.is_physical == true())
+                        .one()
+                    )
+                    row = [
+                        ss.mpan_core,
+                        site.code,
+                        site.name,
+                        ss.supplier_account,
+                        hh_format(ss.start_date),
+                        hh_format(ss.finish_date),
+                        ss.years_back > 0,
+                    ]
 
-                chellow.computer.contract_func(
-                    caches, ss.supplier_contract, "virtual_bill"
-                )(ss)
-                bill = ss.supplier_bill
-                for title in bill_titles:
-                    if title in bill:
-                        row.append(csv_make_val(bill[title]))
-                        del bill[title]
-                    else:
-                        row.append("")
+                    chellow.computer.contract_func(
+                        caches, ss.supplier_contract, "virtual_bill"
+                    )(ss)
+                    bill = ss.supplier_bill
+                    for title in bill_titles:
+                        if title in bill:
+                            row.append(csv_make_val(bill[title]))
+                            del bill[title]
+                        else:
+                            row.append("")
 
-                for k in sorted(bill.keys()):
-                    row.append(k)
-                    row.append(csv_make_val(bill[k]))
-                writer.writerow(row)
+                    for k in sorted(bill.keys()):
+                        row.append(k)
+                        row.append(csv_make_val(bill[k]))
+                    writer.writerow(row)
 
-            day_start += relativedelta(days=1)
+                day_start += relativedelta(days=1)
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

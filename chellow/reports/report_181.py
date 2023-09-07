@@ -146,21 +146,19 @@ def _write_sites(sess, caches, writer, year, site_id):
 
 def content(year, site_id, user):
     caches = {}
-    sess = f = writer = None
+    f = writer = None
     try:
-        sess = Session()
-        running_name, finished_name = chellow.dloads.make_names("output.csv", user)
-        f = open(running_name, mode="w", newline="")
-        writer = csv.writer(f, lineterminator="\n")
-        _write_sites(sess, caches, writer, year, site_id)
+        with Session() as sess:
+            running_name, finished_name = chellow.dloads.make_names("output.csv", user)
+            f = open(running_name, mode="w", newline="")
+            writer = csv.writer(f, lineterminator="\n")
+            _write_sites(sess, caches, writer, year, site_id)
 
     except BadRequest as e:
         writer.writerow([e.description])
     except BaseException:
         writer.writerow([traceback.format_exc()])
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

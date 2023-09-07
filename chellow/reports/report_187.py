@@ -62,143 +62,122 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
             tls.append(polarity + " " + suffix)
 
     titles = csv_str(tls)
-    sess = tmp_file = None
+    tmp_file = None
     try:
-        sess = Session()
-        user = User.get_by_id(sess, user_id)
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
 
-        running_name, finished_name = chellow.dloads.make_names(base_name, user)
+            running_name, finished_name = chellow.dloads.make_names(base_name, user)
 
-        if is_zipped:
-            zf = zipfile.ZipFile(running_name, "w")
-        else:
-            tmp_file = open(running_name, "w")
+            if is_zipped:
+                zf = zipfile.ZipFile(running_name, "w")
+            else:
+                tmp_file = open(running_name, "w")
 
-        caches = {}
-        supplies = (
-            select(Supply)
-            .join(Era)
-            .where(
-                Era.start_date <= finish_date,
-                or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            )
-            .order_by(Supply.id)
-            .distinct()
-        )
-        if supply_id is not None:
-            sup = Supply.get_by_id(sess, supply_id)
-            supplies = supplies.where(Era.supply == sup)
-
-        if mpan_cores is not None:
-            supplies = supplies.where(
-                or_(
-                    Era.imp_mpan_core.in_(mpan_cores), Era.exp_mpan_core.in_(mpan_cores)
-                )
-            )
-
-        if not is_zipped:
-            tmp_file.write(titles)
-
-        for supply in sess.scalars(supplies):
-            site, era = (
-                sess.query(Site, Era)
-                .join(Era.site_eras)
-                .filter(
-                    Era.supply == supply,
+            caches = {}
+            supplies = (
+                select(Supply)
+                .join(Era)
+                .where(
                     Era.start_date <= finish_date,
-                    SiteEra.site_id == Site.id,
                     or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                    SiteEra.is_physical == true(),
                 )
-                .order_by(Era.id)
-                .first()
+                .order_by(Supply.id)
+                .distinct()
             )
+            if supply_id is not None:
+                sup = Supply.get_by_id(sess, supply_id)
+                supplies = supplies.where(Era.supply == sup)
 
-            outs = []
-            data = iter(
-                sess.execute(
-                    text(
-                        """
-select hh_base.start_date,
-    max(imp_active.value), max(imp_active.status),
-    max(imp_active.last_modified),
-    max(imp_reactive_imp.value), max(imp_reactive_imp.status),
-    max(imp_reactive_imp.last_modified),
-    max(imp_reactive_exp.value), max(imp_reactive_exp.status),
-    max(imp_reactive_exp.last_modified),
-    max(exp_active.value), max(exp_active.status),
-    max(exp_active.last_modified),
-    max(exp_reactive_imp.value), max(imp_reactive_imp.status),
-    max(exp_reactive_imp.last_modified),
-    max(exp_reactive_exp.value), max(exp_reactive_exp.status),
-    max(exp_reactive_exp.last_modified)
-from hh_datum hh_base
-    join channel on hh_base.channel_id = channel.id
-    join era on channel.era_id = era.id
-    left join hh_datum imp_active
-        on (imp_active.id = hh_base.id and channel.imp_related is true and
-            channel.channel_type = 'ACTIVE')
-    left join hh_datum imp_reactive_imp
-        on (imp_reactive_imp.id = hh_base.id
-            and channel.imp_related is true and
-            channel.channel_type = 'REACTIVE_IMP')
-    left join hh_datum imp_reactive_exp
-        on (imp_reactive_exp.id = hh_base.id
-            and channel.imp_related is true and
-            channel.channel_type = 'REACTIVE_EXP')
-    left join hh_datum exp_active
-        on (exp_active.id = hh_base.id and channel.imp_related is false and
-            channel.channel_type = 'ACTIVE')
-    left join hh_datum exp_reactive_imp
-                on (exp_reactive_imp.id = hh_base.id
-                    and channel.imp_related is
-                false and channel.channel_type = 'REACTIVE_IMP')
-    left join hh_datum exp_reactive_exp
-                on (exp_reactive_exp.id = hh_base.id
-                and channel.imp_related is false
-                and channel.channel_type = 'REACTIVE_EXP')
-where supply_id = :supply_id
-    and hh_base.start_date between :start_date and :finish_date
-group by hh_base.start_date
-order by hh_base.start_date
-    """
-                    ),
-                    params={
-                        "supply_id": supply.id,
-                        "start_date": start_date,
-                        "finish_date": finish_date,
-                    },
+            if mpan_cores is not None:
+                supplies = supplies.where(
+                    or_(
+                        Era.imp_mpan_core.in_(mpan_cores),
+                        Era.exp_mpan_core.in_(mpan_cores),
+                    )
                 )
-            )
-            datum = next(data, None)
 
-            for dt in hh_range(caches, start_date, finish_date):
-                row = [site.code, era.imp_mpan_core, era.exp_mpan_core, dt]
-                if datum is not None:
-                    (
-                        hh_start_date,
-                        imp_active,
-                        imp_active_status,
-                        imp_active_modified,
-                        imp_reactive_imp,
-                        imp_reactive_imp_status,
-                        imp_reactive_imp_modified,
-                        imp_reactive_exp,
-                        imp_reactive_exp_status,
-                        imp_reactive_exp_modified,
-                        exp_active,
-                        exp_active_status,
-                        exp_active_modified,
-                        exp_reactive_imp,
-                        exp_reactive_imp_status,
-                        exp_reactive_imp_modified,
-                        exp_reactive_exp,
-                        exp_reactive_exp_status,
-                        exp_reactive_exp_modified,
-                    ) = datum
-                    if hh_start_date == dt:
-                        datum = next(data, None)
-                        row += [
+            if not is_zipped:
+                tmp_file.write(titles)
+
+            for supply in sess.scalars(supplies):
+                site, era = (
+                    sess.query(Site, Era)
+                    .join(Era.site_eras)
+                    .filter(
+                        Era.supply == supply,
+                        Era.start_date <= finish_date,
+                        SiteEra.site_id == Site.id,
+                        or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                        SiteEra.is_physical == true(),
+                    )
+                    .order_by(Era.id)
+                    .first()
+                )
+
+                outs = []
+                data = iter(
+                    sess.execute(
+                        text(
+                            """
+    select hh_base.start_date,
+        max(imp_active.value), max(imp_active.status),
+        max(imp_active.last_modified),
+        max(imp_reactive_imp.value), max(imp_reactive_imp.status),
+        max(imp_reactive_imp.last_modified),
+        max(imp_reactive_exp.value), max(imp_reactive_exp.status),
+        max(imp_reactive_exp.last_modified),
+        max(exp_active.value), max(exp_active.status),
+        max(exp_active.last_modified),
+        max(exp_reactive_imp.value), max(imp_reactive_imp.status),
+        max(exp_reactive_imp.last_modified),
+        max(exp_reactive_exp.value), max(exp_reactive_exp.status),
+        max(exp_reactive_exp.last_modified)
+    from hh_datum hh_base
+        join channel on hh_base.channel_id = channel.id
+        join era on channel.era_id = era.id
+        left join hh_datum imp_active
+            on (imp_active.id = hh_base.id and channel.imp_related is true and
+                channel.channel_type = 'ACTIVE')
+        left join hh_datum imp_reactive_imp
+            on (imp_reactive_imp.id = hh_base.id
+                and channel.imp_related is true and
+                channel.channel_type = 'REACTIVE_IMP')
+        left join hh_datum imp_reactive_exp
+            on (imp_reactive_exp.id = hh_base.id
+                and channel.imp_related is true and
+                channel.channel_type = 'REACTIVE_EXP')
+        left join hh_datum exp_active
+            on (exp_active.id = hh_base.id and channel.imp_related is false and
+                channel.channel_type = 'ACTIVE')
+        left join hh_datum exp_reactive_imp
+                    on (exp_reactive_imp.id = hh_base.id
+                        and channel.imp_related is
+                    false and channel.channel_type = 'REACTIVE_IMP')
+        left join hh_datum exp_reactive_exp
+                    on (exp_reactive_exp.id = hh_base.id
+                    and channel.imp_related is false
+                    and channel.channel_type = 'REACTIVE_EXP')
+    where supply_id = :supply_id
+        and hh_base.start_date between :start_date and :finish_date
+    group by hh_base.start_date
+    order by hh_base.start_date
+        """
+                        ),
+                        params={
+                            "supply_id": supply.id,
+                            "start_date": start_date,
+                            "finish_date": finish_date,
+                        },
+                    )
+                )
+                datum = next(data, None)
+
+                for dt in hh_range(caches, start_date, finish_date):
+                    row = [site.code, era.imp_mpan_core, era.exp_mpan_core, dt]
+                    if datum is not None:
+                        (
+                            hh_start_date,
                             imp_active,
                             imp_active_status,
                             imp_active_modified,
@@ -217,18 +196,42 @@ order by hh_base.start_date
                             exp_reactive_exp,
                             exp_reactive_exp_status,
                             exp_reactive_exp_modified,
-                        ]
+                        ) = datum
+                        if hh_start_date == dt:
+                            datum = next(data, None)
+                            row += [
+                                imp_active,
+                                imp_active_status,
+                                imp_active_modified,
+                                imp_reactive_imp,
+                                imp_reactive_imp_status,
+                                imp_reactive_imp_modified,
+                                imp_reactive_exp,
+                                imp_reactive_exp_status,
+                                imp_reactive_exp_modified,
+                                exp_active,
+                                exp_active_status,
+                                exp_active_modified,
+                                exp_reactive_imp,
+                                exp_reactive_imp_status,
+                                exp_reactive_imp_modified,
+                                exp_reactive_exp,
+                                exp_reactive_exp_status,
+                                exp_reactive_exp_modified,
+                            ]
 
-                outs.append(csv_str(row))
+                    outs.append(csv_str(row))
 
-            if is_zipped:
-                fnm = f"hh_data_row_{era.id}_{era.imp_mpan_core}_{era.exp_mpan_core}"
-                zf.writestr(fnm.replace(" ", "") + ".csv", titles + "".join(outs))
-            else:
-                tmp_file.write("".join(outs))
+                if is_zipped:
+                    fnm = (
+                        f"hh_data_row_{era.id}_{era.imp_mpan_core}_{era.exp_mpan_core}"
+                    )
+                    zf.writestr(fnm.replace(" ", "") + ".csv", titles + "".join(outs))
+                else:
+                    tmp_file.write("".join(outs))
 
-            # Avoid a long-running transaction
-            sess.rollback()
+                # Avoid a long-running transaction
+                sess.rollback()
     except BaseException:
         msg = f"Problem {traceback.format_exc()}"
         print(msg)
@@ -238,8 +241,6 @@ order by hh_base.start_date
             if tmp_file is not None:
                 tmp_file.write(msg)
     finally:
-        if sess is not None:
-            sess.close()
         if is_zipped:
             zf.close()
             os.rename(running_name, finished_name)

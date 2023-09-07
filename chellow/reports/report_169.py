@@ -48,166 +48,175 @@ def content(
     base_name = ["supplies_hh_data", finish_date_ct.strftime("%Y%m%d%H%M")]
     cache = {}
     try:
-        sess = Session()
-        supplies = (
-            select(Supply)
-            .join(Era)
-            .where(
-                or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                Era.start_date <= finish_date,
-            )
-            .order_by(Supply.id)
-            .distinct()
-        )
-        if supply_id is not None:
-            supply = Supply.get_by_id(sess, supply_id)
-            supplies = supplies.where(Supply.id == supply.id)
-            first_era = sess.scalars(
-                select(Era)
+        with Session() as sess:
+            supplies = (
+                select(Supply)
+                .join(Era)
                 .where(
-                    Era.supply == supply,
                     or_(Era.finish_date == null(), Era.finish_date >= start_date),
                     Era.start_date <= finish_date,
                 )
-                .order_by(Era.start_date)
-            ).first()
-            if first_era.imp_mpan_core is None:
-                name_core = first_era.exp_mpan_core
-            else:
-                name_core = first_era.imp_mpan_core
-            base_name.append("supply_" + name_core.replace(" ", "_"))
-
-        if mpan_cores is not None:
-            supplies = supplies.where(
-                or_(
-                    Era.imp_mpan_core.in_(mpan_cores), Era.exp_mpan_core.in_(mpan_cores)
-                )
+                .order_by(Supply.id)
+                .distinct()
             )
-            base_name.append("filter")
+            if supply_id is not None:
+                supply = Supply.get_by_id(sess, supply_id)
+                supplies = supplies.where(Supply.id == supply.id)
+                first_era = sess.scalars(
+                    select(Era)
+                    .where(
+                        Era.supply == supply,
+                        or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                        Era.start_date <= finish_date,
+                    )
+                    .order_by(Era.start_date)
+                ).first()
+                if first_era.imp_mpan_core is None:
+                    name_core = first_era.exp_mpan_core
+                else:
+                    name_core = first_era.imp_mpan_core
+                base_name.append("supply_" + name_core.replace(" ", "_"))
 
-        cf = StringIO()
-        writer = csv.writer(cf, lineterminator="\n")
-        headers = [
-            "import_mpan_core",
-            "export_mpan_core",
-            "is_hh",
-            "is_import_related",
-            "channel_type",
-            "hh_start_clock_time",
-            "total",
-        ]
-        slot_names = [str(n) for n in range(1, 51)]
-        titles = headers + slot_names
-        writer.writerow(titles)
-        titles_csv = cf.getvalue()
-        cf.close()
-        fdate = forecast_date()
-        user = User.get_by_id(sess, user_id)
+            if mpan_cores is not None:
+                supplies = supplies.where(
+                    or_(
+                        Era.imp_mpan_core.in_(mpan_cores),
+                        Era.exp_mpan_core.in_(mpan_cores),
+                    )
+                )
+                base_name.append("filter")
 
-        running_name, finished_name = chellow.dloads.make_names(
-            "_".join(base_name) + (".zip" if is_zipped else ".csv"), user
-        )
-        if is_zipped:
-            zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
-        else:
-            tf = open(running_name, mode="w", newline="")
-            tf.write(titles_csv)
-
-        for supply in sess.execute(supplies).scalars():
             cf = StringIO()
             writer = csv.writer(cf, lineterminator="\n")
-            imp_mpan_core = exp_mpan_core = is_hh = None
-            data = []
-            for era in sess.scalars(
-                select(Era)
-                .where(
-                    Era.supply == supply,
-                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
-                    Era.start_date <= finish_date,
-                )
-                .order_by(Era.start_date)
-            ):
-                if era.imp_mpan_core is not None:
-                    imp_mpan_core = era.imp_mpan_core
-                if era.exp_mpan_core is not None:
-                    exp_mpan_core = era.exp_mpan_core
+            headers = [
+                "import_mpan_core",
+                "export_mpan_core",
+                "is_hh",
+                "is_import_related",
+                "channel_type",
+                "hh_start_clock_time",
+                "total",
+            ]
+            slot_names = [str(n) for n in range(1, 51)]
+            titles = headers + slot_names
+            writer.writerow(titles)
+            titles_csv = cf.getvalue()
+            cf.close()
+            fdate = forecast_date()
+            user = User.get_by_id(sess, user_id)
 
-                if era.pc.code == "00" or len(era.channels) > 0:
-                    is_hh = True
-                    for datum in sess.scalars(
-                        select(HhDatum)
-                        .join(Channel)
-                        .join(Era)
-                        .where(
-                            Era.supply == supply,
-                            HhDatum.start_date >= start_date,
-                            HhDatum.start_date <= finish_date,
-                            Channel.imp_related == imp_related,
-                            Channel.channel_type == channel_type,
-                        )
-                        .order_by(HhDatum.start_date)
-                    ):
-                        data.append((datum.start_date, datum.value))
-                else:
-                    is_hh = False
-                    ds = SupplySource(
-                        sess, start_date, finish_date, fdate, era, imp_related, cache
+            running_name, finished_name = chellow.dloads.make_names(
+                "_".join(base_name) + (".zip" if is_zipped else ".csv"), user
+            )
+            if is_zipped:
+                zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
+            else:
+                tf = open(running_name, mode="w", newline="")
+                tf.write(titles_csv)
+
+            for supply in sess.execute(supplies).scalars():
+                cf = StringIO()
+                writer = csv.writer(cf, lineterminator="\n")
+                imp_mpan_core = exp_mpan_core = is_hh = None
+                data = []
+                for era in sess.scalars(
+                    select(Era)
+                    .where(
+                        Era.supply == supply,
+                        or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                        Era.start_date <= finish_date,
                     )
-                    KEY_LOOKUP = {
-                        "ACTIVE": "msp-kwh",
-                        "REACTIVE_IMP": "imp-msp-kvarh",
-                        "REACTIVE_EXP": "exp-msp-kvarh",
-                    }
-                    for hh in ds.hh_data:
-                        data.append((hh["start-date"], hh[KEY_LOOKUP[channel_type]]))
+                    .order_by(Era.start_date)
+                ):
+                    if era.imp_mpan_core is not None:
+                        imp_mpan_core = era.imp_mpan_core
+                    if era.exp_mpan_core is not None:
+                        exp_mpan_core = era.exp_mpan_core
 
-            vals = total = slot_count = None
-            hh_data = iter(data)
-            datum = next(hh_data, None)
-            for current_date in hh_range(cache, start_date, finish_date):
-                dt_ct = to_ct(current_date)
-                if dt_ct.hour == 0 and dt_ct.minute == 0:
-                    if vals is not None:
-                        _write_row(writer, titles, vals, total)
+                    if era.pc.code == "00" or len(era.channels) > 0:
+                        is_hh = True
+                        for datum in sess.scalars(
+                            select(HhDatum)
+                            .join(Channel)
+                            .join(Era)
+                            .where(
+                                Era.supply == supply,
+                                HhDatum.start_date >= start_date,
+                                HhDatum.start_date <= finish_date,
+                                Channel.imp_related == imp_related,
+                                Channel.channel_type == channel_type,
+                            )
+                            .order_by(HhDatum.start_date)
+                        ):
+                            data.append((datum.start_date, datum.value))
+                    else:
+                        is_hh = False
+                        ds = SupplySource(
+                            sess,
+                            start_date,
+                            finish_date,
+                            fdate,
+                            era,
+                            imp_related,
+                            cache,
+                        )
+                        KEY_LOOKUP = {
+                            "ACTIVE": "msp-kwh",
+                            "REACTIVE_IMP": "imp-msp-kvarh",
+                            "REACTIVE_EXP": "exp-msp-kvarh",
+                        }
+                        for hh in ds.hh_data:
+                            data.append(
+                                (hh["start-date"], hh[KEY_LOOKUP[channel_type]])
+                            )
 
-                    vals = {
-                        "import_mpan_core": imp_mpan_core,
-                        "export_mpan_core": exp_mpan_core,
-                        "is_hh": is_hh,
-                        "is_import_related": imp_related,
-                        "channel_type": channel_type,
-                        "hh_start_clock_time": dt_ct.strftime("%Y-%m-%d"),
-                    }
-                    for slot_name in slot_names:
-                        vals[slot_name] = None
-                    total = slot_count = 0
+                vals = total = slot_count = None
+                hh_data = iter(data)
+                datum = next(hh_data, None)
+                for current_date in hh_range(cache, start_date, finish_date):
+                    dt_ct = to_ct(current_date)
+                    if dt_ct.hour == 0 and dt_ct.minute == 0:
+                        if vals is not None:
+                            _write_row(writer, titles, vals, total)
 
-                slot_count += 1
-                if datum is not None and datum[0] == current_date:
-                    val = datum[1]
-                    vals[str(slot_count)] = val
-                    total += val
-                    datum = next(hh_data, None)
+                        vals = {
+                            "import_mpan_core": imp_mpan_core,
+                            "export_mpan_core": exp_mpan_core,
+                            "is_hh": is_hh,
+                            "is_import_related": imp_related,
+                            "channel_type": channel_type,
+                            "hh_start_clock_time": dt_ct.strftime("%Y-%m-%d"),
+                        }
+                        for slot_name in slot_names:
+                            vals[slot_name] = None
+                        total = slot_count = 0
 
-            if vals is not None:
-                _write_row(writer, titles, vals, total)
+                    slot_count += 1
+                    if datum is not None and datum[0] == current_date:
+                        val = datum[1]
+                        vals[str(slot_count)] = val
+                        total += val
+                        datum = next(hh_data, None)
+
+                if vals is not None:
+                    _write_row(writer, titles, vals, total)
+
+                if is_zipped:
+                    fname = f"{imp_mpan_core}_{exp_mpan_core}_{supply.id}.csv".replace(
+                        " ", "_"
+                    )
+                    zf.writestr(fname, titles_csv + cf.getvalue())
+                else:
+                    tf.write(cf.getvalue())
+                cf.close()
+
+                # Avoid long-running transaction
+                sess.rollback()
 
             if is_zipped:
-                fname = f"{imp_mpan_core}_{exp_mpan_core}_{supply.id}.csv".replace(
-                    " ", "_"
-                )
-                zf.writestr(fname, titles_csv + cf.getvalue())
+                zf.close()
             else:
-                tf.write(cf.getvalue())
-            cf.close()
-
-            # Avoid long-running transaction
-            sess.rollback()
-
-        if is_zipped:
-            zf.close()
-        else:
-            tf.close()
+                tf.close()
 
     except BaseException:
         msg = traceback.format_exc()
@@ -218,8 +227,6 @@ def content(
         else:
             tf.write(msg)
     finally:
-        if sess is not None:
-            sess.close()
         os.rename(running_name, finished_name)
 
 

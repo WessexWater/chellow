@@ -27,92 +27,92 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
     report_context = {}
     sess = tmp_file = None
     try:
-        sess = Session()
-        user = User.get_by_id(sess, user_id)
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
 
-        running_name, finished_name = chellow.dloads.make_names(
-            "g_bill_check.csv", user
-        )
-        tmp_file = open(running_name, "w")
-        csv_writer = csv.writer(tmp_file)
-        g_bills = (
-            select(GBill)
-            .order_by(GBill.g_supply_id, GBill.reference)
-            .options(
-                joinedload(GBill.g_supply),
-                joinedload(GBill.g_batch),
+            running_name, finished_name = chellow.dloads.make_names(
+                "g_bill_check.csv", user
             )
-        )
-        if g_batch_id is not None:
-            g_batch = GBatch.get_by_id(sess, g_batch_id)
-            g_contract = g_batch.g_contract
-            g_bills = g_bills.where(GBill.g_batch == g_batch)
-
-        elif g_bill_id is not None:
-            g_bill = GBill.get_by_id(sess, g_bill_id)
-            g_contract = g_bill.g_batch.g_contract
-            g_bills = g_bills.where(GBill.id == g_bill.id)
-
-        elif g_contract_id is not None:
-            g_contract = GContract.get_by_id(sess, g_contract_id)
-            g_bills = g_bills.join(GBatch).where(
-                GBatch.g_contract == g_contract,
-                GBill.start_date <= finish_date,
-                GBill.finish_date >= start_date,
-            )
-
-        vbf = chellow.gas.engine.g_contract_func(
-            report_context, g_contract, "virtual_bill"
-        )
-        if vbf is None:
-            raise BadRequest(
-                f"The contract {g_contract.name} doesn't have a function "
-                f"virtual_bill."
-            )
-
-        header_titles = [
-            "batch",
-            "bill_reference",
-            "bill_type",
-            "bill_start_date",
-            "bill_finish_date",
-            "mprn",
-            "supply_name",
-            "site_code",
-            "site_name",
-            "covered_start",
-            "covered_finish",
-            "covered_bill_ids",
-        ]
-        bill_titles = chellow.gas.engine.g_contract_func(
-            report_context, g_contract, "virtual_bill_titles"
-        )()
-
-        titles = header_titles[:]
-        for title in bill_titles:
-            for prefix in ("covered_", "virtual_"):
-                titles.append(prefix + title)
-            if title.endswith("_gbp"):
-                titles.append("difference_" + title)
-
-        csv_writer.writerow(titles)
-
-        g_bill_map = defaultdict(set, {})
-        for b in sess.execute(g_bills).scalars():
-            g_bill_map[b.g_supply.id].add(b.id)
-
-        for g_supply_id, g_bill_ids in g_bill_map.items():
-            while len(g_bill_ids) > 0:
-                _process_g_bill_ids(
-                    sess,
-                    report_context,
-                    g_bill_ids,
-                    forecast_date,
-                    bill_titles,
-                    vbf,
-                    titles,
-                    csv_writer,
+            tmp_file = open(running_name, "w")
+            csv_writer = csv.writer(tmp_file)
+            g_bills = (
+                select(GBill)
+                .order_by(GBill.g_supply_id, GBill.reference)
+                .options(
+                    joinedload(GBill.g_supply),
+                    joinedload(GBill.g_batch),
                 )
+            )
+            if g_batch_id is not None:
+                g_batch = GBatch.get_by_id(sess, g_batch_id)
+                g_contract = g_batch.g_contract
+                g_bills = g_bills.where(GBill.g_batch == g_batch)
+
+            elif g_bill_id is not None:
+                g_bill = GBill.get_by_id(sess, g_bill_id)
+                g_contract = g_bill.g_batch.g_contract
+                g_bills = g_bills.where(GBill.id == g_bill.id)
+
+            elif g_contract_id is not None:
+                g_contract = GContract.get_by_id(sess, g_contract_id)
+                g_bills = g_bills.join(GBatch).where(
+                    GBatch.g_contract == g_contract,
+                    GBill.start_date <= finish_date,
+                    GBill.finish_date >= start_date,
+                )
+
+            vbf = chellow.gas.engine.g_contract_func(
+                report_context, g_contract, "virtual_bill"
+            )
+            if vbf is None:
+                raise BadRequest(
+                    f"The contract {g_contract.name} doesn't have a function "
+                    f"virtual_bill."
+                )
+
+            header_titles = [
+                "batch",
+                "bill_reference",
+                "bill_type",
+                "bill_start_date",
+                "bill_finish_date",
+                "mprn",
+                "supply_name",
+                "site_code",
+                "site_name",
+                "covered_start",
+                "covered_finish",
+                "covered_bill_ids",
+            ]
+            bill_titles = chellow.gas.engine.g_contract_func(
+                report_context, g_contract, "virtual_bill_titles"
+            )()
+
+            titles = header_titles[:]
+            for title in bill_titles:
+                for prefix in ("covered_", "virtual_"):
+                    titles.append(prefix + title)
+                if title.endswith("_gbp"):
+                    titles.append("difference_" + title)
+
+            csv_writer.writerow(titles)
+
+            g_bill_map = defaultdict(set, {})
+            for b in sess.execute(g_bills).scalars():
+                g_bill_map[b.g_supply.id].add(b.id)
+
+            for g_supply_id, g_bill_ids in g_bill_map.items():
+                while len(g_bill_ids) > 0:
+                    _process_g_bill_ids(
+                        sess,
+                        report_context,
+                        g_bill_ids,
+                        forecast_date,
+                        bill_titles,
+                        vbf,
+                        titles,
+                        csv_writer,
+                    )
     except BadRequest as e:
         tmp_file.write(f"Problem: {e.description}")
     except BaseException:
@@ -120,14 +120,8 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
         sys.stderr.write(msg + "\n")
         tmp_file.write(f"Problem {msg}")
     finally:
-        try:
-            if sess is not None:
-                sess.close()
-        except BaseException:
-            tmp_file.write("\nProblem closing session.")
-        finally:
-            tmp_file.close()
-            os.rename(running_name, finished_name)
+        tmp_file.close()
+        os.rename(running_name, finished_name)
 
 
 def _process_g_bill_ids(

@@ -97,18 +97,15 @@ class RcrcImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = None
-                try:
-                    sess = Session()
-                    _process(self.log, sess)
-                except BaseException:
-                    self.log("Outer problem " + traceback.format_exc())
-                    sess.rollback()
-                finally:
-                    self.lock.release()
-                    self.log("Finished checking RCRC rates.")
-                    if sess is not None:
-                        sess.close()
+                with Session() as sess:
+                    try:
+                        _process(self.log, sess)
+                        self.log("Finished checking RCRC rates.")
+                    except BaseException:
+                        self.log("Outer problem " + traceback.format_exc())
+                        sess.rollback()
+                    finally:
+                        self.lock.release()
 
             self.going.wait(30 * 60)
             self.going.clear()

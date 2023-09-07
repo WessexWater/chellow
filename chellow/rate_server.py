@@ -124,37 +124,10 @@ class RateServer(threading.Thread):
 
     def run(self):
         while not self.stopped.is_set():
-            sess = None
-            try:
-                sess = Session()
-                config = Contract.get_non_core_by_name(sess, "configuration")
-                state = config.make_state()
-            except BaseException as e:
-                msg = f"{e.description} " if isinstance(e, BadRequest) else ""
-                self.log(f"{msg}{traceback.format_exc()}")
-                self.global_alert = (
-                    "There's a problem with a <a href='/rate_server'>Rate Server "
-                    "import</a>."
-                )
-                sess.rollback()
-            finally:
-                if sess is not None:
-                    sess.close()
-
-            last_run = state.get(LAST_RUN_KEY)
-            if last_run is None or utc_datetime_now() - last_run > timedelta(days=1):
-                self.going.set()
-
-            if self.going.is_set():
-                sess = self.global_alert = None
+            with Session() as sess:
                 try:
-                    sess = Session()
                     config = Contract.get_non_core_by_name(sess, "configuration")
                     state = config.make_state()
-                    state[LAST_RUN_KEY] = utc_datetime_now()
-                    config.update_state(state)
-                    sess.commit()
-                    run_import(sess, self.log, self.set_progress)
                 except BaseException as e:
                     msg = f"{e.description} " if isinstance(e, BadRequest) else ""
                     self.log(f"{msg}{traceback.format_exc()}")
@@ -163,11 +136,32 @@ class RateServer(threading.Thread):
                         "import</a>."
                     )
                     sess.rollback()
-                finally:
-                    self.going.clear()
-                    if sess is not None:
-                        sess.close()
-                    self.log("Finished importing rates.")
+
+            last_run = state.get(LAST_RUN_KEY)
+            if last_run is None or utc_datetime_now() - last_run > timedelta(days=1):
+                self.going.set()
+
+            if self.going.is_set():
+                self.global_alert = None
+                with Session() as sess:
+                    try:
+                        config = Contract.get_non_core_by_name(sess, "configuration")
+                        state = config.make_state()
+                        state[LAST_RUN_KEY] = utc_datetime_now()
+                        config.update_state(state)
+                        sess.commit()
+                        run_import(sess, self.log, self.set_progress)
+                    except BaseException as e:
+                        msg = f"{e.description} " if isinstance(e, BadRequest) else ""
+                        self.log(f"{msg}{traceback.format_exc()}")
+                        self.global_alert = (
+                            "There's a problem with a "
+                            "<a href='/rate_server'>Rate Server import</a>."
+                        )
+                        sess.rollback()
+                    finally:
+                        self.going.clear()
+                        self.log("Finished importing rates.")
 
             else:
                 self.log(

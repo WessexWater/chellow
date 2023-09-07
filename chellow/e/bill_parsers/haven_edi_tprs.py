@@ -378,10 +378,9 @@ class Parser:
 
     def make_raw_bills(self):
         bills = []
-        sess = Session()
-        headers = {"sess": sess}
         bill = None
-        try:
+        with Session() as sess:
+            headers = {"sess": sess}
             for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
                 try:
                     func = CODE_FUNCS[seg_name]
@@ -401,8 +400,5 @@ class Parser:
 
                 if bill is not None:
                     bills.append(bill)
-        finally:
-            if sess is not None:
-                sess.close()
 
         return bills

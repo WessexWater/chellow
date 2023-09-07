@@ -41,18 +41,15 @@ from chellow.views import chellow_redirect
 
 
 def content(running_name, finished_name, date, supply_id, mpan_cores):
-    sess = None
     try:
-        sess = Session()
-        f = open(running_name, mode="w", newline="")
-        _process(sess, f, date, supply_id, mpan_cores)
+        with Session() as sess:
+            f = open(running_name, mode="w", newline="")
+            _process(sess, f, date, supply_id, mpan_cores)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
         f.write(msg)
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

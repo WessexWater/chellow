@@ -101,57 +101,57 @@ class BmarketidxImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = contract = None
-                try:
-                    sess = Session()
-                    self.log("Starting to check bmarketidx.")
-                    contract = Contract.get_non_core_by_name(sess, "bmarketidx")
-                    latest_rs = (
-                        sess.query(RateScript)
-                        .filter(RateScript.contract_id == contract.id)
-                        .order_by(RateScript.start_date.desc())
-                        .first()
-                    )
-                    start_ct = to_ct(latest_rs.start_date)
+                self.global_alert = contract = None
+                with Session() as sess:
+                    try:
+                        self.log("Starting to check bmarketidx.")
+                        contract = Contract.get_non_core_by_name(sess, "bmarketidx")
+                        latest_rs = (
+                            sess.query(RateScript)
+                            .filter(RateScript.contract_id == contract.id)
+                            .order_by(RateScript.start_date.desc())
+                            .first()
+                        )
+                        start_ct = to_ct(latest_rs.start_date)
 
-                    months = list(
-                        c_months_u(
-                            start_year=start_ct.year,
-                            start_month=start_ct.month,
-                            months=2,
+                        months = list(
+                            c_months_u(
+                                start_year=start_ct.year,
+                                start_month=start_ct.month,
+                                months=2,
+                            )
                         )
-                    )
-                    month_start, month_finish = months[1]
+                        month_start, month_finish = months[1]
 
-                    now = utc_datetime_now()
-                    if now > month_finish:
-                        _process_month(
-                            self.log,
-                            sess,
-                            contract,
-                            latest_rs,
-                            month_start,
-                            month_finish,
-                        )
+                        now = utc_datetime_now()
+                        if now > month_finish:
+                            _process_month(
+                                self.log,
+                                sess,
+                                contract,
+                                latest_rs,
+                                month_start,
+                                month_finish,
+                            )
 
-                except BaseException:
-                    self.log(f"Outer problem {traceback.format_exc()}")
-                    sess.rollback()
-                    if contract is None:
-                        self.global_alert = (
-                            "There's a problem with the bmarketidx automatic importer."
-                        )
-                    else:
-                        self.global_alert = (
-                            f"There's a problem with the <a "
-                            f"href='/e/non_core_contracts/{contract.id}/"
-                            f"automatic_importer'>bmarketidx automatic importer</a>."
-                        )
-                finally:
-                    self.lock.release()
-                    self.log("Finished checking bmarketidx rates.")
-                    if sess is not None:
-                        sess.close()
+                    except BaseException:
+                        self.log(f"Outer problem {traceback.format_exc()}")
+                        sess.rollback()
+                        if contract is None:
+                            self.global_alert = (
+                                "There's a problem with the bmarketidx automatic "
+                                "importer."
+                            )
+                        else:
+                            self.global_alert = (
+                                f"There's a problem with the <a "
+                                f"href='/e/non_core_contracts/{contract.id}/"
+                                f"automatic_importer'>bmarketidx automatic "
+                                f"importer</a>."
+                            )
+                    finally:
+                        self.lock.release()
+                        self.log("Finished checking bmarketidx rates.")
 
             self.going.wait(2 * 60 * 60)
             self.going.clear()

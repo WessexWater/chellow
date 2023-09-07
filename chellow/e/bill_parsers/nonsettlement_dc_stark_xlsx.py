@@ -86,68 +86,66 @@ class Parser:
 
     def make_raw_bills(self):
         row_index = None
-        sess = None
         try:
-            sess = Session()
-            bills = []
-            row_iter = self.sheet.iter_rows()
-            title_row = next(row_iter)
-            for row in row_iter:
-                val = get_value(title_row, row, "mpan ref")
-                if val is None or val == "":
-                    break
+            with Session() as sess:
+                bills = []
+                row_iter = self.sheet.iter_rows()
+                title_row = next(row_iter)
+                for row in row_iter:
+                    val = get_value(title_row, row, "mpan ref")
+                    if val is None or val == "":
+                        break
 
-                self._set_last_line(row_index, val)
-                msn = str(get_value(title_row, row, "meter")).strip()
-                mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
-                start_date = get_start_date(title_row, row, "start")
-                issue_date = start_date
-                finish_date = get_finish_date(title_row, row, "end")
-                check = get_str(title_row, row, "check")
-                if check != "Billed":
-                    continue
+                    self._set_last_line(row_index, val)
+                    msn = str(get_value(title_row, row, "meter")).strip()
+                    mpan_core = parse_mpan_core(
+                        str(get_int(title_row, row, "mpan ref"))
+                    )
+                    start_date = get_start_date(title_row, row, "start")
+                    issue_date = start_date
+                    finish_date = get_finish_date(title_row, row, "end")
+                    check = get_str(title_row, row, "check")
+                    if check != "Billed":
+                        continue
 
-                net = METER_RATE / 12
-                vat = round(net * Decimal("0.2"), 2)
+                    net = METER_RATE / 12
+                    vat = round(net * Decimal("0.2"), 2)
 
-                breakdown = {
-                    "raw_lines": [],
-                    "cop": ["5"],
-                    "settlement-status": ["non_settlement"],
-                    "msn": [msn],
-                    "meter-rate": [METER_RATE],
-                    "meter-gbp": net,
-                }
-
-                bills.append(
-                    {
-                        "bill_type_code": "N",
-                        "kwh": Decimal(0),
-                        "vat": vat,
-                        "net": net,
-                        "gross": net + vat,
-                        "reads": [],
-                        "breakdown": breakdown,
-                        "account": mpan_core,
-                        "issue_date": issue_date,
-                        "start_date": start_date,
-                        "finish_date": finish_date,
-                        "mpan_core": mpan_core,
-                        "reference": "_".join(
-                            (
-                                start_date.strftime("%Y%m%d"),
-                                finish_date.strftime("%Y%m%d"),
-                                issue_date.strftime("%Y%m%d"),
-                                mpan_core,
-                            )
-                        ),
+                    breakdown = {
+                        "raw_lines": [],
+                        "cop": ["5"],
+                        "settlement-status": ["non_settlement"],
+                        "msn": [msn],
+                        "meter-rate": [METER_RATE],
+                        "meter-gbp": net,
                     }
-                )
-                sess.rollback()
+
+                    bills.append(
+                        {
+                            "bill_type_code": "N",
+                            "kwh": Decimal(0),
+                            "vat": vat,
+                            "net": net,
+                            "gross": net + vat,
+                            "reads": [],
+                            "breakdown": breakdown,
+                            "account": mpan_core,
+                            "issue_date": issue_date,
+                            "start_date": start_date,
+                            "finish_date": finish_date,
+                            "mpan_core": mpan_core,
+                            "reference": "_".join(
+                                (
+                                    start_date.strftime("%Y%m%d"),
+                                    finish_date.strftime("%Y%m%d"),
+                                    issue_date.strftime("%Y%m%d"),
+                                    mpan_core,
+                                )
+                            ),
+                        }
+                    )
+                    sess.rollback()
         except BadRequest as e:
-            raise BadRequest("Row number: " + str(row_index) + " " + e.description)
-        finally:
-            if sess is not None:
-                sess.close()
+            raise BadRequest(f"Row number: {row_index} {e.description}")
 
         return bills

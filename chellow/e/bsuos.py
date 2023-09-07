@@ -177,37 +177,35 @@ class BsuosImporter(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = s = None
-                try:
-                    sess = Session()
-                    self.log("Starting to check BSUoS rates.")
-                    contract = Contract.get_non_core_by_name(sess, "bsuos")
-                    props = contract.make_properties()
-                    s = requests.Session()
-                    s.verify = False
-                    if props.get("enabled", False):
-                        for path in PATHS:
-                            _process_url(
-                                self.log, sess, f"{BASE_URL}{path}", contract, s
+                self.global_alert = s = None
+                with Session() as sess:
+                    try:
+                        self.log("Starting to check BSUoS rates.")
+                        contract = Contract.get_non_core_by_name(sess, "bsuos")
+                        props = contract.make_properties()
+                        s = requests.Session()
+                        s.verify = False
+                        if props.get("enabled", False):
+                            for path in PATHS:
+                                _process_url(
+                                    self.log, sess, f"{BASE_URL}{path}", contract, s
+                                )
+                        else:
+                            self.log(
+                                "The automatic importer is disabled. To enable it, "
+                                "edit the contract properties to set 'enabled' to True."
                             )
-                    else:
-                        self.log(
-                            "The automatic importer is disabled. To enable it, edit "
-                            "the contract properties to set 'enabled' to True."
+                        self.log("Finished checking BSUoS rates.")
+                    except BaseException:
+                        self.log(f"Outer problem {traceback.format_exc()}")
+                        self.global_alert = (
+                            f"There's a problem with the "
+                            f"<a href='/non_core_contracts/{contract.id}'>BSUoS "
+                            f"automatic importer</a>."
                         )
-                except BaseException:
-                    self.log(f"Outer problem {traceback.format_exc()}")
-                    self.global_alert = (
-                        f"There's a problem with the "
-                        f"<a href='/non_core_contracts/{contract.id}'>BSUoS automatic "
-                        f"importer</a>."
-                    )
-                    sess.rollback()
-                finally:
-                    if sess is not None:
-                        sess.close()
-                    self.lock.release()
-                    self.log("Finished checking BSUoS rates.")
+                        sess.rollback()
+                    finally:
+                        self.lock.release()
 
             self.going.wait(60 * 60 * 24)
             self.going.clear()

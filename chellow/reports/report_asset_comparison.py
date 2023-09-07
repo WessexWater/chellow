@@ -148,19 +148,22 @@ FNAME = "asset_comparison"
 
 
 def content(user, file_like, report_run_id):
-    sess = None
     try:
-        sess = Session()
-        running_name, finished_name = chellow.dloads.make_names(FNAME + ".csv", user)
-        f = open(running_name, mode="w", newline="")
-        writer = csv.writer(f, lineterminator="\n")
-        report_run = ReportRun.get_by_id(sess, report_run_id)
+        with Session() as sess:
+            running_name, finished_name = chellow.dloads.make_names(
+                f"{FNAME}.csv", user
+            )
+            f = open(running_name, mode="w", newline="")
+            writer = csv.writer(f, lineterminator="\n")
+            report_run = ReportRun.get_by_id(sess, report_run_id)
 
-        props = Contract.get_non_core_by_name(sess, "configuration").make_properties()
+            props = Contract.get_non_core_by_name(
+                sess, "configuration"
+            ).make_properties()
 
-        _process_sites(sess, file_like, writer, props, report_run)
-        report_run.update("finished")
-        sess.commit()
+            _process_sites(sess, file_like, writer, props, report_run)
+            report_run.update("finished")
+            sess.commit()
     except BaseException:
         msg = traceback.format_exc()
         if report_run is not None:
@@ -170,8 +173,6 @@ def content(user, file_like, report_run_id):
         sys.stderr.write(msg)
         writer.writerow([msg])
     finally:
-        if sess is not None:
-            sess.close()
         if f is not None:
             f.close()
             os.rename(running_name, finished_name)

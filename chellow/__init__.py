@@ -83,18 +83,13 @@ def create_app(testing=False):
         db_upgrade(app.root_path)
         chellow.dloads.startup(app.instance_path)
 
-        sess = None
-        try:
-            sess = Session()
+        with Session() as sess:
             configuration = sess.execute(
                 select(Contract).where(Contract.name == "configuration")
             ).scalar_one()
             props = configuration.make_properties()
             api_props = props.get("api", {})
             api.description = api_props.get("description", "Access Chellow data")
-        finally:
-            if sess is not None:
-                sess.close()
 
     for module in get_importer_modules():
         if not testing:

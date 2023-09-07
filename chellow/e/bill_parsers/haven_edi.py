@@ -150,18 +150,14 @@ class Parser:
 
     def make_raw_bills(self):
         raw_bills = []
-        sess = Session()
-        headers = {"sess": sess, "errors": []}
-        try:
+        with Session() as sess:
+            headers = {"sess": sess, "errors": []}
             for self.line_number, code in enumerate(self.parser):
                 elements = _find_elements(code, self.parser.elements)
                 line = self.parser.line
                 bill = _process_segment(code, elements, line, headers, self.line_number)
                 if bill is not None:
                     raw_bills.append(bill)
-        finally:
-            if sess is not None:
-                sess.close()
 
         return raw_bills
 

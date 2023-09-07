@@ -1522,71 +1522,67 @@ class GeneralImporter(threading.Thread):
         return fields
 
     def run(self):
-        sess = None
         try:
-            sess = Session()
-            reader = csv.reader(self.f)
-            hh_data = []
-            for idx, line in enumerate(reader):
-                self.args = []
-                self.line_number = idx + 1
+            with Session() as sess:
+                reader = csv.reader(self.f)
+                hh_data = []
+                for idx, line in enumerate(reader):
+                    self.args = []
+                    self.line_number = idx + 1
 
-                if len(line) == 0:
-                    continue
+                    if len(line) == 0:
+                        continue
 
-                if len(line) > 0 and line[0].startswith("#"):
-                    continue
+                    if len(line) > 0 and line[0].startswith("#"):
+                        continue
 
-                action = add_arg(self.args, "action", line, 0).lower()
-                if action not in ALLOWED_ACTIONS:
-                    raise BadRequest(
-                        f"The 'action' field must be one of {ALLOWED_ACTIONS}"
-                    )
-                typ = add_arg(self.args, "type", line, 1).lower()
-                vals = line[2:]
-                if typ == "hh_datum":
-                    if action == "insert":
-                        hh_data.append(
-                            {
-                                "mpan_core": parse_mpan_core(
-                                    add_arg(self.args, "MPAN Core", vals, 0)
-                                ),
-                                "start_date": parse_hh_start(
-                                    add_arg(self.args, "Start Date", vals, 1)
-                                ),
-                                "channel_type": parse_channel_type(
-                                    add_arg(self.args, "Channel Type", vals, 2)
-                                ),
-                                "value": Decimal(add_arg(self.args, "Value", vals, 3)),
-                                "status": add_arg(self.args, "Status", vals, 4),
-                            }
+                    action = add_arg(self.args, "action", line, 0).lower()
+                    if action not in ALLOWED_ACTIONS:
+                        raise BadRequest(
+                            f"The 'action' field must be one of {ALLOWED_ACTIONS}"
                         )
-                else:
-                    try:
-                        typ_func = typ_funcs[typ]
-                        typ_func(sess, action, vals, self.args)
-                    except KeyError:
-                        raise BadRequest(f"The type {typ} is not recognized.")
+                    typ = add_arg(self.args, "type", line, 1).lower()
+                    vals = line[2:]
+                    if typ == "hh_datum":
+                        if action == "insert":
+                            hh_data.append(
+                                {
+                                    "mpan_core": parse_mpan_core(
+                                        add_arg(self.args, "MPAN Core", vals, 0)
+                                    ),
+                                    "start_date": parse_hh_start(
+                                        add_arg(self.args, "Start Date", vals, 1)
+                                    ),
+                                    "channel_type": parse_channel_type(
+                                        add_arg(self.args, "Channel Type", vals, 2)
+                                    ),
+                                    "value": Decimal(
+                                        add_arg(self.args, "Value", vals, 3)
+                                    ),
+                                    "status": add_arg(self.args, "Status", vals, 4),
+                                }
+                            )
+                    else:
+                        try:
+                            typ_func = typ_funcs[typ]
+                            typ_func(sess, action, vals, self.args)
+                        except KeyError:
+                            raise BadRequest(f"The type {typ} is not recognized.")
 
-            HhDatum.insert(sess, hh_data)
-            sess.commit()
+                HhDatum.insert(sess, hh_data)
+                sess.commit()
         except BadRequest as e:
-            sess.rollback()
             try:
                 self.rd_lock.acquire()
                 self.error_message = e.description
             finally:
                 self.rd_lock.release()
         except BaseException:
-            sess.rollback()
             try:
                 self.rd_lock.acquire()
                 self.error_message = traceback.format_exc()
             finally:
                 self.rd_lock.release()
-        finally:
-            if sess is not None:
-                sess.close()
 
 
 def start_process(f):

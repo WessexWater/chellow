@@ -107,121 +107,122 @@ def content(
     forecast_date = to_utc(Datetime.max)
 
     try:
-        sess = Session()
-        user = User.get_by_id(sess, user_id)
-        running_name, finished_name = chellow.dloads.make_names(
-            f"bill_check_{fname_additional}.csv", user
-        )
-        tmp_file = open(running_name, mode="w", newline="")
-        writer = csv.writer(tmp_file, lineterminator="\n")
-
-        report_run = ReportRun.get_by_id(sess, report_run_id)
-
-        bills = (
-            sess.query(Bill)
-            .order_by(Bill.supply_id, Bill.reference)
-            .options(
-                joinedload(Bill.supply),
-                subqueryload(Bill.reads).joinedload(RegisterRead.present_type),
-                subqueryload(Bill.reads).joinedload(RegisterRead.previous_type),
-                joinedload(Bill.batch),
+        with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+            running_name, finished_name = chellow.dloads.make_names(
+                f"bill_check_{fname_additional}.csv", user
             )
-        )
+            tmp_file = open(running_name, mode="w", newline="")
+            writer = csv.writer(tmp_file, lineterminator="\n")
 
-        if len(mpan_cores) > 0:
-            mpan_cores = list(map(parse_mpan_core, mpan_cores))
-            supply_ids = [
-                i[0]
-                for i in sess.query(Era.supply_id)
-                .filter(
-                    or_(
-                        Era.imp_mpan_core.in_(mpan_cores),
-                        Era.exp_mpan_core.in_(mpan_cores),
-                    )
+            report_run = ReportRun.get_by_id(sess, report_run_id)
+
+            bills = (
+                sess.query(Bill)
+                .order_by(Bill.supply_id, Bill.reference)
+                .options(
+                    joinedload(Bill.supply),
+                    subqueryload(Bill.reads).joinedload(RegisterRead.present_type),
+                    subqueryload(Bill.reads).joinedload(RegisterRead.previous_type),
+                    joinedload(Bill.batch),
                 )
-                .distinct()
+            )
+
+            if len(mpan_cores) > 0:
+                mpan_cores = list(map(parse_mpan_core, mpan_cores))
+                supply_ids = [
+                    i[0]
+                    for i in sess.query(Era.supply_id)
+                    .filter(
+                        or_(
+                            Era.imp_mpan_core.in_(mpan_cores),
+                            Era.exp_mpan_core.in_(mpan_cores),
+                        )
+                    )
+                    .distinct()
+                ]
+                bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
+
+            if batch_id is not None:
+                batch = Batch.get_by_id(sess, batch_id)
+                bills = bills.filter(Bill.batch == batch)
+                contract = batch.contract
+            elif bill_id is not None:
+                bill = Bill.get_by_id(sess, bill_id)
+                bills = bills.filter(Bill.id == bill.id)
+                contract = bill.batch.contract
+            elif contract_id is not None:
+                contract = Contract.get_by_id(sess, contract_id)
+                bills = bills.join(Batch).filter(
+                    Batch.contract == contract,
+                    Bill.start_date <= finish_date,
+                    Bill.finish_date >= start_date,
+                )
+
+            vbf = contract_func(caches, contract, "virtual_bill")
+            if vbf is None:
+                raise BadRequest(
+                    f"The contract {contract.name} doesn't have a function "
+                    f"virtual_bill."
+                )
+
+            virtual_bill_titles_func = contract_func(
+                caches, contract, "virtual_bill_titles"
+            )
+            if virtual_bill_titles_func is None:
+                raise BadRequest(
+                    f"The contract {contract.name} doesn't have a function "
+                    f"virtual_bill_titles."
+                )
+            virtual_bill_titles = virtual_bill_titles_func()
+
+            titles = [
+                "batch",
+                "bill-reference",
+                "bill-type",
+                "bill-kwh",
+                "bill-net-gbp",
+                "bill-vat-gbp",
+                "bill-start-date",
+                "bill-finish-date",
+                "imp-mpan-core",
+                "exp-mpan-core",
+                "site-code",
+                "site-name",
+                "covered-from",
+                "covered-to",
+                "covered-bills",
+                "metered-kwh",
             ]
-            bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
+            for t in virtual_bill_titles:
+                titles.append("covered-" + t)
+                titles.append("virtual-" + t)
+                if t.endswith("-gbp"):
+                    titles.append("difference-" + t)
 
-        if batch_id is not None:
-            batch = Batch.get_by_id(sess, batch_id)
-            bills = bills.filter(Bill.batch == batch)
-            contract = batch.contract
-        elif bill_id is not None:
-            bill = Bill.get_by_id(sess, bill_id)
-            bills = bills.filter(Bill.id == bill.id)
-            contract = bill.batch.contract
-        elif contract_id is not None:
-            contract = Contract.get_by_id(sess, contract_id)
-            bills = bills.join(Batch).filter(
-                Batch.contract == contract,
-                Bill.start_date <= finish_date,
-                Bill.finish_date >= start_date,
-            )
+            writer.writerow(titles)
 
-        vbf = contract_func(caches, contract, "virtual_bill")
-        if vbf is None:
-            raise BadRequest(
-                f"The contract {contract.name} doesn't have a function virtual_bill."
-            )
+            bill_map = defaultdict(set, {})
+            for bill in bills:
+                bill_map[bill.supply.id].add(bill.id)
 
-        virtual_bill_titles_func = contract_func(
-            caches, contract, "virtual_bill_titles"
-        )
-        if virtual_bill_titles_func is None:
-            raise BadRequest(
-                f"The contract {contract.name} doesn't have a function "
-                f"virtual_bill_titles."
-            )
-        virtual_bill_titles = virtual_bill_titles_func()
+            for supply_id, bill_ids in bill_map.items():
+                _process_supply(
+                    sess,
+                    caches,
+                    supply_id,
+                    bill_ids,
+                    forecast_date,
+                    contract,
+                    vbf,
+                    virtual_bill_titles,
+                    writer,
+                    titles,
+                    report_run,
+                )
 
-        titles = [
-            "batch",
-            "bill-reference",
-            "bill-type",
-            "bill-kwh",
-            "bill-net-gbp",
-            "bill-vat-gbp",
-            "bill-start-date",
-            "bill-finish-date",
-            "imp-mpan-core",
-            "exp-mpan-core",
-            "site-code",
-            "site-name",
-            "covered-from",
-            "covered-to",
-            "covered-bills",
-            "metered-kwh",
-        ]
-        for t in virtual_bill_titles:
-            titles.append("covered-" + t)
-            titles.append("virtual-" + t)
-            if t.endswith("-gbp"):
-                titles.append("difference-" + t)
-
-        writer.writerow(titles)
-
-        bill_map = defaultdict(set, {})
-        for bill in bills:
-            bill_map[bill.supply.id].add(bill.id)
-
-        for supply_id, bill_ids in bill_map.items():
-            _process_supply(
-                sess,
-                caches,
-                supply_id,
-                bill_ids,
-                forecast_date,
-                contract,
-                vbf,
-                virtual_bill_titles,
-                writer,
-                titles,
-                report_run,
-            )
-
-        report_run.update("finished")
-        sess.commit()
+            report_run.update("finished")
+            sess.commit()
 
     except BadRequest as e:
         if report_run is not None:
@@ -242,8 +243,6 @@ def content(
         sys.stderr.write(msg + "\n")
         tmp_file.write(prefix + msg)
     finally:
-        if sess is not None:
-            sess.close()
         if tmp_file is not None:
             tmp_file.close()
             os.rename(running_name, finished_name)

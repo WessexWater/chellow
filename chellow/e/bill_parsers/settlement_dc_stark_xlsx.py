@@ -68,104 +68,100 @@ class Parser:
 
     def make_raw_bills(self):
         row_index = None
-        sess = None
         try:
-            sess = Session()
-            bills = []
-            issue_date_str = self.get_str("A", 7)
-            issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
-            for row in range(12, len(self.sheet["A"]) + 1):
-                val = self.get_cell("A", row).value
-                if val is None or val == "":
-                    break
+            with Session() as sess:
+                bills = []
+                issue_date_str = self.get_str("A", 7)
+                issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
+                for row in range(12, len(self.sheet["A"]) + 1):
+                    val = self.get_cell("A", row).value
+                    if val is None or val == "":
+                        break
 
-                self._set_last_line(row_index, val)
-                mpan_core = parse_mpan_core(str(self.get_int("B", row)))
-                start_date = self.get_start_date("D", row)
-                finish_date = self.get_start_date("E", row) + relativedelta(
-                    hours=23, minutes=30
-                )
+                    self._set_last_line(row_index, val)
+                    mpan_core = parse_mpan_core(str(self.get_int("B", row)))
+                    start_date = self.get_start_date("D", row)
+                    finish_date = self.get_start_date("E", row) + relativedelta(
+                        hours=23, minutes=30
+                    )
 
-                net = round(self.get_dec("W", row), 2)
+                    net = round(self.get_dec("W", row), 2)
 
-                cop_3_meters = self.get_int("G", row)
-                cop_3_rate = self.get_dec("H", row)
-                cop_3_gbp = self.get_dec("I", row)
+                    cop_3_meters = self.get_int("G", row)
+                    cop_3_rate = self.get_dec("H", row)
+                    cop_3_gbp = self.get_dec("I", row)
 
-                # Cop 5 meters
-                self.get_int("J", row)
-                cop_5_rate = self.get_dec("K", row)
-                cop_5_gbp = self.get_dec("L", row)
+                    # Cop 5 meters
+                    self.get_int("J", row)
+                    cop_5_rate = self.get_dec("K", row)
+                    cop_5_gbp = self.get_dec("L", row)
 
-                ad_hoc_visits = self.get_dec("P", row)
-                ad_hoc_rate = self.get_dec("Q", row)
-                ad_hoc_gbp = self.get_dec("R", row)
+                    ad_hoc_visits = self.get_dec("P", row)
+                    ad_hoc_rate = self.get_dec("Q", row)
+                    ad_hoc_gbp = self.get_dec("R", row)
 
-                annual_visits = self.get_int("S", row)
-                annual_rate = self.get_dec("T", row)
-                annual_gbp = self.get_dec("U", row)
+                    annual_visits = self.get_int("S", row)
+                    annual_rate = self.get_dec("T", row)
+                    annual_gbp = self.get_dec("U", row)
 
-                if cop_3_meters > 0:
-                    cop = "3"
-                    mpan_rate = cop_3_rate
-                    mpan_gbp = cop_3_gbp
-                else:
-                    cop = "5"
-                    mpan_rate = cop_5_rate
-                    mpan_gbp = cop_5_gbp
-
-                breakdown = {
-                    "raw_lines": [],
-                    "cop": [cop],
-                    "settlement-status": ["settlement"],
-                    "mpan-rate": [mpan_rate],
-                    "mpan-gbp": mpan_gbp,
-                    "ad-hoc-visits": ad_hoc_visits,
-                    "ad-hoc-rate": [ad_hoc_rate],
-                    "ad-hoc-gbp": ad_hoc_gbp,
-                    "annual-visits-count": annual_visits,
-                    "annual-visits-rate": [annual_rate],
-                    "annual-visits-gbp": annual_gbp,
-                }
-                annual_date_cell = self.get_cell("V", row)
-                annual_date_value = annual_date_cell.value
-                if annual_date_value is not None:
-                    if isinstance(annual_date_value, Datetime):
-                        annual_date = hh_format(annual_date_value)
+                    if cop_3_meters > 0:
+                        cop = "3"
+                        mpan_rate = cop_3_rate
+                        mpan_gbp = cop_3_gbp
                     else:
-                        annual_date = annual_date_value
-                    breakdown["annual-visits-date"] = [annual_date]
+                        cop = "5"
+                        mpan_rate = cop_5_rate
+                        mpan_gbp = cop_5_gbp
 
-                bills.append(
-                    {
-                        "bill_type_code": "N",
-                        "kwh": Decimal(0),
-                        "vat": Decimal("0.00"),
-                        "net": net,
-                        "gross": net,
-                        "reads": [],
-                        "breakdown": breakdown,
-                        "account": mpan_core,
-                        "issue_date": issue_date,
-                        "start_date": start_date,
-                        "finish_date": finish_date,
-                        "mpan_core": mpan_core,
-                        "reference": "_".join(
-                            (
-                                start_date.strftime("%Y%m%d"),
-                                finish_date.strftime("%Y%m%d"),
-                                issue_date.strftime("%Y%m%d"),
-                                mpan_core,
-                            )
-                        ),
+                    breakdown = {
+                        "raw_lines": [],
+                        "cop": [cop],
+                        "settlement-status": ["settlement"],
+                        "mpan-rate": [mpan_rate],
+                        "mpan-gbp": mpan_gbp,
+                        "ad-hoc-visits": ad_hoc_visits,
+                        "ad-hoc-rate": [ad_hoc_rate],
+                        "ad-hoc-gbp": ad_hoc_gbp,
+                        "annual-visits-count": annual_visits,
+                        "annual-visits-rate": [annual_rate],
+                        "annual-visits-gbp": annual_gbp,
                     }
-                )
-                sess.rollback()
+                    annual_date_cell = self.get_cell("V", row)
+                    annual_date_value = annual_date_cell.value
+                    if annual_date_value is not None:
+                        if isinstance(annual_date_value, Datetime):
+                            annual_date = hh_format(annual_date_value)
+                        else:
+                            annual_date = annual_date_value
+                        breakdown["annual-visits-date"] = [annual_date]
+
+                    bills.append(
+                        {
+                            "bill_type_code": "N",
+                            "kwh": Decimal(0),
+                            "vat": Decimal("0.00"),
+                            "net": net,
+                            "gross": net,
+                            "reads": [],
+                            "breakdown": breakdown,
+                            "account": mpan_core,
+                            "issue_date": issue_date,
+                            "start_date": start_date,
+                            "finish_date": finish_date,
+                            "mpan_core": mpan_core,
+                            "reference": "_".join(
+                                (
+                                    start_date.strftime("%Y%m%d"),
+                                    finish_date.strftime("%Y%m%d"),
+                                    issue_date.strftime("%Y%m%d"),
+                                    mpan_core,
+                                )
+                            ),
+                        }
+                    )
+                    sess.rollback()
 
         except BadRequest as e:
             raise BadRequest(f"Row number: {row} {e.description}")
-        finally:
-            if sess is not None:
-                sess.close()
 
         return bills

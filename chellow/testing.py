@@ -17,6 +17,19 @@ from chellow.utils import ct_datetime_now
 tester = None
 
 
+def _run(log_f, sess):
+    log_f("Starting to run tests.")
+    for report in sess.execute(select(Report).order_by(Report.id)).scalars():
+        _test_report(log_f, sess, report)
+        sess.rollback()  # Avoid long-running transaction
+    for contract in sess.execute(select(Contract).order_by(Contract.id)).scalars():
+        _test_contract(log_f, sess, contract)
+        sess.rollback()  # Avoid long-running transaction
+    for g_contract in sess.execute(select(GContract).order_by(GContract.id)).scalars():
+        _test_g_contract(log_f, sess, g_contract)
+        sess.rollback()  # Avoid long-running transaction
+
+
 class Tester(threading.Thread):
     def __init__(self):
         super().__init__(name="Tester")
@@ -48,37 +61,20 @@ class Tester(threading.Thread):
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
-                sess = self.global_alert = None
-                try:
-                    sess = Session()
-                    self.log("Starting to run tests.")
-                    for report in sess.execute(
-                        select(Report).order_by(Report.id)
-                    ).scalars():
-                        _test_report(self.log, sess, report)
-                        sess.rollback()  # Avoid long-running transaction
-                    for contract in sess.execute(
-                        select(Contract).order_by(Contract.id)
-                    ).scalars():
-                        _test_contract(self.log, sess, contract)
-                        sess.rollback()  # Avoid long-running transaction
-                    for g_contract in sess.execute(
-                        select(GContract).order_by(GContract.id)
-                    ).scalars():
-                        _test_g_contract(self.log, sess, g_contract)
-                        sess.rollback()  # Avoid long-running transaction
-                except BaseException:
-                    self.log(traceback.format_exc())
-                    self.global_alert = (
-                        "There's a problem with the "
-                        "<a href='/tester'>Automatic Tester</a>."
-                    )
-                    sess.rollback()
-                finally:
-                    if sess is not None:
-                        sess.close()
-                    self.lock.release()
-                    self.log("Finished running tests.")
+                self.global_alert = None
+                with Session() as sess:
+                    try:
+                        _run(self.log, sess)
+                    except BaseException:
+                        self.log(traceback.format_exc())
+                        self.global_alert = (
+                            "There's a problem with the "
+                            "<a href='/tester'>Automatic Tester</a>."
+                        )
+                        sess.rollback()
+                    finally:
+                        self.lock.release()
+                        self.log("Finished running tests.")
 
             self.going.wait(60 * 60 * 24)
             self.going.clear()
