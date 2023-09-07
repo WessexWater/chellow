@@ -4087,7 +4087,7 @@ def site_add_e_supply_form_get(site_id):
 
 
 @e.route("/sites/<int:site_id>/add_e_supply", methods=["POST"])
-def site_add_e_supply_form_post(site_id):
+def site_add_e_supply_post(site_id):
     try:
         site = Site.get_by_id(g.sess, site_id)
         start_date = req_date("start")
@@ -4105,6 +4105,8 @@ def site_add_e_supply_form_post(site_id):
         msn = req_str("msn")
         pc_id = req_int("pc_id")
         pc = Pc.get_by_id(g.sess, pc_id)
+        dno_id = req_int("dno_id")
+        dno = Party.get_dno_by_id(g.sess, dno_id)
         mtc_participant_id = req_int("mtc_participant_id")
         mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
         cop_id = req_int("cop_id")
@@ -4187,6 +4189,7 @@ def site_add_e_supply_form_post(site_id):
             dc_contract,
             dc_account,
             msn,
+            dno,
             pc,
             mtc_participant.mtc.code,
             cop,

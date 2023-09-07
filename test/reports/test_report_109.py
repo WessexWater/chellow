@@ -192,6 +192,7 @@ def displaced_virtual_bill(ds):
         dc_contract,
         "ghyy3",
         "hgjeyhuw",
+        dno,
         pc,
         "845",
         cop,

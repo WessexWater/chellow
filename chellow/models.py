@@ -1910,6 +1910,7 @@ class Site(Base, PersistentClass):
         dc_contract,
         dc_account,
         msn,
+        dno,
         pc,
         old_mtc_code,
         cop,
@@ -1933,7 +1934,6 @@ class Site(Base, PersistentClass):
             raise BadRequest(
                 "An era must have either an import or export MPAN core or both."
             )
-        dno = Party.get_dno_by_code(sess, mpan_core[:2], start_date)
         supply = Supply(supply_name, source, generator_type, gsp_group, dno)
 
         try:

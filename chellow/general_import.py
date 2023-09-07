@@ -1068,19 +1068,21 @@ def general_import_supply(sess, action, vals, args):
 
         dc_account = add_arg(args, "DC Account", vals, 10)
         msn = add_arg(args, "Meter Serial Number", vals, 11)
-        pc_code = add_arg(args, "Profile Class", vals, 12)
+        dno_code = add_arg(args, "DNO Code", vals, 12)
+        dno = Party.get_dno_by_code(sess, dno_code)
+        pc_code = add_arg(args, "Profile Class", vals, 13)
         pc = Pc.get_by_code(sess, parse_pc_code(pc_code))
-        mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 13)
-        cop_code = add_arg(args, "CoP", vals, 14)
+        mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 14)
+        cop_code = add_arg(args, "CoP", vals, 15)
         cop = Cop.get_by_code(sess, cop_code)
-        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 15)
+        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 16)
         ssc = Ssc.get_by_code(sess, ssc_code) if len(ssc_code) > 0 else None
-        properties_str = add_arg(args, "Properties", vals, 16)
+        properties_str = add_arg(args, "Properties", vals, 17)
         try:
             properties = loads(properties_str)
         except ZishException as e:
             raise BadRequest("Can't parse the properties field. " + str(e))
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 17)
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 18)
         if len(imp_mpan_core) == 0:
             imp_mpan_core = None
         else:
@@ -1092,8 +1094,8 @@ def general_import_supply(sess, action, vals, args):
             imp_supplier_account = None
             imp_sc = None
         else:
-            imp_llfc_code = add_arg(args, "Import LLFC", vals, 18)
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 19)
+            imp_llfc_code = add_arg(args, "Import LLFC", vals, 19)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 20)
             try:
                 imp_sc = int(imp_sc_str)
             except ValueError as e:
@@ -1102,9 +1104,9 @@ def general_import_supply(sess, action, vals, args):
                 )
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 20
+                args, "Import Supplier Contract", vals, 21
             )
-            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 21)
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 22)
             imp_supplier_contract = Contract.get_supplier_by_name(
                 sess, imp_supplier_contract_name
             )
@@ -1115,15 +1117,15 @@ def general_import_supply(sess, action, vals, args):
         exp_mpan_core = None
         exp_supplier_account = None
         if len(vals) > 22:
-            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 22)
+            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 23)
             if len(exp_mpan_core) == 0:
                 exp_mpan_core = None
             else:
                 exp_mpan_core = parse_mpan_core(exp_mpan_core)
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 23)
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 24)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 24)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 25)
                 try:
                     exp_sc = int(exp_sc_str)
                 except ValueError as e:
@@ -1134,13 +1136,13 @@ def general_import_supply(sess, action, vals, args):
                     )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 25
+                    args, "Export Supplier Contract", vals, 26
                 )
                 exp_supplier_contract = Contract.get_supplier_by_name(
                     sess, exp_supplier_contract_name
                 )
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 26
+                    args, "Export Supplier Account", vals, 27
                 )
 
         supply = site.insert_e_supply(
@@ -1156,6 +1158,7 @@ def general_import_supply(sess, action, vals, args):
             dc_contract,
             dc_account,
             msn,
+            dno,
             pc,
             mtc_code,
             cop,

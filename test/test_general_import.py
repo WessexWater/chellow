@@ -241,6 +241,7 @@ def test_general_import_era_insert(sess):
         dc_contract,
         "ghyy3",
         "hgjeyhuw",
+        dno,
         pc,
         "845",
         cop,

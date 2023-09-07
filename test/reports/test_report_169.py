@@ -233,6 +233,7 @@ def test_content_zip(mocker, sess):
         dc_contract,
         "ghyy3",
         "hgjeyhuw",
+        dno,
         pc,
         "845",
         cop,
