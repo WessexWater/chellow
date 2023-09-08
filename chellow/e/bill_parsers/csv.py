@@ -28,7 +28,8 @@ def parse_date(row, idx, is_finish=False):
         return validate_hh_start(dt)
     except ValueError as e:
         raise BadRequest(
-            f"Difficulty parsing a date in the row {row} at position " f"{idx}: {e}"
+            f"Difficulty parsing a date in the row {row} at position {idx}. The "
+            f"spreadsheet format is 'YYYY-MM-DD HH:MM'. {e}"
         )
 
 
