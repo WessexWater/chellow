@@ -36,6 +36,7 @@ from sqlalchemy import (
     or_,
     select,
     text,
+    update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.engine import Engine
@@ -4029,6 +4030,114 @@ class Channel(Base, PersistentClass):
         sess.flush()
 
 
+class HhDatum(Base, PersistentClass):
+    # status A actual, E estimated, C padding
+    @staticmethod
+    def insert(sess, raw_data, contract=None):
+        mpan_core = channel_type = prev_date = era_finish_date = channel = None
+        data = []
+        for datum in raw_data:
+            if (
+                len(data) > 1000
+                or not (
+                    mpan_core == datum["mpan_core"]
+                    and datum["channel_type"] == channel_type
+                    and datum["start_date"] == prev_date + HH
+                )
+                or (
+                    era_finish_date is not None
+                    and era_finish_date < datum["start_date"]
+                )
+            ):
+                if len(data) > 0:
+                    channel.add_hh_data(sess, data)
+                    data = []
+                mpan_core = datum["mpan_core"]
+                channel_type = datum["channel_type"]
+                channel_q = (
+                    sess.query(Channel)
+                    .join(Era)
+                    .filter(
+                        Channel.channel_type == channel_type,
+                        Era.start_date <= datum["start_date"],
+                        or_(
+                            Era.finish_date == null(),
+                            Era.finish_date >= datum["start_date"],
+                        ),
+                        or_(
+                            and_(
+                                Era.imp_mpan_core == mpan_core,
+                                Channel.imp_related == true(),
+                            ),
+                            and_(
+                                Era.exp_mpan_core == mpan_core,
+                                Channel.imp_related == false(),
+                            ),
+                        ),
+                    )
+                    .options(joinedload(Channel.era))
+                )
+
+                if contract is not None:
+                    channel_q = channel_q.filter(Era.dc_contract == contract)
+
+                channel = channel_q.first()
+
+                if channel is None:
+                    datum_str = ", ".join(
+                        [
+                            mpan_core,
+                            hh_format(datum["start_date"]),
+                            channel_type,
+                            str(datum["value"]),
+                            datum["status"],
+                        ]
+                    )
+                    if contract is None:
+                        msg = f"There is no channel for the datum ({datum_str})."
+                    else:
+                        msg = (
+                            f"There is no channel under the contract {contract.name} "
+                            f"for the datum ({datum_str})."
+                        )
+                    raise BadRequest(msg)
+
+                era_finish_date = channel.era.finish_date
+            prev_date = datum["start_date"]
+            data.append(datum)
+        if len(data) > 0:
+            channel.add_hh_data(sess, data)
+
+    __tablename__ = "hh_datum"
+    id = Column(Integer, primary_key=True)
+    channel_id = Column(Integer, ForeignKey("channel.id"))
+    start_date = Column(DateTime(timezone=True), nullable=False)
+    value = Column(Numeric, nullable=False)
+    status = Column(String, nullable=False)
+    last_modified = Column(DateTime(timezone=True), nullable=False)
+    __table_args__ = (UniqueConstraint("channel_id", "start_date"),)
+
+    def __init__(self, channel, datum_raw):
+        self.channel = channel
+        self.start_date = datum_raw["start_date"]
+        self.update(datum_raw["value"], datum_raw["status"])
+
+    def __str__(self):
+        buf = []
+        for prop in ("status", "start_date", "channel_type", "value", "mpan_core"):
+            buf.append("'" + prop + "': '" + str(getattr(self, prop)) + "'")
+        return "{" + ", ".join(buf) + "}"
+
+    def update(self, value, status):
+        if status not in ("E", "A", "C"):
+            raise BadRequest("The status character must be E, A or C.")
+
+        self.value = value
+        self.status = status
+        nw = utc_datetime_now()
+        self.last_modified = utc_datetime(year=nw.year, month=nw.month, day=nw.day)
+
+
 class Supply(Base, PersistentClass):
     @staticmethod
     def get_by_mpan_core(sess, mpan_core):
@@ -4127,27 +4236,16 @@ class Supply(Base, PersistentClass):
                             f"{hh_format(new_era.finish_date)}."
                         )
 
-                    c_params = {
-                        "channel_id": channel.id,
-                        "target_channel_id": target_channel.id,
-                        "start_date": start_date,
-                    }
-                    if finish_date is not None:
-                        c_params["finish_date"] = finish_date
-
-                    sess.execute(
-                        text(
-                            "update hh_datum set channel_id = :target_channel_id "
-                            "where start_date >= :start_date and "
-                            "channel_id = :channel_id"
-                            + (
-                                ""
-                                if finish_date is None
-                                else " and start_date <= :finish_date"
-                            )
-                        ),
-                        c_params,
+                    q = (
+                        update(HhDatum)
+                        .where(
+                            HhDatum.channel == channel, HhDatum.start_date >= start_date
+                        )
+                        .values({"channel_id": target_channel.id})
                     )
+                    if finish_date is not None:
+                        q = q.where(HhDatum.start_date <= finish_date)
+                    sess.execute(q)
 
     __tablename__ = "supply"
     id = Column(Integer, primary_key=True)
@@ -4669,114 +4767,6 @@ class Supply(Base, PersistentClass):
                 era.find_channel(sess, imp_related, "ACTIVE").site_check(
                     sess, start, finish
                 )
-
-
-class HhDatum(Base, PersistentClass):
-    # status A actual, E estimated, C padding
-    @staticmethod
-    def insert(sess, raw_data, contract=None):
-        mpan_core = channel_type = prev_date = era_finish_date = channel = None
-        data = []
-        for datum in raw_data:
-            if (
-                len(data) > 1000
-                or not (
-                    mpan_core == datum["mpan_core"]
-                    and datum["channel_type"] == channel_type
-                    and datum["start_date"] == prev_date + HH
-                )
-                or (
-                    era_finish_date is not None
-                    and era_finish_date < datum["start_date"]
-                )
-            ):
-                if len(data) > 0:
-                    channel.add_hh_data(sess, data)
-                    data = []
-                mpan_core = datum["mpan_core"]
-                channel_type = datum["channel_type"]
-                channel_q = (
-                    sess.query(Channel)
-                    .join(Era)
-                    .filter(
-                        Channel.channel_type == channel_type,
-                        Era.start_date <= datum["start_date"],
-                        or_(
-                            Era.finish_date == null(),
-                            Era.finish_date >= datum["start_date"],
-                        ),
-                        or_(
-                            and_(
-                                Era.imp_mpan_core == mpan_core,
-                                Channel.imp_related == true(),
-                            ),
-                            and_(
-                                Era.exp_mpan_core == mpan_core,
-                                Channel.imp_related == false(),
-                            ),
-                        ),
-                    )
-                    .options(joinedload(Channel.era))
-                )
-
-                if contract is not None:
-                    channel_q = channel_q.filter(Era.dc_contract == contract)
-
-                channel = channel_q.first()
-
-                if channel is None:
-                    datum_str = ", ".join(
-                        [
-                            mpan_core,
-                            hh_format(datum["start_date"]),
-                            channel_type,
-                            str(datum["value"]),
-                            datum["status"],
-                        ]
-                    )
-                    if contract is None:
-                        msg = f"There is no channel for the datum ({datum_str})."
-                    else:
-                        msg = (
-                            f"There is no channel under the contract {contract.name} "
-                            f"for the datum ({datum_str})."
-                        )
-                    raise BadRequest(msg)
-
-                era_finish_date = channel.era.finish_date
-            prev_date = datum["start_date"]
-            data.append(datum)
-        if len(data) > 0:
-            channel.add_hh_data(sess, data)
-
-    __tablename__ = "hh_datum"
-    id = Column(Integer, primary_key=True)
-    channel_id = Column(Integer, ForeignKey("channel.id"))
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    value = Column(Numeric, nullable=False)
-    status = Column(String, nullable=False)
-    last_modified = Column(DateTime(timezone=True), nullable=False)
-    __table_args__ = (UniqueConstraint("channel_id", "start_date"),)
-
-    def __init__(self, channel, datum_raw):
-        self.channel = channel
-        self.start_date = datum_raw["start_date"]
-        self.update(datum_raw["value"], datum_raw["status"])
-
-    def __str__(self):
-        buf = []
-        for prop in ("status", "start_date", "channel_type", "value", "mpan_core"):
-            buf.append("'" + prop + "': '" + str(getattr(self, prop)) + "'")
-        return "{" + ", ".join(buf) + "}"
-
-    def update(self, value, status):
-        if status not in ("E", "A", "C"):
-            raise BadRequest("The status character must be E, A or C.")
-
-        self.value = value
-        self.status = status
-        nw = utc_datetime_now()
-        self.last_modified = utc_datetime(year=nw.year, month=nw.month, day=nw.day)
 
 
 class Report(Base, PersistentClass):
