@@ -4391,17 +4391,16 @@ def supplier_batch_get(batch_id):
         sum_gross_gbp += bill.gross
         sum_kwh += bill.kwh
 
-        if bill.vat != 0:
-            bd = bill.bd
-            if "vat" in bd:
-                for vat_percentage, vat_vals in bd["vat"].items():
-                    try:
-                        vbd = vat_breakdown[vat_percentage]
-                    except KeyError:
-                        vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+        bd = bill.bd
+        if "vat" in bd:
+            for vat_percentage, vat_vals in bd["vat"].items():
+                try:
+                    vbd = vat_breakdown[vat_percentage]
+                except KeyError:
+                    vbd = vat_breakdown[vat_percentage] = defaultdict(int)
 
-                    vbd["vat"] += vat_vals["vat"]
-                    vbd["net"] += vat_vals["net"]
+                vbd["vat"] += vat_vals["vat"]
+                vbd["net"] += vat_vals["net"]
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
@@ -4766,9 +4765,10 @@ def supplier_bill_get(bill_id):
     }
     try:
         breakdown_dict = loads(bill.breakdown)
+        fields["vat_breakdown"] = breakdown_dict.get("vat", {})
 
         raw_lines = []
-        for key in ("raw_lines", "raw-lines"):
+        for key in ("raw_lines", "raw-lines", "vat"):
             try:
                 raw_lines += breakdown_dict[key]
                 del breakdown_dict[key]

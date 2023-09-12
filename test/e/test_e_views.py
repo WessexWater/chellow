@@ -2643,25 +2643,140 @@ def test_supplier_batch_edit_delete(sess, client):
 
 
 def test_supplier_batch_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
     sess.commit()
 
     response = client.get(f"/e/supplier_batches/{batch.id}")
     match(response, 200)
+
+
+def test_supplier_batch_get_vat(sess, client):
+    """When vat is zero, but vat net breakdown non-zero"""
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    site = Site.insert(sess, "22488", "Water Works")
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    batch.insert_bill(
+        sess,
+        "xx",
+        "4432",
+        to_utc(ct_datetime(2020, 1, 1)),
+        to_utc(ct_datetime(2018, 1, 1)),
+        to_utc(ct_datetime(2018, 1, 3)),
+        Decimal("482"),
+        Decimal("5.67"),
+        Decimal("0.00"),
+        Decimal("8.55"),
+        bill_type_N,
+        {"vat": {5: {"vat": Decimal("0"), "net": Decimal("34.66")}}},
+        supply,
+    )
+    sess.commit()
+
+    response = client.get(f"/e/supplier_batches/{batch.id}")
+    patterns = [
+        r"<thead>\s*",
+        r"<th>VAT %</th>\s",
+        r"<th>Net GBP</th>\s*",
+        r"<th>VAT GBP</th>\s*",
+        r"</thead>\s*",
+        r"<tbody>\s*" r"<tr>\s*" r"<td>5%</td>\s*",
+        r"<td>£34.66</td>\s*",
+        r"<td>£0.00</td>\s*",
+        r"</tr>\s*",
+        r"</tbody>\s*",
+    ]
+    match(response, 200, *patterns)
 
 
 def test_supplier_batch_post_import_bills(sess, client):

@@ -144,6 +144,24 @@
 		</tbody>
 	</table>
 
+	<table>
+		<caption>VAT Breakdown</caption>
+		<thead>
+			<th>VAT %</th>
+			<th>Net GBP</th>
+			<th>VAT GBP</th>
+		</thead>
+		<tbody>
+			{% for k, v in vat_breakdown.items()|sort %}
+				<tr>
+					<td>{{k}}%</td>
+					<td>{{ "£{:,}".format(v.net) }}</td>
+					<td>{{ "£{:,}".format(v.vat) }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 	<pre>{{bill.breakdown}}</pre>
 
 {% endblock %}
