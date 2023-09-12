@@ -810,7 +810,7 @@ def test_SupplySource_init_nhh(sess, mocker):
         "845",
         cop,
         comm,
-        ssc,
+        ssc.code,
         energisation_status,
         {},
         None,

@@ -3510,7 +3510,7 @@ class Era(Base, PersistentClass):
         mtc_code,
         cop,
         comm,
-        ssc,
+        ssc_code,
         energisation_status,
         properties,
         imp_mpan_core,
@@ -3549,14 +3549,16 @@ class Era(Base, PersistentClass):
 
         self.msn = msn.strip()
         self.pc = pc
-        self.ssc = ssc
+        self.ssc = (
+            None if ssc_code is None else Ssc.get_by_code(sess, ssc_code, start_date)
+        )
 
-        if pc.code == "00" and ssc is not None:
+        if pc.code == "00" and self.ssc is not None:
             raise BadRequest(
                 "A supply with Profile Class 00 can't have a Standard Settlement "
                 "Configuration."
             )
-        if pc.code != "00" and ssc is None:
+        if pc.code != "00" and self.ssc is None:
             raise BadRequest(
                 "A NHH supply must have a Standard Settlement Configuration."
             )
@@ -3700,7 +3702,7 @@ class Era(Base, PersistentClass):
                         raise BadRequest(
                             f"The {polarity} combination of MTC "
                             f"{self.mtc_participant.mtc.code} LLFC {llfc.code} SSC "
-                            f"{ssc.code} PC {pc.code} is only valid until "
+                            f"{self.ssc.code} PC {pc.code} is only valid until "
                             f"{hh_format(combo.valid_to)} but the era ends at "
                             f"{hh_format(finish_date)}."
                         )
@@ -4342,7 +4344,7 @@ class Supply(Base, PersistentClass):
         mtc_code,
         cop,
         comm,
-        ssc,
+        ssc_code,
         energisation_status,
         properties,
         imp_mpan_core,
@@ -4490,7 +4492,7 @@ class Supply(Base, PersistentClass):
             mtc_code,
             cop,
             comm,
-            ssc,
+            ssc_code,
             energisation_status,
             properties,
             imp_mpan_core,

@@ -1,4 +1,4 @@
-{%- macro input_date(prefix, initial=None, resolution='minute') -%}
+{%- macro input_date(prefix, initial=None, resolution='minute', is_dynamic=False) -%}
   {% if prefix != None %}
     {% set year_field = prefix + '_year' %}
     {% set month_field = prefix + '_month' %}
@@ -14,6 +14,25 @@
   {% endif %}
 
   {% set initial = initial|now_if_none|to_ct %}
+
+	{% if year_field in request.values %}
+		{% set selected_year = request.values[year_field]|int %}
+	{% else %}
+		{% set selected_year = initial.year %}
+	{% endif %}
+
+	{% if month_field in request.values %}
+		{% set selected_month = request.values[month_field]|int %}
+	{% else %}
+		{% set selected_month = initial.month %}
+	{% endif %}
+
+	{% if is_dynamic %}
+		{% set month_max_day = get_month_max_day(selected_year, selected_month) -%}
+	{% else %}
+		{% set month_max_day = 32 -%}
+	{% endif %}
+
 	<div>
 		<input name="{{ year_field }}" maxlength="4" size="4" value="
 			{%- if request.values[year_field] -%}
@@ -38,7 +57,7 @@
 
 		{% if resolution in ['day', 'hour', 'minute'] -%}
 			-<select name="{{ day_field }}">
-				{% for day in range(1, 32) -%}
+				{% for day in range(1, month_max_day + 1) -%}
 					<option value="{{ day }}"
 						{%- if request.values[day_field] -%}
 							{%- if request.values[day_field]|int == day %} selected

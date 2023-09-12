@@ -13,7 +13,7 @@
 		{% endif %}
 	{% endwith %}
 	<label>Name</label> {{input_text('name', required=True)}}
-	<label>Start Date</label> {{input_date('start')}}
+	<label>Start Date</label> {{input_date('start', is_dynamic=True)}}
 	<label>Source</label>
 	<select name="source_id">
 		{% for src in sources %}
@@ -97,12 +97,16 @@
 		{% endfor %}
 	</select>
 
-	<label>SSC</label>
-	<select name="ssc_id">
-		{% for ss in sscs %}
-			{{input_option( 'ssc_id', ss.id, ss.code + ' ' + ss.description)}}
-		{% endfor %}
-	</select>
+	{% if pc.code == '00' %}
+		<input type="hidden" name="ssc_id" value="">
+	{% else %}
+		<label>SSC</label>
+		<select name="ssc_id">
+			{% for ss in sscs %}
+				{{input_option( 'ssc_id', ss.id, ss.code + ' ' + ss.description)}}
+			{% endfor %}
+		</select>
+	{% endif %}
 
 	<label>MTC</label>
 	<select name="mtc_participant_id">

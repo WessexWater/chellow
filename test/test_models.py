@@ -511,7 +511,7 @@ def test_Era_meter_category_dumb(sess):
         "845",
         cop,
         comm,
-        ssc,
+        ssc.code,
         energisation_status,
         {},
         imp_mpan_core,

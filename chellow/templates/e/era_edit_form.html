@@ -1,0 +1,170 @@
+{% extends "macros.html" %}
+
+{% block html %}
+	<legend>Update this era</legend>	
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			<label>Messages</label>
+			<ul>
+				{% for message in messages %}
+					<li>{{message}}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+	{% endwith %}
+	<label>Start Date</label> {{input_date('start', era.start_date, is_dynamic=True)}}
+
+	<label>Finished?</label>
+	{{input_checkbox('is_ended')}}
+
+	{% if request.values.is_ended == 'true' %}
+		<label>Finish Date</label>
+		{{input_date('finish', era.finish_date, is_dynamic=True)}}
+	{% endif %}
+
+	<label>MOP Contract</label>
+	<select name="mop_contract_id">
+		{% for contract in mop_contracts %}
+			{{input_option('mop_contract_id', contract.id, contract.name,
+			era.mop_contract.id)}}
+		{% endfor %}
+	</select>
+	<label>MOP Account</label> {{input_text('mop_account', era.mop_account)}}
+	<label>DC Contract</label>
+	<select name="dc_contract_id">
+		{% for contract in dc_contracts %}
+			{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
+		{% endfor %}
+	</select>
+	<label>DC Account</label> {{input_text('dc_account', era.dc_account)}}
+	<label>Meter Serial Number</label> {{input_text('msn', era.msn)}}
+	<label>Profile Class</label>
+	<select name="pc_id">
+		{% for p in pcs %}
+			{{input_option('pc_id', p.id, p.code + ' - ' + p.name, era.pc.id)}}
+		{% endfor %}
+	</select>
+
+	{% if pc.code == '00' %}
+		<input name="ssc_id" type="hidden" value="">
+	{% else %}
+		<label>SSC</label>
+		<select name="ssc_id">
+			{% for ssc in sscs %}
+				{{input_option('ssc_id', ssc.id, ssc.code + ' ' + ssc.description, era.ssc.id)}}
+			{% endfor %}
+		</select>
+	{% endif %}
+
+	<label>Meter Timeswitch Class</label>
+	<select name="mtc_participant_id">
+		{% for mtc_participant in mtc_participants %}
+			{{input_option('mtc_participant_id', mtc_participant.id,
+		 			mtc_participant.mtc.code + ' - ' + mtc_participant.description,
+				 	era.mtc_participant.id)}}
+		{% endfor %}
+	</select>
+
+	<label>CoP</label>
+	<select name="cop_id">
+		{% for cop in cops %}
+			{{input_option('cop_id', cop.id, cop.code + ' ' + cop.description, era.cop.id)}}
+		{% endfor %}
+	</select>
+
+	<label>Comm</label>
+	<select name="comm_id">
+		{% for comm in comms %}
+			{{input_option(
+				'comm_id', comm.id, comm.code + ' ' + comm.description, era.comm.id)}}
+		{% endfor %}
+	</select>
+
+	<label>Energisation Status</label>
+	<select name="energisation_status_id">
+		{% for energisation_status in energisation_statuses %}
+			{{input_option(
+				'energisation_status_id', energisation_status.id,
+				energisation_status.description, era.energisation_status.id)}}
+		{% endfor %}
+	</select>
+	<label>Properties</label>
+	<div>
+		{{input_textarea('properties', era.properties, 10, 80)}}
+		<p>
+			The <code>meter_type</code> property contains a
+			<a href="/e/dtc_meter_types">DTC Meter Type Code</a>.
+		</p>
+	</div>
+
+	<label>Has An Import MPAN?</label>
+	{{input_checkbox('has_imp_mpan')}}
+
+	{% if request.values.has_imp_mpan == 'true' %}
+		<fieldset>
+			<legend>Import</legend>
+
+			<label>Mpan Core</label>
+		 	{{input_text('imp_mpan_core', size=35, pattern='[0-9 ]*', required=True, initial=era.imp_mpan_core)}}
+
+			<label>LLFC</label>
+			<select name="imp_llfc_id">
+				{% for llfc in imp_llfcs %}
+					{{input_option('imp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description,
+							initial=era.imp_llfc.id)}}
+				{% endfor %}
+			</select>
+
+			<label>Supply Capacity</label>
+			{{input_number('imp_sc', required=True, initial=era.imp_sc)}}
+
+			<label>Supplier Contract</label>
+			<select name="imp_supplier_contract_id">
+				{% for contract in supplier_contracts %}
+					{{input_option('imp_supplier_contract_id', contract.id, contract.name,
+							initial=era.imp_supplier_contract.id)}}
+				{% endfor %}
+			</select>
+
+			<label>Supplier Account</label>
+			{{input_text('imp_supplier_account', required=True,
+					initial=era.imp_supplier_account)}}
+		</fieldset>	
+	{% endif %}
+
+	<label>Has An Export MPAN?</label>
+	{{input_checkbox('has_exp_mpan', initial=has_exp_mapn_value)}}
+
+	{% if request.values.has_exp_mpan == 'true' %}
+		<fieldset>
+			<legend>Export</legend>
+			<label>Mpan Core</label>
+			{{input_text('exp_mpan_core', size=35, pattern='[0-9 ]*', required=True,
+					initial=era.exp_mpan_core)}}
+
+			<label>LLFC</label>
+			<select name="exp_llfc_id">
+				{% for llfc in exp_llfcs %}
+					{{input_option('exp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description,
+							initial=era.exp_llfc.id)}}
+				{% endfor %}
+			</select>
+
+			<label>Supply Capacity</label>
+			{{input_number('exp_sc', required=True, initial=era.imp_sc)}}
+
+			<label>Supplier Contract</label>
+			<select name="exp_supplier_contract_id">
+				{% for contract in supplier_contracts %}
+					{{input_option('exp_supplier_contract_id', contract.id, contract.name,
+							initial=era.exp_supplier_contract.id)}}
+				{% endfor %}
+			</select>
+			<label>Supplier Account</label>
+			{{input_text('exp_supplier_account', required=True,
+					initial=era.exp_supplier_account)}}
+		</fieldset>
+	{% endif %}
+
+	<input type="submit" value="Update">
+{% endblock %}

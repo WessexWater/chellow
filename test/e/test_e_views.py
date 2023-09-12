@@ -802,54 +802,41 @@ def test_em_hh_data(sess, client):
 
 
 def test_era_edit_get(client, sess):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -860,22 +847,15 @@ def test_era_edit_get(client, sess):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -918,6 +898,109 @@ def test_era_edit_get(client, sess):
     sess.commit()
 
     response = client.get(f"/e/eras/{era.id}/edit")
+
+    match(response, 200)
+
+
+def test_era_edit_form_get(client, sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2020, 1, 1),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 0470 7514 535",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    era = supply.eras[0]
+
+    sess.commit()
+
+    query_string = {"pc_id": pc.id, "mtc_participant_id": mtc_participant.id}
+
+    response = client.get(f"/e/eras/{era.id}/edit/form", query_string=query_string)
 
     patterns = [
         r'<select name="energisation_status_id">\s*'
@@ -1083,14 +1166,15 @@ def test_era_edit_post_hh(client, sess):
         "dc_account": "ghyy3",
         "msn": "hgjeyhuw",
         "pc_id": str(pc.id),
-        "mtc_code": "845",
+        "mtc_participant_id": mtc_participant.id,
         "cop_id": str(cop.id),
         "comm_id": str(comm.id),
-        "ssc_code": "",
+        "ssc_id": "",
         "energisation_status_id": str(energisation_status.id),
         "properties": "{}",
+        "has_imp_mpan": "true",
         "imp_mpan_core": "22 0470 7514 535",
-        "imp_llfc_code": "510",
+        "imp_llfc_id": llfc.id,
         "imp_supplier_contract_id": str(imp_supplier_contract.id),
         "imp_supplier_account": "7748",
         "imp_sc": "361",
@@ -1222,7 +1306,7 @@ def test_era_edit_post_nhh(client, sess):
         "845",
         cop,
         comm,
-        ssc,
+        ssc.code,
         energisation_status,
         {},
         "22 0470 7514 535",
@@ -1252,14 +1336,15 @@ def test_era_edit_post_nhh(client, sess):
         "dc_account": "ghyy3",
         "msn": "hgjeyhuw",
         "pc_id": str(pc.id),
-        "mtc_code": "845",
+        "mtc_participant_id": mtc_participant.id,
         "cop_id": str(cop.id),
         "comm_id": str(comm.id),
-        "ssc_code": ssc.code,
+        "ssc_id": ssc.id,
         "energisation_status_id": str(energisation_status.id),
         "properties": "{}",
+        "has_imp_mpan": "true",
         "imp_mpan_core": "22 0470 7514 535",
-        "imp_llfc_code": "510",
+        "imp_llfc_id": llfc.id,
         "imp_supplier_contract_id": str(imp_supplier_contract.id),
         "imp_supplier_account": "7748",
         "imp_sc": "361",
@@ -1389,15 +1474,7 @@ def test_era_edit_post_fail(client, sess):
     data = {}
     response = client.post(f"/e/eras/{era.id}/edit", data=data)
 
-    patterns = [
-        r'<select name="energisation_status_id">\s*'
-        r'<option value="2">De-Energised</option>\s*'
-        r'<option value="1" selected>Energised</option>\s*'
-        r"</select>",
-        r'<select name="comm_id">\s*'
-        r'<option value="3">GPRS General Packet Radio Service</option>',
-    ]
-    match(response, 400, *patterns)
+    match(response, 400)
 
 
 def test_get_era_bundles_bill_after_supply_end(sess, client):

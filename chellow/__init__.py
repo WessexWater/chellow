@@ -25,7 +25,6 @@ import chellow.gas.cv
 import chellow.gas.views
 import chellow.national_grid
 import chellow.testing
-import chellow.utils
 from chellow.models import (
     Contract,
     Session,
@@ -35,7 +34,7 @@ from chellow.models import (
     start_sqlalchemy,
 )
 from chellow.proxy import MsProxy
-from chellow.utils import to_ct, utc_datetime_now
+from chellow.utils import HH, ct_datetime, to_ct, utc_datetime_now
 
 
 TEMPLATE_FORMATS = {
@@ -276,11 +275,21 @@ def create_app(testing=False):
 
         test_match = g.config.get("test_match")
 
+        def get_month_max_day(year, month):
+            if month == 12:
+                new_year = year + 1
+                new_month = 1
+            else:
+                new_year = year
+                new_month = month + 1
+            return (ct_datetime(new_year, new_month) - HH).day
+
         return {
             "current_user": g.user,
             "global_alerts": global_alerts,
             "is_test": False if test_match is None else test_match in request.host,
             "test_css": g.config.get("test_css"),
+            "get_month_max_day": get_month_max_day,
         }
 
     @app.teardown_request

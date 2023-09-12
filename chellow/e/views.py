@@ -1518,17 +1518,269 @@ def era_edit_get(era_id):
     )
 
 
+@e.route("/eras/<int:era_id>/edit/form")
+def era_edit_form_get(era_id):
+    try:
+        ct_now = ct_datetime_now()
+        cops = g.sess.scalars(select(Cop).order_by(Cop.code))
+        comms = g.sess.scalars(select(Comm).order_by(Comm.code))
+        energisation_statuses = g.sess.scalars(
+            select(EnergisationStatus).order_by(EnergisationStatus.code)
+        )
+        default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
+
+        if "start_year" in request.values:
+            start_date = req_date("start")
+        else:
+            start_date = to_utc(ct_datetime(ct_now.year, ct_now.month, ct_now.day))
+
+        era = Era.get_by_id(g.sess, era_id)
+        RateScriptAliasStart = aliased(RateScript)
+        RateScriptAliasFinish = aliased(RateScript)
+        mop_contracts = g.sess.scalars(
+            select(Contract)
+            .join(MarketRole)
+            .join(
+                RateScriptAliasStart,
+                Contract.start_rate_script_id == RateScriptAliasStart.id,
+            )
+            .join(
+                RateScriptAliasFinish,
+                Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+            )
+            .where(
+                MarketRole.code == "M",
+                start_date >= RateScriptAliasStart.start_date,
+                RateScriptAliasFinish.finish_date == null(),
+            )
+            .order_by(Contract.name)
+        )
+        dc_contracts = g.sess.scalars(
+            select(Contract)
+            .join(MarketRole)
+            .join(
+                RateScriptAliasStart,
+                Contract.start_rate_script_id == RateScriptAliasStart.id,
+            )
+            .join(
+                RateScriptAliasFinish,
+                Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+            )
+            .where(
+                MarketRole.code.in_(("C", "D")),
+                start_date >= RateScriptAliasStart.start_date,
+                RateScriptAliasFinish.finish_date == null(),
+            )
+            .order_by(Contract.name)
+        )
+        supplier_contracts = g.sess.scalars(
+            select(Contract)
+            .join(MarketRole)
+            .join(
+                RateScriptAliasStart,
+                Contract.start_rate_script_id == RateScriptAliasStart.id,
+            )
+            .join(
+                RateScriptAliasFinish,
+                Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+            )
+            .where(
+                MarketRole.code == "X",
+                start_date >= RateScriptAliasStart.start_date,
+                RateScriptAliasFinish.finish_date == null(),
+            )
+            .order_by(Contract.name)
+        )
+        pcs = g.sess.scalars(select(Pc).order_by(Pc.code))
+        pc_id = req_int_none("pc_id")
+        if pc_id is None:
+            pc = Pc.get_by_code(g.sess, "00")
+        else:
+            pc = Pc.get_by_id(g.sess, pc_id)
+
+        dno = era.supply.dno
+
+        participant = dno.participant
+
+        if pc.code == "00":
+            sscs = None
+        else:
+            sscs = g.sess.scalars(
+                select(Ssc)
+                .select_from(MtcSsc)
+                .join(Ssc, MtcSsc.ssc_id == Ssc.id)
+                .join(MtcLlfcSsc, MtcLlfcSsc.mtc_ssc_id == MtcSsc.id)
+                .join(MtcLlfcSscPc)
+                .join(MtcParticipant)
+                .where(
+                    MtcParticipant.participant == participant,
+                    MtcLlfcSscPc.pc == pc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                    MtcLlfcSscPc.valid_to == null(),
+                )
+                .distinct()
+                .order_by(Ssc.code, Ssc.valid_from.desc())
+            ).all()
+            ssc_id = req_int_none("ssc_id")
+            if ssc_id in {s.id for s in sscs}:
+                ssc = Ssc.get_by_id(g.sess, ssc_id)
+            else:
+                ssc = sscs[0]
+
+        if pc.code == "00":
+            mtc_participants = [
+                mtc_participant
+                for mtc_participant, mtc in g.sess.execute(
+                    select(MtcParticipant, Mtc)
+                    .join(Mtc)
+                    .join(MtcLlfc)
+                    .where(MtcParticipant.participant == participant)
+                    .order_by(Mtc.code, MtcParticipant.valid_from.desc())
+                    .distinct()
+                )
+            ]
+        else:
+            mtc_participants = [
+                mtc_participant
+                for mtc_participant, mtc in g.sess.execute(
+                    select(MtcParticipant, Mtc)
+                    .select_from(MtcLlfcSscPc)
+                    .join(MtcLlfcSsc)
+                    .join(MtcSsc)
+                    .join(MtcParticipant)
+                    .join(Mtc)
+                    .where(
+                        MtcParticipant.participant == participant,
+                        MtcLlfcSscPc.pc == pc,
+                        MtcSsc.ssc == ssc,
+                        start_date >= MtcLlfcSscPc.valid_from,
+                        MtcLlfcSscPc.valid_to == null(),
+                    )
+                    .distinct()
+                    .order_by(Mtc.code, MtcParticipant.valid_from.desc())
+                )
+            ]
+
+        mtc_participant_id = req_int_none("mtc_participant_id")
+        if mtc_participant_id is None:
+            if len(mtc_participants) > 0:
+                mtc_participant = mtc_participants[0]
+            else:
+                mtc_participant = None
+        else:
+            mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
+
+        if pc.code == "00":
+            imp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .join(MtcLlfc)
+                .where(
+                    MtcLlfc.mtc_participant == mtc_participant,
+                    start_date >= Llfc.valid_from,
+                    Llfc.valid_to == null(),
+                    Llfc.is_import == true(),
+                )
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+                .distinct()
+            )
+        else:
+            imp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .select_from(MtcLlfcSsc)
+                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
+                .join(MtcLlfcSscPc)
+                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
+                .where(
+                    MtcSsc.mtc_participant == mtc_participant,
+                    MtcLlfcSscPc.pc == pc,
+                    MtcSsc.ssc == ssc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                    MtcLlfcSscPc.valid_to == null(),
+                    Llfc.is_import == true(),
+                )
+                .distinct()
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+            )
+
+        if pc.code == "00":
+            exp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .join(MtcLlfc)
+                .where(
+                    MtcLlfc.mtc_participant == mtc_participant,
+                    start_date >= Llfc.valid_from,
+                    Llfc.valid_to == null(),
+                    Llfc.is_import == false(),
+                )
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+                .distinct()
+            )
+        else:
+            exp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .select_from(MtcLlfcSsc)
+                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
+                .join(MtcLlfcSscPc)
+                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
+                .where(
+                    MtcSsc.mtc_participant == mtc_participant,
+                    MtcLlfcSscPc.pc == pc,
+                    MtcSsc.ssc == ssc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                    MtcLlfcSscPc.valid_to == null(),
+                    Llfc.is_import == false(),
+                )
+                .distinct()
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+            )
+
+        return render_template(
+            "era_edit_form.html",
+            era=era,
+            energisation_statuses=energisation_statuses,
+            default_energisation_status=default_energisation_status,
+            mop_contracts=mop_contracts,
+            dc_contracts=dc_contracts,
+            supplier_contracts=supplier_contracts,
+            pcs=pcs,
+            pc=pc,
+            cops=cops,
+            comms=comms,
+            sscs=sscs,
+            mtc_participants=mtc_participants,
+            mtc_participant=mtc_participant,
+            start_date=start_date,
+            imp_llfcs=imp_llfcs,
+            exp_llfcs=exp_llfcs,
+            has_imp_mpan_value="false" if era.imp_mpan_core is None else "true",
+            has_exp_mpan_value="false" if era.exp_mpan_core is None else "true",
+        )
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return render_template(
+            "era_edit_form.html",
+            mop_contracts=mop_contracts,
+            dc_contracts=dc_contracts,
+            supplier_contracts=supplier_contracts,
+            pcs=pcs,
+            pc=pc,
+            cops=cops,
+            comms=comms,
+            sscs=sscs,
+            mtc_participants=mtc_participants,
+            mtc_participant=mtc_participant,
+            has_imp_mpan_value="false" if era.imp_mpan_core is None else "true",
+            has_exp_mpan_value="false" if era.exp_mpan_core is None else "true",
+        )
+
+
 @e.route("/eras/<int:era_id>/edit", methods=["POST"])
 def era_edit_post(era_id):
     try:
         era = Era.get_by_id(g.sess, era_id)
 
-        if "delete" in request.form:
-            supply = era.supply
-            supply.delete_era(g.sess, era)
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply.id}", 303)
-        elif "attach" in request.form:
+        if "attach" in request.form:
             site_code = req_str("site_code")
             site = Site.get_by_code(g.sess, site_code)
             era.attach_site(g.sess, site)
@@ -1562,64 +1814,65 @@ def era_edit_post(era_id):
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
-            mtc_code = req_str("mtc_code")
+            mtc_participant_id = req_int("mtc_participant_id")
+            mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             comm_id = req_int("comm_id")
             comm = Comm.get_by_id(g.sess, comm_id)
-            ssc_code = req_str("ssc_code")
-            ssc_code = ssc_code.strip()
+            ssc_id = req_int_none("ssc_id")
+            if ssc_id is None:
+                ssc = None
+                ssc_code = None
+            else:
+                ssc = Ssc.get_by_id(g.sess, ssc_id)
+                ssc_code = ssc.code
             energisation_status_id = req_int("energisation_status_id")
             energisation_status = EnergisationStatus.get_by_id(
                 g.sess, energisation_status_id
             )
             properties = req_zish("properties")
-            if len(ssc_code) == 0:
-                ssc = None
-            else:
-                ssc = Ssc.get_by_code(g.sess, ssc_code, start_date)
 
-            if "imp_mpan_core" in request.values:
+            has_imp_mpan = req_bool("has_imp_mpan")
+            has_exp_mpan = req_bool("has_exp_mpan")
+
+            if has_imp_mpan:
                 imp_mpan_core_raw = req_str("imp_mpan_core")
-            else:
-                imp_mpan_core_raw = None
-
-            if imp_mpan_core_raw is None or len(imp_mpan_core_raw.strip()) == 0:
-                imp_mpan_core = None
-                imp_sc = None
-                imp_supplier_contract = None
-                imp_supplier_account = None
-                imp_llfc_code = None
-            else:
                 imp_mpan_core = parse_mpan_core(imp_mpan_core_raw)
-                imp_llfc_code = req_str("imp_llfc_code")
+                imp_llfc_id = req_int("imp_llfc_id")
+                imp_llfc = Llfc.get_by_id(g.sess, imp_llfc_id)
+                imp_llfc_code = imp_llfc.code
                 imp_supplier_contract_id = req_int("imp_supplier_contract_id")
                 imp_supplier_contract = Contract.get_supplier_by_id(
                     g.sess, imp_supplier_contract_id
                 )
                 imp_supplier_account = req_str("imp_supplier_account")
                 imp_sc = req_int("imp_sc")
+            else:
+                imp_mpan_core = None
+                imp_sc = None
+                imp_supplier_contract = None
+                imp_supplier_account = None
+                imp_llfc_code = None
 
-            if "exp_mpan_core" in request.form:
+            if has_exp_mpan:
                 exp_mpan_core_raw = req_str("exp_mpan_core")
-            else:
-                exp_mpan_core_raw = None
-
-            if exp_mpan_core_raw is None or len(exp_mpan_core_raw.strip()) == 0:
-                exp_mpan_core = None
-                exp_llfc_code = None
-                exp_sc = None
-                exp_supplier_contract = None
-                exp_supplier_account = None
-            else:
                 exp_mpan_core = parse_mpan_core(exp_mpan_core_raw)
-                exp_llfc_code = req_str("exp_llfc_code")
+                exp_llfc_id = req_int("exp_llfc_id")
+                exp_llfc = Llfc.get_by_id(g.sess, exp_llfc_id)
+                exp_llfc_code = exp_llfc.code
                 exp_sc = req_int("exp_sc")
                 exp_supplier_contract_id = req_int("exp_supplier_contract_id")
                 exp_supplier_contract = Contract.get_supplier_by_id(
                     g.sess, exp_supplier_contract_id
                 )
                 exp_supplier_account = req_str("exp_supplier_account")
+            else:
+                exp_mpan_core = None
+                exp_llfc_code = None
+                exp_sc = None
+                exp_supplier_contract = None
+                exp_supplier_account = None
 
             era.supply.update_era(
                 g.sess,
@@ -1632,10 +1885,10 @@ def era_edit_post(era_id):
                 dc_account,
                 msn,
                 pc,
-                mtc_code,
+                mtc_participant.mtc.code,
                 cop,
                 comm,
-                ssc,
+                ssc_code,
                 energisation_status,
                 properties,
                 imp_mpan_core,
@@ -1651,6 +1904,67 @@ def era_edit_post(era_id):
             )
             g.sess.commit()
             return chellow_redirect(f"/supplies/{era.supply.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        energisation_statuses = g.sess.query(EnergisationStatus).order_by(
+            EnergisationStatus.code
+        )
+        pcs = g.sess.query(Pc).order_by(Pc.code)
+        cops = g.sess.query(Cop).order_by(Cop.code)
+        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
+        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
+        mop_contracts = (
+            g.sess.query(Contract)
+            .join(MarketRole)
+            .filter(MarketRole.code == "M")
+            .order_by(Contract.name)
+        )
+        dc_contracts = (
+            g.sess.query(Contract)
+            .join(MarketRole)
+            .filter(MarketRole.code.in_(("C", "D")))
+            .order_by(Contract.name)
+        )
+        supplier_contracts = (
+            g.sess.query(Contract)
+            .join(MarketRole)
+            .filter(MarketRole.code == "X")
+            .order_by(Contract.name)
+        )
+        site_eras = (
+            g.sess.query(SiteEra)
+            .join(Site)
+            .filter(SiteEra.era == era)
+            .order_by(Site.code)
+            .all()
+        )
+        return make_response(
+            render_template(
+                "era_edit.html",
+                era=era,
+                pcs=pcs,
+                cops=cops,
+                comms=comms,
+                gsp_groups=gsp_groups,
+                mop_contracts=mop_contracts,
+                dc_contracts=dc_contracts,
+                supplier_contracts=supplier_contracts,
+                site_eras=site_eras,
+                energisation_statuses=energisation_statuses,
+            ),
+            400,
+        )
+
+
+@e.route("/eras/<int:era_id>/edit", methods=["DELETE"])
+def era_edit_delete(era_id):
+    try:
+        era = Era.get_by_id(g.sess, era_id)
+
+        supply = era.supply
+        supply.delete_era(g.sess, era)
+        g.sess.commit()
+        return hx_redirect(f"/supplies/{supply.id}")
     except BadRequest as e:
         flash(e.description)
         energisation_statuses = g.sess.query(EnergisationStatus).order_by(
@@ -3903,8 +4217,7 @@ def site_add_e_supply_form_get(site_id):
         participant = dno.participant
 
         if pc.code == "00":
-            sscs = [{"id": "", "code": "None", "description": ""}]
-            ssc = None
+            sscs = None
         else:
             sscs = g.sess.scalars(
                 select(Ssc)
@@ -4194,7 +4507,7 @@ def site_add_e_supply_post(site_id):
             mtc_participant.mtc.code,
             cop,
             comm,
-            ssc,
+            None if ssc is None else ssc.code,
             energisation_status,
             properties,
             imp_mpan_core,

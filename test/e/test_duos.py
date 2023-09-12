@@ -442,7 +442,7 @@ def test_SiteSource(sess):
         "845",
         cop,
         comm,
-        ssc,
+        ssc.code,
         energisation_status,
         {},
         "22 7867 6232 781",

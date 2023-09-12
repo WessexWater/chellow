@@ -714,7 +714,7 @@ def test_meter_type(mocker, sess):
         "845",
         cop,
         comm,
-        ssc,
+        ssc.code,
         energisation_status,
         {},
         "22 7868 6232 789",
