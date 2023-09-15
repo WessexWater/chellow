@@ -24,8 +24,8 @@ from chellow.models import (
     Contract,
     Era,
     MeasurementRequirement,
+    RSession,
     Scenario,
-    Session,
     Site,
     SiteEra,
     Source,
@@ -276,7 +276,6 @@ def _process_site(
                 elif source_code == "gen":
                     month_data["export-gen-kwh"] += kwh
 
-            sess.rollback()
             sss = exp_ss if imp_ss is None else imp_ss
             dc_contract = sss.dc_contract
             dc_vb_func = sss.contract_func(dc_contract, "virtual_bill")
@@ -289,7 +288,6 @@ def _process_site(
                 )
             dc_bill = sss.dc_bill
             gbp = dc_bill["net-gbp"]
-            sess.rollback()
 
             mop_contract = sss.mop_contract
             mop_bill_function = sss.contract_func(mop_contract, "virtual_bill")
@@ -302,7 +300,6 @@ def _process_site(
                 )
             mop_bill = sss.mop_bill
             gbp += mop_bill["net-gbp"]
-            sess.rollback()
 
             if source_code in ("3rd-party", "3rd-party-reverse"):
                 month_data["import-3rd-party-gbp"] += gbp
@@ -632,7 +629,6 @@ def _process_site(
     ] + [site_month_data[k] for k in summary_titles]
 
     site_rows.append([make_val(v) for v in site_row])
-    sess.rollback()
     return normal_reads
 
 
@@ -672,7 +668,7 @@ def content(
     bill_check_site_rows = []
     bill_check_era_rows = []
     try:
-        with Session() as sess:
+        with RSession() as sess:
             start_year = scenario_props["scenario_start_year"]
             start_month = scenario_props["scenario_start_month"]
             months = scenario_props["scenario_duration"]
@@ -982,6 +978,8 @@ def content(
                                 )
                         except BadRequest as e:
                             raise BadRequest(f"Site Code {site.code}: {e.description}")
+
+                    sess.rollback()  # Evict from cache
 
                 normal_read_rows = [["mpan_core", "date", "msn", "type", "registers"]]
                 for mpan_core, r in sorted(list(normal_reads)):

@@ -348,6 +348,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -356,7 +358,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -375,7 +377,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -634,7 +636,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
-
+    user_id = user.id
+    site_code = site.code
     sess.commit()
 
     scenario_props = {
@@ -642,7 +645,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -661,7 +664,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -885,6 +888,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -893,7 +898,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -912,7 +917,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -1296,6 +1301,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -1304,7 +1311,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": [imp_mpan_core],
     }
     base_name = ["monthly_duration"]
@@ -1323,7 +1330,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -1618,6 +1625,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    site_1_code = site_1.code
+    user_id = user.id
 
     sess.commit()
 
@@ -1626,7 +1635,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site_1.code],
+        "site_codes": [site_1_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -1645,7 +1654,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -1945,6 +1954,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -1953,7 +1964,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -1972,7 +1983,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -2495,6 +2506,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -2503,7 +2516,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -2522,7 +2535,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -2908,6 +2921,8 @@ def virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -2916,7 +2931,7 @@ def virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -2935,7 +2950,7 @@ def virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -3263,6 +3278,8 @@ def displaced_virtual_bill(ds):
 
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    site_code = site.code
 
     sess.commit()
 
@@ -3271,7 +3288,7 @@ def displaced_virtual_bill(ds):
         "scenario_start_month": start_date.month,
         "scenario_duration": months,
         "by_hh": False,
-        "site_codes": [site.code],
+        "site_codes": [site_code],
         "mpan_cores": None,
     }
     base_name = ["monthly_duration"]
@@ -3290,7 +3307,7 @@ def displaced_virtual_bill(ds):
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
@@ -3569,13 +3586,15 @@ def test_content_no_mpan_cores(mocker, sess, client):
     }
     base_name = ["no_mpan_cores"]
     user = User.get_by_email_address(sess, "admin@example.com")
+    user_id = user.id
+    sess.commit()
     compression = False
     now = to_utc(ct_datetime(2020, 1, 1))
     is_bill_check = False
     content(
         scenario_props,
         base_name,
-        user.id,
+        user_id,
         compression,
         now,
         is_bill_check,
