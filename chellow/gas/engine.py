@@ -24,7 +24,6 @@ from chellow.models import (
     GRateScript,
     GReadType,
     GRegisterRead,
-    get_g_industry_contract_id,
 )
 from chellow.utils import (
     HH,
@@ -215,15 +214,20 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
         d_cache[finish_date] = datum_tuple
         return datum_tuple
 
-    def g_rates(self, g_contract_id_or_name, date):
-        return g_rates(self.sess, self.caches, g_contract_id_or_name, date)
-
 
 ACTUAL_READ_TYPES = ["A", "C", "S"]
 CORRECTION_FACTOR = 1.02264
 
 
-def g_rates(sess, caches, g_contract_id_or_name, date):
+def g_industry_rates(sess, caches, g_contract_id_or_name, date):
+    return g_rates(sess, caches, g_contract_id_or_name, date, True)
+
+
+def g_supplier_rates(sess, caches, g_contract_id_or_name, date):
+    return g_rates(sess, caches, g_contract_id_or_name, date, False)
+
+
+def g_rates(sess, caches, g_contract_id_or_name, date, is_industry):
     try:
         return caches["g_engine"]["rates"][g_contract_id_or_name][date]
     except KeyError:
@@ -238,17 +242,36 @@ def g_rates(sess, caches, g_contract_id_or_name, date):
             rss_cache = ccache["rates"] = {}
 
         try:
-            cont_cache = rss_cache[g_contract_id_or_name]
+            i_cache = rss_cache[is_industry]
         except KeyError:
-            cont_cache = rss_cache[g_contract_id_or_name] = {}
+            i_cache = rss_cache[is_industry] = {}
+
+        try:
+            cont_cache = i_cache[g_contract_id_or_name]
+        except KeyError:
+            cont_cache = i_cache[g_contract_id_or_name] = {}
 
         try:
             return cont_cache[date]
         except KeyError:
             if isinstance(g_contract_id_or_name, int):
-                g_contract = GContract.get_by_id(sess, g_contract_id_or_name)
+                if is_industry:
+                    g_contract = GContract.get_industry_by_id(
+                        sess, g_contract_id_or_name
+                    )
+                else:
+                    g_contract = GContract.get_supplier_by_id(
+                        sess, g_contract_id_or_name
+                    )
             elif isinstance(g_contract_id_or_name, str):
-                g_contract = GContract.get_by_name(sess, g_contract_id_or_name)
+                if is_industry:
+                    g_contract = GContract.get_industry_by_name(
+                        sess, g_contract_id_or_name
+                    )
+                else:
+                    g_contract = GContract.get_supplier_by_name(
+                        sess, g_contract_id_or_name
+                    )
             else:
                 raise BadRequest("g_contract_id_or_name must be an int or str")
 
@@ -428,8 +451,6 @@ class GDataSource:
                     .all()
                 )
 
-        cv_id = get_g_industry_contract_id("cv")
-        ug_id = get_g_industry_contract_id("ug")
         hist_map = {}
 
         for i, hist_g_era in enumerate(hist_g_eras):
@@ -450,7 +471,6 @@ class GDataSource:
                     chunk_start,
                     chunk_finish,
                     hist_g_era,
-                    cv_id,
                     self.g_ldz_code,
                     hist_map,
                     forecast_date,
@@ -463,7 +483,6 @@ class GDataSource:
                     hist_g_era,
                     chunk_start,
                     chunk_finish,
-                    cv_id,
                     hist_map,
                     self.g_ldz_code,
                 )
@@ -489,12 +508,18 @@ class GDataSource:
                 / 3.6
             )
             h["ug_rate"] = float(
-                g_rates(sess, self.caches, ug_id, h["start_date"])["ug_gbp_per_kwh"][
-                    self.g_exit_zone_code
-                ]
+                g_rates(sess, self.caches, "ug", h["start_date"], True)[
+                    "ug_gbp_per_kwh"
+                ][self.g_exit_zone_code]
             )
             self.hh_data.append(h)
             self.bill_hhs[d["start_date"]] = {}
+
+    def g_industry_rates(self, g_contract_id_or_name, date):
+        return g_industry_rates(self.sess, self.caches, g_contract_id_or_name, date)
+
+    def g_supplier_rates(self, g_contract_id_or_name, date):
+        return g_supplier_rates(self.sess, self.caches, g_contract_id_or_name, date)
 
 
 def _no_bill_kwh(
@@ -504,7 +529,6 @@ def _no_bill_kwh(
     start,
     finish,
     g_era,
-    cv_id,
     g_ldz_code,
     hist_map,
     forecast_date,
@@ -533,7 +557,7 @@ def _no_bill_kwh(
                     break
 
     consumption_info = "read list - \n" + dumps(read_list) + "\n"
-    hhs = _find_hhs(sess, caches, g_era, pairs, start, finish, cv_id, g_ldz_code)
+    hhs = _find_hhs(sess, caches, g_era, pairs, start, finish, g_ldz_code)
     _set_status(hhs, read_list, forecast_date)
     hist_map.update(hhs)
     return consumption_info + "pairs - \n" + dumps(pairs)
@@ -564,22 +588,14 @@ def _find_pair(is_forwards, read_list):
 
 
 def _bill_kwh(
-    sess,
-    caches,
-    g_supply,
-    hist_g_era,
-    chunk_start,
-    chunk_finish,
-    cv_id,
-    hist_map,
-    g_ldz_code,
+    sess, caches, g_supply, hist_g_era, chunk_start, chunk_finish, hist_map, g_ldz_code
 ):
     cf = float(hist_g_era.correction_factor)
     g_unit = hist_g_era.g_unit
     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
 
     for hh_date in hh_range(caches, chunk_start, chunk_finish):
-        cv, avg_cv = find_cv(sess, caches, cv_id, hh_date, g_ldz_code)
+        cv, avg_cv = find_cv(sess, caches, "cv", hh_date, g_ldz_code)
         hist_map[hh_date] = {
             "unit_code": unit_code,
             "unit_factor": unit_factor,
@@ -644,8 +660,8 @@ def _bill_kwh(
             hist_map[hh_date]["units_consumed"] = hh_units_consumed
 
 
-def find_cv(sess, caches, cv_id, dt, g_ldz_code):
-    cvs = g_rates(sess, caches, cv_id, dt)["cvs"][g_ldz_code]
+def find_cv(sess, caches, dt, g_ldz_code):
+    cvs = g_rates(sess, caches, "cv", dt, True)["cvs"][g_ldz_code]
     ct = to_ct(dt)
     try:
         cv_props = cvs[ct.day]
@@ -687,9 +703,7 @@ def find_cv(sess, caches, cv_id, dt, g_ldz_code):
     return cv, avg_cv
 
 
-def _find_hhs(
-    sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_cv_id, g_ldz_code
-):
+def _find_hhs(sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_ldz_code):
     hhs = {}
     if len(pairs) == 0:
         pairs.append({"start-date": chunk_start, "units": 0})
@@ -721,7 +735,7 @@ def _find_hhs(
     for pair in pairs:
         units = pair["units"]
         for hh_date in hh_range(caches, pair["start-date"], pair["finish-date"]):
-            cv, avg_cv = find_cv(sess, caches, g_cv_id, hh_date, g_ldz_code)
+            cv, avg_cv = find_cv(sess, caches, hh_date, g_ldz_code)
 
             hhs[hh_date] = {
                 "unit_code": unit_code,

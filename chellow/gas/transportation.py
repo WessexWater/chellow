@@ -1,7 +1,3 @@
-from chellow.gas.engine import g_rates
-from chellow.models import get_g_industry_contract_id
-
-
 def vb(ds):
     to_exit_commodity_rate_set = ds.rate_sets["to_exit_commodity_rate"]
     so_exit_commodity_rate_set = ds.rate_sets["so_exit_commodity_rate"]
@@ -15,14 +11,12 @@ def vb(ds):
     dn_customer_fixed_rate_set = ds.rate_sets["dn_customer_fixed_rate"]
     dn_ecn_rate_set = ds.rate_sets["dn_ecn_rate"]
     dn_ecn_fixed_rate_set = ds.rate_sets["dn_ecn_fixed_rate"]
-    nts_commodity_id = get_g_industry_contract_id("nts_commodity")
-    dn_id = get_g_industry_contract_id("dn")
 
     for hh in ds.hh_data:
         start_date = hh["start_date"]
         soq = hh["soq"]
         aq = hh["aq"]
-        nts_rates = g_rates(ds.sess, ds.caches, nts_commodity_id, start_date)
+        nts_rates = ds.g_industry_rates("nts_commodity", start_date)
 
         to_exit_commodity_rate = float(nts_rates["to_exit_gbp_per_kwh"])
         to_exit_commodity_rate_set.add(to_exit_commodity_rate)
@@ -32,7 +26,7 @@ def vb(ds):
         so_exit_commodity_rate_set.add(so_exit_commodity_rate)
         hh["so_exit_commodity_rate"] = so_exit_commodity_rate
 
-        rates = g_rates(ds.sess, ds.caches, dn_id, start_date)
+        rates = ds.g_industry_rates("dn", start_date)
         dn_rates = rates["gdn"][ds.g_dn_code]
         system_commodity_rates = dn_rates["system_commodity"]
         system_capacity_rates = dn_rates["system_capacity"]

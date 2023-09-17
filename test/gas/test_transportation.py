@@ -1,10 +1,7 @@
-import csv
 from decimal import Decimal
-from io import StringIO
 
-from utils import match_tables
-
-import chellow.reports.report_g_virtual_bills_hh
+from chellow.gas.engine import GDataSource
+from chellow.gas.transportation import vb
 from chellow.models import (
     BillType,
     Contract,
@@ -24,8 +21,8 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_supply(mocker, sess, client):
-    from_date = utc_datetime(2000, 1, 1)
+def test_vb(mocker, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
@@ -33,10 +30,8 @@ def test_supply(mocker, sess, client):
     insert_g_units(sess)
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    market_role_Z = MarketRole.get_by_code(sess, "Z")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     g_cv_rate_script = {
         "cvs": {
             "EA": {
@@ -44,20 +39,34 @@ def test_supply(mocker, sess, client):
             }
         }
     }
-    GContract.insert_industry(sess, "cv", "", {}, from_date, None, g_cv_rate_script)
-    ug_rate_script = {"ug_gbp_per_kwh": {"EA1": Decimal("40.1")}}
-    GContract.insert_industry(sess, "ug", "", {}, from_date, None, ug_rate_script)
-    ccl_rate_script = {"ccl_gbp_per_kwh": Decimal("0.00198")}
-    GContract.insert_industry(sess, "ccl", "", {}, from_date, None, ccl_rate_script)
+    GContract.insert_industry(sess, "cv", "", {}, vf, None, g_cv_rate_script)
+    g_nts_commodity_rate_script = {"to_exit_gbp_per_kwh": 1, "so_exit_gbp_per_kwh": 1}
+    GContract.insert_industry(
+        sess, "nts_commodity", "", {}, vf, None, g_nts_commodity_rate_script
+    )
+    g_dn_rate_script = {
+        "gdn": {
+            "EE": {
+                "system_commodity": {"to_73200_gbp_per_kwh": 1},
+                "system_capacity": {"to_73200_gbp_per_kwh_per_day": 1},
+                "customer_capacity": {"to_73200_gbp_per_kwh_per_day": 1},
+                "customer_fixed": 1,
+            }
+        },
+        "exit_zones": {"EA1": {"exit_capacity_gbp_per_kwh_per_day": 1}},
+    }
+    GContract.insert_industry(sess, "dn", "", {}, vf, None, g_dn_rate_script)
+    ug_rate_script = {
+        "ug_gbp_per_kwh": {"EA1": Decimal("40.1")},
+    }
+    GContract.insert_industry(sess, "ug", "", {}, vf, None, ug_rate_script)
+    ccl_rate_script = {
+        "ccl_gbp_per_kwh": Decimal("0.00525288"),
+    }
+    GContract.insert_industry(sess, "ccl", "", {}, vf, None, ccl_rate_script)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     charge_script = """
 import chellow.gas.ccl
@@ -179,110 +188,12 @@ def virtual_bill(ds):
     )
     sess.commit()
 
-    mock_file = StringIO()
-    mock_file.close = mocker.Mock()
-    mocker.patch(
-        "chellow.reports.report_g_virtual_bills_hh.open", return_value=mock_file
-    )
-    mocker.patch(
-        "chellow.reports.report_g_virtual_bills_hh.chellow.dloads.make_names",
-        return_value=("a", "b"),
-    )
-    mocker.patch("chellow.reports.report_g_virtual_bills.os.rename")
-
-    user = mocker.Mock()
-    g_supply_id = g_supply.id
-    start_date = to_utc(ct_datetime(2018, 2, 1))
-    finish_date = to_utc(ct_datetime(2018, 2, 1, 0, 30))
-
-    chellow.reports.report_g_virtual_bills_hh.content(
-        g_supply_id, start_date, finish_date, user
-    )
-
-    mock_file.seek(0)
-    table = list(csv.reader(mock_file))
-
-    expected = [
-        [
-            "MPRN",
-            "Site Code",
-            "Site Name",
-            "Account",
-            "HH Start",
-            "",
-            "",
-            "units_consumed",
-            "correction_factor",
-            "unit_code",
-            "unit_factor",
-            "calorific_value",
-            "kwh",
-            "gas_rate",
-            "gas_gbp",
-            "ccl_rate",
-            "standing_rate",
-            "standing_gbp",
-            "net_gbp",
-            "vat_gbp",
-            "gross_gbp",
-            "problem",
-        ],
-        [
-            "87614362",
-            "22488",
-            "Water Works",
-            "d7gthekrg",
-            "2018-02-01 00:00",
-            "",
-            "",
-            "0.6944444444444444",
-            "1.0",
-            "M3",
-            "1.0",
-            "39.2",
-            "7.561728395061729",
-            "0.1",
-            "0.7561728395061729",
-            "0.00198",
-            "",
-            "",
-            "0.7711450617283951",
-            "0",
-            "0.7711450617283951",
-            "",
-            "ccl_gbp",
-            "0.014972222222222222",
-            "ccl_kwh",
-            "7.561728395061729",
-        ],
-        [
-            "87614362",
-            "22488",
-            "Water Works",
-            "d7gthekrg",
-            "2018-02-01 00:30",
-            "",
-            "",
-            "0.6944444444444444",
-            "1.0",
-            "M3",
-            "1.0",
-            "39.2",
-            "7.561728395061729",
-            "0.1",
-            "0.7561728395061729",
-            "0.00198",
-            "",
-            "",
-            "0.7711450617283951",
-            "0",
-            "0.7711450617283951",
-            "",
-            "ccl_gbp",
-            "0.014972222222222222",
-            "ccl_kwh",
-            "7.561728395061729",
-        ],
-    ]
-
-    match_tables(table, expected)
+    start_date = to_utc(ct_datetime(2020, 1, 1))
+    finish_date = to_utc(ct_datetime(2020, 1, 31))
+    forecast_date = to_utc(ct_datetime(2021, 1, 1))
+    g_era = g_supply.g_eras[0]
+    caches = {}
+    ds = GDataSource(sess, start_date, finish_date, forecast_date, g_era, caches, None)
+    for hh in ds.hh_data:
+        hh["soq"] = hh["aq"] = 1
+    vb(ds)

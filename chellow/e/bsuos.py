@@ -18,12 +18,7 @@ from sqlalchemy.sql.expression import null
 
 from zish import dumps, loads
 
-from chellow.models import (
-    Contract,
-    RateScript,
-    Session,
-    get_non_core_contract_id,
-)
+from chellow.models import Contract, RateScript, Session
 from chellow.national_grid import api_get
 from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc, utc_datetime_now
@@ -69,9 +64,8 @@ def hh(data_source, run="RF"):
             h["bsuos-rate"] = bsuos_rate = bsuos_cache[h["start-date"]]
         except KeyError:
             h_start = h["start-date"]
-            db_id = get_non_core_contract_id("bsuos")
 
-            rates = data_source.hh_rate(db_id, h_start)
+            rates = data_source.non_core_rate("bsuos", h_start)
 
             if h_start >= to_utc(ct_datetime(2023, 4, 1)):
                 try:

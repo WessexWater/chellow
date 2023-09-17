@@ -17,7 +17,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.models import Contract, RateScript, Session
 from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
 
@@ -44,8 +44,7 @@ def hh(data_source, run="DF"):
             h["tlm"] = tlm = cache[h["start-date"]][gsp_group_code][run]
         except KeyError:
             h_start = h["start-date"]
-            db_id = get_non_core_contract_id("tlms")
-            rates = data_source.hh_rate(db_id, h_start)["tlms"]
+            rates = data_source.non_core_rate("tlms", h_start)["tlms"]
 
             key = key_format(h_start)
             try:

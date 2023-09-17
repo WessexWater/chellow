@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import loads
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     ct_datetime_parse,
     hh_format,
@@ -37,8 +37,7 @@ def hh(data_source):
             hh["rcrc-rate"] = rcrc = cache[hh["start-date"]]
         except KeyError:
             h_start = hh["start-date"]
-            db_id = get_non_core_contract_id("rcrc")
-            rates = data_source.hh_rate(db_id, h_start)["rates"]
+            rates = data_source.non_core_rate("rcrc", h_start)["rates"]
             try:
                 hh["rcrc-rate"] = rcrc = cache[h_start] = (
                     float(rates[key_format(h_start)]) / 1000

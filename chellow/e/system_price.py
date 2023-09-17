@@ -13,7 +13,7 @@ import xlrd
 
 from zish import loads
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.models import Contract, RateScript, Session
 from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
 
 
@@ -34,9 +34,10 @@ def hh(data_source):
             except KeyError:
                 system_price_cache = data_source.caches["system_price"] = {}
 
-            db_id = get_non_core_contract_id("system_price")
             h_start = h["start-date"]
-            rates = data_source.hh_rate(db_id, h_start)["gbp_per_nbp_mwh"]
+            rates = data_source.non_core_rate("system_price", h_start)[
+                "gbp_per_nbp_mwh"
+            ]
 
             try:
                 try:

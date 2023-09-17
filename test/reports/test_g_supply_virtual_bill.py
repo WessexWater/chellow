@@ -80,7 +80,7 @@ def virtual_bill(ds):
         kwh = hh['kwh']
         bill_hh['kwh'] = kwh
         gas_rate = float(
-            g_rates(ds.sess, ds.caches, db_id, start_date)['gas_rate'])
+            g_rates(ds.sess, ds.caches, db_id, start_date, False)['gas_rate'])
         bill_hh['gas_rate'] = {gas_rate}
         bill_hh['gas_gbp'] = gas_rate * kwh
         bill_hh['ccl_kwh'] = kwh
@@ -94,7 +94,7 @@ def virtual_bill(ds):
         if hh['utc_is_month_end']:
             standing_rate = float(
                 g_rates(
-                    ds.sess, ds.caches, db_id, start_date)['standing_rate'])
+                    ds.sess, ds.caches, db_id, start_date, False)['standing_rate'])
             bill_hh['standing_rate'] = {standing_rate}
             bill_hh['standing_gbp'] = standing_rate
         if hh['utc_decimal_hour'] == 0:

@@ -35,10 +35,9 @@ def test_find_hhs_pairs_before_after_chunk_finish(mocker):
     ]
     chunk_start = utc_datetime(2010, 1, 1)
     chunk_finish = utc_datetime(2010, 1, 1)
-    g_cv_id = 0
     g_ldz_code = "SW"
     hhs = _find_hhs(
-        sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_cv_id, g_ldz_code
+        sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_ldz_code
     )
     assert hhs == {
         utc_datetime(2010, 1, 1): {
@@ -76,10 +75,9 @@ def test_find_hhs_pair_after_chunk_finish(mocker):
     pairs = [{"start-date": utc_datetime(2010, 1, 1, 0, 30), "units": 1}]
     chunk_start = utc_datetime(2010, 1, 1)
     chunk_finish = utc_datetime(2010, 1, 1)
-    g_cv_id = 0
     g_ldz_code = "SW"
     hhs = _find_hhs(
-        sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_cv_id, g_ldz_code
+        sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_ldz_code
     )
     assert hhs == {
         utc_datetime(2010, 1, 1): {

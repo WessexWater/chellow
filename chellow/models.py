@@ -9,7 +9,6 @@ from binascii import hexlify, unhexlify
 from collections.abc import Mapping, Set
 from datetime import datetime as Datetime
 from decimal import Decimal
-from functools import lru_cache
 from hashlib import pbkdf2_hmac
 from itertools import takewhile
 
@@ -179,29 +178,6 @@ CHANNEL_TYPES = ("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP")
 
 def log_message(msg):
     sys.stderr.write(str(msg) + "\n")
-
-
-@lru_cache()
-def get_non_core_contract_id(name):
-    with Session() as sess:
-        cont = (
-            sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == "Z", Contract.name == name)
-            .one()
-        )
-        return cont.id
-
-
-@lru_cache()
-def get_g_industry_contract_id(name):
-    with Session() as sess:
-        cont = sess.execute(
-            select(GContract).where(
-                GContract.is_industry == true(), GContract.name == name
-            )
-        ).scalar_one()
-        return cont.id
 
 
 @event.listens_for(Engine, "handle_error")

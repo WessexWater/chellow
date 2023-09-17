@@ -570,9 +570,7 @@ class DataSource:
             return val
 
     def non_core_rate(self, contract_name_or_id, date):
-        return hh_rate(
-            self.sess, self.caches, contract_name_or_id, date, market_role_code="Z"
-        )
+        return non_core_rate(self.sess, self.caches, contract_name_or_id, date)
 
     def _add_problem(self, problem):
         self.supplier_bill["problem"] += problem

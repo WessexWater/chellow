@@ -10,7 +10,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import loads
 
-from chellow.models import Contract, RateScript, Session, get_non_core_contract_id
+from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     HH,
     c_months_u,
@@ -33,8 +33,7 @@ def hh(data_source, provider="APXMIDP"):
             hh["bmarketidx-rate"] = cache[hh["start-date"]][provider]
         except KeyError:
             h_start = hh["start-date"]
-            db_id = get_non_core_contract_id("bmarketidx")
-            rates = data_source.hh_rate(db_id, h_start)["rates"]
+            rates = data_source.non_core_rate("bmarketidx", h_start)["rates"]
 
             try:
                 idxs = cache[h_start]
