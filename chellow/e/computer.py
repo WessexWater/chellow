@@ -1577,7 +1577,7 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             Bill.supply == supply,
             BillType.code != "W",
         )
-        .options(joinedload(RegisterRead.bill))
+        .options(joinedload(RegisterRead.bill), joinedload(r_typ))
     )
 
     if is_forwards:
