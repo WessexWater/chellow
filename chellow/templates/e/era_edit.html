@@ -70,24 +70,29 @@
 	<form action="/e/eras/{{era.id}}/edit" method="post">	
 		<fieldset hx-get="/e/eras/{{era.id}}/edit/form" hx-params="*"
 			 hx-trigger="load, change"
-			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id'],[name='is_ended']">
-			<input type="hidden" name="source_id" value="{{request.values.source_id}}">
-			<input type="hidden" name="cop_id" value="{{request.values.cop_id}}">
-			<input type="hidden" name="comm_id" value="{{request.values.comm_id}}">
-			<input type="hidden" name="energisation_status_id"
-					value="{{era.energisation_status.id}}">
-			<input type="hidden" name="pc_id" value="{{era.pc_id}}">
-			<input type="hidden" name="dno_id" value="{{era.supply.dno.id}}">
-			<input type="hidden" name="gsp_group_id" value="{{era.supply.gsp_group.id}}">
-			<input type="hidden" name="mtc_participant_id"
-		 			value="{{request.values.mtc_participant_id}}">
-			<input type="hidden" name="name" value="{{request.values.name}}">
-			<input type="hidden" name="mop_contract_id"
-		 			value="{{request.values.mop_contract_id}}">
-			<input type="hidden" name="mop_account" value="{{request.values.mop_account}}">
-			<input type="hidden" name="dc_contract_id"
-		 			value="{{request.values.dc_contract_id}}">
-			<input type="hidden" name="dc_account" value="{{request.values.dc_account}}">
+			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id'],[name='is_ended'],[name='imp_supplier_contract_id'],[name='exp_supplier_contract_id'],[name='imp_sc'],[name='exp_sc'],[name='msn']">
+			<input type="hidden" name="is_ended" value="
+				{%- if era.finish_date == None -%}
+					false		
+				{%- else -%}
+				  true
+				{%- endif -%}">
+			{{input_hidden('source_id', initial=era.supply.source.id)}}
+			{{input_hidden('cop_id', initial=era.cop.id)}}
+			{{input_hidden('comm_id', initial=era.comm.id)}}
+			{{input_hidden('energisation_status_id', initial=era.energisation_status.id)}}
+			{{input_hidden('pc_id', initial=era.pc.id)}}
+			{{input_hidden('dno_id', initial=era.supply.dno.id)}}
+			{{input_hidden('gsp_group_id', initial=era.supply.gsp_group.id)}}
+			{{input_hidden('mtc_participant_id', initial=era.mtc_participant.id)}}
+			{{input_hidden('ssc_id', initial=era.ssc.id)}}
+			{{input_hidden('name', initial=era.name)}}
+			{{input_hidden('msn', initial=era.msn)}}
+			{{input_hidden('mop_contract_id', initial=era.mop_contract_id)}}
+			{{input_hidden('mop_account', initial=era.mop_account)}}
+			{{input_hidden('dc_contract_id', initial=era.dc_contract.id)}}
+			{{input_hidden('dc_account', initial=era.dc_account)}}
+
 			<input type="hidden" name="has_imp_mpan" value="
 				{%- if 'has_imp_mpan' in request.values -%}
 					{{request.values.has_imp_mpan}}
@@ -96,26 +101,27 @@
 				{%- else -%}
 					true
 				{%- endif -%}">
-			<input type="hidden" name="imp_mpan_core"
-		 			value="{{request.values.imp_mpan_core}}">
-			<input type="hidden" name="imp_supplier_account"
-					value="{{request.values.imp_supplier_account}}">
-			<input type="hidden" name="imp_llfc_id"
-					value="{{request.values.imp_llfc_id}}">
-			<input type="hidden" name="has_exp_mpan" value="{{request.values.has_exp_mpan}}">
-			<input type="hidden" name="exp_mpan_core"
-		 			value="{{request.values.exp_mpan_core}}">
-			<input type="hidden" name="exp_supplier_account"
-					value="{{request.values.exp_supplier_account}}">
-			<input type="hidden" name="exp_llfc_id"
-					value="{{request.values.exp_llfc_id}}">
-			<input type="hidden" name="ssc_id" value="{{request.values.ssc_id}}">
-			<input type="hidden" name="is_ended" value="
-				{%- if era.finish_date == None -%}
-					false		
+
+			{{input_hidden('imp_mpan_core', initial=era.imp_mpan_core)}}
+			{{input_hidden('imp_supplier_contract_id', initial=era.imp_supplier_contract.id)}}
+			{{input_hidden('imp_supplier_account', initial=era.imp_supplier_account)}}
+			{{input_hidden('imp_llfc_id', initial=era.imp_llfc.id)}}
+			{{input_hidden('imp_sc', initial=era.imp_sc)}}
+
+			<input type="hidden" name="has_exp_mpan" value="
+				{%- if 'has_exp_mpan' in request.values -%}
+					{{request.values.has_exp_mpan}}
+				{%- elif era.exp_mpan_core == None -%}
+					false
 				{%- else -%}
-				  true
+					true
 				{%- endif -%}">
+
+			{{input_hidden('exp_mpan_core', initial=era.exp_mpan_core)}}
+			{{input_hidden('exp_supplier_contract_id', initial=era.exp_supplier_contract.id)}}
+			{{input_hidden('exp_supplier_account', initial=era.exp_supplier_account)}}
+			{{input_hidden('exp_llfc_id', initial=era.exp_llfc.id)}}
+			{{input_hidden('exp_sc', initial=era.exp_sc)}}
 		</fieldset>
 	</form>
 		

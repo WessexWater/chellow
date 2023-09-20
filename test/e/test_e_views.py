@@ -2320,7 +2320,7 @@ def test_scenario_edit_post(sess, client):
     match(response, 303, r"/scenarios/1")
 
 
-def test_site_add_e_supply__form_get(client, sess):
+def test_site_add_e_supply_form_get(client, sess):
     vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
@@ -2345,7 +2345,7 @@ def test_site_add_e_supply__form_get(client, sess):
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
-    MtcParticipant.insert(
+    mtc_participant_hh = MtcParticipant.insert(
         sess,
         mtc,
         participant,
@@ -2358,9 +2358,26 @@ def test_site_add_e_supply__form_get(client, sess):
         vf,
         None,
     )
+    mtc = Mtc.insert(sess, "001", False, True, vf, None)
+    MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "nhh",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    dno.insert_llfc(sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant_hh, llfc, vf, None)
     insert_sources(sess)
     insert_energisation_statuses(sess)
     Pc.insert(sess, "00", "", vf, None)
@@ -2379,6 +2396,9 @@ def test_site_add_e_supply__form_get(client, sess):
     patterns = [
         r'<select name="comm_id">\s*'
         r'<option value="3">GPRS General Packet Radio Service</option>\s*',
+        r'<select name="mtc_participant_id">\s*'  # Make sure only HH MTCs are shown
+        r'<option value="1">845 HH COP5 And Above With Comms</option>\s*'
+        r"</select>\s*",
     ]
     match(response, 200, *patterns)
 

@@ -109,6 +109,15 @@
             {%- endif -%}>{{ desc }}</option>
 {%- endmacro -%}
 
+{% macro input_hidden(name, initial=None) %}
+    <input type="hidden" name="{{name}}" value="
+        {%- if request.values[name] -%}
+            {{ request.values[name] }}
+        {%- elif initial is not none -%}
+            {{initial}}
+        {%- endif -%}">
+{%- endmacro -%}
+
 {% macro input_text(
   name, initial=None, size=None, maxlength=None, placeholder=None,
   required=None, pattern=None) %}

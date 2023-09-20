@@ -14,8 +14,8 @@
 	<form action="/e/sites/{{site.id}}/add_e_supply" method="post">
 		<fieldset hx-get="/e/sites/{{site.id}}/add_e_supply/form" hx-params="*"
 			 hx-trigger="load, change"
-			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id']">
-			<input type="hidden" name="source_id" value="{{request.values.source_id}}">
+			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id'],[name='imp_supplier_contract_id'],[name='exp_supplier_contract_id']">
+			{{ input_hidden('source_id')}}
 			<input type="hidden" name="cop_id" value="{{request.values.cop_id}}">
 			<input type="hidden" name="comm_id" value="{{request.values.comm_id}}">
 			<input type="hidden" name="energisation_status_id"
@@ -47,6 +47,8 @@
 			<input type="hidden" name="exp_llfc_id"
 					value="{{request.values.exp_llfc_id}}">
 			<input type="hidden" name="ssc_id" value="{{request.values.ssc_id}}">
+			<input type="hidden" name="imp_supplier_contract_id" value="{{request.values.imp_supplier_contract_id}}">
+			<input type="hidden" name="exp_supplier_contract_id" value="{{request.values.exp_supplier_contract_id}}">
 		</fieldset>
 	</form>
 {% endblock %}

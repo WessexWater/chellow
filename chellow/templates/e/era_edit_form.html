@@ -105,64 +105,56 @@
 			<legend>Import</legend>
 
 			<label>Mpan Core</label>
-		 	{{input_text('imp_mpan_core', size=35, pattern='[0-9 ]*', required=True, initial=era.imp_mpan_core)}}
+		 	{{input_text('imp_mpan_core', size=35, pattern='[0-9 ]*', required=True)}}
 
 			<label>LLFC</label>
 			<select name="imp_llfc_id">
 				{% for llfc in imp_llfcs %}
-					{{input_option('imp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description,
-							initial=era.imp_llfc.id)}}
+					{{input_option('imp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description)}}
 				{% endfor %}
 			</select>
 
 			<label>Supply Capacity</label>
-			{{input_number('imp_sc', required=True, initial=era.imp_sc)}}
+			{{input_number('imp_sc', required=True)}}
 
 			<label>Supplier Contract</label>
 			<select name="imp_supplier_contract_id">
 				{% for contract in supplier_contracts %}
-					{{input_option('imp_supplier_contract_id', contract.id, contract.name,
-							initial=era.imp_supplier_contract.id)}}
+					{{input_option('imp_supplier_contract_id', contract.id, contract.name)}}
 				{% endfor %}
 			</select>
 
 			<label>Supplier Account</label>
-			{{input_text('imp_supplier_account', required=True,
-					initial=era.imp_supplier_account)}}
+			{{input_text('imp_supplier_account', required=True)}}
 		</fieldset>	
 	{% endif %}
 
-	<label>Has An Export MPAN?</label>
-	{{input_checkbox('has_exp_mpan', initial=has_exp_mapn_value)}}
+	<label>Has An Export MPAN?</label> {{input_checkbox('has_exp_mpan')}}
 
 	{% if request.values.has_exp_mpan == 'true' %}
 		<fieldset>
 			<legend>Export</legend>
 			<label>Mpan Core</label>
-			{{input_text('exp_mpan_core', size=35, pattern='[0-9 ]*', required=True,
-					initial=era.exp_mpan_core)}}
+			{{input_text('exp_mpan_core', size=35, pattern='[0-9 ]*', required=True)}}
 
 			<label>LLFC</label>
 			<select name="exp_llfc_id">
 				{% for llfc in exp_llfcs %}
-					{{input_option('exp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description,
-							initial=era.exp_llfc.id)}}
+					{{input_option('exp_llfc_id', llfc.id, llfc.code + ' ' + llfc.description)}}
 				{% endfor %}
 			</select>
 
 			<label>Supply Capacity</label>
-			{{input_number('exp_sc', required=True, initial=era.imp_sc)}}
+			{{input_number('exp_sc', required=True)}}
 
 			<label>Supplier Contract</label>
 			<select name="exp_supplier_contract_id">
 				{% for contract in supplier_contracts %}
-					{{input_option('exp_supplier_contract_id', contract.id, contract.name,
-							initial=era.exp_supplier_contract.id)}}
+					{{input_option('exp_supplier_contract_id', contract.id, contract.name)}}
 				{% endfor %}
 			</select>
 			<label>Supplier Account</label>
-			{{input_text('exp_supplier_account', required=True,
-					initial=era.exp_supplier_account)}}
+			{{input_text('exp_supplier_account', required=True)}}
 		</fieldset>
 	{% endif %}
 

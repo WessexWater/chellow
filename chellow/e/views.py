@@ -1590,7 +1590,7 @@ def era_edit_form_get(era_id):
                 RateScriptAliasFinish.finish_date == null(),
             )
             .order_by(Contract.name)
-        )
+        ).all()
         pcs = g.sess.scalars(select(Pc).order_by(Pc.code))
         pc_id = req_int_none("pc_id")
         if pc_id is None:
@@ -1662,13 +1662,10 @@ def era_edit_form_get(era_id):
             ]
 
         mtc_participant_id = req_int_none("mtc_participant_id")
-        if mtc_participant_id is None:
-            if len(mtc_participants) > 0:
-                mtc_participant = mtc_participants[0]
-            else:
-                mtc_participant = None
-        else:
+        if mtc_participant_id in {m.id for m in mtc_participants}:
             mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
+        else:
+            mtc_participant = mtc_participants[0]
 
         if pc.code == "00":
             imp_llfcs = g.sess.scalars(
@@ -1683,26 +1680,7 @@ def era_edit_form_get(era_id):
                 .order_by(Llfc.code, Llfc.valid_from.desc())
                 .distinct()
             )
-        else:
-            imp_llfcs = g.sess.scalars(
-                select(Llfc)
-                .select_from(MtcLlfcSsc)
-                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
-                .join(MtcLlfcSscPc)
-                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
-                .where(
-                    MtcSsc.mtc_participant == mtc_participant,
-                    MtcLlfcSscPc.pc == pc,
-                    MtcSsc.ssc == ssc,
-                    start_date >= MtcLlfcSscPc.valid_from,
-                    MtcLlfcSscPc.valid_to == null(),
-                    Llfc.is_import == true(),
-                )
-                .distinct()
-                .order_by(Llfc.code, Llfc.valid_from.desc())
-            )
 
-        if pc.code == "00":
             exp_llfcs = g.sess.scalars(
                 select(Llfc)
                 .join(MtcLlfc)
@@ -1716,23 +1694,36 @@ def era_edit_form_get(era_id):
                 .distinct()
             )
         else:
+            mtc_ssc = MtcSsc.find_by_values(g.sess, mtc_participant, ssc, start_date)
+            imp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .join(MtcLlfcSsc)
+                .join(MtcLlfcSscPc)
+                .where(
+                    MtcLlfcSsc.mtc_ssc == mtc_ssc,
+                    MtcLlfcSscPc.pc == pc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                    MtcLlfcSscPc.valid_to == null(),
+                    Llfc.is_import == true(),
+                )
+                .distinct()
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+            ).all()
+
             exp_llfcs = g.sess.scalars(
                 select(Llfc)
-                .select_from(MtcLlfcSsc)
-                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
+                .join(MtcLlfcSsc)
                 .join(MtcLlfcSscPc)
-                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
                 .where(
-                    MtcSsc.mtc_participant == mtc_participant,
+                    MtcLlfcSsc.mtc_ssc == mtc_ssc,
                     MtcLlfcSscPc.pc == pc,
-                    MtcSsc.ssc == ssc,
                     start_date >= MtcLlfcSscPc.valid_from,
                     MtcLlfcSscPc.valid_to == null(),
                     Llfc.is_import == false(),
                 )
                 .distinct()
                 .order_by(Llfc.code, Llfc.valid_from.desc())
-            )
+            ).all()
 
         return render_template(
             "era_edit_form.html",
@@ -4276,13 +4267,10 @@ def site_add_e_supply_form_get(site_id):
             ]
 
         mtc_participant_id = req_int_none("mtc_participant_id")
-        if mtc_participant_id is None:
-            if len(mtc_participants) > 0:
-                mtc_participant = mtc_participants[0]
-            else:
-                mtc_participant = None
-        else:
+        if mtc_participant_id in {m.id for m in mtc_participants}:
             mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
+        else:
+            mtc_participant = mtc_participants[0]
 
         if pc.code == "00":
             imp_llfcs = g.sess.scalars(
@@ -4297,26 +4285,7 @@ def site_add_e_supply_form_get(site_id):
                 .order_by(Llfc.code, Llfc.valid_from.desc())
                 .distinct()
             )
-        else:
-            imp_llfcs = g.sess.scalars(
-                select(Llfc)
-                .select_from(MtcLlfcSsc)
-                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
-                .join(MtcLlfcSscPc)
-                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
-                .where(
-                    MtcSsc.mtc_participant == mtc_participant,
-                    MtcLlfcSscPc.pc == pc,
-                    MtcSsc.ssc == ssc,
-                    start_date >= MtcLlfcSscPc.valid_from,
-                    MtcLlfcSscPc.valid_to == null(),
-                    Llfc.is_import == true(),
-                )
-                .distinct()
-                .order_by(Llfc.code, Llfc.valid_from.desc())
-            )
 
-        if pc.code == "00":
             exp_llfcs = g.sess.scalars(
                 select(Llfc)
                 .join(MtcLlfc)
@@ -4330,23 +4299,36 @@ def site_add_e_supply_form_get(site_id):
                 .distinct()
             )
         else:
+            mtc_ssc = MtcSsc.find_by_values(g.sess, mtc_participant, ssc, start_date)
+            imp_llfcs = g.sess.scalars(
+                select(Llfc)
+                .join(MtcLlfcSsc)
+                .join(MtcLlfcSscPc)
+                .where(
+                    MtcLlfcSsc.mtc_ssc == mtc_ssc,
+                    MtcLlfcSscPc.pc == pc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                    MtcLlfcSscPc.valid_to == null(),
+                    Llfc.is_import == true(),
+                )
+                .distinct()
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+            ).all()
+
             exp_llfcs = g.sess.scalars(
                 select(Llfc)
-                .select_from(MtcLlfcSsc)
-                .join(Llfc, Llfc.id == MtcLlfcSsc.llfc_id)
+                .join(MtcLlfcSsc)
                 .join(MtcLlfcSscPc)
-                .join(MtcSsc, MtcSsc.id == MtcLlfcSsc.mtc_ssc_id)
                 .where(
-                    MtcSsc.mtc_participant == mtc_participant,
+                    MtcLlfcSsc.mtc_ssc == mtc_ssc,
                     MtcLlfcSscPc.pc == pc,
-                    MtcSsc.ssc == ssc,
                     start_date >= MtcLlfcSscPc.valid_from,
                     MtcLlfcSscPc.valid_to == null(),
                     Llfc.is_import == false(),
                 )
                 .distinct()
                 .order_by(Llfc.code, Llfc.valid_from.desc())
-            )
+            ).all()
 
         return render_template(
             "site_add_e_supply_form.html",
@@ -4396,6 +4378,8 @@ def site_add_e_supply_form_get(site_id):
             sscs=sscs,
             mtc_participants=mtc_participants,
             mtc_participant=mtc_participant,
+            imp_llfcs=imp_llfcs,
+            exp_llfcs=exp_llfcs,
         )
 
 
@@ -5383,16 +5367,17 @@ def supplier_contract_add_post():
 
 @e.route("/supplier_contracts/add")
 def supplier_contract_add_get():
-    contracts = (
-        g.sess.query(Contract)
+    contracts = g.sess.scalars(
+        select(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code == "X")
+        .where(MarketRole.code == "X")
         .order_by(Contract.name)
     )
-    parties = (
-        g.sess.query(Party)
-        .join(MarketRole, Participant)
-        .filter(MarketRole.code == "X")
+    parties = g.sess.scalars(
+        select(Party)
+        .join(MarketRole)
+        .join(Participant)
+        .where(MarketRole.code == "X")
         .order_by(Participant.code)
     )
     return render_template(
