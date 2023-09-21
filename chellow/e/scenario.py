@@ -381,6 +381,7 @@ def make_calcs(
             joinedload(Era.supply).joinedload(Supply.source),
             joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
             joinedload(Era.pc),
+            joinedload(Era.energisation_status),
             joinedload(Era.site_eras),
         )
         .order_by(Era.supply_id, Era.start_date)

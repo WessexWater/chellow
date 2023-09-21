@@ -407,6 +407,17 @@ def cache_level(cache, key):
         return new_cache
 
 
+def cached_dno_contract(sess, caches, dno_code):
+    try:
+        return caches["computer"]["dno_contracts"][dno_code]
+    except KeyError:
+        computer_cache = cache_level(caches, "computer")
+        cont_cache = cache_level(computer_cache, "dno_contracts")
+        dno_contract = Contract.get_dno_by_name(sess, dno_code)
+        cont_cache[dno_code] = dno_contract
+        return dno_contract
+
+
 def datum_range(sess, caches, years_back, start_date, finish_date):
     try:
         return caches["computer"]["datum_range"][years_back][start_date][finish_date]
@@ -606,7 +617,7 @@ class SiteSource(DataSource):
             self.mpan_core = era.imp_mpan_core
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
-            self.dno_contract = Contract.get_dno_by_name(self.sess, self.dno_code)
+            self.dno_contract = cached_dno_contract(self.sess, caches, self.dno_code)
 
             era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
             if era.imp_llfc.code in era_map_llfcs:
@@ -955,7 +966,7 @@ class SupplySource(DataSource):
             self.dno = self.supply.dno
             self.dno_code = self.dno.dno_code
 
-        self.dno_contract = Contract.get_dno_by_name(sess, self.dno_code)
+        self.dno_contract = cached_dno_contract(self.sess, caches, self.dno_code)
 
         era_map_llfcs = self.era_map_llfcs.get(self.dno_code, {})
         self.is_import = is_import
