@@ -203,7 +203,7 @@ def _process_site(
 
                 for t in title_dict["imp-supplier"]:
                     try:
-                        vals[t] = imp_supplier_bill[t]
+                        vals[f"imp-supplier-{t}"] = imp_supplier_bill[t]
                     except KeyError:
                         pass
 
@@ -255,7 +255,7 @@ def _process_site(
 
                 for t in title_dict["exp-supplier"]:
                     try:
-                        vals[t] = exp_supplier_bill[t]
+                        vals[f"exp-supplier-{t}"] = exp_supplier_bill[t]
                     except KeyError:
                         pass
 
@@ -377,13 +377,13 @@ def _process_site(
 
             for t in title_dict["mop"]:
                 try:
-                    vals[t] = mop_bill[t]
+                    vals[f"mop-{t}"] = mop_bill[t]
                 except KeyError:
                     pass
 
             for t in title_dict["dc"]:
                 try:
-                    vals[t] = dc_bill[t]
+                    vals[f"dc-{t}"] = dc_bill[t]
                 except KeyError:
                     pass
 

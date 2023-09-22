@@ -201,6 +201,7 @@ def create_app(testing=False):
                     method in ("GET", "HEAD")
                     or path
                     in (
+                        "/reports/59",
                         "/reports/169",
                         "/reports/183",
                         "/reports/187",
@@ -226,7 +227,7 @@ def create_app(testing=False):
                         ):
                             return
                     elif market_role_code == "X":
-                        if path.startswith("/e/supplier_contracts/" + party.id):
+                        if path.startswith(f"/e/supplier_contracts/{party.id}"):
                             return
 
         if g.user is None and g.sess.query(User).count() == 0:
