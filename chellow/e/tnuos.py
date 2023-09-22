@@ -25,15 +25,24 @@ from chellow.utils import (
     to_utc,
 )
 
-BANDED_START = to_utc(ct_datetime(2023, 4, 1))
-
 
 def hh(ds, rate_period="monthly", est_kw=None):
-    default_fdate = forecast_date()
+    hh_triad(ds, rate_period, est_kw)
+    hh_banded(ds)
+
+
+def hh_triad(ds, rate_period="monthly", est_kw=None):
     for hh in ds.hh_data:
         if hh["ct-is-month-end"]:
             _process_triad_hh(ds, rate_period, est_kw, hh)
 
+
+BANDED_START = to_utc(ct_datetime(2023, 4, 1))
+
+
+def hh_banded(ds):
+    default_fdate = forecast_date()
+    for hh in ds.hh_data:
         if hh["start-date"] >= BANDED_START and hh["ct-decimal-hour"] == 12:
             _process_banded_hh(ds, hh, default_fdate)
 

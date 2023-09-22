@@ -479,7 +479,6 @@ def make_calcs(
             f"{meter_order[measurement_type]}_{supply.id}_{hh_format(era.start_date)}"
         )
         calcs.append((order, era.imp_mpan_core, era.exp_mpan_core, imp_ss, exp_ss))
-        sess.rollback()
 
     start_date_ct, finish_date_ct = to_ct(start_date), to_ct(finish_date)
     for month_start, month_finish in c_months_u(
@@ -588,7 +587,6 @@ def make_calcs(
             )
 
             calcs.append(("0", None, ss_name, None, ss))
-        sess.rollback()
     return calcs, site_gen_types
 
 
