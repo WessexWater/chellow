@@ -532,7 +532,7 @@ def make_calcs(
                 )
             disp_vb_function(site_ds)
 
-            calcs.append(("1", "displaced", None, site_ds, None))
+            calcs.append((f"1_{hh_format(ss_start)}", "displaced", None, site_ds, None))
 
         if len(extra_sss) > 0:
             if True in extra_sss:

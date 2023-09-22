@@ -125,10 +125,12 @@ def _process_site(
     normal_reads = set()
     site_month_data = defaultdict(int)
     for order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss in sorted(calcs, key=str):
+        main_ss = exp_ss if imp_ss is None else imp_ss
+
         vals = {
             "creation-date": now,
-            "start-date": start_date,
-            "finish-date": finish_date,
+            "start-date": main_ss.start_date,
+            "finish-date": main_ss.finish_date,
             "site-code": site.code,
             "site-name": site.name,
         }
@@ -173,12 +175,8 @@ def _process_site(
                     pass
 
         else:
-            if imp_ss is None:
-                source_code = exp_ss.source_code
-                supply = exp_ss.supply
-            else:
-                source_code = imp_ss.source_code
-                supply = imp_ss.supply
+            source_code = main_ss.source_code
+            supply = main_ss.supply
 
             site_sources.add(source_code)
 

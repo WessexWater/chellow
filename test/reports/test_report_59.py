@@ -709,7 +709,7 @@ def displaced_virtual_bill(ds):
         [
             Datetime(2020, 1, 1, 0, 0),
             Datetime(2009, 1, 1, 0, 0),
-            Datetime(2009, 2, 10, 23, 30),
+            Datetime(2009, 1, 31, 23, 30),
             None,
             None,
             None,
@@ -744,8 +744,8 @@ def displaced_virtual_bill(ds):
             0.0,
             0.0,
             0.0,
-            4.799999999999942,
-            4.799999999999942,
+            14.879999999999727,
+            14.879999999999727,
             0.0,
             0.0,
             0.0,
@@ -772,7 +772,7 @@ def displaced_virtual_bill(ds):
         ],
         [
             Datetime(2020, 1, 1, 0, 0),
-            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 1, 0, 0),
             Datetime(2009, 2, 10, 23, 30),
             None,
             None,
@@ -808,8 +808,8 @@ def displaced_virtual_bill(ds):
             0.0,
             0.0,
             0.0,
-            14.879999999999727,
-            14.879999999999727,
+            4.799999999999942,
+            4.799999999999942,
             0.0,
             0.0,
             0.0,
@@ -835,6 +835,11 @@ def displaced_virtual_bill(ds):
             None,
         ],
     ]
-    print(era_table)
 
-    assert era_expected == era_table
+    assert len(era_expected) == len(era_table)
+    for i, (expected_row, actual_row) in enumerate(zip(era_expected, era_table)):
+        assert len(expected_row) == len(actual_row)
+        for j, (expected_val, actual_val) in enumerate(zip(expected_row, actual_row)):
+            assert (
+                expected_val == actual_val
+            ), f"On row {i} column {j}, {expected_val} != {actual_val}"
