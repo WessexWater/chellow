@@ -4,6 +4,18 @@
 	Sites &raquo; {{site.code}} {{site.name}} &raquo; HH data
 {% endblock %}
 
+{% block inside_head %}
+	<style>
+		tbody > tr {
+			scroll-margin-top: 8em;
+		}
+
+		tbody > tr:target {
+			background-color: yellow;
+		}
+	</style>
+{% endblock %}
+
 {% block nav %}
 	<a href="/sites">Sites</a> &raquo;
 	<a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a> &raquo; HH data
@@ -40,8 +52,9 @@
 		</thead>
 		<tbody>
 			{% for hh in hh_data %}
-				<tr>
-					<td style="white-space: nowrap">{{hh.start_date|hh_format}}</td>
+				{% set start_str = hh.start_date|hh_format %}
+				<tr id="{{start_str}}">
+					<td style="white-space: nowrap">{{start_str}}</td>
 					<td>{{hh.import_kwh}}</td>
 					<td>{{hh.used_kwh}}</td>
 					<td>{{hh.displaced_kwh}}</td>

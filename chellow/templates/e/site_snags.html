@@ -47,7 +47,7 @@
 					<td>{{snag.start_date|hh_format}}</td>
 					<td>{{snag.finish_date|hh_format}}</td>
 					<td>
-						<a href="/sites/{{snag.site.id}}/hh_data?year={{snag.start_date.year}}&amp;month={{snag.start_date.month}}#:~:text={{snag.start_date|hh_format|urlencode}}">HH Data</a>
+						<a href="/sites/{{snag.site.id}}/hh_data?year={{snag.start_date.year}}&amp;month={{snag.start_date.month}}#{{snag.start_date|hh_format|urlencode}}">HH Data</a>
 					</td>
 				</tr>
 			{% endfor %}
