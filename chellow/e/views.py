@@ -1624,8 +1624,10 @@ def era_edit_form_get(era_id):
             ssc_id = req_int_none("ssc_id")
             if ssc_id in {s.id for s in sscs}:
                 ssc = Ssc.get_by_id(g.sess, ssc_id)
-            else:
+            elif len(sscs) > 0:
                 ssc = sscs[0]
+            else:
+                ssc = None
 
         if pc.code == "00":
             mtc_participants = [
@@ -1664,8 +1666,10 @@ def era_edit_form_get(era_id):
         mtc_participant_id = req_int_none("mtc_participant_id")
         if mtc_participant_id in {m.id for m in mtc_participants}:
             mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
-        else:
+        elif len(mtc_participants) > 0:
             mtc_participant = mtc_participants[0]
+        else:
+            mtc_participant = None
 
         if pc.code == "00":
             imp_llfcs = g.sess.scalars(
@@ -1743,8 +1747,6 @@ def era_edit_form_get(era_id):
             start_date=start_date,
             imp_llfcs=imp_llfcs,
             exp_llfcs=exp_llfcs,
-            has_imp_mpan_value="false" if era.imp_mpan_core is None else "true",
-            has_exp_mpan_value="false" if era.exp_mpan_core is None else "true",
         )
     except BadRequest as e:
         g.sess.rollback()
@@ -1761,8 +1763,6 @@ def era_edit_form_get(era_id):
             sscs=sscs,
             mtc_participants=mtc_participants,
             mtc_participant=mtc_participant,
-            has_imp_mpan_value="false" if era.imp_mpan_core is None else "true",
-            has_exp_mpan_value="false" if era.exp_mpan_core is None else "true",
         )
 
 

@@ -71,12 +71,7 @@
 		<fieldset hx-get="/e/eras/{{era.id}}/edit/form" hx-params="*"
 			 hx-trigger="load, change"
 			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id'],[name='is_ended'],[name='imp_supplier_contract_id'],[name='exp_supplier_contract_id'],[name='imp_sc'],[name='exp_sc'],[name='msn']">
-			<input type="hidden" name="is_ended" value="
-				{%- if era.finish_date == None -%}
-					false		
-				{%- else -%}
-				  true
-				{%- endif -%}">
+			{{input_hidden_checkbox('is_ended', initial=era.finish_date != None)}}
 			{{input_hidden('source_id', initial=era.supply.source.id)}}
 			{{input_hidden('cop_id', initial=era.cop.id)}}
 			{{input_hidden('comm_id', initial=era.comm.id)}}
@@ -93,30 +88,14 @@
 			{{input_hidden('dc_contract_id', initial=era.dc_contract.id)}}
 			{{input_hidden('dc_account', initial=era.dc_account)}}
 
-			<input type="hidden" name="has_imp_mpan" value="
-				{%- if 'has_imp_mpan' in request.values -%}
-					{{request.values.has_imp_mpan}}
-				{%- elif era.imp_mpan_core == None -%}
-					false
-				{%- else -%}
-					true
-				{%- endif -%}">
-
+			{{input_hidden_checkbox('has_imp_mpan', initial=era.imp_mpan_core != None)}}
 			{{input_hidden('imp_mpan_core', initial=era.imp_mpan_core)}}
 			{{input_hidden('imp_supplier_contract_id', initial=era.imp_supplier_contract.id)}}
 			{{input_hidden('imp_supplier_account', initial=era.imp_supplier_account)}}
 			{{input_hidden('imp_llfc_id', initial=era.imp_llfc.id)}}
 			{{input_hidden('imp_sc', initial=era.imp_sc)}}
 
-			<input type="hidden" name="has_exp_mpan" value="
-				{%- if 'has_exp_mpan' in request.values -%}
-					{{request.values.has_exp_mpan}}
-				{%- elif era.exp_mpan_core == None -%}
-					false
-				{%- else -%}
-					true
-				{%- endif -%}">
-
+			{{input_hidden_checkbox('has_exp_mpan', initial=era.exp_mpan_core != None)}}
 			{{input_hidden('exp_mpan_core', initial=era.exp_mpan_core)}}
 			{{input_hidden('exp_supplier_contract_id', initial=era.exp_supplier_contract.id)}}
 			{{input_hidden('exp_supplier_account', initial=era.exp_supplier_account)}}

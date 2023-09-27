@@ -118,6 +118,19 @@
         {%- endif -%}">
 {%- endmacro -%}
 
+{% macro input_hidden_checkbox(name, initial=None) %}
+    <input type="hidden" name="{{name}}" value="
+        {%- if request.values[name] -%}
+            {{ request.values[name] }}
+        {%- elif initial is not none -%}
+					{%- if initial -%}
+						true
+					{%- else -%}
+						false
+					{%- endif -%}
+				{%- endif -%}">
+{%- endmacro -%}
+
 {% macro input_text(
   name, initial=None, size=None, maxlength=None, placeholder=None,
   required=None, pattern=None) %}
