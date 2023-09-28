@@ -33,7 +33,7 @@
 		{% set month_max_day = 32 -%}
 	{% endif %}
 
-	<div>
+	<div style="white-space: nowrap;">
 		<input name="{{ year_field }}" maxlength="4" size="4" value="
 			{%- if request.values[year_field] -%}
 				{{ request.values[year_field] }}

@@ -18,7 +18,7 @@ body {
 	line-height: 1.42857143;
 }
 
-a:link, a:visited {
+a {
 	color: var(--main-color);
 	text-decoration: none;
 	transition: background-color 230ms ease, color 230ms ease;

@@ -1,0 +1,573 @@
+{% extends "macros.html" %}
+
+{% block html %}
+	{% for era_bundle in era_bundles %}
+		{% set era = era_bundle['era'] %}
+		{% set physical_site = era_bundle['physical_site'] %}
+		{% set other_sites = era_bundle['other_sites'] %}
+		<table>
+			<caption>Era [<a href="/e/eras/{{era.id}}/edit">edit</a>]</caption>
+			<thead>
+				<tr>
+					<th rowspan="2">From</th>
+					<th rowspan="2">To</th>
+					<th rowspan="2">Sites</th>
+					<th rowspan="2"><span title="Energisation Status">ES</span></th>
+					<th rowspan="2"><span title="Profile Class">PC</span></th>
+					<th rowspan="2"><span title="Meter Serial Number">MSN</span></th>
+					<th rowspan="2"><span title="Meter Timeswitch Class">MTC</span></th>
+					<th rowspan="2"><span title="Metering Code Of Practice">CoP</span></th>
+					<th rowspan="2"><span title="Communications Type">Comm</span></th>
+					<th rowspan="2">
+						<span title="Standard Settlement Configuration">SSC</span>
+					</th>
+					<th rowspan="2"><span title="Properties">Props</span></th>
+					<th colspan="2"><span title="Meter Operator">MOP</span></th>
+					<th colspan="2"><span title="Data Collector">DC</span></th>
+					<th rowspan="2">
+						Channels [<a href="/e/eras/{{era.id}}/add_channel">add</a>]
+				 	</th>
+					<th rowspan="2"><span title="Line Loss Factor Class">LLFC</span></th>
+					<th rowspan="2">MPAN Core</th>
+					<th rowspan="2">kVA</th>
+					<th colspan="2">Supplier</th>
+				</tr>
+				<tr>
+					<th>Contract</th>
+					<th>Account</th>
+					<th>Contract</th>
+					<th>Account</th>
+					<th>Contract</th>
+					<th>Account</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td rowspan="4">
+						<span title="{{ era.start_date|hh_format }}"
+							>{{ era.start_date|hh_format(modifier='date') }}</span>
+					</td>
+					<td rowspan="4">
+							<span title="{{ era.finish_date|hh_format }}"
+								>{{ era.finish_date|hh_format(modifier='date') }}</span>
+					</td>
+					<td rowspan="4">
+							<a href="/sites/{{physical_site.id}}"
+								 title="{{physical_site.name}}">{{ physical_site.code }}</a>
+							{% if other_sites %}
+								(also
+								{% for other_site in other_sites %}
+									<a href="/sites/{{ other_site.id }}"
+										 title="{{other_site.name}}">{{ other_site.code }}</a>
+								{%- endfor -%}
+								)
+							{% endif %}
+					</td>
+					<td rowspan="4">
+						<a
+								href="/e/energisation_statuses/{{era.energisation_status.id}}"
+								title="{{era.energisation_status.description}}"
+						>{{era.energisation_status.code}}</a>
+					</td>
+					<td rowspan="4">
+							<a href="/e/pcs/{{era.pc.id}}"
+								 title="{{era.pc.name}}">{{era.pc.code}}</a>
+					</td>
+					<td rowspan="4">{{ era.msn }}</td>
+					<td rowspan="4">
+							<a href="/e/mtc_participants/{{era.mtc_participant.id}}" title="{{era.mtc_participant.description}}">{{era.mtc_participant.mtc.code}}</a>
+					</td>
+					<td rowspan="4">
+							<a href="/e/cops/{{era.cop.id}}" title="{{era.cop.description}}">{{era.cop.code}}</a>
+					</td>
+					<td rowspan="4">
+							<a href="/e/comms/{{era.comm.id}}" title="{{era.comm.description}}">{{era.comm.code}}</a>
+					</td>
+					<td rowspan="4">
+							{% if era.ssc %}
+							<a href="/e/sscs/{{era.ssc.id}}" title="{{era.ssc.description}}">{{era.ssc.code}}</a>
+							{% endif %}
+					</td>
+					<td rowspan="4">{{era.properties}}</td>
+					<td rowspan="4">
+						<a href="/e/mop_contracts/{{era.mop_contract.id}}">{{era.mop_contract.name}}</a>
+					</td>
+					<td rowspan="4">
+						{{era.mop_account}}
+					</td>
+					<td rowspan="4">
+						<a href="/e/dc_contracts/{{era.dc_contract.id}}">{{era.dc_contract.name}}</a>
+					</td>
+					<td rowspan="4">{{era.dc_account}}</td>
+					<th colspan="6">Import</th>
+					</tr>
+					<tr>
+						<td>
+							{% for channel in era_bundle['imp_channels'] %}
+								<a href="/e/channels/{{channel.id}}">{{channel.channel_type}}</a>
+							{% endfor %}
+						</td>
+						<td>
+							{% if era.imp_mpan_core %}
+								<a href="/e/llfcs/{{era.imp_llfc.id}}" title="{{era.imp_llfc.description}}">
+									{{era.imp_llfc.code}}
+								</a>
+							{% endif %}
+						</td>
+						<td>
+							{% if era.imp_mpan_core %}
+								<a title="{{supply.dno.dno_name}}" href="/e/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a> {{era.imp_mpan_core[3:]}}
+							{% endif %}
+						<td>
+							{% if era.imp_mpan_core %}
+								{{ era.imp_sc }}
+							{% endif %}
+						</td>
+						<td>
+							{% if era.imp_mpan_core %}
+								<a href="/e/supplier_contracts/{{era.imp_supplier_contract.id}}">{{era.imp_supplier_contract.name}}</a>
+							{% endif %}
+						</td>
+						<td>
+							{% if era.imp_mpan_core %}
+								{{ era.imp_supplier_account }}
+								{% if era_bundle['imp_shared_supplier_accounts'] %}(
+									{%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
+									{%- if not loop.first    -%} {%- endif -%}
+								<a href="/e/supplies/{{sup.id}}">{{sup.id}}</a>
+								{%- endfor -%}
+								)
+								{% endif %}
+							{% endif %}
+						</td>
+					</tr>
+					<tr>
+							<th colspan="6">Export</th>
+					</tr>
+					<tr>
+						<td>
+								{% for channel in era_bundle['exp_channels'] %}
+								<a href="/e/channels/{{channel.id}}">{{channel.channel_type}}</a>
+								{% endfor %}
+						</td>
+						<td>
+								{% if era.exp_mpan_core %}
+								<a href="/e/llfcs/{{era.exp_llfc.id}}" title="{{era.exp_llfc.description}}">{{era.exp_llfc.code}}</a>
+								{% endif %}
+						</td>
+						<td>
+								{% if era.exp_mpan_core %}
+								<a title="{{era.supply.dno.dno_code}}" href="/e/dnos/{{era.supply.dno.id}}">{{era.supply.dno.dno_code}}</a> {{era.exp_mpan_core[3:]}}
+								{% endif %}
+						</td>
+						<td>
+							{% if era.exp_mpan_core %}
+								{{ era.exp_sc }}
+							{% endif %}
+						</td>
+						<td>
+								{% if era.exp_mpan_core %}
+								<a href="/e/supplier_contracts/{{era.exp_supplier_contract.id}}">{{era.exp_supplier_contract.name}}</a>
+								{% endif %}
+						</td>
+						<td>
+							{% if era.exp_mpan_core %}
+								{{ era.exp_supplier_account }}
+								{% if era_bundle['exp_shared_supplier_accounts'] %}(
+								{%- for sup in era_bundle['exp_shared_supplier_accounts'] -%}
+								{%- if not loop.first    -%} {%- endif -%}
+								<a href="/e/supplies/{{sup.id}}">{{sup.id}}</a>
+								{%- endfor -%}
+								)
+								{% endif %}
+								{% endif %}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<br>
+			<details>
+				<summary>Era Bills</summary>
+
+				<table>
+					{% set imp_bills = era_bundle['imp_bills'] %}
+					<caption>
+						Import Supplier Bills
+						[<a href="/e/eras/{{era.id}}/add_supplier_bill">add</a>]
+					</caption>
+					<thead>
+						<tr>
+							<th rowspan="2">View</th>
+							<th rowspan="2">From</th>
+							<th rowspan="2">To</th>
+							<th rowspan="2">Batch</th>
+							<th rowspan="2">Reference</th>
+							<th rowspan="2">kWh</th>
+							<th rowspan="2">Net</th>
+							<th rowspan="2">VAT</th>
+							<th rowspan="2">Type</th>
+							{% for tpr in imp_bills['inner_headers'] %}
+								<th colspan="4">
+										{% if tpr == None %}
+										MD
+										{% else %}
+										<a href="/e/tprs/{{tpr.id}}">{{tpr.code}}</a>
+										{% endif %}
+								</th>
+							{% endfor %}
+							{% for i in range(imp_bills['num_outer_cols']) %}
+								<th colspan="5">
+										{{ loop.index }}
+								</th>
+							{% endfor %}
+						</tr>
+						<tr>
+							{% for tpr in imp_bills['inner_headers'] %}
+								<th colspan="2">Previous</th>
+								<th colspan="2">Present</th>
+							{% endfor %}
+							{% for i in range(imp_bills['num_outer_cols']) %}
+								<th>TPR</th>
+								<th colspan="2">Previous</th>
+								<th colspan="2">Present</th>
+							{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+						{% for bill_dict in imp_bills['bill_dicts'] %}
+							{% set read_rows = bill_dict['read_rows'] %}
+							{% set bill = bill_dict['bill'] %}
+							{% set rows_high = bill_dict['rows_high'] %}
+							{% if bill_dict.first_collapsible %}
+							<tr style="background-color: silver; cursor: pointer;">
+									<td style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+											class="expander_{{bill_dict.collapse_id}}"
+											onClick="expandBills({{bill_dict.collapse_id}})">
+											+
+									</td>
+									<td style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+											class="collapser_{{bill_dict.collapse_id}}"
+											onClick="collapseBills({{bill_dict.collapse_id}})">
+											-
+									</td>
+							</tr>
+							{% endif %}
+
+							<tr {% if bill_dict.collapsible %}
+									class="collapsible_{{bill_dict.collapse_id}}"
+									style="display: none; background-color: silver;"
+									{% endif %}>
+									<td rowspan="{{ rows_high }}">
+											<a href="/e/supplier_bills/{{bill.id}}">View</a>
+									</td>
+									<td rowspan="{{ rows_high }}">
+											<label title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</label>
+									</td>
+									<td rowspan="{{ rows_high }}">
+											<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
+									</td>
+									<td rowspan="{{ rows_high }}">
+											<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+									</td>
+									<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+									<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+									<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+									<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+									<td rowspan="{{ rows_high }}">
+											<a href="/bill_types/{{bill.bill_type.id}}"
+												 title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+									</td>
+									{% for read_row in read_rows %}
+									{% if not loop.first %}
+							<tr {% if bill_dict.collapsible %}
+									class="collapsible_{{bill_dict.collapse_id}}"
+									style="display: none; background-color: silver;"
+									{% endif %}>
+									{% endif %}
+									{% for read in read_row['inner_reads'] %}
+									<td style="border-right: none;">
+											{% if read %}
+											<a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+											{% endif %}
+									</td>
+									<td style="border-left: none; text-align: right;">
+											{% if read %}
+											{{ read.previous_type.code }}
+											{% endif %}
+									</td>
+									<td style="border-right: none;">
+											{% if read %}
+											<a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+											{% endif %}
+									</td>
+									<td style="border-left: none; text-align: right;">
+											{% if read %}
+											{{ read.present_type.code }}
+											{% endif %}
+									</td>
+									{% endfor %}
+									{% for read in read_row['outer_reads'] %}
+									<td>
+											{% if read %}
+											{% if read.tpr %}
+											<a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
+											{% else %}
+											MD
+											{% endif %}
+											{% endif %}
+									</td>
+									<td style="border-right: none;">
+											{% if read %}
+											<a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
+											{% endif %}
+									</td>
+									<td style="border-left: none; text-align: right;">
+											{% if read %}
+											{{read.previous_type.code}}
+											{% endif %}
+									</td>
+									<td style="border-right: none;">
+											{% if read %}
+											<a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
+											{% endif %}
+									</td>
+									<td style="border-left: none; text-align: right;">
+											{% if read %}
+											{{read.present_type.code}}
+											{% endif %}
+									</td>
+									{% if not loop.first %}
+							</tr>
+							{% endif %}
+							{% endfor %}
+							{% endfor %}
+							</tr>
+							{% endfor %}
+					</tbody>
+			</table>
+
+				<table>
+						{% set exp_bills = era_bundle['exp_bills'] %}
+						<caption>Export Supplier Bills</caption>
+						<thead>
+								<tr>
+										<th rowspan="2">View</th>
+										<th rowspan="2">From</th>
+										<th rowspan="2">To</th>
+										<th rowspan="2">Batch</th>
+										<th rowspan="2">Reference</th>
+										<th rowspan="2">kWh</th>
+										<th rowspan="2">Net</th>
+										<th rowspan="2">VAT</th>
+										<th rowspan="2">Type</th>
+										{% for tpr in exp_bills['inner_headers'] %}
+										<th colspan="4">
+												{% if tpr == None %}
+												MD
+												{% else %}
+												<a href="/e/tprs/{{tpr.id}}">{{tpr.code}}</a>
+												{% endif %}
+										</th>
+										{% endfor %}
+										{% for i in range(exp_bills['num_outer_cols']) %}
+										<th colspan="5">
+												{{ loop.index }}
+										</th>
+										{% endfor %}
+								</tr>
+
+								<tr>
+										{% for tpr in exp_bills['inner_headers'] %}
+										<th colspan="2">Previous</th>
+										<th colspan="2">Present</th>
+										{% endfor %}
+										{% for i in range(exp_bills['num_outer_cols']) %}
+										<th>TPR</th>
+										<th colspan="2">Previous</th>
+										<th colspan="2">Present</th>
+										{% endfor %}
+								</tr>
+						</thead>
+						<tbody>
+								{% for bill_dict in exp_bills['bill_dicts'] %}
+								{% set read_rows = bill_dict['read_rows'] %}
+								{% set bill = bill_dict['bill'] %}
+								{% set rows_high = bill_dict['rows_high'] %}
+								<tr>
+										<td rowspan="{{ rows_high }}">
+												<a href="/e/supplier_bills/{{bill.id}}">View</a>
+										</td>
+										<td rowspan="{{ rows_high }}">
+												<label title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</label>
+										</td>
+										<td rowspan="{{ rows_high }}">
+												<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
+										</td>
+										<td rowspan="{{ rows_high }}">
+												<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+										</td>
+										<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+										<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+										<td rowspan="{{ rows_high }}">
+												<a href="/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+										</td>
+
+										{% for read_row in read_rows %}
+										{% for read in read_row['inner_reads'] %}
+										<td style="border-right: none;">
+												{% if read %}
+												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
+												{% endif %}
+										</td>
+										<td style="border-left: none;">
+												{% if read %}
+												{{ read.previousType.code }}
+												{% endif %}
+										</td>
+										<td style="border-right: none;">
+												{% if read %}
+												<label title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</label>
+												{% endif %}
+										</td>
+										<td style="border-left: none;">
+												{% if read %}
+												{{ read.presentType.code }}
+												{% endif %}
+										</td>
+										{% endfor %}
+										{% if loop.first %}
+										{% for read in read_row['outer_reads'] %}
+										<td>
+												{% if read.tpr %}
+												<a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
+												{% else %}
+												MD
+												{% endif %}
+										</td>
+										<td style="border-right: none;">
+												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
+										</td>
+										<td style="border-left: none;">
+												{{ read.previous_type.code }}
+										</td>
+										<td style="border-right: none;">
+												<label title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</label>
+										</td>
+										<td style="border-left: none;">
+												{{ read.present_type.code }}
+										</td>
+										{% endfor %}
+										{% endif %}
+										{% endfor %}
+								</tr>
+								{% endfor %}
+						</tbody>
+				</table>
+
+					<table>
+							<caption>DC Bills</caption>
+							<thead>
+									<tr>
+											<th>View</th>
+											<th>Batch</th>
+											<th>Reference</th>
+											<th>Account</th>
+											<th>Issue Date</th>
+											<th>From</th>
+											<th>To</th>
+											<th>kWh</th>
+											<th>Net</th>
+											<th>VAT</th>
+											<th>Gross</th>
+											<th>Type</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for bill_dict in era_bundle['dc_bills']['bill_dicts'] %}
+						{% set bill = bill_dict['bill'] %}
+							<tr>
+								<td>
+										<a href="/e/dc_bills/{{bill.id}}">view</a>
+								</td>
+								<td>
+										<a href="/e/dc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+								</td>
+								<td>{{ bill.reference }}</td>
+								<td>{{ bill.account }}</td>
+								<td>{{ bill.issue_date|hh_format }}</td>
+								<td>{{ bill.start_date|hh_format }}</td>
+								<td>{{ bill.finish_date|hh_format }}</td>
+								<td>{{ bill.kwh }}</td>
+								<td>{{ bill.net }}</td>
+								<td>{{ bill.vat }}</td>
+								<td>{{ bill.gross }}</td>
+								<td>
+									<a href="/bill_types/{{bill.bill_type.id}}" title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+				<table>
+					<caption>MOP Bills</caption>
+					<thead>
+							<tr>
+									<th>View</th>
+									<th>Batch</th>
+									<th>Reference</th>
+									<th>Account</th>
+									<th>Issue Date</th>
+									<th>From</th>
+									<th>To</th>
+									<th>kWh</th>
+									<th>Net</th>
+									<th>VAT</th>
+									<th>Gross</th>
+									<th>Type</th>
+							</tr>
+				</thead>
+				<tbody>
+					{% for bill_dict in era_bundle['mop_bills']['bill_dicts'] %}
+						{% set bill = bill_dict['bill'] %}
+						<tr>
+							<td><a href="/e/mop_bills/{{bill.id}}">view</a></td>
+							<td>
+								<a href="/e/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+							</td>
+							<td>{{ bill.reference }}</td>
+							<td>{{ bill.account }}</td>
+							<td>{{ bill.issue_date|hh_format }}</td>
+							<td>{{ bill.start_date|hh_format }}</td>
+							<td>{{ bill.finish_date|hh_format }}</td>
+							<td>{{ bill.kwh }}</td>
+							<td>{{ bill.net }}</td>
+							<td>{{ bill.vat }}</td>
+							<td>{{ bill.gross }}</td>
+							<td>
+								<a href="/bill_types/{{bill.bill_type.id}}"
+										title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</details>
+	{% endfor %}
+
+	{% if era_bundles|length > 0 %}
+
+		{% set last_start_date = era_bundles[-1]['era'].start_date %}
+		<p style="text-align: center;" hx-target="this" hx-swap="outerHTML">
+			<button hx-get="/e/supplies/{{supply.id}}/eras?last_start_date={{last_start_date|hh_format}}">
+				Load older eras...
+			</button>
+		</p>
+	{% endif %}
+
+{% endblock %}

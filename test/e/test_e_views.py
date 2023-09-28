@@ -1739,7 +1739,9 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     )
     sess.commit()
 
-    bundles = get_era_bundles(sess, supply)
+    bundles = get_era_bundles(
+        sess, supply, latest_start_date=to_utc(ct_datetime(2022, 5, 1))
+    )
 
     assert len(bundles[0]["imp_bills"]["bill_dicts"]) == 0
     assert len(bundles[1]["imp_bills"]["bill_dicts"]) == 1

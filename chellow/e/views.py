@@ -24,7 +24,7 @@ from sqlalchemy import Float, case, cast, false, func, null, or_, select, text, 
 from sqlalchemy.orm import aliased, joinedload
 
 
-from werkzeug.exceptions import BadRequest, NotFound
+from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
 
@@ -5469,23 +5469,16 @@ def supply_post(supply_id):
         return render_template("supply_post.html")
 
 
+@e.route("/supplies/<int:supply_id>/eras")
+def supply_eras_get(supply_id):
+    supply = Supply.get_by_id(g.sess, supply_id)
+    last_start_date = parse_hh_start(req_str("last_start_date"))
+    era_bundles = get_era_bundles(g.sess, supply, last_start_date)
+    return render_template("supply_eras.html", era_bundles=era_bundles, supply=supply)
+
+
 @e.route("/supplies/<int:supply_id>")
 def supply_get(supply_id):
-    debug = ""
-    supply = (
-        g.sess.query(Supply)
-        .filter(Supply.id == supply_id)
-        .options(
-            joinedload(Supply.source),
-            joinedload(Supply.generator_type),
-            joinedload(Supply.gsp_group),
-            joinedload(Supply.dno),
-        )
-        .first()
-    )
-    if supply is None:
-        raise NotFound(f"There isn't a supply with the id {supply_id}")
-
     supply = Supply.get_by_id(g.sess, supply_id)
     era_bundles = get_era_bundles(g.sess, supply)
 
@@ -5522,14 +5515,13 @@ def supply_get(supply_id):
         now=now,
         last_month_start=last_month_start,
         last_month_finish=last_month_finish,
-        era_bundles=era_bundles,
         supply=supply,
         system_properties=properties,
         truncated_line=truncated_line,
         note=note,
         this_month_start=this_month_start,
         batch_reports=batch_reports,
-        debug=debug,
+        era_bundles=era_bundles,
     )
 
 
@@ -5979,12 +5971,14 @@ def tpr_get(tpr_id):
     return render_template("tpr.html", tpr=tpr, clock_intervals=clock_intervals)
 
 
-def get_era_bundles(sess, supply):
+def get_era_bundles(sess, supply, latest_start_date=None):
     era_bundles = []
-    eras = (
-        sess.query(Era)
-        .filter(Era.supply == supply)
+
+    eras_q = (
+        select(Era)
+        .where(Era.supply == supply)
         .order_by(Era.start_date.desc())
+        .limit(3)
         .options(
             joinedload(Era.pc),
             joinedload(Era.imp_supplier_contract),
@@ -5997,8 +5991,10 @@ def get_era_bundles(sess, supply):
             joinedload(Era.exp_llfc),
             joinedload(Era.supply).joinedload(Supply.dno),
         )
-        .all()
     )
+    if latest_start_date is not None:
+        eras_q = eras_q.where(Era.start_date < latest_start_date)
+    eras = sess.scalars(eras_q).all()
     for era in eras:
         imp_mpan_core = era.imp_mpan_core
         exp_mpan_core = era.exp_mpan_core
