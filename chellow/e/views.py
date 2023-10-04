@@ -29,6 +29,7 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 import chellow.e.dno_rate_parser
+from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
 from chellow.models import (
     Batch,
@@ -1240,9 +1241,7 @@ def dc_rate_script_get(dc_rate_script_id):
 @e.route("/dc_rate_scripts/<int:dc_rate_script_id>/edit")
 def dc_rate_script_edit_get(dc_rate_script_id):
     dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
-    rs_example_func = chellow.e.computer.contract_func(
-        {}, dc_rate_script.contract, "rate_script_example"
-    )
+    rs_example_func = contract_func({}, dc_rate_script.contract, "rate_script_example")
     rs_example = None if rs_example_func is None else rs_example_func()
 
     return render_template(
@@ -2947,9 +2946,7 @@ def mop_rate_script_get(rate_script_id):
 @e.route("/mop_rate_scripts/<int:rate_script_id>/edit")
 def mop_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_mop_by_id(g.sess, rate_script_id)
-    rs_example_func = chellow.e.computer.contract_func(
-        {}, rate_script.contract, "rate_script_example"
-    )
+    rs_example_func = contract_func({}, rate_script.contract, "rate_script_example")
     rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
         "mop_rate_script_edit.html",
@@ -5269,9 +5266,7 @@ def supplier_rate_script_get(rate_script_id):
 @e.route("/supplier_rate_scripts/<int:rate_script_id>/edit")
 def supplier_rate_script_edit_get(rate_script_id):
     rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
-    rs_example_func = chellow.e.computer.contract_func(
-        {}, rate_script.contract, "rate_script_example"
-    )
+    rs_example_func = contract_func({}, rate_script.contract, "rate_script_example")
     rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
         "supplier_rate_script_edit.html",
@@ -5869,18 +5864,22 @@ def supply_virtual_bill_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
     start_date = req_date("start")
     finish_date = req_date("finish")
-    forecast_date = chellow.computer.forecast_date()
+    fdate = forecast_date()
 
     net_gbp = 0
     caches = {}
     meras = []
     debug = ""
 
-    month_start = utc_datetime(start_date.year, start_date.month)
+    start_date_ct = to_ct(start_date)
+    finish_date_ct = to_ct(start_date)
 
-    while not month_start > finish_date:
-        month_finish = month_start + relativedelta(months=1) - HH
-
+    for month_start, month_finish in c_months_u(
+        start_year=start_date_ct.year,
+        start_month=start_date_ct.month,
+        finish_year=finish_date_ct.year,
+        finish_month=finish_date_ct.month,
+    ):
         chunk_start = hh_max(start_date, month_start)
         chunk_finish = hh_min(finish_date, month_finish)
 
@@ -5896,8 +5895,8 @@ def supply_virtual_bill_get(supply_id):
             debug += "found an era"
 
             contract = era.imp_supplier_contract
-            data_source = chellow.computer.SupplySource(
-                g.sess, block_start, block_finish, forecast_date, era, True, caches
+            data_source = SupplySource(
+                g.sess, block_start, block_finish, fdate, era, True, caches
             )
             headings = [
                 "id",
@@ -5916,15 +5915,11 @@ def supply_virtual_bill_get(supply_id):
             mera = {"headings": headings, "data": data, "skip": False}
 
             meras.append(mera)
-            chellow.computer.contract_func(caches, contract, "virtual_bill")(
-                data_source
-            )
+            contract_func(caches, contract, "virtual_bill")(data_source)
             bill = data_source.supplier_bill
             net_gbp += bill["net-gbp"]
 
-            for title in chellow.computer.contract_func(
-                caches, contract, "virtual_bill_titles"
-            )():
+            for title in contract_func(caches, contract, "virtual_bill_titles")():
                 if title == "consumption-info":
                     del bill[title]
                     continue
@@ -5941,8 +5936,6 @@ def supply_virtual_bill_get(supply_id):
 
             if len(meras) > 1 and meras[-2]["headings"] == mera["headings"]:
                 mera["skip"] = True
-
-        month_start += relativedelta(months=1)
 
     return render_template(
         "supply_virtual_bill.html",
