@@ -62,6 +62,7 @@ def write_spreadsheet(
     fl,
     compressed,
     site_rows,
+    supply_rows,
     era_rows,
     read_rows,
     bill_check_site_rows,
@@ -72,6 +73,7 @@ def write_spreadsheet(
     fl.truncate()
     with odio.create_spreadsheet(fl, "1.2", compressed=compressed) as f:
         f.append_table("Site Level", site_rows)
+        f.append_table("Supply Level", supply_rows)
         f.append_table("Era Level", era_rows)
         f.append_table("Normal Reads", read_rows)
         if is_bill_check:
@@ -97,6 +99,8 @@ def _process_site(
     title_dict,
     era_titles,
     era_rows,
+    supply_titles,
+    supply_rows,
     site_rows,
     data_source_bill,
 ):
@@ -123,7 +127,8 @@ def _process_site(
     site_category = None
     site_sources = set()
     normal_reads = set()
-    site_month_data = defaultdict(int)
+    site_data = defaultdict(int)
+    supplies_data = {}
     for order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss in sorted(calcs, key=str):
         main_ss = exp_ss if imp_ss is None else imp_ss
 
@@ -150,6 +155,24 @@ def _process_site(
                 vals[f"{sname}-{xname}"] = 0
 
         if imp_mpan_core == "displaced":
+            try:
+                supply_data = supplies_data["displaced"]
+            except KeyError:
+                supply_data = supplies_data[-1] = defaultdict(
+                    int,
+                    {
+                        "creation-date": now,
+                        "start-date": main_ss.start_date,
+                        "finish-date": main_ss.finish_date,
+                        "imp-mpan-core": "displaced",
+                        "site-code": site.code,
+                        "site-name": site.name,
+                        "associated-site-ids": set(),
+                        "source": "displaced",
+                        "supply-name": "displaced",
+                    },
+                )
+
             vals["billed-supplier-import-net-gbp"] = None
             vals["billed-dc-import-net-gbp"] = None
             vals["billed-mop-import-net-gbp"] = None
@@ -178,6 +201,21 @@ def _process_site(
             source_code = main_ss.source_code
             supply = main_ss.supply
 
+            try:
+                supply_data = supplies_data[supply.id]
+            except KeyError:
+                supply_data = supplies_data[supply.id] = defaultdict(
+                    int,
+                    {
+                        "creation-date": now,
+                        "start-date": main_ss.start_date,
+                        "finish-date": main_ss.finish_date,
+                        "site-code": site.code,
+                        "site-name": site.name,
+                        "associated-site-ids": set(),
+                    },
+                )
+
             site_sources.add(source_code)
 
             vals["billed-supplier-import-net-gbp"] = 0
@@ -193,11 +231,18 @@ def _process_site(
                     imp_supplier_contract_name = None
                 else:
                     imp_supplier_contract_name = imp_supplier_contract.name
-                imp_bad_hhs = imp_bad_kwh = 0
+                imp_bad_hhs = imp_bad_kwh = imp_md_kw = imp_md_kva = 0
                 for hh in imp_ss.hh_data:
+                    imp_md_kw = max(imp_md_kw, hh["msp-kw"])
+                    imp_md_kva = max(imp_md_kva, hh["msp-kva"])
                     if hh["status"] != "A":
                         imp_bad_hhs += 1
                         imp_bad_kwh += hh["msp-kwh"]
+
+                supply_data["imp-non-actual-hhs"] += imp_bad_hhs
+                supply_data["imp-non-actual-kwh"] += imp_bad_kwh
+                supply_data["imp-md-kw"] += imp_md_kw
+                supply_data["imp-md-kva"] += imp_md_kva
 
                 for t in title_dict["imp-supplier"]:
                     try:
@@ -245,11 +290,18 @@ def _process_site(
                     exp_supplier_contract_name = ""
                 else:
                     exp_supplier_contract_name = exp_supplier_contract.name
-                exp_bad_hhs = exp_bad_kwh = 0
+                exp_bad_hhs = exp_bad_kwh = exp_md_kw = exp_md_kva = 0
                 for hh in exp_ss.hh_data:
+                    exp_md_kw = max(exp_md_kw, hh["msp-kw"])
+                    exp_md_kva = max(exp_md_kva, hh["msp-kva"])
                     if hh["status"] != "A":
                         exp_bad_hhs += 1
                         exp_bad_kwh += hh["msp-kwh"]
+
+                supply_data["exp-non-actual-hhs"] += exp_bad_hhs
+                supply_data["exp-non-actual-kwh"] += exp_bad_kwh
+                supply_data["exp-md-kw"] += exp_md_kw
+                supply_data["exp-md-kva"] += exp_md_kva
 
                 for t in title_dict["exp-supplier"]:
                     try:
@@ -382,12 +434,24 @@ def _process_site(
                 except KeyError:
                     pass
 
+            supply_data["imp-mpan-core"] = imp_mpan_core
+            supply_data["exp-mpan-core"] = exp_mpan_core
+            supply_data["associated-site-ids"] |= era_associates
+            supply_data["start-date"] = min(sss.start_date, supply_data["start-date"])
+            supply_data["finish-date"] = max(
+                sss.finish_date, supply_data["finish-date"]
+            )
+
+            supply_data["source"] = source_code
+            supply_data["generator-type"] = generator_type
+            supply_data["supply-name"] = sss.supply_name
+
         era_rows.append([make_val(vals.get(t)) for t in era_titles])
 
         for t in summary_titles:
             v = vals.get(t)
             if v is not None:
-                site_month_data[t] += v
+                site_data[t] += v
 
     q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
     if supply_ids is not None:
@@ -465,7 +529,7 @@ def _process_site(
                         else:
                             raise BadRequest("Role code not recognized.")
 
-                        for data in month_data, site_month_data:
+                        for data in month_data, site_data:
                             data["billed-import-net-kwh"] += bill_prop_kwh
                             data["billed-import-net-gbp"] += bill_prop_gbp
                             data[key] += bill_prop_gbp
@@ -569,7 +633,7 @@ def _process_site(
                         else:
                             raise BadRequest("Role code not recognized.")
 
-                        for data in month_data, site_month_data:
+                        for data in month_data, site_data:
                             data["billed-import-net-kwh"] += bill_prop_kwh
                             data["billed-import-net-gbp"] += bill_prop_gbp
                             data[key] += bill_prop_gbp
@@ -601,19 +665,21 @@ def _process_site(
                     ] + [month_data[t] for t in summary_titles]
 
                     era_rows.append([make_val(v) for v in out])
+
+    for _, vals in sorted(supplies_data.items()):
+        supply_rows.append(make_val(vals.get(t)) for t in supply_titles)
+
     site_row = [
         now,
         site.code,
         site.name,
-        ", ".join(
-            s.code for s in site.find_linked_sites(sess, start_date, finish_date)
-        ),
+        site.find_linked_sites(sess, start_date, finish_date),
         start_date,
         finish_date,
         site_category,
-        ", ".join(sorted(list(site_sources))),
-        ", ".join(sorted(list(site_gen_types))),
-    ] + [site_month_data[k] for k in summary_titles]
+        site_sources,
+        site_gen_types,
+    ] + [site_data[k] for k in summary_titles]
 
     site_rows.append([make_val(v) for v in site_row])
     return normal_reads
@@ -650,9 +716,11 @@ def content(
 
     rsess = rf = None
     site_rows = []
+    supply_rows = []
     era_rows = []
     normal_read_rows = []
     bill_check_site_rows = []
+    bill_check_supply_rows = []
     bill_check_era_rows = []
 
     try:
@@ -784,6 +852,23 @@ def content(
                 "msn",
                 "pc",
             ]
+            supply_header_titles = [
+                "creation-date",
+                "start-date",
+                "finish-date",
+                "imp-mpan-core",
+                "exp-mpan-core",
+                "site-code",
+                "site-name",
+                "associated-site-ids",
+                "source",
+                "generator-type",
+                "supply-name",
+                "imp-md-kw",
+                "imp-md-kva",
+                "exp-md-kw",
+                "exp-md-kva",
+            ]
             site_header_titles = [
                 "creation-date",
                 "site-id",
@@ -889,6 +974,8 @@ def content(
                 + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
             )
             site_rows.append(site_header_titles + summary_titles)
+            supply_titles = supply_header_titles + summary_titles
+            supply_rows.append(supply_titles)
             era_rows.append(era_titles)
             bill_check_site_rows.append(site_header_titles + summary_titles)
             bill_check_era_rows.append(era_titles)
@@ -924,6 +1011,8 @@ def content(
                             title_dict,
                             era_titles,
                             era_rows,
+                            supply_titles,
+                            supply_rows,
                             site_rows,
                             None,
                         )
@@ -942,6 +1031,8 @@ def content(
                                 title_dict,
                                 era_titles,
                                 bill_check_era_rows,
+                                supply_titles,
+                                bill_check_supply_rows,
                                 bill_check_site_rows,
                                 data_source_bill,
                             )
@@ -958,6 +1049,7 @@ def content(
                 rf,
                 compression,
                 site_rows,
+                supply_rows,
                 era_rows,
                 normal_read_rows,
                 bill_check_site_rows,
@@ -972,9 +1064,11 @@ def content(
             rf,
             compression,
             site_rows,
+            supply_rows,
             era_rows,
             normal_read_rows,
             bill_check_site_rows,
+            bill_check_supply_rows,
             bill_check_era_rows,
             is_bill_check,
         )
@@ -996,6 +1090,7 @@ def content(
                 era_rows,
                 normal_read_rows,
                 bill_check_site_rows,
+                bill_check_supply_rows,
                 bill_check_era_rows,
                 is_bill_check,
             )

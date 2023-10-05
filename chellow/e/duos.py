@@ -784,14 +784,7 @@ def datum_2012_02_23(ds, hh):
         days_in_month = 0
         for dsc in ds.get_data_sources(month_from, month_to):
             for datum in dsc.hh_data:
-                md_kva = max(
-                    md_kva,
-                    (
-                        datum["msp-kw"] ** 2
-                        + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
-                    )
-                    ** 0.5,
-                )
+                md_kva = max(md_kva, datum["msp-kva"])
                 if datum["ct-decimal-hour"] == 0:
                     days_in_month += 1
 

@@ -1360,6 +1360,10 @@ class SupplySource(DataSource):
         ):
             datum = d.copy()
             datum.update(hist_map.get(d["hist-start"], {}))
+            datum["msp-kva"] = (
+                datum["msp-kw"] ** 2
+                + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
+            ) ** 0.5
             self.hh_data.append(datum)
 
             d_start = d["start-date"]
