@@ -5869,7 +5869,6 @@ def supply_virtual_bill_get(supply_id):
     net_gbp = 0
     caches = {}
     meras = []
-    debug = ""
 
     start_date_ct = to_ct(start_date)
     finish_date_ct = to_ct(start_date)
@@ -5883,30 +5882,30 @@ def supply_virtual_bill_get(supply_id):
         chunk_start = hh_max(start_date, month_start)
         chunk_finish = hh_min(finish_date, month_finish)
 
-        for era in g.sess.query(Era).filter(
-            Era.supply == supply,
-            Era.imp_mpan_core != null(),
-            Era.start_date <= chunk_finish,
-            or_(Era.finish_date == null(), Era.finish_date >= chunk_start),
+        for era in g.sess.scalars(
+            select(Era).where(
+                Era.supply == supply,
+                Era.imp_mpan_core != null(),
+                Era.start_date <= chunk_finish,
+                or_(Era.finish_date == null(), Era.finish_date >= chunk_start),
+            )
         ):
             block_start = hh_max(era.start_date, chunk_start)
             block_finish = hh_min(era.finish_date, chunk_finish)
-
-            debug += "found an era"
 
             contract = era.imp_supplier_contract
             data_source = SupplySource(
                 g.sess, block_start, block_finish, fdate, era, True, caches
             )
             headings = [
-                "id",
+                "mpan_core",
                 "supplier_contract",
                 "account",
                 "start date",
                 "finish date",
             ]
             data = [
-                data_source.id,
+                data_source.mpan_core,
                 contract.name,
                 data_source.supplier_account,
                 data_source.start_date,
@@ -5924,15 +5923,7 @@ def supply_virtual_bill_get(supply_id):
                     del bill[title]
                     continue
                 headings.append(title)
-                if title in bill:
-                    data.append(bill[title])
-                    del bill[title]
-                else:
-                    data.append("")
-
-            for k in sorted(bill.keys()):
-                headings.append(k)
-                data.append(bill[k])
+                data.append(csv_make_val(bill.get(title)))
 
             if len(meras) > 1 and meras[-2]["headings"] == mera["headings"]:
                 mera["skip"] = True
