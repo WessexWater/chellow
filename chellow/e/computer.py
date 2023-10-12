@@ -815,6 +815,10 @@ class SiteSource(DataSource):
         ):
             datum = dtm.copy()
             datum.update(hist_map[datum["hist-start"]])
+            datum["msp-kva"] = (
+                datum["msp-kw"] ** 2
+                + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
+            ) ** 0.5
             self.hh_data.append(datum)
             self.supplier_bill_hhs[dtm["start-date"]] = {}
             self.mop_bill_hhs[dtm["start-date"]] = {}

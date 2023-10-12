@@ -1,4 +1,12 @@
-import chellow.e.computer
+from chellow.e.computer import (
+    SiteSource,
+    SupplySource,
+    _find_hhs,
+    _find_pair,
+    _init_hh_data,
+    _make_reads,
+    _set_status,
+)
 from chellow.models import (
     Comm,
     Contract,
@@ -29,6 +37,176 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_SiteSource_init_hh_data(sess, mocker):
+    """New style channels"""
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(sess, "Fus DC", participant, "", {}, vf, None, {})
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fus Sup", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(sess, "510", "HH HV", voltage_level, False, True, vf, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "net")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    era = supply.eras[0]
+    channel = era.insert_channel(sess, True, "ACTIVE")
+    data_raw = [
+        {
+            "start_date": utc_datetime(2009, 8, 10),
+            "value": 10,
+            "status": "A",
+        }
+    ]
+    channel.add_hh_data(sess, data_raw)
+
+    sess.commit()
+
+    caches = {}
+    start_date = utc_datetime(2009, 7, 31, 23, 00)
+    finish_date = utc_datetime(2009, 7, 31, 23, 00)
+    fdate = utc_datetime(2010, 7, 31, 23, 00)
+    ds = SiteSource(sess, site, start_date, finish_date, fdate, caches)
+
+    actual_datum = ds.hh_data[0]
+    expected_datum = {
+        "hist-start": utc_datetime(2009, 7, 31, 23, 0),
+        "start-date": utc_datetime(2009, 7, 31, 23, 0),
+        "ct-day": 1,
+        "utc-month": 7,
+        "utc-day": 31,
+        "utc-decimal-hour": 23.0,
+        "utc-year": 2009,
+        "utc-hour": 23,
+        "utc-minute": 0,
+        "ct-year": 2009,
+        "ct-month": 8,
+        "ct-decimal-hour": 0.0,
+        "ct-day-of-week": 5,
+        "utc-day-of-week": 4,
+        "utc-is-bank-holiday": False,
+        "ct-is-bank-holiday": False,
+        "utc-is-month-end": False,
+        "ct-is-month-end": False,
+        "status": "E",
+        "imp-msp-kvarh": 0,
+        "imp-msp-kvar": 0,
+        "exp-msp-kvarh": 0,
+        "exp-msp-kvar": 0,
+        "msp-kva": 0,
+        "msp-kw": 0,
+        "msp-kwh": 0,
+        "hist-import-net-kvarh": 0,
+        "hist-export-net-kvarh": 0,
+        "anti-msp-kwh": 0,
+        "anti-msp-kw": 0,
+        "hist-imp-msp-kvarh": 0,
+        "hist-kwh": 0,
+        "hist-import-net-kwh": 0,
+        "hist-export-net-kwh": 0,
+        "hist-import-gen-kwh": 0,
+        "hist-export-gen-kwh": 0,
+        "hist-import-3rd-party-kwh": 0,
+        "hist-export-3rd-party-kwh": 0,
+        "hist-used-3rd-party-kwh": 0,
+        "used-3rd-party-kwh": 0,
+        "hist-used-gen-msp-kwh": 0,
+        "used-gen-msp-kwh": 0,
+        "import-net-kwh": 0,
+        "export-net-kwh": 0,
+        "import-gen-kwh": 0,
+        "export-gen-kwh": 0,
+        "import-3rd-party-kwh": 0,
+        "export-3rd-party-kwh": 0,
+        "hist-used-kwh": 0,
+        "used-kwh": 0,
+        "used-gen-msp-kw": 0,
+    }
+    assert actual_datum == expected_datum
+
+
 def test_find_pair(mocker):
     sess = mocker.Mock()
     caches = {}
@@ -46,7 +224,7 @@ def test_find_pair(mocker):
         "read_type": "N",
     }
     read_list = [first_read, second_read]
-    pair = chellow.e.computer._find_pair(sess, caches, is_forwards, read_list)
+    pair = _find_pair(sess, caches, is_forwards, read_list)
     assert pair["start-date"] == utc_datetime(2010, 1, 1)
 
 
@@ -57,7 +235,7 @@ def test_find_hhs_empty_pairs(mocker):
     pairs = []
     chunk_start = utc_datetime(2010, 1, 1)
     chunk_finish = utc_datetime(2010, 1, 1)
-    hhs = chellow.e.computer._find_hhs(caches, sess, pairs, chunk_start, chunk_finish)
+    hhs = _find_hhs(caches, sess, pairs, chunk_start, chunk_finish)
     assert hhs == {
         utc_datetime(2010, 1, 1): {
             "msp-kw": 0,
@@ -82,7 +260,7 @@ def test_find_hhs_two_pairs(mocker):
     ]
     chunk_start = utc_datetime(2010, 1, 1)
     chunk_finish = utc_datetime(2010, 1, 1, 0, 30)
-    hhs = chellow.e.computer._find_hhs(caches, sess, pairs, chunk_start, chunk_finish)
+    hhs = _find_hhs(caches, sess, pairs, chunk_start, chunk_finish)
     assert hhs == {
         utc_datetime(2010, 1, 1): {
             "msp-kw": 2.0,
@@ -112,7 +290,7 @@ def test_set_status(mocker):
 
     read_list = [{"date": utc_datetime(2012, 1, 1)}]
     forecast_date = utc_datetime(2012, 3, 1)
-    chellow.e.computer._set_status(hhs, read_list, forecast_date)
+    _set_status(hhs, read_list, forecast_date)
     assert hhs == {utc_datetime(2012, 2, 1): {"status": "E"}}
 
 
@@ -123,7 +301,7 @@ def test_make_reads_forwards(mocker):
     read_b = {"date": utc_datetime(2018, 3, 13), "msn": msn}
     prev_reads = iter([read_a])
     pres_reads = iter([read_b])
-    actual = list(chellow.e.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    actual = list(_make_reads(is_forwards, prev_reads, pres_reads))
     expected = [read_a, read_b]
     assert actual == expected
 
@@ -135,7 +313,7 @@ def test_make_reads_forwards_meter_change(mocker):
     read_b = {"date": dt, "msn": "b"}
     prev_reads = iter([read_a])
     pres_reads = iter([read_b])
-    actual = list(chellow.e.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    actual = list(_make_reads(is_forwards, prev_reads, pres_reads))
     expected = [read_b, read_a]
     assert actual == expected
 
@@ -147,27 +325,25 @@ def test_make_reads_backwards(mocker):
     read_b = {"date": utc_datetime(2018, 3, 13), "msn": msn}
     prev_reads = iter([read_a])
     pres_reads = iter([read_b])
-    actual = list(chellow.e.computer._make_reads(is_forwards, prev_reads, pres_reads))
+    actual = list(_make_reads(is_forwards, prev_reads, pres_reads))
     expected = [read_b, read_a]
     assert actual == expected
 
 
 def test_init_hh_data(sess, mocker):
     """New style channels"""
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
         sess,
         "bank_holidays",
         "",
         {},
-        utc_datetime(2000, 1, 1),
+        vf,
         None,
         bank_holiday_rate_script,
     )
@@ -175,51 +351,27 @@ def test_init_hh_data(sess, mocker):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(
-        sess,
-        "845",
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -230,22 +382,15 @@ def test_init_hh_data(sess, mocker):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -300,7 +445,7 @@ def test_init_hh_data(sess, mocker):
     chunk_start = utc_datetime(2009, 7, 31, 23, 00)
     chunk_finish = utc_datetime(2009, 8, 31, 22, 30)
     is_import = True
-    full_channels, hhd = chellow.e.computer._init_hh_data(
+    full_channels, hhd = _init_hh_data(
         sess, caches, era, chunk_start, chunk_finish, is_import
     )
 
@@ -478,7 +623,7 @@ def test_init_hh_data_export(sess, mocker):
     chunk_start = utc_datetime(2009, 7, 31, 23, 00)
     chunk_finish = utc_datetime(2009, 8, 31, 22, 30)
     is_import = False
-    full_channels, hhd = chellow.e.computer._init_hh_data(
+    full_channels, hhd = _init_hh_data(
         sess, caches, era, chunk_start, chunk_finish, is_import
     )
 
@@ -659,7 +804,7 @@ def test_SupplySource_init_hh(sess, mocker):
     finish_date = utc_datetime(2009, 8, 31, 22, 30)
     forecast_date = utc_datetime(2019, 8, 31, 22, 30)
     is_import = False
-    ss = chellow.e.computer.SupplySource(
+    ss = SupplySource(
         sess, start_date, finish_date, forecast_date, era, is_import, caches
     )
 
@@ -843,15 +988,13 @@ def test_SupplySource_init_nhh(sess, mocker):
     finish_date = utc_datetime(2009, 8, 31, 22, 30)
     forecast_date = utc_datetime(2019, 8, 31, 22, 30)
     is_import = False
-    chellow.e.computer.SupplySource(
-        sess, start_date, finish_date, forecast_date, era, is_import, caches
-    )
+    SupplySource(sess, start_date, finish_date, forecast_date, era, is_import, caches)
 
 
 def test_SiteSource_get_data_sources(mocker):
-    mocker.patch.object(chellow.e.computer.SiteSource, "__init__", lambda *x: None)
+    mocker.patch.object(SiteSource, "__init__", lambda *x: None)
     mocker.patch("chellow.e.computer.displaced_era")
-    ds = chellow.e.computer.SiteSource()
+    ds = SiteSource()
     ds.forecast_date = to_utc(ct_datetime(2010, 1, 1))
     ds.start_date = to_utc(ct_datetime(2008, 1, 1))
     ds.finish_date = to_utc(ct_datetime(2008, 8, 31, 22, 30))
@@ -869,10 +1012,10 @@ def test_SiteSource_get_data_sources(mocker):
 
 
 def test_SiteSource_get_data_sources_clock_change(mocker):
-    mocker.patch.object(chellow.e.computer.SiteSource, "__init__", lambda *x: None)
+    mocker.patch.object(SiteSource, "__init__", lambda *x: None)
     mocker.patch("chellow.e.computer.displaced_era")
     mock_c_months_u = mocker.patch("chellow.e.computer.c_months_u")
-    ds = chellow.e.computer.SiteSource()
+    ds = SiteSource()
     ds.forecast_date = to_utc(ct_datetime(2010, 1, 1))
     ds.start_date = to_utc(ct_datetime(2008, 1, 1))
     ds.finish_date = to_utc(ct_datetime(2008, 8, 31, 22, 30))
