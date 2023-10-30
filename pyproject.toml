@@ -31,7 +31,7 @@ dependencies = [
 	"pympler==1.0.1",
 	"psutil==5.9.5",
 	"xlrd==2.0.1",
-	"zish==0.1.10",
+	"zish==0.1.11",
 ]
 
 [project.urls]
