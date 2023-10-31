@@ -9,6 +9,7 @@ from chellow.e.bill_parsers.engie_edi import (
     _process_CCD1,
     _process_CCD2,
     _process_CCD3,
+    _process_END,
     _process_MHD,
     _process_NOOP,
     _process_VAT,
@@ -19,7 +20,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 def test_CODE_FUNCS():
     assert CODE_FUNCS["BCD"] == _process_BCD
     assert CODE_FUNCS["BTL"] == _process_NOOP
-    assert CODE_FUNCS["END"] == _process_NOOP
+    assert CODE_FUNCS["END"] == _process_END
     assert CODE_FUNCS["TTL"] == _process_NOOP
     assert CODE_FUNCS["VTS"] == _process_NOOP
 
@@ -100,6 +101,7 @@ def test_process_CCD2_duos_availability(mocker):
     bill = _process_CCD2(elements, headers)
     expected_headers = {
         "bill_type_code": "N",
+        "element_code": "219182",
         "reference": reference,
         "issue_date": issue_date,
         "mpan_core": "22 7673 9575 6734",
@@ -127,8 +129,6 @@ def test_process_CCD2_duos_availability(mocker):
     }
 
     assert headers == expected_headers
-    print(bill)
-    print(expected_bill)
     assert bill == expected_bill
     assert isinstance(bill["kwh"], Decimal)
     assert isinstance(bill["net"], Decimal)
@@ -165,6 +165,7 @@ def test_process_CCD3(mocker):
     headers = {"issue_date": issue_date, "reference": reference, "bill_type_code": "N"}
     _process_CCD3(elements, headers)
     expected_headers = {
+        "element_code": "584867",
         "mpan_core": "22 7673 9575 6734",
         "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
         "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
@@ -202,6 +203,7 @@ def test_process_CCD3_ro(mocker):
     headers = {"issue_date": issue_date, "reference": reference, "bill_type_code": "N"}
     _process_CCD3(elements, headers)
     expected_headers = {
+        "element_code": "425779",
         "mpan_core": "22 7673 9575 6734",
         "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
         "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
@@ -298,6 +300,7 @@ def test_process_segment_CCD2_blank_ro(mocker):
     headers = {"reference": reference, "issue_date": issue_date, "bill_type_code": "N"}
     bill = _process_CCD2(elements, headers)
     expected_headers = {
+        "element_code": "378246",
         "bill_type_code": "N",
         "reference": reference,
         "issue_date": issue_date,
@@ -359,3 +362,82 @@ def test_make_raw_bills(mocker):
     edi_file = BytesIO()
     parser = Parser(edi_file)
     assert parser.make_raw_bills() == []
+
+
+def test_make_raw_bills_bill(mocker):
+    edi_lines = [
+        "STX=ANA:1+ENGIE REX:ENGIE Revised Electricity XML+"
+        "SPECTRE:Spectre Inc- SPEC+230427:141606+768389++UTLHDR'",
+        "MHD=1+UTLHDR:3'",
+        "TYP=7698'",
+        "SDT=ENGIE REX+ENGIE Revised Electricity XML++741911934'",
+        "CDT=SPECTRE:SPECTERELEC+Spectre Inc- SPECTRE++1'",
+        "FIL=49+1+230427'",
+        "MTR=6'",
+        "MHD=2+UTLBIL:3'",
+        "BCD=230414+230414+2-03185844++M+N++230301:230401'",
+        "CCD=1+2::ADD+579387:Capacity Market (Estimate)+++2287572747106+++++7883:KWH++"
+        "CF++009521+7883:KWH+230301+230401+009521+8773'",
+        "MAN=1+1+22:8757274710:6:00:845:N11+E12D88751'",
+        "VAT=1+++S+20000+7332+98677+38196'",
+        "BTL=000+97732+967712++76882'",
+        "MTR=43'",
+        "END=425'",
+    ]
+    edi_file = BytesIO("".join(f"{line}\n" for line in edi_lines).encode())
+    parser = Parser(edi_file)
+    actual = parser.make_raw_bills()
+    expected = [
+        {
+            "bill_type_code": "N",
+            "reference": "2-03185844_capacity",
+            "issue_date": utc_datetime(2023, 4, 13, 23, 0),
+            "mpan_core": "22 8757 2747 106",
+            "account": "22 8757 2747 106",
+            "start_date": utc_datetime(2023, 3, 1, 0, 0),
+            "finish_date": utc_datetime(2023, 3, 31, 22, 30),
+            "kwh": Decimal("0"),
+            "net": Decimal("87.73"),
+            "vat": Decimal("0.00"),
+            "gross": Decimal("87.73"),
+            "breakdown": {
+                "capacity-kwh": Decimal("7.883"),
+                "capacity-rate": [Decimal("0.09521")],
+                "capacity-gbp": Decimal("87.73"),
+                "raw-lines": [
+                    "CCD=1+2::ADD+579387:Capacity Market (Estimate)+++"
+                    "2287572747106+++++7883:KWH++CF++009521+7883:KWH+230301+"
+                    "230401+009521+8773'",
+                ],
+            },
+            "reads": [],
+        },
+        {
+            "bill_type_code": "N",
+            "account": "22 8757 2747 106",
+            "mpan_core": "22 8757 2747 106",
+            "reference": "2-03185844_vat",
+            "issue_date": utc_datetime(2023, 4, 13, 23, 0),
+            "start_date": utc_datetime(2023, 3, 1, 0, 0),
+            "finish_date": utc_datetime(2023, 3, 31, 22, 30),
+            "kwh": Decimal("0.00"),
+            "net": Decimal("0.00"),
+            "vat": Decimal("986.77"),
+            "gross": Decimal("986.77"),
+            "breakdown": {
+                "vat": {
+                    Decimal("20"): {
+                        "vat": Decimal("986.77"),
+                        "net": Decimal("73.32"),
+                    }
+                },
+                "raw-lines": [
+                    "VAT=1+++S+20000+7332+98677+38196'",
+                ],
+            },
+            "reads": [],
+        },
+    ]
+    for i, (expected_bill, actual_bill) in enumerate(zip(expected, actual)):
+        assert expected_bill == actual_bill, f"problem with bill {i}"
+    assert actual == expected

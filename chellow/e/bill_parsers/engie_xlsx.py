@@ -9,7 +9,7 @@ from openpyxl import load_workbook
 from werkzeug.exceptions import BadRequest
 
 
-from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
 
 
 ELEM_MAP = {
@@ -239,43 +239,6 @@ def get_int(sheet, row, col):
         )
 
 
-"""
-def get_date(row, name, datemode):
-    dt = get_date_naive(row, name, datemode)
-    return dt if dt is None else to_utc(to_ct(dt))
-
-
-def get_date_naive(row, name, datemode):
-    val = get_value(row, name)
-    if isinstance(val, float):
-        return Datetime(*xldate_as_tuple(val, datemode))
-    else:
-        return None
-
-
-def get_value(row, name):
-    idx = COLUMN_MAP[name]
-    try:
-        val = row[idx].value
-    except IndexError:
-        raise BadRequest(
-            f"For the name '{name}', the index is {idx} which is beyond the end of "
-            f"the row. "
-        )
-    if isinstance(val, str):
-        return val.strip()
-    else:
-        return val
-
-
-def get_dec(row, name):
-    try:
-        return Decimal(str(get_value(row, name)))
-    except decimal.InvalidOperation:
-        return None
-"""
-
-
 def _bd_add(bd, el_name, val):
     if el_name.split("-")[-1] in ("rate", "kva"):
         if el_name not in bd:
@@ -290,6 +253,22 @@ def _bd_add(bd, el_name, val):
             raise BadRequest(
                 f"Problem with element name {el_name} and value '{val}': {e}"
             )
+
+
+def _customer_mods(cust_number, description, bill):
+    print(cust_number, type(cust_number), description)
+    if cust_number == 10001596:
+        if (
+            description == "RO Mutualisation 2021-22"
+            and "ro-gbp" in bill["breakdown"]
+            and bill["issue_date"] == to_utc(ct_datetime(2023, 4, 14))
+            and bill["start_date"] == to_utc(ct_datetime(2023, 3, 1))
+            and bill["finish_date"] == to_utc(ct_datetime(2023, 3, 31, 23, 30))
+        ):
+            bill["start_date"] = to_utc(ct_datetime(2021, 4, 1))
+            bill["finish_date"] = to_utc(ct_datetime(2022, 3, 31, 23, 30))
+
+    return bill
 
 
 def _parse_row(sheet, row, title_row):
@@ -437,7 +416,8 @@ def _parse_row(sheet, row, title_row):
 
     bill["reference"] = reference
     bill["gross"] = bill["net"] + bill["vat"]
-    return bill
+    customer_number = get_value(sheet, row, "Customer Number")
+    return _customer_mods(customer_number, description, bill)
 
 
 def _make_raw_bills(sheet):

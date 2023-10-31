@@ -4,7 +4,14 @@ from decimal import Decimal
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
+from chellow.edi_lib import (
+    ct_datetime,
+    parse_edi,
+    to_date,
+    to_decimal,
+    to_finish_date,
+    to_utc,
+)
 from chellow.utils import HH
 
 
@@ -77,6 +84,7 @@ TCOD_MAP = {
     "265091": ("night-gbp", "night-rate", "night-kwh"),
     "483457": ("peak-gbp", "peak-rate", "peak-kwh"),
     "975901": ("peak-shoulder-gbp", "peak-shoulder-rate", "peak-shoulder-kwh"),
+    "307660": ("ro-gbp", "ro-rate", "ro-kwh"),
     "364252": ("ro-gbp", "ro-rate", "ro-kwh"),
     "378246": ("ro-gbp", "ro-rate", "ro-kwh"),
     "632209": ("summer-night-gbp", "summer-night-rate", "summer-night-kwh"),
@@ -156,6 +164,7 @@ def _process_CCD2(elements, headers):
     breakdown = defaultdict(int)
 
     element_code = elements["TCOD"][0]
+    headers["element_code"] = element_code
     try:
         eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
     except KeyError:
@@ -219,6 +228,7 @@ def _process_CCD3(elements, headers):
     breakdown = defaultdict(int)
 
     element_code = elements["TCOD"][0]
+    headers["element_code"] = element_code
     try:
         eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
     except KeyError:
@@ -280,6 +290,7 @@ def _process_CCD4(elements, headers):
     breakdown = defaultdict(int)
 
     element_code = elements["TCOD"][0]
+    headers["element_code"] = element_code
     try:
         eln_gbp, eln_rate, eln_cons = TCOD_MAP[element_code]
     except KeyError:
@@ -335,14 +346,26 @@ def _process_CCD4(elements, headers):
     }
 
 
+def _process_CDT(elements, headers):
+    customer_id = elements["CIDN"][0]
+    headers["customer_number"] = customer_id
+
+
+def _process_END(elements, headers):
+    pass
+
+
 def _process_MHD(elements, headers):
     message_type = elements["TYPE"][0]
     if message_type == "UTLBIL":
-        pass
+        keep_keys = {"customer_number"}
+        keep = {k: headers[k] for k in keep_keys}
+        headers.clear()
+        headers.update(keep)
 
 
 def _process_MTR(elements, headers):
-    headers.clear()
+    pass
 
 
 def _process_VAT(elements, headers):
@@ -378,10 +401,10 @@ CODE_FUNCS = {
     "CCD2": _process_CCD2,
     "CCD3": _process_CCD3,
     "CCD4": _process_CCD4,
-    "CDT": _process_NOOP,
+    "CDT": _process_CDT,
     "CLO": _process_NOOP,
     "DNA": _process_NOOP,
-    "END": _process_NOOP,
+    "END": _process_END,
     "FIL": _process_NOOP,
     "MAN": _process_NOOP,
     "MHD": _process_MHD,
@@ -393,6 +416,21 @@ CODE_FUNCS = {
     "VAT": _process_VAT,
     "VTS": _process_NOOP,
 }
+
+
+def _customer_mods(headers, bill):
+    if headers["customer_number"] == "WESSEXWAT":
+        if (
+            headers["element_code"] == "307660"
+            and "ro-gbp" in bill["breakdown"]
+            and bill["issue_date"] == to_utc(ct_datetime(2023, 4, 14))
+            and bill["start_date"] == to_utc(ct_datetime(2023, 3, 1))
+            and bill["finish_date"] == to_utc(ct_datetime(2023, 3, 31, 23, 30))
+        ):
+            bill["start_date"] = to_utc(ct_datetime(2021, 4, 1))
+            bill["finish_date"] = to_utc(ct_datetime(2022, 3, 31, 23, 30))
+
+    return bill
 
 
 class Parser:
@@ -423,10 +461,8 @@ class Parser:
                     f"seg_name {seg_name} elements {elements}"
                 ) from e
 
-            if "breakdown" in headers:
-                headers["breakdown"]["raw-lines"].append(line)
-
             if bill is not None:
-                bills.append(bill)
+                bill["breakdown"]["raw-lines"] = [line]
+                bills.append(_customer_mods(headers, bill))
 
         return bills
