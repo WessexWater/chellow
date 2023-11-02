@@ -1233,12 +1233,6 @@ def downloads_get():
     return render_template("downloads.html", files=files)
 
 
-@home.route("/downloads", methods=["POST"])
-def downloads_post():
-    chellow.dloads.reset()
-    return chellow_redirect("/downloads", 303)
-
-
 @home.route("/downloads/<fname>")
 def download_get(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
@@ -1261,14 +1255,14 @@ def download_get(fname):
     return send_response(content, file_name=name)
 
 
-@home.route("/downloads/<fname>", methods=["POST"])
-def download_post(fname):
+@home.route("/downloads/<fname>", methods=["DELETE"])
+def download_delete(fname):
     head, name = os.path.split(os.path.normcase(os.path.normpath(fname)))
 
     download_path = os.path.join(current_app.instance_path, "downloads")
     full_name = os.path.join(download_path, name)
     os.remove(full_name)
-    return chellow_redirect("/downloads", 303)
+    return hx_redirect("/downloads")
 
 
 @home.route("/report_runs")

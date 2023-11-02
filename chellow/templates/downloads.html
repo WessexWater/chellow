@@ -18,11 +18,6 @@
 				<th>Size</th>
 				<th>Last Modified</th>
 				<th>
-					<form method="post">
-						<fieldset>
-							<input type="submit" name="delete" value="Delete All">
-						</fieldset>
-					</form>
 				</th>
 			</tr>
 		</thead>
@@ -37,7 +32,8 @@
 					</td>
 					<td>{{file.last_modified|hh_format}}</td>
 					<td>
-						<form method="post" action="/downloads/{{file.name}}">
+						<form hx-delete="/downloads/{{file.name}}"
+								hx-confirm="Are you sure you want to delete this file?">
 							<fieldset>
 								<input type="submit" name="delete" value="Delete">
 							</fieldset>

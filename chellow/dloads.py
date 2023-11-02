@@ -65,17 +65,6 @@ mem_lock = threading.Lock()
 mem_vals = {}
 
 
-def reset():
-    global mem_id
-    global mem_vals
-    with mem_lock:
-        mem_id = 0
-        mem_vals = {}
-
-    for fl in sorted(os.listdir(download_path)):
-        os.remove(os.path.join(download_path, fl))
-
-
 def get_mem_id():
     global mem_id
     with mem_lock:
