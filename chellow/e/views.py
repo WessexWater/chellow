@@ -951,13 +951,45 @@ def dc_bill_edit_post(bill_id):
 
 @e.route("/dc_contracts")
 def dc_contracts_get():
-    dc_contracts = g.sess.execute(
+    RateScriptAliasFinish = aliased(RateScript)
+
+    current_dc_contracts = (
+        g.sess.execute(
+            select(Contract)
+            .join(MarketRole)
+            .join(
+                RateScriptAliasFinish,
+                Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+            )
+            .where(MarketRole.code == "C", RateScriptAliasFinish.finish_date == null())
+            .order_by(Contract.name)
+        )
+        .scalars()
+        .all()
+    )
+    ended_dc_contracts = g.sess.execute(
         select(Contract)
         .join(MarketRole)
-        .where(MarketRole.code == "C")
+        .join(
+            RateScriptAliasFinish,
+            Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+        )
+        .where(MarketRole.code == "C", RateScriptAliasFinish.finish_date != null())
         .order_by(Contract.name)
     ).scalars()
-    return render_template("dc_contracts.html", dc_contracts=dc_contracts)
+    latest_imports = []
+    for contract in current_dc_contracts:
+        state = contract.make_state()
+        for timestamp, path in state.get("latest_imports", []):
+            latest_imports.append((timestamp, contract.name, path))
+    latest_imports.sort(reverse=True)
+
+    return render_template(
+        "dc_contracts.html",
+        current_dc_contracts=current_dc_contracts,
+        ended_dc_contracts=ended_dc_contracts,
+        latest_imports=latest_imports,
+    )
 
 
 @e.route("/dc_contracts/add", methods=["POST"])

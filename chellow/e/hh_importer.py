@@ -300,10 +300,16 @@ class HhImportTask(threading.Thread):
         try:
             last_import_keys = state["last_import_keys"]
         except KeyError:
-            last_import_keys = state["last_import_keys"] = {}
+            last_import_keys = state["last_import_keys"] = []
+
+        try:
+            latest_imports = state["latest_imports"][:20]
+            state["latest_imports"] = latest_imports
+        except KeyError:
+            latest_imports = state["latest_imports"] = []
 
         sess.rollback()
-        self.log("Connecting to sftp server at " + host_name + ":" + str(port) + ".")
+        self.log(f"Connecting to sftp server at {host_name}:{port}.")
         cnopts = pysftp.CnOpts()
         cnopts.hostkeys = None
         ftp = pysftp.Connection(
@@ -348,7 +354,8 @@ class HhImportTask(threading.Thread):
             return False
         else:
             key, fpath = f
-            self.log("Attempting to download " + fpath + " with key " + key + ".")
+            latest_imports.append((utc_datetime_now(), fpath))
+            self.log(f"Attempting to download {fpath} with key {key}.")
             f = tempfile.TemporaryFile()
             ftp.getfo(fpath, f)
             self.log("File downloaded successfully.")
@@ -358,8 +365,8 @@ class HhImportTask(threading.Thread):
             f.seek(0, os.SEEK_END)
             fsize = f.tell()
             f.seek(0)
-            self.log("File size is " + str(fsize) + " bytes.")
-            self.log("Treating files as type " + file_type)
+            self.log(f"File size is {fsize} bytes.")
+            self.log(f"Treating files as type {file_type}")
             self.importer = HhDataImportProcess(
                 self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
             )
@@ -376,7 +383,7 @@ class HhImportTask(threading.Thread):
             contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)
             sess.commit()
-            self.log("Finished loading '" + fpath)
+            self.log(f"Finished loading '{fpath}'")
             return True
 
 
