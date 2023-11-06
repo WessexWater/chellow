@@ -116,6 +116,7 @@ from chellow.utils import (
     req_file,
     req_hh_date,
     req_int,
+    req_int_none,
     req_str,
     req_zish,
     send_response,
@@ -2407,4 +2408,62 @@ def site_gen_graph_get(site_id):
         title=title,
         height=height,
         days=days,
+    )
+
+
+@home.route("/input_date", methods=["GET"])
+def input_date_get():
+    if "prefix" in request.values:
+        prefix = req_str("prefix")
+        year_name = f"{prefix}_year"
+        month_name = f"{prefix}_month"
+        day_name = f"{prefix}_day"
+        hour_name = f"{prefix}_hour"
+        minute_name = f"{prefix}_minute"
+    else:
+        year_name = "year"
+        month_name = "month"
+        day_name = "day"
+        hour_name = "hour"
+        minute_name = "minute"
+
+    resolution = req_str("resolution")
+
+    year = req_int_none(year_name)
+    if year is None:
+        initial = ct_datetime_now()
+    else:
+        month = req_int(month_name)
+        if resolution in ("day", "hour", "minute"):
+            day = req_int(day_name)
+        else:
+            day = 1
+
+        if resolution in ("hour", "minute"):
+            hour = req_int(hour_name)
+        else:
+            hour = 0
+
+        if resolution == "minute":
+            minute = req_int(hour_name)
+        else:
+            minute = 0
+
+        initial = ct_datetime(year, month, day, hour, minute)
+
+    month_max_day = (
+        ct_datetime(initial.year, initial.month, 1) + relativedelta(months=1) - HH
+    ).day
+
+    return render_template(
+        "input_date.html",
+        initial=initial,
+        resolution=resolution,
+        prefix=prefix,
+        year_name=year_name,
+        month_name=month_name,
+        day_name=day_name,
+        hour_name=hour_name,
+        minute_name=minute_name,
+        month_max_day=month_max_day,
     )

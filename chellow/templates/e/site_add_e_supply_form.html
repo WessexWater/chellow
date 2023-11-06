@@ -13,7 +13,7 @@
 		{% endif %}
 	{% endwith %}
 	<label>Name</label> {{input_text('name', required=True)}}
-	<label>Start Date</label> {{input_date('start', is_dynamic=True)}}
+	<label>Start Date</label> {{input_date('start', initial=start_date, is_dynamic=False)}}
 	<label>Source</label>
 	<select name="source_id">
 		{% for src in sources %}

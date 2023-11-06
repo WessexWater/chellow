@@ -12,14 +12,14 @@
 			</ul>
 		{% endif %}
 	{% endwith %}
-	<label>Start Date</label> {{input_date('start', era.start_date, is_dynamic=True)}}
+	<label>Start Date</label> {{input_date('start', era.start_date, is_dynamic=False)}}
 
 	<label>Finished?</label>
 	{{input_checkbox('is_ended')}}
 
 	{% if request.values.is_ended == 'true' %}
 		<label>Finish Date</label>
-		{{input_date('finish', era.finish_date, is_dynamic=True)}}
+		{{input_date('finish', era.finish_date, is_dynamic=False)}}
 	{% endif %}
 
 	<label>MOP Contract</label>

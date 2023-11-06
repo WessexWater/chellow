@@ -1,0 +1,40 @@
+{% extends "macros.html" %}
+
+{% block html %}
+	{{input_hidden('prefix', initial=prefix)}}
+	{{input_hidden('resolution', initial=resolution)}}
+
+	{{input_text(year_name, initial=initial.year, size=4, maxlength=4)}}
+
+	{%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
+		-<select name="{{ month_name }}">
+		{% for month in range(1, 13) -%}
+			{{input_option(month_name,  month,  "%02i"|format(month) , initial=initial.month)}}
+		{% endfor %}
+		</select>
+	{%- endif -%}
+
+	{% if resolution in ['day', 'hour', 'minute'] -%}
+		-<select name="{{ day_name }}">
+			{% for day in range(1, month_max_day + 1) -%}
+				{{input_option(day_name, day, "%02i"|format(day), initial=initial.day)}}
+			{% endfor -%}
+		</select>
+	{%- endif -%}
+
+	{% if resolution in ['hour', 'minute'] %}
+		<select name="{{ hour_name }}">
+			{% for hour in range(24) %}
+				{{input_option(hour_name, hour, "%02i"|format(hour), initial=initial.hour)}}
+			{%- endfor %}
+		</select>
+	{%- endif -%}
+
+	{% if resolution == 'minute' -%}
+		:<select name="{{ minute_name }}">
+			{% for minute in range(0, 31, 30) -%}
+				{{input_option(minute_name, minute, "%02i"|format(minute), initial=initial.minute)}}
+			{% endfor %}
+		</select>
+	{%- endif %}
+{% endblock %}
