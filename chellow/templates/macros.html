@@ -16,8 +16,7 @@
 	<div style="white-space: nowrap;" hx-get="/input_date" hx-params="*" hx-trigger="load
 			{%- if is_dynamic -%}
 				, change
-			{%- endif -%}"
-			hx-include="[name='{{year_name}}'],[name='{{month_name}}'],[name='{{day_name}}'],[name='{{hour_name}}'],[name='{{minute_name}}'],[name='prefix'],[name='resolution']">
+			{%- endif -%}" hx-include="this">
 		{{input_hidden('prefix', initial=prefix)}}
 		{{input_hidden('resolution', initial=resolution)}}
 		{% if initial %}
