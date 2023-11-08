@@ -72,7 +72,7 @@ def run_import(sess, log, set_progress):
     paths_list = []
     for sub_entry in tree_entry["tree"]:
         path = sub_entry["path"].split("/")
-        if path[-1] == "README.md":
+        if path[-1].upper() == "README.MD":
             continue
         if len(path) == 1 and path[0] == "LICENSE":
             continue
