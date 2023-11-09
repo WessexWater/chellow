@@ -1,8 +1,8 @@
 {% extends "macros.html" %}
 
 {% block html %}
-	{{input_hidden('prefix', initial=prefix)}}
-	{{input_hidden('resolution', initial=resolution)}}
+	<input type="hidden" name="prefix" value="{{prefix}}">
+	<input type="hidden" name="resolution" value="{{resolution}}">
 
 	{{input_text(year_name, initial=initial.year, size=4, maxlength=4)}}
 

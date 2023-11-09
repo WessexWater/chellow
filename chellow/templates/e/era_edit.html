@@ -69,8 +69,7 @@
 	
 	<form action="/e/eras/{{era.id}}/edit" method="post">	
 		<fieldset hx-get="/e/eras/{{era.id}}/edit/form" hx-params="*"
-			 hx-trigger="load, change"
-			 hx-include="[name='source_id'],[name='start_year'],[name='start_month'],[name='start_day'],[name='start_hour'],[name='start_minute'],[name='pc_id'],[name='name'],[name='imp_mpan_core'],[name='exp_mpan_core'],[name='mop_account'],[name='dc_account'],[name='dc_contract_id'],[name='mop_contract_id'],[name='imp_supplier_account'],[name='exp_supplier_account'],[name='imp_llfc_id'],[name='exp_llfc_id'],[name='mtc_participant_id'],[name='has_imp_mpan'],[name='has_exp_mpan'],[name='dno_id'],[name='gsp_group_id'],[name='ssc_id'],[name='cop_id'],[name='comm_id'],[name='energisation_status_id'],[name='is_ended'],[name='imp_supplier_contract_id'],[name='exp_supplier_contract_id'],[name='imp_sc'],[name='exp_sc'],[name='msn']">
+			 hx-trigger="load, change" hx-include="this">
 			{{input_hidden_checkbox('is_ended', initial=era.finish_date != None)}}
 			{{input_hidden('source_id', initial=era.supply.source.id)}}
 			{{input_hidden('cop_id', initial=era.cop.id)}}

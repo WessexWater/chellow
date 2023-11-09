@@ -17,8 +17,9 @@
 			{%- if is_dynamic -%}
 				, change
 			{%- endif -%}" hx-include="this">
-		{{input_hidden('prefix', initial=prefix)}}
-		{{input_hidden('resolution', initial=resolution)}}
+		<input type="hidden" name="prefix" value="{{prefix}}">
+		<input type="hidden" name="resolution" value="{{resolution}}">
+
 		{% if initial %}
 			{{input_hidden(year_name, initial=initial.year)}}
 			{{input_hidden(month_name, initial=initial.month)}}
