@@ -10,6 +10,7 @@ import traceback
 import types
 from collections import OrderedDict
 from datetime import datetime as Datetime
+from decimal import Decimal
 from importlib import import_module
 from io import DEFAULT_BUFFER_SIZE, StringIO
 from itertools import chain, islice
@@ -1071,12 +1072,12 @@ def site_hh_data_get(site_id):
         hh_dict = {
             "start_date": hh_date,
             "supplies": sups,
-            "export_kwh": 0,
-            "import_kwh": 0,
-            "parasitic_kwh": 0,
-            "generated_kwh": 0,
-            "third_party_import_kwh": 0,
-            "third_party_export_kwh": 0,
+            "export_kwh": Decimal(0),
+            "import_kwh": Decimal(0),
+            "parasitic_kwh": Decimal(0),
+            "generated_kwh": Decimal(0),
+            "third_party_import_kwh": Decimal(0),
+            "third_party_export_kwh": Decimal(0),
         }
         hh_data.append(hh_dict)
         for supply in supplies:
@@ -1089,33 +1090,32 @@ def site_hh_data_get(site_id):
             ):
                 channel = datum.channel
                 imp_related = channel.imp_related
-                hh_float_value = float(datum.value)
                 source_code = channel.era.supply.source.code
 
                 prefix = "import_" if imp_related else "export_"
-                sup_hh[prefix + "kwh"] = datum.value
-                sup_hh[prefix + "status"] = datum.status
+                sup_hh[f"{prefix}kwh"] = datum.value
+                sup_hh[f"{prefix}status"] = datum.status
 
                 if not imp_related and source_code in ("net", "gen-net"):
-                    hh_dict["export_kwh"] += hh_float_value
+                    hh_dict["export_kwh"] += datum.value
                 if imp_related and source_code in ("net", "gen-net"):
-                    hh_dict["import_kwh"] += hh_float_value
+                    hh_dict["import_kwh"] += datum.value
                 if (imp_related and source_code == "gen") or (
                     not imp_related and source_code == "gen-net"
                 ):
-                    hh_dict["generated_kwh"] += hh_float_value
+                    hh_dict["generated_kwh"] += datum.value
                 if (not imp_related and source_code == "gen") or (
                     imp_related and source_code == "gen-net"
                 ):
-                    hh_dict["parasitic_kwh"] += hh_float_value
+                    hh_dict["parasitic_kwh"] += datum.value
                 if (imp_related and source_code == "3rd-party") or (
                     not imp_related and source_code == "3rd-party-reverse"
                 ):
-                    hh_dict["third_party_import_kwh"] += hh_float_value
+                    hh_dict["third_party_import_kwh"] += datum.value
                 if (not imp_related and source_code == "3rd-party") or (
                     imp_related and source_code == "3rd-party-reverse"
                 ):
-                    hh_dict["third_party_export_kwh"] += hh_float_value
+                    hh_dict["third_party_export_kwh"] += datum.value
                 datum = next(data, None)
 
         hh_dict["displaced_kwh"] = (
