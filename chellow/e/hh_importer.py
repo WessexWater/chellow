@@ -24,9 +24,11 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Contract, Era, HhDatum, MarketRole, Session
 from chellow.utils import (
     HH,
+    ct_datetime_now,
     hh_format,
     hh_max,
     hh_min,
+    to_ct,
     utc_datetime,
     utc_datetime_now,
 )
@@ -302,8 +304,14 @@ class HhImportTask(threading.Thread):
         except KeyError:
             last_import_keys = state["last_import_keys"] = []
 
+        ct_now = ct_datetime_now()
         try:
-            latest_imports = state["latest_imports"][:20]
+            latest_imports = [
+                (dt, fname)
+                for dt, fname in state["latest_imports"]
+                if (to_ct(dt).year, to_ct(dt).month, to_ct(dt).day)
+                == (ct_now.year, ct_now.month, ct_now.day)
+            ]
             state["latest_imports"] = latest_imports
         except KeyError:
             latest_imports = state["latest_imports"] = []
