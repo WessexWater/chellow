@@ -325,6 +325,16 @@ def shutdown():
         bsuos_importer.stop()
 
 
+def extract_rates(line):
+    rates = []
+    if line.startswith("BSUoS Tariff £/MWh"):
+        for token in line.split():
+            if token[0] == "£" and token[1] != "/":
+                dpindex = token.index(".")
+                rates.append(Decimal(token[1 : dpindex + 3]))
+    return rates
+
+
 def find_rate(file_name, file_like, rate_index):
     rate_script = {"a_file_name": file_name}
     rates = []
@@ -332,10 +342,7 @@ def find_rate(file_name, file_like, rate_index):
     reader = PdfReader(file_like)
     for page in reader.pages:
         for line in page.extract_text().splitlines():
-            if line.startswith("BSUoS Tariff £/MWh"):
-                for token in line.split():
-                    if token[0] == "£" and token[1] != "/":
-                        rates.append(Decimal(token[1:]))
+            rates.extend(extract_rates(line))
 
     rate_script["rate_gbp_per_mwh"] = rates[rate_index]
     return rate_script
