@@ -6,7 +6,8 @@ import tempfile
 import threading
 import traceback
 from collections import defaultdict, deque
-from datetime import timedelta as Timedelta
+from datetime import datetime as Datetime, timedelta as Timedelta
+from decimal import Decimal
 from io import TextIOWrapper
 
 import jinja2
@@ -24,11 +25,13 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Contract, Era, HhDatum, MarketRole, Session
 from chellow.utils import (
     HH,
+    ct_datetime,
     ct_datetime_now,
     hh_format,
     hh_max,
     hh_min,
     to_ct,
+    to_utc,
     utc_datetime,
     utc_datetime_now,
 )
@@ -395,11 +398,142 @@ class HhImportTask(threading.Thread):
             return True
 
 
+def meniscus_parser(log_f, result, properties, mpan_core):
+    if isinstance(result, dict):
+        result_data = result["Data"]
+    elif isinstance(result, list):
+        result_data = result
+    else:
+        raise BadRequest(
+            f"Expecting a JSON object at the top level, but instead got {result}"
+        )
+    raw_data = []
+    for jdatum in result_data:
+        raw_data.append(
+            dict(
+                mpan_core=mpan_core,
+                start_date=utc_datetime(1, 1, 1)
+                + Timedelta(seconds=jdatum["Time"] / 10000000),
+                channel_type="ACTIVE",
+                value=jdatum["Value"],
+                status="A",
+            )
+        )
+    return raw_data
+
+
+def solaredge_meters_parser(log_f, result, properties, mpan_core):
+    meters = result["meterEnergyDetails"]["meters"]
+    meter = None
+    if mpan_core in properties["generated_mpan_cores"]:
+        meter_type = "FeedIn"
+    elif mpan_core in properties["parasitic_mpan_cores"]:
+        meter_type = "Purchased"
+    else:
+        raise BadRequest(
+            f"Can't find the MPAN core {mpan_core} in either the generated_mpan_cores "
+            f"or parasitic_mpan_cores lists in the DC properties."
+        )
+    for m in meters:
+        if m["meterType"] == meter_type:
+            meter = m
+            break
+
+    if meter is None:
+        raise BadRequest(
+            f"Can't find the meter type '{meter_type}' in the list of meters."
+        )
+
+    raw_data = {}
+    prev_read = None
+    for val in meter["values"]:
+        if "value" in val:
+            d_ct = to_ct(Datetime.strptime(val["date"], "%Y-%m-%d %H:%M:%S"))
+            read = Decimal(val["value"])
+            if prev_read is not None:
+                value = (read - prev_read) / Decimal("1000")
+                if d_ct.minute > 30:
+                    date_ct_minute = 30
+                else:
+                    date_ct_minute = 0
+
+                date_ct = ct_datetime(
+                    d_ct.year, d_ct.month, d_ct.day, d_ct.hour, date_ct_minute
+                )
+
+                try:
+                    raw_datum = raw_data[date_ct]
+                except KeyError:
+                    raw_datum = raw_data[date_ct] = {
+                        "mpan_core": mpan_core,
+                        "start_date": to_utc(date_ct),
+                        "channel_type": "ACTIVE",
+                        "value": Decimal(0),
+                        "status": "A",
+                    }
+
+                raw_datum["value"] += value
+            prev_read = read
+
+    return [v for _, v in sorted(raw_data.items())]
+
+
+def solaredge_energy_details_parser(log_f, result, properties, mpan_core):
+    meters = result["energyDetails"]["meters"]
+    meter = None
+    if mpan_core in properties["generated_mpan_cores"]:
+        meter_key = "Production"
+    elif mpan_core in properties["parasitic_mpan_cores"]:
+        meter_key = "Consumption"
+    else:
+        raise BadRequest(
+            f"Can't find the MPAN core {mpan_core} in either the generated_mpan_cores "
+            f"or parasitic_mpan_cores lists in the DC properties."
+        )
+    for m in meters:
+        if m["type"] == meter_key:
+            meter = m
+            break
+
+    if meter is None:
+        raise BadRequest(
+            f"Can't find the meter type '{meter_key}' in the list of meters."
+        )
+
+    raw_data = []
+    for val in meter["values"]:
+        if "value" in val:
+            date_ct = to_ct(Datetime.strptime(val["date"], "%Y-%m-%d %H:%M:%S"))
+            value = Decimal(val["value"]) / Decimal("1000")
+            if date_ct.minute in (0, 30):
+                raw_data.append(
+                    {
+                        "mpan_core": mpan_core,
+                        "start_date": to_utc(date_ct),
+                        "channel_type": "ACTIVE",
+                        "value": value,
+                        "status": "A",
+                    }
+                )
+            elif len(raw_data) > 0:
+                raw_data[-1]["value"] += value
+
+    return raw_data
+
+
+PARSERS = {
+    "meniscus": meniscus_parser,
+    "solaredge_energy_details": solaredge_energy_details_parser,
+    "solaredge_meters": solaredge_meters_parser,
+}
+
+
 def https_handler(sess, log_f, properties, contract, now=None):
     url_template_str = properties["url_template"]
     url_values = properties.get("url_values", {})
     download_days = properties["download_days"]
-    result_data_key = properties["result_data_key"]
+    parser_name = properties["parser"]
+
     if now is None:
         now = utc_datetime_now()
     window_finish = utc_datetime(now.year, now.month, now.day) - HH
@@ -441,30 +575,13 @@ def https_handler(sess, log_f, properties, contract, now=None):
             log_f(f"Retrieving data from {url}.")
 
             sess.rollback()  # Avoid long transactions
-            res = requests.get(url, timeout=120)
+
+            s = requests.Session()
+            s.verify = False
+            res = s.get(url, timeout=120)
             res.raise_for_status()
-            result = res.json()
-            if isinstance(result, dict):
-                result_data = result[result_data_key]
-            elif isinstance(result, list):
-                result_data = result
-            else:
-                raise BadRequest(
-                    f"Expecting a JSON object at the top level, but instead got "
-                    f"{result}"
-                )
-            raw_data = []
-            for jdatum in result_data:
-                raw_data.append(
-                    dict(
-                        mpan_core=mpan_core,
-                        start_date=utc_datetime(1, 1, 1)
-                        + Timedelta(seconds=jdatum["Time"] / 10000000),
-                        channel_type="ACTIVE",
-                        value=jdatum["Value"],
-                        status="A",
-                    )
-                )
+
+            raw_data = PARSERS[parser_name](log_f, res.json(), properties, mpan_core)
             HhDatum.insert(sess, raw_data, contract)
             sess.commit()
     log_f("Finished loading.")

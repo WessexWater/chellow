@@ -3854,23 +3854,12 @@ class Channel(Base, PersistentClass):
         if hh_after(finish, self.era.finish_date):
             raise BadRequest("The finish date is after the end of the era.")
 
-        num_rows = (
-            sess.query(HhDatum)
-            .filter(
+        sess.execute(
+            delete(HhDatum).where(
                 HhDatum.channel == self,
                 HhDatum.start_date >= start,
                 HhDatum.start_date <= finish,
             )
-            .count()
-        )
-        if num_rows == 0:
-            raise BadRequest("There aren't any data to delete for this period.")
-
-        sess.execute(
-            "delete from hh_datum where hh_datum.channel_id = :channel_id and "
-            "hh_datum.start_date >= :start and hh_datum.start_date "
-            "<= :finish",
-            {"channel_id": self.id, "start": start, "finish": finish},
         )
 
         self.add_snag(sess, Snag.MISSING, start, finish)

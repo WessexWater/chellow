@@ -1,6 +1,11 @@
+from decimal import Decimal
 from io import StringIO
 
-from chellow.e.hh_importer import HhDataImportProcess, https_handler
+from chellow.e.hh_importer import (
+    HhDataImportProcess,
+    https_handler,
+    solaredge_energy_details_parser,
+)
 from chellow.models import (
     Comm,
     Contract,
@@ -123,10 +128,12 @@ def test_https_handler(mocker, sess):
     sess.commit()
 
     mock_requests = mocker.patch("chellow.e.hh_importer.requests")
+    mock_s = mocker.Mock()
+    mock_requests.Session.return_value = mock_s
     mock_response = mocker.Mock()
-    mock_requests.get.return_value = mock_response
+    mock_s.get.return_value = mock_response
     mock_response.json.return_value = {
-        "DataPoints": [{"Flags": 0, "Time": 636188256000000000, "Value": 21}]
+        "Data": [{"Flags": 0, "Time": 636188256000000000, "Value": 21}]
     }
 
     log = []
@@ -138,7 +145,7 @@ def test_https_handler(mocker, sess):
         "enabled": True,
         "protocol": "https",
         "download_days": 8,
-        "result_data_key": "DataPoints",
+        "parser": "meniscus",
         "url_template": "https://example.com/?from="
         "{{chunk_start.strftime('%d/%m/%Y')}}&to="
         "{{chunk_finish.strftime('%d/%m/%Y')}}",
@@ -156,7 +163,7 @@ def test_https_handler(mocker, sess):
         "Finished loading.",
     ]
     assert log == expected_log
-    mock_requests.get.assert_called_once()
+    mock_s.get.assert_called_once()
 
 
 def test_HhDataImportProcess(sess):
@@ -200,3 +207,33 @@ def test_HhDataImportProcess(sess):
     importer.run()
 
     assert importer.messages == []
+
+
+def test_solaredge_energy_details_parser():
+    def log_f():
+        pass
+
+    mpan_core = "22 4781 4783 280"
+    res = {
+        "energyDetails": {
+            "meters": [
+                {
+                    "type": "Production",
+                    "values": [{"date": "2023-10-01 00:00:00", "value": "3772"}],
+                }
+            ]
+        }
+    }
+    properties = {"generated_mpan_cores": [mpan_core]}
+    actual = solaredge_energy_details_parser(log_f, res, properties, mpan_core)
+    expected = [
+        {
+            "mpan_core": "22 4781 4783 280",
+            "start_date": utc_datetime(2023, 9, 30, 23, 0),
+            "channel_type": "ACTIVE",
+            "value": Decimal("3.772"),
+            "status": "A",
+        }
+    ]
+    print(actual)
+    assert actual == expected

@@ -4214,7 +4214,7 @@ def site_add_e_supply_form_get(site_id):
                 RateScriptAliasFinish.finish_date == null(),
             )
             .order_by(Contract.name)
-        )
+        ).all()
         pcs = g.sess.query(Pc).order_by(Pc.code)
         pc_id = req_int_none("pc_id")
         if pc_id is None:
