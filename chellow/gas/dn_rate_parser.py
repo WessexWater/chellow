@@ -249,10 +249,10 @@ def find_nts_rates(file_name, file_like, col):
     for sheet in book.worksheets:
         title = sheet.title.strip().lower()
         if title.startswith("nts unit rates"):
-            rates["so_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 10)
-            rates["so_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 11)
-            rates["to_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 12)
-            rates["to_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 13)
+            rates["so_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 11)
+            rates["so_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 13)
+            rates["to_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 10)
+            rates["to_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 12)
 
     return rates
 
@@ -317,7 +317,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
 
             nts_rs_2_script = nts_rs_2.make_script()
             if nts_rs_2_script.get("a_file_name") != file_name:
-                nts_rs_2.update(find_nts_1_rates(file_name, BytesIO(download(s, url))))
+                nts_rs_2.update(find_nts_2_rates(file_name, BytesIO(download(s, url))))
                 log(f"Updated NTS rate script for {hh_format(oct_start)}")
 
             dn_rs_script = dn_rs.make_script()
