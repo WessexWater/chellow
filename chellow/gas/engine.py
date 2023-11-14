@@ -595,7 +595,7 @@ def _bill_kwh(
     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
 
     for hh_date in hh_range(caches, chunk_start, chunk_finish):
-        cv, avg_cv = find_cv(sess, caches, "cv", hh_date, g_ldz_code)
+        cv, avg_cv = find_cv(sess, caches, hh_date, g_ldz_code)
         hist_map[hh_date] = {
             "unit_code": unit_code,
             "unit_factor": unit_factor,
