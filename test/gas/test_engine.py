@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from chellow.gas.engine import GDataSource, _bill_kwh, _find_hhs
+from chellow.gas.engine import GDataSource, _bill_kwh, _find_hhs, find_cv
 from chellow.models import (
     Contract,
     GContract,
@@ -14,6 +14,33 @@ from chellow.models import (
     insert_g_units,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_find_cv(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "None core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_cv_rate_script = {
+        "cvs": {
+            "EA": {
+                1: {"applicable_at": utc_datetime(2020, 10, 3), "cv": 39.2101},
+            }
+        }
+    }
+    GContract.insert_industry(sess, "cv", "", {}, vf, None, g_cv_rate_script)
+    sess.commit()
+
+    caches = {}
+    dt = to_utc(ct_datetime(2020, 1, 1))
+    cv, avg_cv = find_cv(sess, caches, dt, g_ldz.code)
+
+    assert (cv, avg_cv) == (39.2101, 39.2)
 
 
 def test_find_hhs_pairs_before_after_chunk_finish(mocker):

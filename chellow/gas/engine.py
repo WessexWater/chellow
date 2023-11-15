@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import timedelta
 from itertools import combinations, count
-from math import floor, log10
+from math import log10
 from types import MappingProxyType
 
 from dateutil.relativedelta import relativedelta
@@ -697,8 +697,8 @@ def find_cv(sess, caches, dt, g_ldz_code):
             avg_cv = year_cache[ct.month]
         except KeyError:
             cv_list = [float(v["cv"]) for v in cvs.values()]
-            avg_cv = year_cache[ct.month] = (
-                floor((sum(cv_list) / len(cv_list)) * 10) / 10
+            avg_cv = year_cache[ct.month] = round(
+                sum(cv_list) / len(cv_list), ndigits=1
             )
     return cv, avg_cv
 
