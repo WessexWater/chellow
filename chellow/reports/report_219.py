@@ -5,21 +5,32 @@ import traceback
 
 from flask import g, request
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
 import chellow.dloads
-from chellow.models import Batch, Bill, BillType, Era, RegisterRead, Session, Supply
+from chellow.models import (
+    Batch,
+    Bill,
+    BillType,
+    Era,
+    RegisterRead,
+    Session,
+    Supply,
+    User,
+)
 from chellow.utils import c_months_u, csv_make_val, req_int
 from chellow.views import chellow_redirect
 
 
-def content(year, month, months, supply_id, user):
+def content(year, month, months, supply_id, user_id):
     f = None
     try:
         with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+
             running_name, finished_name = chellow.dloads.make_names(
                 "register_reads.csv", user
             )
@@ -54,10 +65,10 @@ def content(year, month, months, supply_id, user):
             start_date, finish_date = month_pairs[0][0], month_pairs[-1][-1]
 
             supplies = (
-                sess.query(Supply)
+                select(Supply)
                 .join(Bill)
                 .join(RegisterRead)
-                .filter(
+                .where(
                     or_(
                         and_(
                             RegisterRead.present_date >= start_date,
@@ -69,18 +80,18 @@ def content(year, month, months, supply_id, user):
                         ),
                     )
                 )
-                .order_by(Bill.supply_id)
+                .order_by(Supply.id)
                 .distinct()
             )
 
             if supply_id is not None:
                 supply = Supply.get_by_id(sess, supply_id)
-                supplies = supplies.filter(Bill.supply == supply)
+                supplies = supplies.where(Supply.id == supply.id)
 
-            for supply in supplies:
+            for supply in sess.scalars(supplies):
                 supply_id = supply.id
-                for bill, batch, bill_type in (
-                    sess.query(Bill, Batch, BillType)
+                for bill, batch, bill_type in sess.execute(
+                    select(Bill, Batch, BillType)
                     .join(Batch)
                     .join(BillType)
                     .join(RegisterRead)
@@ -162,6 +173,7 @@ def content(year, month, months, supply_id, user):
         w.writerow([e.description])
     except BaseException:
         msg = traceback.format_exc()
+        print(msg)
         f.write(msg)
     finally:
         if f is not None:
@@ -174,6 +186,6 @@ def do_get(sess):
     month = req_int("end_month")
     months = req_int("months")
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
-    args = (year, month, months, supply_id, g.user)
+    args = year, month, months, supply_id, g.user.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
