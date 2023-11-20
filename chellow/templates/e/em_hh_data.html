@@ -15,7 +15,7 @@
 	<form action="/e/sites/{{site.id}}/energy_management/hh_data">
 		<fieldset>						
 			<label>Site Code </label> {{input_text('site_code', site.code)}}
-			<label>Month</label> {{input_date(None, None, 'month')}}
+			<label>Month</label> {{input_date(resolution='month')}}
 			<input type="submit" value="Show">
 		</fieldset>
 	</form>

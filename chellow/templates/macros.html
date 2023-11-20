@@ -1,17 +1,9 @@
-{%- macro input_date(prefix, initial=None, resolution='minute', is_dynamic=True) -%}
-	{% if prefix != None %}
-		{% set year_name = prefix + '_year' %}
-		{% set month_name = prefix + '_month' %}
-		{% set day_name = prefix + '_day' %}
-		{% set hour_name = prefix + '_hour' %}
-		{% set minute_name = prefix + '_minute' %}
-	{% else %}
-		{% set year_field = 'year' %}
-		{% set month_field = 'month' %}
-		{% set day_field = 'day' %}
-		{% set hour_field = 'hour' %}
-		{% set minute_field = 'minute' %}
-	{% endif %}
+{%- macro input_date(prefix='timestamp', initial=None, resolution='minute', is_dynamic=True) -%}
+	{% set year_name = prefix + '_year' %}
+	{% set month_name = prefix + '_month' %}
+	{% set day_name = prefix + '_day' %}
+	{% set hour_name = prefix + '_hour' %}
+	{% set minute_name = prefix + '_minute' %}
 
 	<div style="white-space: nowrap;" hx-get="/input_date" hx-params="*" hx-trigger="load
 			{%- if is_dynamic -%}

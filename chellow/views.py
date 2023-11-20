@@ -2413,19 +2413,12 @@ def site_gen_graph_get(site_id):
 
 @home.route("/input_date", methods=["GET"])
 def input_date_get():
-    if "prefix" in request.values:
-        prefix = req_str("prefix")
-        year_name = f"{prefix}_year"
-        month_name = f"{prefix}_month"
-        day_name = f"{prefix}_day"
-        hour_name = f"{prefix}_hour"
-        minute_name = f"{prefix}_minute"
-    else:
-        year_name = "year"
-        month_name = "month"
-        day_name = "day"
-        hour_name = "hour"
-        minute_name = "minute"
+    prefix = req_str("prefix")
+    year_name = f"{prefix}_year"
+    month_name = f"{prefix}_month"
+    day_name = f"{prefix}_day"
+    hour_name = f"{prefix}_hour"
+    minute_name = f"{prefix}_minute"
 
     resolution = req_str("resolution")
 
