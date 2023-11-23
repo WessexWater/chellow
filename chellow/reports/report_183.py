@@ -13,7 +13,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
 
 import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Supply, User
+from chellow.models import Era, RSession, Site, SiteEra, Supply, User
 from chellow.utils import (
     csv_make_val,
     ct_datetime,
@@ -110,8 +110,8 @@ def _process_site(sess, zf, site, start_date, finish_date, typ):
 def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
     zf = None
     try:
-        with Session() as sess:
-            user = User.get_by_id(sess, user_id)
+        with RSession() as rsess:
+            user = User.get_by_id(rsess, user_id)
             running_name, finished_name = chellow.dloads.make_names(file_name, user)
             sites_q = (
                 select(Site)
@@ -129,11 +129,11 @@ def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
 
             zf = ZipFile(running_name, "w")
 
-            for site in sess.execute(sites_q).scalars():
-                _process_site(sess, zf, site, start_date, finish_date, typ)
+            for site in rsess.execute(sites_q).scalars():
+                _process_site(rsess, zf, site, start_date, finish_date, typ)
 
                 # Avoid long-running transaction
-                sess.rollback()
+                rsess.rollback()
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
@@ -147,13 +147,13 @@ def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
 def site_content(site_id, start_date, finish_date, user_id, file_name):
     f = None
     try:
-        with Session() as sess:
-            user = User.get_by_id(sess, user_id)
+        with RSession() as rsess:
+            user = User.get_by_id(rsess, user_id)
             running_name, finished_name = chellow.dloads.make_names(file_name, user)
             f = open(running_name, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
-            site = Site.get_by_id(sess, site_id)
-            sites = sess.query(Site).filter(Site.id == site_id)
+            site = Site.get_by_id(rsess, site_id)
+            sites = rsess.query(Site).filter(Site.id == site_id)
             start_date_str = hh_format(start_date)
             finish_date_str = hh_format(finish_date)
 
@@ -174,12 +174,12 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
                 )
                 associates = " ".join(
                     s.code
-                    for s in site.find_linked_sites(sess, start_date, finish_date)
+                    for s in site.find_linked_sites(rsess, start_date, finish_date)
                 )
                 source_codes = set()
                 gen_types = set()
                 for supply in (
-                    sess.query(Supply)
+                    rsess.query(Supply)
                     .join(Era)
                     .join(SiteEra)
                     .filter(
@@ -200,7 +200,7 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
                 source_codes_str = ", ".join(sorted(source_codes))
                 gen_types_str = ", ".join(sorted(gen_types))
                 vals = None
-                for hh in site.hh_data(sess, start_date, finish_date):
+                for hh in site.hh_data(rsess, start_date, finish_date):
                     hh_start_ct = to_ct(hh["start_date"])
                     if hh_start_ct.hour == 0 and hh_start_ct.minute == 0:
                         if vals is not None:

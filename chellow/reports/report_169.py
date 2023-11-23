@@ -12,7 +12,7 @@ from sqlalchemy.sql.expression import null
 
 import chellow.dloads
 from chellow.e.computer import SupplySource, forecast_date
-from chellow.models import Channel, Era, HhDatum, Session, Supply, User
+from chellow.models import Channel, Era, HhDatum, RSession, Supply, User
 from chellow.utils import (
     csv_make_val,
     ct_datetime,
@@ -48,7 +48,7 @@ def content(
     base_name = ["supplies_hh_data", finish_date_ct.strftime("%Y%m%d%H%M")]
     cache = {}
     try:
-        with Session() as sess:
+        with RSession() as sess:
             supplies = (
                 select(Supply)
                 .join(Era)

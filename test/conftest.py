@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 import chellow.models
 from chellow import create_app
-from chellow.models import Session, User, UserRole, stop_sqlalchemy
+from chellow.models import RSession, Session, User, UserRole, stop_sqlalchemy
 
 
 @pytest.fixture
@@ -63,6 +63,13 @@ def sess(app):
     sess = Session()
     yield sess
     sess.close()
+
+
+@pytest.fixture
+def rsess(app):
+    rsess = RSession()
+    yield rsess
+    rsess.close()
 
 
 @pytest.fixture
