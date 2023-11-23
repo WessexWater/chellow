@@ -1220,9 +1220,13 @@ def site_get(site_id):
 def downloads_get():
     files = []
     download_path = chellow.dloads.download_path
+    num_running = 0
 
     for fl in sorted(os.listdir(download_path), reverse=True):
         statinfo = os.stat(os.path.join(download_path, fl))
+        fl_parts = fl.split("_")
+        if fl_parts[1] == "RUNNING":
+            num_running += 1
         files.append(
             {
                 "name": fl,
@@ -1231,7 +1235,7 @@ def downloads_get():
             }
         )
 
-    return render_template("downloads.html", files=files)
+    return render_template("downloads.html", files=files, num_running=num_running)
 
 
 @home.route("/downloads/<fname>")
