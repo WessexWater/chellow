@@ -2429,6 +2429,13 @@ def input_date_get():
     year = req_int_none(year_name)
     if year is None:
         initial = ct_datetime_now()
+        year, month, day, hour, minute = (
+            initial.year,
+            initial.month,
+            initial.day,
+            initial.hour,
+            initial.minute,
+        )
     else:
         month = req_int(month_name)
         if resolution in ("day", "hour", "minute"):
@@ -2446,11 +2453,9 @@ def input_date_get():
         else:
             minute = 0
 
-        initial = ct_datetime(year, month, day, hour, minute)
+    month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
 
-    month_max_day = (
-        ct_datetime(initial.year, initial.month, 1) + relativedelta(months=1) - HH
-    ).day
+    initial = ct_datetime(year, month, min(day, month_max_day), hour, minute)
 
     return render_template(
         "input_date.html",

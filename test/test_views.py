@@ -69,6 +69,19 @@ def test_home(client, sess, mocker):
     match(response, 200, f"/e/dc_contracts/{dc_contract.id}/auto_importer")
 
 
+def test_input_date(client, sess, mocker):
+    query_string = {
+        "prefix": "timestamp",
+        "resolution": "day",
+        "timestamp_year": "2022",
+        "timestamp_month": "11",
+        "timestamp_day": "31",
+    }
+    response = client.get("/input_date", query_string=query_string)
+
+    match(response, 200)
+
+
 def test_local_report_home(client, sess):
     script = """from flask import render_template_string
 
