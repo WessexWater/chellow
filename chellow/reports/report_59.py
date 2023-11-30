@@ -669,6 +669,11 @@ def _process_site(
     for _, vals in sorted(supplies_data.items()):
         supply_rows.append(make_val(vals.get(t)) for t in supply_titles)
 
+    site_md_used_kw = 0
+    for hh in site.hh_data(sess, start_date, finish_date, exclude_virtual=True):
+        used_kw = hh["used"] * 2
+        site_md_used_kw = max(used_kw, site_md_used_kw)
+
     site_row = [
         now,
         site.code,
@@ -679,6 +684,7 @@ def _process_site(
         site_category,
         site_sources,
         site_gen_types,
+        site_md_used_kw,
     ] + [site_data[k] for k in summary_titles]
 
     site_rows.append([make_val(v) for v in site_row])
@@ -879,6 +885,7 @@ def content(
                 "metering-type",
                 "sources",
                 "generator-types",
+                "md-used-kw",
             ]
             summary_titles = [
                 "import-net-kwh",

@@ -449,6 +449,7 @@ def displaced_virtual_bill(ds):
             "metering-type",
             "sources",
             "generator-types",
+            "md-used-kw",
             "import-net-kwh",
             "export-net-kwh",
             "import-gen-kwh",
@@ -498,6 +499,7 @@ def displaced_virtual_bill(ds):
             0.0,
             0.0,
             0.0,
+            0.0,
             19.67999999999967,
             19.67999999999967,
             0.0,
@@ -508,7 +510,7 @@ def displaced_virtual_bill(ds):
             0.0,
         ],
     ]
-
+    print(site_table)
     assert site_expected == site_table
 
     supply_table = list(sheet.tables[1].rows)
