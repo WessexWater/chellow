@@ -4,7 +4,7 @@ from io import BytesIO
 import odio
 
 
-from utils import match
+from utils import match, match_tables
 
 from chellow.models import (
     Comm,
@@ -510,11 +510,9 @@ def displaced_virtual_bill(ds):
             0.0,
         ],
     ]
-    print(site_table)
     assert site_expected == site_table
 
     supply_table = list(sheet.tables[1].rows)
-    print(supply_table)
     supply_expected = [
         [
             "creation-date",
@@ -558,18 +556,18 @@ def displaced_virtual_bill(ds):
         ],
         [
             Datetime(2020, 1, 1, 0, 0),
-            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 1, 0, 0),
             Datetime(2009, 2, 10, 23, 30),
-            "22 7867 5232 780",
+            "displaced",
             None,
             "CI017",
             "Water Works",
             None,
-            "gen",
-            "pv",
-            "Bob",
-            0.0,
-            0.0,
+            "displaced",
+            None,
+            "displaced",
+            None,
+            None,
             None,
             None,
             None,
@@ -600,13 +598,13 @@ def displaced_virtual_bill(ds):
             Datetime(2020, 1, 1, 0, 0),
             Datetime(2009, 1, 1, 0, 0),
             Datetime(2009, 2, 10, 23, 30),
-            "22 7867 5232 780",
+            "22 7867 6232 781",
             None,
             "CI017",
             "Water Works",
             None,
-            "gen",
-            "pv",
+            "net",
+            None,
             "Bob",
             0.0,
             0.0,
@@ -1018,3 +1016,569 @@ def displaced_virtual_bill(ds):
             assert (
                 expected_val == actual_val
             ), f"On row {i} column {j}, {expected_val} != {actual_val}"
+
+
+def test_associated_site_ids(mocker, sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    associated_site = Site.insert(sess, "J77y", "Sewage Works")
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+
+    mop_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    mop_contract = Contract.insert_mop(
+        sess,
+        "Fusion Mop Contract",
+        participant,
+        mop_charge_script,
+        {},
+        utc_datetime(2000, 1, 1),
+        None,
+        {},
+    )
+
+    dc_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+
+    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+
+    supplier_charge_script = """
+import chellow.e.ccl
+from chellow.utils import HH, reduce_bill_hhs, utc_datetime
+
+def virtual_bill_titles():
+    return [
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
+        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
+        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
+        bill_hh['net-gbp'] = sum(
+            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['vat-gbp'] = 0
+        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+
+    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
+    imp_supplier_contract = Contract.insert_supplier(
+        sess,
+        "Fusion Supplier 2000",
+        participant,
+        supplier_charge_script,
+        {},
+        vf,
+        None,
+        {},
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(
+        sess,
+        dno.dno_code,
+        participant,
+        "",
+        {},
+        vf,
+        None,
+        {},
+    )
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        vf,
+        None,
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source_net = Source.get_by_code(sess, "net")
+    insert_generator_types(sess)
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    supply = site.insert_e_supply(
+        sess,
+        source_net,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        {},
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    era = supply.eras[0]
+    era.attach_site(sess, associated_site)
+
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+
+    sess.commit()
+
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 1,
+        "scenario_start_day": 1,
+        "scenario_start_hour": 0,
+        "scenario_start_minute": 0,
+        "scenario_finish_year": 2009,
+        "scenario_finish_month": 2,
+        "scenario_finish_day": 10,
+        "scenario_finish_hour": 23,
+        "scenario_finish_minute": 30,
+        "by_hh": False,
+    }
+    base_name = ["monthly_duration"]
+    compression = False
+    now = utc_datetime(2020, 1, 1)
+    is_bill_check = False
+
+    mock_file = BytesIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_59.open", return_value=mock_file)
+    mocker.patch(
+        "chellow.reports.report_59.chellow.dloads.make_names", return_value=("a", "b")
+    )
+    mocker.patch("chellow.reports.report_59.os.rename")
+
+    content(
+        scenario_props,
+        base_name,
+        user_id,
+        compression,
+        now,
+        is_bill_check,
+    )
+
+    sheet = odio.parse_spreadsheet(mock_file)
+    site_table = list(sheet.tables[0].rows)
+
+    site_expected = [
+        [
+            "creation-date",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "start-date",
+            "finish-date",
+            "metering-type",
+            "sources",
+            "generator-types",
+            "md-used-kw",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            "CI017",
+            "Water Works",
+            "J77y",
+            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 10, 23, 30),
+            "hh",
+            "net",
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            "J77y",
+            "Sewage Works",
+            "CI017",
+            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 10, 23, 30),
+            None,
+            None,
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ],
+    ]
+    match_tables(site_expected, site_table)
+
+    supply_table = list(sheet.tables[1].rows)
+    supply_expected = [
+        [
+            "creation-date",
+            "start-date",
+            "finish-date",
+            "imp-mpan-core",
+            "exp-mpan-core",
+            "site-code",
+            "site-name",
+            "associated-site-ids",
+            "source",
+            "generator-type",
+            "supply-name",
+            "imp-md-kw",
+            "imp-md-kva",
+            "exp-md-kw",
+            "exp-md-kva",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 10, 23, 30),
+            "22 7867 6232 781",
+            None,
+            "CI017",
+            "Water Works",
+            "J77y",
+            "net",
+            None,
+            "Bob",
+            0.0,
+            0.0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        ],
+    ]
+    match_tables(supply_expected, supply_table)
+
+    era_table = list(sheet.tables[2].rows)
+
+    era_expected = [
+        [
+            "creation-date",
+            "start-date",
+            "finish-date",
+            "imp-mpan-core",
+            "exp-mpan-core",
+            "site-id",
+            "site-name",
+            "associated-site-ids",
+            "era-start-date",
+            "era-finish-date",
+            "imp-supplier-contract",
+            "imp-non-actual-hhs",
+            "imp-non-actual-kwh",
+            "exp-supplier-contract",
+            "exp-non-actual-hhs",
+            "exp-non-actual-kwh",
+            "metering-type",
+            "source",
+            "generator-type",
+            "supply-name",
+            "msn",
+            "pc",
+            "import-net-kwh",
+            "export-net-kwh",
+            "import-gen-kwh",
+            "export-gen-kwh",
+            "import-3rd-party-kwh",
+            "export-3rd-party-kwh",
+            "displaced-kwh",
+            "used-kwh",
+            "used-3rd-party-kwh",
+            "import-net-gbp",
+            "export-net-gbp",
+            "import-gen-gbp",
+            "export-gen-gbp",
+            "import-3rd-party-gbp",
+            "export-3rd-party-gbp",
+            "displaced-gbp",
+            "used-gbp",
+            "used-3rd-party-gbp",
+            "billed-import-net-kwh",
+            "billed-import-net-gbp",
+            "billed-supplier-import-net-gbp",
+            "billed-dc-import-net-gbp",
+            "billed-mop-import-net-gbp",
+            None,
+            "mop-net-gbp",
+            "mop-problem",
+            None,
+            "dc-net-gbp",
+            "dc-problem",
+            None,
+            "imp-supplier-ccl-kwh",
+            "imp-supplier-ccl-rate",
+            "imp-supplier-ccl-gbp",
+            "imp-supplier-net-gbp",
+            "imp-supplier-vat-gbp",
+            "imp-supplier-gross-gbp",
+            "imp-supplier-sum-msp-kwh",
+            "imp-supplier-sum-msp-gbp",
+            "imp-supplier-problem",
+            None,
+        ],
+        [
+            Datetime(2020, 1, 1, 0, 0),
+            Datetime(2009, 1, 1, 0, 0),
+            Datetime(2009, 2, 10, 23, 30),
+            "22 7867 6232 781",
+            None,
+            None,
+            "Water Works",
+            "J77y",
+            Datetime(2000, 1, 1, 0, 0),
+            None,
+            "Fusion Supplier 2000",
+            1968.0,
+            0.0,
+            None,
+            None,
+            None,
+            "hh",
+            "net",
+            None,
+            "Bob",
+            "hgjeyhuw",
+            "00",
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            0.0,
+            None,
+            None,
+            0.0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            None,
+        ],
+    ]
+
+    match_tables(era_expected, era_table)

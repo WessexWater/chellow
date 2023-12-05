@@ -436,7 +436,7 @@ def _process_site(
 
             supply_data["imp-mpan-core"] = imp_mpan_core
             supply_data["exp-mpan-core"] = exp_mpan_core
-            supply_data["associated-site-ids"] |= era_associates
+            supply_data["associated-site-ids"].update(era_associates)
             supply_data["start-date"] = min(sss.start_date, supply_data["start-date"])
             supply_data["finish-date"] = max(
                 sss.finish_date, supply_data["finish-date"]
@@ -666,8 +666,9 @@ def _process_site(
 
                     era_rows.append([make_val(v) for v in out])
 
-    for _, vals in sorted(supplies_data.items()):
-        supply_rows.append(make_val(vals.get(t)) for t in supply_titles)
+    for _, v in sorted(supplies_data.items()):
+        row = [make_val(v.get(t)) for t in supply_titles]
+        supply_rows.append(row)
 
     site_md_used_kw = 0
     for hh in site.hh_data(sess, start_date, finish_date, exclude_virtual=True):
@@ -678,7 +679,7 @@ def _process_site(
         now,
         site.code,
         site.name,
-        site.find_linked_sites(sess, start_date, finish_date),
+        [s.code for s in site.find_linked_sites(sess, start_date, finish_date)],
         start_date,
         finish_date,
         site_category,

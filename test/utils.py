@@ -1,5 +1,4 @@
 import re
-from itertools import zip_longest
 from time import sleep
 
 
@@ -14,13 +13,19 @@ def match(response, status_code, *patterns):
         ), response_str
 
 
-def match_tables(table_1, table_2):
-    for r1, r2 in zip_longest(table_1, table_2):
-        for c1, c2 in zip_longest(r1, r2):
-            if c1 != c2:
-                raise Exception(f"Two cells don't match: {c1} and {c2}")
-
-    assert table_1 == table_2
+def match_tables(expected_table, actual_table):
+    len_expected_table = len(expected_table)
+    len_actual_table = len(actual_table)
+    assert len_expected_table == len_actual_table, (
+        f"The length of the expected table {len_expected_table} does not match the "
+        f"lngth of the actual table {len_actual_table}"
+    )
+    for i, (expected_row, actual_row) in enumerate(zip(expected_table, actual_table)):
+        assert len(expected_row) == len(actual_row)
+        for j, (expected_val, actual_val) in enumerate(zip(expected_row, actual_row)):
+            assert (
+                expected_val == actual_val
+            ), f"On row {i} column {j}, {expected_val} != {actual_val}"
 
 
 def match_repeat(client, path, match, seconds=5):
