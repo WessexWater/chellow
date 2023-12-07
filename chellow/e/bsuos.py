@@ -217,7 +217,7 @@ def _process_url(logger, sess, url, contract, s):
     next(reader)  # Skip titles
 
     for row in reader:
-        date_str = row[0]
+        date_str = row[0].strip()
         date_format = "%Y-%m-%dT%H:%M:%S" if len(date_str) == 19 else "%d-%m-%y"
         date = Datetime.strptime(date_str, date_format)
         period_str = row[1]
