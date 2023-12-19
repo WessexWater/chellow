@@ -1552,6 +1552,7 @@ def era_edit_get(era_id):
 @e.route("/eras/<int:era_id>/edit/form")
 def era_edit_form_get(era_id):
     try:
+        era = Era.get_by_id(g.sess, era_id)
         ct_now = ct_datetime_now()
         cops = g.sess.scalars(select(Cop).order_by(Cop.code))
         comms = g.sess.scalars(select(Comm).order_by(Comm.code))
@@ -1565,7 +1566,17 @@ def era_edit_form_get(era_id):
         else:
             start_date = to_utc(ct_datetime(ct_now.year, ct_now.month, ct_now.day))
 
-        era = Era.get_by_id(g.sess, era_id)
+        is_ended = req_bool("is_ended")
+        if is_ended:
+            if "finish_year" in request.values:
+                finish_date = req_hh_date("finish")
+            elif era.finish_date is None:
+                finish_date = start_date
+            else:
+                finish_date = era.finish_date
+        else:
+            finish_date = None
+
         RateScriptAliasStart = aliased(RateScript)
         RateScriptAliasFinish = aliased(RateScript)
         mop_contracts = g.sess.scalars(
@@ -1703,20 +1714,26 @@ def era_edit_form_get(era_id):
             mtc_participant = None
 
         if pc.code == "00":
-            imp_llfcs = g.sess.scalars(
+            imp_llfcs_q = (
                 select(Llfc)
                 .join(MtcLlfc)
                 .where(
                     MtcLlfc.mtc_participant == mtc_participant,
                     start_date >= Llfc.valid_from,
-                    Llfc.valid_to == null(),
                     Llfc.is_import == true(),
                 )
                 .order_by(Llfc.code, Llfc.valid_from.desc())
                 .distinct()
             )
+            if finish_date is None:
+                imp_llfcs_q = imp_llfcs_q.where(Llfc.valid_to == null())
+            else:
+                imp_llfcs_q = imp_llfcs_q.where(
+                    or_(Llfc.valid_to == null(), Llfc.valid_to >= finish_date)
+                )
+            imp_llfcs = g.sess.scalars(imp_llfcs_q)
 
-            exp_llfcs = g.sess.scalars(
+            exp_llfcs_q = (
                 select(Llfc)
                 .join(MtcLlfc)
                 .where(
@@ -1728,6 +1745,13 @@ def era_edit_form_get(era_id):
                 .order_by(Llfc.code, Llfc.valid_from.desc())
                 .distinct()
             )
+            if finish_date is None:
+                exp_llfcs_q = exp_llfcs_q.where(Llfc.valid_to == null())
+            else:
+                exp_llfcs_q = exp_llfcs_q.where(
+                    or_(Llfc.valid_to == null(), Llfc.valid_to >= finish_date)
+                )
+            exp_llfcs = g.sess.scalars(exp_llfcs_q)
         else:
             mtc_ssc = MtcSsc.find_by_values(g.sess, mtc_participant, ssc, start_date)
             imp_llfcs = g.sess.scalars(
@@ -1763,6 +1787,7 @@ def era_edit_form_get(era_id):
         return render_template(
             "era_edit_form.html",
             era=era,
+            finish_date=finish_date,
             energisation_statuses=energisation_statuses,
             default_energisation_status=default_energisation_status,
             mop_contracts=mop_contracts,

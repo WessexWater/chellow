@@ -19,7 +19,7 @@
 
 	{% if request.values.is_ended == 'true' %}
 		<label>Finish Date</label>
-		{{input_date('finish', era.finish_date, is_dynamic=False)}}
+		{{input_date('finish', finish_date, is_dynamic=False)}}
 	{% endif %}
 
 	<label>MOP Contract</label>
