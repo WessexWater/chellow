@@ -1579,7 +1579,7 @@ def era_edit_form_get(era_id):
 
         RateScriptAliasStart = aliased(RateScript)
         RateScriptAliasFinish = aliased(RateScript)
-        mop_contracts = g.sess.scalars(
+        mop_contracts_q = (
             select(Contract)
             .join(MarketRole)
             .join(
@@ -1593,11 +1593,22 @@ def era_edit_form_get(era_id):
             .where(
                 MarketRole.code == "M",
                 start_date >= RateScriptAliasStart.start_date,
-                RateScriptAliasFinish.finish_date == null(),
             )
             .order_by(Contract.name)
         )
-        dc_contracts = g.sess.scalars(
+        if finish_date is None:
+            mop_contracts_q = mop_contracts_q.where(
+                RateScriptAliasFinish.finish_date == null()
+            )
+        else:
+            mop_contracts_q = mop_contracts_q.where(
+                or_(
+                    RateScriptAliasFinish.finish_date == null(),
+                    RateScriptAliasFinish.finish_date >= finish_date,
+                )
+            )
+        mop_contracts = g.sess.scalars(mop_contracts_q)
+        dc_contracts_q = (
             select(Contract)
             .join(MarketRole)
             .join(
@@ -1611,11 +1622,22 @@ def era_edit_form_get(era_id):
             .where(
                 MarketRole.code.in_(("C", "D")),
                 start_date >= RateScriptAliasStart.start_date,
-                RateScriptAliasFinish.finish_date == null(),
             )
             .order_by(Contract.name)
         )
-        supplier_contracts = g.sess.scalars(
+        if finish_date is None:
+            dc_contracts_q = dc_contracts_q.where(
+                RateScriptAliasFinish.finish_date == null()
+            )
+        else:
+            dc_contracts_q = dc_contracts_q.where(
+                or_(
+                    RateScriptAliasFinish.finish_date == null(),
+                    RateScriptAliasFinish.finish_date >= finish_date,
+                )
+            )
+        dc_contracts = g.sess.scalars(dc_contracts_q)
+        supplier_contracts_q = (
             select(Contract)
             .join(MarketRole)
             .join(
@@ -1629,10 +1651,21 @@ def era_edit_form_get(era_id):
             .where(
                 MarketRole.code == "X",
                 start_date >= RateScriptAliasStart.start_date,
-                RateScriptAliasFinish.finish_date == null(),
             )
             .order_by(Contract.name)
-        ).all()
+        )
+        if finish_date is None:
+            supplier_contracts_q = supplier_contracts_q.where(
+                RateScriptAliasFinish.finish_date == null()
+            )
+        else:
+            supplier_contracts_q = supplier_contracts_q.where(
+                or_(
+                    RateScriptAliasFinish.finish_date == null(),
+                    RateScriptAliasFinish.finish_date >= finish_date,
+                )
+            )
+        supplier_contracts = g.sess.scalars(supplier_contracts_q).all()
         pcs = g.sess.scalars(select(Pc).order_by(Pc.code))
         pc_id = req_int_none("pc_id")
         if pc_id is None:
@@ -1647,7 +1680,7 @@ def era_edit_form_get(era_id):
         if pc.code == "00":
             sscs = None
         else:
-            sscs = g.sess.scalars(
+            sscs_q = (
                 select(Ssc)
                 .select_from(MtcSsc)
                 .join(Ssc, MtcSsc.ssc_id == Ssc.id)
@@ -1658,11 +1691,20 @@ def era_edit_form_get(era_id):
                     MtcParticipant.participant == participant,
                     MtcLlfcSscPc.pc == pc,
                     start_date >= MtcLlfcSscPc.valid_from,
-                    MtcLlfcSscPc.valid_to == null(),
                 )
                 .distinct()
                 .order_by(Ssc.code, Ssc.valid_from.desc())
-            ).all()
+            )
+            if finish_date is None:
+                sscs_q = sscs_q.where(MtcLlfcSscPc.valid_to == null())
+            else:
+                sscs_q = sscs_q.where(
+                    or_(
+                        MtcLlfcSscPc.valid_to == null(),
+                        MtcLlfcSscPc.valid_to >= finish_date,
+                    )
+                )
+            sscs = g.sess.scalars(sscs_q).all()
             ssc_id = req_int_none("ssc_id")
             if ssc_id in {s.id for s in sscs}:
                 ssc = Ssc.get_by_id(g.sess, ssc_id)
@@ -1684,25 +1726,36 @@ def era_edit_form_get(era_id):
                 )
             ]
         else:
+            mtc_participants_q = (
+                select(MtcParticipant, Mtc)
+                .select_from(MtcLlfcSscPc)
+                .join(MtcLlfcSsc)
+                .join(MtcSsc)
+                .join(MtcParticipant)
+                .join(Mtc)
+                .where(
+                    MtcParticipant.participant == participant,
+                    MtcLlfcSscPc.pc == pc,
+                    MtcSsc.ssc == ssc,
+                    start_date >= MtcLlfcSscPc.valid_from,
+                )
+                .distinct()
+                .order_by(Mtc.code, MtcParticipant.valid_from.desc())
+            )
+            if finish_date is None:
+                mtc_participants_q = mtc_participants_q.where(
+                    MtcLlfcSscPc.valid_to == null()
+                )
+            else:
+                mtc_participants_q = mtc_participants_q.where(
+                    or_(
+                        MtcLlfcSscPc.valid_to == null(),
+                        MtcLlfcSscPc.valid_to >= finish_date,
+                    )
+                )
             mtc_participants = [
                 mtc_participant
-                for mtc_participant, mtc in g.sess.execute(
-                    select(MtcParticipant, Mtc)
-                    .select_from(MtcLlfcSscPc)
-                    .join(MtcLlfcSsc)
-                    .join(MtcSsc)
-                    .join(MtcParticipant)
-                    .join(Mtc)
-                    .where(
-                        MtcParticipant.participant == participant,
-                        MtcLlfcSscPc.pc == pc,
-                        MtcSsc.ssc == ssc,
-                        start_date >= MtcLlfcSscPc.valid_from,
-                        MtcLlfcSscPc.valid_to == null(),
-                    )
-                    .distinct()
-                    .order_by(Mtc.code, MtcParticipant.valid_from.desc())
-                )
+                for mtc_participant, mtc in g.sess.execute(mtc_participants_q)
             ]
 
         mtc_participant_id = req_int_none("mtc_participant_id")
@@ -1754,7 +1807,7 @@ def era_edit_form_get(era_id):
             exp_llfcs = g.sess.scalars(exp_llfcs_q)
         else:
             mtc_ssc = MtcSsc.find_by_values(g.sess, mtc_participant, ssc, start_date)
-            imp_llfcs = g.sess.scalars(
+            imp_llfcs_q = (
                 select(Llfc)
                 .join(MtcLlfcSsc)
                 .join(MtcLlfcSscPc)
@@ -1762,14 +1815,23 @@ def era_edit_form_get(era_id):
                     MtcLlfcSsc.mtc_ssc == mtc_ssc,
                     MtcLlfcSscPc.pc == pc,
                     start_date >= MtcLlfcSscPc.valid_from,
-                    MtcLlfcSscPc.valid_to == null(),
                     Llfc.is_import == true(),
                 )
                 .distinct()
                 .order_by(Llfc.code, Llfc.valid_from.desc())
-            ).all()
+            )
+            if finish_date is None:
+                imp_llfcs_q = imp_llfcs_q.where(MtcLlfcSscPc.valid_to == null())
+            else:
+                imp_llfcs_q = imp_llfcs_q.where(
+                    or_(
+                        MtcLlfcSscPc.valid_to == null(),
+                        MtcLlfcSscPc.valid_to >= finish_date,
+                    )
+                )
+            imp_llfcs = g.sess.scalars(imp_llfcs_q).all()
 
-            exp_llfcs = g.sess.scalars(
+            exp_llfcs_q = (
                 select(Llfc)
                 .join(MtcLlfcSsc)
                 .join(MtcLlfcSscPc)
@@ -1777,12 +1839,21 @@ def era_edit_form_get(era_id):
                     MtcLlfcSsc.mtc_ssc == mtc_ssc,
                     MtcLlfcSscPc.pc == pc,
                     start_date >= MtcLlfcSscPc.valid_from,
-                    MtcLlfcSscPc.valid_to == null(),
                     Llfc.is_import == false(),
                 )
                 .distinct()
                 .order_by(Llfc.code, Llfc.valid_from.desc())
-            ).all()
+            )
+            if finish_date is None:
+                exp_llfcs_q = exp_llfcs_q.where(MtcLlfcSscPc.valid_to == null())
+            else:
+                exp_llfcs_q = exp_llfcs_q.where(
+                    or_(
+                        MtcLlfcSscPc.valid_to == null(),
+                        MtcLlfcSscPc.valid_to >= finish_date,
+                    )
+                )
+            exp_llfcs = g.sess.scalars(exp_llfcs_q).all()
 
         return render_template(
             "era_edit_form.html",
