@@ -1,6 +1,7 @@
 import atexit
 import collections
 import csv
+import json
 import threading
 import traceback
 from datetime import datetime as Datetime
@@ -9,7 +10,6 @@ from io import BytesIO
 
 from dateutil.relativedelta import relativedelta
 
-from pypdf import PdfReader
 
 import requests
 
@@ -325,24 +325,11 @@ def shutdown():
         bsuos_importer.stop()
 
 
-def extract_rates(line):
-    rates = []
-    if line.startswith("BSUoS Tariff £/MWh"):
-        for token in line.split():
-            if token[0] == "£" and token[1] != "/":
-                dpindex = token.index(".")
-                rates.append(Decimal(token[1 : dpindex + 3]))
-    return rates
-
-
 def find_rate(file_name, file_like, rate_index):
     rate_script = {"a_file_name": file_name}
     rates = []
-
-    reader = PdfReader(file_like)
-    for page in reader.pages:
-        for line in page.extract_text().splitlines():
-            rates.extend(extract_rates(line))
+    for rate_str in json.load(file_like)["rates"]:
+        rates.append(Decimal(rate_str))
 
     rate_script["rate_gbp_per_mwh"] = rates[rate_index]
     return rate_script
@@ -393,11 +380,19 @@ def rate_server_import(sess, log, set_progress, s, paths):
 
             rs_1_script = rs_1.make_script()
             if rs_1_script.get("a_file_name") != file_name:
+                log(
+                    f"Found new file {file_name} for rate script starting "
+                    f"{hh_format(year_start)}"
+                )
                 rs_1.update(find_rate(file_name, BytesIO(download(s, url)), 0))
                 log(f"Updated BSUoS rate script for {hh_format(year_start)}")
 
             rs_2_script = rs_2.make_script()
             if rs_2_script.get("a_file_name") != file_name:
+                log(
+                    f"Found new file {file_name} for rate script starting "
+                    f"{hh_format(oct_start)}"
+                )
                 rs_2.update(find_rate(file_name, BytesIO(download(s, url)), 1))
                 log(f"Updated BSUoS rate script for {hh_format(oct_start)}")
 
