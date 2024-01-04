@@ -87,7 +87,7 @@ def run_import(sess, log, set_progress):
         "chellow.e.dno_rate_parser",
         "chellow.e.laf_import",
         "chellow.e.mdd_importer",
-        "chellow.e.tnuos",
+        "chellow.e.triad",
         "chellow.gas.dn_rate_parser",
     ):
         mod = import_module(mod_name)

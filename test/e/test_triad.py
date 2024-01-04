@@ -1,5 +1,7 @@
+from decimal import Decimal
+
 from chellow.e.computer import SupplySource
-from chellow.e.tnuos import _process_banded_hh, national_grid_import
+from chellow.e.triad import _find_triad_dates, _process_triad_hh, national_grid_import
 from chellow.models import (
     Comm,
     Contract,
@@ -26,7 +28,7 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_process_banded_hh_ums(sess):
+def test_process_triad_hh(sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = to_utc(ct_datetime(2023, 7, 31, 23, 30))
@@ -40,17 +42,35 @@ def test_process_banded_hh_ums(sess):
     Contract.insert_non_core(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
-    tnuos_rate_script = {
-        "bands": {"Unmetered": {"TDR Tariff": "1"}},
+    triad_rate_script = {
+        "triad_gbp_per_gsp_kw": {
+            "import": {"_L": {"HHTariff(Floored)_£/kW": Decimal(0)}}
+        },
     }
     Contract.insert_non_core(
         sess,
-        "tnuos",
+        "triad_rates",
         "",
         {},
         vf,
         None,
-        tnuos_rate_script,
+        triad_rate_script,
+    )
+    triad_dates_rate_script = {
+        "triad_dates": [
+            utc_datetime(2021, 12, 2, 16, 30),
+            utc_datetime(2022, 1, 5, 17, 00),
+            utc_datetime(2022, 1, 20, 17, 00),
+        ],
+    }
+    Contract.insert_non_core(
+        sess,
+        "triad_dates",
+        "",
+        {},
+        vf,
+        None,
+        triad_dates_rate_script,
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
@@ -81,7 +101,21 @@ def test_process_banded_hh_ums(sess):
         {},
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    dno_rate_script = {
+        "_L": {
+            "bands": {},
+            "tariffs": {
+                "510_00": {
+                    "description": "",
+                    "gbp-per-kvarh": 0,
+                    "green-gbp-per-kwh": 0,
+                }
+            },
+        },
+    }
+    Contract.insert_dno(
+        sess, dno.dno_code, participant, "", {}, vf, None, dno_rate_script
+    )
     meter_type = MeterType.insert(sess, "UM", "Unmetered", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", True, False, vf, None)
@@ -150,8 +184,11 @@ def test_process_banded_hh_ums(sess):
         sess, start_date, finish_date, forecast_from, era, is_import, caches
     )
     hh = ds.hh_data[0]
-    hh["duos-description"] = "Unmetered Supplies"
-    _process_banded_hh(ds, hh)
+    hh["duos-description"] = "Unmetered"
+
+    rate_period = "monthly"
+    est_kw = None
+    _process_triad_hh(ds, rate_period, est_kw, hh)
     assert hh == {
         "hist-start": utc_datetime(2019, 7, 31, 22, 30),
         "start-date": utc_datetime(2023, 7, 31, 22, 30),
@@ -177,36 +214,107 @@ def test_process_banded_hh_ums(sess):
         "exp-msp-kvarh": 0,
         "exp-msp-kvar": 0,
         "msp-kw": 0,
-        "msp-kva": 0,
         "msp-kwh": 0,
+        "msp-kva": 0,
         "hist-import-net-kvarh": 0,
         "hist-export-net-kvarh": 0,
         "anti-msp-kwh": 0,
         "anti-msp-kw": 0,
         "hist-imp-msp-kvarh": 0,
         "hist-kwh": 0,
-        "duos-description": "Unmetered Supplies",
-        "tnuos-band": "Unmetered",
-        "tnuos-days": 1,
-        "tnuos-gbp": 0.00989041095890411,
-        "tnuos-rate": 1.0,
+        "duos-description": "Unmetered",
+        "triad-estimate-1-date": utc_datetime(2021, 12, 2, 16, 30),
+        "triad-estimate-1-gsp-kw": 0,
+        "triad-estimate-1-laf": 1,
+        "triad-estimate-1-msp-kw": 0,
+        "triad-estimate-1-status": "X",
+        "triad-estimate-2-date": utc_datetime(2022, 1, 5, 17, 0),
+        "triad-estimate-2-gsp-kw": 0,
+        "triad-estimate-2-laf": 1,
+        "triad-estimate-2-msp-kw": 0,
+        "triad-estimate-2-status": "X",
+        "triad-estimate-3-date": utc_datetime(2022, 1, 20, 17, 0),
+        "triad-estimate-3-gsp-kw": 0,
+        "triad-estimate-3-laf": 1,
+        "triad-estimate-3-msp-kw": 0,
+        "triad-estimate-3-status": "X",
+        "triad-estimate-gbp": 0.0,
+        "triad-estimate-gsp-kw": 0.0,
+        "triad-estimate-months": 1,
+        "triad-estimate-rate": 0.0,
     }
 
 
+def test_find_triad_dates(mocker):
+    file_name = "nail_file.pdf"
+    file_like = mocker.Mock()
+    mock_reader = mocker.Mock()
+    lines = [
+        "here is the table: ",
+        "Date  Settlement ",
+        "Period  Net System ",
+        "Demand (MW)  ",
+        "15/12/2022  35 44,561 ",
+        "17/01/2023  35 42,022 ",
+        "02/12/2022  36 39,573 ",
+        "",
+    ]
+    page = mocker.Mock()
+    page.extract_text = mocker.Mock(return_value="\n".join(lines))
+    mock_reader.pages = [page]
+
+    mocker.patch("chellow.e.triad.PdfReader", return_value=mock_reader)
+    actual = _find_triad_dates(file_name, file_like)
+    expected = {
+        "a_file_name": "nail_file.pdf",
+        "triad_dates": [
+            utc_datetime(2022, 12, 15, 17, 0),
+            utc_datetime(2023, 1, 17, 17, 0),
+            utc_datetime(2022, 12, 2, 17, 30),
+        ],
+    }
+    assert actual == expected
+
+
 def test_national_grid_import(mocker, sess):
-    vf = to_utc(ct_datetime(1996, 4, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
     participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
-    contract = Contract.insert_non_core(
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
+    )
+    triad_rate_script = {
+        "triad_gbp_per_gsp_kw": {
+            "import": {"_L": {"HHTariff(Floored)_£/kW": Decimal(0)}}
+        },
+    }
+    Contract.insert_non_core(
         sess,
-        "tnuos",
+        "triad_rates",
         "",
         {},
         vf,
         None,
+        triad_rate_script,
+    )
+    triad_dates_rate_script = {
+        "triad_dates": [
+            utc_datetime(2021, 12, 2, 16, 30),
+            utc_datetime(2022, 1, 5, 17, 00),
+            utc_datetime(2022, 1, 20, 17, 00),
+        ],
+    }
+    Contract.insert_non_core(
+        sess,
+        "triad_dates",
+        "",
         {},
+        vf,
+        None,
+        triad_dates_rate_script,
     )
     sess.commit()
 
@@ -216,27 +324,7 @@ def test_national_grid_import(mocker, sess):
     def set_progress(msg):
         pass
 
-    record = {
-        "Year_FY": "1997",
-        "TDR Band": "unmetered",
-        "Published_Date": "2000-01-01",
-        "TDR Tariff extra": "3.4",
-    }
-    mocker.patch(
-        "chellow.e.tnuos.api_get", return_value={"result": {"records": [record]}}
-    )
+    mocker.patch("chellow.e.triad.api_get", return_value={"result": {"records": []}})
 
     s = mocker.Mock()
     national_grid_import(sess, log, set_progress, s)
-    rs = contract.rate_scripts[0]
-    assert rs.make_script() == {
-        "bands": {
-            "unmetered": {
-                "Published_Date": "2000-01-01",
-                "TDR Band": "unmetered",
-                "TDR Tariff": "3.4",
-                "TDR Tariff extra": "3.4",
-                "Year_FY": "1997",
-            },
-        },
-    }

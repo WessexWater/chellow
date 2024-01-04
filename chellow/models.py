@@ -1208,6 +1208,10 @@ class Party(Base, PersistentClass):
 
 class Contract(Base, PersistentClass):
     @staticmethod
+    def find_non_core_by_name(sess, name):
+        return Contract.find_by_role_code_name(sess, "Z", name)
+
+    @staticmethod
     def get_non_core_by_name(sess, name):
         return Contract.get_by_role_code_name(sess, "Z", name)
 
