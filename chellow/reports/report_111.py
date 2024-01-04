@@ -453,7 +453,7 @@ def _process_supply(
             covered_bdown["vat-gbp"] += float(covered_bill.vat)
             covered_bdown["sum-msp-kwh"] += float(covered_bill.kwh)
             for k, v in loads(covered_bill.breakdown).items():
-                if k in ("raw_lines", "raw-lines"):
+                if k in ("raw_lines", "raw-lines", "vat"):
                     continue
 
                 if isinstance(v, list):
