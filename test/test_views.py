@@ -638,6 +638,8 @@ def test_supplies_get_g(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     sess.commit()
     query_string = {

@@ -6,6 +6,10 @@ from chellow.models import (
     Contract,
     Cop,
     EnergisationStatus,
+    GContract,
+    GDn,
+    GReadingFrequency,
+    GUnit,
     GspGroup,
     MarketRole,
     MeterPaymentType,
@@ -21,6 +25,8 @@ from chellow.models import (
     insert_comms,
     insert_cops,
     insert_energisation_statuses,
+    insert_g_reading_frequencies,
+    insert_g_units,
     insert_sources,
     insert_voltage_levels,
 )
@@ -158,6 +164,213 @@ def test_general_import_g_bill_reads(mocker):
         pres_date,
         pres_type,
     )
+
+
+def test_general_import_g_era_insert(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site_code = "22488"
+    site = Site.insert(sess, site_code, "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2010, 1, 1),
+        None,
+        msn,
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+    new_aq = "10"
+    new_soq = "20"
+
+    action = "insert"
+    vals = [
+        mprn,
+        "2019-09-08 00:00",
+        site_code,
+        "{no change}",
+        "1",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        new_aq,
+        new_soq,
+    ]
+    args = []
+    chellow.general_import.general_import_g_era(sess, action, vals, args)
+
+    expected_args = [
+        ("MPRN", "87614362"),
+        ("Start Date", "2019-09-08 00:00"),
+        ("Site Code", site_code),
+        ("Meter Serial Number", "{no change}"),
+        ("Correction Factor", "1"),
+        ("Unit", "{no change}"),
+        ("Supplier Contract Name", "{no change}"),
+        ("Account", "{no change}"),
+        ("Reading Frequency", "{no change}"),
+        ("AQ", new_aq),
+        ("SOQ", new_soq),
+    ]
+
+    assert args == expected_args
+
+
+def test_general_import_g_era_insert_no_change(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2010, 1, 1),
+        None,
+        msn,
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+
+    action = "insert"
+    vals = [
+        mprn,
+        "2019-09-08 00:00",
+        "{no change}",
+        "{no change}",
+        "1",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+    ]
+    args = []
+    chellow.general_import.general_import_g_era(sess, action, vals, args)
+    expected_args = [
+        ("MPRN", "87614362"),
+        ("Start Date", "2019-09-08 00:00"),
+        ("Site Code", "{no change}"),
+        ("Meter Serial Number", "{no change}"),
+        ("Correction Factor", "1"),
+        ("Unit", "{no change}"),
+        ("Supplier Contract Name", "{no change}"),
+        ("Account", "{no change}"),
+        ("Reading Frequency", "{no change}"),
+        ("AQ", "{no change}"),
+        ("SOQ", "{no change}"),
+    ]
+
+    assert args == expected_args
+
+
+def test_general_import_g_era_update(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2010, 1, 1),
+        None,
+        msn,
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+
+    action = "update"
+    vals = [
+        mprn,
+        "2019-09-08 00:00",
+        "{no change}",
+        "{no change}",
+        "A Mop Contract",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+        "{no change}",
+    ]
+    args = []
+    chellow.general_import.general_import_g_era(sess, action, vals, args)
+    expected_args = [
+        ("MPRN", "87614362"),
+        ("date", "2019-09-08 00:00"),
+        ("Start Date", "{no change}"),
+        ("Finish Date", "{no change}"),
+        ("Meter Serial Number", "A Mop Contract"),
+        ("Correction Factor", "{no change}"),
+        ("Unit", "{no change}"),
+        ("Supplier Contract Name", "{no change}"),
+        ("Account", "{no change}"),
+        ("Reading Frequency", "{no change}"),
+        ("AQ", "{no change}"),
+        ("SOQ", "{no change}"),
+    ]
+
+    assert args == expected_args
 
 
 def test_parse_breakdown():

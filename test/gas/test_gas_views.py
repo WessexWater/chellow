@@ -73,6 +73,8 @@ def test_batch_get(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
@@ -150,6 +152,8 @@ def test_batch_edit_post(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     sess.commit()
@@ -214,6 +218,8 @@ def test_bill_get(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
@@ -274,6 +280,8 @@ def test_bill_add_post(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
     insert_bill_types(sess)
@@ -336,6 +344,8 @@ def test_bill_edit_post(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
@@ -500,6 +510,8 @@ def test_bill_imports_post_full(mocker, app, client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     insert_g_read_types(sess)
@@ -712,6 +724,8 @@ def test_supply_get(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     sess.commit()
@@ -754,6 +768,8 @@ def test_supply_note_add_get(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     sess.commit()
@@ -795,6 +811,8 @@ def test_supply_notes_get(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     sess.commit()
 
@@ -832,6 +850,8 @@ def test_supply_edit_post(client, sess):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     sess.commit()
@@ -885,6 +905,8 @@ def test_read_edit_post_delete(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
@@ -1022,6 +1044,8 @@ def test_read_add_get(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
@@ -1080,6 +1104,8 @@ def test_read_add_post(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
@@ -1135,6 +1161,69 @@ def test_read_add_post(sess, client):
     match(response, 303)
 
 
+def test_era_post(sess, client):
+    site = Site.insert(sess, "22488", "Water Works")
+
+    g_dn = GDn.insert(sess, "EE", "East of England")
+
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+
+    insert_g_units(sess)
+
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+
+    insert_g_reading_frequencies(sess)
+
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+
+    g_contract = GContract.insert(
+        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+
+    g_supply = site.insert_g_supply(
+        sess,
+        "7y94u5",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+
+    g_era = g_supply.g_eras[0]
+
+    sess.commit()
+
+    data = {
+        "start_year": "2018",
+        "start_month": "01",
+        "start_day": "01",
+        "start_hour": "0",
+        "start_minute": "0",
+        "msn": "9874h6l",
+        "correction_factor": "1",
+        "g_contract_id": g_contract.id,
+        "account": "acc 8",
+        "g_unit_id": g_unit_M3.id,
+        "g_reading_frequency_id": g_reading_frequency_M.id,
+        "aq": 1,
+        "soq": 1,
+    }
+
+    response = client.post(f"/g/eras/{g_era.id}/edit", data=data)
+
+    match(response, 303, r"/g/supplies/1")
+
+
 def test_era_post_delete(sess, client):
     site = Site.insert(sess, "22488", "Water Works")
 
@@ -1169,6 +1258,8 @@ def test_era_post_delete(sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
 
     g_era = g_supply.insert_g_era_at(sess, utc_datetime(2018, 3, 1))

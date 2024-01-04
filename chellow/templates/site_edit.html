@@ -86,6 +86,11 @@
 								g_reading_frequency.code + ' ' + g_reading_frequency.description)}}
 					{% endfor %}
 				</select>
+
+				<label>AQ</label> {{input_text('aq')}}
+
+				<label>SOQ</label> {{input_text('soq')}}
+
 				<input name="insert_gas" type="submit" value="Insert">
 			</fieldset>
 		</form>

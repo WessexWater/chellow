@@ -1971,6 +1971,8 @@ class Site(Base, PersistentClass):
         g_contract,
         account,
         g_reading_frequency,
+        aq,
+        soq,
     ):
         if g_contract.is_industry:
             raise BadRequest(
@@ -2004,6 +2006,8 @@ class Site(Base, PersistentClass):
             g_contract,
             account,
             g_reading_frequency,
+            aq,
+            soq,
         )
         sess.flush()
         return g_supply
@@ -5163,6 +5167,9 @@ class GEra(Base, PersistentClass):
     finish_date = Column(DateTime(timezone=True), index=True)
     msn = Column(String)
     correction_factor = Column(Numeric, nullable=False)
+    aq = Column(Numeric, nullable=False)
+    soq = Column(Numeric, nullable=False)
+
     g_unit_id = Column(Integer, ForeignKey("g_unit.id"), nullable=False, index=True)
     g_unit = relationship("GUnit", primaryjoin="GUnit.id==GEra.g_unit_id")
     g_contract_id = Column(
@@ -5192,6 +5199,8 @@ class GEra(Base, PersistentClass):
         contract,
         account,
         g_reading_frequency,
+        aq,
+        soq,
     ):
         self.g_supply = g_supply
         self.update(
@@ -5204,6 +5213,8 @@ class GEra(Base, PersistentClass):
             contract,
             account,
             g_reading_frequency,
+            aq,
+            soq,
         )
 
     def attach_site(self, sess, site, is_location=False):
@@ -5253,6 +5264,8 @@ class GEra(Base, PersistentClass):
                 self.g_contract,
                 self.account,
                 self.g_reading_frequency,
+                self.aq,
+                self.soq,
             )
 
     def update(
@@ -5266,6 +5279,8 @@ class GEra(Base, PersistentClass):
         g_contract,
         account,
         g_reading_frequency,
+        aq,
+        soq,
     ):
         if hh_after(start_date, finish_date):
             raise BadRequest("The era start date can't be after the finish date.")
@@ -5278,6 +5293,8 @@ class GEra(Base, PersistentClass):
         self.g_contract = g_contract
         self.account = account
         self.g_reading_frequency = g_reading_frequency
+        self.aq = aq
+        self.soq = soq
 
         with sess.no_autoflush:
             if g_contract.start_g_rate_script.start_date > start_date:
@@ -5339,7 +5356,7 @@ class GSupply(Base, PersistentClass):
     def get_by_mprn(sess, mprn):
         supply = GSupply.find_by_mprn(sess, mprn)
         if supply is None:
-            raise BadRequest("The MPRN " + mprn + " is not set up in Chellow.")
+            raise BadRequest(f"The MPRN {mprn} is not set up in Chellow.")
         return supply
 
     def insert_g_era_at(self, sess, start_date):
@@ -5368,6 +5385,8 @@ class GSupply(Base, PersistentClass):
             g_era.g_contract,
             g_era.account,
             g_era.g_reading_frequency,
+            g_era.aq,
+            g_era.soq,
         )
 
     def insert_g_era(
@@ -5383,6 +5402,8 @@ class GSupply(Base, PersistentClass):
         g_contract,
         account,
         g_reading_frequency,
+        aq,
+        soq,
     ):
         covered_g_era = None
         last_g_era = (
@@ -5424,6 +5445,8 @@ class GSupply(Base, PersistentClass):
             g_contract,
             account,
             g_reading_frequency,
+            aq,
+            soq,
         )
         sess.add(g_era)
 
@@ -5476,6 +5499,8 @@ class GSupply(Base, PersistentClass):
         g_contract,
         account,
         g_reading_frequency,
+        aq,
+        soq,
     ):
         if g_era.g_supply != self:
             raise Exception("The era doesn't belong to this supply.")
@@ -5496,6 +5521,8 @@ class GSupply(Base, PersistentClass):
             g_contract,
             account,
             g_reading_frequency,
+            aq,
+            soq,
         )
 
         if prev_g_era is not None:
@@ -7271,6 +7298,15 @@ def db_upgrade_43_to_44(sess, root_path):
     )
 
 
+def db_upgrade_44_to_45(sess, root_path):
+    sess.execute(text("ALTER TABLE g_era ADD aq NUMERIC;"))
+    sess.execute(text("ALTER TABLE g_era ADD soq NUMERIC;"))
+    sess.execute(text("UPDATE g_era SET aq = 0"))
+    sess.execute(text("UPDATE g_era SET soq = 0"))
+    sess.execute(text("ALTER TABLE g_era ALTER aq SET NOT NULL;"))
+    sess.execute(text("ALTER TABLE g_era ALTER soq SET NOT NULL;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7300,6 +7336,7 @@ upgrade_funcs.extend(
         db_upgrade_41_to_42,
         db_upgrade_42_to_43,
         db_upgrade_43_to_44,
+        db_upgrade_44_to_45,
     ]
 )
 

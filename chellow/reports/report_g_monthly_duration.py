@@ -7,7 +7,7 @@ from flask import g, request
 
 import odio
 
-from sqlalchemy import or_, true
+from sqlalchemy import or_, select, true
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
@@ -49,6 +49,113 @@ def write_spreadsheet(fl, compressed, site_rows, era_rows):
     with odio.create_spreadsheet(fl, "1.2", compressed=compressed) as f:
         f.append_table("Site Level", site_rows)
         f.append_table("Era Level", era_rows)
+
+
+def _process_era(
+    report_context,
+    sess,
+    site,
+    g_era,
+    month_start,
+    month_finish,
+    forecast_from,
+    g_era_rows,
+    vb_titles,
+    now,
+):
+    g_supply = g_era.g_supply
+
+    ss_start = hh_max(g_era.start_date, month_start)
+    ss_finish = hh_min(g_era.finish_date, month_finish)
+
+    ss = GDataSource(
+        sess,
+        ss_start,
+        ss_finish,
+        forecast_from,
+        g_era,
+        report_context,
+        None,
+    )
+
+    contract = g_era.g_contract
+    vb_function = contract_func(report_context, contract, "virtual_bill")
+    if vb_function is None:
+        raise BadRequest(
+            f"The contract {contract.name} doesn't have the virtual_bill() function."
+        )
+    try:
+        vb_function(ss)
+        bill = ss.bill
+    except TypeError as e:
+        raise BadRequest(
+            f"Problem with virtual bill for g_supplier_contrat {contract.id}."
+        ) from e
+
+    try:
+        gbp = bill["net_gbp"]
+    except KeyError:
+        gbp = 0
+        bill["problem"] += (
+            f"For the supply {ss.mprn} the virtual bill {bill} "
+            f"from the contract {contract.name} does not contain "
+            f"the net_gbp key."
+        )
+    try:
+        kwh = bill["kwh"]
+    except KeyError:
+        kwh = 0
+        bill["problem"] += (
+            f"For the supply {ss.mprn} the virtual bill "
+            f"{bill} from the contract {contract.name} does not "
+            f"contain the 'kwh' key."
+        )
+
+    billed_kwh = billed_gbp = 0
+
+    g_era_associates = {s.site.code for s in g_era.site_g_eras if not s.is_physical}
+
+    for g_bill in sess.query(GBill).filter(
+        GBill.g_supply == g_supply,
+        GBill.start_date <= ss_finish,
+        GBill.finish_date >= ss_start,
+    ):
+        bill_start = g_bill.start_date
+        bill_finish = g_bill.finish_date
+        bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
+        overlap_duration = (
+            min(bill_finish, ss_finish) - max(bill_start, ss_start)
+        ).total_seconds() + (30 * 60)
+        overlap_proportion = overlap_duration / bill_duration
+        billed_kwh += overlap_proportion * float(g_bill.kwh)
+        billed_gbp += overlap_proportion * float(g_bill.net)
+
+    associated_site_ids = ",".join(sorted(g_era_associates))
+    g_era_rows.append(
+        [
+            make_val(v)
+            for v in [
+                now,
+                g_supply.mprn,
+                g_supply.name,
+                g_supply.g_exit_zone.code,
+                g_era.msn,
+                g_era.g_unit.code,
+                contract.name,
+                site.code,
+                site.name,
+                associated_site_ids,
+                g_era.start_date,
+                month_finish,
+                kwh,
+                gbp,
+                billed_kwh,
+                billed_gbp,
+            ]
+        ]
+        + [make_val(bill.get(t)) for t in vb_titles]
+    )
+    return kwh, gbp, billed_kwh, billed_gbp
 
 
 def content(
@@ -164,8 +271,8 @@ def content(
                 ):
                     site_kwh = site_gbp = site_billed_kwh = site_billed_gbp = 0
 
-                    for g_era in (
-                        sess.query(GEra)
+                    g_eras_q = (
+                        select(GEra)
                         .join(SiteGEra)
                         .filter(
                             SiteGEra.site == site,
@@ -182,110 +289,32 @@ def content(
                             joinedload(GEra.g_supply).joinedload(GSupply.g_exit_zone),
                         )
                         .order_by(GEra.id)
-                    ):
-                        g_supply = g_era.g_supply
+                    )
+                    if g_supply_id is not None:
+                        g_eras_q = g_eras_q.where(GEra.g_supply_id == g_supply_id)
 
-                        if g_supply_id is not None and g_supply.id != g_supply_id:
-                            continue
-
-                        ss_start = hh_max(g_era.start_date, month_start)
-                        ss_finish = hh_min(g_era.finish_date, month_finish)
-
-                        ss = GDataSource(
-                            sess,
-                            ss_start,
-                            ss_finish,
-                            forecast_from,
-                            g_era,
-                            report_context,
-                            None,
-                        )
-
-                        contract = g_era.g_contract
-                        vb_function = contract_func(
-                            report_context, contract, "virtual_bill"
-                        )
-                        if vb_function is None:
+                    for g_era in sess.scalars(g_eras_q):
+                        try:
+                            kwh, gbp, billed_kwh, billed_gbp = _process_era(
+                                report_context,
+                                sess,
+                                site,
+                                g_era,
+                                month_start,
+                                month_finish,
+                                forecast_from,
+                                g_era_rows,
+                                vb_titles,
+                                now,
+                            )
+                            site_kwh += kwh
+                            site_gbp += gbp
+                            site_billed_kwh += billed_kwh
+                            site_billed_gbp += billed_gbp
+                        except BadRequest as e:
                             raise BadRequest(
-                                "The contract "
-                                + contract.name
-                                + " doesn't have the virtual_bill() function."
+                                f"Problem with g_era {g_era.id}: {e.description}"
                             )
-                        vb_function(ss)
-                        bill = ss.bill
-
-                        try:
-                            gbp = bill["net_gbp"]
-                        except KeyError:
-                            gbp = 0
-                            bill["problem"] += (
-                                f"For the supply {ss.mprn} the virtual bill {bill} "
-                                f"from the contract {contract.name} does not contain "
-                                f"the net_gbp key."
-                            )
-                        try:
-                            kwh = bill["kwh"]
-                        except KeyError:
-                            kwh = 0
-                            bill["problem"] += (
-                                f"For the supply {ss.mprn} the virtual bill "
-                                f"{bill} from the contract {contract.name} does not "
-                                f"contain the 'kwh' key."
-                            )
-
-                        billed_kwh = billed_gbp = 0
-
-                        g_era_associates = {
-                            s.site.code for s in g_era.site_g_eras if not s.is_physical
-                        }
-
-                        for g_bill in sess.query(GBill).filter(
-                            GBill.g_supply == g_supply,
-                            GBill.start_date <= ss_finish,
-                            GBill.finish_date >= ss_start,
-                        ):
-                            bill_start = g_bill.start_date
-                            bill_finish = g_bill.finish_date
-                            bill_duration = (
-                                bill_finish - bill_start
-                            ).total_seconds() + (30 * 60)
-                            overlap_duration = (
-                                min(bill_finish, ss_finish) - max(bill_start, ss_start)
-                            ).total_seconds() + (30 * 60)
-                            overlap_proportion = overlap_duration / bill_duration
-                            billed_kwh += overlap_proportion * float(g_bill.kwh)
-                            billed_gbp += overlap_proportion * float(g_bill.net)
-
-                        associated_site_ids = ",".join(sorted(g_era_associates))
-                        g_era_rows.append(
-                            [
-                                make_val(v)
-                                for v in [
-                                    now,
-                                    g_supply.mprn,
-                                    g_supply.name,
-                                    g_supply.g_exit_zone.code,
-                                    g_era.msn,
-                                    g_era.g_unit.code,
-                                    contract.name,
-                                    site.code,
-                                    site.name,
-                                    associated_site_ids,
-                                    g_era.start_date,
-                                    month_finish,
-                                    kwh,
-                                    gbp,
-                                    billed_kwh,
-                                    billed_gbp,
-                                ]
-                            ]
-                            + [make_val(bill.get(t)) for t in vb_titles]
-                        )
-
-                        site_kwh += kwh
-                        site_gbp += gbp
-                        site_billed_kwh += billed_kwh
-                        site_billed_gbp += billed_gbp
 
                     linked_sites = ", ".join(
                         s.code
@@ -311,9 +340,6 @@ def content(
                     sess.rollback()
                 write_spreadsheet(rf, compression, site_rows, g_era_rows)
 
-    except BadRequest as e:
-        site_rows.append(["Problem " + e.description])
-        write_spreadsheet(rf, compression, site_rows, g_era_rows)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")

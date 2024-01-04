@@ -55,6 +55,8 @@ def test_find_hhs_pairs_before_after_chunk_finish(mocker):
     hist_g_era.g_unit = mocker.Mock()
     hist_g_era.g_unit.code = "M3"
     hist_g_era.g_unit.factor = 1
+    hist_g_era.aq = 1
+    hist_g_era.soq = 1
 
     pairs = [
         {"start-date": utc_datetime(2010, 1, 1), "units": 1},
@@ -71,6 +73,8 @@ def test_find_hhs_pairs_before_after_chunk_finish(mocker):
             "unit_code": "M3",
             "unit_factor": 1.0,
             "units_consumed": 1,
+            "aq": 1,
+            "soq": 1,
             "correction_factor": 1.0,
             "calorific_value": 39,
             "avg_cv": 39,
@@ -95,6 +99,8 @@ def test_find_hhs_pair_after_chunk_finish(mocker):
     caches = {}
     hist_g_era = mocker.Mock()
     hist_g_era.correction_factor = 1
+    hist_g_era.aq = 1
+    hist_g_era.soq = 1
     hist_g_era.g_unit = mocker.Mock()
     hist_g_era.g_unit.code = "M3"
     hist_g_era.g_unit.factor = 1
@@ -111,6 +117,8 @@ def test_find_hhs_pair_after_chunk_finish(mocker):
             "unit_code": "M3",
             "unit_factor": 1.0,
             "units_consumed": 1,
+            "aq": 1,
+            "soq": 1,
             "correction_factor": 1.0,
             "calorific_value": 39,
             "avg_cv": 39,
@@ -234,6 +242,8 @@ def virtual_bill(ds):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     sess.commit()
 
@@ -354,6 +364,8 @@ def virtual_bill(ds):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     sess.commit()
 

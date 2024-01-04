@@ -4,7 +4,7 @@ import threading
 import traceback
 from decimal import Decimal
 
-from sqlalchemy import null, or_
+from sqlalchemy import null, or_, select
 from sqlalchemy.sql.expression import false
 
 from werkzeug.exceptions import BadRequest
@@ -21,6 +21,7 @@ from chellow.models import (
     EnergisationStatus,
     Era,
     GContract,
+    GEra,
     GExitZone,
     GReadType,
     GReadingFrequency,
@@ -586,6 +587,183 @@ def general_import_g_supply(sess, action, vals, args):
         mprn = add_arg(args, "MPRN", vals, 0)
         g_supply = GSupply.get_by_mprn(sess, mprn)
         g_supply.delete()
+        sess.flush()
+
+
+def general_import_g_era(sess, action, vals, args):
+    if action == "insert":
+        mprn = add_arg(args, "MPRN", vals, 0)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+        start_date_str = add_arg(args, "Start Date", vals, 1)
+        if len(start_date_str) == 0:
+            start_date = None
+        else:
+            start_date = parse_hh_start(start_date_str)
+
+        existing_g_era = sess.scalars(
+            select(GEra).where(
+                GEra.g_supply == g_supply,
+                GEra.start_date <= start_date,
+                or_(GEra.finish_date == null(), GEra.finish_date >= start_date),
+            )
+        ).one_or_none()
+        if existing_g_era is None:
+            raise BadRequest("The start date is outside the dates of the supply.")
+
+        site_code = add_arg(args, "Site Code", vals, 2)
+        physical_site = None
+        logical_sites = []
+        if site_code == NO_CHANGE:
+            for site_g_era in existing_g_era.site_g_eras:
+                if site_g_era.is_physical:
+                    physical_site = site_g_era.site
+                else:
+                    logical_sites.append(site_g_era.site)
+        else:
+            physical_site = Site.get_by_code(sess, site_code)
+
+        msn = add_arg(args, "Meter Serial Number", vals, 3)
+        if msn == NO_CHANGE:
+            msn = existing_g_era.msn
+
+        correction_factor_str = add_arg(args, "Correction Factor", vals, 4)
+        if correction_factor_str == NO_CHANGE:
+            correction_factor = existing_g_era.correction_factor
+        else:
+            correction_factor = Decimal(correction_factor_str)
+
+        g_unit_code = add_arg(args, "Unit", vals, 5)
+        if g_unit_code == NO_CHANGE:
+            g_unit = existing_g_era.g_unit
+        else:
+            g_unit = GUnit.get_by_code(sess, g_unit_code)
+
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 6)
+        if contract_name == NO_CHANGE:
+            g_contract = existing_g_era.g_contract
+        else:
+            g_contract = GContract.get_supplier_by_name(sess, contract_name)
+
+        account = add_arg(args, "Account", vals, 7)
+        if account == NO_CHANGE:
+            account = existing_g_era.account
+
+        g_reading_frequency_code = add_arg(args, "Reading Frequency", vals, 8)
+        if g_reading_frequency_code == NO_CHANGE:
+            g_reading_frequency = existing_g_era.g_reading_frequency
+        else:
+            g_reading_frequency = GReadingFrequency.get_by_code(
+                sess, g_reading_frequency_code
+            )
+
+        aq_str = add_arg(args, "AQ", vals, 9)
+        aq = existing_g_era.aq if aq_str == NO_CHANGE else Decimal(aq_str)
+
+        soq_str = add_arg(args, "SOQ", vals, 10)
+        soq = existing_g_era.soq if soq_str == NO_CHANGE else Decimal(soq_str)
+
+        g_supply.insert_g_era(
+            sess,
+            physical_site,
+            logical_sites,
+            start_date,
+            None,
+            msn,
+            correction_factor,
+            g_unit,
+            g_contract,
+            account,
+            g_reading_frequency,
+            aq,
+            soq,
+        )
+        sess.flush()
+
+    elif action == "update":
+        mprn = add_arg(args, "MPRN", vals, 0)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+        date_str = add_arg(args, "date", vals, 1)
+        dt = parse_hh_start(date_str)
+        g_era = g_supply.find_g_era_at(sess, dt)
+        if g_era is None:
+            raise BadRequest("There isn't a gas era at this date.")
+
+        start_date_str = add_arg(args, "Start Date", vals, 2)
+        if start_date_str == NO_CHANGE:
+            start_date = g_era.start_date
+        else:
+            start_date = parse_hh_start(start_date_str)
+
+        finish_date_str = add_arg(args, "Finish Date", vals, 3)
+        if finish_date_str == NO_CHANGE:
+            finish_date = g_era.finish_date
+        else:
+            finish_date = parse_hh_start(finish_date_str)
+
+        msn = add_arg(args, "Meter Serial Number", vals, 4)
+        if msn == NO_CHANGE:
+            msn = g_era.msn
+
+        correction_factor_str = add_arg(args, "Correction Factor", vals, 5)
+        if correction_factor_str == NO_CHANGE:
+            correction_factor = g_era.correction_factor
+        else:
+            correction_factor = Decimal(correction_factor_str)
+
+        g_unit_code = add_arg(args, "Unit", vals, 6)
+        if g_unit_code == NO_CHANGE:
+            g_unit = g_era.g_unit
+        else:
+            g_unit = GUnit.get_by_code(sess, g_unit_code)
+
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 7)
+        if contract_name == NO_CHANGE:
+            g_contract = g_era.g_contract
+        else:
+            g_contract = GContract.get_supplier_by_name(sess, contract_name)
+
+        account = add_arg(args, "Account", vals, 8)
+        if account == NO_CHANGE:
+            account = g_era.account
+
+        g_reading_frequency_code = add_arg(args, "Reading Frequency", vals, 9)
+        if g_reading_frequency_code == NO_CHANGE:
+            g_reading_frequency = g_era.g_reading_frequency
+        else:
+            g_reading_frequency = GReadingFrequency.get_by_code(
+                sess, g_reading_frequency_code
+            )
+
+        aq_str = add_arg(args, "AQ", vals, 10)
+        aq = g_era.aq if aq_str == NO_CHANGE else Decimal(aq_str)
+
+        soq_str = add_arg(args, "SOQ", vals, 11)
+        soq = g_era.aq if soq_str == NO_CHANGE else Decimal(soq_str)
+
+        g_supply.update_g_era(
+            sess,
+            g_era,
+            start_date,
+            finish_date,
+            msn,
+            correction_factor,
+            g_unit,
+            g_contract,
+            account,
+            g_reading_frequency,
+            aq,
+            soq,
+        )
+    elif action == "delete":
+        mprn = add_arg(args, "MPRN", vals, 0)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+        date_str = add_arg(args, "Date", vals, 1)
+        dt = parse_hh_start(date_str)
+        g_era = g_supply.find_g_era_at(sess, dt)
+        if g_era is None:
+            raise BadRequest("There isn't a gas era at this date.")
+
+        g_supply.delete_g_era(sess, g_era)
         sess.flush()
 
 

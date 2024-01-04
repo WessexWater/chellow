@@ -205,6 +205,8 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         "unit_factor": 1,
                         "units_consumed": 0,
                         "correction_factor": 1,
+                        "aq": 0,
+                        "soq": 0,
                         "calorific_value": 0,
                         "avg_cv": 0,
                     }
@@ -591,6 +593,8 @@ def _bill_kwh(
     sess, caches, g_supply, hist_g_era, chunk_start, chunk_finish, hist_map, g_ldz_code
 ):
     cf = float(hist_g_era.correction_factor)
+    aq = float(hist_g_era.aq)
+    soq = float(hist_g_era.soq)
     g_unit = hist_g_era.g_unit
     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
 
@@ -600,6 +604,8 @@ def _bill_kwh(
             "unit_code": unit_code,
             "unit_factor": unit_factor,
             "correction_factor": cf,
+            "aq": aq,
+            "soq": soq,
             "calorific_value": cv,
             "avg_cv": avg_cv,
         }
@@ -730,6 +736,8 @@ def _find_hhs(sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_ldz_
         pairs[-1]["finish-date"] = chunk_finish
 
     cf = float(hist_g_era.correction_factor)
+    aq = float(hist_g_era.aq)
+    soq = float(hist_g_era.soq)
     g_unit = hist_g_era.g_unit
     unit_code, unit_factor = g_unit.code, float(g_unit.factor)
     for pair in pairs:
@@ -742,6 +750,8 @@ def _find_hhs(sess, caches, hist_g_era, pairs, chunk_start, chunk_finish, g_ldz_
                 "unit_factor": unit_factor,
                 "units_consumed": units,
                 "correction_factor": cf,
+                "aq": aq,
+                "soq": soq,
                 "calorific_value": cv,
                 "avg_cv": avg_cv,
             }

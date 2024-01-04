@@ -799,6 +799,8 @@ def site_edit_post(site_id):
                 g.sess, g_reading_frequency_id
             )
             start_date = req_date("start")
+            aq = req_decimal("aq")
+            soq = req_decimal("soq")
             g_supply = site.insert_g_supply(
                 g.sess,
                 mprn,
@@ -812,6 +814,8 @@ def site_edit_post(site_id):
                 g_contract,
                 account,
                 g_reading_frequency,
+                aq,
+                soq,
             )
             g.sess.commit()
             return chellow_redirect(f"/g/supplies/{g_supply.id}", 303)

@@ -189,6 +189,8 @@ def virtual_bill(ds):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
@@ -302,6 +304,8 @@ def test_bill_http(mocker, sess, client):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
+        1,
+        1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 

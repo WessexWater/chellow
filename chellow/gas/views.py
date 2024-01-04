@@ -837,6 +837,8 @@ def era_edit_post(g_era_id):
             g_reading_frequency = GReadingFrequency.get_by_id(
                 g.sess, g_reading_frequency_id
             )
+            aq = req_decimal("aq")
+            soq = req_decimal("soq")
             g_era.g_supply.update_g_era(
                 g.sess,
                 g_era,
@@ -848,6 +850,8 @@ def era_edit_post(g_era_id):
                 g_contract,
                 account,
                 g_reading_frequency,
+                aq,
+                soq,
             )
             g.sess.commit()
             return chellow_redirect(f"/supplies/{g_era.g_supply.id}", 303)
