@@ -4,6 +4,7 @@ from io import BytesIO
 
 import odio
 
+from utils import match_tables
 import chellow.reports.report_g_monthly_duration
 from chellow.models import (
     BillType,
@@ -21,6 +22,8 @@ from chellow.models import (
     insert_g_reading_frequencies,
     insert_g_units,
 )
+
+
 from chellow.utils import utc_datetime
 
 
@@ -234,6 +237,7 @@ def virtual_bill(ds):
             "site_id",
             "site_name",
             "associated_site_ids",
+            "era-start",
             "month",
             "kwh",
             "gbp",
@@ -266,6 +270,7 @@ def virtual_bill(ds):
             "22488",
             "Water Works",
             "",
+            Datetime(2010, 1, 1, 0, 0),
             Datetime(2015, 9, 30, 23, 30),
             10888.888888888665,
             1146.1869155555785,
@@ -289,4 +294,4 @@ def virtual_bill(ds):
         ],
     ]
 
-    assert expected == table
+    match_tables(expected, table)

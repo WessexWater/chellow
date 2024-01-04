@@ -21,7 +21,13 @@ def match_tables(expected_table, actual_table):
         f"lngth of the actual table {len_actual_table}"
     )
     for i, (expected_row, actual_row) in enumerate(zip(expected_table, actual_table)):
-        assert len(expected_row) == len(actual_row)
+        len_expected_row, len_actual_row = len(expected_row), len(actual_row)
+        assert len_expected_row == len_actual_row, (
+            f"For row {i} the length {len_expected_row} of the expected row does not "
+            f"match the lngth of the actual row {len_actual_row}\n"
+            f"{expected_row}\n"
+            f"{actual_row}\n"
+        )
         for j, (expected_val, actual_val) in enumerate(zip(expected_row, actual_row)):
             assert (
                 expected_val == actual_val

@@ -115,6 +115,7 @@ def content(
                 "site_id",
                 "site_name",
                 "associated_site_ids",
+                "era-start",
                 "month",
             ]
             site_header_titles = [
@@ -218,26 +219,18 @@ def content(
                         except KeyError:
                             gbp = 0
                             bill["problem"] += (
-                                "For the supply "
-                                + ss.mprn
-                                + " the virtual bill "
-                                + str(bill)
-                                + " from the contract "
-                                + contract.name
-                                + " does not contain the net_gbp key."
+                                f"For the supply {ss.mprn} the virtual bill {bill} "
+                                f"from the contract {contract.name} does not contain "
+                                f"the net_gbp key."
                             )
                         try:
                             kwh = bill["kwh"]
                         except KeyError:
                             kwh = 0
                             bill["problem"] += (
-                                "For the supply "
-                                + ss.mprn
-                                + " the virtual bill "
-                                + str(bill)
-                                + " from the contract "
-                                + contract.name
-                                + " does not contain the 'kwh' key."
+                                f"For the supply {ss.mprn} the virtual bill "
+                                f"{bill} from the contract {contract.name} does not "
+                                f"contain the 'kwh' key."
                             )
 
                         billed_kwh = billed_gbp = 0
@@ -278,6 +271,7 @@ def content(
                                     site.code,
                                     site.name,
                                     associated_site_ids,
+                                    g_era.start_date,
                                     month_finish,
                                     kwh,
                                     gbp,
