@@ -1,0 +1,305 @@
+from datetime import datetime as Datetime
+
+from dateutil.relativedelta import relativedelta
+from sqlalchemy import null, or_, select
+
+from chellow.e.lcc import api_search, api_sql
+from chellow.models import Contract, RateScript
+from chellow.utils import ct_datetime, hh_format, to_ct, to_utc
+
+
+def hh(data_source):
+    try:
+        cfd_cache = data_source.caches["cfd"]
+    except KeyError:
+        cfd_cache = data_source.caches["cfd"] = {}
+
+    for h in data_source.hh_data:
+        try:
+            h["cfd-rate"] = cfd_cache[h["start-date"]]
+        except KeyError:
+            h_start = h["start-date"]
+            daily_contract = Contract.get_non_core_by_name(
+                data_source.sess, "cfd_reconciled_daily_levy_rates"
+            )
+            daily_rs = data_source.sess.scalars(
+                select(RateScript).where(
+                    RateScript.contract == daily_contract,
+                    RateScript.start_date <= h_start,
+                    or_(
+                        RateScript.finish_date == null(),
+                        RateScript.finish_date >= h_start,
+                    ),
+                )
+            ).one_or_none()
+            if daily_rs.finish_date is None and h_start >= to_utc(
+                to_ct(daily_rs.start_date) + relativedelta(months=3)
+            ):
+                base_rate = data_source.non_core_rate(
+                    "cfd_in_period_tracking", h_start
+                )["rate_gbp_per_kwh"]
+            else:
+                base_rate = data_source.non_core_rate(
+                    "cfd_reconciled_daily_levy_rates", h_start
+                )["rate_gbp_per_kwh"]
+
+            effective_ocl_rate = data_source.non_core_rate(
+                "cfd_operational_costs_levy", h["start-date"]
+            )["record"]["Effective_OCL_Rate_GBP_Per_MWh"]
+            if effective_ocl_rate == "":
+                levy_rate_str = data_source.non_core_rate(
+                    "cfd_operational_costs_levy", h["start-date"]
+                )["record"]["OCL_Rate_GBP_Per_MWh"]
+            else:
+                levy_rate_str = effective_ocl_rate
+            levy_rate = float(levy_rate_str) / 1000
+            h["cfd-rate"] = cfd_cache[h["start-date"]] = float(base_rate) + levy_rate
+
+
+def lcc_import(sess, log, set_progress, s):
+    import_in_period_tracking(sess, log, set_progress, s)
+    import_operational_costs_levy(sess, log, set_progress, s)
+    import_reconciled_daily_levy_rates(sess, log, set_progress, s)
+
+
+def _quarters(s):
+    quarter = {}
+    res_j = api_search(
+        s, "2fc2fad9-ad57-4901-982a-f92d4ef6c622", sort="Settlement_Date"
+    )
+    for record in res_j["result"]["records"]:
+        settlement_date_str = record["Settlement_Date"]
+        settlement_date_ct = to_ct(
+            Datetime.strptime(settlement_date_str[:10], "%Y-%m-%d")
+        )
+        settlement_date = to_utc(settlement_date_ct)
+
+        quarter[settlement_date] = record
+        settlement_next_ct = settlement_date_ct + relativedelta(days=1)
+
+        if settlement_next_ct.month in (1, 4, 7, 10) and settlement_next_ct.day == 1:
+            yield quarter
+            quarter = {}
+
+
+def _parse_number(num_str):
+    if num_str == "":
+        return 0
+    else:
+        return float(num_str)
+
+
+def _parse_date(date_str):
+    return to_utc(to_ct(Datetime.strptime(date_str[:10], "%Y-%m-%d")))
+
+
+def import_in_period_tracking(sess, log, set_progress, s):
+    log("Starting to check for new LCC CfD In-Period Tracking")
+
+    contract_name = "cfd_in_period_tracking"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+
+    for quarter in _quarters(s):
+        quarter_start = sorted(quarter.keys())[0]
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == quarter_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, quarter_start, {"records": {}})
+
+        gbp = 0
+        kwh = 0
+        for record in quarter.values():
+            gbp += _parse_number(record["Actual_CFD_Payments_GBP"])
+            gbp += _parse_number(record["Expected_CFD_Payments_GBP"])
+            kwh += _parse_number(record["Actual_Eligible_Demand_MWh"]) * 1000
+            kwh += _parse_number(record["Expected_Eligible_Demand_MWh"]) * 1000
+
+        rate = gbp / kwh
+
+        rs_script = rs.make_script()
+        records = rs_script["records"]
+        for k, v in sorted(quarter.items()):
+            records[hh_format(k)] = v
+        rs_script["rate_gbp_per_kwh"] = rate
+        rs.update(rs_script)
+        sess.commit()
+    log("Finished LCC CfD In-Period Tracking")
+
+
+def import_operational_costs_levy(sess, log, set_progress, s):
+    log("Starting to check for new LCC CfD Operational Costs Levy")
+
+    contract_name = "cfd_operational_costs_levy"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+
+    res_j = api_search(s, "44f41eac-61b3-4e8d-8c52-3eda7b8e8517", sort="Period_Start")
+    for record in res_j["result"]["records"][1:]:  # skip title row
+        period_start_str = record["Period_Start"]
+        period_start = to_utc(
+            to_ct(Datetime.strptime(period_start_str[:10], "%Y-%m-%d"))
+        )
+
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == period_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, period_start, {})
+
+        rs_script = rs.make_script()
+        rs_script["record"] = record
+        rs.update(rs_script)
+        sess.commit()
+
+
+RUN_TYPES = ("II", "SF", "R1", "R2", "R3", "RF", "DF")
+
+
+def _reconciled_days(s, search_from):
+    runs = {}
+    res_j = api_sql(
+        s,
+        f"""SELECT * from "e0e163cb-ba36-416d-83fe-976992d61516"
+        WHERE "Settlement_Date" > '{search_from}' ORDER BY "Settlement_Date"
+        """,
+    )
+
+    records = res_j["result"]["records"]
+    if len(records) > 0:
+        prev_settlement_date = _parse_date(records[0]["Settlement_Date"])
+        runs = {}
+        for record in records:
+            settlement_date = _parse_date(record["Settlement_Date"])
+            if settlement_date != prev_settlement_date:
+                yield prev_settlement_date, runs
+                runs = {}
+
+            settlement_run_type = record["Settlement_Run_Type"]
+            runs[settlement_run_type] = record
+            prev_settlement_date = settlement_date
+
+        yield settlement_date, runs
+
+
+def _reconciled_daily_quarters(s, search_from):
+    quarter = {}
+    for settlement_date, lcc_runs in _reconciled_days(s, search_from):
+        try:
+            runs = quarter[settlement_date]
+        except KeyError:
+            runs = quarter[settlement_date] = {}
+
+        for run_type, record in lcc_runs.items():
+            runs[run_type] = record
+
+        settlement_next_ct = to_ct(settlement_date) + relativedelta(days=1)
+
+        if settlement_next_ct.month in (1, 4, 7, 10) and settlement_next_ct.day == 1:
+            yield quarter
+            quarter = {}
+
+
+def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
+    log("Starting to check for new LCC CfD Reconciled Daily Levy Rates")
+
+    contract_name = "cfd_reconciled_daily_levy_rates"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+
+    search_from = "1996-04-01"
+    for rs in sess.scalars(
+        select(RateScript)
+        .where(RateScript.contract == contract)
+        .order_by(RateScript.start_date.desc())
+    ):
+        script = rs.make_script()
+        try:
+            records = script["records"]
+        except KeyError:
+            break
+
+        complete = True
+        rs_start_ct = to_ct(rs.start_date)
+        quarter_finish_ct = (
+            rs_start_ct + relativedelta(months=3) - relativedelta(days=1)
+        )
+        day_ct = rs_start_ct
+        while day_ct <= quarter_finish_ct:
+            try:
+                records[hh_format(to_utc(day_ct))]["DF"]
+            except KeyError:
+                complete = False
+                break
+
+            day_ct += relativedelta(days=1)
+
+        if complete:
+            search_from = quarter_finish_ct.strftime("%Y-%m-%d")
+        else:
+            break
+
+    for quarter in _reconciled_daily_quarters(s, search_from):
+        quarter_start = sorted(quarter.keys())[0]
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == quarter_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, quarter_start, {"records": {}})
+
+        gbp = 0
+        kwh = 0
+        run_types_reverse = list(reversed(RUN_TYPES))
+        for runs in quarter.values():
+            top_run = None
+            for run_type in run_types_reverse:
+                if run_type in runs:
+                    top_run = runs[run_type]
+                    break
+
+            eligible_mwh = _parse_number(top_run["Reconciled_Eligible_Demand_MWh"])
+            gbp += (
+                _parse_number(top_run["Reconciled_Daily_Levy_Rate_GBP_Per_MWh"])
+                * eligible_mwh
+            )
+            kwh += eligible_mwh * 1000
+
+        rate = gbp / kwh
+
+        rs_script = rs.make_script()
+        records = rs_script["records"]
+        for dt, runs in sorted(quarter.items()):
+            date_str = hh_format(dt)
+            try:
+                rs_runs = records[date_str]
+            except KeyError:
+                rs_runs = records[date_str] = {}
+
+            for run_type, record in runs.items():
+                rs_runs[run_type] = record
+
+        rs_script["rate_gbp_per_kwh"] = rate
+        rs.update(rs_script)
+        sess.commit()
+
+    log("Finished LCC CfD Reconciled Daily Levy Rates")
+    sess.commit()

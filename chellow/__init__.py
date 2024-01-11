@@ -54,6 +54,7 @@ def get_importer_modules():
         chellow.e.bsuos,
         chellow.e.system_price,
         chellow.e.hh_importer,
+        chellow.e.lcc,
         chellow.testing,
         chellow.e.tlms,
         chellow.bank_holidays,

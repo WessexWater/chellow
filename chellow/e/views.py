@@ -29,6 +29,7 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 import chellow.e.dno_rate_parser
+import chellow.e.lcc
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
 from chellow.models import (
@@ -2328,6 +2329,23 @@ def lafs_get():
     )
 
     return render_template("lafs.html", dno=dno, llfc=llfc, lafs=lafs)
+
+
+@e.route("/lcc")
+def lcc_get():
+    importer = chellow.e.lcc.importer
+
+    return render_template(
+        "lcc.html",
+        importer=importer,
+    )
+
+
+@e.route("/lcc", methods=["POST"])
+def lcc_post():
+    importer = chellow.e.lcc.importer
+    importer.go()
+    return chellow_redirect("/lcc", 303)
 
 
 @e.route("/llfcs")
