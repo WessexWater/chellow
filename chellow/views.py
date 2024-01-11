@@ -137,7 +137,6 @@ def chellow_redirect(path, code=None):
     else:
         res = redirect(location, code)
 
-    res.headers["HX-Redirect"] = location
     return res
 
 

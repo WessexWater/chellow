@@ -689,6 +689,22 @@ def test_supplier_contracts_empty(client, sess):
     match(response, 200)
 
 
+def test_supplier_contract_edit_delete(client, sess):
+    contract = GContract.insert_supplier(
+        sess,
+        "Fusion 2020",
+        "",
+        {},
+        utc_datetime(2019, 1, 1),
+        None,
+        {},
+    )
+    sess.commit()
+
+    response = client.delete(f"/g/supplier_contracts/{contract.id}/edit")
+    assert response.headers["HX-Redirect"].endswith("/g/supplier_contracts")
+
+
 def test_supplies(client, sess):
     response = client.get("/g/supplies")
 

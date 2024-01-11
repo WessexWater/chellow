@@ -11,43 +11,30 @@
 
 {% block content %}
 
-	{% if request.method == 'GET' and request.values.delete %}
+	<form action="/g/supplier_contracts/{{g_contract.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update Contract</legend>
+			<label>Name</label>
+			{{input_text('name', g_contract.name)}}
+			<label>Charge script</label>
+			{{input_textarea('charge_script', g_contract.charge_script, 40, 80)}}
+			<label>Properties</label>
+			{{input_textarea('properties', g_contract.properties, 20, 80)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
 
-		<form method="post" action="/g/supplier_contracts/{{g_contract.id}}/edit">
-			<fieldset>
-				<legend>Are you sure you want to delete this contract?</legend>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-		<p>
-			<a href="/g/supplier_contracts/{{g_contract.id}}/edit">Cancel</a>
-		</p>
+	<h3>Example Properties</h3>
 
-	{% else %}
-		<form action="/g/supplier_contracts/{{g_contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update Contract</legend>
-				<label>Name</label>
-				{{input_text('name', g_contract.name)}}
-				<label>Charge script</label>
-				{{input_textarea('charge_script', g_contract.charge_script, 40, 80)}}
-				<label>Properties</label>
-				{{input_textarea('properties', g_contract.properties, 20, 80)}}
-				<input type="submit" name="update" value="Update">
-			</fieldset>
-		</form>
-
-		<h3>Example Properties</h3>
-
-		<pre>{
-  "default_bill_parser": "csv",
+	<pre>{
+"default_bill_parser": "csv",
 }</pre>
 
-		<form action="/g_contracts/{{g_contract.id}}/edit">
-			<fieldset>
-				<legend>Delete this contract</legend>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-	{% endif %}
+	<form hx-delete="/g/supplier_contracts/{{g_contract.id}}/edit"
+		hx-confirm="Are you sure you want to delete this supplier contract?">
+		<fieldset>
+			<legend>Delete this contract</legend>
+			<input type="submit" value="Delete">
+		</fieldset>
+	</form>
 {% endblock %}

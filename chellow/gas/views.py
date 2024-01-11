@@ -1534,17 +1534,27 @@ def supplier_contract_edit_get(g_contract_id):
 def supplier_contract_edit_post(g_contract_id):
     try:
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
-        if "delete" in request.values:
-            g_contract.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/supplier_contracts", 303)
-        else:
-            name = req_str("name")
-            charge_script = req_str("charge_script")
-            properties = req_zish("properties")
-            g_contract.update(name, charge_script, properties)
-            g.sess.commit()
-            return chellow_redirect(f"/supplier_contracts/{g_contract.id}", 303)
+        name = req_str("name")
+        charge_script = req_str("charge_script")
+        properties = req_zish("properties")
+        g_contract.update(name, charge_script, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_contracts/{g_contract.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        g.sess.rollback()
+        return make_response(
+            render_template("supplier_contract_edit.html", g_contract=g_contract), 400
+        )
+
+
+@gas.route("/supplier_contracts/<int:g_contract_id>/edit", methods=["DELETE"])
+def supplier_contract_edit_delete(g_contract_id):
+    try:
+        g_contract = GContract.get_by_id(g.sess, g_contract_id)
+        g_contract.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect("/supplier_contracts", 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
