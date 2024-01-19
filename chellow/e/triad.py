@@ -8,6 +8,8 @@ from pypdf import PdfReader
 
 from sqlalchemy import null, or_, select
 
+from werkzeug.exceptions import BadRequest
+
 import chellow.e.duos
 from chellow.models import Contract, RateScript
 from chellow.national_grid import api_get
@@ -276,6 +278,16 @@ GSP_LOOKUP = {
 }
 
 
+def _parse_varying_date(date_str):
+    if "-" in date_str:
+        pattern = "%Y-%m-%d"
+    elif "/" in date_str:
+        pattern = "%d/%m/%Y"
+    else:
+        raise BadRequest(f"The date {date_str} is not recognized.")
+    return Datetime.strptime(date_str, pattern)
+
+
 def national_grid_import(sess, log, set_progress, s):
     log("Starting to check for new TNUoS TRIAD Tariffs")
 
@@ -317,10 +329,13 @@ def national_grid_import(sess, log, set_progress, s):
                 rates = tr[polarity] = {}
 
             record_key = GSP_LOOKUP[record["Zone_No"]]
-            record_published_date = record["Published_Date"]
+            record_published_date = _parse_varying_date(record["Published_Date"])
 
             rate = rates.get(record_key)
-            if rate is None or rate["Published_Date"] > record_published_date:
+            if (
+                rate is None
+                or _parse_varying_date(rate["Published_Date"]) < record_published_date
+            ):
                 rates[record_key] = record
                 rs.update(rs_script)
                 sess.commit()
