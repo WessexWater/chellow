@@ -1,4 +1,5 @@
 from datetime import datetime as Datetime
+from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
@@ -9,6 +10,28 @@ from werkzeug.exceptions import BadRequest
 from chellow.e.lcc import api_search, api_sql
 from chellow.models import Contract, RateScript
 from chellow.utils import ct_datetime, hh_format, to_ct, to_utc
+
+
+def _find_quarter_rs(sess, contract_name, date):
+    contract = Contract.get_non_core_by_name(sess, contract_name)
+    rs = sess.scalars(
+        select(RateScript).where(
+            RateScript.contract == contract,
+            RateScript.start_date <= date,
+            or_(
+                RateScript.finish_date == null(),
+                RateScript.finish_date >= date,
+            ),
+        )
+    ).one_or_none()
+    if rs is None:
+        return None
+    elif rs.finish_date is None and date >= to_utc(
+        to_ct(rs.start_date) + relativedelta(months=3)
+    ):
+        return None
+    else:
+        return rs
 
 
 def hh(data_source, use_bill_check=False):
@@ -32,29 +55,35 @@ def hh(data_source, use_bill_check=False):
                     / 1000
                 )
             else:
-                daily_contract = Contract.get_non_core_by_name(
-                    data_source.sess, "cfd_reconciled_daily_levy_rates"
+                daily_rs = _find_quarter_rs(
+                    data_source.sess, "cfd_reconciled_daily_levy_rates", h_start
                 )
-                daily_rs = data_source.sess.scalars(
-                    select(RateScript).where(
-                        RateScript.contract == daily_contract,
-                        RateScript.start_date <= h_start,
-                        or_(
-                            RateScript.finish_date == null(),
-                            RateScript.finish_date >= h_start,
-                        ),
+                if daily_rs is None:
+                    period_rs = _find_quarter_rs(
+                        data_source.sess, "cfd_in_period_tracking", h_start
                     )
-                ).one_or_none()
-                if daily_rs.finish_date is None and h_start >= to_utc(
-                    to_ct(daily_rs.start_date) + relativedelta(months=3)
-                ):
-                    base_rate_dec = data_source.non_core_rate(
-                        "cfd_in_period_tracking", h_start
-                    )["rate_gbp_per_kwh"]
+                    if period_rs is None:
+                        ilr_rs = _find_quarter_rs(
+                            data_source.sess, "cfd_forecast_ilr_tra", h_start
+                        )
+                        if ilr_rs is None:
+                            base_rate_dec = data_source.non_core_rate(
+                                "cfd_advanced_forecast_ilr_tra", h_start
+                            )["sensitivity"]["Base Case"][
+                                "Interim_Levy_Rate_GBP_Per_MWh"
+                            ] / Decimal(
+                                1000
+                            )
+
+                        else:
+                            base_rate_dec = ilr_rs["record"][
+                                "Interim_Levy_Rate_GBP_Per_MWh"
+                            ] / Decimal(1000)
+                    else:
+                        base_rate_dec = period_rs["rate_gbp_per_kwh"]
                 else:
-                    base_rate_dec = data_source.non_core_rate(
-                        "cfd_reconciled_daily_levy_rates", h_start
-                    )["rate_gbp_per_kwh"]
+                    base_rate_dec = daily_rs["rate_gbp_per_kwh"]
+
                 base_rate = float(base_rate_dec)
 
             effective_ocl_rate = data_source.non_core_rate(
@@ -76,6 +105,7 @@ def lcc_import(sess, log, set_progress, s):
     import_operational_costs_levy(sess, log, set_progress, s)
     import_reconciled_daily_levy_rates(sess, log, set_progress, s)
     import_forecast_ilr_tra(sess, log, set_progress, s)
+    import_advanced_forecast_ilr_tra(sess, log, set_progress, s)
 
 
 def _quarters(s):
@@ -116,7 +146,7 @@ def _parse_varying_date(date_str):
         pattern = "%d/%m/%Y"
     else:
         raise BadRequest(f"The date {date_str} is not recognized.")
-    return Datetime.strptime(date_str, pattern)
+    return to_utc(to_ct(Datetime.strptime(date_str[:10], pattern)))
 
 
 def import_in_period_tracking(sess, log, set_progress, s):
@@ -344,7 +374,7 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
     res_j = api_search(s, "fbece4ce-7cfc-42b7-8fb2-387cf59a3c32", sort="Period_Start")
     for record in res_j["result"]["records"]:
         period_start_str = record["Period_Start"]
-        period_start = to_utc(to_ct(_parse_varying_date(period_start_str)))
+        period_start = _parse_varying_date(period_start_str)
 
         rs = sess.execute(
             select(RateScript).where(
@@ -360,3 +390,41 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
         rs.update(rs_script)
         sess.commit()
     log("Finished LCC CfD Forecast ILR TRA")
+
+
+def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
+    log("Starting to check for new LCC CfD Advanced Forecast ILR TRA")
+
+    contract_name = "cfd_advanced_forecast_ilr_tra"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+
+    res_j = api_search(s, "e3ad6876-c1e9-46f9-b557-cb9bdae53885", sort="Period Start")
+    for record in res_j["result"]["records"]:
+        period_start_str = record["Period Start"]
+        period_start = _parse_varying_date(period_start_str)
+
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == period_start,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, period_start, {})
+
+        sensitivity = record["Sensitivity"]
+        rs_script = rs.make_script()
+        try:
+            rs_sensitivity = rs_script["sensitivity"]
+        except KeyError:
+            rs_sensitivity = rs_script["sensitivity"] = {}
+        rs_sensitivity[sensitivity] = record
+        rs.update(rs_script)
+
+        sess.commit()
+
+    log("Finished LCC CfD Advanced Forecast ILR TRA")
