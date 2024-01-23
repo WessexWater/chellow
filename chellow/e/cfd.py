@@ -9,7 +9,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.e.lcc import api_search, api_sql
 from chellow.models import Contract, RateScript
-from chellow.utils import ct_datetime, hh_format, to_ct, to_utc
+from chellow.utils import c_months_u, ct_datetime, hh_format, to_ct, to_utc
 
 
 def _find_quarter_rs(sess, contract_name, date):
@@ -26,12 +26,18 @@ def _find_quarter_rs(sess, contract_name, date):
     ).one_or_none()
     if rs is None:
         return None
-    elif rs.finish_date is None and date >= to_utc(
-        to_ct(rs.start_date) + relativedelta(months=3)
-    ):
-        return None
     else:
-        return rs
+        st_ct = to_ct(rs.start_date)
+        if (
+            rs.finish_date is None
+            and date
+            > list(
+                c_months_u(start_year=st_ct.year, start_month=st_ct.month, months=3)
+            )[-1][-1]
+        ):
+            return None
+        else:
+            return rs.make_script()
 
 
 def hh(data_source, use_bill_check=False):
@@ -67,18 +73,18 @@ def hh(data_source, use_bill_check=False):
                             data_source.sess, "cfd_forecast_ilr_tra", h_start
                         )
                         if ilr_rs is None:
-                            base_rate_dec = data_source.non_core_rate(
-                                "cfd_advanced_forecast_ilr_tra", h_start
-                            )["sensitivity"]["Base Case"][
-                                "Interim_Levy_Rate_GBP_Per_MWh"
-                            ] / Decimal(
-                                1000
-                            )
+                            base_rate_dec = Decimal(
+                                data_source.non_core_rate(
+                                    "cfd_advanced_forecast_ilr_tra", h_start
+                                )["sensitivity"]["Base Case"][
+                                    "Interim Levy Rate_GBP_Per_MWh"
+                                ]
+                            ) / Decimal(1000)
 
                         else:
-                            base_rate_dec = ilr_rs["record"][
-                                "Interim_Levy_Rate_GBP_Per_MWh"
-                            ] / Decimal(1000)
+                            base_rate_dec = Decimal(
+                                ilr_rs["record"]["Interim_Levy_Rate_GBP_Per_MWh"]
+                            ) / Decimal(1000)
                     else:
                         base_rate_dec = period_rs["rate_gbp_per_kwh"]
                 else:
