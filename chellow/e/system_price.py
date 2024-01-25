@@ -1,11 +1,6 @@
-import atexit
-import collections
 import datetime
-import threading
 import traceback
 from datetime import timedelta as Timedelta
-
-import requests
 
 from werkzeug.exceptions import BadRequest
 
@@ -13,8 +8,8 @@ import xlrd
 
 from zish import loads
 
-from chellow.models import Contract, RateScript, Session
-from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
+from chellow.models import Contract, RateScript
+from chellow.utils import HH, hh_format, to_ct, to_utc
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
@@ -66,68 +61,18 @@ def hh(data_source):
         h["ssp-gbp"] = h["nbp-kwh"] * ssp
 
 
-system_price_importer = None
-
-
-class SystemPriceImporter(threading.Thread):
-    def __init__(self):
-        super(SystemPriceImporter, self).__init__(name="System Price Importer")
-        self.lock = threading.RLock()
-        self.messages = collections.deque(maxlen=1000)
-        self.stopped = threading.Event()
-        self.going = threading.Event()
-        self.PROXY_HOST_KEY = "proxy.host"
-        self.PROXY_PORT_KEY = "proxy.port"
-
-    def stop(self):
-        self.stopped.set()
-        self.going.set()
-        self.join()
-
-    def go(self):
-        self.going.set()
-
-    def is_locked(self):
-        if self.lock.acquire(False):
-            self.lock.release()
-            return False
-        else:
-            return True
-
-    def log(self, message):
-        self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
-        )
-
-    def run(self):
-        while not self.stopped.isSet():
-            if self.lock.acquire(False):
-                with Session() as sess:
-                    try:
-                        _process(self.log, sess)
-                        self.log("Finished checking System Price rates.")
-                    except BaseException:
-                        self.log(f"Outer problem {traceback.format_exc()}")
-                        sess.rollback()
-                    finally:
-                        self.lock.release()
-
-            self.going.wait(24 * 60 * 60)
-            self.going.clear()
-
-
-def _process(log_f, sess):
+def elexon_import(sess, log, set_progress, s):
     contract = Contract.get_non_core_by_name(sess, "system_price")
     contract_props = contract.make_properties()
 
     if not contract_props.get("enabled", False):
-        log_f(
+        log(
             "The automatic importer is disabled. To enable it, edit "
             "the contract properties to set 'enabled' to True."
         )
         return
 
-    log_f("Starting to check System Prices.")
+    log("Starting to check System Prices.")
 
     for rscript in (
         sess.query(RateScript)
@@ -156,11 +101,11 @@ def _process(log_f, sess):
         f"{contract_props['url']}file/download/BESTVIEWPRICES_FILE?key={scripting_key}"
     )
 
-    log_f(f"Downloading from {url} and extracting data from {hh_format(fill_start)}")
+    log(f"Downloading from {url} and extracting data from {hh_format(fill_start)}")
 
     sess.rollback()  # Avoid long-running transactions
-    res = requests.get(url)
-    log_f(f"Received {res.status_code} {res.reason}")
+    res = s.get(url)
+    log(f"Received {res.status_code} {res.reason}")
     data = res.content
     book = xlrd.open_workbook(file_contents=data)
     sbp_sheet = book.sheet_by_index(1)
@@ -191,7 +136,7 @@ def _process(log_f, sess):
                         "ssp": ssp_val,
                     }
             hh_date += HH
-    log_f("Successfully extracted data.")
+    log("Successfully extracted data.")
     last_date = sorted(sp_months[-1].keys())[-1]
     if last_date.month == (last_date + HH).month:
         del sp_months[-1]
@@ -210,7 +155,7 @@ def _process(log_f, sess):
             .first()
         )
         if rs is None:
-            log_f(f"Adding a new rate script starting at {hh_format(month_start)}.")
+            log(f"Adding a new rate script starting at {hh_format(month_start)}.")
 
             latest_rs = (
                 sess.query(RateScript)
@@ -231,22 +176,6 @@ def _process(log_f, sess):
         script = {
             "gbp_per_nbp_mwh": dict((key_format(k), v) for k, v in sp_month.items())
         }
-        log_f(f"Updating rate script starting at {hh_format(month_start)}.")
+        log(f"Updating rate script starting at {hh_format(month_start)}.")
         contract.update_rate_script(sess, rs, rs.start_date, rs.finish_date, script)
         sess.commit()
-
-
-def get_importer():
-    return system_price_importer
-
-
-def startup():
-    global system_price_importer
-    system_price_importer = SystemPriceImporter()
-    system_price_importer.start()
-
-
-@atexit.register
-def shutdown():
-    if system_price_importer is not None:
-        system_price_importer.stop()

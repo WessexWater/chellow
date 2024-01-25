@@ -94,6 +94,7 @@ class BankHolidayImporter(threading.Thread):
         self.going = threading.Event()
         self.PROXY_HOST_KEY = "proxy.host"
         self.PROXY_PORT_KEY = "proxy.port"
+        self.global_alert = None
 
     def stop(self):
         self.stopped.set()
@@ -120,9 +121,13 @@ class BankHolidayImporter(threading.Thread):
             if self.lock.acquire(False):
                 try:
                     with Session() as sess:
+                        self.global_alert = None
                         _run(self.log, sess)
                 except BaseException:
                     self.log(f"Outer problem {traceback.format_exc()}")
+                    self.global_alert = (
+                        "There's a problem with the Bank Holiday importer"
+                    )
                 finally:
                     self.lock.release()
                     self.log("Finished checking bank holidays.")

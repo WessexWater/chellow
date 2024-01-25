@@ -1,4 +1,4 @@
-from chellow.e.system_price import _process
+from chellow.e.system_price import elexon_import
 from chellow.models import Contract, MarketRole, Participant
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
@@ -38,16 +38,16 @@ def test_process(sess, mocker):
     def log_f(msg):
         log.append(msg)
 
-    mock_requests = mocker.Mock()
+    mock_s = mocker.Mock()
     mock_response = mocker.Mock()
-    mock_requests.get.return_value = mock_response
+    mock_s.get.return_value = mock_response
     with open("test/e/system_price/prices.xls", "rb") as f:
         mock_response.content = f.read()
     mock_response.status_code = 200
     mock_response.reason = "OK"
-    mocker.patch("chellow.e.system_price.requests", mock_requests)
 
-    _process(log_f, sess)
+    mock_set_progress = mocker.Mock()
+    elexon_import(sess, log_f, mock_set_progress, mock_s)
 
     assert log == [
         "Starting to check System Prices.",

@@ -1482,6 +1482,20 @@ def duration_report_get(ct_now=None):
     )
 
 
+@e.route("/elexon")
+def elexon_get():
+    importer = chellow.e.elexon.importer
+
+    return render_template("elexon.html", importer=importer)
+
+
+@e.route("/elexon", methods=["POST"])
+def elexon_post():
+    importer = chellow.e.elexon.importer
+    importer.go()
+    return chellow_redirect("/elexon", 303)
+
+
 @e.route("/energisation_statuses")
 def energisation_statuses_get():
     energisation_statuses = g.sess.query(EnergisationStatus).order_by(

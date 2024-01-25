@@ -1,19 +1,14 @@
-import atexit
-import collections
 import csv
-import threading
-import traceback
 from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
-import requests
 
 from werkzeug.exceptions import BadRequest
 
 from zish import loads
 
-from chellow.models import Contract, RateScript, Session
+from chellow.models import Contract, RateScript
 from chellow.utils import (
     ct_datetime_parse,
     hh_format,
@@ -58,56 +53,8 @@ def hh(data_source):
         hh["rcrc-gbp"] = hh["nbp-kwh"] * rcrc
 
 
-rcrc_importer = None
-
-
 def key_format(dt):
     return dt.strftime("%d %H:%M Z")
-
-
-class RcrcImporter(threading.Thread):
-    def __init__(self):
-        super(RcrcImporter, self).__init__(name="RCRC Importer")
-        self.lock = threading.RLock()
-        self.messages = collections.deque(maxlen=100)
-        self.stopped = threading.Event()
-        self.going = threading.Event()
-
-    def stop(self):
-        self.stopped.set()
-        self.going.set()
-        self.join()
-
-    def go(self):
-        self.going.set()
-
-    def is_locked(self):
-        if self.lock.acquire(False):
-            self.lock.release()
-            return False
-        else:
-            return True
-
-    def log(self, message):
-        self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
-        )
-
-    def run(self):
-        while not self.stopped.isSet():
-            if self.lock.acquire(False):
-                with Session() as sess:
-                    try:
-                        _process(self.log, sess)
-                        self.log("Finished checking RCRC rates.")
-                    except BaseException:
-                        self.log("Outer problem " + traceback.format_exc())
-                        sess.rollback()
-                    finally:
-                        self.lock.release()
-
-            self.going.wait(30 * 60)
-            self.going.clear()
 
 
 def _find_month(lines, month_start, month_finish):
@@ -123,8 +70,8 @@ def _find_month(lines, month_start, month_finish):
     return month_rcrcs
 
 
-def _process(log_f, sess):
-    log_f("Starting to check RCRCs.")
+def elexon_import(sess, log, set_progress, s):
+    log("Starting to check RCRCs.")
     contract = Contract.get_non_core_by_name(sess, "rcrc")
     latest_rs = (
         sess.query(RateScript)
@@ -155,18 +102,18 @@ def _process(log_f, sess):
 
         contract_props = contract.make_properties()
         url_str = f"{contract_props['url']}file/download/RCRC_FILE?key={scripting_key}"
-        log_f(
+        log(
             f"Downloading {url_str} to see if data is available from "
             f"{hh_format(month_start)} to {hh_format(month_finish)}."
         )
 
         sess.rollback()  # Avoid long-running transaction
-        r = requests.get(url_str, timeout=60)
+        r = s.get(url_str, timeout=60)
         month_rcrcs = _find_month(
             (x.decode() for x in r.iter_lines()), month_start, month_finish
         )
         if key_format(month_finish) in month_rcrcs:
-            log_f("The whole month's data is there.")
+            log("The whole month's data is there.")
             script = {"rates": month_rcrcs}
             contract = Contract.get_non_core_by_name(sess, "rcrc")
             rs = RateScript.get_by_id(sess, latest_rs_id)
@@ -175,25 +122,9 @@ def _process(log_f, sess):
             )
             contract.insert_rate_script(sess, month_start, script)
             sess.commit()
-            log_f(f"Added a new rate script starting at {hh_format(month_start)}.")
+            log(f"Added a new rate script starting at {hh_format(month_start)}.")
         else:
             msg = "There isn't a whole month there yet."
             if len(month_rcrcs) > 0:
                 msg += f" The last date is {sorted(month_rcrcs.keys())[-1]}"
-            log_f(msg)
-
-
-def get_importer():
-    return rcrc_importer
-
-
-def startup():
-    global rcrc_importer
-    rcrc_importer = RcrcImporter()
-    rcrc_importer.start()
-
-
-@atexit.register
-def shutdown():
-    if rcrc_importer is not None:
-        rcrc_importer.stop()
+            log(msg)

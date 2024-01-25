@@ -16,10 +16,10 @@ import chellow.bank_holidays
 import chellow.dloads
 import chellow.e.bmarketidx
 import chellow.e.bsuos
+import chellow.e.elexon
 import chellow.e.hh_importer
 import chellow.e.rcrc
 import chellow.e.system_price
-import chellow.e.tlms
 import chellow.e.views
 import chellow.gas.cv
 import chellow.gas.views
@@ -50,13 +50,10 @@ TEMPLATE_FORMATS = {
 
 def get_importer_modules():
     return (
-        chellow.e.rcrc,
+        chellow.e.elexon,
         chellow.e.bsuos,
-        chellow.e.system_price,
-        chellow.e.hh_importer,
         chellow.e.lcc,
         chellow.testing,
-        chellow.e.tlms,
         chellow.bank_holidays,
         chellow.gas.cv,
         chellow.e.bmarketidx,
@@ -82,6 +79,7 @@ def create_app(testing=False):
     if not testing:
         db_upgrade(app.root_path)
         chellow.dloads.startup(app.instance_path)
+        chellow.e.hh_importer.startup()
 
         with Session() as sess:
             configuration = sess.execute(
@@ -264,14 +262,8 @@ def create_app(testing=False):
                 except NotFound:
                     pass
 
-        for importer in (
-            chellow.e.bsuos.bsuos_importer,
-            chellow.gas.cv.cv_importer,
-            chellow.e.bmarketidx.bmarketidx_importer,
-            chellow.national_grid.importer,
-            chellow.rate_server.importer,
-            chellow.testing.tester,
-        ):
+        for mod in get_importer_modules():
+            importer = mod.get_importer()
             if importer is not None and importer.global_alert is not None:
                 global_alerts.append(importer.global_alert)
 

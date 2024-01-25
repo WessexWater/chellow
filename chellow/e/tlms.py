@@ -1,14 +1,8 @@
-import atexit
-import collections
 import csv
-import threading
-import traceback
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
 from dateutil.relativedelta import relativedelta
-
-import requests
 
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
@@ -17,8 +11,8 @@ from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
 
-from chellow.models import Contract, RateScript, Session
-from chellow.utils import HH, hh_format, to_ct, to_utc, utc_datetime_now
+from chellow.models import Contract, RateScript
+from chellow.utils import HH, hh_format, to_ct, to_utc
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
@@ -83,51 +77,6 @@ def hh(data_source, run="DF"):
         h["nbp-kwh"] = h["gsp-kwh"] * tlm
 
 
-tlm_importer = None
-
-
-class TlmImporter(threading.Thread):
-    def __init__(self):
-        super(TlmImporter, self).__init__(name="TLM Importer")
-        self.lock = threading.RLock()
-        self.messages = collections.deque(maxlen=100)
-        self.stopped = threading.Event()
-        self.going = threading.Event()
-        self.PROXY_HOST_KEY = "proxy.host"
-        self.PROXY_PORT_KEY = "proxy.port"
-
-    def stop(self):
-        self.stopped.set()
-        self.going.set()
-        self.join()
-
-    def go(self):
-        self.going.set()
-
-    def is_locked(self):
-        if self.lock.acquire(False):
-            self.lock.release()
-            return False
-        else:
-            return True
-
-    def log(self, message):
-        self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
-        )
-
-    def run(self):
-        while not self.stopped.isSet():
-            if self.lock.acquire(False):
-                try:
-                    _import_tlms(self.log)
-                finally:
-                    self.lock.release()
-
-            self.going.wait(24 * 60 * 60)
-            self.going.clear()
-
-
 def _save_cache(sess, cache):
     for yr, yr_cache in cache.items():
         for month, (rs, rates, rts) in tuple(yr_cache.items()):
@@ -136,58 +85,46 @@ def _save_cache(sess, cache):
             del yr_cache[month]
 
 
-def _import_tlms(log_func):
+def elexon_import(sess, log, set_progress, s):
     cache = {}
-    with Session() as sess:
-        try:
-            log_func("Starting to check TLMs.")
-            contract = Contract.get_non_core_by_name(sess, "tlms")
-            contract_props = contract.make_properties()
-            if contract_props.get("enabled", False):
-                config = Contract.get_non_core_by_name(sess, "configuration")
-                props = config.make_properties()
-                scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-                if scripting_key is None:
-                    raise BadRequest(
-                        f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be "
-                        f"found in the configuration properties."
-                    )
+    log("Starting to check TLMs.")
+    contract = Contract.get_non_core_by_name(sess, "tlms")
+    contract_props = contract.make_properties()
+    if contract_props.get("enabled", False):
+        config = Contract.get_non_core_by_name(sess, "configuration")
+        props = config.make_properties()
+        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+        if scripting_key is None:
+            raise BadRequest(
+                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be "
+                f"found in the configuration properties."
+            )
 
-                url_str = (
-                    f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
-                )
+        url_str = f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
 
-                sess.rollback()  # Avoid long-running transaction
-                r = requests.get(url_str)
-                parser = csv.reader(
-                    (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
-                )
-                log_func(f"Opened {url_str}.")
+        sess.rollback()  # Avoid long-running transaction
+        r = s.get(url_str)
+        parser = csv.reader(
+            (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
+        )
+        log(f"Opened {url_str}.")
 
-                next(parser, None)
-                for i, values in enumerate(parser):
-                    if values[3] == "":
-                        for zone in GSP_GROUP_LOOKUP.keys():
-                            values[3] = zone
-                            _process_line(cache, sess, contract, log_func, values)
-                    else:
-                        _process_line(cache, sess, contract, log_func, values)
-
-                _save_cache(sess, cache)
+        next(parser, None)
+        for i, values in enumerate(parser):
+            if values[3] == "":
+                for zone in GSP_GROUP_LOOKUP.keys():
+                    values[3] = zone
+                    _process_line(cache, sess, contract, log, values)
             else:
-                log_func(
-                    "The importer is disabled. Set 'enabled' to 'true' in the "
-                    "properties to enable it."
-                )
+                _process_line(cache, sess, contract, log, values)
 
-        except BadRequest as e:
-            log_func(f"Problem: {e.description}")
-            sess.rollback()
-        except BaseException:
-            log_func(f"Outer problem {traceback.format_exc()}")
-            sess.rollback()
-        finally:
-            log_func("Finished checking TLM rates.")
+        _save_cache(sess, cache)
+    else:
+        log(
+            "The importer is disabled. Set 'enabled' to 'true' in the "
+            "properties to enable it."
+        )
+    log("Finished checking TLMs.")
 
 
 GSP_GROUP_LOOKUP = {
@@ -247,7 +184,7 @@ def _process_line(cache, sess, contract, log_func, values):
             .first()
         )
         while rs is None:
-            log_func("There's no rate script at " + hh_format(hh_date) + ".")
+            log_func(f"There's no rate script at {hh_format(hh_date)}.")
             latest_rs = (
                 sess.query(RateScript)
                 .filter(RateScript.contract == contract)
@@ -264,7 +201,7 @@ def _process_line(cache, sess, contract, log_func, values):
             new_rs_start = latest_rs.start_date + relativedelta(months=1)
             contract.insert_rate_script(sess, new_rs_start, {})
             sess.commit()
-            log_func("Added a rate script starting at " + hh_format(new_rs_start) + ".")
+            log_func(f"Added a rate script starting at {hh_format(new_rs_start)}.")
 
             rs = (
                 sess.query(RateScript)
@@ -304,29 +241,6 @@ def _process_line(cache, sess, contract, log_func, values):
         group[run] = {"off_taking": off_taking, "delivering": delivering}
 
         log_func(
-            "Found rate at "
-            + hh_format(hh_date)
-            + " for GSP Group "
-            + gsp_group_code
-            + " and run "
-            + run
-            + "."
+            f"Found rate at {hh_format(hh_date)} for GSP Group {gsp_group_code} "
+            f"and run {run}."
         )
-
-
-def get_importer():
-    return tlm_importer
-
-
-def startup():
-    global tlm_importer
-    if tlm_importer is not None:
-        raise BadRequest("The TLM importer has already been started.")
-    tlm_importer = TlmImporter()
-    tlm_importer.start()
-
-
-@atexit.register
-def shutdown():
-    if tlm_importer is not None:
-        tlm_importer.stop()
