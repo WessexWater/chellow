@@ -110,8 +110,11 @@ def elexon_import(sess, log, set_progress, s):
         log(f"Opened {url_str}.")
 
         next(parser, None)
-        for i, values in enumerate(parser):
-            if values[3] == "":
+        for values in parser:
+            if len(values) == 0:
+                continue
+
+            elif values[3] == "":
                 for zone in GSP_GROUP_LOOKUP.keys():
                     values[3] = zone
                     _process_line(cache, sess, contract, log, values)

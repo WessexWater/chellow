@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from chellow.e.computer import SupplySource
-from chellow.e.tlms import hh
+from chellow.e.tlms import elexon_import, hh
 from chellow.models import (
     Comm,
     Contract,
@@ -182,3 +182,37 @@ def test_hh(sess, mocker):
     hh_datum["gsp-kwh"] = 1
     hh(ss)
     assert hh_datum["tlm"] == 1.5
+
+
+def test_elexon_import(sess, mocker):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "CALB", "Calb")
+    market_role = MarketRole.insert(sess, "Z", "Non-core")
+    participant.insert_party(sess, market_role, "None core", vf, None, None)
+    Contract.insert_non_core(
+        sess, "tlms", "", {"enabled": True, "url": "https://example.com"}, vf, None, {}
+    )
+    Contract.insert_non_core(
+        sess,
+        "configuration",
+        "",
+        {"elexonportal_scripting_key": "xxk"},
+        vf,
+        None,
+        {},
+    )
+    sess.commit()
+
+    def log(msg):
+        pass
+
+    def set_progress(msg):
+        pass
+
+    s = mocker.Mock()
+    mock_response = mocker.Mock()
+    lines = [b"", b""]
+    mock_response.iter_lines = mocker.Mock(return_value=lines)
+    s.get = mocker.Mock(return_value=mock_response)
+
+    elexon_import(sess, log, set_progress, s)
