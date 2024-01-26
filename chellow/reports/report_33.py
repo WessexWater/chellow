@@ -454,9 +454,11 @@ limit 3
                 era.imp_sc,
                 None if era.imp_llfc is None else era.imp_llfc.code,
                 None if era.imp_llfc is None else era.imp_llfc.description,
-                None
-                if era.imp_supplier_contract is None
-                else era.imp_supplier_contract.name,
+                (
+                    None
+                    if era.imp_supplier_contract is None
+                    else era.imp_supplier_contract.name
+                ),
                 era.imp_supplier_account,
                 imp_avg_months,
                 imp_latest_supplier_bill_date,
@@ -465,9 +467,11 @@ limit 3
                 era.exp_sc,
                 None if era.exp_llfc is None else era.exp_llfc.code,
                 None if era.exp_llfc is None else era.exp_llfc.description,
-                None
-                if era.exp_supplier_contract is None
-                else era.exp_supplier_contract.name,
+                (
+                    None
+                    if era.exp_supplier_contract is None
+                    else era.exp_supplier_contract.name
+                ),
                 era.exp_supplier_account,
                 exp_avg_months,
                 exp_latest_supplier_bill_date,

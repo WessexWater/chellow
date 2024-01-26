@@ -98,9 +98,9 @@ def _handle_SECTION(state, sheet, row, rates, networks):
                     sheet, col, row
                 )
             elif rate_name == "minimum_gbp_per_kwh_per_day":
-                state_rates["732000_and_over"][
-                    "minimum_gbp_per_kwh_per_day"
-                ] = get_rate(sheet, col, row)
+                state_rates["732000_and_over"]["minimum_gbp_per_kwh_per_day"] = (
+                    get_rate(sheet, col, row)
+                )
             else:
                 state_rates[rate_name] = get_rate(sheet, col, row)
 

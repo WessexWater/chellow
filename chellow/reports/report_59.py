@@ -539,13 +539,17 @@ def _process_site(
                     out = [
                         now,
                         last_era.imp_mpan_core,
-                        None
-                        if imp_supplier_contract is None
-                        else imp_supplier_contract.name,
+                        (
+                            None
+                            if imp_supplier_contract is None
+                            else imp_supplier_contract.name
+                        ),
                         last_era.exp_mpan_core,
-                        None
-                        if exp_supplier_contract is None
-                        else exp_supplier_contract.name,
+                        (
+                            None
+                            if exp_supplier_contract is None
+                            else exp_supplier_contract.name
+                        ),
                         chunk_start,
                         last_era.meter_category,
                         last_era.supply.source.code,
@@ -643,13 +647,17 @@ def _process_site(
                     out = [
                         now,
                         last_era.imp_mpan_core,
-                        None
-                        if imp_supplier_contract is None
-                        else imp_supplier_contract.name,
+                        (
+                            None
+                            if imp_supplier_contract is None
+                            else imp_supplier_contract.name
+                        ),
                         last_era.exp_mpan_core,
-                        None
-                        if exp_supplier_contract is None
-                        else exp_supplier_contract.name,
+                        (
+                            None
+                            if exp_supplier_contract is None
+                            else exp_supplier_contract.name
+                        ),
                         None,
                         last_era.meter_category,
                         last_era.supply.source.code,
