@@ -10,8 +10,7 @@
 {% endblock %}
 
 {% block content %}
-	{% if contract.name in [
-	    'bank_holidays', 'bmarketidx', 'rcrc', 'system_price', 'tlms'] %}
+	{% if contract.name in ['bank_holidays', 'bmarketidx'] %}
 		<p>
 			<a href="/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
 		</p>
@@ -33,6 +32,10 @@
 				</li>
 				<li><a href="/national_grid">Forecast Rates</a></li>
 			</ul>
+		</p>
+	{% elif contract.name in ['rcrc', 'system_price', 'tlms'] %}
+		<p>
+			<a href="/e/elexon">Automatic Importer</a>
 		</p>
 	{% endif %}
 
