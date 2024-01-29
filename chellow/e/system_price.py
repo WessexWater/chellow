@@ -2,6 +2,8 @@ import datetime
 import traceback
 from datetime import timedelta as Timedelta
 
+from sqlalchemy import select
+
 from werkzeug.exceptions import BadRequest
 
 import xlrd
@@ -10,9 +12,6 @@ from zish import loads
 
 from chellow.models import Contract, RateScript
 from chellow.utils import HH, hh_format, to_ct, to_utc
-
-
-ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
 
 
 def key_format(dt):
@@ -61,7 +60,7 @@ def hh(data_source):
         h["ssp-gbp"] = h["nbp-kwh"] * ssp
 
 
-def elexon_import(sess, log, set_progress, s):
+def elexon_import(sess, log, set_progress, s, scripting_key):
     contract = Contract.get_non_core_by_name(sess, "system_price")
     contract_props = contract.make_properties()
 
@@ -74,9 +73,9 @@ def elexon_import(sess, log, set_progress, s):
 
     log("Starting to check System Prices.")
 
-    for rscript in (
-        sess.query(RateScript)
-        .filter(RateScript.contract == contract)
+    for rscript in sess.scalars(
+        select(RateScript)
+        .where(RateScript.contract == contract)
         .order_by(RateScript.start_date.desc())
     ):
         ns = loads(rscript.script)
@@ -87,24 +86,16 @@ def elexon_import(sess, log, set_progress, s):
         elif rates[key_format(rscript.finish_date)]["run"] == "DF":
             fill_start = rscript.finish_date + HH
             break
+    params = {"key": scripting_key}
+    url = "https://downloads.elexonportal.co.uk/file/download/BESTVIEWPRICES_FILE"
 
-    config = Contract.get_non_core_by_name(sess, "configuration")
-    config_props = config.make_properties()
-
-    scripting_key = config_props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-    if scripting_key is None:
-        raise BadRequest(
-            f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be found in "
-            f"the configuration properties."
-        )
-    url = (
-        f"{contract_props['url']}file/download/BESTVIEWPRICES_FILE?key={scripting_key}"
+    log(
+        f"Downloading from {url}?key={scripting_key} and extracting data from "
+        f"{hh_format(fill_start)}"
     )
 
-    log(f"Downloading from {url} and extracting data from {hh_format(fill_start)}")
-
     sess.rollback()  # Avoid long-running transactions
-    res = s.get(url)
+    res = s.get(url, params=params)
     log(f"Received {res.status_code} {res.reason}")
     data = res.content
     book = xlrd.open_workbook(file_contents=data)

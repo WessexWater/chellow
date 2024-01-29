@@ -63,14 +63,23 @@ def _find_month(lines, month_start, month_finish):
     next(parser)
     month_rcrcs = {}
     for values in parser:
-        hh_date = to_utc(ct_datetime_parse(values[0], "%d/%m/%Y"))
+        if len(values) == 0:
+            continue
+        date_str = values[0]
+        if "/" in date_str:
+            pattern = "%d/%m/%Y"
+        elif " " in date_str:
+            pattern = "%d %b %Y"
+        else:
+            raise BadRequest(f"Date format {date_str} not recognized.")
+        hh_date = to_utc(ct_datetime_parse(date_str, pattern))
         hh_date += relativedelta(minutes=30 * int(values[2]))
         if month_start <= hh_date <= month_finish:
             month_rcrcs[key_format(hh_date)] = Decimal(values[3])
     return month_rcrcs
 
 
-def elexon_import(sess, log, set_progress, s):
+def elexon_import(sess, log, set_progress, s, scripting_key):
     log("Starting to check RCRCs.")
     contract = Contract.get_non_core_by_name(sess, "rcrc")
     latest_rs = (
@@ -90,25 +99,15 @@ def elexon_import(sess, log, set_progress, s):
     month_start, month_finish = months[1]
     now = utc_datetime_now()
     if now > month_finish:
-        config = Contract.get_non_core_by_name(sess, "configuration")
-        props = config.make_properties()
-
-        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-        if scripting_key is None:
-            raise BadRequest(
-                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be found in "
-                f"the configuration properties."
-            )
-
-        contract_props = contract.make_properties()
-        url_str = f"{contract_props['url']}file/download/RCRC_FILE?key={scripting_key}"
+        params = {"key": scripting_key}
+        url_str = "https://downloads.elexonportal.co.uk/file/download/RCRC_FILE"
         log(
-            f"Downloading {url_str} to see if data is available from "
-            f"{hh_format(month_start)} to {hh_format(month_finish)}."
+            f"Downloading {url_str}?key={scripting_key} to see if data is available "
+            f"from {hh_format(month_start)} to {hh_format(month_finish)}."
         )
 
         sess.rollback()  # Avoid long-running transaction
-        r = s.get(url_str, timeout=60)
+        r = s.get(url_str, timeout=120, params=params)
         month_rcrcs = _find_month(
             (x.decode() for x in r.iter_lines()), month_start, month_finish
         )

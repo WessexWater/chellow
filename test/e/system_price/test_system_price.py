@@ -10,7 +10,6 @@ def test_process(sess, mocker):
     participant.insert_party(sess, market_role_Z, "non-core", from_date, None, None)
     system_price_properties = {
         "enabled": True,
-        "url": "https://example.com",
     }
     rate_script_properties = {"gbp_per_nbp_mwh": {}}
     Contract.insert_non_core(
@@ -47,11 +46,13 @@ def test_process(sess, mocker):
     mock_response.reason = "OK"
 
     mock_set_progress = mocker.Mock()
-    elexon_import(sess, log_f, mock_set_progress, mock_s)
+    scripting_key = "xxx"
+    elexon_import(sess, log_f, mock_set_progress, mock_s, scripting_key)
 
     assert log == [
         "Starting to check System Prices.",
-        "Downloading from https://example.comfile/download/BESTVIEWPRICES_FILE?"
+        "Downloading from "
+        "https://downloads.elexonportal.co.uk/file/download/BESTVIEWPRICES_FILE?"
         "key=xxx and extracting data from 2001-04-01 01:00",
         "Received 200 OK",
         "Successfully extracted data.",

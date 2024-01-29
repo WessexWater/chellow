@@ -214,5 +214,6 @@ def test_elexon_import(sess, mocker):
     lines = [b"", b""]
     mock_response.iter_lines = mocker.Mock(return_value=lines)
     s.get = mocker.Mock(return_value=mock_response)
+    scripting_key = mocker.Mock()
 
-    elexon_import(sess, log, set_progress, s)
+    elexon_import(sess, log, set_progress, s, scripting_key)

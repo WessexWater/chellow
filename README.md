@@ -26,6 +26,7 @@ Chellow is a Python web application that uses the PostgreSQL database. To instal
 Chellow, follow these steps:
 
 * Install [PostgreSQL](http://www.postgresql.org/) 12
+  * Set the PostgreSQL time zone to 'UTC'.
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
 * Set up the following environment variables to configure Chellow:
 

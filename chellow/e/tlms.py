@@ -4,7 +4,7 @@ from decimal import Decimal, InvalidOperation
 
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
@@ -12,10 +12,8 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 from chellow.models import Contract, RateScript
-from chellow.utils import HH, hh_format, to_ct, to_utc
+from chellow.utils import HH, hh_format, hh_range, to_ct, to_utc
 
-
-ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
 
 RUNS = ["DF", "RF", "R3", "R2", "R1", "SF", "II"]
 
@@ -77,51 +75,76 @@ def hh(data_source, run="DF"):
         h["nbp-kwh"] = h["gsp-kwh"] * tlm
 
 
-def _save_cache(sess, cache):
-    for yr, yr_cache in cache.items():
-        for month, (rs, rates, rts) in tuple(yr_cache.items()):
-            rs.script = dumps(rates)
-            sess.commit()
-            del yr_cache[month]
+def _find_complete_date(caches, sess, contract, cache):
+    for rs in sess.scalars(
+        select(RateScript)
+        .where(RateScript.contract == contract, RateScript.finish_date != null())
+        .order_by(RateScript.start_date.desc())
+    ):
+        rates = rs.make_script()
+        rates["id"] = rs.id
+        cache["rate_scripts"].append(rates)
+        timestamps = cache["timestamps"]
+        tlms = rates["tlms"]
+        complete = True
+        for dt in hh_range(caches, rs.start_date, rs.finish_date):
+            timestamps[dt] = rates
+            key = key_format(dt)
+            if key in tlms:
+                gps = tlms[key]
+                for group in GSP_GROUP_LOOKUP.values():
+                    if not (group in gps and "DF" in gps[group]):
+                        complete = False
+            else:
+                complete = False
+
+        if complete:
+            return rs.finish_date
 
 
-def elexon_import(sess, log, set_progress, s):
-    cache = {}
+def elexon_import(sess, log, set_progress, s, scripting_key):
+    cache = {"rate_scripts": [], "timestamps": {}}
+    caches = {}
     log("Starting to check TLMs.")
     contract = Contract.get_non_core_by_name(sess, "tlms")
     contract_props = contract.make_properties()
     if contract_props.get("enabled", False):
-        config = Contract.get_non_core_by_name(sess, "configuration")
-        props = config.make_properties()
-        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-        if scripting_key is None:
-            raise BadRequest(
-                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} cannot be "
-                f"found in the configuration properties."
-            )
 
-        url_str = f"{contract_props['url']}file/download/TLM_FILE?key={scripting_key}"
+        params = {"key": scripting_key}
+        url_str = "https://downloads.elexonportal.co.uk/file/download/TLM_FILE"
+        complete_date = _find_complete_date(caches, sess, contract, cache)
+        log(f"Found complete up to {complete_date}")
 
         sess.rollback()  # Avoid long-running transaction
-        r = s.get(url_str)
+        r = s.get(url_str, params=params, timeout=120)
         parser = csv.reader(
             (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
         )
-        log(f"Opened {url_str}.")
+        log(f"Opened {url_str}?key={scripting_key}.")
 
         next(parser, None)
         for values in parser:
             if len(values) == 0:
                 continue
 
-            elif values[3] == "":
+            set_progress(values[0])
+
+            if values[3] == "":
                 for zone in GSP_GROUP_LOOKUP.keys():
                     values[3] = zone
-                    _process_line(cache, sess, contract, log, values)
+                    _process_line(
+                        cache, sess, contract, log, values, complete_date, caches
+                    )
             else:
-                _process_line(cache, sess, contract, log, values)
+                _process_line(cache, sess, contract, log, values, complete_date, caches)
 
-        _save_cache(sess, cache)
+        for rscript in cache["rate_scripts"]:
+            rs = sess.scalars(
+                select(RateScript).where(RateScript.id == rscript["id"])
+            ).one()
+            rs.script = dumps({"tlms": rscript["tlms"]})
+            sess.commit()
+
     else:
         log(
             "The importer is disabled. Set 'enabled' to 'true' in the "
@@ -148,10 +171,12 @@ GSP_GROUP_LOOKUP = {
 }
 
 
-def _process_line(cache, sess, contract, log_func, values):
+def _process_line(cache, sess, contract, log_func, values, complete_date, caches):
     hh_date_ct = to_ct(Datetime.strptime(values[0], "%d/%m/%Y"))
     hh_date = to_utc(hh_date_ct)
     hh_date += relativedelta(minutes=30 * (int(values[2]) - 1))
+    if complete_date is not None and hh_date <= complete_date:
+        return
     run = values[1]
     gsp_group_code = GSP_GROUP_LOOKUP[values[3]]
     off_taking_str = values[4]
@@ -166,45 +191,13 @@ def _process_line(cache, sess, contract, log_func, values):
 
     delivering = Decimal(values[5])
 
+    key = key_format(hh_date)
     try:
-        rs, rates, rts = cache[hh_date.year][hh_date.month]
+        cache["timestamps"][hh_date]["tlms"][key][gsp_group_code][run]
     except KeyError:
-        _save_cache(sess, cache)
         try:
-            yr_cache = cache[hh_date.year]
+            rate = cache["timestamps"][hh_date]
         except KeyError:
-            yr_cache = cache[hh_date.year] = {}
-
-        rs = (
-            sess.query(RateScript)
-            .filter(
-                RateScript.contract == contract,
-                RateScript.start_date <= hh_date,
-                or_(
-                    RateScript.finish_date == null(), RateScript.finish_date >= hh_date
-                ),
-            )
-            .first()
-        )
-        while rs is None:
-            log_func(f"There's no rate script at {hh_format(hh_date)}.")
-            latest_rs = (
-                sess.query(RateScript)
-                .filter(RateScript.contract == contract)
-                .order_by(RateScript.start_date.desc())
-                .first()
-            )
-            contract.update_rate_script(
-                sess,
-                latest_rs,
-                latest_rs.start_date,
-                latest_rs.start_date + relativedelta(months=2) - HH,
-                loads(latest_rs.script),
-            )
-            new_rs_start = latest_rs.start_date + relativedelta(months=1)
-            contract.insert_rate_script(sess, new_rs_start, {})
-            sess.commit()
-            log_func(f"Added a rate script starting at {hh_format(new_rs_start)}.")
 
             rs = (
                 sess.query(RateScript)
@@ -218,29 +211,56 @@ def _process_line(cache, sess, contract, log_func, values):
                 )
                 .first()
             )
+            assert rs is None
+            while rs is None:
+                log_func(f"There's no rate script at {hh_format(hh_date)}.")
+                latest_rs = (
+                    sess.query(RateScript)
+                    .filter(RateScript.contract == contract)
+                    .order_by(RateScript.start_date.desc())
+                    .first()
+                )
+                contract.update_rate_script(
+                    sess,
+                    latest_rs,
+                    latest_rs.start_date,
+                    latest_rs.start_date + relativedelta(months=2) - HH,
+                    loads(latest_rs.script),
+                )
+                new_rs_start = latest_rs.start_date + relativedelta(months=1)
+                new_rs = contract.insert_rate_script(sess, new_rs_start, {})
+                rt = {"tlms": {}, "id": new_rs.id}
+                cache["rate_scripts"].append(rt)
+                for h in hh_range(caches, new_rs.start_date, new_rs.finish_date):
+                    cache["timestamps"][h] = rt
+                sess.commit()
+                log_func(f"Added a rate script starting at {hh_format(new_rs_start)}.")
 
-        rates = loads(rs.script)
+                rs = (
+                    sess.query(RateScript)
+                    .filter(
+                        RateScript.contract == contract,
+                        RateScript.start_date <= hh_date,
+                        or_(
+                            RateScript.finish_date == null(),
+                            RateScript.finish_date >= hh_date,
+                        ),
+                    )
+                    .first()
+                )
+
+            rate = cache["timestamps"][hh_date]
 
         try:
-            rts = rates["tlms"]
+            existing = rate["tlms"][key]
         except KeyError:
-            rts = rates["tlms"] = {}
+            existing = rate["tlms"][key] = {}
 
-        yr_cache[hh_date.month] = rs, rates, rts
-        sess.rollback()
+        try:
+            group = existing[gsp_group_code]
+        except KeyError:
+            group = existing[gsp_group_code] = {}
 
-    key = key_format(hh_date)
-    try:
-        existing = rts[key]
-    except KeyError:
-        existing = rts[key] = {}
-
-    try:
-        group = existing[gsp_group_code]
-    except KeyError:
-        group = existing[gsp_group_code] = {}
-
-    if run not in group:
         group[run] = {"off_taking": off_taking, "delivering": delivering}
 
         log_func(
