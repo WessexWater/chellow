@@ -156,12 +156,7 @@ def test_content(mocker, sess):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_bills.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_bills.chellow.dloads.make_names",
-        return_value=("a", "b"),
-    )
-    mocker.patch("chellow.reports.report_bills.os.rename")
+    mocker.patch("chellow.reports.report_bills.open_file", return_value=mock_file)
 
     content(user_id, batch.id)
     mock_file.seek(0)

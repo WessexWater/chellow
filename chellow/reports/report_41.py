@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -11,7 +10,7 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
 import chellow.e.tnuos
-from chellow.dloads import make_names
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, forecast_date
 from chellow.e.duos import duos_vb
 from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply, User
@@ -54,8 +53,7 @@ def content(year, supply_id, user_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = make_names("supplies_triad.csv", user)
-            f = open(running_name, mode="w", newline="")
+            f = open_file("supplies_triad.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
 
             march_start = to_utc(ct_datetime(year, 3, 1))
@@ -207,7 +205,6 @@ def content(year, supply_id, user_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

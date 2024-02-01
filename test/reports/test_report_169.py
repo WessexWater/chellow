@@ -70,11 +70,9 @@ def test_content(mocker, client, rsess):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_169.open", return_value=mock_file)
-    mock_make_names = mocker.patch(
-        "chellow.reports.report_169.chellow.dloads.make_names", return_value=("a", "b")
+    mock_open_file = mocker.patch(
+        "chellow.reports.report_169.open_file", return_value=mock_file
     )
-    mocker.patch("chellow.reports.report_169.os.rename")
     start_date = to_utc(ct_datetime(2020, 6, 1))
     finish_date = to_utc(ct_datetime(2020, 6, 1, 23, 30))
     imp_related = True
@@ -93,7 +91,7 @@ def test_content(mocker, client, rsess):
         mpan_cores,
         user_id,
     )
-    call_args = mock_make_names.call_args
+    call_args = mock_open_file.call_args
     arg_name, arg_user = call_args[0]
     assert arg_name == "supplies_hh_data_202006012330.csv"
     assert arg_user.id == user.id
@@ -261,11 +259,7 @@ def test_content_zip(mocker, sess):
 
     f = BytesIO()
     zf = ZipFile(f, "w", ZIP_DEFLATED)
-    mocker.patch("chellow.reports.report_169.zipfile.ZipFile", return_value=zf)
-    mocker.patch(
-        "chellow.reports.report_169.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_169.os.rename")
+    mocker.patch("chellow.reports.report_169.open_file", return_value=zf)
     start_date = to_utc(ct_datetime(2020, 6, 1))
     finish_date = to_utc(ct_datetime(2020, 6, 1, 23, 30))
     imp_related = True

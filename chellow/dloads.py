@@ -6,6 +6,10 @@ import threading
 import time
 import traceback
 
+from zipfile import ZIP_DEFLATED, ZipFile
+
+from werkzeug.exceptions import BadRequest
+
 from chellow.utils import utc_datetime_now
 
 
@@ -23,23 +27,54 @@ def startup(instance_path):
     file_deleter = FileDeleter()
     file_deleter.start()
 
-    download_path = os.path.join(instance_path, "downloads")
+    download_path = instance_path / "downloads"
+    download_path.mkdir(parents=True, exist_ok=True)
 
-    if not os.path.exists(download_path):
-        os.makedirs(download_path)
-
-    files = sorted(os.listdir(download_path), reverse=True)
-    if len(files) > 0:
-        download_id = int(files[0][:SERIAL_DIGITS]) + 1
+    dirs = sorted(download_path.iterdir(), reverse=True)
+    if len(dirs) > 0:
+        download_id = int(dirs[0].name[:SERIAL_DIGITS]) + 1
 
 
-def make_names(base, user):
+class DloadFile:
+    def __init__(self, running_name, finished_name, mode, newline, is_zip):
+        self.running_name = running_name
+        self.finished_name = finished_name
+        if is_zip:
+            self.f = ZipFile(running_name, mode=mode, compression=ZIP_DEFLATED)
+        else:
+            self.f = self.running_name.open(mode=mode, newline=newline)
+
+    def _check_exists(self):
+        if not self.running_name.exists():
+            raise BadRequest("Output file has been deleted.")
+
+    def write(self, b):
+        self._check_exists()
+        self.f.write(b)
+
+    def seek(self, offset, whence=0):
+        self._check_exists()
+        return self.f.seek(offset, whence)
+
+    def close(self):
+        self.f.close()
+        self._check_exists()
+        self.running_name.rename(self.finished_name)
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
+        self.close()
+
+
+def open_file(base, user, mode="r", newline=None, is_zip=False):
     global download_id
 
     base = base.replace("/", "").replace(" ", "")
     try:
         lock.acquire()
-        if len(os.listdir(download_path)) == 0:
+        if len(list(download_path.iterdir())) == 0:
             download_id = 0
         serial = str(download_id).zfill(SERIAL_DIGITS)
         download_id += 1
@@ -56,8 +91,8 @@ def make_names(base, user):
         uname = un.replace("@", "").replace(".", "").replace("\\", "")
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
-    print(names)
-    return tuple(os.path.join(download_path, name) for name in names)
+    running_name, finished_name = tuple(download_path / name for name in names)
+    return DloadFile(running_name, finished_name, mode, is_zip)
 
 
 mem_id = 0

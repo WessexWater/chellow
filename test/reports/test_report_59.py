@@ -420,11 +420,7 @@ def displaced_virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_59.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_59.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_59.os.rename")
+    mocker.patch("chellow.reports.report_59.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -1236,11 +1232,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_59.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_59.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_59.os.rename")
+    mocker.patch("chellow.reports.report_59.open_file", return_value=mock_file)
 
     content(
         scenario_props,

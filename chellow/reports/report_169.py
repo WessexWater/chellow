@@ -1,8 +1,6 @@
 import csv
-import os
 import threading
 import traceback
-import zipfile
 from io import StringIO
 
 from flask import g, request
@@ -10,7 +8,7 @@ from flask import g, request
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import Channel, Era, HhDatum, RSession, Supply, User
 from chellow.utils import (
@@ -105,13 +103,12 @@ def content(
             fdate = forecast_date()
             user = User.get_by_id(sess, user_id)
 
-            running_name, finished_name = chellow.dloads.make_names(
-                "_".join(base_name) + (".zip" if is_zipped else ".csv"), user
-            )
             if is_zipped:
-                zf = zipfile.ZipFile(running_name, "w", zipfile.ZIP_DEFLATED)
+                zf = open_file(
+                    "_".join(base_name) + ".zip", user, mode="w", is_zip=True
+                )
             else:
-                tf = open(running_name, mode="w", newline="")
+                tf = open_file("_".join(base_name) + ".csv", user, mode="w", newline="")
                 tf.write(titles_csv)
 
             for supply in sess.execute(supplies).scalars():
@@ -226,8 +223,6 @@ def content(
             zf.close()
         else:
             tf.write(msg)
-    finally:
-        os.rename(running_name, finished_name)
 
 
 def do_get(sess):

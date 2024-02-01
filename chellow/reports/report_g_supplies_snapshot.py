@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -12,7 +11,7 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource, forecast_date
 from chellow.models import GEra, GSupply, Session
@@ -22,12 +21,8 @@ from chellow.views import chellow_redirect
 
 def content(date, g_supply_id, user):
     try:
-        running_name, finished_name = chellow.dloads.make_names(
-            "g_supplies_snapshot.csv", user
-        )
-
         with Session() as sess:
-            f = open(running_name, mode="w", newline="")
+            f = open_file("g_supplies_snapshot.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             writer.writerow(
                 (
@@ -129,7 +124,6 @@ def content(date, g_supply_id, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(session):

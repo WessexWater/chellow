@@ -368,11 +368,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -655,11 +651,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -908,11 +900,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -1321,11 +1309,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -1645,11 +1629,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -1974,11 +1954,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -2526,11 +2502,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -2941,11 +2913,7 @@ def virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -3298,11 +3266,7 @@ def displaced_virtual_bill(ds):
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(
         scenario_props,
@@ -3550,7 +3514,8 @@ def displaced_virtual_bill(ds):
     assert era_expected == era_table
 
 
-def test_content_error():
+def test_content_error(mocker):
+    mocker.patch("chellow.reports.report_247.open_file", return_value=None)
     scenario_props = {}
     base_name = []
     user_id = 0
@@ -3558,8 +3523,8 @@ def test_content_error():
     now = to_utc(ct_datetime(2020, 1, 1))
     is_bill_check = False
     with pytest.raises(
-        TypeError,
-        match="expected str, bytes or os.PathLike object, not NoneType",
+        AttributeError,
+        match="'NoneType' object has no attribute 'write'",
     ):
         content(
             scenario_props,
@@ -3574,11 +3539,7 @@ def test_content_error():
 def test_content_no_mpan_cores(mocker, sess, client):
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_247.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_247.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_247.os.rename")
+    mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
     scenario_props = {
         "scenario_start_year": 2022,
         "scenario_start_month": 9,

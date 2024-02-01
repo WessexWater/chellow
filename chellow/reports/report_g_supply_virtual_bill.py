@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -10,7 +9,7 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import forecast_date
 from chellow.gas.engine import GDataSource, g_contract_func
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
@@ -22,10 +21,9 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
     caches = {}
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                f"g_supply_virtual_bill_{g_supply_id}.csv", user
+            f = open_file(
+                f"g_supply_virtual_bill_{g_supply_id}.csv", user, mode="w", newline=""
             )
-            f = open(running_name, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
 
             g_supply = GSupply.get_by_id(sess, g_supply_id)
@@ -99,7 +97,6 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

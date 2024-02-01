@@ -239,11 +239,7 @@ def virtual_bill(ds):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_387.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_387.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_387.os.rename")
+    mocker.patch("chellow.reports.report_387.open_file", return_value=mock_file)
 
     content(supply.id, start_date, start_date, user)
 

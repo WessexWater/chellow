@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -10,7 +9,7 @@ from flask import g
 from sqlalchemy import or_, text
 from sqlalchemy.sql.expression import null
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import c_months_u, hh_format, hh_range, req_int
@@ -34,10 +33,7 @@ def content(contract_id, end_year, end_month, months, user):
     f = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "displaced.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            f = open_file("displaced.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             titles = [
                 "Site Code",
@@ -268,7 +264,6 @@ def content(contract_id, end_year, end_month, months, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

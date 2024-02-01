@@ -219,11 +219,7 @@ def displaced_virtual_bill(ds):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_109.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_109.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_109.os.rename")
+    mocker.patch("chellow.reports.report_109.open_file", return_value=mock_file)
 
     end_year = 2000
     end_month = 1

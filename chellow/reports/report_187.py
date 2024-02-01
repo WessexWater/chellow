@@ -1,7 +1,5 @@
-import os
 import threading
 import traceback
-import zipfile
 from datetime import datetime as Datetime
 
 from flask import g, request
@@ -10,7 +8,7 @@ from sqlalchemy import null, or_, select, text, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import (
     hh_format,
@@ -67,12 +65,10 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
 
-            running_name, finished_name = chellow.dloads.make_names(base_name, user)
-
             if is_zipped:
-                zf = zipfile.ZipFile(running_name, "w")
+                zf = open_file(base_name, user, mode="w", is_zip=True)
             else:
-                tmp_file = open(running_name, "w")
+                tmp_file = open_file(base_name, user, mode="w")
 
             caches = {}
             supplies = (
@@ -243,11 +239,9 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
     finally:
         if is_zipped:
             zf.close()
-            os.rename(running_name, finished_name)
         else:
             if tmp_file is not None:
                 tmp_file.close()
-                os.rename(running_name, finished_name)
 
 
 def do_post(sess):

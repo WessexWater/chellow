@@ -1,4 +1,3 @@
-import os
 import sys
 import threading
 import traceback
@@ -16,7 +15,7 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import contract_func, forecast_date
 from chellow.e.scenario import make_calcs, make_site_deltas
 from chellow.models import (
@@ -747,11 +746,7 @@ def content(
             if is_bill_check:
                 base_name.append("bill_check")
 
-            running_name, finished_name = chellow.dloads.make_names(
-                "_".join(base_name) + ".ods", user
-            )
-
-            rf = open(running_name, "wb")
+            rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
 
             for rate_script in scenario_props.get("rates", []):
                 contract_id = rate_script["contract_id"]
@@ -1024,8 +1019,7 @@ def content(
         site_rows.append(["Problem " + msg])
         if rf is None:
             msg = traceback.format_exc()
-            r_name, f_name = chellow.dloads.make_names("error.txt", None)
-            ef = open(r_name, "w")
+            ef = open_file("error.txt", None, mode="w")
             ef.write(msg + "\n")
             ef.close()
         else:
@@ -1042,7 +1036,6 @@ def content(
     finally:
         if rf is not None:
             rf.close()
-            os.rename(running_name, finished_name)
 
 
 def do_post(sess):

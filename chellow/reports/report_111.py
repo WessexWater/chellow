@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -20,8 +19,8 @@ from werkzeug.exceptions import BadRequest
 
 from zish import ZishLocationException, loads
 
-import chellow.dloads
-from chellow.e.computer import contract_func
+from chellow.dloads import open_file
+from chellow.e.computer import SupplySource, contract_func
 from chellow.models import (
     Batch,
     Bill,
@@ -109,10 +108,9 @@ def content(
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(
-                f"bill_check_{fname_additional}.csv", user
+            tmp_file = open_file(
+                f"bill_check_{fname_additional}.csv", user, mode="w", newline=""
             )
-            tmp_file = open(running_name, mode="w", newline="")
             writer = csv.writer(tmp_file, lineterminator="\n")
 
             report_run = ReportRun.get_by_id(sess, report_run_id)
@@ -245,7 +243,6 @@ def content(
     finally:
         if tmp_file is not None:
             tmp_file.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -558,7 +555,7 @@ def _process_supply(
                 )
                 data_source = data_sources[ds_key]
             except KeyError:
-                data_source = data_sources[ds_key] = chellow.e.computer.SupplySource(
+                data_source = data_sources[ds_key] = SupplySource(
                     sess,
                     chunk_start,
                     chunk_finish,
@@ -573,7 +570,7 @@ def _process_supply(
             if data_source.measurement_type == "hh":
                 metered_kwh += sum(h["msp-kwh"] for h in data_source.hh_data)
             else:
-                ds = chellow.e.computer.SupplySource(
+                ds = SupplySource(
                     sess,
                     chunk_start,
                     chunk_finish,

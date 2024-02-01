@@ -1,4 +1,3 @@
-import os
 import sys
 import threading
 import traceback
@@ -13,8 +12,8 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
 import chellow.e.computer
+from chellow.dloads import open_file
 from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource
 from chellow.models import (
@@ -203,11 +202,7 @@ def content(
                 base_name.append(str(g_supply.id))
                 sites = sites.filter(GEra.g_supply == g_supply)
 
-            running_name, finished_name = chellow.dloads.make_names(
-                "_".join(base_name) + ".ods", user
-            )
-
-            rf = open(running_name, "wb")
+            rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
             site_rows = []
             g_era_rows = []
 
@@ -348,11 +343,9 @@ def content(
     finally:
         try:
             rf.close()
-            os.rename(running_name, finished_name)
         except BaseException:
             msg = traceback.format_exc()
-            r_name, f_name = chellow.dloads.make_names("error.txt", user)
-            ef = open(r_name, "w")
+            ef = open_file("error.txt", user, mode="w")
             ef.write(msg + "\n")
             ef.close()
 

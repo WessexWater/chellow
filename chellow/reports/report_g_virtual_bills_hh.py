@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -10,6 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
 
 import chellow.e.computer
+from chellow.dloads import open_file
 from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
@@ -26,10 +26,12 @@ def content(g_supply_id, start_date, finish_date, user):
             forecast_date = chellow.e.computer.forecast_date()
 
             prev_titles = None
-            running_name, finished_name = chellow.dloads.make_names(
-                f"g_supply_virtual_bills_hh_{g_supply_id}.csv", user
+            f = open_file(
+                f"g_supply_virtual_bills_hh_{g_supply_id}.csv",
+                user,
+                mode="w",
+                newline="",
             )
-            f = open(running_name, mode="w", newline="")
             w = csv.writer(f, lineterminator="\n")
 
             for hh_start in hh_range(caches, start_date, finish_date):
@@ -94,7 +96,6 @@ def content(g_supply_id, start_date, finish_date, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

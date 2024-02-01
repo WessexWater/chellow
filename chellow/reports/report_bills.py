@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 from collections import defaultdict
@@ -9,7 +8,7 @@ from flask import g
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import Batch, Bill, Session, User
 from chellow.utils import csv_make_val, req_int
 from chellow.views import chellow_redirect
@@ -94,10 +93,7 @@ def content(user_id, batch_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(
-                f"bills_batch_{batch_id}.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            f = open_file(f"bills_batch_{batch_id}.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             _content(sess, writer, batch_id)
 
@@ -109,7 +105,6 @@ def content(user_id, batch_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

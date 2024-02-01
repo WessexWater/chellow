@@ -1,12 +1,11 @@
 import csv
-import os
 import sys
 import threading
 import traceback
 
 from flask import g
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import Session, Site, User
 from chellow.utils import c_months_u, csv_make_val, req_int, req_str, to_ct
 from chellow.views import chellow_redirect
@@ -22,10 +21,12 @@ def content(start_date, finish_date, site_id, typ, user_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(
-                f'site_hh_data_{to_ct(start_date).strftime("%Y%m%d%H%M")}.csv', user
+            f = open_file(
+                f'site_hh_data_{to_ct(start_date).strftime("%Y%m%d%H%M")}.csv',
+                user,
+                mode="w",
+                newline="",
             )
-            f = open(running_name, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             titles = ["site_code", "type", "hh_start_clock_time", "total"]
             hr_titles = tuple(map(str, range(1, 51)))
@@ -61,7 +62,6 @@ def content(start_date, finish_date, site_id, typ, user_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

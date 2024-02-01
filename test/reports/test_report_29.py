@@ -126,11 +126,7 @@ def test_content(mocker, sess):
     sess.commit()
     f = StringIO()
     f.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_29.open", return_value=f)
-    mocker.patch("chellow.reports.report_29.os.rename")
-    mocker.patch(
-        "chellow.reports.report_29.chellow.dloads.make_names", return_value=("a", "b")
-    )
+    mocker.patch("chellow.reports.report_29.open_file", return_value=f)
     start_date = to_utc(ct_datetime(2010, 1, 1))
     finish_date = to_utc(ct_datetime(2010, 1, 31, 23, 30))
     site_id = site.id

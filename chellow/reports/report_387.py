@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -9,7 +8,7 @@ from flask import g
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import Era, Session, Site, SiteEra, Supply
 from chellow.utils import (
@@ -31,10 +30,9 @@ def content(supply_id, start_date, finish_date, user):
 
             f_date = forecast_date()
 
-            running_name, finished_name = chellow.dloads.make_names(
-                f"supply_virtual_bills_hh_{supply_id}.csv", user
+            f = open_file(
+                f"supply_virtual_bills_hh_{supply_id}.csv", user, mode="w", newline=""
             )
-            f = open(running_name, mode="w", newline="")
             w = csv.writer(f, lineterminator="\n")
 
             mop_titles = []
@@ -155,7 +153,6 @@ def content(supply_id, start_date, finish_date, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

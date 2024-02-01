@@ -32,12 +32,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 def test_content_no_data(mocker, sess):
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_187.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_187.chellow.dloads.make_names",
-        return_value=("a", "b"),
-    )
-    mocker.patch("chellow.reports.report_187.os.rename")
+    mocker.patch("chellow.reports.report_187.open_file", return_value=mock_file)
     start_date = to_utc(ct_datetime(2023, 7, 5))
     finish_date = to_utc(ct_datetime(2023, 7, 18, 22, 30))
     supply_id = None
@@ -167,12 +162,7 @@ def test_content(mocker, sess):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_187.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_187.chellow.dloads.make_names",
-        return_value=("a", "b"),
-    )
-    mocker.patch("chellow.reports.report_187.os.rename")
+    mocker.patch("chellow.reports.report_187.open_file", return_value=mock_file)
     start_date = to_utc(ct_datetime(2023, 7, 18, 22, 30))
     finish_date = to_utc(ct_datetime(2023, 7, 18, 22, 30))
     supply_id = None

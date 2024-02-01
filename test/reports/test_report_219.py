@@ -190,11 +190,7 @@ def test_content(mocker, sess):
     sess.commit()
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_219.open", return_value=mock_file)
-    mocker.patch("chellow.reports.report_219.os.rename")
-    mocker.patch(
-        "chellow.reports.report_219.chellow.dloads.make_names", return_value=("a", "b")
-    )
+    mocker.patch("chellow.reports.report_219.open_file", return_value=mock_file)
     year = 2020
     month = 1
     months = 1

@@ -218,11 +218,7 @@ def virtual_bill(ds):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_429.open", return_value=mock_file)
-    mocker.patch(
-        "chellow.reports.report_429.chellow.dloads.make_names", return_value=("a", "b")
-    )
-    mocker.patch("chellow.reports.report_429.os.rename")
+    mocker.patch("chellow.reports.report_429.open_file", return_value=mock_file)
 
     chellow.reports.report_429.content(g_batch.id, g_bill.id, None, None, None, user.id)
 

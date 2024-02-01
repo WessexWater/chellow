@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -15,8 +14,8 @@ from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
 import chellow.gas.engine
+from chellow.dloads import open_file
 from chellow.models import GBatch, GBill, GContract, GEra, Session, Site, SiteGEra, User
 from chellow.utils import csv_make_val, hh_max, hh_min, req_date, req_int, to_utc
 from chellow.views import chellow_redirect
@@ -30,10 +29,7 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
 
-            running_name, finished_name = chellow.dloads.make_names(
-                "g_bill_check.csv", user
-            )
-            tmp_file = open(running_name, "w")
+            tmp_file = open_file("g_bill_check.csv", user, mode="w")
             csv_writer = csv.writer(tmp_file)
             g_bills = (
                 select(GBill)
@@ -121,7 +117,6 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
         tmp_file.write(f"Problem {msg}")
     finally:
         tmp_file.close()
-        os.rename(running_name, finished_name)
 
 
 def _process_g_bill_ids(

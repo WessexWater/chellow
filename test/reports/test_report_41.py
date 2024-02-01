@@ -63,9 +63,7 @@ def test_content(mocker, sess):
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_41.open", return_value=mock_file)
-    mocker.patch("chellow.reports.report_41.make_names", return_value=("a", "b"))
-    mocker.patch("chellow.reports.report_41.os.rename")
+    mocker.patch("chellow.reports.report_41.open_file", return_value=mock_file)
 
     year = 2010
     supply_id = None

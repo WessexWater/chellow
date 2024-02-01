@@ -1,6 +1,7 @@
 import os
 from datetime import datetime as Datetime
 from importlib.metadata import version
+from pathlib import Path
 
 from flask import Flask, Response, g, make_response, render_template, request
 
@@ -78,7 +79,7 @@ def create_app(testing=False):
 
     if not testing:
         db_upgrade(app.root_path)
-        chellow.dloads.startup(app.instance_path)
+        chellow.dloads.startup(Path(app.instance_path))
         chellow.e.hh_importer.startup()
 
         with Session() as sess:

@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -10,7 +9,7 @@ from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import (
     Batch,
     Bill,
@@ -31,10 +30,7 @@ def content(year, month, months, supply_id, user_id):
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
 
-            running_name, finished_name = chellow.dloads.make_names(
-                "register_reads.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            f = open_file("register_reads.csv", user, mode="w", newline="")
             w = csv.writer(f, lineterminator="\n")
             titles = (
                 "Duration Start",
@@ -178,7 +174,6 @@ def content(year, month, months, supply_id, user_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
