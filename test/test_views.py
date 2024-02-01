@@ -918,6 +918,23 @@ def test_non_core_rate_script_edit_get(sess, client):
     match(response, 200)
 
 
+def test_non_core_rate_script_edit_get_bst(sess, client):
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(
+        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
+    )
+    contract = Contract.insert_non_core(
+        sess, "rcrc", "", {}, to_utc(ct_datetime(2000, 5, 31, 23, 30)), None, {}
+    )
+    rs = contract.start_rate_script
+    sess.commit()
+
+    response = client.get(f"/non_core_rate_scripts/{rs.id}/edit")
+
+    match(response, 200, r'<input type="hidden" name="start_hour" value="23">')
+
+
 def test_site_edit_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

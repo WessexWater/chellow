@@ -2459,7 +2459,7 @@ def input_date_get():
 
     month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
 
-    initial = ct_datetime(year, month, min(day, month_max_day), hour, minute)
+    initial = to_utc(ct_datetime(year, month, min(day, month_max_day), hour, minute))
 
     return render_template(
         "input_date.html",

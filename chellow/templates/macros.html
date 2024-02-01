@@ -13,11 +13,12 @@
 		<input type="hidden" name="resolution" value="{{resolution}}">
 
 		{% if initial %}
-			{{input_hidden(year_name, initial=initial.year)}}
-			{{input_hidden(month_name, initial=initial.month)}}
-			{{input_hidden(day_name, initial=initial.day)}}
-			{{input_hidden(hour_name, initial=initial.hour)}}
-			{{input_hidden(minute_name, initial=initial.minute)}}
+			{% set initial_ct = initial|to_ct %}
+			{{input_hidden(year_name, initial=initial_ct.year)}}
+			{{input_hidden(month_name, initial=initial_ct.month)}}
+			{{input_hidden(day_name, initial=initial_ct.day)}}
+			{{input_hidden(hour_name, initial=initial_ct.hour)}}
+			{{input_hidden(minute_name, initial=initial_ct.minute)}}
 		{% else %}
 			{{input_hidden(year_name, initial=None)}}
 			{{input_hidden(month_name, initial=None)}}
