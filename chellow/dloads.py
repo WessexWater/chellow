@@ -92,7 +92,7 @@ def open_file(base, user, mode="r", newline=None, is_zip=False):
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
     running_name, finished_name = tuple(download_path / name for name in names)
-    return DloadFile(running_name, finished_name, mode, is_zip)
+    return DloadFile(running_name, finished_name, mode, newline, is_zip)
 
 
 mem_id = 0
