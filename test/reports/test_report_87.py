@@ -1,7 +1,8 @@
 from io import StringIO
 
 import chellow.e.computer
-import chellow.reports.report_87
+from chellow.models import Contract, MarketRole, Participant, User, UserRole
+from chellow.reports.report_87 import content
 from chellow.utils import ct_datetime, to_utc
 
 
@@ -65,3 +66,28 @@ def test_summertime(mocker):
         finish_year=finish_date_ct.year,
         finish_month=finish_date_ct.month,
     )
+
+
+def test_content(mocker, sess):
+    mock_file = StringIO()
+    mock_file.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_87.open_file", return_value=mock_file)
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+
+    contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    sess.commit()
+
+    start_date = to_utc(ct_datetime(2020, 1, 1))
+    finish_date = to_utc(ct_datetime(2020, 1, 31, 23, 30))
+
+    content(start_date, finish_date, contract.id, user_id)

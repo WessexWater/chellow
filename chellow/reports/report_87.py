@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -10,8 +9,8 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
 import chellow.e.computer
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func
 from chellow.models import (
     Contract,
@@ -22,6 +21,7 @@ from chellow.models import (
     SiteEra,
     Ssc,
     Tpr,
+    User,
 )
 from chellow.utils import (
     c_months_u,
@@ -177,15 +177,14 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
             sess.rollback()  # Avoid long-running transaction
 
 
-def content(start_date, finish_date, contract_id, user):
+def content(start_date, finish_date, contract_id, user_id):
     f = None
     try:
-        running_name, finished_name = chellow.dloads.make_names(
-            "virtual_bills.csv", user
-        )
-
-        f = open(running_name, mode="w", newline="")
         with Session() as sess:
+            user = User.get_by_id(sess, user_id)
+
+            f = open_file("virtual_bills.csv", user, mode="w", newline="")
+
             create_csv(f, sess, start_date, finish_date, contract_id)
 
     except BadRequest as e:
@@ -201,7 +200,6 @@ def content(start_date, finish_date, contract_id, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -210,6 +208,6 @@ def do_get(sess):
     contract_id = req_int("supplier_contract_id")
 
     threading.Thread(
-        target=content, args=(start_date, finish_date, contract_id, g.user)
+        target=content, args=(start_date, finish_date, contract_id, g.user.id)
     ).start()
     return chellow_redirect("/downloads", 303)
