@@ -48,9 +48,13 @@ class DloadFile:
         if not self.running_name.exists():
             raise BadRequest("Output file has been deleted.")
 
+    def flush(self, *args, **kwargs):
+        self._check_exists()
+        return self.f.flush(*args, **kwargs)
+
     def write(self, *args, **kwargs):
         self._check_exists()
-        self.f.write(*args, **kwargs)
+        return self.f.write(*args, **kwargs)
 
     def seek(self, *args, **kwargs):
         self._check_exists()
