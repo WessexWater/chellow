@@ -48,13 +48,17 @@ class DloadFile:
         if not self.running_name.exists():
             raise BadRequest("Output file has been deleted.")
 
-    def write(self, b):
+    def write(self, *args, **kwargs):
         self._check_exists()
-        self.f.write(b)
+        self.f.write(*args, **kwargs)
 
-    def seek(self, offset, whence=0):
+    def seek(self, *args, **kwargs):
         self._check_exists()
-        return self.f.seek(offset, whence)
+        return self.f.seek(*args, **kwargs)
+
+    def truncate(self, *args, **kwargs):
+        self._check_exists()
+        return self.f.truncate(*args, **kwargs)
 
     def close(self):
         self.f.close()
@@ -62,13 +66,13 @@ class DloadFile:
         self.running_name.rename(self.finished_name)
 
     def __enter__(self):
-        pass
+        return self
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
 
-def open_file(base, user, mode="r", newline=None, is_zip=False):
+def make_names(base, user):
     global download_id
 
     base = base.replace("/", "").replace(" ", "")
@@ -91,7 +95,11 @@ def open_file(base, user, mode="r", newline=None, is_zip=False):
         uname = un.replace("@", "").replace(".", "").replace("\\", "")
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
-    running_name, finished_name = tuple(download_path / name for name in names)
+    return tuple(download_path / name for name in names)
+
+
+def open_file(base, user, mode="r", newline=None, is_zip=False):
+    running_name, finished_name = make_names(base, user)
     return DloadFile(running_name, finished_name, mode, newline, is_zip)
 
 
