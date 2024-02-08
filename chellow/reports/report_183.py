@@ -1,10 +1,8 @@
 import csv
-import os
 import sys
 import threading
 import traceback
 from io import StringIO
-from zipfile import ZipFile
 
 from flask import g, request
 
@@ -12,7 +10,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null, true
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import Era, RSession, Site, SiteEra, Supply, User
 from chellow.utils import (
     csv_make_val,
@@ -112,7 +110,6 @@ def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
     try:
         with RSession() as rsess:
             user = User.get_by_id(rsess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(file_name, user)
             sites_q = (
                 select(Site)
                 .join(SiteEra)
@@ -127,7 +124,7 @@ def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
             if site_codes is not None:
                 sites_q = sites_q.where(Site.code.in_(site_codes))
 
-            zf = ZipFile(running_name, "w")
+            zf = open_file(file_name, user, mode="w", is_zip=True)
 
             for site in rsess.execute(sites_q).scalars():
                 _process_site(rsess, zf, site, start_date, finish_date, typ)
@@ -141,7 +138,6 @@ def none_content(site_codes, typ, start_date, finish_date, user_id, file_name):
     finally:
         if zf is not None:
             zf.close()
-            os.rename(running_name, finished_name)
 
 
 def site_content(site_id, start_date, finish_date, user_id, file_name):
@@ -149,8 +145,7 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
     try:
         with RSession() as rsess:
             user = User.get_by_id(rsess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(file_name, user)
-            f = open(running_name, mode="w", newline="")
+            f = open_file(file_name, user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             site = Site.get_by_id(rsess, site_id)
             sites = rsess.query(Site).filter(Site.id == site_id)
@@ -229,7 +224,6 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_post(sess):

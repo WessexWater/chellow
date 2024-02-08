@@ -64,6 +64,10 @@ class DloadFile:
         self._check_exists()
         return self.f.truncate(*args, **kwargs)
 
+    def writestr(self, *args, **kwargs):
+        self._check_exists()
+        return self.f.writestr(*args, **kwargs)
+
     def close(self):
         self.f.close()
         self._check_exists()

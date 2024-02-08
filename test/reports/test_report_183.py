@@ -118,3 +118,20 @@ def test_process_site(sess):
     typ = "used"
     _process_site(sess, zf, site, start_date, finish_date, typ)
     assert zf.namelist() == ["CI017_202207312330.csv"]
+
+
+def test_none_content(mocker, sess):
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    sess.commit()
+
+    f = BytesIO()
+    mocker.patch("chellow.reports.report_183.open_file", return_value=f)
+
+    site_codes = []
+    typ = "used"
+    start_date = to_utc(ct_datetime(2022, 7, 1))
+    finish_date = to_utc(ct_datetime(2022, 7, 31, 23, 30))
+    file_name = "output"
+    none_content(site_codes, typ, start_date, finish_date, user_id, file_name)
