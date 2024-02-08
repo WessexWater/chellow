@@ -76,7 +76,7 @@ class DloadFile:
         self.close()
 
 
-def make_names(base, user):
+def open_file(base, user, mode="r", newline=None, is_zip=False):
     global download_id
 
     base = base.replace("/", "").replace(" ", "")
@@ -99,11 +99,7 @@ def make_names(base, user):
         uname = un.replace("@", "").replace(".", "").replace("\\", "")
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
-    return tuple(download_path / name for name in names)
-
-
-def open_file(base, user, mode="r", newline=None, is_zip=False):
-    running_name, finished_name = make_names(base, user)
+    running_name, finished_name = tuple(download_path / name for name in names)
     return DloadFile(running_name, finished_name, mode, newline, is_zip)
 
 

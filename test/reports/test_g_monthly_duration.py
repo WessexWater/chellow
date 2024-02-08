@@ -196,14 +196,9 @@ def virtual_bill(ds):
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch(
-        "chellow.reports.report_g_monthly_duration.make_names",
-        return_value=("a", "b"),
-    )
-    mocker.patch(
-        "chellow.reports.report_g_monthly_duration.open",
+        "chellow.reports.report_g_monthly_duration.open_file",
         return_value=mock_file,
     )
-    mocker.patch("chellow.reports.report_g_monthly_duration.os.rename")
 
     user = mocker.Mock()
     site_id = site.id
