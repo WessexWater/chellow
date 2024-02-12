@@ -6,12 +6,12 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import HH, parse_mpan_core, utc_datetime
 
 
-def create_parser(reader, mpan_map):
-    return StarkDf2HhParser(reader, mpan_map)
+def create_parser(reader, mpan_map, messages):
+    return StarkDf2HhParser(reader, mpan_map, messages)
 
 
 class StarkDf2HhParser:
-    def __init__(self, reader, mpan_map):
+    def __init__(self, reader, mpan_map, messages):
         self.line = self.line_number = None
         self.reader = zip(itertools.count(1), reader)
 
@@ -25,6 +25,9 @@ class StarkDf2HhParser:
             4: "REACTIVE_EXP",
         }
 
+        self.mpan_map = mpan_map
+        self.messages = messages
+
     def __iter__(self):
         return self
 
@@ -36,6 +39,15 @@ class StarkDf2HhParser:
                 lline = self.line.strip().upper()
                 if lline.startswith("#O"):
                     self.core = parse_mpan_core(lline[2:])
+                    if self.core in self.mpan_map and self.mpan_map[self.core] is None:
+                        msg = f"The MPAN core {self.core} has been ignored"
+                        if len(self.messages) == 0 or self.messages[-1] != msg:
+                            self.messages.append(
+                                f"The MPAN core {self.core} has been ignored"
+                            )
+                        self.core = None
+                        continue
+
                 elif lline.startswith("#S"):
                     sensor = int(lline[2:].strip())
                     try:
@@ -72,6 +84,10 @@ class StarkDf2HhParser:
                     except ValueError:
                         raise BadRequest("Problem parsing the value: " + fields[2])
                     status = fields[3][-1]
+
+                    if self.core is None:
+                        continue
+
                     local_datum = {
                         "mpan_core": self.core,
                         "channel_type": self.channel_type,

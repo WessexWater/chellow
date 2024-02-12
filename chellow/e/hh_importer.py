@@ -48,6 +48,7 @@ class HhDataImportProcess(threading.Thread):
         super().__init__(name=f"HH Manual Import: contract {dc_contract_id}")
 
         self.messages = []
+        self.error = None
         self.istream = istream
         self.dc_contract_id = dc_contract_id
         self.id = process_id
@@ -74,14 +75,16 @@ class HhDataImportProcess(threading.Thread):
                 parser_module = importlib.import_module(
                     f"chellow.e.hh_parser_{mod_name}"
                 )
-                self.converter = parser_module.create_parser(self.istream, mpan_map)
+                self.converter = parser_module.create_parser(
+                    self.istream, mpan_map, self.messages
+                )
                 sess.rollback()
                 HhDatum.insert(sess, self.converter, contract)
                 sess.commit()
             except BadRequest as e:
-                self.messages.append(e.description)
+                self.error = e.description
             except BaseException:
-                self.messages.append(f"Outer problem {traceback.format_exc()}")
+                self.error = f"Outer problem {traceback.format_exc()}"
 
     def get_status(self):
         return (
@@ -281,8 +284,8 @@ class HhImportTask(threading.Thread):
             for message in self.importer.messages:
                 self.log(message)
 
-            if len(self.importer.messages) > 0:
-                raise BadRequest("Problem loading file.")
+            if self.importer.error is not None:
+                raise BadRequest(f"Problem loading file. {self.importer.error}")
 
             contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)
@@ -384,12 +387,12 @@ class HhImportTask(threading.Thread):
 
             self.importer.run()
             messages = self.importer.messages
-            self.importer = None
             for message in messages:
                 self.log(message)
 
-            if len(messages) > 0:
-                raise BadRequest("Problem loading file.")
+            if self.importer.error is not None:
+                raise BadRequest(f"Problem loading file. {self.importer.error}")
+            self.importer = None
 
             contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)

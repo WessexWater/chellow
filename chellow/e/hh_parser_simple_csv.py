@@ -8,12 +8,12 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import parse_channel_type, parse_mpan_core, to_utc, validate_hh_start
 
 
-def create_parser(reader, mpan_map):
-    return HhParserCsvSimple(reader, mpan_map)
+def create_parser(reader, mpan_map, messages):
+    return HhParserCsvSimple(reader, mpan_map, messages)
 
 
 class HhParserCsvSimple:
-    def __init__(self, reader, mpan_map):
+    def __init__(self, reader, mpan_map, messages):
         self.shredder = zip(itertools.count(1), csv.reader(reader))
         next(self.shredder)  # skip the title line
         self.values = None

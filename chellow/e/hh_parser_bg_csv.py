@@ -8,12 +8,12 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import parse_mpan_core, utc_datetime
 
 
-def create_parser(reader, mpan_map):
-    return HhParserBglobal(reader, mpan_map)
+def create_parser(reader, mpan_map, messages):
+    return HhParserBglobal(reader, mpan_map, messages)
 
 
 class HhParserBglobal:
-    def __init__(self, reader, mpan_map):
+    def __init__(self, reader, mpan_map, messages):
         self.shredder = zip(itertools.count(1), csv.reader(reader))
         self.line_number, self.values = next(self.shredder)
         self.mpan_map = mpan_map
