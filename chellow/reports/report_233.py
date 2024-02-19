@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -10,20 +9,28 @@ from flask import g
 
 from sqlalchemy.sql.expression import true
 
-import chellow.dloads
-from chellow.models import Channel, Contract, Era, Session, Site, SiteEra, Snag, Supply
+from chellow.dloads import open_file
+from chellow.models import (
+    Channel,
+    Contract,
+    Era,
+    Session,
+    Site,
+    SiteEra,
+    Snag,
+    Supply,
+    User,
+)
 from chellow.utils import csv_make_val, hh_before, req_int, utc_datetime_now
 from chellow.views import chellow_redirect
 
 
-def content(contract_id, days_hidden, user):
+def content(contract_id, days_hidden, user_id):
     f = writer = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "channel_snags.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("channel_snags.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             titles = (
                 "Hidden Days",
@@ -111,13 +118,12 @@ def content(contract_id, days_hidden, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     contract_id = req_int("dc_contract_id")
     days_hidden = req_int("days_hidden")
 
-    args = (contract_id, days_hidden, g.user)
+    args = contract_id, days_hidden, g.user.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
