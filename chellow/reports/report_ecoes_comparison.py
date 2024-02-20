@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -14,7 +13,7 @@ from sqlalchemy.sql.expression import null, or_
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import (
     Contract,
     Era,
@@ -46,10 +45,7 @@ def content(user_id, show_ignored, report_run_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(
-                f"{FNAME}.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            f = open_file(f"{FNAME}.csv", user, mode="w", newline="")
             report_run = ReportRun.get_by_id(sess, report_run_id)
 
             props = Contract.get_non_core_by_name(
@@ -140,7 +136,6 @@ def content(user_id, show_ignored, report_run_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def _process(
