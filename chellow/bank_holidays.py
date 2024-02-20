@@ -19,9 +19,6 @@ from chellow.utils import (
 )
 
 
-ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
-
-
 bh_importer = None
 
 

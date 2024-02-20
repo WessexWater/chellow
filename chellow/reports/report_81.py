@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -11,14 +10,14 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
-from chellow.models import Contract, Era, Session
+from chellow.models import Contract, Era, Session, User
 from chellow.utils import c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
 from chellow.views import chellow_redirect
 
 
-def content(running_name, finished_name, contract_id, end_year, end_month, months):
+def content(user_id, contract_id, end_year, end_month, months):
     caches = {}
     f = supply_source = None
     try:
@@ -32,7 +31,8 @@ def content(running_name, finished_name, contract_id, end_year, end_month, month
 
             f_date = forecast_date()
 
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("dc_virtual_bills.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
 
             bill_titles = contract_func(caches, contract, "virtual_bill_titles")()
@@ -115,7 +115,6 @@ def content(running_name, finished_name, contract_id, end_year, end_month, month
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -124,9 +123,6 @@ def do_get(sess):
     months = req_int("months")
     contract_id = req_int("dc_contract_id")
 
-    running_name, finished_name = chellow.dloads.make_names(
-        "dc_virtual_bills.csv", g.user
-    )
-    args = running_name, finished_name, contract_id, end_year, end_month, months
+    args = g.user.id, contract_id, end_year, end_month, months
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

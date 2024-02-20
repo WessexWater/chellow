@@ -1,10 +1,6 @@
 from io import StringIO
 
-from chellow.models import (
-    Contract,
-    MarketRole,
-    Participant,
-)
+from chellow.models import Contract, MarketRole, Participant, User, UserRole
 from chellow.reports.report_81 import content
 from chellow.utils import ct_datetime, to_utc
 
@@ -45,18 +41,18 @@ def virtual_bill(ds):
     dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
     )
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
 
     sess.commit()
     f = StringIO()
     f.close = mocker.Mock()
-    mocker.patch("chellow.reports.report_81.open", return_value=f)
-    mocker.patch("chellow.reports.report_81.os.rename")
-    running_name = "running"
-    finished_name = "finished"
+    mocker.patch("chellow.reports.report_81.open_file", return_value=f)
     end_year = 2020
     end_month = 1
     months = 1
-    content(running_name, finished_name, dc_contract.id, end_year, end_month, months)
+    content(user_id, dc_contract.id, end_year, end_month, months)
     actual = f.getvalue()
     expected = [
         "Import MPAN Core",
