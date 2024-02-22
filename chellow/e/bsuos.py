@@ -218,7 +218,13 @@ def _process_url(logger, sess, url, contract, s):
 
     for row in reader:
         date_str = row[0].strip()
-        date_format = "%Y-%m-%dT%H:%M:%S" if len(date_str) == 19 else "%d-%m-%y"
+        len_date_str = len(date_str)
+        if len_date_str == 19:
+            date_format = "%Y-%m-%dT%H:%M:%S"
+        elif len_date_str == 20:
+            date_format = "%Y-%m-%d-T%H:%M:%S"
+        else:
+            date_format = "%d-%m-%y"
         date = Datetime.strptime(date_str, date_format)
         period_str = row[1]
         period = int(period_str)
