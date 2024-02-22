@@ -409,7 +409,12 @@ def rate_server_import(sess, log, set_progress, s, paths):
 def national_grid_import(sess, log, set_progress, s):
     log("Starting to check for new BSUoS forecast")
 
-    contract = Contract.get_non_core_by_name(sess, "bsuos")
+    CONTRACT_NAME = "bsuos"
+    contract = Contract.find_non_core_by_name(sess, CONTRACT_NAME)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess, CONTRACT_NAME, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
 
     block = None
 
