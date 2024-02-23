@@ -165,6 +165,17 @@ def _process_site(
                     None,
                     None,
                     None,
+                    imp_ss.pc_code,
+                    imp_ss.energisation_status_code,
+                    imp_ss.gsp_group_code,
+                    imp_ss.dno_code,
+                    imp_ss.voltage_level_code,
+                    imp_ss.is_substation,
+                    imp_ss.llfc_code,
+                    imp_ss.llfc.description,
+                    None,
+                    None,
+                    None,
                     None,
                     site.code,
                     site.name,
@@ -345,7 +356,8 @@ def _process_site(
                     raise BadRequest("Role code not recognized.")
 
             if imp_ss is None:
-                imp_supplier_contract_name = None
+                imp_supplier_contract_name = imp_voltage_level_code = None
+                imp_is_substation = imp_llfc_code = imp_llfc_description = None
                 pc_code = exp_ss.pc_code
             else:
                 if imp_supplier_contract is None:
@@ -353,14 +365,23 @@ def _process_site(
                 else:
                     imp_supplier_contract_name = imp_supplier_contract.name
                 pc_code = imp_ss.pc_code
+                imp_voltage_level_code = imp_ss.voltage_level_code
+                imp_is_substation = imp_ss.is_substation
+                imp_llfc_code = imp_ss.llfc_code
+                imp_llfc_description = imp_ss.llfc.description
 
             if exp_ss is None:
-                exp_supplier_contract_name = None
+                exp_supplier_contract_name = exp_voltage_level_code = None
+                exp_is_substation = exp_llfc_code = exp_llfc_description = None
             else:
                 if exp_supplier_contract is None:
                     exp_supplier_contract_name = ""
                 else:
                     exp_supplier_contract_name = exp_supplier_contract.name
+                exp_voltage_level_code = exp_ss.voltage_level_code
+                exp_is_substation = exp_ss.is_substation
+                exp_llfc_code = exp_ss.llfc_code
+                exp_llfc_description = exp_ss.llfc.description
 
             out = (
                 [
@@ -376,6 +397,17 @@ def _process_site(
                     sss.supply_name,
                     sss.msn,
                     pc_code,
+                    sss.energisation_status_code,
+                    sss.gsp_group_code,
+                    sss.dno_code,
+                    imp_voltage_level_code,
+                    imp_is_substation,
+                    imp_llfc_code,
+                    imp_llfc_description,
+                    exp_voltage_level_code,
+                    exp_is_substation,
+                    exp_llfc_code,
+                    exp_llfc_description,
                     site.code,
                     site.name,
                     ",".join(sorted(list(era_associates))),
@@ -486,7 +518,26 @@ def _process_site(
                             data[key] += bill_prop_gbp
 
                     imp_supplier_contract = last_era.imp_supplier_contract
+                    imp_llfc = last_era.imp_llfc
+                    if imp_llfc is None:
+                        imp_llfc_code = imp_voltage_level_code = None
+                        imp_is_substation = imp_llfc_description = None
+                    else:
+                        imp_llfc_code = imp_llfc.code
+                        imp_voltage_level_code = imp_llfc.voltage_level.code
+                        imp_is_substation = imp_llfc.is_substation
+                        imp_llfc_description = imp_llfc.description
+
                     exp_supplier_contract = last_era.exp_supplier_contract
+                    exp_llfc = last_era.exp_llfc
+                    if exp_llfc is None:
+                        exp_llfc_code = exp_voltage_level_code = None
+                        exp_is_substation = exp_llfc_description = None
+                    else:
+                        exp_llfc_code = exp_llfc.code
+                        exp_voltage_level_code = exp_llfc.voltage_level.code
+                        exp_is_substation = exp_llfc.is_substation
+                        exp_llfc_description = exp_llfc.description
                     out = [
                         now,
                         last_era.imp_mpan_core,
@@ -508,6 +559,17 @@ def _process_site(
                         last_era.supply.name,
                         last_era.msn,
                         last_era.pc.code,
+                        last_era.energisation_status.code,
+                        last_era.supply.gsp_group.code,
+                        last_era.supply.dno.dno_code,
+                        imp_voltage_level_code,
+                        imp_is_substation,
+                        imp_llfc_code,
+                        imp_llfc_description,
+                        exp_voltage_level_code,
+                        exp_is_substation,
+                        exp_llfc_code,
+                        exp_llfc_description,
                         site.code,
                         site.name,
                         None,
@@ -593,6 +655,25 @@ def _process_site(
                             data[key] += bill_prop_gbp
 
                     imp_supplier_contract = first_era.imp_supplier_contract
+                    imp_llfc = last_era.imp_llfc
+                    if imp_llfc is None:
+                        imp_llfc_code = imp_voltage_level_code = None
+                        imp_is_substation = imp_llfc_description = None
+                    else:
+                        imp_llfc_code = imp_llfc.code
+                        imp_voltage_level_code = imp_llfc.voltage_level.code
+                        imp_is_substation = imp_llfc.is_substation
+                        imp_llfc_description = imp_llfc.description
+
+                    exp_llfc = last_era.exp_llfc
+                    if exp_llfc is None:
+                        exp_llfc_code = exp_voltage_level_code = None
+                        exp_is_substation = exp_llfc_description = None
+                    else:
+                        exp_llfc_code = exp_llfc.code
+                        exp_voltage_level_code = exp_llfc.voltage_level.code
+                        exp_is_substation = exp_llfc.is_substation
+                        exp_llfc_description = exp_llfc.description
                     exp_supplier_contract = first_era.exp_supplier_contract
                     out = [
                         now,
@@ -615,6 +696,17 @@ def _process_site(
                         last_era.supply.name,
                         last_era.msn,
                         last_era.pc.code,
+                        last_era.energisation_status.code,
+                        last_era.supply.gsp_group.code,
+                        last_era.supply.dno.dno_code,
+                        imp_voltage_level_code,
+                        imp_is_substation,
+                        imp_llfc_code,
+                        imp_llfc_description,
+                        exp_voltage_level_code,
+                        exp_is_substation,
+                        exp_llfc_code,
+                        exp_llfc_description,
                         site.code,
                         site.name,
                         None,
@@ -812,6 +904,17 @@ def content(
                 "supply-name",
                 "msn",
                 "pc",
+                "energisation-status",
+                "gsp-group",
+                "dno",
+                "imp-voltage-level",
+                "imp-is-substation",
+                "imp-llfc-code",
+                "imp-llfc-description",
+                "exp-voltage-level",
+                "exp-is-substation",
+                "exp-llfc-code",
+                "exp-llfc-description",
                 "site-id",
                 "site-name",
                 "associated-site-ids",

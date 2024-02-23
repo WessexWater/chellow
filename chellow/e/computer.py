@@ -682,6 +682,7 @@ class SiteSource(DataSource):
             self.gsp_group_code = self.supply.gsp_group.code
             self.ssc = self.era.ssc
             self.ssc_code = None if self.ssc is None else self.ssc.code
+            self.energisation_status_code = era.energisation_status.code
 
         era_q = (
             select(Era.id)

@@ -674,31 +674,25 @@ def virtual_bill(ds):
 
 
 def test_bill_after_end_supply(mocker, sess):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     start_date = utc_datetime(2009, 7, 31, 23, 00)
     months = 1
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -754,7 +748,7 @@ def virtual_bill(ds):
         None,
         {},
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
@@ -793,10 +787,10 @@ def virtual_bill(ds):
         {},
     )
     batch = imp_supplier_contract.insert_batch(sess, "a b", "")
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -807,22 +801,15 @@ def virtual_bill(ds):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1000,6 +987,17 @@ def virtual_bill(ds):
             "supply-name",
             "msn",
             "pc",
+            "energisation-status",
+            "gsp-group",
+            "dno",
+            "imp-voltage-level",
+            "imp-is-substation",
+            "imp-llfc-code",
+            "imp-llfc-description",
+            "exp-voltage-level",
+            "exp-is-substation",
+            "exp-llfc-code",
+            "exp-llfc-description",
             "site-id",
             "site-name",
             "associated-site-ids",
@@ -1045,6 +1043,17 @@ def virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works",
             None,
@@ -2053,6 +2062,17 @@ def virtual_bill(ds):
             "supply-name",
             "msn",
             "pc",
+            "energisation-status",
+            "gsp-group",
+            "dno",
+            "imp-voltage-level",
+            "imp-is-substation",
+            "imp-llfc-code",
+            "imp-llfc-description",
+            "exp-voltage-level",
+            "exp-is-substation",
+            "exp-llfc-code",
+            "exp-llfc-description",
             "site-id",
             "site-name",
             "associated-site-ids",
@@ -2111,6 +2131,17 @@ def virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works 1",
             "",
@@ -2168,6 +2199,17 @@ def virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works 1",
             "",
@@ -2225,6 +2267,17 @@ def virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works 1",
             None,
@@ -2602,6 +2655,17 @@ def virtual_bill(ds):
             "supply-name",
             "msn",
             "pc",
+            "energisation-status",
+            "gsp-group",
+            "dno",
+            "imp-voltage-level",
+            "imp-is-substation",
+            "imp-llfc-code",
+            "imp-llfc-description",
+            "exp-voltage-level",
+            "exp-is-substation",
+            "exp-llfc-code",
+            "exp-llfc-description",
             "site-id",
             "site-name",
             "associated-site-ids",
@@ -2647,6 +2711,17 @@ def virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works",
             None,
@@ -3294,6 +3369,17 @@ def displaced_virtual_bill(ds):
             "supply-name",
             "msn",
             "pc",
+            "energisation-status",
+            "gsp-group",
+            "dno",
+            "imp-voltage-level",
+            "imp-is-substation",
+            "imp-llfc-code",
+            "imp-llfc-description",
+            "exp-voltage-level",
+            "exp-is-substation",
+            "exp-llfc-code",
+            "exp-llfc-description",
             "site-id",
             "site-name",
             "associated-site-ids",
@@ -3352,6 +3438,17 @@ def displaced_virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works",
             "",
@@ -3409,6 +3506,17 @@ def displaced_virtual_bill(ds):
             "Bob",
             "hgjeyhuw",
             "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
+            None,
+            None,
+            None,
+            None,
             "CI017",
             "Water Works",
             "",
@@ -3462,6 +3570,17 @@ def displaced_virtual_bill(ds):
             None,
             "hh",
             "displaced",
+            None,
+            None,
+            None,
+            "00",
+            "E",
+            "_L",
+            "22",
+            "HV",
+            False,
+            "510",
+            "PC 5-8 & HH HV",
             None,
             None,
             None,
