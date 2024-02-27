@@ -23,14 +23,14 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import ct_datetime, to_utc, utc_datetime
+from chellow.utils import ct_datetime, to_utc
 
 
 def test_process_banded_hh_ums(sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
-    start_date = to_utc(ct_datetime(2023, 7, 31, 23, 30))
-    finish_date = to_utc(ct_datetime(2023, 7, 31, 23, 30))
+    start_date = to_utc(ct_datetime(2023, 7, 31, 12, 0))
+    finish_date = to_utc(ct_datetime(2023, 7, 31, 12, 0))
     forecast_from = to_utc(ct_datetime(2020, 1, 1))
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
@@ -43,15 +43,7 @@ def test_process_banded_hh_ums(sess):
     tnuos_rate_script = {
         "bands": {"Unmetered": {"TDR Tariff": "1"}},
     }
-    Contract.insert_non_core(
-        sess,
-        "tnuos",
-        "",
-        {},
-        vf,
-        None,
-        tnuos_rate_script,
-    )
+    Contract.insert_non_core(sess, "tnuos", "", {}, vf, None, tnuos_rate_script)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
@@ -71,14 +63,7 @@ def test_process_banded_hh_ums(sess):
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        vf,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
@@ -153,24 +138,24 @@ def test_process_banded_hh_ums(sess):
     hh["duos-description"] = "Unmetered Supplies"
     _process_banded_hh(ds, hh)
     assert hh == {
-        "hist-start": utc_datetime(2019, 7, 31, 22, 30),
-        "start-date": utc_datetime(2023, 7, 31, 22, 30),
+        "hist-start": to_utc(ct_datetime(2019, 7, 31, 12, 0)),
+        "start-date": to_utc(ct_datetime(2023, 7, 31, 12, 0)),
         "ct-day": 31,
         "utc-month": 7,
         "utc-day": 31,
-        "utc-decimal-hour": 22.5,
+        "utc-decimal-hour": 11,
         "utc-year": 2023,
-        "utc-hour": 22,
-        "utc-minute": 30,
+        "utc-hour": 11,
+        "utc-minute": 0,
         "ct-year": 2023,
         "ct-month": 7,
-        "ct-decimal-hour": 23.5,
+        "ct-decimal-hour": 12,
         "ct-day-of-week": 0,
         "utc-day-of-week": 0,
         "utc-is-bank-holiday": False,
         "ct-is-bank-holiday": False,
         "utc-is-month-end": False,
-        "ct-is-month-end": True,
+        "ct-is-month-end": False,
         "status": "X",
         "imp-msp-kvarh": 0,
         "imp-msp-kvar": 0,

@@ -14,7 +14,7 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 def hh(ds):
     for hh in ds.hh_data:
-        if hh["start-date"] >= BANDED_START and hh["ct-decimal-hour"] == 12:
+        if hh["start-date"] >= BANDED_START:
             _process_banded_hh(ds, hh)
 
 
@@ -58,13 +58,14 @@ def _process_banded_hh(ds, hh):
     rates = ds.non_core_rate("tnuos", hh["start-date"])
     band_code = BAND_LOOKUP[hh["duos-description"]]
     hh["tnuos-band"] = band_code
-    rate = float(rates["bands"][band_code]["TDR Tariff"])
-    hh["tnuos-rate"] = rate
-    if band_code == "Unmetered":
-        hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
-    else:
-        hh["tnuos-gbp"] = rate
-    hh["tnuos-days"] = 1
+    if hh["ct-decimal-hour"] == 12:
+        rate = float(rates["bands"][band_code]["TDR Tariff"])
+        hh["tnuos-rate"] = rate
+        if band_code == "Unmetered":
+            hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
+        else:
+            hh["tnuos-gbp"] = rate
+        hh["tnuos-days"] = 1
 
 
 def national_grid_import(sess, log, set_progress, s):

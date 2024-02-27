@@ -41,6 +41,15 @@ def content(user_id, contract_id, end_year, end_month, months):
                 "Export MPAN Core",
                 "Start Date",
                 "Finish Date",
+                "energisation_status",
+                "gsp_group",
+                "dno",
+                "imp_is_substation",
+                "imp_llfc_code",
+                "imp_llfc_description",
+                "exp_is_substation",
+                "exp_llfc_code",
+                "exp_llfc_description",
             ]
 
             vb_func = contract_func(caches, contract, "virtual_bill")
@@ -58,43 +67,56 @@ def content(user_id, contract_id, end_year, end_month, months):
                 .options(joinedload(Era.channels))
                 .order_by(Era.supply_id)
             ):
-                imp_mpan_core = era.imp_mpan_core
-                if imp_mpan_core is None:
-                    imp_mpan_core_str = ""
+                if era.imp_mpan_core is None:
                     is_import = False
                 else:
                     is_import = True
-                    imp_mpan_core_str = imp_mpan_core
-
-                exp_mpan_core = era.exp_mpan_core
-                exp_mpan_core_str = "" if exp_mpan_core is None else exp_mpan_core
 
                 chunk_start = hh_max(era.start_date, start_date)
                 chunk_finish = hh_min(era.finish_date, finish_date)
-
-                vals = [
-                    imp_mpan_core_str,
-                    exp_mpan_core_str,
-                    hh_format(chunk_start),
-                    hh_format(chunk_finish),
-                ]
-
                 supply_source = SupplySource(
                     sess, chunk_start, chunk_finish, f_date, era, is_import, caches
                 )
+                if is_import:
+                    imp_is_substation = supply_source.is_substation
+                    imp_llfc_code = supply_source.llfc_code
+                    imp_llfc_description = supply_source.llfc.description
+                    exp_is_substation = exp_llfc_code = exp_llfc_description = None
+                else:
+                    exp_is_substation = supply_source.is_substation
+                    exp_llfc_code = supply_source.llfc_code
+                    exp_llfc_description = supply_source.llfc.description
+                    imp_is_substation = imp_llfc_code = imp_llfc_description = None
+
+                vals = [
+                    era.imp_mpan_core,
+                    era.exp_mpan_core,
+                    chunk_start,
+                    chunk_finish,
+                    supply_source.energisation_status_code,
+                    supply_source.gsp_group_code,
+                    supply_source.dno_code,
+                    imp_is_substation,
+                    imp_llfc_code,
+                    imp_llfc_description,
+                    exp_is_substation,
+                    exp_llfc_code,
+                    exp_llfc_description,
+                ]
+
                 vb_func(supply_source)
                 bill = supply_source.dc_bill
 
                 for title in bill_titles:
-                    vals.append(csv_make_val(bill.get(title)))
+                    vals.append(bill.get(title))
                     if title in bill:
                         del bill[title]
 
                 for k in sorted(bill.keys()):
                     vals.append(k)
-                    vals.append(csv_make_val(bill[k]))
+                    vals.append(bill[k])
 
-                writer.writerow(vals)
+                writer.writerow(csv_make_val(v) for v in vals)
 
                 # Avoid long-running transactions
                 sess.rollback()
