@@ -3829,6 +3829,13 @@ class Era(Base, PersistentClass):
             self._meter_category = cat
         return self._meter_category
 
+    def get_physical_site(self, sess):
+        return sess.scalar(
+            select(Site)
+            .join(SiteEra)
+            .where(SiteEra.era == self, SiteEra.is_physical == true())
+        )
+
 
 METER_CATEGORY = {"H": "hh", "N": "nhh", "S1": "amr"}
 
@@ -3873,12 +3880,7 @@ class Channel(Base, PersistentClass):
         self.add_snag(sess, Snag.MISSING, start, finish)
 
         if self.channel_type == "ACTIVE":
-            site = (
-                sess.query(Site)
-                .join(SiteEra)
-                .filter(SiteEra.era == self.era, SiteEra.is_physical == true())
-                .one()
-            )
+            site = self.era.get_physical_site(sess)
             site.hh_check(sess, start, finish)
 
     def add_hh_data(self, sess, data_raw):

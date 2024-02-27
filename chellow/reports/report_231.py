@@ -29,10 +29,20 @@ def content(user_id, start_date, finish_date, contract_id):
 
             f_date = forecast_date()
             header_titles = [
-                "Import MPAN Core",
-                "Export MPAN Core",
-                "Start Date",
-                "Finish Date",
+                "imp_mpan_core",
+                "exp_mpan_core",
+                "start_date",
+                "finish_date",
+                "energisation_status",
+                "gsp_group",
+                "dno",
+                "site_code",
+                "imp_is_substation",
+                "imp_llfc_code",
+                "imp_llfc_description",
+                "exp_is_substation",
+                "exp_llfc_code",
+                "exp_llfc_description",
             ]
 
             bill_titles = contract_func(caches, contract, "virtual_bill_titles")()
@@ -50,41 +60,51 @@ def content(user_id, start_date, finish_date, contract_id):
             ):
                 chunk_start = hh_max(era.start_date, start_date)
                 chunk_finish = hh_min(era.finish_date, finish_date)
-                import_mpan_core = era.imp_mpan_core
-                if import_mpan_core is None:
-                    import_mpan_core_str = ""
-                else:
-                    is_import = True
-                    import_mpan_core_str = import_mpan_core
+                is_import = era.imp_mpan_core is not None
 
-                export_mpan_core = era.exp_mpan_core
-                if export_mpan_core is None:
-                    export_mpan_core_str = ""
-                else:
-                    is_import = False
-                    export_mpan_core_str = export_mpan_core
-
-                out = [
-                    import_mpan_core_str,
-                    export_mpan_core_str,
-                    hh_format(chunk_start),
-                    hh_format(chunk_finish),
-                ]
                 supply_source = SupplySource(
                     sess, chunk_start, chunk_finish, f_date, era, is_import, caches
                 )
+
+                if is_import:
+                    imp_is_substation = supply_source.is_substation
+                    imp_llfc_code = supply_source.llfc_code
+                    imp_llfc_description = supply_source.llfc.description
+                    exp_is_substation = exp_llfc_code = exp_llfc_description = None
+                else:
+                    exp_is_substation = supply_source.is_substation
+                    exp_llfc_code = supply_source.llfc_code
+                    exp_llfc_description = supply_source.llfc.description
+                    imp_is_substation = imp_llfc_code = imp_llfc_description = None
+
+                out = [
+                    era.imp_mpan_core,
+                    era.exp_mpan_core,
+                    chunk_start,
+                    chunk_finish,
+                    supply_source.energisation_status_code,
+                    supply_source.gsp_group_code,
+                    supply_source.dno_code,
+                    era.get_physical_site(sess).code,
+                    imp_is_substation,
+                    imp_llfc_code,
+                    imp_llfc_description,
+                    exp_is_substation,
+                    exp_llfc_code,
+                    exp_llfc_description,
+                ]
                 vb_func(supply_source)
                 bill = supply_source.mop_bill
                 for title in bill_titles:
                     if title in bill:
-                        out.append(csv_make_val(bill[title]))
+                        out.append(bill[title])
                         del bill[title]
                     else:
                         out.append("")
                 for k in sorted(bill.keys()):
                     out.append(k)
-                    out.append(str(bill[k]))
-                writer.writerow(out)
+                    out.append(bill[k])
+                writer.writerow(csv_make_val(v) for v in out)
 
                 sess.rollback()  # Avoid long-running transactions
     except BadRequest as e:

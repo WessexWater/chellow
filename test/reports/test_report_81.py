@@ -62,6 +62,7 @@ def virtual_bill(ds):
         "energisation_status",
         "gsp_group",
         "dno",
+        "site_code",
         "imp_is_substation",
         "imp_llfc_code",
         "imp_llfc_description",

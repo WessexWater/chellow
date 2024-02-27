@@ -44,6 +44,7 @@ def content(user_id, contract_id, end_year, end_month, months):
                 "energisation_status",
                 "gsp_group",
                 "dno",
+                "site_code",
                 "imp_is_substation",
                 "imp_llfc_code",
                 "imp_llfc_description",
@@ -67,10 +68,7 @@ def content(user_id, contract_id, end_year, end_month, months):
                 .options(joinedload(Era.channels))
                 .order_by(Era.supply_id)
             ):
-                if era.imp_mpan_core is None:
-                    is_import = False
-                else:
-                    is_import = True
+                is_import = era.imp_mpan_core is not None
 
                 chunk_start = hh_max(era.start_date, start_date)
                 chunk_finish = hh_min(era.finish_date, finish_date)
@@ -96,6 +94,7 @@ def content(user_id, contract_id, end_year, end_month, months):
                     supply_source.energisation_status_code,
                     supply_source.gsp_group_code,
                     supply_source.dno_code,
+                    era.get_physical_site(sess).code,
                     imp_is_substation,
                     imp_llfc_code,
                     imp_llfc_description,

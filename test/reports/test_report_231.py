@@ -61,10 +61,20 @@ def virtual_bill(ds):
     content(user_id, start_date, finish_date, mop_contract.id)
     actual = f.getvalue()
     expected = [
-        "Import MPAN Core",
-        "Export MPAN Core",
-        "Start Date",
-        "Finish Date",
+        "imp_mpan_core",
+        "exp_mpan_core",
+        "start_date",
+        "finish_date",
+        "energisation_status",
+        "gsp_group",
+        "dno",
+        "site_code",
+        "imp_is_substation",
+        "imp_llfc_code",
+        "imp_llfc_description",
+        "exp_is_substation",
+        "exp_llfc_code",
+        "exp_llfc_description",
         "net-gbp",
         "problem",
     ]
