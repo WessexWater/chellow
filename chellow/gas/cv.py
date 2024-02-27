@@ -182,7 +182,10 @@ def fetch_cvs(sess, log_f, g_contract):
                     rs = g_contract.insert_g_rate_script(sess, month_start, {"cvs": {}})
 
             script = rs.make_script()
-            rs_cvs = script["cvs"]
+            try:
+                rs_cvs = script["cvs"]
+            except KeyError:
+                rs_cvs = script["cvs"] = {}
             try:
                 ldz_days = rs_cvs[ldz]
             except KeyError:
