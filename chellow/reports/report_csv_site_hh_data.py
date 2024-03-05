@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -9,8 +8,8 @@ from flask import g, request
 from sqlalchemy import null, or_, true
 from sqlalchemy.orm import joinedload
 
-import chellow.dloads
-from chellow.models import Era, Session, Site, SiteEra, Source, Supply
+from chellow.dloads import open_file
+from chellow.models import Era, Session, Site, SiteEra, Source, Supply, User
 from chellow.utils import req_date, req_int, write_row
 from chellow.views import chellow_redirect
 
@@ -18,13 +17,11 @@ from chellow.views import chellow_redirect
 TYPE_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
 
 
-def content(sess, start_date, finish_date, site_id, user):
+def content(start_date, finish_date, site_id, user_id):
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "site_hh_data.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("site_hh_data.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             write_row(
                 writer,
@@ -111,7 +108,6 @@ def content(sess, start_date, finish_date, site_id, user):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -122,6 +118,6 @@ def do_get(sess):
     else:
         site_id = None
 
-    args = (sess, start_date, finish_date, site_id, g.user)
+    args = start_date, finish_date, site_id, g.user.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
