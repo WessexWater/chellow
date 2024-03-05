@@ -916,6 +916,26 @@ def test_Contract_get_next_batch_details__no_suffix(mocker):
     assert desc == batch_description
 
 
+def test_Contract_insert_batch_duplicate(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+
+    contract = Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
+    contract.insert_batch(sess, "a", "a ref")
+    sess.commit()
+
+    with pytest.raises(
+        BadRequest,
+        match="There's already a batch with the reference 'a'.",
+    ):
+        contract.insert_batch(sess, "a", "a ref")
+
+
 def test_Tpr_get_by_code_not_found(sess):
     with pytest.raises(
         BadRequest,

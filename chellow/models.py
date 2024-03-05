@@ -1683,8 +1683,17 @@ class Contract(Base, PersistentClass):
         batch = Batch(sess, self, reference, description)
         try:
             sess.add(batch)
-        except ProgrammingError:
-            raise BadRequest("There's already a batch with that reference.")
+            sess.flush()
+        except IntegrityError as e:
+            if (
+                'duplicate key value violates unique constraint "batch_reference_key"'
+                in str(e)
+            ):
+                raise BadRequest(
+                    f"There's already a batch with the reference '{reference}'."
+                ) from e
+            else:
+                raise e
         return batch
 
     def make_properties(self):
