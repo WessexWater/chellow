@@ -69,7 +69,7 @@ def run_import(sess, log, set_progress):
 
 LAST_RUN_KEY = "last_run"
 GLOBAL_ALERT = (
-    "There's a problem with a <a href='/lcc'>Low Carbon Contracts import</a>."
+    "There's a problem with a <a href='/e/lcc'>Low Carbon Contracts import</a>."
 )
 LCC_STATE_KEY = "lcc"
 
