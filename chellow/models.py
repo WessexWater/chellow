@@ -7318,6 +7318,21 @@ def db_upgrade_44_to_45(sess, root_path):
     sess.execute(text("ALTER TABLE g_era ALTER soq SET NOT NULL;"))
 
 
+def db_upgrade_45_to_46(sess, root_path):
+    sess.execute(
+        text(
+            "ALTER TABLE batch DROP CONSTRAINT IF EXISTS "
+            "batch_contract_id_reference_key;"
+        )
+    )
+    sess.execute(
+        text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS batch_reference_key ON batch "
+            "(reference);"
+        )
+    )
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7348,6 +7363,7 @@ upgrade_funcs.extend(
         db_upgrade_42_to_43,
         db_upgrade_43_to_44,
         db_upgrade_44_to_45,
+        db_upgrade_45_to_46,
     ]
 )
 
