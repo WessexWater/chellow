@@ -1,4 +1,9 @@
-from chellow.e.cfd import _find_quarter_rs, _reconciled_days, hh
+from chellow.e.cfd import (
+    _find_quarter_rs,
+    _reconciled_days,
+    hh,
+    import_forecast_ilr_tra,
+)
 from chellow.e.computer import SupplySource
 from chellow.models import (
     Comm,
@@ -28,19 +33,16 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 def test_reconciled_days(mocker):
     s = mocker.Mock()
-    search_from = mocker.Mock()
-    result = {
-        "result": {
-            "records": [
-                {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "DF"},
-                {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "RF"},
-                {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "DF"},
-                {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "RF"},
-            ]
-        }
-    }
-    mocker.patch("chellow.e.cfd.api_sql", return_value=result)
-    actual = list(_reconciled_days(s, search_from))
+    search_from = "2023-01-01"
+    log = mocker.Mock()
+    result = [
+        {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "DF"},
+        {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "RF"},
+        {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "DF"},
+        {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "RF"},
+    ]
+    mocker.patch("chellow.e.cfd.api_records", return_value=result)
+    actual = list(_reconciled_days(log, s, search_from))
     expected = [
         (
             utc_datetime(2023, 3, 29, 23, 0),
@@ -79,6 +81,27 @@ def test_find_quarter_rs(sess):
 
     actual = _find_quarter_rs(sess, contract_name, to_utc(ct_datetime(2024, 4, 1)))
     assert actual is None
+
+
+def test_import_forecast_ilr_tra(sess, mocker):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "CALB", "Calb")
+    market_role = MarketRole.insert(sess, "Z", "Non-core")
+    participant.insert_party(sess, market_role, "None core", vf, None, None)
+    sess.commit()
+
+    s = mocker.Mock()
+    mock_request = mocker.Mock()
+    req_j = {
+        "success": True,
+        "fields": [],
+        "records": [],
+    }
+    mock_request.json = mocker.Mock(return_value=req_j)
+    s.get = mocker.Mock(return_value=mock_request)
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
+    import_forecast_ilr_tra(sess, log, set_progress, s)
 
 
 def test_hh(sess, mocker):

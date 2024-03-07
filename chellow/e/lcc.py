@@ -19,10 +19,11 @@ from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 importer = None
 
 
-def api_sql(s, sql):
-    url = "https://dp.lowcarboncontracts.uk/api/3/action/datastore_search_sql"
-    params = {"sql": sql}
+def api_records(log, s, resource_id, skip=0):
+    url = f"https://dp.lowcarboncontracts.uk/datastore/dump/{resource_id}"
+    params = {"format": "json"}
     res = s.get(url, params=params)
+    log(f"Requested URL {res.url}")
     try:
         res_j = res.json()
     except requests.exceptions.JSONDecodeError as e:
@@ -34,27 +35,10 @@ def api_sql(s, sql):
     if "success" in res_j and not res_j["success"]:
         raise BadRequest(res_j)
 
-    return res_j
+    field_titles = [f["id"] for f in res_j["fields"]]
 
-
-def api_search(s, resource_id, sort=None):
-    url = "https://dp.lowcarboncontracts.uk/api/3/action/datastore_search"
-    params = {"resource_id": resource_id}
-    if sort is not None:
-        params["sort"] = sort
-    res = s.get(url, params=params)
-    try:
-        res_j = res.json()
-    except requests.exceptions.JSONDecodeError as e:
-        raise BadRequest(
-            f"Couldn't parse as JSON the content from {url} with error {e}: "
-            f"{res.text}"
-        )
-
-    if "success" in res_j and not res_j["success"]:
-        raise BadRequest(res_j)
-
-    return res_j
+    for record in res_j["records"][skip:]:
+        yield {k: v for k, v in zip(field_titles, record)}
 
 
 def run_import(sess, log, set_progress):
@@ -72,6 +56,7 @@ GLOBAL_ALERT = (
     "There's a problem with a <a href='/e/lcc'>Low Carbon Contracts import</a>."
 )
 LCC_STATE_KEY = "lcc"
+DELAY_DAYS = 7
 
 
 class LowCarbonContracts(threading.Thread):
@@ -113,7 +98,9 @@ class LowCarbonContracts(threading.Thread):
                     sess.rollback()
 
             last_run = lcc_state.get(LAST_RUN_KEY)
-            if last_run is None or utc_datetime_now() - last_run > timedelta(days=1):
+            if last_run is None or utc_datetime_now() - last_run > timedelta(
+                days=DELAY_DAYS
+            ):
                 self.going.set()
 
             if self.going.is_set():
@@ -143,7 +130,8 @@ class LowCarbonContracts(threading.Thread):
             else:
                 self.log(
                     f"The importer was last run at {hh_format(last_run)}. There will "
-                    f"be another import when 24 hours have elapsed since the last run."
+                    f"be another import when {DELAY_DAYS} days have elapsed since the "
+                    f"last run."
                 )
                 self.going.wait(60 * 60)
 

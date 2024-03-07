@@ -7,7 +7,7 @@ from sqlalchemy import null, or_, select
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.e.lcc import api_search, api_sql
+from chellow.e.lcc import api_records
 from chellow.models import Contract, RateScript
 from chellow.utils import c_months_u, ct_datetime, hh_format, to_ct, to_utc
 
@@ -114,12 +114,9 @@ def lcc_import(sess, log, set_progress, s):
     import_advanced_forecast_ilr_tra(sess, log, set_progress, s)
 
 
-def _quarters(s):
+def _quarters(log, s):
     quarter = {}
-    res_j = api_search(
-        s, "2fc2fad9-ad57-4901-982a-f92d4ef6c622", sort="Settlement_Date"
-    )
-    for record in res_j["result"]["records"]:
+    for record in api_records(log, s, "2fc2fad9-ad57-4901-982a-f92d4ef6c622"):
         settlement_date_str = record["Settlement_Date"]
         settlement_date_ct = to_ct(
             Datetime.strptime(settlement_date_str[:10], "%Y-%m-%d")
@@ -165,7 +162,7 @@ def import_in_period_tracking(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for quarter in _quarters(s):
+    for quarter in _quarters(log, s):
         quarter_start = sorted(quarter.keys())[0]
         rs = sess.execute(
             select(RateScript).where(
@@ -206,12 +203,8 @@ def import_operational_costs_levy(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    res_j = api_search(s, "44f41eac-61b3-4e8d-8c52-3eda7b8e8517", sort="Period_Start")
-    for record in res_j["result"]["records"][1:]:  # skip title row
-        period_start_str = record["Period_Start"]
-        period_start = to_utc(
-            to_ct(Datetime.strptime(period_start_str[:10], "%Y-%m-%d"))
-        )
+    for record in api_records(log, s, "44f41eac-61b3-4e8d-8c52-3eda7b8e8517", skip=1):
+        period_start = _parse_date(record["Period_Start"])
 
         rs = sess.execute(
             select(RateScript).where(
@@ -231,16 +224,14 @@ def import_operational_costs_levy(sess, log, set_progress, s):
 RUN_TYPES = ("II", "SF", "R1", "R2", "R3", "RF", "DF")
 
 
-def _reconciled_days(s, search_from):
+def _reconciled_days(log, s, search_from):
     runs = {}
-    res_j = api_sql(
-        s,
-        f"""SELECT * from "e0e163cb-ba36-416d-83fe-976992d61516"
-        WHERE "Settlement_Date" > '{search_from}' ORDER BY "Settlement_Date"
-        """,
-    )
 
-    records = res_j["result"]["records"]
+    records = [
+        r
+        for r in api_records(log, s, "e0e163cb-ba36-416d-83fe-976992d61516")
+        if r["Settlement_Date"] > search_from
+    ]
     if len(records) > 0:
         prev_settlement_date = _parse_date(records[0]["Settlement_Date"])
         runs = {}
@@ -257,9 +248,9 @@ def _reconciled_days(s, search_from):
         yield settlement_date, runs
 
 
-def _reconciled_daily_quarters(s, search_from):
+def _reconciled_daily_quarters(log, s, search_from):
     quarter = {}
-    for settlement_date, lcc_runs in _reconciled_days(s, search_from):
+    for settlement_date, lcc_runs in _reconciled_days(log, s, search_from):
         try:
             runs = quarter[settlement_date]
         except KeyError:
@@ -317,7 +308,7 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
         else:
             break
 
-    for quarter in _reconciled_daily_quarters(s, search_from):
+    for quarter in _reconciled_daily_quarters(log, s, search_from):
         quarter_start = sorted(quarter.keys())[0]
         rs = sess.execute(
             select(RateScript).where(
@@ -377,10 +368,8 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    res_j = api_search(s, "fbece4ce-7cfc-42b7-8fb2-387cf59a3c32", sort="Period_Start")
-    for record in res_j["result"]["records"]:
-        period_start_str = record["Period_Start"]
-        period_start = _parse_varying_date(period_start_str)
+    for record in api_records(log, s, "fbece4ce-7cfc-42b7-8fb2-387cf59a3c32"):
+        period_start = _parse_varying_date(record["Period_Start"])
 
         rs = sess.execute(
             select(RateScript).where(
@@ -408,10 +397,8 @@ def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    res_j = api_search(s, "e3ad6876-c1e9-46f9-b557-cb9bdae53885", sort="Period Start")
-    for record in res_j["result"]["records"]:
-        period_start_str = record["Period Start"]
-        period_start = _parse_varying_date(period_start_str)
+    for record in api_records(log, s, "e3ad6876-c1e9-46f9-b557-cb9bdae53885"):
+        period_start = _parse_varying_date(record["Period Start"])
 
         rs = sess.execute(
             select(RateScript).where(
