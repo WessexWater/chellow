@@ -4,7 +4,7 @@ import traceback
 
 from flask import g
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
@@ -66,12 +66,22 @@ def _process_era(
             caches,
         )
 
-        site = (
-            sess.query(Site)
+        site = sess.scalars(
+            select(Site)
             .join(SiteEra)
-            .filter(SiteEra.era == era, SiteEra.is_physical == true())
-            .one()
-        )
+            .where(SiteEra.era == era, SiteEra.is_physical == true())
+        ).one()
+
+        if polarity:
+            imp_is_substation = data_source.is_substation
+            imp_llfc_code = data_source.llfc_code
+            imp_llfc_description = data_source.llfc.description
+            exp_is_substation = exp_llfc_code = exp_llfc_description = None
+        else:
+            exp_is_substation = data_source.is_substation
+            exp_llfc_code = data_source.llfc_code
+            exp_llfc_description = data_source.llfc.description
+            imp_is_substation = imp_llfc_code = imp_llfc_description = None
 
         vals = [
             data_source.mpan_core,
@@ -80,6 +90,15 @@ def _process_era(
             data_source.supplier_account,
             data_source.start_date,
             data_source.finish_date,
+            data_source.energisation_status_code,
+            data_source.gsp_group_code,
+            data_source.dno_code,
+            imp_is_substation,
+            imp_llfc_code,
+            imp_llfc_description,
+            exp_is_substation,
+            exp_llfc_code,
+            exp_llfc_description,
         ]
 
         vb_func(data_source)
@@ -134,9 +153,24 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
     ):
         for suffix in ("-kwh", "-rate", "-gbp"):
             bill_titles.append(tpr.code + suffix)
-    writer.writerow(
-        ["MPAN Core", "Site Code", "Site Name", "Account", "From", "To"] + bill_titles
-    )
+    header_titles = [
+        "mpan_core",
+        "site_code",
+        "site_name",
+        "account",
+        "from",
+        "to",
+        "energisation_status",
+        "gsp_group",
+        "dno",
+        "imp_is_substation",
+        "imp_llfc_code",
+        "imp_llfc_description",
+        "exp_is_substation",
+        "exp_llfc_code",
+        "exp_llfc_description",
+    ]
+    writer.writerow(header_titles + bill_titles)
     vb_func = contract_func(caches, contract, "virtual_bill")
 
     for month_start, month_finish in month_pairs:
