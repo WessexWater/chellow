@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -10,7 +9,7 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import (
     Era,
@@ -21,19 +20,21 @@ from chellow.models import (
     Ssc,
     Supply,
     Tpr,
+    User,
 )
 from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
 from chellow.views import chellow_redirect
 
 
-def content(supply_id, file_name, start_date, finish_date, user):
+def content(supply_id, start_date, finish_date, user_id):
     caches = {}
+    f = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                f"supply_virtual_bills_{supply_id}.csv", user
+            user = User.get_by_id(sess, user_id)
+            f = open_file(
+                f"supply_virtual_bills_{supply_id}.csv", user, mode="w", newline=""
             )
-            f = open(running_name, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
 
             supply = Supply.get_by_id(sess, supply_id)
@@ -192,19 +193,20 @@ def content(supply_id, file_name, start_date, finish_date, user):
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
-        writer.writerow([traceback.format_exc()])
+        msg = traceback.format_exc()
+        print(msg)
+        if f is not None:
+            writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     supply_id = req_int("supply_id")
-    file_name = "supply_virtual_bills_" + str(supply_id) + ".csv"
     start_date = req_date("start")
     finish_date = req_date("finish")
-    args = (supply_id, file_name, start_date, finish_date, g.user)
+    args = supply_id, start_date, finish_date, g.user.id
 
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
