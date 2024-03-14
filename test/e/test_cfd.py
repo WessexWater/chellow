@@ -80,7 +80,7 @@ def test_find_quarter_rs(sess):
     sess.commit()
 
     actual = _find_quarter_rs(sess, contract_name, to_utc(ct_datetime(2024, 4, 1)))
-    assert actual is None
+    assert actual is False
 
 
 def test_import_forecast_ilr_tra(sess, mocker):
