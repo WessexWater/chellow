@@ -1,6 +1,3 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
-
 from utils import match
 
 import chellow.dloads
@@ -305,14 +302,10 @@ def test_content(mocker, sess):
     user_id = user.id
     sess.commit()
 
-    mocker.patch("chellow.dloads.FileDeleter")
-    with TemporaryDirectory() as td:
-        instance_path = Path(td)
-        chellow.dloads.startup(instance_path)
+    supply_id = supply.id
+    start_date = to_utc(ct_datetime(2000, 1, 1))
+    finish_date = to_utc(ct_datetime(2000, 1, 1))
+    content(supply_id, start_date, finish_date, user_id)
 
-        supply_id = supply.id
-        start_date = to_utc(ct_datetime(2000, 1, 1))
-        finish_date = to_utc(ct_datetime(2000, 1, 1))
-        content(supply_id, start_date, finish_date, user_id)
-        files = list(p.name for p in (instance_path / "downloads").iterdir())
-        assert files == ["00000_FINISHED_adminexamplecom_supply_virtual_bills_1.csv"]
+    files = list(p.name for p in chellow.dloads.download_path.iterdir())
+    assert files == ["00000_FINISHED_adminexamplecom_supply_virtual_bills_1.csv"]

@@ -1,3 +1,5 @@
+from tempfile import TemporaryDirectory
+
 from flask.testing import FlaskClient
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -39,7 +41,8 @@ def fresh_db():
 def app(fresh_db):
     chellow.e.bill_importer.import_id = 0
     chellow.e.bill_importer.imports.clear()
-    return create_app(testing=True)
+    with TemporaryDirectory() as td:
+        yield create_app(testing=True, instance_path=td)
 
 
 @pytest.fixture

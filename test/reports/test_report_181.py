@@ -1,6 +1,23 @@
-import chellow.e.computer
-import chellow.reports.report_181
+import chellow.dloads
+from chellow.e.computer import forecast_date
+from chellow.models import Site, User, UserRole
+from chellow.reports.report_181 import _write_sites, content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_content(sess):
+    site = Site.insert(sess, "a", "a")
+    editor = UserRole.insert(sess, "editor")
+    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
+    sess.commit()
+
+    year = 2022
+    site_id = site.id
+    content(year, site_id, user_id)
+
+    files = list(p.name for p in chellow.dloads.download_path.iterdir())
+    assert files == ["00000_FINISHED_adminexamplecom_output.csv"]
 
 
 def test_write_sites(mocker):
@@ -49,11 +66,9 @@ def test_write_sites(mocker):
     mocker.patch("chellow.e.duos.duos_vb", autospec=True)
     mocker.patch("chellow.e.tnuos.hh", autospec=True)
 
-    forecast_date = chellow.e.computer.forecast_date()
+    fd = forecast_date()
 
-    chellow.reports.report_181._write_sites(sess, caches, writer, year, site_id)
+    _write_sites(sess, caches, writer, year, site_id)
 
     ms.assert_called_once_with(sess, year_start, year_finish, site_id, source_codes)
-    de.assert_called_once_with(
-        sess, caches, site, month_start, year_finish, forecast_date
-    )
+    de.assert_called_once_with(sess, caches, site, month_start, year_finish, fd)

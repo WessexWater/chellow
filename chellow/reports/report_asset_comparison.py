@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -13,8 +12,8 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
-from chellow.models import Contract, Era, ReportRun, Session, Site, SiteEra
+from chellow.dloads import open_file
+from chellow.models import Contract, Era, ReportRun, Session, Site, SiteEra, User
 from chellow.views import chellow_redirect
 
 STATUSES_ACTIVE = ("IN USE / IN SERVICE", "STORED SPARE")
@@ -147,13 +146,12 @@ def _process_sites(sess, file_like, writer, props, report_run):
 FNAME = "asset_comparison"
 
 
-def content(user, file_like, report_run_id):
+def content(user_id, file_like, report_run_id):
+    f = report_run = writer = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                f"{FNAME}.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file(f"{FNAME}.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             report_run = ReportRun.get_by_id(sess, report_run_id)
 
@@ -171,11 +169,11 @@ def content(user, file_like, report_run_id):
             report_run.insert_row(sess, "", ["error"], {"error": msg}, {})
             sess.commit()
         sys.stderr.write(msg)
-        writer.writerow([msg])
+        if writer is not None:
+            writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_post(sess):
@@ -194,6 +192,6 @@ def do_post(sess):
         },
     )
     sess.commit()
-    args = user, StringIO(file_item.read().decode("utf8")), report_run.id
+    args = user.id, StringIO(file_item.read().decode("utf8")), report_run.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect(f"/report_runs/{report_run.id}", 303)

@@ -63,8 +63,8 @@ def get_importer_modules():
     )
 
 
-def create_app(testing=False):
-    app = Flask("chellow", instance_relative_config=True)
+def create_app(testing=False, instance_path=None):
+    app = Flask("chellow", instance_relative_config=True, instance_path=instance_path)
     app.wsgi_app = MsProxy(app.wsgi_app)
     app.secret_key = os.urandom(24)
     start_sqlalchemy()
@@ -79,7 +79,6 @@ def create_app(testing=False):
 
     if not testing:
         db_upgrade(app.root_path)
-        chellow.dloads.startup(Path(app.instance_path))
         chellow.e.hh_importer.startup()
 
         with Session() as sess:
@@ -89,6 +88,8 @@ def create_app(testing=False):
             props = configuration.make_properties()
             api_props = props.get("api", {})
             api.description = api_props.get("description", "Access Chellow data")
+
+    chellow.dloads.startup(Path(app.instance_path), run_deleter=(not testing))
 
     for module in get_importer_modules():
         if not testing:

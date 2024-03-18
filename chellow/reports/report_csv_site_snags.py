@@ -1,6 +1,4 @@
 import csv
-import os
-import sys
 import threading
 import traceback
 from datetime import datetime as Datetime, timedelta as Timedelta
@@ -12,20 +10,18 @@ import pytz
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
-import chellow.dloads
-from chellow.models import Session, Site, Snag
+from chellow.dloads import open_file
+from chellow.models import Session, Site, Snag, User
 from chellow.utils import hh_format
 from chellow.views import chellow_redirect
 
 
-def content(user):
+def content(user_id):
     f = writer = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "site_snags.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("site_snags.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             writer.writerow(
                 (
@@ -74,15 +70,15 @@ def content(user):
                 )
     except BaseException:
         msg = traceback.format_exc()
-        sys.stderr.write(msg)
-        writer.writerow([msg])
+        print(msg)
+        if writer is not None:
+            writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
-    args = (g.user,)
+    args = (g.user.id,)
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

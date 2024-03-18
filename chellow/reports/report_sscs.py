@@ -1,4 +1,3 @@
-import os
 import sys
 import threading
 import traceback
@@ -13,7 +12,7 @@ from sqlalchemy.orm import joinedload
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import MeasurementRequirement, Session, Ssc, Tpr, User
 from chellow.utils import req_bool
 from chellow.views import chellow_redirect
@@ -54,9 +53,7 @@ def content(
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
 
-            running_name, finished_name = chellow.dloads.make_names("sscs.ods", user)
-
-            rf = open(running_name, "wb")
+            rf = open_file("sscs.ods", user, "wb")
 
             for ssc in sess.scalars(select(Ssc).order_by(Ssc.code)):
                 ssc_rows.append(
@@ -100,8 +97,7 @@ def content(
         ssc_rows.append(["Problem " + msg])
         if rf is None:
             msg = traceback.format_exc()
-            r_name, f_name = chellow.dloads.make_names("error.txt", None)
-            ef = open(r_name, "w")
+            ef = open_file("error.txt", None, "w")
             ef.write(msg + "\n")
             ef.close()
         else:
@@ -109,7 +105,6 @@ def content(
     finally:
         if rf is not None:
             rf.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):

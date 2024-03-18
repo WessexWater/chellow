@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 from datetime import datetime as Datetime
@@ -14,8 +13,9 @@ from sqlalchemy.sql.expression import null, or_, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.computer
-from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.dloads import open_file
+from chellow.e.computer import SupplySource, contract_func, forecast_date
+from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
 from chellow.views import chellow_redirect
 
@@ -29,15 +29,13 @@ def content(
     finish_day,
     is_import,
     supply_id,
-    user,
+    user_id,
 ):
     caches = {}
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "daily_supplier_virtual_bill.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("daily_supplier_virtual_bill.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             start_date = Datetime(start_year, start_month, start_day, tzinfo=pytz.utc)
             finish_date = (
@@ -47,7 +45,7 @@ def content(
             )
 
             supply = Supply.get_by_id(sess, supply_id)
-            forecast_date = chellow.computer.forecast_date()
+            fd = forecast_date()
             day_start = start_date
             header_titles = [
                 "MPAN Core",
@@ -71,9 +69,7 @@ def content(
                 else:
                     cont = era.exp_supplier_contract
 
-                for title in chellow.computer.contract_func(
-                    caches, cont, "virtual_bill_titles"
-                )():
+                for title in contract_func(caches, cont, "virtual_bill_titles")():
                     if title not in bill_titles:
                         bill_titles.append(title)
 
@@ -94,11 +90,11 @@ def content(
                     chunk_start = hh_max(era.start_date, day_start)
                     chunk_finish = hh_min(era.finish_date, day_finish)
 
-                    ss = chellow.computer.SupplySource(
+                    ss = SupplySource(
                         sess,
                         chunk_start,
                         chunk_finish,
-                        forecast_date,
+                        fd,
                         era,
                         is_import,
                         caches,
@@ -120,9 +116,7 @@ def content(
                         ss.years_back > 0,
                     ]
 
-                    chellow.computer.contract_func(
-                        caches, ss.supplier_contract, "virtual_bill"
-                    )(ss)
+                    contract_func(caches, ss.supplier_contract, "virtual_bill")(ss)
                     bill = ss.supplier_bill
                     for title in bill_titles:
                         if title in bill:
@@ -144,7 +138,6 @@ def content(
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -159,18 +152,16 @@ def do_get(sess):
     is_import = req_bool("is_import")
     supply_id = req_int("supply_id")
 
-    threading.Thread(
-        target=content,
-        args=(
-            start_year,
-            start_month,
-            start_day,
-            finish_year,
-            finish_month,
-            finish_day,
-            is_import,
-            supply_id,
-            g.user,
-        ),
-    ).start()
+    args = (
+        start_year,
+        start_month,
+        start_day,
+        finish_year,
+        finish_month,
+        finish_day,
+        is_import,
+        supply_id,
+        g.user.id,
+    )
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

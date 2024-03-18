@@ -20,12 +20,14 @@ download_path = None
 SERIAL_DIGITS = 5
 
 
-def startup(instance_path):
+def startup(instance_path, run_deleter=True):
     global file_deleter
     global download_id
     global download_path
-    file_deleter = FileDeleter()
-    file_deleter.start()
+
+    if run_deleter:
+        file_deleter = FileDeleter()
+        file_deleter.start()
 
     download_path = instance_path / "downloads"
     download_path.mkdir(parents=True, exist_ok=True)

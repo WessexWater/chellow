@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -10,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.models import (
     Contract,
     Era,
@@ -33,10 +32,7 @@ def content(user_id, report_run_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            running_name, finished_name = chellow.dloads.make_names(
-                f"{FNAME}.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            f = open_file(f"{FNAME}.csv", user, mode="w", newline="")
             report_run = ReportRun.get_by_id(sess, report_run_id)
 
             _process(sess, f, report_run)
@@ -56,7 +52,6 @@ def content(user_id, report_run_id):
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def _process(sess, f, report_run):
@@ -129,13 +124,7 @@ def _process(sess, f, report_run):
 
 
 def do_get(sess):
-    report_run = ReportRun.insert(
-        sess,
-        FNAME,
-        g.user,
-        FNAME,
-        {},
-    )
+    report_run = ReportRun.insert(sess, FNAME, g.user, FNAME, {})
     sess.commit()
     threading.Thread(target=content, args=(g.user.id, report_run.id)).start()
     return chellow_redirect(f"/report_runs/{report_run.id}", 303)

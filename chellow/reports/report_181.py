@@ -1,5 +1,4 @@
 import csv
-import os
 import threading
 import traceback
 
@@ -10,11 +9,11 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
 import chellow.e.computer
 import chellow.e.duos
 import chellow.e.tnuos
-from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply
+from chellow.dloads import open_file
+from chellow.models import Era, Pc, Session, Site, SiteEra, Source, Supply, User
 from chellow.utils import (
     HH,
     c_months_u,
@@ -144,28 +143,30 @@ def _write_sites(sess, caches, writer, year, site_id):
         sess.rollback()
 
 
-def content(year, site_id, user):
+def content(year, site_id, user_id):
     caches = {}
     f = writer = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names("output.csv", user)
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("output.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             _write_sites(sess, caches, writer, year, site_id)
 
     except BadRequest as e:
         writer.writerow([e.description])
     except BaseException:
-        writer.writerow([traceback.format_exc()])
+        msg = traceback.format_exc()
+        print(msg)
+        if writer is not None:
+            writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
     site_id = req_int("site_id") if "site_id" in request.values else None
     year = req_int("year")
-    threading.Thread(target=content, args=(year, site_id, g.user)).start()
+    threading.Thread(target=content, args=(year, site_id, g.user.id)).start()
     return chellow_redirect("/downloads", 303)

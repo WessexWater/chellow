@@ -1,5 +1,4 @@
 import csv
-import os
 import sys
 import threading
 import traceback
@@ -12,10 +11,10 @@ from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
 
-import chellow.dloads
+from chellow.dloads import open_file
 from chellow.e.computer import contract_func, forecast_date
 from chellow.gas.engine import GDataSource
-from chellow.models import GContract, GEra, Session, Site, SiteGEra
+from chellow.models import GContract, GEra, Session, Site, SiteGEra, User
 from chellow.utils import (
     c_months_u,
     hh_format,
@@ -29,14 +28,13 @@ from chellow.utils import (
 from chellow.views import chellow_redirect
 
 
-def content(start_date, finish_date, g_contract_id, user):
+def content(start_date, finish_date, g_contract_id, user_id):
     report_context = {}
+    f = writer = None
     try:
         with Session() as sess:
-            running_name, finished_name = chellow.dloads.make_names(
-                "gas_virtual_bills.csv", user
-            )
-            f = open(running_name, mode="w", newline="")
+            user = User.get_by_id(sess, user_id)
+            f = open_file("gas_virtual_bills.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
 
             g_contract = GContract.get_by_id(sess, g_contract_id)
@@ -125,11 +123,11 @@ def content(start_date, finish_date, g_contract_id, user):
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
-        writer.writerow([msg])
+        if writer is not None:
+            writer.writerow([msg])
     finally:
         if f is not None:
             f.close()
-            os.rename(running_name, finished_name)
 
 
 def do_get(sess):
@@ -137,7 +135,6 @@ def do_get(sess):
     finish_date = req_date("finish")
     g_contract_id = req_int("g_contract_id")
 
-    threading.Thread(
-        target=content, args=(start_date, finish_date, g_contract_id, g.user)
-    ).start()
+    args = start_date, finish_date, g_contract_id, g.user.id
+    threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)
