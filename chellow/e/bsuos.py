@@ -220,11 +220,13 @@ def _process_url(logger, sess, url, contract, s):
         date_str = row[0].strip()
         len_date_str = len(date_str)
         if len_date_str == 19:
-            date_format = "%Y-%m-%dT%H:%M:%S"
+            sep_char = date_str[13]
+            date_format = f"%Y-%m-%dT%H{sep_char}%M:%S"
         elif len_date_str == 20:
             date_format = "%Y-%m-%d-T%H:%M:%S"
         else:
             date_format = "%d-%m-%y"
+
         date = Datetime.strptime(date_str, date_format)
         period_str = row[1]
         period = int(period_str)
