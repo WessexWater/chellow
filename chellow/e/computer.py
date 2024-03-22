@@ -908,7 +908,7 @@ class SiteSource(DataSource):
                 yield site_ds
 
 
-ACTUAL_READ_TYPES = ["N", "N3", "C", "X", "CP"]
+ACTUAL_READ_TYPES = ["N", "N3", "C", "X", "CP", "F"]
 
 
 class SupplySource(DataSource):
@@ -1182,171 +1182,46 @@ class SupplySource(DataSource):
                                 "tpr": tpr.code,
                             }
 
-            elif self.bill is None and hist_measurement_type in ("nhh", "amr"):
+            elif hist_measurement_type in ("nhh", "amr"):
                 if self.energisation_status_code == "E":
-                    pairs, self.normal_reads = _no_bill_nhh(
-                        sess,
-                        caches,
-                        self.supply,
-                        chunk_start,
-                        chunk_finish,
-                        hist_map,
-                        forecast_date,
-                    )
-                    self.consumption_info += dumps(pairs)
-
-            elif self.bill is not None and hist_measurement_type in ("nhh", "amr"):
-                if self.energisation_status_code == "E":
-                    hhd = {}
-                    for hh_date in hh_range(self.caches, chunk_start, chunk_finish):
-                        hhd[hh_date] = {
-                            "status": "X",
-                            "imp-msp-kvarh": 0,
-                            "imp-msp-kvar": 0,
-                            "exp-msp-kvarh": 0,
-                            "exp-msp-kvar": 0,
-                            "msp-kw": 0,
-                            "msp-kwh": 0,
-                            "hist-kwh": 0,
-                        }
-
-                    tpr_codes = [
-                        t[0]
-                        for t in sess.query(Tpr.code)
-                        .join(MeasurementRequirement)
-                        .filter(MeasurementRequirement.ssc == self.ssc)
-                    ]
-
-                    bills = dict(
-                        (b.id, b)
-                        for b in sess.query(Bill)
-                        .filter(
-                            Bill.supply == self.supply,
-                            Bill.start_date <= chunk_finish,
-                            Bill.finish_date >= chunk_start,
+                    if self.bill is None:
+                        read_types = ACTUAL_READ_TYPES
+                        pairs, self.normal_reads = _no_bill_nhh(
+                            sess,
+                            caches,
+                            self.supply,
+                            chunk_start,
+                            chunk_finish,
+                            hist_map,
+                            forecast_date,
+                            read_types,
                         )
-                        .order_by(Bill.issue_date.desc(), Bill.start_date)
-                    )
-                    while True:
-                        to_del = None
-                        for a, b in combinations(bills.values(), 2):
-                            if all(
-                                (
-                                    a.start_date == b.start_date,
-                                    a.finish_date == b.finish_date,
-                                    a.net == -1 * b.net,
-                                    a.vat == -1 * b.vat,
-                                    a.gross == -1 * b.gross,
-                                )
-                            ):
-                                to_del = (a.id, b.id)
-                                break
-                        if to_del is None:
-                            break
-                        else:
-                            for k in to_del:
-                                del bills[k]
+                        self.consumption_info += dumps(pairs)
+                    elif self.bill is not None and self.bill.kwh is None:
+                        read_types = ACTUAL_READ_TYPES + "E"
+                        pairs, self.normal_reads = _no_bill_nhh(
+                            sess,
+                            caches,
+                            self.supply,
+                            chunk_start,
+                            chunk_finish,
+                            hist_map,
+                            forecast_date,
+                            read_types,
+                        )
+                        self.consumption_info += dumps(pairs)
+                    else:
+                        self.consumption_info += _bill_nhh(
+                            sess,
+                            caches,
+                            chunk_start,
+                            chunk_finish,
+                            self.ssc,
+                            self.supply,
+                            self._add_problem,
+                            hist_map,
+                        )
 
-                    prev_type_alias = aliased(ReadType)
-                    pres_type_alias = aliased(ReadType)
-                    for bill in bills.values():
-                        kws = defaultdict(int)
-                        for (
-                            coefficient,
-                            previous_date,
-                            previous_value,
-                            previous_type,
-                            present_date,
-                            present_value,
-                            present_type,
-                            tpr_code,
-                        ) in (
-                            sess.query(
-                                cast(RegisterRead.coefficient, Float),
-                                RegisterRead.previous_date,
-                                cast(RegisterRead.previous_value, Float),
-                                prev_type_alias.code,
-                                RegisterRead.present_date,
-                                cast(RegisterRead.present_value, Float),
-                                pres_type_alias.code,
-                                Tpr.code,
-                            )
-                            .join(Tpr)
-                            .join(
-                                prev_type_alias,
-                                RegisterRead.previous_type_id == prev_type_alias.id,
-                            )
-                            .join(
-                                pres_type_alias,
-                                RegisterRead.present_type_id == pres_type_alias.id,
-                            )
-                            .filter(RegisterRead.bill == bill, RegisterRead.units == 0)
-                            .order_by(RegisterRead.present_date)
-                        ):
-                            if tpr_code not in tpr_codes:
-                                self._add_problem(
-                                    f"The TPR {tpr_code} from the register read does "
-                                    f"not match any of the TPRs "
-                                    f"({', '.join(tpr_codes)}) associated with the "
-                                    f"MPAN."
-                                )
-
-                            if present_date > bill.finish_date:
-                                self._add_problem(
-                                    "There's a read after the end of the bill!"
-                                )
-                            advance = present_value - previous_value
-                            if advance < 0:
-                                self._add_problem("Clocked?")
-                                digits = int(log10(previous_value)) + 1
-                                advance = 10**digits - previous_value + present_value
-
-                            kwh = advance * coefficient
-                            self.consumption_info += (
-                                f"dumb nhh kwh for {tpr_code} from "
-                                f"{hh_format(chunk_start)} to "
-                                f"{hh_format(chunk_finish)} is {kwh}\n"
-                            )
-
-                            kws[tpr_code] += kwh
-
-                        for tpr_code, kwh in kws.items():
-                            if (
-                                present_type in ACTUAL_READ_TYPES
-                                and previous_type in ACTUAL_READ_TYPES
-                            ):
-                                status = "A"
-                            else:
-                                status = "E"
-
-                            hh_part = {}
-                            for hh_date in hh_range(
-                                self.caches, bill.start_date, bill.finish_date
-                            ):
-                                if is_tpr(sess, self.caches, tpr_code, hh_date):
-                                    hh_part[hh_date] = {"status": status}
-
-                            num_hh = len(hh_part)
-                            if num_hh > 0:
-                                rate = kwh / num_hh
-                                for d, h in hh_part.items():
-                                    if chunk_start <= d <= chunk_finish:
-                                        hhd_datum = hhd[d]
-                                        hhd_datum["msp-kw"] += rate * 2
-                                        hhd_datum["msp-kwh"] += rate
-                                        hhd_datum["hist-kwh"] += rate
-                                        hhd_datum["tpr"] = tpr_code
-                                        if hhd_datum["status"] in ("X", "A"):
-                                            hhd_datum["status"] = h["status"]
-                            elif kwh > 0:
-                                self._add_problem(
-                                    f"For the TPR code {tpr_code} the bill says "
-                                    f"that there are {kwh} kWh, but the time of "
-                                    f"the TPR doesn't cover the time between the "
-                                    f"register reads."
-                                )
-
-                    hist_map.update(hhd)
             elif hist_measurement_type == "hh":
                 full_channels, hhd = _init_hh_data(
                     sess, caches, hist_era, chunk_start, chunk_finish, is_import
@@ -1721,6 +1596,156 @@ def _make_reads(forwards, prev_reads, pres_reads):
             else:
                 yield pres_read
                 pres_read = next(pres_reads, None)
+
+
+def _bill_nhh(
+    sess, caches, chunk_start, chunk_finish, ssc, supply, _add_problem, hist_map
+):
+    hhd = {}
+    consumption_info = ""
+    for hh_date in hh_range(caches, chunk_start, chunk_finish):
+        hhd[hh_date] = {
+            "status": "X",
+            "imp-msp-kvarh": 0,
+            "imp-msp-kvar": 0,
+            "exp-msp-kvarh": 0,
+            "exp-msp-kvar": 0,
+            "msp-kw": 0,
+            "msp-kwh": 0,
+            "hist-kwh": 0,
+        }
+
+    tpr_codes = [
+        t[0]
+        for t in sess.query(Tpr.code)
+        .join(MeasurementRequirement)
+        .filter(MeasurementRequirement.ssc == ssc)
+    ]
+
+    bills = dict(
+        (b.id, b)
+        for b in sess.query(Bill)
+        .filter(
+            Bill.supply == supply,
+            Bill.start_date <= chunk_finish,
+            Bill.finish_date >= chunk_start,
+        )
+        .order_by(Bill.issue_date.desc(), Bill.start_date)
+    )
+    while True:
+        to_del = None
+        for a, b in combinations(bills.values(), 2):
+            if all(
+                (
+                    a.start_date == b.start_date,
+                    a.finish_date == b.finish_date,
+                    a.net == -1 * b.net,
+                    a.vat == -1 * b.vat,
+                    a.gross == -1 * b.gross,
+                )
+            ):
+                to_del = (a.id, b.id)
+                break
+        if to_del is None:
+            break
+        else:
+            for k in to_del:
+                del bills[k]
+
+    prev_type_alias = aliased(ReadType)
+    pres_type_alias = aliased(ReadType)
+    for bill in bills.values():
+        kws = defaultdict(int)
+        for (
+            coefficient,
+            previous_date,
+            previous_value,
+            previous_type,
+            present_date,
+            present_value,
+            present_type,
+            tpr_code,
+        ) in (
+            sess.query(
+                cast(RegisterRead.coefficient, Float),
+                RegisterRead.previous_date,
+                cast(RegisterRead.previous_value, Float),
+                prev_type_alias.code,
+                RegisterRead.present_date,
+                cast(RegisterRead.present_value, Float),
+                pres_type_alias.code,
+                Tpr.code,
+            )
+            .join(Tpr)
+            .join(
+                prev_type_alias,
+                RegisterRead.previous_type_id == prev_type_alias.id,
+            )
+            .join(
+                pres_type_alias,
+                RegisterRead.present_type_id == pres_type_alias.id,
+            )
+            .filter(RegisterRead.bill == bill, RegisterRead.units == 0)
+            .order_by(RegisterRead.present_date)
+        ):
+            if tpr_code not in tpr_codes:
+                _add_problem(
+                    f"The TPR {tpr_code} from the register read does "
+                    f"not match any of the TPRs "
+                    f"({', '.join(tpr_codes)}) associated with the "
+                    f"MPAN."
+                )
+
+            if present_date > bill.finish_date:
+                _add_problem("There's a read after the end of the bill!")
+            advance = present_value - previous_value
+            if advance < 0:
+                _add_problem("Clocked?")
+                digits = int(log10(previous_value)) + 1
+                advance = 10**digits - previous_value + present_value
+
+            kwh = advance * coefficient
+            consumption_info += (
+                f"dumb nhh kwh for {tpr_code} from "
+                f"{hh_format(chunk_start)} to "
+                f"{hh_format(chunk_finish)} is {kwh}\n"
+            )
+
+            kws[tpr_code] += kwh
+
+        for tpr_code, kwh in kws.items():
+            if present_type in ACTUAL_READ_TYPES and previous_type in ACTUAL_READ_TYPES:
+                status = "A"
+            else:
+                status = "E"
+
+            hh_part = {}
+            for hh_date in hh_range(caches, bill.start_date, bill.finish_date):
+                if is_tpr(sess, caches, tpr_code, hh_date):
+                    hh_part[hh_date] = {"status": status}
+
+            num_hh = len(hh_part)
+            if num_hh > 0:
+                rate = kwh / num_hh
+                for d, h in hh_part.items():
+                    if chunk_start <= d <= chunk_finish:
+                        hhd_datum = hhd[d]
+                        hhd_datum["msp-kw"] += rate * 2
+                        hhd_datum["msp-kwh"] += rate
+                        hhd_datum["hist-kwh"] += rate
+                        hhd_datum["tpr"] = tpr_code
+                        if hhd_datum["status"] in ("X", "A"):
+                            hhd_datum["status"] = h["status"]
+            elif kwh > 0:
+                _add_problem(
+                    f"For the TPR code {tpr_code} the bill says "
+                    f"that there are {kwh} kWh, but the time of "
+                    f"the TPR doesn't cover the time between the "
+                    f"register reads."
+                )
+
+    hist_map.update(hhd)
+    return consumption_info
 
 
 def _init_hh_data(sess, caches, hist_era, chunk_start, chunk_finish, is_import):
