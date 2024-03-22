@@ -1037,6 +1037,7 @@ def content(
                 data_source_bill = Object()
                 data_source_bill.start_date = month_start
                 data_source_bill.finish_date = month_finish
+                data_source_bill.kwh = None
 
                 for site in sites:
                     if by_hh:
