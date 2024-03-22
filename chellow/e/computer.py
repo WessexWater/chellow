@@ -1449,7 +1449,7 @@ def _set_status(hhs, read_list, forecast_date):
         v["status"] = "E" if k > last_read_date else "A"
 
 
-def _read_generator(sess, supply, start, is_forwards, is_prev):
+def _read_generator(sess, supply, start, is_forwards, is_prev, read_types):
     if is_prev:
         r_typ = RegisterRead.previous_type
         r_dt = RegisterRead.previous_date
@@ -1466,7 +1466,7 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
         .join(r_typ)
         .filter(
             RegisterRead.units == 0,
-            ReadType.code.in_(ACTUAL_READ_TYPES),
+            ReadType.code.in_(read_types),
             Bill.supply == supply,
             BillType.code != "W",
         )
@@ -1542,15 +1542,21 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
         }
 
 
-def _no_bill_nhh(sess, caches, supply, start, finish, hist_map, forecast_date):
+def _no_bill_nhh(
+    sess, caches, supply, start, finish, hist_map, forecast_date, read_types
+):
     read_list = []
     pairs = []
     read_keys = set()
     normal_reads = set()
 
     for is_forwards in (False, True):
-        prev_reads = iter(_read_generator(sess, supply, start, is_forwards, True))
-        pres_reads = iter(_read_generator(sess, supply, start, is_forwards, False))
+        prev_reads = iter(
+            _read_generator(sess, supply, start, is_forwards, True, read_types)
+        )
+        pres_reads = iter(
+            _read_generator(sess, supply, start, is_forwards, False, read_types)
+        )
         if is_forwards:
             read_list.reverse()
 
