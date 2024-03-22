@@ -413,7 +413,7 @@ def make_calcs(
                 report_context,
                 era_maps=era_maps,
                 deltas=sup_deltas,
-                bill=data_source_bill if era.pc.code == "00" else None,
+                bill=data_source_bill,
             )
             imp_supplier_contract = imp_ss.supplier_contract
             if imp_supplier_contract is not None:
@@ -454,7 +454,7 @@ def make_calcs(
                 report_context,
                 era_maps=era_maps,
                 deltas=sup_deltas,
-                bill=data_source_bill if era.pc.code == "00" else None,
+                bill=data_source_bill,
             )
             measurement_type = exp_ss.measurement_type
             exp_supplier_contract = exp_ss.supplier_contract
