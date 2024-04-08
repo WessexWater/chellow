@@ -510,6 +510,17 @@ class Cop(Base, PersistentClass):
             raise BadRequest(f"The CoP with code {code} can't be found.")
         return typ
 
+    @staticmethod
+    def get_valid(sess, meter_type):
+
+        if meter_type.code == "C5":
+            q = select(Cop).where(Cop.code.in_(["1", "2", "3", "4", "5"]))
+        elif meter_type.code in ["6A", "6B", "6C", "6D"]:
+            q = select(Cop).where(Cop.code == meter_type.code.lower())
+        else:
+            q = select(Cop)
+        return sess.scalars(q.order_by(Cop.code))
+
     __tablename__ = "cop"
     id = Column(Integer, primary_key=True)
     code = Column(String, unique=True, nullable=False)
@@ -3700,12 +3711,9 @@ class Era(Base, PersistentClass):
                             f"{hh_format(finish_date)}."
                         )
 
-        if (
-            self.mtc_participant.meter_type.code == "C5"
-            and cop.code not in ["1", "2", "3", "4", "5"]
-            or self.mtc_participant.meter_type.code in ["6A", "6B", "6C", "6D"]
-            and cop.code.upper() != self.mtc_participant.meter_type.code
-        ):
+        if cop.code not in [
+            c.code for c in Cop.get_valid(sess, self.mtc_participant.meter_type)
+        ]:
             raise BadRequest(
                 f"The CoP of {cop.code} is not compatible with the meter type code "
                 f"of {self.mtc_participant.meter_type.code}."

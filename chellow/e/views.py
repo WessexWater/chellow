@@ -1569,7 +1569,6 @@ def era_edit_form_get(era_id):
     try:
         era = Era.get_by_id(g.sess, era_id)
         ct_now = ct_datetime_now()
-        cops = g.sess.scalars(select(Cop).order_by(Cop.code))
         comms = g.sess.scalars(select(Comm).order_by(Comm.code))
         energisation_statuses = g.sess.scalars(
             select(EnergisationStatus).order_by(EnergisationStatus.code)
@@ -1780,6 +1779,11 @@ def era_edit_form_get(era_id):
             mtc_participant = mtc_participants[0]
         else:
             mtc_participant = None
+
+        if mtc_participant is None:
+            cops = g.sess.scalars(select(Cop).order_by(Cop.code))
+        else:
+            cops = Cop.get_valid(g.sess, mtc_participant.meter_type)
 
         if pc.code == "00":
             imp_llfcs_q = (
