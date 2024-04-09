@@ -6817,9 +6817,9 @@ def db_init(sess, root_path):
         GContract.insert_industry(sess, name, "", props, last_month_start, None, rs)
 
     sess.execute(
-        text(f"alter database {db_name} set default_transaction_deferrable = on")
+        text(f'alter database "{db_name}" set default_transaction_deferrable = on')
     )
-    sess.execute(text(f"alter database {db_name} SET DateStyle TO 'ISO, YMD'"))
+    sess.execute(text(f"""alter database "{db_name}" SET DateStyle TO 'ISO, YMD'"""))
     sess.commit()
     sess.close()
     engine.dispose()
