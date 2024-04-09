@@ -120,13 +120,6 @@ class Elexon(threading.Thread):
                 with Session() as sess:
                     try:
                         config = Contract.get_non_core_by_name(sess, "configuration")
-                        props = config.make_properties()
-                        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
-                        if scripting_key is None:
-                            raise BadRequest(
-                                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} "
-                                f"cannot be found in the configuration properties."
-                            )
                         state = config.make_state()
                         try:
                             elexon_state = state[ELEXON_STATE_KEY]
@@ -135,7 +128,14 @@ class Elexon(threading.Thread):
 
                         elexon_state[LAST_RUN_KEY] = utc_datetime_now()
                         config.update_state(state)
+                        props = config.make_properties()
+                        scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
                         sess.commit()
+                        if scripting_key is None:
+                            raise BadRequest(
+                                f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} "
+                                f"cannot be found in the configuration properties."
+                            )
                         run_import(sess, self.log, self.set_progress, scripting_key)
                     except BaseException as e:
                         msg = f"{e.description} " if isinstance(e, BadRequest) else ""
