@@ -219,7 +219,9 @@ def _process_url(logger, sess, url, contract, s):
     for row in reader:
         date_str = row[0].strip()
         len_date_str = len(date_str)
-        if len_date_str == 19:
+        if len_date_str == 0:
+            continue
+        elif len_date_str == 19:
             sep_char = date_str[13]
             date_format = f"%Y-%m-%dT%H{sep_char}%M:%S"
         elif len_date_str == 20:
