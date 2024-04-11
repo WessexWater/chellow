@@ -42,57 +42,9 @@
 				{{input_textarea(
 					'charge_script', dc_contract.charge_script, 40, 80)}}
 
-				<label>Properties</label>
-				{{ input_textarea(
-					'properties', dc_contract.properties, 40, 80) }}
-
 				<input type="submit" value="Update">
 			</fieldset>
 		</form>
-
-		<h4>Example</h4>
-
-		<p>For the SFTP protocol:</p>
-		<code>
-			<pre>
-{
-  "enabled": true,
-	"protocol": "sftp",
-	"file_type": ".df2",
-	"hostname": "example.com",
-	"username": "username",
-	"password": "password",
-	"directories": ["downloads1", "downloads2"]
-	"mpan_map": {  \\ Optional
-	  "99 0993 2821 985": null,  \\ Ignore MPAN
-	},
-}
-			</pre>
-		</code>
-		<p>For the HTTPS protocol:</p>
-		<code>
-			<pre>
-				{% raw %}
-{
-  "enabled": true,
-  "protocol": "https",
-  "download_days": 8,
-  "parser": "meniscus",
-  "url_template": "https://data.example.com/?from={{chunk_start.strftime('%d/%m/%Y')}}&amp;to={{chunk_finish.strftime('%d/%m/%Y')}}",
-  "url_values": {
-    "99 4298 4729 917": {
-      "name1": val1,
-      "name2": val2,
-    }
-  }
-	"mpan_map": {  \\ Optional
-	  "99 0993 2821 985": null,  \\ Ignore MPAN
-	},
-}
-
-				{% endraw %}
-			</pre>
-		</code>
 
 		<form action="/e/dc_contracts/{{dc_contract.id}}/edit" method="post">
 			<fieldset>

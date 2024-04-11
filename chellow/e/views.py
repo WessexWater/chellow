@@ -105,7 +105,11 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect as credirect, hx_redirect as chx_redirect
+from chellow.views import (
+    chellow_redirect as credirect,
+    hx_redirect as chx_redirect,
+    requires_editor,
+)
 
 
 def chellow_redirect(path, code=None):
@@ -1075,6 +1079,29 @@ def dc_contract_get(dc_contract_id):
             )
 
 
+@e.route("/dc_contracts/<int:dc_contract_id>/properties")
+@requires_editor
+def dc_contract_properties_get(dc_contract_id):
+    contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+    return render_template("dc_contract_properties.html", dc_contract=contract)
+
+
+@e.route("/dc_contracts/<int:dc_contract_id>/properties/edit")
+@requires_editor
+def dc_contract_properties_edit_get(dc_contract_id):
+    dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+    return render_template("dc_contract_properties_edit.html", dc_contract=dc_contract)
+
+
+@e.route("/dc_contracts/<int:contract_id>/properties/edit", methods=["POST"])
+def dc_contract_properties_edit_post(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    properties = req_zish("properties")
+    contract.update(contract.name, contract.party, contract.charge_script, properties)
+    g.sess.commit()
+    return chellow_redirect(f"/dc_contracts/{contract.id}/properties", 303)
+
+
 @e.route("/dc_contracts/<int:dc_contract_id>/edit")
 def dc_contract_edit_get(dc_contract_id):
     parties = (
@@ -1127,9 +1154,8 @@ def dc_contract_edit_post(contract_id):
             party_id = req_int("party_id")
             name = req_str("name")
             charge_script = req_str("charge_script")
-            properties = req_zish("properties")
             party = Party.get_by_id(g.sess, party_id)
-            contract.update(name, party, charge_script, properties)
+            contract.update(name, party, charge_script, contract.properties)
             g.sess.commit()
             return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
     except BadRequest as e:

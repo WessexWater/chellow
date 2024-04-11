@@ -11,6 +11,7 @@ import types
 from collections import OrderedDict
 from datetime import datetime as Datetime
 from decimal import Decimal
+from functools import wraps
 from importlib import import_module
 from io import DEFAULT_BUFFER_SIZE, StringIO
 from itertools import chain, islice
@@ -52,7 +53,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.attributes import flag_modified
 
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import BadRequest, Forbidden
 
 import chellow.bank_holidays
 import chellow.dloads
@@ -145,6 +146,17 @@ def hx_redirect(path, status=None):
     res = Response(status=status)
     res.headers["HX-Redirect"] = chellow.utils.url_root + path
     return res
+
+
+def requires_editor(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user.user_role.code == "editor":
+            return f(*args, **kwargs)
+        else:
+            raise Forbidden("You must be an editor to do this.")
+
+    return decorated_function
 
 
 @home.route("/configuration", methods=["GET"])

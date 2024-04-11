@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{dc_contract.name}} &raquo; Properties
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/e/dc_contracts/{{dc_contract.id}}">dc_contract.name</a> &raquo;
+	Properties [<a href="/e/dc_contracts/{{dc_contract.id}}/properties/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+
+	<pre>{{dc_contract.properties }}</pre>
+
+{% endblock %}
