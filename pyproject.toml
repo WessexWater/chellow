@@ -27,7 +27,7 @@ dependencies = [
 	"waitress==2.1.2",
 	"pep3143daemon==0.0.6",
 	"pip>=9.0.1",
-	"pysftp==0.2.9",
+	"paramiko==3.4.0",
 	"pympler==1.0.1",
 	"psutil==5.9.5",
 	"xlrd==2.0.1",

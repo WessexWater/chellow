@@ -18,7 +18,7 @@
 			<legend>Update Properties</legend>
 
 			<label>Properties</label>
-			{{ input_textarea('properties', dc_contract.properties, 40, 80) }}
+			{{ input_textarea('properties', dc_contract.properties, 40, 80, show_pos=True) }}
 
 			<input type="submit" value="Update">
 		</fieldset>
@@ -35,10 +35,11 @@
   "file_type": ".df2",
   "hostname": "example.com",
   "username": "username",
-  "password": "password",
-  "directories": ["downloads1", "downloads2"]
-  "mpan_map": {  \\ Optional
-    "99 0993 2821 985": null,  \\ Ignore MPAN
+  "password": "password", /* Remove if using private key */
+  "private_key": "private_key", /* Remove if using password */
+  "directories": ["downloads1", "downloads2"],
+  "mpan_map": {  /* Optional */
+    "99 0993 2821 985": null,  /* Ignore MPAN */
   },
 }
 		</pre>

@@ -1093,13 +1093,28 @@ def dc_contract_properties_edit_get(dc_contract_id):
     return render_template("dc_contract_properties_edit.html", dc_contract=dc_contract)
 
 
-@e.route("/dc_contracts/<int:contract_id>/properties/edit", methods=["POST"])
-def dc_contract_properties_edit_post(contract_id):
-    contract = Contract.get_dc_by_id(g.sess, contract_id)
-    properties = req_zish("properties")
-    contract.update(contract.name, contract.party, contract.charge_script, properties)
-    g.sess.commit()
-    return chellow_redirect(f"/dc_contracts/{contract.id}/properties", 303)
+@e.route("/dc_contracts/<int:dc_contract_id>/properties/edit", methods=["POST"])
+def dc_contract_properties_edit_post(dc_contract_id):
+    dc_contract = None
+    try:
+        dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+        properties = req_zish("properties")
+        dc_contract.update(
+            dc_contract.name, dc_contract.party, dc_contract.charge_script, properties
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/dc_contracts/{dc_contract.id}/properties", 303)
+    except BadRequest as e:
+        flash(e.description)
+        if dc_contract is None:
+            raise e
+        else:
+            return make_response(
+                render_template(
+                    "dc_contract_properties_edit.html", dc_contract=dc_contract
+                ),
+                400,
+            )
 
 
 @e.route("/dc_contracts/<int:dc_contract_id>/edit")

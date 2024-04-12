@@ -8,13 +8,13 @@ import traceback
 from collections import defaultdict, deque
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal
-from io import TextIOWrapper
+from io import StringIO, TextIOWrapper
+from pathlib import Path
 
 import jinja2
 
-import paramiko
+from paramiko import AutoAddPolicy, RSAKey, SFTPError, SSHClient
 
-import pysftp
 
 import requests
 
@@ -174,7 +174,7 @@ class HhImportTask(threading.Thread):
             self.log(f"Problem {e}")
             sess.rollback()
             self.is_error = True
-        except Exception:
+        except BaseException:
             self.log(f"Unknown Exception {traceback.format_exc()}")
             sess.rollback()
             self.is_error = True
@@ -231,19 +231,19 @@ class HhImportTask(threading.Thread):
         fl = None
 
         for directory in directories:
-            self.log("Checking the directory '" + directory + "'.")
+            self.log(f"Checking the directory '{directory}'.")
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
                 last_import_key = last_import_keys[directory] = ""
 
             dir_path = home_path + "/" + directory
-            ftp.cwd(dir_path)
+            ftp.chdir(dir_path)
             files = []
-            for fname in ftp.nlst():
+            for fname in ftp.listdir():
                 fpath = dir_path + "/" + fname
                 try:
-                    ftp.cwd(fpath)
+                    ftp.chdir(fpath)
                     continue  # directory
                 except ftplib.error_perm:
                     pass
@@ -266,7 +266,7 @@ class HhImportTask(threading.Thread):
             key, fpath = fl
             self.log(f"Attempting to download {fpath} with key {key}.")
             f = tempfile.TemporaryFile()
-            ftp.retrbinary("RETR " + fpath, f.write)
+            ftp.retrbinary(f"RETR {fpath}", f.write)
             self.log("File downloaded successfully.")
             ftp.quit()
             self.log("Logged out.")
@@ -290,25 +290,30 @@ class HhImportTask(threading.Thread):
             contract = Contract.get_dc_by_id(sess, self.contract_id)
             contract.update_state(state)
             sess.commit()
-            self.log("Finished loading '" + fpath)
+            self.log(f"Finished loading '{fpath}'")
             return True
 
     def sftp_handler(self, sess, properties, contract):
-        host_name = properties["hostname"]
-        user_name = properties["username"]
-        password = properties["password"]
-        try:
-            port = properties["port"]
-        except KeyError:
-            port = None
+        hostname = properties["hostname"]
+        username = properties["username"]
+        password = properties.get("password")
+        private_key = properties.get("private_key")
+        pkey = None
+        if private_key is not None:
+            pkf = StringIO.StringIO(private_key)
+            pkf.seek(0)
+            pkey = RSAKey.from_private_key(pkf)
+
+        port = properties.get("port", 22)
         file_type = properties["file_type"]
         directories = properties["directories"]
+        known_hosts = properties["known_hosts"].strip()
         state = contract.make_state()
 
         try:
             last_import_keys = state["last_import_keys"]
         except KeyError:
-            last_import_keys = state["last_import_keys"] = []
+            last_import_keys = state["last_import_keys"] = {}
 
         ct_now = ct_datetime_now()
         try:
@@ -323,36 +328,60 @@ class HhImportTask(threading.Thread):
             latest_imports = state["latest_imports"] = []
 
         sess.rollback()
-        self.log(f"Connecting to sftp server at {host_name}:{port}.")
-        cnopts = pysftp.CnOpts()
-        cnopts.hostkeys = None
-        ftp = pysftp.Connection(
-            host_name, username=user_name, password=password, cnopts=cnopts
+        self.log(f"Connecting to sftp server at {hostname}:{port}.")
+
+        client = SSHClient()
+        client.set_missing_host_key_policy(AutoAddPolicy)
+
+        client.connect(
+            hostname,
+            port=port,
+            username=username,
+            password=password,
+            pkey=pkey,
+            key_filename=None,
+            timeout=120,
+            banner_timeout=120,
+            auth_timeout=120,
+            channel_timeout=120,
+            look_for_keys=False,
         )
-        ftp.timeout = 120
-        home_path = ftp.pwd
+        host_keys = client.get_host_keys()
+        with tempfile.TemporaryDirectory() as tempdir:
+            td = Path(tempdir)
+            hfname = td / "hosts"
+            host_keys.save(hfname)
+            with hfname.open() as hf:
+                host_keys_str = hf.read().strip()
+
+        if host_keys_str != known_hosts:
+            raise BadRequest(
+                f"The returned host keys {host_keys_str} don't match the known "
+                f"hosts {known_hosts} property"
+            )
+
+        ftp = client.open_sftp()
 
         f = None
 
         for directory in directories:
-            self.log("Checking the directory '" + directory + "'.")
+            self.log(f"Checking the directory '{directory}'.")
             try:
                 last_import_key = last_import_keys[directory]
             except KeyError:
                 last_import_key = last_import_keys[directory] = ""
 
-            dir_path = home_path + "/" + directory
-            ftp.cwd(dir_path)
+            ftp.chdir(directory)
             files = []
             for attr in ftp.listdir_attr():
-                fpath = dir_path + "/" + attr.filename
+                fpath = f"{directory}/{attr.filename}"
                 try:
-                    ftp.cwd(fpath)
+                    ftp.chdir(fpath)
                     continue  # directory
-                except paramiko.SFTPError:
+                except SFTPError:
                     pass
 
-                key = str(attr.st_mtime) + "_" + attr.filename
+                key = f"{attr.st_mtime}_{attr.filename}"
                 if key > last_import_key:
                     files.append((key, fpath))
 
@@ -364,6 +393,7 @@ class HhImportTask(threading.Thread):
         if f is None:
             self.log("No new files found.")
             ftp.close()
+            client.close()
             self.log("Logged out.")
             return False
         else:
