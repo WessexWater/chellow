@@ -300,7 +300,7 @@ class HhImportTask(threading.Thread):
         private_key = properties.get("private_key")
         pkey = None
         if private_key is not None:
-            pkf = StringIO.StringIO(private_key)
+            pkf = StringIO(private_key)
             pkf.seek(0)
             pkey = RSAKey.from_private_key(pkf)
 
