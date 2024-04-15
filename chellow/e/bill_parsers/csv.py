@@ -6,6 +6,8 @@ from dateutil.relativedelta import relativedelta
 
 from werkzeug.exceptions import BadRequest
 
+from zish import ZishLocationException
+
 from chellow.utils import (
     HH,
     ct_datetime_parse,
@@ -44,7 +46,7 @@ class Parser:
         raw_bills = []
         next(iter(self.reader))  # skip title row
         blank_set = set(("",))
-        for self.line_number, self.vals in enumerate(self.reader, start=1):
+        for self.line_number, self.vals in enumerate(self.reader, start=2):
             try:
                 # skip blank lines
                 if len(self.vals) == 0 or set(self.vals) == blank_set:
@@ -72,7 +74,7 @@ class Parser:
                     else:
                         try:
                             breakdown = loads(breakdown_str)
-                        except SyntaxError as e:
+                        except ZishLocationException as e:
                             raise BadRequest(str(e))
                 else:
                     raise BadRequest("There isn't a 'breakdown' field on the end.")
@@ -117,7 +119,9 @@ class Parser:
                 }
                 raw_bills.append(raw_bill)
             except BadRequest as e:
-                raise BadRequest(f"Problem at line {self.line_number}: {e.description}")
+                raise BadRequest(
+                    f"Problem at line {self.line_number} {self.vals}: {e.description}"
+                )
 
         return raw_bills
 
