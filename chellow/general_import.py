@@ -1247,20 +1247,26 @@ def general_import_supply(sess, action, vals, args):
         dc_account = add_arg(args, "DC Account", vals, 10)
         msn = add_arg(args, "Meter Serial Number", vals, 11)
         dno_code = add_arg(args, "DNO Code", vals, 12)
-        dno = Party.get_dno_by_code(sess, dno_code)
+        dno = Party.get_dno_by_code(sess, dno_code, start_date)
         pc_code = add_arg(args, "Profile Class", vals, 13)
         pc = Pc.get_by_code(sess, parse_pc_code(pc_code))
         mtc_code = add_arg(args, "Meter Timeswitch Class", vals, 14)
         cop_code = add_arg(args, "CoP", vals, 15)
         cop = Cop.get_by_code(sess, cop_code)
-        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 16)
+        comm_code = add_arg(args, "Comms Type", vals, 16)
+        comm = Comm.get_by_code(sess, comm_code)
+        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 17)
         ssc = Ssc.get_by_code(sess, ssc_code) if len(ssc_code) > 0 else None
-        properties_str = add_arg(args, "Properties", vals, 17)
+        energisation_status_code = add_arg(args, "Energisation Status", vals, 18)
+        energisation_status = EnergisationStatus.get_by_code(
+            sess, energisation_status_code
+        )
+        properties_str = add_arg(args, "Properties", vals, 19)
         try:
             properties = loads(properties_str)
         except ZishException as e:
-            raise BadRequest("Can't parse the properties field. " + str(e))
-        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 18)
+            raise BadRequest(f"Can't parse the properties field. {e}")
+        imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 20)
         if len(imp_mpan_core) == 0:
             imp_mpan_core = None
         else:
@@ -1272,55 +1278,48 @@ def general_import_supply(sess, action, vals, args):
             imp_supplier_account = None
             imp_sc = None
         else:
-            imp_llfc_code = add_arg(args, "Import LLFC", vals, 19)
-            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 20)
+            imp_llfc_code = add_arg(args, "Import LLFC", vals, 21)
+            imp_sc_str = add_arg(args, "Import Agreed Supply Capacity", vals, 22)
             try:
                 imp_sc = int(imp_sc_str)
             except ValueError as e:
-                raise BadRequest(
-                    "The import supply capacity must be an integer." + str(e)
-                )
+                raise BadRequest(f"The import supply capacity must be an integer. {e}")
 
             imp_supplier_contract_name = add_arg(
-                args, "Import Supplier Contract", vals, 21
+                args, "Import Supplier Contract", vals, 23
             )
-            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 22)
+            imp_supplier_account = add_arg(args, "Import Supplier Account", vals, 24)
             imp_supplier_contract = Contract.get_supplier_by_name(
                 sess, imp_supplier_contract_name
             )
 
-        exp_supplier_contract = None
-        exp_sc = None
-        exp_llfc_code = None
-        exp_mpan_core = None
+        exp_supplier_contract = exp_sc = exp_llfc_code = exp_mpan_core = None
         exp_supplier_account = None
-        if len(vals) > 22:
-            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 23)
+        if len(vals) > 25:
+            exp_mpan_core = add_arg(args, "Export MPAN Core", vals, 25)
             if len(exp_mpan_core) == 0:
                 exp_mpan_core = None
             else:
                 exp_mpan_core = parse_mpan_core(exp_mpan_core)
 
             if exp_mpan_core is not None:
-                exp_llfc_code = add_arg(args, "Export LLFC", vals, 24)
-                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 25)
+                exp_llfc_code = add_arg(args, "Export LLFC", vals, 26)
+                exp_sc_str = add_arg(args, "Export Agreed Supply Capacity", vals, 27)
                 try:
                     exp_sc = int(exp_sc_str)
                 except ValueError as e:
                     raise BadRequest(
-                        "The export agreed supply capacity "
-                        + "must be an integer."
-                        + str(e)
+                        f"The export agreed supply capacity must be an integer. {e}"
                     )
 
                 exp_supplier_contract_name = add_arg(
-                    args, "Export Supplier Contract", vals, 26
+                    args, "Export Supplier Contract", vals, 28
                 )
                 exp_supplier_contract = Contract.get_supplier_by_name(
                     sess, exp_supplier_contract_name
                 )
                 exp_supplier_account = add_arg(
-                    args, "Export Supplier Account", vals, 27
+                    args, "Export Supplier Account", vals, 29
                 )
 
         supply = site.insert_e_supply(
@@ -1340,7 +1339,9 @@ def general_import_supply(sess, action, vals, args):
             pc,
             mtc_code,
             cop,
+            comm,
             ssc,
+            energisation_status,
             properties,
             imp_mpan_core,
             imp_llfc_code,

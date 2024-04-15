@@ -682,3 +682,101 @@ def test_general_import_llfc_update_valid_to_no_change(sess):
     ]
     args = []
     chellow.general_import.general_import_llfc(sess, action, vals, args)
+
+
+def test_general_import_supply_insert(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site_code = "CI017"
+    Site.insert(sess, site_code, "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract_name = "Fusion"
+    Contract.insert_mop(sess, mop_contract_name, participant, "", {}, vf, None, {})
+    dc_contract_name = "Fusion DC 2000"
+    Contract.insert_dc(sess, dc_contract_name, participant, "", {}, vf, None, {})
+    Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop_code = "5"
+    Cop.get_by_code(sess, cop_code)
+    insert_comms(sess)
+    comm_code = "GSM"
+    Comm.get_by_code(sess, comm_code)
+    supplier_contract_name = "Fusion 2000"
+    Contract.insert_supplier(
+        sess, supplier_contract_name, participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc_code = "845"
+    mtc = Mtc.insert(sess, mtc_code, False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc_code = "521"
+    llfc = dno.insert_llfc(sess, llfc_code, "Imp", voltage_level, False, True, vf, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source_code = "net"
+    Source.get_by_code(sess, source_code)
+    insert_energisation_statuses(sess)
+    energisation_status_code = "E"
+    EnergisationStatus.get_by_code(sess, energisation_status_code)
+    gsp_group_code = "_L"
+    GspGroup.insert(sess, gsp_group_code, "South Western")
+    supply_name = "Bob"
+    start_date = vf
+    msn = "khgsa;kh"
+
+    sess.commit()
+
+    action = "insert"
+    vals = [
+        site_code,
+        source_code,
+        "",
+        supply_name,
+        gsp_group_code,
+        hh_format(start_date),
+        "",
+        mop_contract_name,
+        "22 7867 6232 781",
+        dc_contract_name,
+        "22 7867 6232 781",
+        msn,
+        "22",
+        "00",
+        mtc_code,
+        cop_code,
+        comm_code,
+        "",
+        energisation_status_code,
+        "{}",
+        "22 7867 6232 781",
+        llfc_code,
+        "0",
+        supplier_contract_name,
+        "22 7867 6232 781",
+    ]
+    args = []
+    chellow.general_import.general_import_supply(sess, action, vals, args)
