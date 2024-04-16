@@ -420,7 +420,7 @@ def channel_snag_edit_post(snag_id):
 
 @e.route("/comms")
 def comms_get():
-    comms = g.sess.execute(select(Cop).order_by(Cop.code)).scalars()
+    comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
     return render_template("comms.html", comms=comms)
 
 

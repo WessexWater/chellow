@@ -49,6 +49,22 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_comms_get(sess, client):
+    insert_comms(sess)
+    sess.commit()
+
+    response = client.get("/e/comms")
+    match(response, 200)
+
+
+def test_comm_get(sess, client):
+    insert_comms(sess)
+    sess.commit()
+
+    response = client.get("/e/comms/3")
+    match(response, 200)
+
+
 def test_channel_add_post(sess, client):
     valid_from = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
