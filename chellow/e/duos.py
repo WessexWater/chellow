@@ -541,7 +541,7 @@ def datum_2010_04_01(ds, hh):
 
     hh["duos-reactive-kvarh"] = kvarh
 
-    duos_reactive_rate = tariff["gbp-per-kvarh"]
+    duos_reactive_rate = tariff.get("gbp-per-kvarh")
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
@@ -752,7 +752,7 @@ def datum_2012_02_23(ds, hh):
 
     hh["duos-description"] = tariff["description"]
 
-    duos_reactive_rate = tariff["gbp-per-kvarh"]
+    duos_reactive_rate = tariff.get("gbp-per-kvarh")
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
