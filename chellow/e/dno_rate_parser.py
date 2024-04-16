@@ -180,7 +180,7 @@ def val_to_slots(val):
     return slots
 
 
-def col_match(row, pattern, repeats=1):
+def col_find(row, pattern, repeats=1):
     for i, cell in enumerate(row):
         txt = cell.value
         if txt is not None:
@@ -191,10 +191,15 @@ def col_match(row, pattern, repeats=1):
                 else:
                     repeats -= 1
 
-    raise BadRequest(
-        f"Pattern '{pattern}' not found in row "
-        + ", ".join(str(cell.value) for cell in row)
-    )
+
+def col_match(row, pattern, repeats=1):
+    result = col_find(row, pattern, repeats=repeats)
+    if result is None:
+        raise BadRequest(
+            f"Pattern '{pattern}' not found in row "
+            + ", ".join(str(cell.value) for cell in row)
+        )
+    return result
 
 
 def tab_lv_hv(sheet, gsp_rates):
@@ -308,6 +313,8 @@ def tab_ehv(sheet, gsp_rates):
                 llfc_val = get_value(row, col_match(title_row, "llfc", repeats=repeats))
                 llfc = None if llfc_val is None else str(llfc_val).strip()
                 if llfc not in (None, ""):
+                    band_col = col_find(title_row, "residual")
+                    band = "" if band_col is None else int(get_decimal(row, band_col))
                     tariffs[llfc] = {
                         "gbp-per-kwh": get_rate(
                             row, col_match(title_row, polarity + " super red")
@@ -321,6 +328,7 @@ def tab_ehv(sheet, gsp_rates):
                         "excess-gbp-per-kva-per-day": get_zero_rate(
                             row, col_match(title_row, polarity + " exce")
                         ),
+                        "description": f"Designated EHV{band}",
                     }
 
         elif state == EHV_BANDS:

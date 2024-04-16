@@ -11,7 +11,7 @@ import xlrd
 from zish import loads
 
 from chellow.models import Contract, RateScript
-from chellow.utils import HH, hh_format, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc
 
 
 def key_format(dt):
@@ -61,7 +61,20 @@ def hh(data_source):
 
 
 def elexon_import(sess, log, set_progress, s, scripting_key):
-    contract = Contract.get_non_core_by_name(sess, "system_price")
+    log("Starting to check System Prices.")
+    contract_name = "system_price"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
     contract_props = contract.make_properties()
 
     if not contract_props.get("enabled", False):
@@ -71,15 +84,13 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
         )
         return
 
-    log("Starting to check System Prices.")
-
     for rscript in sess.scalars(
         select(RateScript)
         .where(RateScript.contract == contract)
         .order_by(RateScript.start_date.desc())
     ):
         ns = loads(rscript.script)
-        rates = ns["gbp_per_nbp_mwh"]
+        rates = ns.get("gbp_per_nbp_mwh", {})
         if len(rates) == 0:
             fill_start = rscript.start_date
             break
@@ -121,11 +132,12 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
                         sp_month = {}
                         sp_months.append(sp_month)
                     ssp_val = ssp_row[col_idx].value
-                    sp_month[hh_date] = {
-                        "run": run_code,
-                        "sbp": sbp_val,
-                        "ssp": ssp_val,
-                    }
+                    if sp_month is not None:
+                        sp_month[hh_date] = {
+                            "run": run_code,
+                            "sbp": sbp_val,
+                            "ssp": ssp_val,
+                        }
             hh_date += HH
     log("Successfully extracted data.")
     last_date = sorted(sp_months[-1].keys())[-1]

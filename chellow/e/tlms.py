@@ -12,7 +12,7 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 from chellow.models import Contract, RateScript
-from chellow.utils import HH, hh_format, hh_range, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, hh_format, hh_range, to_ct, to_utc
 
 
 RUNS = ["DF", "RF", "R3", "R2", "R1", "SF", "II"]
@@ -106,7 +106,19 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
     cache = {"rate_scripts": [], "timestamps": {}}
     caches = {}
     log("Starting to check TLMs.")
-    contract = Contract.get_non_core_by_name(sess, "tlms")
+    contract_name = "tlms"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1997, 1, 1)),
+            to_utc(ct_datetime(1997, 1, 31, 23, 30)),
+            {"tlms": {}},
+        )
+        sess.commit()
     contract_props = contract.make_properties()
     if contract_props.get("enabled", False):
 

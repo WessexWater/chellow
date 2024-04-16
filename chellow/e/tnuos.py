@@ -51,6 +51,11 @@ BAND_LOOKUP = {
     "Non-Domestic Aggregated Band 4": "LV_NoMIC_4",
     "Non-Domestic Aggregated No Residual": "LV_NoMIC_1",
     "Unmetered Supplies": "Unmetered",
+    "Designated EHV0": "EHV1",
+    "Designated EHV1": "EHV1",
+    "Designated EHV2": "EHV2",
+    "Designated EHV3": "EHV3",
+    "Designated EHV4": "EHV4",
 }
 
 
