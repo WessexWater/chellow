@@ -316,7 +316,7 @@ def tab_ehv(sheet, gsp_rates):
                     band_col = col_find(title_row, "residual")
                     band = "" if band_col is None else int(get_decimal(row, band_col))
                     tariffs[llfc] = {
-                        "gbp-per-kwh": get_rate(
+                        "super-red-gbp-per-kwh": get_rate(
                             row, col_match(title_row, polarity + " super red")
                         ),
                         "gbp-per-day": get_zero_rate(
@@ -338,10 +338,11 @@ def tab_ehv(sheet, gsp_rates):
                 period_str = " ".join(get_value(row, 0).split()).lower()
                 periods = []
 
-                if (
-                    period_str
-                    == "monday to friday nov to feb (excluding "
-                    + "22nd dec to 4th jan inclusive)"
+                if period_str in (
+                    "monday to friday nov to feb (excluding "
+                    "22nd dec to 4th jan inclusive)",
+                    "monday to friday (including bank holidays) nov to feb inclusive "
+                    "(excluding 22nd dec to 4th jan inclusive)",
                 ):
                     periods.append(
                         {
@@ -381,8 +382,8 @@ def tab_ehv(sheet, gsp_rates):
                         bands.append(
                             {
                                 **period,
-                                "start_hour": slot["start"],
-                                "finish_hour": slot["finish"],
+                                "start-hour": slot["start"],
+                                "finish-hour": slot["finish"],
                             }
                         )
 

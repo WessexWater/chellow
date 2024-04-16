@@ -16,7 +16,7 @@ from chellow.utils import (
 )
 
 
-BANDS = ("red", "amber", "green")
+BANDS = ("super-red", "red", "amber", "green")
 
 KEYS = dict(
     (
@@ -659,34 +659,83 @@ def datum_2012_02_23(ds, hh):
 
             tariffs[start_date] = tariff
 
-    try:
-        band = gsp_group_cache["bands"][start_date]
-    except KeyError:
+    if KEYS["super-red"]["tariff-rate"] in tariff:
         try:
-            bands_cache = gsp_group_cache["bands"]
+            band = gsp_group_cache["super-red-band"][start_date]
         except KeyError:
-            bands_cache = gsp_group_cache["bands"] = {}
-
-        try:
-            band = bands_cache[start_date]
-        except KeyError:
-            band = "green"
-            ct_hr = hh["ct-decimal-hour"]
-            weekend = hh["ct-day-of-week"] > 4
             try:
-                slots = ds.hh_rate(ds.dno_contract.id, start_date)[ds.gsp_group_code][
-                    "bands"
-                ]
-            except KeyError as e:
-                raise BadRequest(str(e))
+                bands_cache = gsp_group_cache["super-red-band"]
+            except KeyError:
+                bands_cache = gsp_group_cache["super-red-band"] = {}
 
-            for slot in slots:
-                slot_weekend = slot["weekend"] == 1
-                if slot_weekend == weekend and slot["start"] <= ct_hr < slot["finish"]:
-                    band = slot["band"]
-                    break
+            try:
+                band = bands_cache[start_date]
+            except KeyError:
+                band = None
+                ct_hr = hh["ct-decimal-hour"]
+                weekend = hh["ct-day-of-week"] > 4
+                try:
+                    slots = ds.hh_rate(ds.dno_contract.id, start_date)[
+                        ds.gsp_group_code
+                    ]["super_red"]
+                except KeyError as e:
+                    raise BadRequest(str(e))
 
-            bands_cache[start_date] = band
+                for slot in slots:
+                    if (
+                        slot["weekend"] == weekend
+                        and slot["start-hour"] <= ct_hr < slot["finish-hour"]
+                        and (
+                            hh["ct-month"] > slot["start-month"]
+                            or (
+                                hh["ct-month"] == slot["start-month"]
+                                and hh["ct-day"] >= slot["start-day"]
+                            )
+                        )
+                        and (
+                            hh["ct-month"] < slot["finish-month"]
+                            or (
+                                hh["ct-month"] == slot["finish-month"]
+                                and hh["ct-day"] <= slot["finish-day"]
+                            )
+                        )
+                    ):
+                        band = "super-red"
+                        break
+
+                bands_cache[start_date] = band
+    else:
+
+        try:
+            band = gsp_group_cache["rag-bands"][start_date]
+        except KeyError:
+            try:
+                bands_cache = gsp_group_cache["rag-bands"]
+            except KeyError:
+                bands_cache = gsp_group_cache["rag-bands"] = {}
+
+            try:
+                band = bands_cache[start_date]
+            except KeyError:
+                band = "green"
+                ct_hr = hh["ct-decimal-hour"]
+                weekend = hh["ct-day-of-week"] > 4
+                try:
+                    slots = ds.hh_rate(ds.dno_contract.id, start_date)[
+                        ds.gsp_group_code
+                    ]["bands"]
+                except KeyError as e:
+                    raise BadRequest(str(e))
+
+                for slot in slots:
+                    if (
+                        slot["weekend"] == weekend
+                        and slot["start"] <= ct_hr < slot["finish"]
+                    ):
+                        band = slot["band"]
+                        break
+
+                bands_cache[start_date] = band
 
     try:
         laf = dno_cache["lafs"][ds.llfc_code][start_date]
@@ -759,10 +808,11 @@ def datum_2012_02_23(ds, hh):
             hh["duos-reactive-rate"] = duos_reactive_rate
             hh["duos-reactive-gbp"] = kvarh * duos_reactive_rate
 
-    rate = float(tariff[KEYS[band]["tariff-rate"]])
-    hh[KEYS[band]["bill-rate"]] = rate
-    hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
-    hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
+    if band is not None:
+        rate = float(tariff[KEYS[band]["tariff-rate"]])
+        hh[KEYS[band]["bill-rate"]] = rate
+        hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
+        hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
 
     if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
         hh["duos-fixed-days"] = 1
