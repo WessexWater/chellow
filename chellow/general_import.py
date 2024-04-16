@@ -1255,8 +1255,12 @@ def general_import_supply(sess, action, vals, args):
         cop = Cop.get_by_code(sess, cop_code)
         comm_code = add_arg(args, "Comms Type", vals, 16)
         comm = Comm.get_by_code(sess, comm_code)
-        ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 17)
-        ssc = Ssc.get_by_code(sess, ssc_code) if len(ssc_code) > 0 else None
+        ssc_code_str = add_arg(args, "Standard Settlement Configuration", vals, 17)
+        if len(ssc_code_str) > 0:
+            ssc = Ssc.get_by_code(sess, ssc_code_str, start_date)
+            ssc_code = ssc.code
+        else:
+            ssc_code = None
         energisation_status_code = add_arg(args, "Energisation Status", vals, 18)
         energisation_status = EnergisationStatus.get_by_code(
             sess, energisation_status_code
@@ -1340,7 +1344,7 @@ def general_import_supply(sess, action, vals, args):
             mtc_code,
             cop,
             comm,
-            ssc,
+            ssc_code,
             energisation_status,
             properties,
             imp_mpan_core,

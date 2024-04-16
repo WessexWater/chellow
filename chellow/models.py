@@ -2845,44 +2845,21 @@ class MtcSsc(Base, PersistentClass):
     mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="mtc_ssc")
     __table_args__ = (UniqueConstraint("mtc_participant_id", "ssc_id", "valid_from"),)
 
-    def __init__(
-        self,
-        mtc_participant,
-        ssc,
-        valid_from,
-        valid_to,
-    ):
+    def __init__(self, mtc_participant, ssc, valid_from, valid_to):
         self.mtc_participant = mtc_participant
         self.ssc = ssc
         self.valid_from = valid_from
-        self.update(
-            valid_to,
-        )
+        self.update(valid_to)
 
-    def update(
-        self,
-        valid_to,
-    ):
+    def update(self, valid_to):
         self.valid_to = valid_to
 
         if hh_after(self.valid_from, valid_to):
             raise BadRequest("The valid_from date can't be after the valid_to date.")
 
     @classmethod
-    def insert(
-        cls,
-        sess,
-        mtc_participant,
-        ssc,
-        valid_from,
-        valid_to,
-    ):
-        mtc_ssc = cls(
-            mtc_participant,
-            ssc,
-            valid_from,
-            valid_to,
-        )
+    def insert(cls, sess, mtc_participant, ssc, valid_from, valid_to):
+        mtc_ssc = cls(mtc_participant, ssc, valid_from, valid_to)
         sess.add(mtc_ssc)
         sess.flush()
         return mtc_ssc
@@ -2924,44 +2901,21 @@ class MtcLlfcSsc(Base, PersistentClass):
     mtc_llfc_ssc_pcs = relationship("MtcLlfcSscPc", backref="mtc_llfc_ssc")
     __table_args__ = (UniqueConstraint("mtc_ssc_id", "llfc_id", "valid_from"),)
 
-    def __init__(
-        self,
-        mtc_ssc,
-        llfc,
-        valid_from,
-        valid_to,
-    ):
+    def __init__(self, mtc_ssc, llfc, valid_from, valid_to):
         self.mtc_ssc = mtc_ssc
         self.llfc = llfc
         self.valid_from = valid_from
-        self.update(
-            valid_to,
-        )
+        self.update(valid_to)
 
-    def update(
-        self,
-        valid_to,
-    ):
+    def update(self, valid_to):
         self.valid_to = valid_to
 
         if hh_after(self.valid_from, valid_to):
             raise BadRequest("The valid_from date can't be after the valid_to date.")
 
     @classmethod
-    def insert(
-        cls,
-        sess,
-        mtc_ssc,
-        llfc,
-        valid_from,
-        valid_to,
-    ):
-        mtc_llfc_ssc = cls(
-            mtc_ssc,
-            llfc,
-            valid_from,
-            valid_to,
-        )
+    def insert(cls, sess, mtc_ssc, llfc, valid_from, valid_to):
+        mtc_llfc_ssc = cls(mtc_ssc, llfc, valid_from, valid_to)
         sess.add(mtc_llfc_ssc)
         sess.flush()
         return mtc_llfc_ssc
