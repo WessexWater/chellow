@@ -10,6 +10,7 @@ from chellow.general_import import (
     general_import_g_era,
     general_import_g_supply,
     general_import_llfc,
+    general_import_site,
     general_import_supply,
 )
 from chellow.models import (
@@ -801,6 +802,26 @@ def test_general_import_llfc_update_valid_to_no_change(sess):
     ]
     args = []
     general_import_llfc(sess, action, vals, args)
+
+
+def test_general_import_site_update(sess):
+    site_code = "CI017"
+    site_name = "Water Works"
+    Site.insert(sess, site_code, site_name)
+    sess.commit()
+
+    action = "update"
+    vals = [
+        site_code,
+        "{no change}",
+        "{no change}",
+    ]
+    args = []
+    general_import_site(sess, action, vals, args)
+
+    site = sess.scalars(select(Site)).one()
+    assert site.code == site_code
+    assert site.name == site_name
 
 
 def test_general_import_supply_insert_HH(sess):

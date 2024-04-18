@@ -1574,7 +1574,11 @@ def general_import_site(sess, action, vals, args):
             site.delete()
         elif action == "update":
             new_code = add_arg(args, "new_site_code", vals, 1)
+            if new_code == NO_CHANGE:
+                new_code = site.code
             name = add_arg(args, "new_site_name", vals, 2)
+            if name == NO_CHANGE:
+                name = site.name
             site.update(new_code, name)
 
 
