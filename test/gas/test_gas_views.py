@@ -548,6 +548,7 @@ def test_bill_imports_post_full(mocker, app, client, sess):
         response,
         200,
         r"All the bills have been successfully loaded and attached to the batch.",
+        r"<td>M3</td>",
     )
 
     sess.rollback()
