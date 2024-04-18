@@ -557,6 +557,10 @@ def general_import_g_supply(sess, action, vals, args):
         g_reading_frequency = GReadingFrequency.get_by_code(
             sess, g_reading_frequency_code
         )
+        aq_str = add_arg(args, "AQ", vals, 12)
+        aq = Decimal(aq_str)
+        soq_str = add_arg(args, "SOQ", vals, 13)
+        soq = Decimal(soq_str)
 
         site.insert_g_supply(
             sess,
@@ -571,6 +575,8 @@ def general_import_g_supply(sess, action, vals, args):
             g_contract,
             account,
             g_reading_frequency,
+            aq,
+            soq,
         )
         sess.flush()
     elif action == "update":

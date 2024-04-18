@@ -1,11 +1,23 @@
 from decimal import Decimal
 
-import chellow.general_import
+from sqlalchemy import select
+
+from chellow.general_import import (
+    _parse_breakdown,
+    general_import_era,
+    general_import_g_batch,
+    general_import_g_bill,
+    general_import_g_era,
+    general_import_g_supply,
+    general_import_llfc,
+    general_import_supply,
+)
 from chellow.models import (
     Comm,
     Contract,
     Cop,
     EnergisationStatus,
+    GBill,
     GContract,
     GDn,
     GReadingFrequency,
@@ -26,9 +38,11 @@ from chellow.models import (
     Source,
     Ssc,
     VoltageLevel,
+    insert_bill_types,
     insert_comms,
     insert_cops,
     insert_energisation_statuses,
+    insert_g_read_types,
     insert_g_reading_frequencies,
     insert_g_units,
     insert_sources,
@@ -42,26 +56,53 @@ def test_general_import_g_batch(mocker):
     action = "insert"
     vals = ["CH4U", "batch 8883", "Apr 2019"]
     args = []
-    chellow.general_import.general_import_g_batch(sess, action, vals, args)
+    general_import_g_batch(sess, action, vals, args)
 
 
-def test_general_import_g_bill(mocker):
-    c = mocker.patch("chellow.general_import.GContract", autospec=True)
-    c.get_supplier_by_name.return_value = chellow.general_import.GContract(
-        False, "CH4U", "{}", "{}"
+def test_general_import_g_bill(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site_code = "22488"
+    site = Site.insert(sess, site_code, "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract_name = "Fusion 2020"
+    g_contract = GContract.insert_supplier(sess, g_contract_name, "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2010, 1, 1),
+        None,
+        msn,
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
     )
+    batch_name = "b1"
+    g_contract.insert_g_batch(sess, batch_name, "batch 1")
+    insert_bill_types(sess)
+    sess.commit()
 
-    mocker.patch("chellow.models.GBatch", autospec=True)
-    batch = chellow.models.GBatch(1, 2, 3, 4)
-    batch.g_contract = chellow.general_import.GContract(False, "CH4U", "{}", "{}")
-    c.get_g_batch_by_reference.return_value = batch
-
-    sess = mocker.Mock()
     action = "insert"
     vals = [
-        "CH4U",
-        "batch 8883",
-        "759288812",
+        g_contract_name,
+        batch_name,
+        mprn,
         "2019-09-08 00:00",
         "2019-10-01 00:00",
         "2019-10-31 23:30",
@@ -75,45 +116,54 @@ def test_general_import_g_bill(mocker):
         "0",
     ]
     args = []
-    chellow.general_import.general_import_g_bill(sess, action, vals, args)
+    general_import_g_bill(sess, action, vals, args)
 
 
-def test_general_import_g_bill_reads(mocker):
-    c = mocker.patch("chellow.general_import.GContract", autospec=True)
-    contract = chellow.general_import.GContract(False, "CH4U", "{}", "{}")
-    c.get_supplier_by_name.return_value = contract
-
-    mocker.patch("chellow.models.GBatch", autospec=True)
-    batch = chellow.models.GBatch("CH4U", "{}", "{}", 4)
-    contract.get_g_batch_by_reference.return_value = batch
-
-    mocker.patch("chellow.models.GBill", autospec=True)
-    bill = chellow.models.GBill(
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-        mocker.Mock(),
-    )
-    batch.insert_g_bill.return_value = bill
-
-    sess = mocker.Mock()
-    msn = "88hgkdshjf"
+def test_general_import_g_bill_reads(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site_code = "22488"
+    site = Site.insert(sess, site_code, "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
     g_unit_code = "M3"
-    g_unit_class = mocker.patch("chellow.general_import.GUnit", autospec=True)
-    g_unit = chellow.general_import.GUnit(g_unit_code, "", 1)
-    g_unit_class.get_by_code.return_value = g_unit
+    g_unit = GUnit.get_by_code(sess, g_unit_code)
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract_name = "Fusion 2020"
+    g_contract = GContract.insert_supplier(sess, g_contract_name, "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2010, 1, 1),
+        None,
+        msn,
+        1,
+        g_unit,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+    batch_reference = "b1"
+    g_contract.insert_g_batch(sess, batch_reference, "batch 1")
+    insert_bill_types(sess)
+    insert_g_read_types(sess)
+    sess.commit()
+    msn = "88hgkdshjf"
+    correction_factor_str = "1"
     correction_factor = Decimal("1")
-    calorific_value = Decimal("39")
+    calorific_value_str = "39"
+    calorific_value = Decimal(calorific_value_str)
     prev_value = Decimal("988")
     prev_date = utc_datetime(2019, 10, 1)
     prev_type_code = "E"
@@ -121,16 +171,11 @@ def test_general_import_g_bill_reads(mocker):
     pres_date = utc_datetime(2019, 10, 31, 23, 30)
     pres_type_code = "A"
 
-    g_read_type_class = mocker.patch("chellow.general_import.GReadType", autospec=True)
-    prev_type = chellow.general_import.GReadType(prev_type_code, "")
-    pres_type = chellow.general_import.GReadType(pres_type_code, "")
-    g_read_type_class.get_by_code.side_effect = [prev_type, pres_type]
-
     action = "insert"
     vals = [
-        "CH4U",
-        "batch 8883",
-        "759288812",
+        g_contract_name,
+        batch_reference,
+        mprn,
         "2019-09-08 01:00",
         "2019-10-01 01:00",
         "2019-10-31 23:30",
@@ -144,8 +189,8 @@ def test_general_import_g_bill_reads(mocker):
         "0",
         msn,
         g_unit_code,
-        str(correction_factor),
-        str(calorific_value),
+        correction_factor_str,
+        calorific_value_str,
         hh_format(prev_date),
         str(prev_value),
         prev_type_code,
@@ -154,20 +199,21 @@ def test_general_import_g_bill_reads(mocker):
         pres_type_code,
     ]
     args = []
-    chellow.general_import.general_import_g_bill(sess, action, vals, args)
-    bill.insert_g_read.assert_called_with(
-        sess,
-        msn,
-        g_unit,
-        correction_factor,
-        calorific_value,
-        prev_value,
-        prev_date,
-        prev_type,
-        pres_value,
-        pres_date,
-        pres_type,
-    )
+    general_import_g_bill(sess, action, vals, args)
+
+    g_bill = sess.scalars(select(GBill)).one()
+    g_read = g_bill.g_reads[0]
+
+    assert g_read.msn == msn
+    assert g_read.g_unit == g_unit
+    assert g_read.correction_factor == correction_factor
+    assert g_read.calorific_value == calorific_value
+    assert g_read.prev_value == prev_value
+    assert g_read.prev_date == prev_date
+    assert g_read.prev_type.code == prev_type_code
+    assert g_read.pres_value == pres_value
+    assert g_read.pres_date == pres_date
+    assert g_read.pres_type.code == pres_type_code
 
 
 def test_general_import_g_era_insert(sess):
@@ -221,7 +267,7 @@ def test_general_import_g_era_insert(sess):
         new_soq,
     ]
     args = []
-    chellow.general_import.general_import_g_era(sess, action, vals, args)
+    general_import_g_era(sess, action, vals, args)
 
     expected_args = [
         ("MPRN", "87614362"),
@@ -290,7 +336,7 @@ def test_general_import_g_era_insert_no_change(sess):
         "{no change}",
     ]
     args = []
-    chellow.general_import.general_import_g_era(sess, action, vals, args)
+    general_import_g_era(sess, action, vals, args)
     expected_args = [
         ("MPRN", "87614362"),
         ("Start Date", "2019-09-08 00:00"),
@@ -358,7 +404,7 @@ def test_general_import_g_era_update(sess):
         "{no change}",
     ]
     args = []
-    chellow.general_import.general_import_g_era(sess, action, vals, args)
+    general_import_g_era(sess, action, vals, args)
     expected_args = [
         ("MPRN", "87614362"),
         ("date", "2019-09-08 00:00"),
@@ -377,10 +423,79 @@ def test_general_import_g_era_update(sess):
     assert args == expected_args
 
 
+def test_general_import_g_supply_insert(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site_code = "22488"
+    Site.insert(sess, site_code, "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone_code = "EA1"
+    g_ldz.insert_g_exit_zone(sess, g_exit_zone_code)
+    insert_g_units(sess)
+    g_unit_code = "M3"
+    GUnit.get_by_code(sess, g_unit_code)
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract_name = "Fusion 2020"
+    GContract.insert_supplier(sess, g_contract_name, "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_code = "M"
+    GReadingFrequency.get_by_code(sess, g_reading_frequency_code)
+    mprn = "87614362"
+    msn = "hgeu8rhg"
+    aq = "10"
+    soq = "20"
+    g_supply_name = "1"
+    start_date = "2019-09-08 00:00"
+    finish_date = ""
+    correction_factor = "1"
+    account = "acc1"
+
+    action = "insert"
+    vals = [
+        site_code,
+        mprn,
+        g_supply_name,
+        g_exit_zone_code,
+        start_date,
+        finish_date,
+        msn,
+        correction_factor,
+        g_unit_code,
+        g_contract_name,
+        account,
+        g_reading_frequency_code,
+        aq,
+        soq,
+    ]
+    args = []
+    general_import_g_supply(sess, action, vals, args)
+
+    expected_args = [
+        ("Site Code", site_code),
+        ("MPRN", mprn),
+        ("Supply Name", g_supply_name),
+        ("Exit Zone", g_exit_zone_code),
+        ("Start Date", start_date),
+        ("Finish Date", finish_date),
+        ("Meter Serial Number", msn),
+        ("Correction Factor", correction_factor),
+        ("Unit of Measurement", g_unit_code),
+        ("Supplier Contract", g_contract_name),
+        ("Account", account),
+        ("Reading Frequency", g_reading_frequency_code),
+        ("AQ", aq),
+        ("SOQ", soq),
+    ]
+
+    assert args == expected_args
+
+
 def test_parse_breakdown():
     breakdown_str = '{"date": 2009-05-12T03:00:00Z}'
     expected = {"date": utc_datetime(2009, 5, 12, 3)}
-    actual = chellow.general_import._parse_breakdown(breakdown_str)
+    actual = _parse_breakdown(breakdown_str)
     assert actual == expected
 
 
@@ -515,7 +630,7 @@ def test_general_import_era_insert(sess):
         "{no change}",
     ]
     args = []
-    chellow.general_import.general_import_era(sess, action, vals, args)
+    general_import_era(sess, action, vals, args)
 
 
 def test_general_import_era_update(mocker):
@@ -556,7 +671,7 @@ def test_general_import_era_update(mocker):
         "{no change}",
     ]
     args = []
-    chellow.general_import.general_import_era(sess, action, vals, args)
+    general_import_era(sess, action, vals, args)
 
 
 def test_general_import_llfc_insert(sess):
@@ -580,7 +695,7 @@ def test_general_import_llfc_insert(sess):
         "",
     ]
     args = []
-    chellow.general_import.general_import_llfc(sess, action, vals, args)
+    general_import_llfc(sess, action, vals, args)
 
 
 def test_general_import_llfc_update(sess):
@@ -615,7 +730,7 @@ def test_general_import_llfc_update(sess):
         "",
     ]
     args = []
-    chellow.general_import.general_import_llfc(sess, action, vals, args)
+    general_import_llfc(sess, action, vals, args)
 
 
 def test_general_import_llfc_update_is_import_no_change(sess):
@@ -650,7 +765,7 @@ def test_general_import_llfc_update_is_import_no_change(sess):
         "",
     ]
     args = []
-    chellow.general_import.general_import_llfc(sess, action, vals, args)
+    general_import_llfc(sess, action, vals, args)
 
 
 def test_general_import_llfc_update_valid_to_no_change(sess):
@@ -685,7 +800,7 @@ def test_general_import_llfc_update_valid_to_no_change(sess):
         "{no change}",
     ]
     args = []
-    chellow.general_import.general_import_llfc(sess, action, vals, args)
+    general_import_llfc(sess, action, vals, args)
 
 
 def test_general_import_supply_insert_HH(sess):
@@ -783,7 +898,7 @@ def test_general_import_supply_insert_HH(sess):
         "22 7867 6232 781",
     ]
     args = []
-    chellow.general_import.general_import_supply(sess, action, vals, args)
+    general_import_supply(sess, action, vals, args)
 
 
 def test_general_import_supply_insert_NHH(sess):
@@ -887,4 +1002,4 @@ def test_general_import_supply_insert_NHH(sess):
         "22 7867 6232 781",
     ]
     args = []
-    chellow.general_import.general_import_supply(sess, action, vals, args)
+    general_import_supply(sess, action, vals, args)
