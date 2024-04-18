@@ -64,7 +64,6 @@ def content(user_id, show_ignored, report_run_id):
             for key in (
                 "user_name",
                 "password",
-                "prefix",
                 "exclude_mpan_cores",
                 "ignore_mpan_cores_msn",
             ):
@@ -78,7 +77,7 @@ def content(user_id, show_ignored, report_run_id):
 
             exclude_mpan_cores = ecoes_props["exclude_mpan_cores"]
             ignore_mpan_cores_msn = ecoes_props["ignore_mpan_cores_msn"]
-            url_prefix = ecoes_props["prefix"]
+            url_prefix = "https://www.ecoes.co.uk/"
 
             proxies = props.get("proxies", {})
             s = requests.Session()
