@@ -57,7 +57,13 @@ def parse_bool(bool_str):
     return bool_str == "T"
 
 
-VOLTAGE_MAP = {"24": {"602": {to_utc(ct_datetime(2010, 4, 1)): "LV"}}}
+VOLTAGE_MAP = {
+    "24": {"602": {to_utc(ct_datetime(2010, 4, 1)): "LV"}},
+    "22": {
+        "793": {to_utc(ct_datetime(2012, 7, 13)): "EHV"},
+        "811": {to_utc(ct_datetime(2012, 7, 13)): "EHV"},
+    },
+}
 
 
 def _import_Clock_Interval(sess, rows, ctx):
