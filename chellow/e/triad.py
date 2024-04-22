@@ -68,10 +68,14 @@ def _process_triad_hh(ds, rate_period, est_kw, hh):
             chellow.e.duos.duos_vb(d)
             triad_hh = d.hh_data[0]
 
-            while dt < financial_year_start:
-                dt += relativedelta(years=1)
+            fdt = dt
+            while fdt < financial_year_start:
+                fdt += relativedelta(years=1)
 
-            for d in ds.get_data_sources(dt, dt, financial_year_start):
+            while fdt.weekday() != dt.weekday():
+                fdt += relativedelta(days=1)
+
+            for d in ds.get_data_sources(fdt, fdt, financial_year_start):
                 chellow.e.duos.duos_vb(d)
                 datum = d.hh_data[0]
                 triad_hh["laf"] = datum["laf"]
