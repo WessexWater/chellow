@@ -24,9 +24,9 @@ from chellow.models import (
     GeneratorType,
     MeasurementRequirement,
     MtcParticipant,
+    RSession,
     ReadType,
     RegisterRead,
-    Session,
     SiteEra,
     Supply,
     User,
@@ -47,7 +47,7 @@ from chellow.views import chellow_redirect
 
 def content(user_id, date, supply_id, mpan_cores):
     try:
-        with Session() as sess:
+        with RSession() as sess:
             user = User.get_by_id(sess, user_id)
             f = open_file("supplies_snapshot.csv", user, mode="w", newline="")
             _process(sess, f, date, supply_id, mpan_cores)
