@@ -40,7 +40,7 @@ def _find_triad_rate(ds, date, polarity, gsp_group_code):
     elif polarity == "import":
         rt = trt["HHTariff(Floored)_£/kW"]
     elif polarity == "export":
-        rt = trt["Locational_£/kW"]
+        rt = trt["EET(Floored)_£/kW"]
     return float(rt)
 
 
