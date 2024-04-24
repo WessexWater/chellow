@@ -1473,7 +1473,7 @@ def report_run_spreadsheet_get(run_id):
         cw.writerow([csv_make_val(row.data["values"].get(t)) for t in titles])
 
     output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = f'attachment; filename="{run.title}"'
+    output.headers["Content-Disposition"] = f'attachment; filename="{run.title}.csv"'
     output.headers["Content-type"] = "text/csv"
     return output
 
