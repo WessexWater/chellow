@@ -1213,7 +1213,7 @@ def industry_contract_edit_patch(g_contract_id):
             g_contract.update(name, charge_script, properties)
 
         g.sess.commit()
-        return chellow_redirect(f"/industry_contracts/{g_contract.id}", 204)
+        return hx_redirect(f"/industry_contracts/{g_contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()

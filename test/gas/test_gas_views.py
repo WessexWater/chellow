@@ -662,7 +662,7 @@ def test_industry_contract_edit_patch(client, sess):
         "state": '{"hinderance": "sloth"}',
     }
     response = client.patch(f"/g/industry_contracts/{contract.id}/edit", data=data)
-    match(response, 204)
+    match(response, 303)
     response = client.get(f"/g/industry_contracts/{contract.id}")
     match(response, 200, "&#34;hinderance&#34;: &#34;sloth&#34;")
 

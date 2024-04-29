@@ -143,6 +143,28 @@
 						</table>
 					</td>
 				</tr>
+				<tr>
+					<th>CCL</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in ccl_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
 			</tbody>
 		</table>
 
@@ -183,6 +205,28 @@
 							</thead>
 							<tbody>
 								{% for rs in dn_rs %}
+									{% set script = rs.make_script() %}
+									<tr>
+										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{script.a_file_name}}</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<th>CCL</th>
+					<td>
+						<table>
+							<thead>
+								<tr>
+									<th>Start Date</th>
+									<th>File Name</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for rs in gas_ccl_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
 										<td>{{rs.start_date|hh_format}}</td>

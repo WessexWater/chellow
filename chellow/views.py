@@ -2056,6 +2056,17 @@ def rate_server_get():
         )
         .order_by(RateScript.start_date.desc())
     ).scalars()
+    ccl_rs = g.sess.execute(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "ccl",
+        )
+        .order_by(RateScript.start_date.desc())
+    ).scalars()
     triad_dates_rs = g.sess.execute(
         select(RateScript)
         .join(RateScript.contract)
@@ -2066,6 +2077,16 @@ def rate_server_get():
             Contract.name == "triad_dates",
         )
         .order_by(RateScript.start_date.desc())
+    ).scalars()
+    gas_ccl_rs = g.sess.execute(
+        select(GRateScript)
+        .join(GRateScript.g_contract)
+        .where(
+            GContract.is_industry == true(),
+            GRateScript.start_date >= fy_start,
+            GContract.name == "ccl",
+        )
+        .order_by(GRateScript.start_date.desc())
     ).scalars()
 
     return render_template(
@@ -2078,6 +2099,8 @@ def rate_server_get():
         dn_rs=dn_rs,
         bsuos_rs=bsuos_rs,
         triad_dates_rs=triad_dates_rs,
+        gas_ccl_rs=gas_ccl_rs,
+        ccl_rs=ccl_rs,
     )
 
 

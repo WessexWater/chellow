@@ -85,9 +85,11 @@ def run_import(sess, log, set_progress):
     for mod_name in (
         "chellow.e.mdd_importer",
         "chellow.e.bsuos",
+        "chellow.e.ccl",
         "chellow.e.dno_rate_parser",
         "chellow.e.laf_import",
         "chellow.e.triad",
+        "chellow.gas.ccl",
         "chellow.gas.dn_rate_parser",
     ):
         mod = import_module(mod_name)
