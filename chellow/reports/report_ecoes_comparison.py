@@ -436,8 +436,9 @@ def _process(
                     diffs.append("supplier")
 
                 dc_contract = era.dc_contract
-                if dc_contract is None:
-                    chellow_dc = ""
+                chellow_dc_props = dc_contract.make_properties()
+                if "nhh_participant" in chellow_dc_props:
+                    chellow_dc = chellow_dc_props["nhh_participant"]
                 else:
                     chellow_dc = dc_contract.party.participant.code
 
