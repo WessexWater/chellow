@@ -260,7 +260,6 @@ def _process(
         "ecoes_msn",
         "ecoes_msn_install_date",
         "chellow_msn",
-        "ecoes_msn_install_date",
         "ecoes_meter_type",
         "chellow_meter_type",
         "ignored",
@@ -569,21 +568,26 @@ def _process(
             "ecoes_pc": "",
             "chellow_pc": era.pc.code,
             "ecoes_mtc": "",
+            "ecoes_mtc_date": "",
             "chellow_mtc": era.mtc_participant.mtc.code,
             "ecoes_llfc": "",
+            "ecoes_llfc_from": "",
             "chellow_llfc": llfc.code,
             "ecoes_ssc": "",
             "chellow_ssc": ssc,
             "ecoes_es": "",
             "chellow_es": es,
             "ecoes_supplier": "",
+            "ecoes_supplier_registration_from": "",
             "chellow_supplier": supplier_contract.party.participant.code,
             "chellow_supplier_contract_name": supplier_contract.name,
             "ecoes_dc": "",
             "chellow_dc": dc,
             "ecoes_mop": "",
+            "ecoes_mop_appoint_date": "",
             "chellow_mop": mop,
             "ecoes_gsp_group": "",
+            "ecoes_gsp_effective_from": "",
             "chellow_gsp_group": supply.gsp_group.code,
             "ecoes_msn": "",
             "chellow_msn": msn,
@@ -593,7 +597,7 @@ def _process(
             "ignored": False,
             "problem": "In Chellow, but not in ECOES.",
         }
-        writer.writerow(values[t] for t in titles)
+        writer.writerow(csv_make_val(values[t]) for t in titles)
         values["chellow_supplier_contract_id"] = supplier_contract.id
         values["chellow_supply_id"] = era.supply.id
         values["diffs"] = []

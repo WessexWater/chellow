@@ -11,64 +11,52 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
-		<form method="post" action="/e/dc_contracts/{{dc_contract.id}}/edit">
-			<fieldset>
-				<legend>Are you sure you want to delete this contract?</legend>
-				<input type="submit" name="delete" value="delete">
-				<a href="/e/dc_contracts/{{dc_contract.id}}/edit">Cancel</a>
-			</fieldset>
-		</form>
-		
-	{% else %}
+	<form action="/e/dc_contracts/{{dc_contract.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update Contract</legend>
 
-		<form action="/e/dc_contracts/{{dc_contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update Contract</legend>
+			<label>Party</label>
+			<select name="party_id">
+				{% for party in parties %}
+					{{ input_option(
+							'party_id', party.id,
+							party.participant.code + ' : ' + party.name,
+							dc_contract.party.id) }}
+				{% endfor %}
+			</select>
 
-				<label>Party</label>
-				<select name="party_id">
-					{% for party in parties %}
-						{{ input_option(
-								'party_id', party.id,
-								party.participant.code + ' : ' + party.name,
-								dc_contract.party.id) }}
-					{% endfor %}
-				</select>
+			<label>Name</label> {{input_text('name', dc_contract.name)}}
 
-				<label>Name</label> {{input_text('name', dc_contract.name)}}
+			<label>Charge script</label>
+			{{input_textarea(
+				'charge_script', dc_contract.charge_script, 40, 80)}}
 
-				<label>Charge script</label>
-				{{input_textarea(
-					'charge_script', dc_contract.charge_script, 40, 80)}}
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>
 
-				<input type="submit" value="Update">
-			</fieldset>
-		</form>
+	<form action="/e/dc_contracts/{{dc_contract.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update State</legend>
+			<label>State</label>
+			{{input_textarea('state', dc_contract.state, 40, 80)}}
+			<input type="submit" name="update_state" value="Update">
+		</fieldset>
+	</form>
 
-		<form action="/e/dc_contracts/{{dc_contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update State</legend>
-				<label>State</label>
-				{{input_textarea('state', dc_contract.state, 40, 80)}}
-				<input type="submit" name="update_state" value="Update">
-			</fieldset>
-		</form>
+	<form hx-delete="/e/dc_contracts/{{dc_contract.id}}/edit"
+		hx-confirm="Are you sure you want to delete this contract?">
+		<fieldset>
+			<legend>Delete This Contract</legend>
+			<input type="submit" value="Delete">
+		</fieldset>
+	</form>
 
-		<form action="/e/dc_contracts/{{dc_contract.id}}/edit">
-			<fieldset>
-				<legend>Delete This Contract</legend>
-				<input type="hidden" name="view" value="confirm_delete">
-				<input type="submit" value="Delete">
-			</fieldset>
-		</form>
-
-		<form method="post" action="/e/dc_contracts/{{dc_contract.id}}/edit">
-			<fieldset>
-				<legend>Ignore all snags before</legend>
-				{{ input_date('ignore', initial_date) }}
-				<input type="submit" name="ignore_snags" value="Ignore">
-			</fieldset>
-		</form>
-	{% endif %}
+	<form method="post" action="/e/dc_contracts/{{dc_contract.id}}/edit">
+		<fieldset>
+			<legend>Ignore all snags before</legend>
+			{{ input_date('ignore', initial_date) }}
+			<input type="submit" name="ignore_snags" value="Ignore">
+		</fieldset>
+	</form>
 {% endblock %}

@@ -10,38 +10,24 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.method == 'GET' and request.values.view == 'confirm_delete' %}
-		
-		<form method="post">
-			<fieldset>
-				<legend>Are you sure you want to delete this contract?</legend>
-				<input type="hidden" name="mop_contract_id"
-					value="{{contract.id}}">
-				<input type="submit" name="delete" value="Delete">
-				<a href="/e/mop_contracts/{{contract.id}}/edit">Cancel</a>
-			</fieldset>
-		</form>
-			
-	{% else %}
-		
-		<form method="post">
-			<fieldset>
-				<legend>Update Contract</legend>
-				<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
-				<label>Party</label>
-				<select name="party_id">
-					{% for party in parties %}
-						{{input_option('party_id', party.id,
-								party.participant.code + ' : ' + party.name, contract.party.id) }}
-					{% endfor %}
-				</select>
-				<label>Name </label> {{input_text('name', contract.name)}}
-				<label>Charge script</label>
-				{{input_textarea('charge_script', contract.charge_script, 40, 80)}}
-				<label>Properties</label>
-				{{input_textarea('properties', contract.properties, 40, 80)}}
-				<label>Example</label>
-				<code><pre>
+	<form method="post">
+		<fieldset>
+			<legend>Update Contract</legend>
+			<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
+			<label>Party</label>
+			<select name="party_id">
+				{% for party in parties %}
+					{{input_option('party_id', party.id,
+							party.participant.code + ' : ' + party.name, contract.party.id) }}
+				{% endfor %}
+			</select>
+			<label>Name </label> {{input_text('name', contract.name)}}
+			<label>Charge script</label>
+			{{input_textarea('charge_script', contract.charge_script, 40, 80)}}
+			<label>Properties</label>
+			{{input_textarea('properties', contract.properties, 40, 80)}}
+			<label>Example</label>
+			<code><pre>
 has.importer=yes
 file.type=.df2
 hostname=example.com
@@ -49,26 +35,25 @@ username=username
 password=password
 directory0=downloads1
 directory1=downloads2
-				</pre></code>
-				<input type="submit" value="Update">
-			</fieldset>
-		</form>						
+			</pre></code>
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>						
 
-		<form action="/e/mop_contracts/{{contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update State</legend>	
-				<label>State</label>
-				{{input_textarea('state', contract.state, 40, 80)}}
-				<input type="submit" name="update_state" value="Update">
-			</fieldset>
-		</form>
+	<form action="/e/mop_contracts/{{contract.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update State</legend>	
+			<label>State</label>
+			{{input_textarea('state', contract.state, 40, 80)}}
+			<input type="submit" name="update_state" value="Update">
+		</fieldset>
+	</form>
 
-		<form action="/e/mop_contracts/{{contract.id}}/edit" method="post">
-			<fieldset>
-				<legend>Delete this contract</legend>
-				<input type="hidden" name="view" value="confirm_delete">
-				<input type="submit" value="Delete">
-			</fieldset>
-		</form>
-	{% endif %}
+	<form hx-delete="/e/mop_contracts/{{contract.id}}/edit"
+		hx-confirm="Are you sure you want to delete this contract?">
+		<fieldset>
+			<legend>Delete this contract</legend>
+			<input type="submit" value="Delete">
+		</fieldset>
+	</form>
 {% endblock %}

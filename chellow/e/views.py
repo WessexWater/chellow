@@ -1137,6 +1137,14 @@ def dc_contract_edit_get(dc_contract_id):
     )
 
 
+@e.route("/dc_contracts/<int:contract_id>/edit", methods=["DELETE"])
+def dc_contract_edit_delete(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    contract.delete(g.sess)
+    g.sess.commit()
+    return hx_redirect("/dc_contracts", 303)
+
+
 @e.route("/dc_contracts/<int:contract_id>/edit", methods=["POST"])
 def dc_contract_edit_post(contract_id):
     contract = None
@@ -1161,10 +1169,6 @@ def dc_contract_edit_post(contract_id):
             )
             g.sess.commit()
             return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
-        elif "delete" in request.form:
-            contract.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/dc_contracts", 303)
         else:
             party_id = req_int("party_id")
             name = req_str("name")
@@ -3059,6 +3063,14 @@ def mop_contract_edit_get(contract_id):
     )
 
 
+@e.route("/mop_contracts/<int:contract_id>/edit", methods=["DELETE"])
+def mop_contract_edit_delete(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    contract.delete(g.sess)
+    g.sess.commit()
+    return hx_redirect("/mop_contracts", 303)
+
+
 @e.route("/mop_contracts/<int:contract_id>/edit", methods=["POST"])
 def mop_contract_edit_post(contract_id):
     try:
@@ -3082,10 +3094,6 @@ def mop_contract_edit_post(contract_id):
             )
             g.sess.commit()
             return chellow_redirect(f"/mop_contracts/{contract.id}", 303)
-        elif "delete" in request.form:
-            contract.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/mop_contracts", 303)
         else:
             party_id = req_int("party_id")
             name = req_str("name")

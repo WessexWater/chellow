@@ -538,6 +538,19 @@ def test_dc_auto_importer_post(mocker, sess, client):
     match(response, 303)
 
 
+def test_dc_contract_edit_delete(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_C, "DC Ltd.", vf, None, None)
+    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    sess.commit()
+
+    response = client.delete(f"/e/dc_contracts/{contract.id}/edit")
+
+    match(response, 303)
+
+
 def test_dc_contract_edit_post(sess, client):
     market_role_C = MarketRole.insert(sess, "C", "DC")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -2188,6 +2201,19 @@ def test_mop_batch_upload_file_post(sess, client):
     batch_file = BatchFile.get_by_id(sess, 1)
 
     assert batch_file.data == file_bytes
+
+
+def test_mop_contract_edit_delete(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_M = MarketRole.insert(sess, "M", "MOP")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_M, "MOP Ltd.", vf, None, None)
+    contract = Contract.insert_mop(sess, "MOP 2000", participant, "", {}, vf, None, {})
+    sess.commit()
+
+    response = client.delete(f"/e/mop_contracts/{contract.id}/edit")
+
+    match(response, 303)
 
 
 def test_mop_batch_file_get(sess, client):

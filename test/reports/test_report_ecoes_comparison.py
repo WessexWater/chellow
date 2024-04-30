@@ -1,4 +1,7 @@
+import csv
 from io import StringIO
+
+from utils import match_tables
 
 from chellow.models import (
     Comm,
@@ -282,25 +285,30 @@ def test_process(mocker, sess):
             "ecoes_pc",
             "chellow_pc",
             "ecoes_mtc",
+            "ecoes_mtc_date",
             "chellow_mtc",
             "ecoes_llfc",
+            "ecoes_llfc_from",
             "chellow_llfc",
             "ecoes_ssc",
             "chellow_ssc",
             "ecoes_es",
             "chellow_es",
             "ecoes_supplier",
+            "ecoes_supplier_registration_from",
             "chellow_supplier",
             "chellow_supplier_contract_name",
             "ecoes_dc",
             "chellow_dc",
             "ecoes_mop",
+            "ecoes_mop_appoint_date",
             "chellow_mop",
             "ecoes_gsp_group",
+            "ecoes_gsp_effective_from",
             "chellow_gsp_group",
             "ecoes_msn",
-            "chellow_msn",
             "ecoes_msn_install_date",
+            "chellow_msn",
             "ecoes_meter_type",
             "chellow_meter_type",
             "ignored",
@@ -312,25 +320,30 @@ def test_process(mocker, sess):
             "pc",
             "00",
             "mtc",
+            "2022-10-12 00:00",
             "845",
             "llfc",
+            "2022-10-12 00:00",
             "510",
             "",
             "",
             "energisation-status",
             "E",
             "supplier",
+            "2022-10-12 00:00",
             "CALB",
             "Fusion Supplier 2000",
             "dc",
             "CALB",
             "mop",
+            "2022-10-12 00:00",
             "CALB",
             "gsp-group",
+            "2022-10-12 00:00",
             "_L",
             "msn",
-            "hgjeyhuw",
             "2022-10-12 00:00",
+            "hgjeyhuw",
             "meter-type",
             "H",
             "False",
@@ -346,25 +359,30 @@ def test_process(mocker, sess):
             "pc",
             "00",
             "mtc",
+            "2022-10-12 00:00",
             "845",
             "llfc",
+            "2022-10-12 00:00",
             "510",
             "",
             "",
             "energisation-status",
             "E",
             "supplier",
+            "2022-10-12 00:00",
             "CALB",
             "Fusion Supplier 2000",
             "dc",
             "CALB",
             "mop",
+            "2022-10-12 00:00",
             "CALB",
             "gsp-group",
+            "2022-10-12 00:00",
             "_L",
             "msn",
-            "hgjeyhuw",
             "2022-10-12 00:00",
+            "hgjeyhuw",
             "meter-type",
             "H",
             "False",
@@ -375,60 +393,43 @@ def test_process(mocker, sess):
             "match.",
         ],
     ]
-    expected = "\n".join(",".join(line) for line in expected) + "\n"
-    actual = f.getvalue()
-    assert actual == expected
+    f.seek(0)
+    actual = [line for line in csv.reader(f)]
+    match_tables(expected, actual)
 
 
 def test_process_in_chellow_not_ecoes(mocker, sess):
-    valid_from = to_utc(ct_datetime(2000, 1, 1))
+    vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
-    bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -439,32 +440,16 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
-    dno.insert_llfc(
-        sess,
-        "521",
-        "Export (HV)",
-        voltage_level,
-        False,
-        False,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    dno.insert_llfc(sess, "521", "Export (HV)", voltage_level, False, False, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -534,25 +519,30 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
             "ecoes_pc",
             "chellow_pc",
             "ecoes_mtc",
+            "ecoes_mtc_date",
             "chellow_mtc",
             "ecoes_llfc",
+            "ecoes_llfc_from",
             "chellow_llfc",
             "ecoes_ssc",
             "chellow_ssc",
             "ecoes_es",
             "chellow_es",
             "ecoes_supplier",
+            "ecoes_supplier_registration_from",
             "chellow_supplier",
             "chellow_supplier_contract_name",
             "ecoes_dc",
             "chellow_dc",
             "ecoes_mop",
+            "ecoes_mop_appoint_date",
             "chellow_mop",
             "ecoes_gsp_group",
+            "ecoes_gsp_effective_from",
             "chellow_gsp_group",
             "ecoes_msn",
-            "chellow_msn",
             "ecoes_msn_install_date",
+            "chellow_msn",
             "ecoes_meter_type",
             "chellow_meter_type",
             "ignored",
@@ -564,7 +554,9 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
             "",
             "00",
             "",
+            "",
             "845",
+            "",
             "",
             "510",
             "",
@@ -572,24 +564,29 @@ def test_process_in_chellow_not_ecoes(mocker, sess):
             "",
             "E",
             "",
+            "",
             "CALB",
             "Fusion Supplier 2000",
             "",
             "CALB",
             "",
+            "",
             "CALB",
+            "",
             "",
             "_L",
             "",
-            "hgjeyhuw",
             "",
+            "hgjeyhuw",
             "",
             "H",
             "False",
-            '"In Chellow, but not in ECOES."',
+            "In Chellow, but not in ECOES.",
         ],
     ]
-    assert f.getvalue() == "\n".join(",".join(line) for line in expected) + "\n"
+    f.seek(0)
+    actual = list(csv.reader(f))
+    match_tables(expected, actual)
 
 
 def test_meter_type(mocker, sess):
