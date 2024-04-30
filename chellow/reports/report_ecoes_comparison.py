@@ -25,7 +25,7 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.utils import req_bool
+from chellow.utils import csv_make_val, req_bool
 from chellow.views import chellow_redirect
 
 
@@ -236,23 +236,29 @@ def _process(
         "ecoes_pc",
         "chellow_pc",
         "ecoes_mtc",
+        "ecoes_mtc_date",
         "chellow_mtc",
         "ecoes_llfc",
+        "ecoes_llfc_from",
         "chellow_llfc",
         "ecoes_ssc",
         "chellow_ssc",
         "ecoes_es",
         "chellow_es",
         "ecoes_supplier",
+        "ecoes_supplier_registration_from",
         "chellow_supplier",
         "chellow_supplier_contract_name",
         "ecoes_dc",
         "chellow_dc",
         "ecoes_mop",
+        "ecoes_mop_appoint_date",
         "chellow_mop",
         "ecoes_gsp_group",
+        "ecoes_gsp_effective_from",
         "chellow_gsp_group",
         "ecoes_msn",
+        "ecoes_msn_install_date",
         "chellow_msn",
         "ecoes_msn_install_date",
         "ecoes_meter_type",
@@ -493,8 +499,8 @@ def _process(
                 "ecoes_pc": ecoes["pc"],
                 "chellow_pc": chellow_pc,
                 "ecoes_mtc": ecoes["mtc"],
+                "ecoes_mtc_date": _parse_date(ecoes["mtc-date"]),
                 "chellow_mtc": chellow_mtc,
-                "chellow_mtc_date": _parse_date(ecoes["mtc-date"]),
                 "ecoes_llfc": ecoes["llfc"],
                 "ecoes_llfc_from": _parse_date(ecoes["llfc-from"]),
                 "chellow_llfc": chellow_llfc,
@@ -524,7 +530,7 @@ def _process(
                 "ignored": ignore,
                 "problem": problem,
             }
-            writer.writerow(values[t] for t in titles)
+            writer.writerow(csv_make_val(values[t]) for t in titles)
             values["chellow_supplier_contract_id"] = chellow_supplier_contract_id
             values["chellow_supply_id"] = chellow_supply_id
             values["diffs"] = diffs
