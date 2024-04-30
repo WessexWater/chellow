@@ -374,10 +374,14 @@ def general_import_era(sess, action, vals, args):
         ssc_code = add_arg(args, "Standard Settlement Configuration", vals, 12)
         if ssc_code == NO_CHANGE:
             ssc = existing_era.ssc
+            if ssc is None:
+                ssc_code = None
+            else:
+                ssc_code = ssc.code
         elif len(ssc_code) > 0:
-            ssc = Ssc.get_by_code(sess, ssc_code)
+            Ssc.get_by_code(sess, ssc_code)
         else:
-            ssc = None
+            ssc_code = None
 
         es_code = add_arg(args, "Energisation Status", vals, 13)
         if es_code == NO_CHANGE:
@@ -513,7 +517,7 @@ def general_import_era(sess, action, vals, args):
             mtc_code,
             cop,
             comm,
-            ssc,
+            ssc_code,
             energisation_status,
             properties,
             imp_mpan_core,
