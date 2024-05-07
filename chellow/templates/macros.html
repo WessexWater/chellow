@@ -31,7 +31,7 @@
 
 {%- macro input_option(name, item_id, desc, initial=None) -%}
     <option value="{{ item_id }}"
-        {%- if request.values[name] -%}
+        {%- if name in request.values -%}
             {%- if request.values[name] == '' ~ item_id %} selected
             {%- endif -%}
         {%- else -%}

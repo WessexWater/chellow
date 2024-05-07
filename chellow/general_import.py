@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import false
 
 from werkzeug.exceptions import BadRequest
 
-from zish import ZishException, loads
+from zish import loads
 
 from chellow.models import (
     Bill,
@@ -18,6 +18,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     Era,
     GContract,
@@ -389,11 +390,11 @@ def general_import_era(sess, action, vals, args):
         else:
             energisation_status = EnergisationStatus.get_by_code(sess, es_code)
 
-        properties_str = add_arg(args, "Properties", vals, 14)
-        if properties_str == NO_CHANGE:
-            properties = loads(existing_era.properties)
+        dtc_meter_type_code = add_arg(args, "DTC Meter Type", vals, 14)
+        if dtc_meter_type_code == NO_CHANGE:
+            dtc_meter_type = existing_era.dtc_meter_type
         else:
-            properties = loads(properties_str)
+            dtc_meter_type = DtcMeterType.get_by_code(sess, dtc_meter_type_code)
 
         imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 15)
         if imp_mpan_core == NO_CHANGE:
@@ -519,7 +520,7 @@ def general_import_era(sess, action, vals, args):
             comm,
             ssc_code,
             energisation_status,
-            properties,
+            dtc_meter_type,
             imp_mpan_core,
             imp_llfc_code,
             imp_supplier_contract,
@@ -1275,11 +1276,8 @@ def general_import_supply(sess, action, vals, args):
         energisation_status = EnergisationStatus.get_by_code(
             sess, energisation_status_code
         )
-        properties_str = add_arg(args, "Properties", vals, 19)
-        try:
-            properties = loads(properties_str)
-        except ZishException as e:
-            raise BadRequest(f"Can't parse the properties field. {e}")
+        dtc_meter_type_code = add_arg(args, "DTC Meter Type", vals, 19)
+        dtc_meter_type = DtcMeterType.get_by_code(sess, dtc_meter_type_code)
         imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 20)
         if len(imp_mpan_core) == 0:
             imp_mpan_core = None
@@ -1356,7 +1354,7 @@ def general_import_supply(sess, action, vals, args):
             comm,
             ssc_code,
             energisation_status,
-            properties,
+            dtc_meter_type,
             imp_mpan_core,
             imp_llfc_code,
             imp_supplier_contract,

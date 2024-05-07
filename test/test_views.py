@@ -8,6 +8,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GContract,
     GDn,
@@ -34,6 +35,7 @@ from chellow.models import (
     VoltageLevel,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_g_reading_frequencies,
     insert_g_units,
@@ -232,6 +234,8 @@ def test_site_get(client, sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     site.insert_e_supply(
@@ -254,7 +258,7 @@ def test_site_get(client, sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 0470 7514 535",
         "510",
         imp_supplier_contract,
@@ -377,6 +381,8 @@ def test_site_get_dumb(client, sess):
     mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -397,7 +403,7 @@ def test_site_get_dumb(client, sess):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 0470 7514 535",
         "510",
         imp_supplier_contract,
@@ -531,6 +537,8 @@ def test_supplies_get_e(sess, client):
     mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -551,7 +559,7 @@ def test_supplies_get_e(sess, client):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 0470 7514 535",
         "510",
         imp_supplier_contract,
@@ -583,7 +591,7 @@ def test_supplies_get_e(sess, client):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 0471 7514 532",
         "510",
         imp_supplier_contract,
@@ -758,6 +766,8 @@ def test_general_import_post_full(sess, client):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -778,7 +788,7 @@ def test_general_import_post_full(sess, client):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 0470 7514 535",
         "510",
         imp_supplier_contract,

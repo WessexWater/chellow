@@ -18,10 +18,10 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for code, desc in dtc_meter_types.items() %}
+			{% for dtc_meter_type in dtc_meter_types %}
 				<tr>
-					<td><a href="/e/dtc_meter_types/{{code}}">{{code}}</a></td>
-					<td>{{desc}}</td>
+					<td><a href="/e/dtc_meter_types/{{dtc_meter_type.id}}">{{dtc_meter_type.code}}</a></td>
+					<td>{{dtc_meter_type.description}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

@@ -484,7 +484,11 @@ def _process(
                         "serial numbers do match. "
                     )
 
-                chellow_meter_type = _meter_type(era)
+                chellow_dtc_meter_type = era.dtc_meter_type
+                if chellow_dtc_meter_type is None:
+                    chellow_meter_type = None
+                else:
+                    chellow_meter_type = chellow_dtc_meter_type.code
 
                 if chellow_meter_type != ecoes["meter-type"]:
                     problem += "The DTC meter types don't match."
@@ -560,7 +564,8 @@ def _process(
 
         msn = "" if era.msn is None else era.msn
 
-        meter_type = _meter_type(era)
+        dtc_meter_type = era.dtc_meter_type
+        meter_type = "" if dtc_meter_type is None else dtc_meter_type.code
 
         values = {
             "mpan_core": mpan_core,
@@ -603,21 +608,6 @@ def _process(
         values["diffs"] = []
         values["chellow_era_id"] = era.id
         report_run.insert_row(sess, "", titles, values, {})
-
-
-def _meter_type(era):
-    props = era.props
-    try:
-        return props["meter_type"]
-    except KeyError:
-        if era.pc.code == "00":
-            return "H"
-        elif len(era.channels) > 0:
-            return "RCAMR"
-        elif era.mtc_participant.meter_type.code in ["UM", "PH"]:
-            return ""
-        else:
-            return "N"
 
 
 def do_get(sess):

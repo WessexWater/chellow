@@ -8,6 +8,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GspGroup,
     MarketRole,
@@ -26,6 +27,7 @@ from chellow.models import (
     insert_bill_types,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_generator_types,
     insert_sources,
@@ -96,6 +98,8 @@ def test_content(mocker, sess):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source_net,
@@ -116,7 +120,7 @@ def test_content(mocker, sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,

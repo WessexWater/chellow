@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DTC Meter Types &raquo; {{dtc_meter_type_code}}
+	&raquo; DTC Meter Types &raquo; {{dtc_meter_type.code}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/e/dtc_meter_types">DTC Meter Types</a> &raquo; {{dtc_meter_type_code}}
+	<a href="/e/dtc_meter_types">DTC Meter Types</a> &raquo; {{dtc_meter_type.code}}
 {% endblock %}
 
 {% block content %}
@@ -13,11 +13,11 @@
 	<table>
 		<tr>
 			<th>Code</th>
-			<td>{{dtc_meter_type_code}}</td>
+			<td>{{dtc_meter_type.code}}</td>
 		</tr>
 		<tr>
 				<th>Description</th>
-				<td>{{dtc_meter_type_description}}</td>
+				<td>{{dtc_meter_type.description}}</td>
 		</tr>
 	</table>
 

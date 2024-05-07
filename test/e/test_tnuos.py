@@ -114,7 +114,7 @@ def test_process_banded_hh_ums(sess):
         comm,
         None,
         energisation_status,
-        {},
+        None,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,

@@ -8,6 +8,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GspGroup,
     MarketRole,
@@ -25,6 +26,7 @@ from chellow.models import (
     VoltageLevel,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_sources,
     insert_voltage_levels,
@@ -211,6 +213,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -231,7 +235,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,

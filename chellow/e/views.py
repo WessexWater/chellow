@@ -42,6 +42,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     Era,
     GeneratorType,
@@ -49,7 +50,6 @@ from chellow.models import (
     HhDatum,
     Laf,
     Llfc,
-    METER_TYPES,
     MarketRole,
     MeasurementRequirement,
     MeterPaymentType,
@@ -1505,15 +1505,14 @@ def dno_get(dno_id):
 
 @e.route("/dtc_meter_types")
 def dtc_meter_types_get():
-    return render_template("dtc_meter_types.html", dtc_meter_types=METER_TYPES)
+    dtc_meter_types = g.sess.scalars(select(DtcMeterType).order_by(DtcMeterType.code))
+    return render_template("dtc_meter_types.html", dtc_meter_types=dtc_meter_types)
 
 
-@e.route("/dtc_meter_types/<code>")
-def dtc_meter_type_get(code):
-    desc = METER_TYPES[code]
-    return render_template(
-        "dtc_meter_type.html", dtc_meter_type_code=code, dtc_meter_type_description=desc
-    )
+@e.route("/dtc_meter_types/<int:dtc_meter_type_id>")
+def dtc_meter_type_get(dtc_meter_type_id):
+    dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
+    return render_template("dtc_meter_type.html", dtc_meter_type=dtc_meter_type)
 
 
 @e.route("/duration_report")
@@ -1569,6 +1568,7 @@ def era_edit_get(era_id):
     cops = g.sess.query(Cop).order_by(Cop.code)
     comms = g.sess.query(Comm).order_by(Comm.code)
     gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
+    dtc_meter_types = g.sess.scalars(select(DtcMeterType).order_by(DtcMeterType.code))
     mop_contracts = (
         g.sess.query(Contract)
         .join(MarketRole)
@@ -1602,6 +1602,7 @@ def era_edit_get(era_id):
         cops=cops,
         comms=comms,
         gsp_groups=gsp_groups,
+        dtc_meter_types=dtc_meter_types,
         mop_contracts=mop_contracts,
         dc_contracts=dc_contracts,
         supplier_contracts=supplier_contracts,
@@ -1619,6 +1620,9 @@ def era_edit_form_get(era_id):
             select(EnergisationStatus).order_by(EnergisationStatus.code)
         )
         default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
+        dtc_meter_types = g.sess.scalars(
+            select(DtcMeterType).order_by(DtcMeterType.code)
+        )
 
         if "start_year" in request.values:
             start_date = req_date("start")
@@ -1938,6 +1942,7 @@ def era_edit_form_get(era_id):
             start_date=start_date,
             imp_llfcs=imp_llfcs,
             exp_llfcs=exp_llfcs,
+            dtc_meter_types=dtc_meter_types,
         )
     except BadRequest as e:
         g.sess.rollback()
@@ -1954,6 +1959,7 @@ def era_edit_form_get(era_id):
             sscs=sscs,
             mtc_participants=mtc_participants,
             mtc_participant=mtc_participant,
+            dtc_meter_types=dtc_meter_types,
         )
 
 
@@ -2013,7 +2019,11 @@ def era_edit_post(era_id):
             energisation_status = EnergisationStatus.get_by_id(
                 g.sess, energisation_status_id
             )
-            properties = req_zish("properties")
+            dtc_meter_type_id = req_int_none("dtc_meter_type_id")
+            if dtc_meter_type_id is None:
+                dtc_meter_type = None
+            else:
+                dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
 
             has_imp_mpan = req_bool("has_imp_mpan")
             has_exp_mpan = req_bool("has_exp_mpan")
@@ -2072,7 +2082,7 @@ def era_edit_post(era_id):
                 comm,
                 ssc_code,
                 energisation_status,
-                properties,
+                dtc_meter_type,
                 imp_mpan_core,
                 imp_llfc_code,
                 imp_supplier_contract,
@@ -4626,7 +4636,12 @@ def site_add_e_supply_post(site_id):
         energisation_status = EnergisationStatus.get_by_id(
             g.sess, energisation_status_id
         )
-        properties = req_zish("properties")
+        dtc_meter_type_id = req_int_none("dtc_meter_type_id")
+        if dtc_meter_type_id is None:
+            dtc_meter_type = None
+        else:
+            dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
+
         if "generator_type_id" in request.form:
             generator_type_id = req_int("generator_type_id")
             generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
@@ -4703,7 +4718,7 @@ def site_add_e_supply_post(site_id):
             comm,
             None if ssc is None else ssc.code,
             energisation_status,
-            properties,
+            dtc_meter_type,
             imp_mpan_core,
             imp_llfc_code,
             imp_supplier_contract,

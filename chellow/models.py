@@ -2452,6 +2452,38 @@ class Laf(Base, PersistentClass):
         self.value = value
 
 
+# J0483 in https://www.electralink.co.uk/data-catalogues/dtc-catalogue/
+class DtcMeterType(Base, PersistentClass):
+    __tablename__ = "dtc_meter_type"
+    id = Column(Integer, primary_key=True)
+    code = Column(String, nullable=False, unique=True)
+    description = Column(String, nullable=False)
+    eras = relationship("Era", backref="dtc_meter_type")
+
+    def __init__(self, code, description):
+        self.code = code
+        self.description = description
+
+    @classmethod
+    def insert(cls, sess, code, description):
+        dtc_meter_type = cls(code, description)
+        sess.add(dtc_meter_type)
+        return dtc_meter_type
+
+    @staticmethod
+    def find_by_code(sess, code):
+        return sess.execute(
+            select(DtcMeterType).where(DtcMeterType.code == code)
+        ).scalar_one_or_none()
+
+    @classmethod
+    def get_by_code(cls, sess, code):
+        dtc_meter_type = cls.find_by_code(sess, code)
+        if dtc_meter_type is None:
+            raise Exception(f"Can't find the DTC meter type with code {code}.")
+        return dtc_meter_type
+
+
 class MeterType(Base, PersistentClass):
     __tablename__ = "meter_type"
     id = Column(Integer, primary_key=True)
@@ -3234,42 +3266,6 @@ class EnergisationStatus(Base, PersistentClass):
         return energisation_status
 
 
-METER_TYPES = {
-    "H": "Half Hourly",
-    "K": "Key",
-    "LAG": "Lag",
-    "LEAD": "Lead",
-    "MAIN": "Main",
-    "N": "Non-Half Hourly",
-    "NCAMR": "Non-remotely Configurable Automated Meter Reading",
-    "NSS": "A meter that meets the definition of an ADM but is not compliant "
-    "with any version of SMETS",
-    "RCAMR": "Remotely Configurable Automated Meter Reading without remote "
-    "enable/disable capability",
-    "RCAMY": "Remotely Configurable Automated Meter Reading with remote "
-    "enable/disable capability",
-    "S": "Smartcard Prepayment",
-    "S1": "A meter that is compliant with the Smart Metering Equipment "
-    "Technical Specifications 1 (SMETS1)",
-    "S2A": "A single element meter that is compliant with SMETS2",
-    "S2B": "A twin element meter that is compliant with SMETS2",
-    "S2C": "A polyphase meter that is compliant with SMETS2",
-    "S2AD": "A single element meter with one or more ALCS that is compliant "
-    "with SMETS2",
-    "S2BD": "A twin element meter with one or more ALCS that is compliant "
-    "with SMETS2",
-    "S2CD": "A polyphase meter with one or more ALCS that is compliant with " "SMETS2",
-    "S2ADE": "Single element meter with one or more ALCS and Boost Function "
-    "that is compliant with SMETS2",
-    "S2BDE": "A twin element meter with one or more ALCS and Boost Function "
-    "that is compliant with SMETS2",
-    "S2CDE": "A polyphase meter with one or more ALCS and Boost Function that "
-    "is compliant with SMETS2",
-    "SPECL": "Special",
-    "T": "Token",
-}
-
-
 class Era(Base, PersistentClass):
     __tablename__ = "era"
     id = Column(Integer, primary_key=True)
@@ -3298,7 +3294,7 @@ class Era(Base, PersistentClass):
     energisation_status_id = Column(
         Integer, ForeignKey("energisation_status.id"), nullable=False
     )
-    properties = Column(Text, nullable=False)
+    dtc_meter_type_id = Column(Integer, ForeignKey("dtc_meter_type.id"))
     imp_mpan_core = Column(String)
     imp_llfc_id = Column(Integer, ForeignKey("llfc.id"))
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
@@ -3441,7 +3437,7 @@ class Era(Base, PersistentClass):
                 self.comm,
                 None if self.ssc is None else self.ssc.code,
                 self.energisation_status,
-                loads(self.properties),
+                self.dtc_meter_type,
                 self.imp_mpan_core,
                 None if self.imp_llfc is None else self.imp_llfc.code,
                 self.imp_supplier_contract,
@@ -3470,7 +3466,7 @@ class Era(Base, PersistentClass):
         comm,
         ssc_code,
         energisation_status,
-        properties,
+        dtc_meter_type,
         imp_mpan_core,
         imp_llfc_code,
         imp_supplier_contract,
@@ -3521,22 +3517,7 @@ class Era(Base, PersistentClass):
                 "A NHH supply must have a Standard Settlement Configuration."
             )
         self.energisation_status = energisation_status
-
-        if isinstance(properties, dict):
-            try:
-                meter_type = properties["meter_type"]
-                if meter_type not in METER_TYPES:
-                    raise BadRequest(
-                        f"The meter type {meter_type} must be one of {METER_TYPES}."
-                    )
-            except KeyError:
-                pass
-
-            self.properties = dumps(properties)
-        else:
-            raise Exception(
-                f"The properties argument must be a dict, rather than {properties}."
-            )
+        self.dtc_meter_type = dtc_meter_type
 
         locs = locals()
         voltage_level = None
@@ -3776,28 +3757,12 @@ class Era(Base, PersistentClass):
         sess.flush()
 
     @property
-    def props(self):
-        if not hasattr(self, "_props"):
-            self._props = loads(self.properties)
-        return self._props
-
-    @property
     def meter_category(self):
         if not hasattr(self, "_meter_category"):
-            meter_type = self.props.get("meter_type")
-            try:
-                cat = METER_CATEGORY[meter_type]
-            except KeyError:
-                if self.pc.code == "00":
-                    cat = "hh"
-                elif len(self.channels) > 0:
-                    cat = "amr"
-                elif self.mtc_participant.meter_type.code in ["UM", "PH"]:
-                    cat = "unmetered"
-                else:
-                    cat = "nhh"
+            self._meter_category = METER_CATEGORY[
+                None if self.dtc_meter_type is None else self.dtc_meter_type.code
+            ]
 
-            self._meter_category = cat
         return self._meter_category
 
     def get_physical_site(self, sess):
@@ -3808,7 +3773,42 @@ class Era(Base, PersistentClass):
         )
 
 
-METER_CATEGORY = {"H": "hh", "N": "nhh", "S1": "amr"}
+METER_CATEGORY = {
+    None: "unmetered",
+    "CHECK": "hh",
+    "H": "hh",
+    "K": "nhh",
+    "LAG_": "hh",
+    "LEAD_": "hh",
+    "MAIN_": "hh",
+    "N": "nhh",
+    "NCAMR": "amr",
+    "NSS": "amr",
+    "RCAMR": "amr",
+    "RCAMY": "amr",
+    "S": "nhh",
+    "S1": "amr",
+    "S2A": "amr",
+    "S2B": "amr",
+    "S2C": "amr",
+    "S2AD": "amr",
+    "S2BD": "amr",
+    "S2CDE": "amr",
+    "SPECL": "nhh",
+    "T": "nhh",
+    "2ADF": "amr",
+    "2ADEF": "amr",
+    "2AEF": "amr",
+    "2AF": "amr",
+    "2BF": "amr",
+    "2BDF": "amr",
+    "2BDEF": "amr",
+    "2BEF": "amr",
+    "2CDEF": "amr",
+    "2CF": "amr",
+    "2CDF": "amr",
+    "2CEF": "amr",
+}
 
 
 class Channel(Base, PersistentClass):
@@ -4521,7 +4521,7 @@ class Supply(Base, PersistentClass):
             template_era.comm,
             None if template_era.ssc is None else template_era.ssc.code,
             template_era.energisation_status,
-            loads(template_era.properties),
+            template_era.dtc_meter_type,
             template_era.imp_mpan_core,
             imp_llfc_code,
             template_era.imp_supplier_contract,
@@ -6567,6 +6567,94 @@ def insert_voltage_levels(sess):
         VoltageLevel.insert(sess, code, desc)
 
 
+def insert_dtc_meter_types(sess):
+    for code, desc in (
+        ("CHECK", "Check"),
+        ("H", "Half Hourly"),
+        ("K", "Key"),
+        ("LAG_", "Lag"),
+        ("LEAD_", "Lead"),
+        ("MAIN_", "Main"),
+        ("N", "Non-Half Hourly"),
+        ("NCAMR", "Non-remotely Configurable Automated Meter Reading"),
+        (
+            "NSS",
+            "A meter that meets the definition of an ADM but is not compliant with "
+            "any version of SMETS",
+        ),
+        (
+            "RCAMR",
+            "Remotely Configurable Automated Meter Reading without remote "
+            "enable/disable capability",
+        ),
+        (
+            "RCAMY",
+            "Remotely Configurable Automated Meter Reading with remote "
+            "enable/disable capability",
+        ),
+        ("S", "Smartcard Prepayment"),
+        (
+            "S1",
+            "A meter that is compliant with the Smart Metering Equipment Technical "
+            "Specifications 1 (SMETS1)",
+        ),
+        ("S2A", "A single element meter that is compliant with SMETS2"),
+        ("S2B", "A twin element meter that is compliant with SMETS2"),
+        ("S2C", "A polyphase meter that is compliant with SMETS2"),
+        (
+            "S2AD",
+            "A single element meter with one or more ALCS that is compliant with "
+            "SMETS2",
+        ),
+        (
+            "S2BD",
+            "A twin element meter with one or more ALCS that is compliant with "
+            "SMETS2",
+        ),
+        (
+            "S2CDE",
+            "A polyphase meter with one or more ALCS and Boost Function that is "
+            "compliant with SMETS2",
+        ),
+        ("SPECL", "Special"),
+        ("T", "Token"),
+        (
+            "2ADF",
+            "Single Element with ALCS and Auxiliary Proportional Controller (APC) "
+            "that is compliant with SMETS2",
+        ),
+        (
+            "2ADEF",
+            "Single Element with ALCS, Boost Function and APC that is compliant "
+            "with SMETS2",
+        ),
+        (
+            "2AEF",
+            "Single Element with Boost Function and APC that is compliant with SMETS2",
+        ),
+        ("2AF", "Single Element with APC that is compliant with SMETS2"),
+        ("2BF", "Twin Element with APC that is compliant with SMETS2"),
+        ("2BDF", "Twin Element with ALCS and APC that is compliant with SMETS2"),
+        (
+            "2BDEF",
+            "Twin Element with ALCS, Boost Function and APC that is compliant with "
+            "SMETS2",
+        ),
+        (
+            "2BEF",
+            "Twin Element with Boost Function and APC that is compliant with SMETS2",
+        ),
+        (
+            "2CDEF",
+            "Polyphase with ALCS, Boost Function and APC that is compliant with SMETS2",
+        ),
+        ("2CF", "Polyphase with APC that is compliant with SMETS2"),
+        ("2CDF", "Polyphase with ALCS and APC that is compliant with SMETS2"),
+        ("2CEF", "Polyphase with Boost Function and APC that is compliant with SMETS2"),
+    ):
+        DtcMeterType.insert(sess, code, desc)
+
+
 def db_init(sess, root_path):
     db_name = config["PGDATABASE"]
     log_message("Initializing database.")
@@ -6657,6 +6745,9 @@ def db_init(sess, root_path):
         ("tnuos", {}),
     ):
         Contract.insert_non_core(sess, name, "", properties, last_month_start, None, {})
+
+    insert_dtc_meter_types(sess)
+    sess.commit()
 
     insert_g_read_types(sess)
     sess.commit()
@@ -7295,6 +7386,53 @@ def db_upgrade_45_to_46(sess, root_path):
     )
 
 
+def db_upgrade_46_to_47(sess, root_path):
+    insert_dtc_meter_types(sess)
+    sess.flush()
+
+    sess.execute(
+        text(
+            "alter table era add dtc_meter_type_id integer references dtc_meter_type "
+            "(id);"
+        )
+    )
+    for era_id, pc_id, era_properties, mtc_participant_id in sess.execute(
+        text("select era.id, era.pc_id, era.properties, mtc_participant_id from era")
+    ):
+        dtc_meter_type_id = None
+        props = loads(era_properties)
+        if "meter_type" in props:
+            mt_code = props["meter_type"]
+            dtc_meter_type = DtcMeterType.find_by_code(sess, mt_code)
+            dtc_meter_type_id = dtc_meter_type.id
+
+        if dtc_meter_type_id is None:
+            mtc_participant = MtcParticipant.get_by_id(sess, mtc_participant_id)
+            if mtc_participant.meter_type.code not in ["UM", "PH"]:
+                pc = Pc.get_by_id(sess, pc_id)
+                if pc.code == "00":
+                    dtc_meter_type_code = "H"
+                else:
+                    channels = sess.scalars(
+                        select(Channel).where(Channel.era_id == era_id)
+                    ).all()
+                    if len(channels) > 0:
+                        dtc_meter_type_code = "RCAMR"
+                    else:
+                        dtc_meter_type_code = "N"
+                dtc_meter_type = DtcMeterType.get_by_code(sess, dtc_meter_type_code)
+                dtc_meter_type_id = dtc_meter_type.id
+
+        sess.execute(
+            text(
+                "UPDATE era SET dtc_meter_type_id = :dtc_meter_type_id "
+                "where id = :era_id"
+            ),
+            params={"dtc_meter_type_id": dtc_meter_type_id, "era_id": era_id},
+        )
+    sess.execute(text("alter table era drop column properties;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7326,6 +7464,7 @@ upgrade_funcs.extend(
         db_upgrade_43_to_44,
         db_upgrade_44_to_45,
         db_upgrade_45_to_46,
+        db_upgrade_46_to_47,
     ]
 )
 

@@ -5,6 +5,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GspGroup,
     MarketRole,
@@ -24,6 +25,7 @@ from chellow.models import (
     VoltageLevel,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_sources,
     insert_voltage_levels,
@@ -427,6 +429,8 @@ def test_SiteSource(sess):
     MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -447,7 +451,7 @@ def test_SiteSource(sess):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         supplier_contract,

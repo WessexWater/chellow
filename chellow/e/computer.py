@@ -552,6 +552,7 @@ class DataSource:
         self.era_map_mop_contracts = self.era_map.get("mop_contracts", {})
         self.era_map_cops = self.era_map.get("cops", {})
         self.era_map_comms = self.era_map.get("comms", {})
+        self.era_map_dtc_meter_types = self.era_map.get("dtc_meter_types", {})
         self.era_map_mpan_cores = self.era_map.get("mpan_cores", {})
         self.era_map_dnos = self.era_map.get("dnos", {})
         self.era_map_gsp_groups = self.era_map.get("gsp_groups", {})
@@ -672,9 +673,16 @@ class SiteSource(DataSource):
             else:
                 self.sc = era.imp_sc
 
-            self.properties = self.era_map.get("properties_overwritten", {})
-            self.properties.update(era.props)
-            self.properties.update(self.era_map.get("properties_overwrite", {}))
+            if era.dtc_meter_type is None:
+                era_dtc_meter_type_code = None
+            else:
+                era_dtc_meter_type_code = era.dtc_meter_type.code
+            if era_dtc_meter_type_code in self.era_map_dtc_meter_types:
+                self.dtc_meter_type_code = self.era_map_dtc_meter_types[
+                    era_dtc_meter_type_code
+                ]
+            else:
+                self.dtc_meter_type_code = era_dtc_meter_type_code
 
             self.is_import = True
             self.voltage_level_code = self.llfc.voltage_level.code
@@ -1051,9 +1059,16 @@ class SupplySource(DataSource):
         else:
             self.comm_code = era.comm.code
 
-        self.properties = dict(self.era_map.get("properties_overwritten", {}))
-        self.properties.update(era.props)
-        self.properties.update(self.era_map.get("properties_overwrite", {}))
+        if era.dtc_meter_type is None:
+            era_dtc_meter_type_code = None
+        else:
+            era_dtc_meter_type_code = era.dtc_meter_type.code
+        if era_dtc_meter_type_code in self.era_map_dtc_meter_types:
+            self.dtc_meter_type_code = self.era_map_dtc_meter_types[
+                era_dtc_meter_type_code
+            ]
+        else:
+            self.dtc_meter_type_code = era_dtc_meter_type_code
 
         self.id = self.mpan_core
         self.msn = era.msn
@@ -1632,18 +1647,6 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
         if bill.id != r.bill.id:
             continue
 
-        era = supply.find_era_at(sess, dt)
-        if era is None:
-            era_coeff = None
-        else:
-            era_properties = PropDict(
-                chellow.utils.url_root + "eras/" + str(era.id), loads(era.properties)
-            )
-            try:
-                era_coeff = float(era_properties["coefficient"])
-            except KeyError:
-                era_coeff = None
-
         reads = {}
         coeffs = {}
         for coeff, value, tpr_code in sess.query(
@@ -1656,7 +1659,7 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             r_dt == dt,
         ):
             reads[tpr_code] = value
-            coeffs[tpr_code] = coeff if era_coeff is None else era_coeff
+            coeffs[tpr_code] = coeff
 
         yield {
             "date": dt,

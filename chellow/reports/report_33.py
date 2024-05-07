@@ -375,7 +375,7 @@ limit 3
             latest_mop_bill_date,
             supply_start_date,
             supply_finish_date,
-            era.properties,
+            None if era.dtc_meter_type is None else era.dtc_meter_type.code,
             imp_tnuos_band,
         ]
         + channel_values
@@ -447,7 +447,7 @@ def _process(sess, f, date, supply_id, mpan_cores):
         "Latest MOP Bill Date",
         "Supply Start Date",
         "Supply Finish Date",
-        "Properties",
+        "DTC Meter Type",
         "tnuos_band",
         "Import ACTIVE?",
         "Import REACTIVE_IMPORT?",

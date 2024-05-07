@@ -11,6 +11,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GspGroup,
     MarketRole,
@@ -30,6 +31,7 @@ from chellow.models import (
     VoltageLevel,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_sources,
     insert_voltage_levels,
@@ -99,6 +101,8 @@ def test_SiteSource_init_hh_data(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -119,7 +123,7 @@ def test_SiteSource_init_hh_data(sess, mocker):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -396,6 +400,8 @@ def test_init_hh_data(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -416,7 +422,7 @@ def test_init_hh_data(sess, mocker):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -565,6 +571,8 @@ def test_init_hh_data_export(sess, mocker):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -585,7 +593,7 @@ def test_init_hh_data_export(sess, mocker):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         None,
         None,
         None,
@@ -753,6 +761,8 @@ def test_SupplySource_init_hh(sess, mocker):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -773,7 +783,7 @@ def test_SupplySource_init_hh(sess, mocker):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         None,
         None,
         None,
@@ -937,6 +947,8 @@ def test_SupplySource_init_nhh(sess, mocker):
     MtcLlfc.insert(sess, mtc_participant, llfc_exp, valid_from, None)
     mtc_llfc_exp_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc_exp, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_exp_ssc, pc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -957,7 +969,7 @@ def test_SupplySource_init_nhh(sess, mocker):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         None,
         None,
         None,

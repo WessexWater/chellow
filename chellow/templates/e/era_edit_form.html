@@ -89,14 +89,14 @@
 		{% endfor %}
 	</select>
 
-	<label>Properties</label>
-	<div>
-		{{input_textarea('properties', era.properties, 10, 80)}}
-		<p>
-			The <code>meter_type</code> property contains a
-			<a href="/e/dtc_meter_types">DTC Meter Type Code</a>.
-		</p>
-	</div>
+	<label>DTC Meter Type</label>
+	<select name="dtc_meter_type_id">
+		{{input_option('dtc_meter_type_id', '', 'Unmetered')}}
+		{% for dtc_meter_type in dtc_meter_types %}
+			{{input_option('dtc_meter_type_id', dtc_meter_type.id,
+		 		dtc_meter_type.code + ' ' + dtc_meter_type.description, era.dtc_meter_type.id)}}
+		{% endfor %}
+	</select>
 
 	<label>Has An Import MPAN?</label>
 	{{input_checkbox('has_imp_mpan')}}

@@ -17,6 +17,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GeneratorType,
     GspGroup,
@@ -37,6 +38,7 @@ from chellow.models import (
     insert_bill_types,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_generator_types,
     insert_sources,
@@ -313,6 +315,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -333,7 +337,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -597,6 +601,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -617,7 +623,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -815,6 +821,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -835,7 +843,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -1246,6 +1254,8 @@ def virtual_bill(ds):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     imp_mpan_core = "22 7867 6232 781"
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -1266,7 +1276,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -1564,6 +1574,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site_1.insert_e_supply(
         sess,
         source,
@@ -1584,7 +1596,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -1890,6 +1902,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -1910,7 +1924,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -2483,6 +2497,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -2503,7 +2519,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -2916,6 +2932,8 @@ def virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -2936,7 +2954,7 @@ def virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -3254,6 +3272,8 @@ def displaced_virtual_bill(ds):
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source_net,
@@ -3274,7 +3294,7 @@ def displaced_virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -3306,7 +3326,7 @@ def displaced_virtual_bill(ds):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7864 6232 780",
         "510",
         imp_supplier_contract,

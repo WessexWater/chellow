@@ -21,7 +21,7 @@
 					<th rowspan="2">
 						<span title="Standard Settlement Configuration">SSC</span>
 					</th>
-					<th rowspan="2"><span title="Properties">Props</span></th>
+					<th rowspan="2"><span title="DTC Meter Type">Meter</span></th>
 					<th colspan="2"><span title="Meter Operator">MOP</span></th>
 					<th colspan="2"><span title="Data Collector">DC</span></th>
 					<th rowspan="2">
@@ -75,7 +75,8 @@
 					</td>
 					<td rowspan="4">{{ era.msn }}</td>
 					<td rowspan="4">
-							<a href="/e/mtc_participants/{{era.mtc_participant.id}}" title="{{era.mtc_participant.description}}">{{era.mtc_participant.mtc.code}}</a>
+							<a href="/e/mtc_participants/{{era.mtc_participant.id}}"
+							 	title="{{era.mtc_participant.description}}">{{era.mtc_participant.mtc.code}}</a>
 					</td>
 					<td rowspan="4">
 							<a href="/e/cops/{{era.cop.id}}" title="{{era.cop.description}}">{{era.cop.code}}</a>
@@ -88,7 +89,9 @@
 							<a href="/e/sscs/{{era.ssc.id}}" title="{{era.ssc.description}}">{{era.ssc.code}}</a>
 							{% endif %}
 					</td>
-					<td rowspan="4">{{era.properties}}</td>
+					<td rowspan="4">
+						<a href="/e/dtc_meter_types/{{era.dtc_meter_type.id}}">{{era.dtc_meter_type.code}}</a>
+					</td>
 					<td rowspan="4">
 						<a href="/e/mop_contracts/{{era.mop_contract.id}}">{{era.mop_contract.name}}</a>
 					</td>

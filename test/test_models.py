@@ -13,6 +13,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     Era,
     GspGroup,
@@ -39,6 +40,7 @@ from chellow.models import (
     insert_bill_types,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_sources,
     insert_voltage_levels,
@@ -116,6 +118,8 @@ def test_Bill_update(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -136,7 +140,7 @@ def test_Bill_update(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         supplier_contract,
@@ -224,6 +228,8 @@ def test_Bill_insert_read_duplicate(sess):
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
         source,
@@ -244,7 +250,7 @@ def test_Bill_insert_read_duplicate(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         "22 7867 6232 781",
         "510",
         imp_supplier_contract,
@@ -356,6 +362,8 @@ def test_Channel_delete_data(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
         sess,
@@ -377,7 +385,7 @@ def test_Channel_delete_data(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -455,6 +463,8 @@ def test_Era_update(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
         sess,
@@ -476,7 +486,7 @@ def test_Era_update(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -505,7 +515,7 @@ def test_Era_update(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -591,6 +601,8 @@ def test_Era_meter_category_dumb(sess):
     mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
         sess,
@@ -612,7 +624,7 @@ def test_Era_meter_category_dumb(sess):
         comm,
         ssc.code,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -807,6 +819,8 @@ def test_Era_init_llfc_valid_to(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     imp_mpan_core = "22 7867 6232 781"
     with pytest.raises(
         BadRequest,
@@ -833,7 +847,7 @@ def test_Era_init_llfc_valid_to(sess):
             comm,
             None,
             energisation_status,
-            {},
+            dtc_meter_type,
             imp_mpan_core,
             "510",
             imp_supplier_contract,
@@ -1037,6 +1051,8 @@ def test_Supply_insert_era_at(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     era1_msn = "e1msn"
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
@@ -1059,7 +1075,7 @@ def test_Supply_insert_era_at(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -1090,7 +1106,7 @@ def test_Supply_insert_era_at(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -1172,6 +1188,8 @@ def test_Supply_insert_era_at_nhh(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     era1_msn = "e1msn"
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
@@ -1194,7 +1212,7 @@ def test_Supply_insert_era_at_nhh(sess):
         comm,
         ssc_code,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,
@@ -1274,6 +1292,8 @@ def test_Supply_insert_era_at_hh_data(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     era1_msn = "e1msn"
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
@@ -1296,7 +1316,7 @@ def test_Supply_insert_era_at_hh_data(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         imp_mpan_core,
         "510",
         imp_supplier_contract,

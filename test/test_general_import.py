@@ -17,6 +17,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DtcMeterType,
     EnergisationStatus,
     GBill,
     GContract,
@@ -42,6 +43,7 @@ from chellow.models import (
     insert_bill_types,
     insert_comms,
     insert_cops,
+    insert_dtc_meter_types,
     insert_energisation_statuses,
     insert_g_read_types,
     insert_g_reading_frequencies,
@@ -555,6 +557,8 @@ def test_general_import_era_insert(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -575,7 +579,7 @@ def test_general_import_era_insert(sess):
         comm,
         None,
         energisation_status,
-        {},
+        dtc_meter_type,
         None,
         None,
         None,
@@ -689,6 +693,8 @@ def test_general_import_era_insert_nhh(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     site.insert_e_supply(
         sess,
         source,
@@ -709,7 +715,7 @@ def test_general_import_era_insert_nhh(sess):
         comm,
         ssc_code,
         energisation_status,
-        {},
+        dtc_meter_type,
         None,
         None,
         None,
@@ -1012,6 +1018,8 @@ def test_general_import_supply_insert_HH(sess):
     EnergisationStatus.get_by_code(sess, energisation_status_code)
     gsp_group_code = "_L"
     GspGroup.insert(sess, gsp_group_code, "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type_code = "H"
     supply_name = "Bob"
     start_date = vf
     msn = "khgsa;kh"
@@ -1039,7 +1047,7 @@ def test_general_import_supply_insert_HH(sess):
         comm_code,
         "",
         energisation_status_code,
-        "{}",
+        dtc_meter_type_code,
         "22 7867 6232 781",
         llfc_code,
         "0",
@@ -1111,6 +1119,8 @@ def test_general_import_supply_insert_NHH(sess):
     EnergisationStatus.get_by_code(sess, energisation_status_code)
     gsp_group_code = "_L"
     GspGroup.insert(sess, gsp_group_code, "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type_code = "N"
     supply_name = "Bob"
     start_date = vf
     msn = "khgsa;kh"
@@ -1143,7 +1153,7 @@ def test_general_import_supply_insert_NHH(sess):
         comm_code,
         ssc_code,
         energisation_status_code,
-        "{}",
+        dtc_meter_type_code,
         "22 7867 6232 781",
         llfc_code,
         "0",

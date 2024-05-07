@@ -32,7 +32,7 @@ def test_eras(mocker):
             "era.comm_id AS era_comm_id, "
             "era.ssc_id AS era_ssc_id, "
             "era.energisation_status_id AS era_energisation_status_id, "
-            "era.properties AS era_properties, "
+            "era.dtc_meter_type_id AS era_dtc_meter_type_id, "
             "era.imp_mpan_core AS era_imp_mpan_core, "
             "era.imp_llfc_id AS era_imp_llfc_id, "
             "era.imp_supplier_contract_id AS era_imp_supplier_contract_id, "
@@ -52,8 +52,8 @@ def test_eras(mocker):
             "ORDER BY supply.id"
         )
     )
-    print(desired)
-    assert str(eras) == desired
+    actual = str(eras)
+    assert actual == desired
 
 
 def test_content(mocker, sess):
