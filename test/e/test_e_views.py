@@ -558,13 +558,13 @@ def test_dc_contract_edit_delete(sess, client):
 
 
 def test_dc_contract_edit_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_C = MarketRole.insert(sess, "C", "DC")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    party = participant.insert_party(
-        sess, market_role_C, "DC Ltd.", utc_datetime(2000, 1, 1), None, None
-    )
+    party = participant.insert_party(sess, market_role_C, "DC Ltd.", vf, None, None)
+    properties = {"sora": "ai"}
     contract = Contract.insert_dc(
-        sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "DC 2000", participant, "", properties, vf, None, {}
     )
     sess.commit()
 
@@ -581,24 +581,13 @@ def virtual_bill(ds):
         if hh['utc-is-month-end']:
             bill['net-gbp'] += 7
 """,
-        "properties": """{
-  "enabled": true,
-  "protocol": "https",
-  "download_days": 8,
-  "url_template":
-  "http://localhost:8080/hh_api?from={{chunk_start.strftime('%d/%m/%Y')}}&to={{chunk_finish.strftime('%d/%m/%Y')}}",
-  "url_values": {
-    "22 7907 4116 080": {
-      "api_key": "768234ht"
-    }
-  }
-}
-""",
     }
 
     response = client.post(f"/e/dc_contracts/{contract.id}/edit", data=data)
 
     match(response, 303)
+    sess.rollback()
+    assert contract.make_properties() == properties
 
 
 def test_dc_rate_script_add_post(sess, client):

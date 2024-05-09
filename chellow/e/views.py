@@ -1174,7 +1174,7 @@ def dc_contract_edit_post(contract_id):
             name = req_str("name")
             charge_script = req_str("charge_script")
             party = Party.get_by_id(g.sess, party_id)
-            contract.update(name, party, charge_script, contract.properties)
+            contract.update(name, party, charge_script, contract.make_properties())
             g.sess.commit()
             return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
     except BadRequest as e:
