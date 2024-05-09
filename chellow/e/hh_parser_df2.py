@@ -38,7 +38,8 @@ class StarkDf2HhParser:
                 self.line_number, self.line = next(self.reader)
                 lline = self.line.strip().upper()
                 if lline.startswith("#O"):
-                    self.core = parse_mpan_core(lline[2:])
+                    outstation_parts = lline[2:].split("-")
+                    self.core = parse_mpan_core(outstation_parts[0])
                     if self.core in self.mpan_map and self.mpan_map[self.core] is None:
                         msg = f"The MPAN core {self.core} has been ignored"
                         if len(self.messages) == 0 or self.messages[-1] != msg:
