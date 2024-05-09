@@ -7404,7 +7404,8 @@ def db_upgrade_46_to_47(sess, root_path):
         if "meter_type" in props:
             mt_code = props["meter_type"]
             dtc_meter_type = DtcMeterType.find_by_code(sess, mt_code)
-            dtc_meter_type_id = dtc_meter_type.id
+            if dtc_meter_type is not None:
+                dtc_meter_type_id = dtc_meter_type.id
 
         if dtc_meter_type_id is None:
             mtc_participant = MtcParticipant.get_by_id(sess, mtc_participant_id)
