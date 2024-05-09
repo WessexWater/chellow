@@ -1246,7 +1246,7 @@ def downloads_get():
         files.append(
             {
                 "name": fl,
-                "last_modified": Datetime.utcfromtimestamp(statinfo.st_mtime),
+                "last_modified": to_utc(Datetime.utcfromtimestamp(statinfo.st_mtime)),
                 "size": statinfo.st_size,
             }
         )
