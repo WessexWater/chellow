@@ -540,7 +540,6 @@ def _process(
             values["chellow_era_id"] = chellow_era_id
             report_run.insert_row(sess, "", titles, values, {})
             sess.commit()
-        sess.expunge_all()
 
     for mpan_core in mpans:
         supply = Supply.get_by_mpan_core(sess, mpan_core)
