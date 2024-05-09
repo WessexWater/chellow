@@ -6651,6 +6651,20 @@ def insert_dtc_meter_types(sess):
         ("2CF", "Polyphase with APC that is compliant with SMETS2"),
         ("2CDF", "Polyphase with ALCS and APC that is compliant with SMETS2"),
         ("2CEF", "Polyphase with Boost Function and APC that is compliant with SMETS2"),
+        (
+            "S2ADE",
+            "Single element meter with one or more ALCS and Boost Function that is "
+            "compliant with SMETS2",
+        ),
+        (
+            "S2BDE",
+            "A twin element meter with one or more ALCS and Boost Function that is "
+            "compliant with SMETS2",
+        ),
+        (
+            "S2CD",
+            "A polyphase meter with one or more ALCS that is compliant with SMETS2",
+        ),
     ):
         DtcMeterType.insert(sess, code, desc)
 
@@ -7434,6 +7448,26 @@ def db_upgrade_46_to_47(sess, root_path):
     sess.execute(text("alter table era drop column properties;"))
 
 
+def db_upgrade_47_to_48(sess, root_path):
+    for code, desc in (
+        (
+            "S2ADE",
+            "Single element meter with one or more ALCS and Boost Function that is "
+            "compliant with SMETS2",
+        ),
+        (
+            "S2BDE",
+            "A twin element meter with one or more ALCS and Boost Function that is "
+            "compliant with SMETS2",
+        ),
+        (
+            "S2CD",
+            "A polyphase meter with one or more ALCS that is compliant with SMETS2",
+        ),
+    ):
+        DtcMeterType.insert(sess, code, desc)
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7466,6 +7500,7 @@ upgrade_funcs.extend(
         db_upgrade_44_to_45,
         db_upgrade_45_to_46,
         db_upgrade_46_to_47,
+        db_upgrade_47_to_48,
     ]
 )
 
