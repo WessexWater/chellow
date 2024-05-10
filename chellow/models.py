@@ -3808,6 +3808,9 @@ METER_CATEGORY = {
     "2CF": "amr",
     "2CDF": "amr",
     "2CEF": "amr",
+    "S2ADE": "amr",
+    "S2BDE": "amr",
+    "S2CD": "amr",
 }
 
 
