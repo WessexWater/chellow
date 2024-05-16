@@ -166,7 +166,7 @@ def _process_site(
                         "imp-mpan-core": "displaced",
                         "site-code": site.code,
                         "site-name": site.name,
-                        "associated-site-ids": set(),
+                        "associated-site-codes": set(),
                         "source": "displaced",
                         "supply-name": "displaced",
                     },
@@ -211,7 +211,7 @@ def _process_site(
                         "finish-date": main_ss.finish_date,
                         "site-code": site.code,
                         "site-name": site.name,
-                        "associated-site-ids": set(),
+                        "associated-site-codes": set(),
                     },
                 )
 
@@ -405,7 +405,7 @@ def _process_site(
 
             vals["imp-mpan-core"] = imp_mpan_core
             vals["exp-mpan-core"] = exp_mpan_core
-            vals["associated-site-ids"] = era_associates
+            vals["associated-site-codes"] = era_associates
             vals["era-start-date"] = sss.era.start_date
             vals["era-finish-date"] = sss.era.finish_date
             vals["imp-supplier-contract"] = imp_supplier_contract_name
@@ -435,7 +435,7 @@ def _process_site(
 
             supply_data["imp-mpan-core"] = imp_mpan_core
             supply_data["exp-mpan-core"] = exp_mpan_core
-            supply_data["associated-site-ids"].update(era_associates)
+            supply_data["associated-site-codes"].update(era_associates)
             supply_data["start-date"] = min(sss.start_date, supply_data["start-date"])
             supply_data["finish-date"] = max(
                 sss.finish_date, supply_data["finish-date"]
@@ -844,9 +844,9 @@ def content(
                 "finish-date",
                 "imp-mpan-core",
                 "exp-mpan-core",
-                "site-id",
+                "site-code",
                 "site-name",
-                "associated-site-ids",
+                "associated-site-codes",
                 "era-start-date",
                 "era-finish-date",
                 "imp-supplier-contract",
@@ -870,7 +870,7 @@ def content(
                 "exp-mpan-core",
                 "site-code",
                 "site-name",
-                "associated-site-ids",
+                "associated-site-codes",
                 "source",
                 "generator-type",
                 "supply-name",
@@ -881,9 +881,9 @@ def content(
             ]
             site_header_titles = [
                 "creation-date",
-                "site-id",
+                "site-code",
                 "site-name",
-                "associated-site-ids",
+                "associated-site-codes",
                 "start-date",
                 "finish-date",
                 "metering-type",

@@ -441,9 +441,9 @@ def displaced_virtual_bill(ds):
     site_expected = [
         [
             "creation-date",
-            "site-id",
+            "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "start-date",
             "finish-date",
             "metering-type",
@@ -522,7 +522,7 @@ def displaced_virtual_bill(ds):
             "exp-mpan-core",
             "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "source",
             "generator-type",
             "supply-name",
@@ -693,9 +693,9 @@ def displaced_virtual_bill(ds):
             "finish-date",
             "imp-mpan-core",
             "exp-mpan-core",
-            "site-id",
+            "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "era-start-date",
             "era-finish-date",
             "imp-supplier-contract",
@@ -757,7 +757,7 @@ def displaced_virtual_bill(ds):
             Datetime(2009, 2, 10, 23, 30),
             "22 7867 6232 781",
             None,
-            None,
+            "CI017",
             "Water Works",
             None,
             Datetime(2000, 1, 1, 0, 0),
@@ -821,7 +821,7 @@ def displaced_virtual_bill(ds):
             Datetime(2009, 2, 10, 23, 30),
             "22 7867 5232 780",
             None,
-            None,
+            "CI017",
             "Water Works",
             None,
             Datetime(2000, 1, 1, 0, 0),
@@ -885,7 +885,7 @@ def displaced_virtual_bill(ds):
             Datetime(2009, 1, 31, 23, 30),
             None,
             None,
-            None,
+            "CI017",
             "Water Works",
             None,
             None,
@@ -949,7 +949,7 @@ def displaced_virtual_bill(ds):
             Datetime(2009, 2, 10, 23, 30),
             None,
             None,
-            None,
+            "CI017",
             "Water Works",
             None,
             None,
@@ -1018,7 +1018,7 @@ def displaced_virtual_bill(ds):
             ), f"On row {i} column {j}, {expected_val} != {actual_val}"
 
 
-def test_associated_site_ids(mocker, sess):
+def test_associated_site_codes(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     associated_site = Site.insert(sess, "J77y", "Sewage Works")
@@ -1255,9 +1255,9 @@ def virtual_bill(ds):
     site_expected = [
         [
             "creation-date",
-            "site-id",
+            "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "start-date",
             "finish-date",
             "metering-type",
@@ -1371,7 +1371,7 @@ def virtual_bill(ds):
             "exp-mpan-core",
             "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "source",
             "generator-type",
             "supply-name",
@@ -1455,9 +1455,9 @@ def virtual_bill(ds):
             "finish-date",
             "imp-mpan-core",
             "exp-mpan-core",
-            "site-id",
+            "site-code",
             "site-name",
-            "associated-site-ids",
+            "associated-site-codes",
             "era-start-date",
             "era-finish-date",
             "imp-supplier-contract",
@@ -1519,7 +1519,7 @@ def virtual_bill(ds):
             Datetime(2009, 2, 10, 23, 30),
             "22 7867 6232 781",
             None,
-            None,
+            "CI017",
             "Water Works",
             "J77y",
             Datetime(2000, 1, 1, 0, 0),
