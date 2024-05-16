@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import g
 
-from sqlalchemy.sql.expression import true
+from sqlalchemy.sql.expression import false, select, true
 
 from chellow.dloads import open_file
 from chellow.models import (
@@ -21,11 +21,11 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.utils import csv_make_val, hh_before, req_int, utc_datetime_now
+from chellow.utils import csv_make_val, hh_before, req_bool, req_int, utc_datetime_now
 from chellow.views import chellow_redirect
 
 
-def content(contract_id, days_hidden, user_id):
+def content(contract_id, days_hidden, is_ignored, user_id):
     f = writer = None
     try:
         with Session() as sess:
@@ -54,15 +54,14 @@ def content(contract_id, days_hidden, user_id):
 
             now = utc_datetime_now()
             cutoff_date = now - relativedelta(days=days_hidden)
-
-            for snag, channel, era, supply, site_era, site in (
-                sess.query(Snag, Channel, Era, Supply, SiteEra, Site)
+            q = (
+                select(Snag, Channel, Era, Supply, SiteEra, Site)
                 .join(Channel, Snag.channel_id == Channel.id)
                 .join(Era, Channel.era_id == Era.id)
                 .join(Supply, Era.supply_id == Supply.id)
                 .join(SiteEra, Era.site_eras)
                 .join(Site, SiteEra.site_id == Site.id)
-                .filter(
+                .where(
                     SiteEra.is_physical == true(),
                     Era.dc_contract == contract,
                     Snag.start_date < cutoff_date,
@@ -76,7 +75,11 @@ def content(contract_id, days_hidden, user_id):
                     Snag.start_date,
                     Snag.id,
                 )
-            ):
+            )
+            if not is_ignored:
+                q = q.where(Snag.is_ignored == false())
+
+            for snag, channel, era, supply, site_era, site in sess.execute(q):
                 snag_start = snag.start_date
                 snag_finish = snag.finish_date
                 imp_mc = "" if era.imp_mpan_core is None else era.imp_mpan_core
@@ -123,7 +126,8 @@ def content(contract_id, days_hidden, user_id):
 def do_get(sess):
     contract_id = req_int("dc_contract_id")
     days_hidden = req_int("days_hidden")
+    is_ignored = req_bool("is_ignored")
 
-    args = contract_id, days_hidden, g.user.id
+    args = contract_id, days_hidden, is_ignored, g.user.id
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

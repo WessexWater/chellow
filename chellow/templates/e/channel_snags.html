@@ -17,7 +17,8 @@
 			<legend>Download CSV</legend>	
 			<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
 			<label>Hide snags &lt; days old</label>
-			<input size="3" maxlength="3" name="days_hidden" value="0">
+		 	{{input_text('days_hidden', '0', 3, 3)}}
+			<label>Include ignored snags</label> {{input_checkbox('is_ignored', False)}} 
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
