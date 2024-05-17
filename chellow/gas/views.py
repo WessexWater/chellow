@@ -418,6 +418,16 @@ def batch_get(g_batch_id):
                 vbd["vat"] += g_bill.vat
                 vbd["net"] += g_bill.net
 
+            if "vat" in bd:
+                for vat_percentage, vat_bd in bd["vat"].items():
+                    try:
+                        vbd = vat_breakdown[vat_percentage]
+                    except KeyError:
+                        vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+
+                    vbd["vat"] += vat_bd["vat"]
+                    vbd["net"] += vat_bd["net"]
+
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
 

@@ -46,17 +46,19 @@
 					<th>Start Date</th>
 					<th>Finish Date</th>
 					<th>Net GBP</th>
-					<th>VAT 5%</th>
-					<th>VAT 15%</th>
-					<th>VAT 17.5%</th>
-					<th>VAT 20%</th>
 					<th>VAT</th>
 					<th>Gross GBP</th>
-					{% for read in failed_bills[0]['reads'] %}
-						{% for k in read|sort %}
-							<th>{{k}}</th>
-						{% endfor %}
-					{% endfor %}
+					<th>Breakdown</th>
+					<th>R1 calorific_value</th>
+					<th>R1 correction_factor</th>
+					<th>R1 msn</th>
+					<th>R1 unit</th>
+					<th>R1 prev_date</th>
+					<th>R1 prev_value</th>
+					<th>R1 prev_type_code</th>
+					<th>R1 pres_date</th>
+					<th>R1 pres_value</th>
+					<th>R1 pres_type_code</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -71,16 +73,20 @@
 						<td>{{bill.start_date|hh_format}}</td>
 						<td>{{bill.finish_date|hh_format}}</td>
 						<td>{{bill.net_gbp}}</td>
-						<td>{{bill.vat_5pc}}</td>
-						<td>{{bill.vat_15pc}}</td>
-						<td>{{bill.vat_17_5pc}}</td>
-						<td>{{bill.vat_20pc}}</td>
 						<td>{{bill.vat_gbp}}</td>
 						<td>{{bill.gross_gbp}}</td>
+						<td>{{bill.breakdown|dumps}}</td>
 						{% for read in bill.reads %}
-							{% for k, v in read|dictsort %}
-								<td>{{v}}</td>
-							{% endfor %}
+							<td>{{read.calorific_value}}</td>
+							<td>{{read.correction_factor}}</td>
+							<td>{{read.msn}}</td>
+							<td>{{read. unit}}</td>
+							<td>{{read.prev_date|hh_format}}</td>
+							<td>{{read.prev_value}}</td>
+							<td>{{read.prev_type_code}}</td>
+							<td>{{read.pres_date|hh_format}}</td>
+							<td>{{read.pres_value}}</td>
+							<td>{{read.pres_type_code}}</td>
 						{% endfor %}
 					</tr>
 				{% endfor %}

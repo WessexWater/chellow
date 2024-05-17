@@ -67,10 +67,10 @@ import chellow.e.mdd_importer
 import chellow.e.rcrc
 import chellow.e.system_price
 import chellow.e.tlms
-import chellow.edi_lib
 import chellow.general_import
 import chellow.national_grid
 import chellow.rate_server
+from chellow.edi_lib import SEGMENTS, parse_edi
 from chellow.models import (
     BillType,
     Channel,
@@ -644,23 +644,19 @@ def edi_viewer_post():
         else:
             edi_str = req_str("edi_fragment")
 
-        f = StringIO(edi_str)
-        f.seek(0)
-        parser = chellow.edi_lib.EdiParser(f)
-        for segment_name in parser:
-            elements = parser.elements
+        for line_number, line, segment_name, elements in parse_edi(edi_str):
 
             if segment_name == "CCD":
-                segment_name = segment_name + elements[1][0]
+                segment_name = segment_name + elements["CCDE"][0]
                 try:
-                    seg = chellow.edi_lib.SEGMENTS[segment_name]
+                    seg = SEGMENTS[segment_name]
                 except KeyError:
                     raise BadRequest(
                         f"The segment name {segment_name} is not recognized."
                     )
             else:
                 try:
-                    seg = chellow.edi_lib.SEGMENTS[segment_name]
+                    seg = SEGMENTS[segment_name]
                 except KeyError:
                     raise BadRequest(
                         f"The segment name {segment_name} is not recognized."
@@ -669,13 +665,14 @@ def edi_viewer_post():
             titles_element = []
             titles_component = []
             values = []
-            elems = seg["elements"]
+            elems = {el["code"]: el for el in seg["elements"]}
             if len(elements) > len(elems):
                 raise BadRequest(
                     f"There are more elements than recognized for the segment "
-                    f"{segment_name}."
+                    f"{segment_name}. {line}"
                 )
-            for element, elem in zip(elements, elems):
+            for element_code, element in elements.items():
+                elem = elems[element_code]
                 comps = elem["components"]
                 colspan = len(comps)
                 titles_element.append(
@@ -688,8 +685,9 @@ def edi_viewer_post():
                 )
                 if len(element) > len(comps):
                     raise BadRequest(
-                        f"There are more components than recognized for the segment "
-                        f"{segment_name} and element {element}."
+                        f"For the segment {segment_name} the number of components "
+                        f"{element} is greater than the expected components {comps}. "
+                        f"{line}"
                     )
 
                 for i, (title, typ) in enumerate(comps):
@@ -726,7 +724,7 @@ def edi_viewer_post():
                     "titles_element": titles_element,
                     "titles_component": titles_component,
                     "vals": values,
-                    "raw_line": parser.line,
+                    "raw_line": line,
                 }
             )
 

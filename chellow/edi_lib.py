@@ -6,54 +6,56 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import ct_datetime, to_ct, to_utc
 
 
+def line_iter(f):
+    line = []
+    while c := f.read(1) != "":
+        if c == "'":
+            yield "".join(line)
+            line.clear()
+        else:
+            line.append(c)
+
+
 class EdiParser:
     def __init__(self, f):
-        self.f_iterator = iter(f)
+
+        self.line_iterator = line_iter(f)
         self.line_number = 0
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        self.line = next(self.f_iterator).strip()
+        self.line = next(self.line_iterator).strip()
         self.line_number += 1
 
-        if self.line[-1] != "'":
-            raise BadRequest(
-                f"The parser expects each line to end with a ', but line number "
-                f"{self.line_number} doesn't: {self.line}."
-            )
-        self.elements = [element.split(":") for element in self.line[4:-1].split("+")]
+        self.elements = [element.split(":") for element in self.line[4].split("+")]
         return self.line[:3]
 
 
 def parse_edi(edi_str):
-    for line_number, raw_line in enumerate(edi_str.splitlines(), start=1):
-        if raw_line[-1] != "'":
-            raise BadRequest(
-                f"The parser expects each line to end with a ', but line "
-                f"number {line_number} doesn't: {raw_line}."
-            )
-
+    for line_number, raw_line in enumerate(edi_str.split("'"), start=1):
         line = raw_line.strip()
+        if len(line) == 0:
+            continue
         code = line[:3]
 
-        els = [el.split(":") for el in line[4:-1].split("+")]
+        els = [el.split(":") for el in line[4:].split("+")]
 
-        segment_name = code + els[1][0] if code == "CCD" else code
+        segment_name = code + els[1][0].strip() if code == "CCD" else code
 
         try:
             elem_data = SEGMENTS[segment_name]
         except KeyError:
             raise BadRequest(
                 f"At line number {line_number} the segment name {segment_name} isn't "
-                f"recognized."
+                f"recognized. {raw_line}"
             )
         elem_codes = [m["code"] for m in elem_data["elements"]]
 
         elements = dict(zip(elem_codes, els))
 
-        yield line_number, line, segment_name, elements
+        yield line_number, f"{line}'", segment_name, elements
 
 
 def to_decimal(components):
@@ -67,11 +69,16 @@ def to_decimal(components):
 
 
 def to_ct_date(component):
+    if len(component) == 0:
+        return None
     return to_ct(Datetime.strptime(component, "%y%m%d"))
 
 
 def to_date(component):
-    return to_utc(to_ct_date(component))
+    dt = to_ct_date(component)
+    if dt is None:
+        return None
+    return to_utc(dt)
 
 
 def to_finish_date(component):
