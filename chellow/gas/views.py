@@ -289,15 +289,37 @@ def supply_edit_get(g_supply_id):
     )
 
 
+@gas.route("/supplies/<int:g_supply_id>/edit", methods=["DELETE"])
+def supply_edit_delete(g_supply_id):
+    g_supply = GSupply.get_by_id(g.sess, g_supply_id)
+    try:
+        g_supply.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect("/supplies")
+    except BadRequest as e:
+        flash(e.description)
+        g_eras = g.sess.scalars(
+            select(GEra)
+            .where(GEra.g_supply == g_supply)
+            .order_by(GEra.start_date.desc())
+        )
+        g_exit_zones = g.sess.query(GExitZone).order_by(GExitZone.code).all()
+        return make_response(
+            render_template(
+                "supply_edit.html",
+                g_supply=g_supply,
+                g_eras=g_eras,
+                g_exit_zones=g_exit_zones,
+            ),
+            400,
+        )
+
+
 @gas.route("/supplies/<int:g_supply_id>/edit", methods=["POST"])
 def supply_edit_post(g_supply_id):
     g_supply = GSupply.get_by_id(g.sess, g_supply_id)
     try:
-        if "delete" in request.values:
-            g_supply.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/supplies", 303)
-        elif "insert_g_era" in request.values:
+        if "insert_g_era" in request.values:
             start_date = req_date("start")
             g_supply.insert_g_era_at(g.sess, start_date)
             g.sess.commit()

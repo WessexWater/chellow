@@ -978,6 +978,44 @@ def test_read_edit_post_delete(sess, client):
     match(response, 303, f"/g/bills/{g_bill.id}")
 
 
+def test_supply_edit_get(client, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
+
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+
+    g_supply = site.insert_g_supply(
+        sess,
+        "7y94u5",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+
+    sess.commit()
+
+    response = client.get(f"/g/supplies/{g_supply.id}/edit")
+    match(response, 200, r'<option value="1" selected>EA1</option>')
+
+
 def test_supplier_rate_script_get(sess, client):
     g_contract = GContract.insert(
         sess,
