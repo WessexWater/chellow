@@ -40,7 +40,7 @@ def test_find_cv(sess):
     dt = to_utc(ct_datetime(2020, 1, 1))
     cv, avg_cv = find_cv(sess, caches, dt, g_ldz.code)
 
-    assert (cv, avg_cv) == (39.2101, 39.2)
+    assert (cv, avg_cv) == (39.2101, 39.2101)
 
 
 def test_find_hhs_pairs_before_after_chunk_finish(mocker):

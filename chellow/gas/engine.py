@@ -502,13 +502,6 @@ class GDataSource:
                 * h["calorific_value"]
                 / 3.6
             )
-            h["kwh_avg"] = (
-                h["units_consumed"]
-                * h["unit_factor"]
-                * h["correction_factor"]
-                * h["avg_cv"]
-                / 3.6
-            )
             h["ug_rate"] = float(
                 g_rates(sess, self.caches, "ug", h["start_date"], True)[
                     "ug_gbp_per_kwh"
@@ -703,9 +696,7 @@ def find_cv(sess, caches, dt, g_ldz_code):
             avg_cv = year_cache[ct.month]
         except KeyError:
             cv_list = [float(v["cv"]) for v in cvs.values()]
-            avg_cv = year_cache[ct.month] = round(
-                sum(cv_list) / len(cv_list), ndigits=1
-            )
+            avg_cv = year_cache[ct.month] = sum(cv_list) / len(cv_list)
     return cv, avg_cv
 
 

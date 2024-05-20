@@ -12,27 +12,11 @@ from chellow.utils import HH, to_ct, to_utc
 
 READ_TYPE_MAP = {"00": "A", "01": "E", "02": "E"}
 
-TCOD_MAP = {
-    "Energy Bill Discount Scheme": {"PPK": "ebrs"},
-    "Energy Bill Relief Scheme": {"PPK": "ebrs"},
-    "Energy Bill Relief Scheme Discount": {"PPK": "ebrs"},
-    "Unidentified Gas": {"PPK": "ug"},
-    "Commodity": {"PPK": "commodity"},
-    "Transportation": {"PPD": "transportation_fixed", "PPK": "transportation_variable"},
-    "Gas Flexi": {"PPK": "commodity"},
-    "Flex - Gas Flexi (New)": {"PPK": "commodity"},
-    "Meter Reading": {"PPD": "meter_read"},
-    "Meter Reading Credit Oct 19": {"FIX": "meter_read"},
-    "Meter Rental": {"PPD": "metering"},
-    "CCL": {"PPK": "ccl"},
-    "Consumption Based Administration": {"PPK": "admin_variable"},
-    "Swing": {"PPK": "swing"},
-}
 
 SUPPLIER_CODE_MAP = {
-    "STD": "standing",
-    "MET": "commodity",
-    "CCL": "ccl",
+    "STD": ("standing", Decimal("1000"), Decimal("1")),
+    "MET": ("commodity", Decimal("100000000"), Decimal("1000")),
+    "CCL": ("ccl", Decimal("100000000"), Decimal("1000")),
 }
 
 UNIT_MAP = {"M3": "M3", "HH": "HCUF", "HCUF": "HCUF"}
@@ -62,16 +46,6 @@ def _process_BCD(elements, headers):
     btcd = elements["BTCD"]
     headers["bill_type_code"] = btcd[0]
 
-    sumo = elements["SUMO"]
-    start_date = to_date(sumo[0])
-    if start_date is not None:
-        headers["start_date"] = start_date
-
-    if len(sumo) > 1:
-        finish_date = _to_finish_date(sumo[1])
-        if finish_date is not None:
-            headers["finish_date"] = finish_date
-
 
 def _process_MHD(elements, headers):
     headers.clear()
@@ -88,62 +62,12 @@ def _process_MHD(elements, headers):
         headers["gross"] = Decimal("0.00")
 
 
-def _process_CCD1(elements, headers):
-    mtnr = elements["MTNR"]
-    msn = mtnr[0]
-
-    mloc = elements["MLOC"]
-
-    # Bug in EDI where MPRN missing in second CCD 1
-    if "mprn" not in headers:
-        headers["mprn"] = mloc[0]
-
-    prdt = elements["PRDT"]
-    pvdt = elements["PVDT"]
-
-    pres_read_date = to_date(prdt[0])
-    prev_read_date = to_date(pvdt[0])
-
-    prrd = elements["PRRD"]
-    pres_read_value = Decimal(prrd[0])
-    pres_read_type = READ_TYPE_MAP[prrd[1]]
-    prev_read_value = Decimal(prrd[2])
-    prev_read_type = READ_TYPE_MAP[prrd[3]]
-
-    conb = elements["CONB"]
-    unit = UNIT_MAP[conb[1]]
-    headers["breakdown"]["units_consumed"] += to_decimal(conb) / Decimal("1000")
-
-    adjf = elements["ADJF"]
-    correction_factor = Decimal(adjf[1]) / Decimal(100000)
-
-    nuct = elements["NUCT"]
-
-    headers["kwh"] += to_decimal(nuct) / Decimal("1000")
-
-    headers["reads"].append(
-        {
-            "msn": msn,
-            "unit": unit,
-            "correction_factor": correction_factor,
-            "prev_date": prev_read_date,
-            "prev_value": prev_read_value,
-            "prev_type_code": prev_read_type,
-            "pres_date": pres_read_date,
-            "pres_value": pres_read_value,
-            "pres_type_code": pres_read_type,
-        }
-    )
-
-
 NUCT_LOOKUP = {"DAY": "days", "KWH": "kwh"}
 
 
 def _process_CCD2(elements, headers):
     breakdown = headers["breakdown"]
     ccde = elements["CCDE"]
-    ccde_supplier_code = ccde[2]
-    tcod = elements["TCOD"]
     nuct = elements["NUCT"]
     mtnr = elements["MTNR"]
     conb = elements["CONB"]
@@ -151,56 +75,44 @@ def _process_CCD2(elements, headers):
     prdt = elements["PRDT"]
     pvdt = elements["PVDT"]
     prrd = elements["PRRD"]
+    cppu = elements["CPPU"]
+    ctot = elements["CTOT"]
+    csdt = elements["CSDT"]
+    cedt = elements["CEDT"]
+    mloc = elements["MLOC"]
 
-    if len(tcod) > 1:
-        tpref_lookup = TCOD_MAP[tcod[1]]
-    else:
-        tpref_lookup = SUPPLIER_CODE_MAP
+    ccde_supplier_code = ccde[2]
+    tpref, rate_divisor, units_divisor = SUPPLIER_CODE_MAP[ccde_supplier_code]
 
-    tpref = tpref_lookup[ccde_supplier_code]
+    rate_str = cppu[0]
 
-    bpri = elements["BPRI"]
-    if len(bpri[0]) > 0:
-        rate_key = f"{tpref}_rate"
-        if rate_key not in breakdown:
-            breakdown[rate_key] = set()
-        rate = Decimal(bpri[0]) / Decimal("10000000")
-        breakdown[rate_key].add(rate)
+    rate_key = f"{tpref}_rate"
+    if rate_key not in breakdown:
+        breakdown[rate_key] = set()
+    rate = Decimal(rate_str) / rate_divisor
+    breakdown[rate_key].add(rate)
 
-    try:
-        ctot = elements["CTOT"]
-        breakdown[f"{tpref}_gbp"] += to_decimal(ctot) / Decimal("100")
+    breakdown[f"{tpref}_gbp"] += to_decimal(ctot) / Decimal("100")
 
-        if len(nuct) > 1:
-            key = NUCT_LOOKUP[nuct[1]]
-        else:
-            if ccde_supplier_code == "PPK":
-                key = f"{tpref}_kwh"
-            elif ccde_supplier_code == "PPD":
-                key = f"{tpref}_days"
-
-        breakdown[key] += to_decimal(nuct) / Decimal("1000")
-    except KeyError:
-        pass
+    suff = NUCT_LOOKUP[nuct[1].strip()]
+    key = f"{tpref}_{suff}"
+    units_billed = to_decimal(nuct) / units_divisor
+    breakdown[key] += units_billed
 
     if "start_date" not in headers:
-        csdt = elements["CSDT"]
-        start_date = to_date(csdt[0])
-        if start_date is not None:
-            headers["start_date"] = start_date
+        headers["start_date"] = to_date(csdt[0])
 
     if "finish_date" not in headers:
-        cedt = elements["CSDT"]
-        finish_date = _to_finish_date(cedt[0])
-        if finish_date is not None:
-            headers["finish_date"] = finish_date
+        headers["finish_date"] = _to_finish_date(cedt[0])
 
     if "mprn" not in headers:
-        mloc = elements["MLOC"]
         headers["mprn"] = mloc[0]
 
     if len(conb) > 0 and len(conb[0]) > 0:
         headers["breakdown"]["units_consumed"] += to_decimal(conb) / Decimal("1000")
+
+    if tpref == "commodity":
+        headers["kwh"] += units_billed
 
     if len(prrd) > 0 and len(prrd[0]) > 0:
         pres_read_date = to_date(prdt[0])
@@ -227,70 +139,6 @@ def _process_CCD2(elements, headers):
                 "pres_type_code": pres_read_type,
             }
         )
-
-
-def _process_CCD3(elements, headers):
-    breakdown = headers["breakdown"]
-    ccde = elements["CCDE"]
-    ccde_supplier_code = ccde[2]
-    tcod = elements["TCOD"]
-
-    tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
-
-    bpri = elements["BPRI"]
-    bpri_str = bpri[0]
-    if len(bpri_str) > 0:
-        rate_key = f"{tpref}_rate"
-        if rate_key not in breakdown:
-            breakdown[rate_key] = set()
-        rate = Decimal(bpri_str) / Decimal("10000000")
-        breakdown[rate_key].add(rate)
-
-    nuct = elements["NUCT"]
-
-    try:
-        ctot = elements["CTOT"]
-        breakdown[f"{tpref}_gbp"] += to_decimal(ctot) / Decimal("100")
-
-        if ccde_supplier_code == "PPK":
-            key = f"{tpref}_kwh"
-        elif ccde_supplier_code == "PPD":
-            key = f"{tpref}_days"
-
-        breakdown[key] += to_decimal(nuct) / Decimal("1000")
-    except KeyError:
-        pass
-
-
-def _process_CCD4(elements, headers):
-    breakdown = headers["breakdown"]
-    ccde = elements["ccde"]
-    ccde_supplier_code = ccde[2]
-    tcod = elements["TCOD"]
-
-    tpref = TCOD_MAP[tcod[1]][ccde_supplier_code]
-
-    bpri = elements["BPRI"]
-    rate_key = f"{tpref}_rate"
-    if rate_key not in breakdown:
-        breakdown[rate_key] = set()
-    rate = Decimal(bpri[0]) / Decimal("10000000")
-    breakdown[rate_key].add(rate)
-
-    nuct = elements["NUCT"]
-
-    try:
-        ctot = elements["CTOT"]
-        breakdown[tpref + "_gbp"] += to_decimal(ctot) / Decimal("100")
-
-        if ccde_supplier_code == "PPK":
-            key = f"{tpref}_kwh"
-        elif ccde_supplier_code == "PPD":
-            key = f"{tpref}_days"
-
-        breakdown[key] += to_decimal(nuct) / Decimal("1000")
-    except KeyError:
-        pass
 
 
 def _process_MTR(elements, headers):
@@ -357,10 +205,10 @@ CODE_FUNCS = {
     "ADJ": _process_ADJ,
     "BCD": _process_BCD,
     "BTL": _process_NOOP,
-    "CCD1": _process_CCD1,
+    "CCD1": _process_NOOP,
     "CCD2": _process_CCD2,
-    "CCD3": _process_CCD3,
-    "CCD4": _process_CCD4,
+    "CCD3": _process_NOOP,
+    "CCD4": _process_NOOP,
     "CDT": _process_NOOP,
     "CLO": _process_NOOP,
     "END": _process_NOOP,
