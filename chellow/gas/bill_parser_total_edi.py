@@ -15,8 +15,8 @@ READ_TYPE_MAP = {"00": "A", "01": "E", "02": "E"}
 
 SUPPLIER_CODE_MAP = {
     "STD": ("standing", Decimal("1000"), Decimal("1")),
-    "MET": ("commodity", Decimal("100000000"), Decimal("1000")),
-    "CCL": ("ccl", Decimal("100000000"), Decimal("1000")),
+    "MET": ("commodity", Decimal("100000"), Decimal("1000")),
+    "CCL": ("ccl", Decimal("100000"), Decimal("1000")),
 }
 
 UNIT_MAP = {"M3": "M3", "HH": "HCUF", "HCUF": "HCUF"}

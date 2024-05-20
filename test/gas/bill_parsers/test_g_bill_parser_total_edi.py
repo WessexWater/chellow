@@ -64,7 +64,7 @@ def test_process_CCD2():
         "raw_lines": [],
         "breakdown": {
             "units_consumed": Decimal("0"),
-            "commodity_rate": {Decimal("0.00009742")},
+            "commodity_rate": {Decimal("0.09742")},
             "commodity_gbp": Decimal("38.82"),
             "commodity_kwh": Decimal("968.823"),
         },
