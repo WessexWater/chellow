@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import null, true
 
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, forecast_date
-from chellow.models import Era, Session, Site, SiteEra, Supply
+from chellow.models import Era, RSession, Site, SiteEra, Supply
 from chellow.utils import (
     csv_make_val,
     hh_format,
@@ -25,7 +25,7 @@ def content(supply_id, start_date, finish_date, user):
     caches = {}
     f = None
     try:
-        with Session() as sess:
+        with RSession() as sess:
             supply = Supply.get_by_id(sess, supply_id)
 
             f_date = forecast_date()

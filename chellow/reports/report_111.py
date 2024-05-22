@@ -29,9 +29,9 @@ from chellow.models import (
     Llfc,
     MarketRole,
     MtcParticipant,
+    RSession,
     RegisterRead,
     ReportRun,
-    Session,
     Site,
     SiteEra,
     Supply,
@@ -102,18 +102,16 @@ def content(
     report_run_id,
 ):
     caches = {}
-    tmp_file = sess = supply_id = report_run = None
+    tmp_file = sess = supply_id = None
     forecast_date = to_utc(Datetime.max)
 
     try:
-        with Session() as sess:
+        with RSession() as sess:
             user = User.get_by_id(sess, user_id)
             tmp_file = open_file(
                 f"bill_check_{fname_additional}.csv", user, mode="w", newline=""
             )
             writer = csv.writer(tmp_file, lineterminator="\n")
-
-            report_run = ReportRun.get_by_id(sess, report_run_id)
 
             bills = (
                 sess.query(Bill)
@@ -216,30 +214,26 @@ def content(
                     virtual_bill_titles,
                     writer,
                     titles,
-                    report_run,
+                    report_run_id,
                 )
-
-            report_run.update("finished")
-            sess.commit()
+        ReportRun.w_update(report_run_id, "finished")
 
     except BadRequest as e:
-        if report_run is not None:
-            report_run.update("problem")
         if supply_id is None:
             prefix = "Problem: "
         else:
             prefix = f"Problem with supply {supply_id}:"
         tmp_file.write(prefix + e.description)
+        ReportRun.w_update(report_run_id, "problem")
     except BaseException:
-        if report_run is not None:
-            report_run.update("interrupted")
+        msg = traceback.format_exc()
+        sys.stderr.write(msg + "\n")
         if supply_id is None:
             prefix = "Problem: "
         else:
             prefix = f"Problem with supply {supply_id}:"
-        msg = traceback.format_exc()
-        sys.stderr.write(msg + "\n")
         tmp_file.write(prefix + msg)
+        ReportRun.w_update(report_run_id, "interrupted")
     finally:
         if tmp_file is not None:
             tmp_file.close()
@@ -318,7 +312,7 @@ def _process_supply(
     virtual_bill_titles,
     writer,
     titles,
-    report_run,
+    report_run_id,
 ):
     gaps = {}
     data_sources = {}
@@ -761,8 +755,8 @@ def _process_supply(
         values["batch_id"] = bill.batch.id
         values["supply_id"] = supply.id
         values["site_id"] = None if site_code is None else site.id
-        report_run.insert_row(
-            sess, "", report_run_titles, values, {"is_checked": False}
+        ReportRun.w_insert_row(
+            report_run_id, "", report_run_titles, values, {"is_checked": False}
         )
 
         for bill in sess.query(Bill).filter(
@@ -783,7 +777,7 @@ def _process_supply(
                     )
 
         # Avoid long-running transactions
-        sess.commit()
+        sess.rollback()
 
     clumps = []
     for element, elgap in sorted(gaps.items()):
@@ -837,7 +831,7 @@ def _process_supply(
         vals["supply_id"] = supply.id
         vals["site_id"] = None if site_code is None else site.id
 
-        report_run.insert_row(sess, "", titles, vals, {"is_checked": False})
+        ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
 
     # Avoid long-running transactions
-    sess.commit()
+    sess.rollback()

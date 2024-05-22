@@ -6400,7 +6400,22 @@ class ReportRun(Base, PersistentClass):
     def insert(sess, name, user, title, data):
         report_run = ReportRun(name, user, title, data)
         sess.add(report_run)
+        sess.flush()
         return report_run
+
+    @staticmethod
+    def w_update(report_run_id, state):
+        with Session() as wsess:
+            report_run = ReportRun.get_by_id(wsess, report_run_id)
+            report_run.update(state)
+            wsess.commit()
+
+    @staticmethod
+    def w_insert_row(report_run_id, tab, titles, values, properties):
+        with Session() as wsess:
+            report_run = ReportRun.get_by_id(wsess, report_run_id)
+            report_run.insert_row(wsess, tab, titles, values, properties)
+            wsess.commit()
 
 
 def _jsonize(val):

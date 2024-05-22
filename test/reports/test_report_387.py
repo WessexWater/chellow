@@ -218,6 +218,7 @@ def virtual_bill(ds):
         None,
         None,
     )
+    supply_id = supply.id
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
     batch.insert_bill(
@@ -245,10 +246,9 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_387.open_file", return_value=mock_file)
 
-    content(supply.id, start_date, start_date, user)
+    content(supply_id, start_date, start_date, user)
 
     actual = mock_file.getvalue()
-    print(actual)
 
     expected = [
         [
