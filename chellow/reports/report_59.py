@@ -486,7 +486,45 @@ def _process_site(
                     .all()
                 )
                 if len(bills) > 0:
-                    month_data = {}
+                    imp_supplier_contract = last_era.imp_supplier_contract
+                    imp_supplier_contract_name = (
+                        None
+                        if imp_supplier_contract is None
+                        else imp_supplier_contract.name
+                    )
+                    exp_supplier_contract = last_era.exp_supplier_contract
+                    exp_supplier_contract_name = (
+                        None
+                        if exp_supplier_contract is None
+                        else exp_supplier_contract.name
+                    )
+                    era_associates = {
+                        s.site.code for s in last_era.site_eras if not s.is_physical
+                    }
+                    vals = {
+                        "creation-date": now,
+                        "start-date": chunk_start,
+                        "finish-date": chunk_finish,
+                        "imp-mpan-core": last_era.imp_mpan_core,
+                        "exp-mpan-core": last_era.exp_mpan_core,
+                        "site-code": site.code,
+                        "site-name": site.name,
+                        "associated-site-codes": era_associates,
+                        "era-start-date": None,
+                        "era-finish-date": None,
+                        "imp-supplier-contract": imp_supplier_contract_name,
+                        "imp-non-actual-hhs": None,
+                        "imp-non-actual-kwh": None,
+                        "exp-supplier-contract": exp_supplier_contract_name,
+                        "exp-non-actual-hhs": None,
+                        "exp-non-actual-kwh": None,
+                        "metering-type": last_era.meter_category,
+                        "source": last_era.supply.source.code,
+                        "generator-type": None,
+                        "supply-name": last_era.supply.name,
+                        "msn": last_era.msn,
+                        "pc": last_era.pc.code,
+                    }
                     for name in (
                         "import-net",
                         "export-net",
@@ -500,10 +538,10 @@ def _process_site(
                         "billed-import-net",
                     ):
                         for sname in ("kwh", "gbp"):
-                            month_data[name + "-" + sname] = 0
-                    month_data["billed-supplier-import-net-gbp"] = 0
-                    month_data["billed-dc-import-net-gbp"] = 0
-                    month_data["billed-mop-import-net-gbp"] = 0
+                            vals[name + "-" + sname] = 0
+                    vals["billed-supplier-import-net-gbp"] = 0
+                    vals["billed-dc-import-net-gbp"] = 0
+                    vals["billed-mop-import-net-gbp"] = 0
 
                     for bill in bills:
                         bill_role_code = bill.batch.contract.market_role.code
@@ -528,42 +566,12 @@ def _process_site(
                         else:
                             raise BadRequest("Role code not recognized.")
 
-                        for data in month_data, site_data:
+                        for data in vals, site_data:
                             data["billed-import-net-kwh"] += bill_prop_kwh
                             data["billed-import-net-gbp"] += bill_prop_gbp
                             data[key] += bill_prop_gbp
 
-                    imp_supplier_contract = last_era.imp_supplier_contract
-                    exp_supplier_contract = last_era.exp_supplier_contract
-                    out = [
-                        now,
-                        last_era.imp_mpan_core,
-                        (
-                            None
-                            if imp_supplier_contract is None
-                            else imp_supplier_contract.name
-                        ),
-                        last_era.exp_mpan_core,
-                        (
-                            None
-                            if exp_supplier_contract is None
-                            else exp_supplier_contract.name
-                        ),
-                        chunk_start,
-                        last_era.meter_category,
-                        last_era.supply.source.code,
-                        None,
-                        last_era.supply.name,
-                        last_era.msn,
-                        last_era.pc.code,
-                        site.code,
-                        site.name,
-                        None,
-                        start_date,
-                        finish_date,
-                    ] + [month_data[t] for t in summary_titles]
-
-                    era_rows.append([make_val(v) for v in out])
+                    era_rows.append([make_val(vals.get(t)) for t in era_titles])
         first_era = (
             sess.execute(
                 select(Era).where(Era.supply == supply).order_by(Era.start_date)
