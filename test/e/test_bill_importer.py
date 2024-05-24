@@ -17,8 +17,12 @@ def test_supplier_bill_import_html(mocker, app):
             g.config = {}
             batch = mocker.Mock()
             failed_bills = [{"error": "MPAN not found"}]
+            failed_max_registers = 0
             render_template(
-                "/e/supplier_bill_import.html", batch=batch, failed_bills=failed_bills
+                "/e/supplier_bill_import.html",
+                batch=batch,
+                failed_bills=failed_bills,
+                failed_max_registers=failed_max_registers,
             )
 
 

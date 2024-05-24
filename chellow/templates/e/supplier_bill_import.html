@@ -50,7 +50,19 @@
 					<th>VAT</th>
 					<th>Gross</th>
 					<th>Breakdown</th>
-					<th>Reads</th>
+					{% for i in range(failed_max_registers) %}
+						<th>R{{loop.index}} MPAN</th>
+						<th>R{{loop.index}} Meter Serial Number</th>
+						<th>R{{loop.index}} Coefficient</th>
+						<th>R{{loop.index}} Units</th>
+						<th>R{{loop.index}} TPR</th>
+						<th>R{{loop.index}} Previous Read Date</th>
+						<th>R{{loop.index}} Previous Read Value</th>
+						<th>R{{loop.index}} Previous Read Type</th>
+						<th>R{{loop.index}} Present Read Date</th>
+						<th>R{{loop.index}} Present Read Value</th>
+						<th>R{{loop.index}} Present Read Type</th>
+					{% endfor %}
 				</tr>
 			</thead>
 			<tbody>
@@ -87,7 +99,19 @@
 								<pre>{{bill.breakdown|dumps}}</pre>
 							{% endif %}
 						</td>
-						<td>{{bill.reads}}</td>
+						{% for read in bill.reads %}
+							<td>{{read.mpan}}</td>
+							<td>{{read.msn}}</td>
+							<td>{{read.coefficient}}</td>
+							<td>{{read.units}}</td>
+							<td>{{read.tpr_code}}</td>
+							<td>{{read.prev_date|hh_format}}</td>
+							<td>{{read.prev_value}}</td>
+							<td>{{read.prev_type_code}}</td>
+							<td>{{read.pres_date|hh_format}}</td>
+							<td>{{read.pres_value}}</td>
+							<td>{{read.pres_type_code}}</td>
+						{% endfor %}
 					</tr>
 				{% endfor %}
 			</tbody>

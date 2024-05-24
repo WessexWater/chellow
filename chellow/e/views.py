@@ -5252,6 +5252,10 @@ def supplier_bill_import_get(import_id):
             fields["successful_max_registers"] = max(
                 len(bill["reads"]) for bill in imp_fields["successful_bills"]
             )
+        if "failed_bills" in imp_fields and len(imp_fields["failed_bills"]) > 0:
+            fields["failed_max_registers"] = max(
+                len(bill["reads"]) for bill in imp_fields["failed_bills"]
+            )
         fields.update(imp_fields)
         fields["status"] = importer.status()
     return render_template(
