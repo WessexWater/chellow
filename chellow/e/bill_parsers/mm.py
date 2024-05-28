@@ -73,7 +73,7 @@ CHARGE_UNITS_LOOKUP = {
 ELEMENT_LOOKUP = {
     "10ANNUAL": "standing",
     "20RS0108": "unrestricted",
-    "9WANNUAL": "site_fee",
+    "9WANNUAL": "site-fee",
     "20RS0123": "day",
     "30RS0123": "night",
     "90ANNUAL": "duos-fixed",
@@ -181,14 +181,14 @@ def _handle_0470(headers, pre_record, record):
 def _handle_1455(headers, pre_record, record):
     parts = _chop_record(record, ccl_kwh=13, unknown_1=8, ccl_rate=15, ccl_gbp=13)
     bd = headers["breakdown"]
-    bd["ccl_kwh"] += Decimal(parts["ccl_kwh"])
-    if "ccl_rate" in bd:
-        ccl_rates = bd["ccl_rate"]
+    bd["ccl-kwh"] += Decimal(parts["ccl_kwh"])
+    if "ccl-rate" in bd:
+        ccl_rates = bd["ccl-rate"]
     else:
-        ccl_rates = bd["ccl_rate"] = set()
+        ccl_rates = bd["ccl-rate"] = set()
 
     ccl_rates.add(Decimal(parts["ccl_rate"]) / Decimal("100"))
-    bd["ccl_gbp"] += Decimal(parts["ccl_gbp"]) / Decimal("100")
+    bd["ccl-gbp"] += Decimal(parts["ccl_gbp"]) / Decimal("100")
 
 
 def _handle_1460(headers, pre_record, record):

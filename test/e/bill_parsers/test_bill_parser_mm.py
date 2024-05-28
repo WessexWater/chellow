@@ -1,6 +1,7 @@
+from collections import defaultdict
 from decimal import Decimal
 
-from chellow.e.bill_parsers.mm import _handle_0461
+from chellow.e.bill_parsers.mm import _handle_0461, _handle_1455
 from chellow.utils import utc_datetime
 
 
@@ -45,4 +46,25 @@ def test_handle_0461():
             }
         ],
         "mpan_core": "22 7642 5654 120",
+    }
+
+
+def test_handle_1455():
+    headers = {"breakdown": defaultdict(int, {})}
+    pre_record = ""
+    record = "".join(
+        (
+            "0000000000034",  # ccl_kwh=13
+            "xxxxxxxx",  # unknown_1=8
+            "000000000003.00",  # ccl_rate=15
+            "0000000000876",  # ccl_gbp=13
+        )
+    )
+    _handle_1455(headers, pre_record, record)
+    assert headers == {
+        "breakdown": {
+            "ccl-kwh": Decimal("34"),
+            "ccl-rate": {Decimal("0.03")},
+            "ccl-gbp": Decimal("8.76"),
+        }
     }
