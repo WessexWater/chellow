@@ -5,7 +5,7 @@ from io import StringIO
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import HH, to_ct, to_utc
+from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
 
 def parse_date(date_str):
@@ -147,7 +147,7 @@ def _handle_0461(headers, pre_record, record):
         pres_read_date=DATE_LENGTH,
         prev_read_date=DATE_LENGTH,
     )
-    mpan_core = parts["mpan_core"]
+    mpan_core = parse_mpan_core(parts["mpan_core"])
     headers["mpan_core"] = mpan_core
     units = CONSUMPTION_UNITS_LOOKUP[parts["units"].strip()]
     if units == "kwh":
