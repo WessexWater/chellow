@@ -123,7 +123,7 @@ def _handle_0460(headers, pre_record, record):
         breakdown[f"{element_name}-days"] += Decimal(parts["days"])
 
 
-CONSUMPTION_UNITS_LOOKUP = {"KWH": "kwh", "KVA": "kva", "KVARH": "kvarh", "KW": "kw"}
+CONSUMPTION_UNITS_LOOKUP = {"KWH": "kWh", "KVA": "kVA", "KVARH": "kVArh", "KW": "kW"}
 
 REGISTER_CODE_LOOKUP = {"DAY": "00040", "NIGHT": "00206", "SINGLE": "00001"}
 
@@ -150,7 +150,7 @@ def _handle_0461(headers, pre_record, record):
     mpan_core = parse_mpan_core(parts["mpan_core"])
     headers["mpan_core"] = mpan_core
     units = CONSUMPTION_UNITS_LOOKUP[parts["units"].strip()]
-    if units == "kwh":
+    if units == "kWh":
         headers["kwh"] += Decimal(parts["quantity"])
 
     prev_read_date_str = parts["prev_read_date"].strip()

@@ -34,7 +34,7 @@ def test_handle_0461():
                 "msn": "xxxxxxxxxxx",
                 "mpan": "11111111 22 7642 5654 120",
                 "coefficient": Decimal("1"),
-                "units": "kwh",
+                "units": "kWh",
                 "tpr_code": "00001",
                 "prev_date": utc_datetime(2024, 3, 1, 0, 0),
                 "prev_value": Decimal("539"),

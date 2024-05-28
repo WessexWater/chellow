@@ -567,7 +567,7 @@ class RegisterRead(Base, PersistentClass):
         try:
             return RegisterRead.UNITS_STR[units_str]
         except KeyError:
-            raise BadRequest("The units '" + str(units_str) + " isn't recognized.")
+            raise BadRequest(f"The units '{units_str}' isn't recognized.")
 
     __tablename__ = "register_read"
     id = Column(Integer, primary_key=True)
