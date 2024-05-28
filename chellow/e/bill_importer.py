@@ -179,7 +179,7 @@ def _process_batch_file(sess, batch_file, log_f):
         raise BadRequest(f"Can't find a parser with the name '{parser_name}'.")
 
     parser = imp_mod.Parser(BytesIO(data))
-    log_f(f"Starting to parse the file with '{parser_name}'.")
+    log_f(f"Starting to parse the file {batch_file.filename} with '{parser_name}'.")
 
     return parser
 

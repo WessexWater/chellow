@@ -58,29 +58,53 @@ def _handle_0101(headers, pre_record, record):
     headers["finish_date"] = to_utc(to_ct(parse_date_naive(parts["finish_date"]) - HH))
 
 
-CHARGE_LOOKUP = {
+CHARGE_UNITS_LOOKUP = {
     "STDG": "days",
     "UNIT": "kwh",
+    "AVAL": "kva",
+    "EXAVAL": "kva",
+    "MD": "kw",
+    "LOADU": "kw",
+    "SAG": "days",
+    "TNUOS": "days",
+    "REAP": "kvarh",
 }
 
-ELEMENT_LOOKUP = {"10ANNUAL": "standing", "20RS0108": "0001", "9WANNUAL": "site_fee"}
+ELEMENT_LOOKUP = {
+    "10ANNUAL": "standing",
+    "20RS0108": "unrestricted",
+    "9WANNUAL": "site_fee",
+    "20RS0123": "day",
+    "30RS0123": "night",
+    "90ANNUAL": "duos-fixed",
+    "9QANNUAL": "duos-availability",
+    "9UANNUAL": "duos-excess-availability",
+    "40ANNUAL": "maximum-demand",
+    "20ANNUAL": "triad",
+    "70ANNUAL": "elexon",
+    "10RS0050": "duos-red",
+    "20RS0050": "duos-amber",
+    "30RS0050": "duos-red",
+    "9CANNUAL": "duos-reactive",
+}
 
 
 def _handle_0460(headers, pre_record, record):
     parts = _chop_record(
         record,
         unknown_1=12,
-        gbp=12,
+        unknown_2=12,
         code=8,
         quantity=12,
-        charge=4,
-        unknown_2=18,
+        units=22,
         rate=16,
         unknown_date=DATE_LENGTH,
-        another_gbp=12,
+        gbp=12,
         charge_description=35,
+        unknown_3=51,
+        days=2,
     )
-    units = CHARGE_LOOKUP[parts["charge"]]
+    units = CHARGE_UNITS_LOOKUP[parts["units"].strip()]
     gbp = Decimal(parts["gbp"]) / 100
     quantity = Decimal(parts["quantity"])
     rate = Decimal(parts["rate"])
@@ -95,11 +119,13 @@ def _handle_0460(headers, pre_record, record):
 
     rates.add(rate)
     breakdown[f"{element_name}-gbp"] += gbp
+    if element_name in ("duos-availability", "duos-excess-availability"):
+        breakdown[f"{element_name}-days"] += Decimal(parts["days"])
 
 
-UNITS_LOOKUP = {"KWH": "kwh"}
+CONSUMPTION_UNITS_LOOKUP = {"KWH": "kwh", "KVA": "kva", "KVARH": "kvarh", "KW": "kw"}
 
-REGISTER_CODE_LOOKUP = {"000001": "0001"}
+REGISTER_CODE_LOOKUP = {"DAY": "00040", "NIGHT": "00206", "SINGLE": "00001"}
 
 
 def _handle_0461(headers, pre_record, record):
@@ -109,7 +135,7 @@ def _handle_0461(headers, pre_record, record):
         unknown_1=2,
         prev_read_value=12,
         pres_read_value=12,
-        register_code=6,
+        coefficient=6,
         units=6,
         quantity=12,
         charge=6,
@@ -117,40 +143,56 @@ def _handle_0461(headers, pre_record, record):
         pres_read_type=1,
         mpan_core=13,
         mpan_top=8,
-        tariff_code=19,
+        register_code=19,
         pres_read_date=DATE_LENGTH,
         prev_read_date=DATE_LENGTH,
     )
     mpan_core = parts["mpan_core"]
     headers["mpan_core"] = mpan_core
-    units = UNITS_LOOKUP[parts["units"].strip()]
+    units = CONSUMPTION_UNITS_LOOKUP[parts["units"].strip()]
     if units == "kwh":
         headers["kwh"] += Decimal(parts["quantity"])
-    tpr_code = REGISTER_CODE_LOOKUP[parts["register_code"]]
 
-    headers["reads"].append(
-        {
-            "msn": parts["msn"].strip(),
-            "mpan": f"{parts['mpan_top']} {mpan_core}",
-            "coefficient": 1,
-            "units": units,
-            "tpr_code": tpr_code,
-            "prev_date": parse_date(parts["prev_read_date"]),
-            "prev_value": Decimal(parts["prev_read_value"]),
-            "prev_type_code": parts["prev_read_type"],
-            "pres_date": parse_date(parts["pres_read_date"]),
-            "pres_value": Decimal(parts["pres_read_value"]),
-            "pres_type_code": parts["pres_read_type"],
-        }
-    )
+    prev_read_date_str = parts["prev_read_date"].strip()
+    if len(prev_read_date_str) > 0:
+        tpr_code = REGISTER_CODE_LOOKUP[parts["register_code"].strip()]
+
+        headers["reads"].append(
+            {
+                "msn": parts["msn"].strip(),
+                "mpan": f"{parts['mpan_top']} {mpan_core}",
+                "coefficient": Decimal(parts["coefficient"]),
+                "units": units,
+                "tpr_code": tpr_code,
+                "prev_date": parse_date(parts["prev_read_date"]),
+                "prev_value": Decimal(parts["prev_read_value"]),
+                "prev_type_code": parts["prev_read_type"],
+                "pres_date": parse_date(parts["pres_read_date"]),
+                "pres_value": Decimal(parts["pres_read_value"]),
+                "pres_type_code": parts["pres_read_type"],
+            }
+        )
 
 
 def _handle_0470(headers, pre_record, record):
     pass
 
 
+def _handle_1455(headers, pre_record, record):
+    parts = _chop_record(record, ccl_kwh=13, unknown_1=8, ccl_rate=15, ccl_gbp=13)
+    bd = headers["breakdown"]
+    bd["ccl_kwh"] += Decimal(parts["ccl_kwh"])
+    if "ccl_rate" in bd:
+        ccl_rates = bd["ccl_rate"]
+    else:
+        ccl_rates = bd["ccl_rate"] = set()
+
+    ccl_rates.add(Decimal(parts["ccl_rate"]) / Decimal("100"))
+    bd["ccl_gbp"] += Decimal(parts["ccl_gbp"]) / Decimal("100")
+
+
 def _handle_1460(headers, pre_record, record):
-    parts = _chop_record(record, unknown_1=1, net=12, vat_rate=5, vat=12)
+    parts = _chop_record(record, unknown_1=1, net=12, vat_rate=6, vat=12)
     net = Decimal(parts["net"]) / Decimal(100)
     vat_rate = int(Decimal(parts["vat_rate"]))
     vat = Decimal(parts["vat"]) / Decimal(100)
@@ -170,13 +212,15 @@ def _handle_1500(headers, pre_record, record):
         record,
         unknown_1=8,
         unknown_2=10,
-        net=10,
         unknown_3=10,
-        unknown_4=20,
-        vat=10,
-        unknown_5=10,
-        unknown_6=20,
+        unknown_4=10,
+        unknown_5=20,
+        unknown_6=10,
+        unknown_7=10,
+        unknown_8=20,
         gross=12,
+        net=12,
+        vat=12,
     )
     return {
         "bill_type_code": "N",
@@ -187,9 +231,9 @@ def _handle_1500(headers, pre_record, record):
         "start_date": headers["start_date"],
         "finish_date": headers["finish_date"],
         "kwh": headers["kwh"],
-        "net": Decimal(parts["net"]),
-        "vat": Decimal(parts["vat"]),
-        "gross": Decimal(parts["gross"]),
+        "net": Decimal("0.00") + Decimal(parts["net"]) / Decimal("100"),
+        "vat": Decimal("0.00") + Decimal(parts["vat"]) / Decimal("100"),
+        "gross": Decimal("0.00") + Decimal(parts["gross"]) / Decimal("100"),
         "breakdown": headers["breakdown"],
         "reads": headers["reads"],
     }
@@ -212,6 +256,7 @@ LINE_HANDLERS = {
     "0460": _handle_0460,
     "0461": _handle_0461,
     "0470": _handle_0470,
+    "1455": _handle_1455,
     "1460": _handle_1460,
     "1500": _handle_1500,
     "2000": _handle_2000,
