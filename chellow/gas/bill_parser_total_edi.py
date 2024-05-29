@@ -9,8 +9,19 @@ from werkzeug.exceptions import BadRequest
 from chellow.edi_lib import parse_edi, to_date, to_decimal
 from chellow.utils import HH, to_ct, to_utc
 
+# From Total 2024-05-29
+# ReadType == "C"  = "00"
+# ReadType == "N" = "00"
+# ReadType == "A" = "00"
+# ReadType == "PA" = "00"
+# ReadType == "S"  = "00"
+# ReadType == "I"  = "00"
+# ReadType == "E" = "02"
+# ReadType == "AE"  = "02"
+# ReadType == "M"  = "02"
+# ReadType == "PE"  = "02"
 
-READ_TYPE_MAP = {"00": "A", "01": "E", "02": "E"}
+READ_TYPE_MAP = {"00": "A", "02": "E"}
 
 
 SUPPLIER_CODE_MAP = {
