@@ -72,7 +72,7 @@ CHARGE_UNITS_LOOKUP = {
 
 ELEMENT_LOOKUP = {
     "10ANNUAL": "standing",
-    "20RS0108": "unrestricted",
+    "20RS0108": "single",
     "9WANNUAL": "site-fee",
     "20RS0123": "day",
     "30RS0123": "night",
