@@ -15,8 +15,8 @@ from chellow.models import (
     Bill,
     BillType,
     Era,
+    RSession,
     RegisterRead,
-    Session,
     Supply,
     User,
 )
@@ -27,31 +27,33 @@ from chellow.views import chellow_redirect
 def content(year, month, months, supply_id, user_id):
     f = None
     try:
-        with Session() as sess:
+        with RSession() as sess:
             user = User.get_by_id(sess, user_id)
 
             f = open_file("register_reads.csv", user, mode="w", newline="")
             w = csv.writer(f, lineterminator="\n")
             titles = (
-                "Duration Start",
-                "Duration Finish",
-                "Supply Id",
-                "Import MPAN Core",
-                "Export MPAN Core",
-                "Batch Reference",
-                "Bill Id",
-                "Bill Reference",
-                "Bill Issue Date",
-                "Bill Type",
-                "Register Read Id",
-                "TPR",
-                "Coefficient",
-                "Previous Read Date",
-                "Previous Read Value",
-                "Previous Read Type",
-                "Present Read Date",
-                "Present Read Value",
-                "Present Read Type",
+                "duration_start",
+                "duration_finish",
+                "site_code",
+                "site_name",
+                "supply_id",
+                "imp_mpan_core",
+                "exp_mpan_core",
+                "batch_reference",
+                "bill_id",
+                "bill_reference",
+                "bill_issue_date",
+                "bill_type",
+                "register_read_id",
+                "tpr",
+                "coefficient",
+                "prev_read_date",
+                "prev_read_value",
+                "prev_read_type",
+                "pres_read_date",
+                "pres_read_value",
+                "pres_read_type",
             )
             w.writerow(titles)
 
@@ -118,6 +120,8 @@ def content(year, month, months, supply_id, user_id):
                         else:
                             era = eras[-1]
 
+                    site = era.get_physical_site(sess)
+
                     for read in (
                         sess.query(RegisterRead)
                         .filter(
@@ -139,28 +143,30 @@ def content(year, month, months, supply_id, user_id):
                             joinedload(RegisterRead.present_type),
                         )
                     ):
-                        vals = [
-                            start_date,
-                            finish_date,
-                            supply_id,
-                            era.imp_mpan_core,
-                            era.exp_mpan_core,
-                            batch.reference,
-                            bill.id,
-                            bill.reference,
-                            bill.issue_date,
-                            bill_type.code,
-                            read.id,
-                            "md" if read.tpr is None else read.tpr.code,
-                            read.coefficient,
-                            read.previous_date,
-                            read.previous_value,
-                            read.previous_type.code,
-                            read.present_date,
-                            read.present_value,
-                            read.present_type.code,
-                        ]
-                        w.writerow(csv_make_val(v) for v in vals)
+                        vals = {
+                            "duration_start": start_date,
+                            "duration_finish": finish_date,
+                            "site_code": site.code,
+                            "site_name": site.name,
+                            "supply_id": supply_id,
+                            "imp_mpan_core": era.imp_mpan_core,
+                            "exp_mpan_core": era.exp_mpan_core,
+                            "batch_reference": batch.reference,
+                            "bill_id": bill.id,
+                            "bill_reference": bill.reference,
+                            "bill_issue_date": bill.issue_date,
+                            "bill_type": bill_type.code,
+                            "register_read_id": read.id,
+                            "tpr": "md" if read.tpr is None else read.tpr.code,
+                            "coefficient": read.coefficient,
+                            "prev_read_date": read.previous_date,
+                            "prev_read_value": read.previous_value,
+                            "prev_read_type": read.previous_type.code,
+                            "pres_read_date": read.present_date,
+                            "pres_read_value": read.present_value,
+                            "pres_read_type": read.present_type.code,
+                        }
+                        w.writerow(csv_make_val(vals.get(t)) for t in titles)
 
                     # Avoid a long-running transaction
                     sess.rollback()

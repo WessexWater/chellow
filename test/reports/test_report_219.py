@@ -1,5 +1,8 @@
+import csv
 from decimal import Decimal
 from io import StringIO
+
+from utils import match_tables
 
 from chellow.models import (
     BillType,
@@ -37,57 +40,36 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_content(mocker, sess):
-    valid_from = to_utc(ct_datetime(2000, 1, 1))
+    vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
-    bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -98,22 +80,15 @@ def test_content(mocker, sess):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
     source = Source.get_by_code(sess, "net")
     insert_energisation_statuses(sess)
@@ -153,8 +128,10 @@ def test_content(mocker, sess):
         None,
         None,
     )
+    supply_id = supply.id
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
     batch = imp_supplier_contract.insert_batch(sess, "a", "batch")
 
     insert_bill_types(sess)
@@ -198,34 +175,38 @@ def test_content(mocker, sess):
     year = 2020
     month = 1
     months = 1
-    supply_id = supply.id
-    content(year, month, months, supply_id, user.id)
-    actual = mock_file.getvalue()
-    expected_lines = [
+    content(year, month, months, supply_id, user_id)
+    mock_file.seek(0)
+    actual = list(csv.reader(mock_file))
+    expected = [
         [
-            "Duration Start",
-            "Duration Finish",
-            "Supply Id",
-            "Import MPAN Core",
-            "Export MPAN Core",
-            "Batch Reference",
-            "Bill Id",
-            "Bill Reference",
-            "Bill Issue Date",
-            "Bill Type",
-            "Register Read Id",
-            "TPR",
-            "Coefficient",
-            "Previous Read Date",
-            "Previous Read Value",
-            "Previous Read Type",
-            "Present Read Date",
-            "Present Read Value",
-            "Present Read Type",
+            "duration_start",
+            "duration_finish",
+            "site_code",
+            "site_name",
+            "supply_id",
+            "imp_mpan_core",
+            "exp_mpan_core",
+            "batch_reference",
+            "bill_id",
+            "bill_reference",
+            "bill_issue_date",
+            "bill_type",
+            "register_read_id",
+            "tpr",
+            "coefficient",
+            "prev_read_date",
+            "prev_read_value",
+            "prev_read_type",
+            "pres_read_date",
+            "pres_read_value",
+            "pres_read_type",
         ],
         [
             "2020-01-01 00:00",
             "2020-01-31 23:30",
+            "CI017",
+            "Water Works",
             "1",
             "22 7867 6232 781",
             "",
@@ -245,5 +226,4 @@ def test_content(mocker, sess):
             "A",
         ],
     ]
-    expected = "\n".join(",".join(line) for line in expected_lines) + "\n"
-    assert actual == expected
+    match_tables(expected, actual)
