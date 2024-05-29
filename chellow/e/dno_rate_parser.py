@@ -317,16 +317,16 @@ def tab_ehv(sheet, gsp_rates):
                     band = "" if band_col is None else int(get_decimal(row, band_col))
                     tariffs[llfc] = {
                         "super-red-gbp-per-kwh": get_rate(
-                            row, col_match(title_row, polarity + " super red")
+                            row, col_match(title_row, f"{polarity} super red")
                         ),
-                        "gbp-per-day": get_zero_rate(
-                            row, col_match(title_row, polarity + " fixed")
+                        "gbp-per-mpan-per-day": get_zero_rate(
+                            row, col_match(title_row, f"{polarity} fixed")
                         ),
                         "gbp-per-kva-per-day": get_zero_rate(
-                            row, col_match(title_row, polarity + " capacity")
+                            row, col_match(title_row, f"{polarity} capacity")
                         ),
                         "excess-gbp-per-kva-per-day": get_zero_rate(
-                            row, col_match(title_row, polarity + " exce")
+                            row, col_match(title_row, f"{polarity} exce")
                         ),
                         "description": f"Designated EHV{band}",
                     }
