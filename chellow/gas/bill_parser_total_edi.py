@@ -44,7 +44,7 @@ def _to_finish_date(date_str):
 def _process_ADJ(elements, headers):
     adjf = elements["ADJF"]
     if adjf[0] == "CV":
-        headers["cv"] = Decimal(adjf[1]) / Decimal(100000)
+        headers["reads"][-1]["calorific_value"] = Decimal(adjf[1]) / Decimal(100000)
 
 
 def _process_BCD(elements, headers):
@@ -158,9 +158,6 @@ def _process_MTR(elements, headers):
         for k, v in tuple(breakdown.items()):
             if isinstance(v, set):
                 breakdown[k] = sorted(v)
-
-        for read in headers["reads"]:
-            read["calorific_value"] = headers["cv"]
 
         return {
             "raw_lines": "\n".join(headers["raw_lines"]),
