@@ -3277,9 +3277,12 @@ def mop_contract_get(contract_id):
         .order_by(RateScript.start_date.desc())
         .all()
     )
-    now = utc_datetime_now()
-    last_month_start = utc_datetime(now.year, now.month) - relativedelta(months=1)
-    last_month_finish = last_month_start + relativedelta(months=1) - HH
+    now_ct = ct_datetime_now()
+    last_month_start_ct = ct_datetime(now_ct.year, now_ct.month) - relativedelta(
+        months=1
+    )
+    last_month_start = to_utc(last_month_start_ct)
+    last_month_finish = to_utc(last_month_start_ct + relativedelta(months=1) - HH)
     party = contract.party
     return render_template(
         "mop_contract.html",
