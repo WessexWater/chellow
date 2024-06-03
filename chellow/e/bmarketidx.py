@@ -144,7 +144,7 @@ class BmarketidxImporter(threading.Thread):
                         else:
                             self.global_alert = (
                                 f"There's a problem with the <a "
-                                f"href='/e/non_core_contracts/{contract.id}/"
+                                f"href='/non_core_contracts/{contract.id}/"
                                 f"automatic_importer'>bmarketidx automatic "
                                 f"importer</a>."
                             )
