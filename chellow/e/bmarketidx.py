@@ -1,8 +1,11 @@
 import atexit
-import collections
 import threading
 import traceback
+from collections import deque
+from datetime import datetime as Datetime
 from decimal import Decimal
+
+from dateutil.relativedelta import relativedelta
 
 import requests
 
@@ -73,7 +76,7 @@ class BmarketidxImporter(threading.Thread):
     def __init__(self):
         super().__init__(name="Bmarketidx Importer")
         self.lock = threading.RLock()
-        self.messages = collections.deque(maxlen=100)
+        self.messages = deque(maxlen=1000)
         self.stopped = threading.Event()
         self.going = threading.Event()
 
@@ -145,7 +148,7 @@ class BmarketidxImporter(threading.Thread):
                             self.global_alert = (
                                 f"There's a problem with the <a "
                                 f"href='/non_core_contracts/{contract.id}/"
-                                f"automatic_importer'>bmarketidx automatic "
+                                f"auto_importer'>bmarketidx automatic "
                                 f"importer</a>."
                             )
                     finally:
@@ -164,24 +167,38 @@ def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
     )
     rates = {}
     month_finish_ct = to_ct(month_finish)
+    base_url = "https://data.elexon.co.uk/bmrs/api/v1/balancing/pricing/market-index"
     for d in range(month_finish_ct.day):
-        day_ct = ct_datetime(month_finish_ct.year, month_finish_ct.month, d + 1)
+        day_from_ct = ct_datetime(month_finish_ct.year, month_finish_ct.month, d + 1)
+        day_to_ct = day_from_ct + relativedelta(days=1)
         params = {
-            "q": f"ajax/alldata/MID/Date,SP,Provider,Price,Volume/NULL/"
-            f'{day_ct.strftime("%Y-%m-%d")}/ALL'
+            "from": f'{day_from_ct.strftime("%Y-%m-%d")}T00:00Z',
+            "to": f'{day_to_ct.strftime("%Y-%m-%d")}T00:00Z',
+            "settlementPeriodFrom": "1",
+            "settlementPeriodTo": "1",
         }
         sess.rollback()
-        r = requests.get(
-            "https://www.bmreports.com/bmrs/", params=params, timeout=60, verify=False
-        )
+        q_str = "&".join(f"{k}={v}" for k, v in params.items())
+        log_f(f"Attempting to download {base_url}?{q_str}")
+        r = requests.get(base_url, params=params, timeout=60, verify=False)
         res = r.json()
-        for h in res["arr"]:
-            dt = to_utc(day_ct + (int(h["settlementPeriod"]) - 1) * HH)
-            try:
-                rate = rates[dt]
-            except KeyError:
-                rate = rates[dt] = {}
-            rate[h["DataProviderId"]] = Decimal(h["MarketIndexPrice"]) / Decimal(1000)
+        for h in res["data"]:
+            # {
+            #   "startTime":"2022-06-01T23:00:00Z",
+            #   "dataProvider":"N2EXMIDP",
+            #   "settlementDate":"2022-06-02",
+            #   "settlementPeriod":1,
+            #   "price":0.00,
+            #   "volume":0.000
+            # },
+            settlement_date = Datetime.strptime(h["settlementDate"], "%Y-%m-%d")
+            if settlement_date.month == month_finish_ct.month:
+                dt = to_utc(settlement_date + (int(h["settlementPeriod"]) - 1) * HH)
+                try:
+                    rate = rates[dt]
+                except KeyError:
+                    rate = rates[dt] = {}
+                rate[h["dataProvider"]] = Decimal(h["price"]) / Decimal(1000)
 
     if month_finish in rates:
         log_f("The whole month's data is there.")
