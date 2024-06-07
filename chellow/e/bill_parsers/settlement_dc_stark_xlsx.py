@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import Session
-from chellow.utils import hh_format, parse_mpan_core, to_utc
+from chellow.utils import parse_mpan_core, to_utc
 
 
 class Parser:
@@ -99,10 +99,18 @@ class Parser:
                     ad_hoc_visits = self.get_dec("P", row)
                     ad_hoc_rate = self.get_dec("Q", row)
                     ad_hoc_gbp = self.get_dec("R", row)
+                    activity_names = set()
+                    activity_gbp = Decimal("0")
+                    if ad_hoc_gbp != 0:
+                        activity_names.add("ad_hoc_visit")
+                        activity_gbp += ad_hoc_gbp
 
                     annual_visits = self.get_int("S", row)
                     annual_rate = self.get_dec("T", row)
                     annual_gbp = self.get_dec("U", row)
+                    if annual_gbp != 0:
+                        activity_names.add("annual_visit")
+                        activity_gbp += annual_gbp
 
                     if cop_3_meters > 0:
                         cop = "3"
@@ -121,19 +129,16 @@ class Parser:
                         "mpan-gbp": mpan_gbp,
                         "ad-hoc-visits": ad_hoc_visits,
                         "ad-hoc-rate": [ad_hoc_rate],
-                        "ad-hoc-gbp": ad_hoc_gbp,
+                        "ad-hoc-gbp-info": ad_hoc_gbp,
                         "annual-visits-count": annual_visits,
                         "annual-visits-rate": [annual_rate],
-                        "annual-visits-gbp": annual_gbp,
+                        "annual-visits-gbp-info": annual_gbp,
                     }
-                    annual_date_cell = self.get_cell("V", row)
-                    annual_date_value = annual_date_cell.value
-                    if annual_date_value is not None:
-                        if isinstance(annual_date_value, Datetime):
-                            annual_date = hh_format(annual_date_value)
-                        else:
-                            annual_date = annual_date_value
-                        breakdown["annual-visits-date"] = [annual_date]
+                    if len(activity_names) > 0:
+                        breakdown["activity-name"] = sorted(activity_names)
+
+                    if activity_gbp != 0:
+                        breakdown["activity-gbp"] = activity_gbp
 
                     bills.append(
                         {
