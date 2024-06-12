@@ -1,6 +1,7 @@
 import csv
 from collections import defaultdict
 from datetime import datetime as Datetime
+from decimal import Decimal
 from importlib import import_module
 from io import BytesIO, StringIO
 
@@ -447,8 +448,8 @@ def batch_get(g_batch_id):
                     except KeyError:
                         vbd = vat_breakdown[vat_percentage] = defaultdict(int)
 
-                    vbd["vat"] += vat_bd["vat"]
-                    vbd["net"] += vat_bd["net"]
+                    vbd["vat"] += vat_bd.get("vat", Decimal("0"))
+                    vbd["net"] += vat_bd.get("net", Decimal("0"))
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
