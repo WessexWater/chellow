@@ -97,30 +97,16 @@
 			<th><a href="/g/supplies/{{g_supply.id}}/notes">Notes</a></th>
 			<td>
 				{% if note %}
-					{% if is_truncated %}
-						<div id="truncated_note">
-							{{ truncated_note }} 
-						</div>
-						<div id="full_note" style="display: none;">
-							<pre
-									style=" white-space: pre-wrap;"
-									>{{ g_supply.note }}</pre>
-							<a
-									href="JavaScript:void()" onClick="hideText()"
-									>Less...</a>
-						</div>
-					{% else %}
-						Category: {{note.category}}
-						{% if note.is_important %}
-							Important
-						{% else %}
-							Not important
-						{% endif %}
-						<pre style="display: inline;">{{note.body}}</pre>
-					{% endif %}
+					<pre style="white-space pre-wrap;">
+						{%- if note.timestamp -%}<em>{{note.timestamp|hh_format}}</em>{%- endif %}
+						{%- if truncated_line -%}
+							<details><summary><span>{{truncated_line}}</span></summary>{{note.body}}</details>
+						{%- else %} {{note.body}}
+						{%- endif -%}
+					</pre>
 				{% endif %}
 			</td>
-		</tr>
+		<tr>
 	</table>
 				
 	{% for g_era_bundle in g_era_bundles %}

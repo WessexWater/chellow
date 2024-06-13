@@ -5,17 +5,17 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_supplies">Gas Supplies</a>  &raquo;
-	<a href="/g_supplies/{{g_supply.id}}">{{g_supply.id}}</a>  &raquo;
-	<a href="/g_supplies/{{g_supply.id}}/notes">Notes</a>  &raquo; Add
+	<a href="/g/supplies">Gas Supplies</a>  &raquo;
+	<a href="/g/supplies/{{g_supply.id}}">{{g_supply.id}}</a>  &raquo;
+	<a href="/g/supplies/{{g_supply.id}}/notes">Notes</a>  &raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form method="post" action="/g_supplies/{{g_supply.id}}/notes/add">
-		<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
-		<label>Category</label> {{input_text('category')}}
-		<label>Important?</label> {{input_checkbox('is_important')}}
-		<label>Body</label> {{input_textarea('body', '', 30, 80)}}
-		<input type="submit" value="Add">
+	<form method="post" action="/g/supplies/{{g_supply.id}}/notes/add">
+		<fieldset>
+			<input type="hidden" name="g_supply_id" value="{{g_supply.id}}">
+			<label>Body</label> {{input_textarea('body', '', 30, 80)}}
+			<input type="submit" value="Add">
+		</fieldset>
 	</form>	
 {% endblock %}

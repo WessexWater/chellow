@@ -5,27 +5,30 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/g_supplies">Gas Supplies</a>  &raquo;
-	<a href="/g_supplies/{{g_supply.id}}">{{g_supply.id}}</a>  &raquo;
-	<a href="/g_supplies/{{g_supply.id}}/notes">Notes</a>  &raquo;
- 	{{note.index}} Edit
+	<a href="/g/supplies">Gas Supplies</a>  &raquo;
+	<a href="/g/supplies/{{g_supply.id}}">{{g_supply.id}}</a>  &raquo;
+	<a href="/g/supplies/{{g_supply.id}}/notes">Notes</a>  &raquo; {{note.index}} Edit
 {% endblock %}
 
 {% block content %}
-	<form method="post" action="/g_supplies/{{g_supply.id}}/notes/{{note.index}}/edit">
+	<form method="post" action="/g/supplies/{{g_supply.id}}/notes/{{note.index}}/edit">
 		<fieldset>
-			<legend>Edit Note</legend>
-			<label>Category</label> {{input_text('category', note.category)}}
-			<label>Important?</label> {{input_checkbox('is_important', note.is_important)}}
+			<legend>Update Supply Note</legend>
+			{% if note.timestamp %}
+				<label>Timestamp</label> {{ note.timestamp|hh_format }}
+			{% endif %}
 			<label>Body</label> {{input_textarea('body', note.body, 30, 80)}}
-			<input type="submit" name="update" value="Edit">
+			<input type="submit" value="Update">
 		</fieldset>
 	</form>
 
-	<form action="/g_supplies/{{g_supply.id}}/notes/{{note.index}}/edit" method="post">
+	<form
+	    hx-delete="/g/supplies/{{g_supply.id}}/notes/{{note.index}}/edit"
+			hx-confirm="Are you sure you want to delete this note?"
+	>
 		<fieldset>
-			<legend>Delete Note</legend>
-			<input type="submit" name="delete" value="Delete">
+			<legend>Delete Supply Note</legend>
+			<input type="submit" value="Delete">
 		</fieldset>
 	</form>
 {% endblock %}
