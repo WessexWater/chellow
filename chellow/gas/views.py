@@ -801,7 +801,11 @@ def supply_note_edit_post(g_supply_id, index):
 @gas.route("/eras/<int:g_era_id>/edit")
 def era_edit_get(g_era_id):
     g_era = GEra.get_by_id(g.sess, g_era_id)
-    supplier_g_contracts = g.sess.query(GContract).order_by(GContract.name)
+    supplier_g_contracts = g.sess.scalars(
+        select(GContract)
+        .where(GContract.is_industry == false())
+        .order_by(GContract.name)
+    )
     site_g_eras = (
         g.sess.query(SiteGEra)
         .join(Site)
