@@ -351,9 +351,8 @@ Table of site level monthly kWh, MD kWh etc.</a>
 		<fieldset>
 			<input type="hidden" name="site_id" value="{{site.id}}">
 			<legend>Monthly Duration</legend>
-			<br>
-			For {{input_text('months', '1', 2, 2)}} month(s) until the end of
-			{{input_date('finish', last_month_finish, resolution='month')}}
+			<label>Number Of Months</label> {{input_text('months', '1', 2, 2)}}
+			<label>Last Month</label> {{input_date('finish', last_month_finish, resolution='month')}}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>			
