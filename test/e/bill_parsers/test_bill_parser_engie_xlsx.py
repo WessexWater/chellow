@@ -16,7 +16,39 @@ def test_parse_row():
     wb = Workbook()
     ws = wb.active
 
-    for column, value in enumerate(
+    rows = [
+        [
+            "BillingEntity",
+            "CustomerName",
+            "CustomerNumber",
+            "AccountName",
+            "AccountNumber",
+            "BillingAddresss",
+            "BillNumber",
+            "BillDate",
+            "DueDate",
+            "AcceptedDate",
+            "BillPeriod",
+            "AgreementNumber",
+            "ProductBundle",
+            "ProductItemName",
+            "BillStatus",
+            "ProductItemClass",
+            "Type",
+            "Description",
+            "FromDate",
+            "ToDate",
+            "SalesTaxRate",
+            "MeterPoint",
+            "Usage",
+            "UsageUnit",
+            "Price",
+            "Amount",
+            "Currency",
+            "Indicator",
+            "RateName",
+            "ProductName",
+        ],
         [
             "Power Comany Ltd.",
             "Bill Paja",
@@ -49,13 +81,14 @@ def test_parse_row():
             "",
             "",
         ],
-        start=1,
-    ):
-        ws.cell(row=2, column=column, value=value)
+    ]
+
+    for row, row_values in enumerate(rows, start=1):
+        for column, value in enumerate(row_values, start=1):
+            ws.cell(row=row, column=column, value=value)
 
     row = 2
-    title_row = ["To Date"]
-
+    title_row = tuple(ws.rows)[0]
     bill = _parse_row(ws, row, title_row)
     assert bill["finish_date"] == utc_datetime(2019, 3, 31, 22, 30)
 
@@ -76,43 +109,79 @@ def test_bill_parser_engie_xls_billed_kwh():
     wb = Workbook()
     ws = wb.active
 
-    row_vals = [
-        "Mistral Wind Power Ltd.",
-        "Bill Paja",
-        "886572998",
-        "Bill Paja",
-        "869987122",
-        "BA1 5TT",
-        "99708221",
-        Datetime(2019, 3, 31, 23, 30),
-        42694,
-        42629,
-        "2016-08-01 - 2016-08-31",
-        "458699",
-        "Standard Deluxe",
-        "Beautiful Breeze",
-        "Accepted",
-        "Pass Thru - UK Electricity Cost Component",
-        "Product",
-        "Renewables Obligation (RO)",
-        Datetime(2019, 3, 31, 23, 30),
-        Datetime(2019, 3, 31, 23, 30),
-        "Commercial UK Energy VAT",
-        "2298132107763",
-        27997.33,
-        "",
-        0.0971123676,
-        "9224",
-        "GBP",
-        "INV",
-        "Renewables Obligation (RO)",
-        "",
+    rows = [
+        [
+            "BillingEntity",
+            "CustomerName",
+            "CustomerNumber",
+            "AccountName",
+            "AccountNumber",
+            "BillingAddresss",
+            "BillNumber",
+            "BillDate",
+            "DueDate",
+            "AcceptedDate",
+            "BillPeriod",
+            "AgreementNumber",
+            "ProductBundle",
+            "ProductItemName",
+            "BillStatus",
+            "ProductItemClass",
+            "Type",
+            "Description",
+            "FromDate",
+            "ToDate",
+            "SalesTaxRate",
+            "MeterPoint",
+            "Usage",
+            "UsageUnit",
+            "Price",
+            "Amount",
+            "Currency",
+            "Indicator",
+            "RateName",
+            "ProductName",
+        ],
+        [
+            "Mistral Wind Power Ltd.",
+            "Bill Paja",
+            "886572998",
+            "Bill Paja",
+            "869987122",
+            "BA1 5TT",
+            "99708221",
+            Datetime(2019, 3, 31, 23, 30),
+            42694,
+            42629,
+            "2016-08-01 - 2016-08-31",
+            "458699",
+            "Standard Deluxe",
+            "Renewables Obligation (RO)",
+            "Accepted",
+            "Pass Thru - UK Electricity Cost Component",
+            "Product",
+            "Renewables Obligation (RO)",
+            Datetime(2019, 3, 31, 23, 30),
+            Datetime(2019, 3, 31, 23, 30),
+            "Commercial UK Energy VAT",
+            "2298132107763",
+            27997.33,
+            "",
+            0.0971123676,
+            "9224",
+            "GBP",
+            "INV",
+            "Renewables Obligation (RO)",
+            "",
+        ],
     ]
-    for column, value in enumerate(row_vals, start=1):
-        ws.cell(row=2, column=column, value=value)
+    for row, row_vals in enumerate(rows, start=1):
+        for column, value in enumerate(row_vals, start=1):
+            ws.cell(row=row, column=column, value=value)
 
     row = 2
-    bill = _parse_row(ws, row, [])
+    title_row = tuple(ws.rows)[0]
+    bill = _parse_row(ws, row, title_row)
     assert bill["kwh"] == Decimal("27997.33")
 
 
@@ -120,41 +189,76 @@ def test_make_raw_bills_vat():
     wb = Workbook()
     ws = wb.active
 
-    row_vals = [
-        "Mistral Wind Power Ltd.",
-        "Bill Paja",
-        "886572998",
-        "Bill Paja",
-        "869987122",
-        "BA1 5TT",
-        "99708221",
-        Datetime(2019, 3, 31, 23, 30),
-        Datetime(2019, 3, 31, 23, 30),
-        Datetime(2019, 3, 31, 23, 30),
-        "2016-08-01 - 2016-08-31",
-        "",
-        "",
-        "",
-        "Accepted",
-        "",
-        "Sales Tax",
-        "Standard VAT@20%",
-        "",
-        "",
-        "",
-        "2298132107763",
-        "",
-        "",
-        "",
-        "9224",
-        "GBP",
-        "INV",
-        "",
-        "",
+    rows = [
+        [
+            "BillingEntity",
+            "CustomerName",
+            "CustomerNumber",
+            "AccountName",
+            "AccountNumber",
+            "BillingAddresss",
+            "BillNumber",
+            "BillDate",
+            "DueDate",
+            "AcceptedDate",
+            "BillPeriod",
+            "AgreementNumber",
+            "ProductBundle",
+            "ProductItemName",
+            "BillStatus",
+            "ProductItemClass",
+            "Type",
+            "Description",
+            "FromDate",
+            "ToDate",
+            "SalesTaxRate",
+            "MeterPoint",
+            "Usage",
+            "UsageUnit",
+            "Price",
+            "Amount",
+            "Currency",
+            "Indicator",
+            "RateName",
+            "ProductName",
+        ],
+        [
+            "Mistral Wind Power Ltd.",
+            "Bill Paja",
+            "886572998",
+            "Bill Paja",
+            "869987122",
+            "BA1 5TT",
+            "99708221",
+            Datetime(2019, 3, 31, 23, 30),
+            Datetime(2019, 3, 31, 23, 30),
+            Datetime(2019, 3, 31, 23, 30),
+            "2016-08-01 - 2016-08-31",
+            "",
+            "",
+            "",
+            "Accepted",
+            "",
+            "Sales Tax",
+            "Standard VAT@20%",
+            "",
+            "",
+            "",
+            "2298132107763",
+            "",
+            "",
+            "",
+            "9224",
+            "GBP",
+            "INV",
+            "",
+            "",
+        ],
     ]
 
-    for column, value in enumerate(row_vals, start=1):
-        ws.cell(row=2, column=column, value=value)
+    for row, row_vals in enumerate(rows, start=1):
+        for column, value in enumerate(row_vals, start=1):
+            ws.cell(row=row, column=column, value=value)
 
     bills = _make_raw_bills(ws)
     expected_bills = [

@@ -1,7 +1,7 @@
 import csv
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
-from itertools import count
+from enum import Enum, auto
 
 from dateutil.relativedelta import relativedelta
 
@@ -147,39 +147,56 @@ def _find_names(tree, path):
     return tree[None]
 
 
-COLUMNS = [
-    "Billing Entity",
-    "Customer Name",
-    "Customer Number",
-    "Account Name",
-    "Account Number",
-    "Billing Address",
-    "Bill Number",
-    "Bill Date",
-    "Due Date",
-    "Accepted Date",
-    "Bill Period",
-    "Agreement Number",
-    "Product Bundle",
-    "Product Name",
-    "Bill Status",
-    "Product Item Class",
-    "Type",
-    "Description",
-    "From Date",
-    "To Date",
-    "Sales Tax Rate",
-    "Meter Point",
-    "Usage",
-    "Usage Unit",
-    "Price",
-    "Amount",
-    "Currency",
-    "Indicator",
-    "Product Item Name",
-    "Rate Name",
-]
-COLUMN_MAP = dict(zip(COLUMNS, count(1)))
+class Title(Enum):
+    METER_POINT = auto()
+    BILL_PERIOD = auto()
+    FROM_DATE = auto()
+    TO_DATE = auto()
+    BILL_DATE = auto()
+    BILL_NUMBER = auto()
+    USAGE = auto()
+    PRICE = auto()
+    AMOUNT = auto()
+    PRODUCT_ITEM_NAME = auto()
+    RATE_NAME = auto()
+    DESCRIPTION = auto()
+    PRODUCT_ITEM_CLASS = auto()
+    CUSTOMER_NUMBER = auto()
+
+
+COLUMNS = {
+    Title.METER_POINT: ["Meter Point", "MeterPoint"],
+    Title.BILL_PERIOD: ["Bill Period", "BillPeriod"],
+    Title.FROM_DATE: ["From Date", "FromDate"],
+    Title.TO_DATE: ["To Date", "ToDate"],
+    Title.BILL_DATE: ["Bill Date", "BillDate"],
+    Title.BILL_NUMBER: ["Bill Number", "BillNumber"],
+    Title.USAGE: ["Usage"],
+    Title.PRICE: ["Price"],
+    Title.AMOUNT: ["Amount"],
+    Title.PRODUCT_ITEM_NAME: ["Product Item Name", "ProductItemName"],
+    Title.RATE_NAME: ["Rate Name", "RateName"],
+    Title.DESCRIPTION: ["Description"],
+    Title.PRODUCT_ITEM_CLASS: ["Product Item Class", "ProductItemClass"],
+    Title.CUSTOMER_NUMBER: ["Customer Number", "CustomerNumber"],
+}
+
+
+def make_column_map(title_row):
+    titles = [cell.value for cell in title_row]
+    column_map = {}
+    for title, title_names in COLUMNS.items():
+        idx = None
+        for title_name in title_names:
+            try:
+                idx = titles.index(title_name)
+            except ValueError:
+                pass
+        if idx is None:
+            raise BadRequest(f"For the title {title} a column can't be found")
+
+        column_map[title] = idx + 1
+    return column_map
 
 
 def get_date_naive(sheet, row, col):
@@ -198,8 +215,7 @@ def get_date(sheet, row, col_name):
     return None if dt is None else to_utc(to_ct(dt))
 
 
-def get_value(sheet, row, col_name):
-    col = COLUMN_MAP[col_name]
+def get_value(sheet, row, col):
     try:
         return sheet.cell(row=row, column=col).value
     except IndexError:
@@ -256,7 +272,6 @@ def _bd_add(bd, el_name, val):
 
 
 def _customer_mods(cust_number, description, bill):
-    print(cust_number, type(cust_number), description)
     if cust_number == 10001596:
         if (
             description == "RO Mutualisation 2021-22"
@@ -272,7 +287,8 @@ def _customer_mods(cust_number, description, bill):
 
 
 def _parse_row(sheet, row, title_row):
-    val = get_value(sheet, row, "Meter Point")
+    column_map = make_column_map(title_row)
+    val = get_value(sheet, row, column_map[Title.METER_POINT])
     try:
         mpan_core = parse_mpan_core(str(int(val)))
     except ValueError as e:
@@ -281,7 +297,7 @@ def _parse_row(sheet, row, title_row):
             f"{e}"
         )
 
-    bill_period = get_value(sheet, row, "Bill Period")
+    bill_period = get_value(sheet, row, column_map[Title.BILL_PERIOD])
     if "-" in bill_period:
         period_start_naive, period_finish_naive = [
             Datetime.strptime(v, "%Y-%m-%d") for v in bill_period.split(" - ")
@@ -291,14 +307,14 @@ def _parse_row(sheet, row, title_row):
     else:
         period_start, period_finish = None, None
 
-    from_date = get_date(sheet, row, "From Date")
+    from_date = get_date(sheet, row, column_map[Title.FROM_DATE])
     if from_date is None:
         if period_start is None:
             raise BadRequest("Can't find a bill start date.")
         else:
             from_date = period_start
 
-    to_date_naive = get_date_naive(sheet, row, "To Date")
+    to_date_naive = get_date_naive(sheet, row, column_map[Title.TO_DATE])
     if to_date_naive is None:
         if period_finish is None:
             raise BadRequest("Can't find a bill finish date.")
@@ -308,8 +324,8 @@ def _parse_row(sheet, row, title_row):
     else:
         to_date = to_utc(to_ct(to_date_naive + relativedelta(days=1) - HH))
 
-    issue_date = get_date(sheet, row, "Bill Date")
-    bill_number = get_value(sheet, row, "Bill Number")
+    issue_date = get_date(sheet, row, column_map[Title.BILL_DATE])
+    bill_number = get_value(sheet, row, column_map[Title.BILL_NUMBER])
     bill = {
         "bill_type_code": "N",
         "kwh": Decimal(0),
@@ -325,16 +341,16 @@ def _parse_row(sheet, row, title_row):
     }
     bd = bill["breakdown"]
 
-    usage = get_dec(sheet, row, "Usage")
+    usage = get_dec(sheet, row, column_map[Title.USAGE])
     # usage_units = get_value(sheet, row, 'Usage Unit')
-    price = get_dec(sheet, row, "Price")
-    amount = get_dec(sheet, row, "Amount")
-    product_item_name = get_value(sheet, row, "Product Item Name")
-    rate_name = get_value(sheet, row, "Rate Name")
+    price = get_dec(sheet, row, column_map[Title.PRICE])
+    amount = get_dec(sheet, row, column_map[Title.AMOUNT])
+    product_item_name = get_value(sheet, row, column_map[Title.PRODUCT_ITEM_NAME])
+    rate_name = get_value(sheet, row, column_map[Title.RATE_NAME])
     if product_item_name == "Renewables Obligation (RO)" and usage is not None:
         bill["kwh"] += round(usage, 2)
-    description = get_value(sheet, row, "Description")
-    product_class = get_value(sheet, row, "Product Item Class")
+    description = get_value(sheet, row, column_map[Title.DESCRIPTION])
+    product_class = get_value(sheet, row, column_map[Title.PRODUCT_ITEM_CLASS])
     if description in ("Standard VAT@20%", "Reduced VAT@5%"):
         bill["vat"] += round(amount, 2)
         if description.endswith("20%"):
@@ -416,7 +432,7 @@ def _parse_row(sheet, row, title_row):
 
     bill["reference"] = reference
     bill["gross"] = bill["net"] + bill["vat"]
-    customer_number = get_value(sheet, row, "Customer Number")
+    customer_number = get_value(sheet, row, column_map[Title.CUSTOMER_NUMBER])
     return _customer_mods(customer_number, description, bill)
 
 
