@@ -370,7 +370,10 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
         )
 
     for record in api_records(log, s, "fbece4ce-7cfc-42b7-8fb2-387cf59a3c32"):
-        period_start = _parse_varying_date(record["Period_Start"])
+        period_start_str = record["Period_Start"]
+        if len(period_start_str) == 0:
+            continue
+        period_start = _parse_varying_date(period_start_str)
 
         rs = sess.execute(
             select(RateScript).where(
