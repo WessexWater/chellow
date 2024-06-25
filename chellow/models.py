@@ -7486,6 +7486,18 @@ def db_upgrade_47_to_48(sess, root_path):
         DtcMeterType.insert(sess, code, desc)
 
 
+def db_upgrade_48_to_49(sess, root_path):
+    for code, factor_str in (
+        ("MCUF", "28.316846592"),
+        ("HCUF", "2.8316846592"),
+        ("TCUF", "0.28316846592"),
+        ("OCUF", "0.028316846592"),
+    ):
+        g_unit = GUnit.get_by_code(sess, code)
+        g_unit.factor = Decimal(factor_str)
+        sess.flush()
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7519,6 +7531,7 @@ upgrade_funcs.extend(
         db_upgrade_45_to_46,
         db_upgrade_46_to_47,
         db_upgrade_47_to_48,
+        db_upgrade_48_to_49,
     ]
 )
 
