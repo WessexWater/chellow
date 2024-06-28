@@ -68,11 +68,16 @@ CHARGE_UNITS_LOOKUP = {
     "SAG": "days",
     "TNUOS": "days",
     "REAP": "kvarh",
+    "DCDA": "days",
+    "MOP1": "days",
+    "COMM": "days",
 }
 
 ELEMENT_LOOKUP = {
     "10ANNUAL": "standing",
     "20RS0108": "single",
+    "30ANNUAL": "mop",
+    "50ANNUAL": "dc",
     "9WANNUAL": "site-fee",
     "20RS0123": "day",
     "30RS0123": "night",
