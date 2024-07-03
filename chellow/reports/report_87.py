@@ -83,37 +83,32 @@ def _process_era(
             exp_llfc_description = data_source.llfc.description
             imp_is_substation = imp_llfc_code = imp_llfc_description = None
 
-        vals = [
-            data_source.mpan_core,
-            site.code,
-            site.name,
-            data_source.supplier_account,
-            data_source.start_date,
-            data_source.finish_date,
-            data_source.energisation_status_code,
-            data_source.gsp_group_code,
-            data_source.dno_code,
-            imp_is_substation,
-            imp_llfc_code,
-            imp_llfc_description,
-            exp_is_substation,
-            exp_llfc_code,
-            exp_llfc_description,
-        ]
+        vals = {
+            "mpan_core": data_source.mpan_core,
+            "site_code": site.code,
+            "site_name": site.name,
+            "account": data_source.supplier_account,
+            "from": data_source.start_date,
+            "to": data_source.finish_date,
+            "energisation_status": data_source.energisation_status_code,
+            "gsp_group": data_source.gsp_group_code,
+            "dno": data_source.dno_code,
+            "era_start": era.start_date,
+            "pc": data_source.pc_code,
+            "meter_type": data_source.meter_type_code,
+            "imp_is_substation": imp_is_substation,
+            "imp_llfc_code": imp_llfc_code,
+            "imp_llfc_description": imp_llfc_description,
+            "exp_is_substation": exp_is_substation,
+            "exp_llfc_code": exp_llfc_code,
+            "exp_llfc_description": exp_llfc_description,
+        }
 
         vb_func(data_source)
         bill = data_source.supplier_bill
         for title in bill_titles:
             if title in bill:
-                val = bill[title]
-                del bill[title]
-            else:
-                val = ""
-            vals.append(val)
-
-        for k in sorted(bill.keys()):
-            vals.append(k)
-            vals.append(str(bill[k]))
+                vals[title] = bill[title]
 
         return vals
 
@@ -163,6 +158,9 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
         "energisation_status",
         "gsp_group",
         "dno",
+        "era_start",
+        "pc",
+        "meter_type",
         "imp_is_substation",
         "imp_llfc_code",
         "imp_llfc_description",
@@ -170,7 +168,8 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
         "exp_llfc_code",
         "exp_llfc_description",
     ]
-    writer.writerow(header_titles + bill_titles)
+    titles = header_titles + bill_titles
+    writer.writerow(titles)
     vb_func = contract_func(caches, contract, "virtual_bill")
 
     for month_start, month_finish in month_pairs:
@@ -201,7 +200,7 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
                     period_finish,
                     era,
                 )
-                writer.writerow(csv_make_val(v) for v in vals)
+                writer.writerow(csv_make_val(vals.get(t)) for t in titles)
             except BadRequest as e:
                 raise BadRequest(
                     f"Problem with {chellow.utils.url_root}eras/{era.id}/edit "

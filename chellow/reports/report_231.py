@@ -36,6 +36,9 @@ def content(user_id, start_date, finish_date, contract_id):
                 "energisation_status",
                 "gsp_group",
                 "dno",
+                "era_start",
+                "pc",
+                "meter_type",
                 "site_code",
                 "imp_is_substation",
                 "imp_llfc_code",
@@ -46,7 +49,8 @@ def content(user_id, start_date, finish_date, contract_id):
             ]
 
             bill_titles = contract_func(caches, contract, "virtual_bill_titles")()
-            writer.writerow(header_titles + bill_titles)
+            titles = header_titles + bill_titles
+            writer.writerow(titles)
             vb_func = contract_func(caches, contract, "virtual_bill")
 
             for era in (
@@ -77,34 +81,31 @@ def content(user_id, start_date, finish_date, contract_id):
                     exp_llfc_description = supply_source.llfc.description
                     imp_is_substation = imp_llfc_code = imp_llfc_description = None
 
-                out = [
-                    era.imp_mpan_core,
-                    era.exp_mpan_core,
-                    chunk_start,
-                    chunk_finish,
-                    supply_source.energisation_status_code,
-                    supply_source.gsp_group_code,
-                    supply_source.dno_code,
-                    era.get_physical_site(sess).code,
-                    imp_is_substation,
-                    imp_llfc_code,
-                    imp_llfc_description,
-                    exp_is_substation,
-                    exp_llfc_code,
-                    exp_llfc_description,
-                ]
+                out = {
+                    "imp_mpan_core": era.imp_mpan_core,
+                    "exp_mpan_core": era.exp_mpan_core,
+                    "start_date": chunk_start,
+                    "finish_date": chunk_finish,
+                    "energisation_status": supply_source.energisation_status_code,
+                    "gsp_group": supply_source.gsp_group_code,
+                    "dno": supply_source.dno_code,
+                    "era_start": era.start_date,
+                    "pc": supply_source.pc_code,
+                    "meter_type": supply_source.meter_type_code,
+                    "site_code": era.get_physical_site(sess).code,
+                    "imp_is_substation": imp_is_substation,
+                    "imp_llfc_code": imp_llfc_code,
+                    "imp_llfc_description": imp_llfc_description,
+                    "exp_is_substation": exp_is_substation,
+                    "exp_llfc_code": exp_llfc_code,
+                    "exp_llfc_description": exp_llfc_description,
+                }
                 vb_func(supply_source)
                 bill = supply_source.mop_bill
                 for title in bill_titles:
                     if title in bill:
-                        out.append(bill[title])
-                        del bill[title]
-                    else:
-                        out.append("")
-                for k in sorted(bill.keys()):
-                    out.append(k)
-                    out.append(bill[k])
-                writer.writerow(csv_make_val(v) for v in out)
+                        out[title] = bill[title]
+                writer.writerow(csv_make_val(out.get(t)) for t in titles)
 
                 sess.rollback()  # Avoid long-running transactions
     except BadRequest as e:

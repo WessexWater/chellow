@@ -265,6 +265,7 @@ def virtual_bill(ds):
     mock_file.seek(0)
     sheet = csv.reader(mock_file)
     actual_table = list(sheet)
+    print(actual_table)
 
     expected_table = [
         [
@@ -277,6 +278,9 @@ def virtual_bill(ds):
             "energisation_status",
             "gsp_group",
             "dno",
+            "era_start",
+            "pc",
+            "meter_type",
             "imp_is_substation",
             "imp_llfc_code",
             "imp_llfc_description",
@@ -300,6 +304,9 @@ def virtual_bill(ds):
             "E",
             "_L",
             "22",
+            "1996-01-01 00:00",
+            "00",
+            "C5",
             "False",
             "510",
             "PC 5-8 & HH HV",
