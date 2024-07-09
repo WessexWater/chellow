@@ -53,10 +53,12 @@ def test_process_g_bill_ids(mocker):
     vbf = mocker.Mock()
     titles = []
     csv_writer = mocker.Mock()
+    g_contract = mocker.Mock()
 
     chellow.reports.report_429._process_g_bill_ids(
         sess,
         report_context,
+        g_contract,
         g_bill_ids,
         forecast_date,
         bill_titles,

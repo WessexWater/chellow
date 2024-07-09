@@ -102,6 +102,7 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
                     _process_g_bill_ids(
                         sess,
                         report_context,
+                        g_contract,
                         g_bill_ids,
                         forecast_date,
                         bill_titles,
@@ -122,6 +123,7 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
 def _process_g_bill_ids(
     sess,
     report_context,
+    g_contract,
     g_bill_ids,
     forecast_date,
     bill_titles,
@@ -132,15 +134,24 @@ def _process_g_bill_ids(
     g_bill_id = list(sorted(g_bill_ids))[0]
     g_bill_ids.remove(g_bill_id)
     g_bill = sess.query(GBill).filter(GBill.id == g_bill_id).one()
-    problem = ""
     g_supply = g_bill.g_supply
+    vals = {
+        "covered_vat_gbp": Decimal("0.00"),
+        "covered_net_gbp": Decimal("0.00"),
+        "covered_gross_gbp": Decimal("0.00"),
+        "covered_kwh": Decimal(0),
+        "covered_start": g_bill.start_date,
+        "covered_finish": g_bill.finish_date,
+        "covered_bill_ids": [],
+        "virtual_problem": "",
+    }
     read_dict = defaultdict(set)
     for g_read in g_bill.g_reads:
         if not all(
             g_read.msn == era.msn
             for era in g_supply.find_g_eras(sess, g_read.prev_date, g_read.pres_date)
         ):
-            problem += (
+            vals["virtual_problem"] += (
                 f"The MSN {g_read.msn} of the register read {g_read.id} doesn't match "
                 f"the MSN of all the relevant eras."
             )
@@ -152,17 +163,9 @@ def _process_g_bill_ids(
             typ_set = read_dict[str(dt) + "-" + g_read.msn]
             typ_set.add(typ)
             if len(typ_set) > 1:
-                problem += f" Reads taken on {dt} have differing read types."
-
-    vals = {
-        "covered_vat_gbp": Decimal("0.00"),
-        "covered_net_gbp": Decimal("0.00"),
-        "covered_gross_gbp": Decimal("0.00"),
-        "covered_kwh": Decimal(0),
-        "covered_start": g_bill.start_date,
-        "covered_finish": g_bill.finish_date,
-        "covered_bill_ids": [],
-    }
+                vals[
+                    "virtual_problem"
+                ] += f" Reads taken on {dt} have differing read types."
 
     covered_primary_bill = None
     enlarged = True
@@ -270,12 +273,19 @@ def _process_g_bill_ids(
             or_(GEra.finish_date == null(), GEra.finish_date >= vals["covered_start"]),
         )
     ).scalars():
+        if g_era.g_contract != g_contract:
+            vals[
+                "virtual_problem"
+            ] += "The contract of the bill is different from the contract of the era."
+            continue
         site = (
             sess.query(Site)
             .join(SiteGEra)
             .filter(SiteGEra.is_physical == true(), SiteGEra.g_era == g_era)
             .one()
         )
+        vals["site_code"] = site.code
+        vals["site_name"] = site.name
 
         chunk_start = hh_max(vals["covered_start"], g_era.start_date)
         chunk_finish = hh_min(vals["covered_finish"], g_era.finish_date)
@@ -314,8 +324,6 @@ def _process_g_bill_ids(
     vals["bill_finish_date"] = g_bill.finish_date
     vals["mprn"] = g_supply.mprn
     vals["supply_name"] = g_supply.name
-    vals["site_code"] = site.code
-    vals["site_name"] = site.name
 
     for k, v in vals.items():
         if k == "covered_bill_ids":
@@ -332,9 +340,7 @@ def _process_g_bill_ids(
             except KeyError:
                 vals[title] = None
 
-    csv_writer.writerow(
-        [(vals.get(k) if vals.get(k) is not None else "") for k in titles]
-    )
+    csv_writer.writerow([csv_make_val(vals.get(k)) for k in titles])
 
 
 def do_get(sess):
