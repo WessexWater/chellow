@@ -1,4 +1,3 @@
-from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
@@ -13,7 +12,6 @@ from chellow.e import hh_importer
 from chellow.e.views import (
     duration_report_get,
     get_era_bundles,
-    read_add_get,
 )
 from chellow.models import (
     BatchFile,
@@ -45,6 +43,7 @@ from chellow.models import (
     insert_cops,
     insert_dtc_meter_types,
     insert_energisation_statuses,
+    insert_read_types,
     insert_sources,
     insert_voltage_levels,
 )
@@ -2444,36 +2443,238 @@ class Sess:
         return next(self.it)
 
 
-def test_read_add_get(mocker, app):
-    bill_id = 1
+def test_read_add_get_no_existing_era(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
 
-    class MockDatetime(Datetime):
-        def __new__(cls, y, m, d):
-            return Datetime.__new__(cls, y, m, d)
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    insert_cops(sess)
+    insert_comms(sess)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_sources(sess)
+    pc = Pc.insert(sess, "00", "", vf, None)
+    cop = Cop.get_by_code(sess, "5")
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    bill = batch.insert_bill(
+        sess,
+        "xx",
+        "4432",
+        to_utc(ct_datetime(2020, 1, 1)),
+        to_utc(ct_datetime(2018, 1, 3)),
+        to_utc(ct_datetime(2018, 1, 5)),
+        Decimal("482"),
+        Decimal("5.67"),
+        Decimal("0.00"),
+        Decimal("8.55"),
+        bill_type_N,
+        {"vat": {5: {"vat": Decimal("0"), "net": Decimal("34.66")}}},
+        supply,
+    )
+    insert_read_types(sess)
 
-    dt = MockDatetime(2019, 1, 1)
-    dt.desc = mocker.Mock()
+    sess.commit()
 
-    with app.app_context():
-        g = mocker.patch("chellow.e.views.g", autospec=True)
-        g.sess = Sess(None, None)
+    response = client.get(f"/e/supplier_bills/{bill.id}/add_read")
+    patterns = []
+    match(response, 200, *patterns)
 
-        MockBill = mocker.patch("chellow.e.views.Bill", autospec=True)
-        MockBill.supply = mocker.Mock()
-        MockBill.start_date = dt
 
-        mock_bill = mocker.Mock()
-        MockBill.get_by_id.return_value = mock_bill
-        mock_bill.supply.find_era_at.return_value = None
-        mock_bill.finish_date = dt
+def test_read_add_get_existing_era(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
 
-        MockRegisterRead = mocker.patch("chellow.e.views.RegisterRead", autospec=True)
-        MockRegisterRead.bill = mocker.Mock()
-        MockRegisterRead.present_date = dt
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    insert_cops(sess)
+    insert_comms(sess)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_sources(sess)
+    pc = Pc.insert(sess, "00", "", vf, None)
+    cop = Cop.get_by_code(sess, "5")
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    source = Source.get_by_code(sess, "net")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31),
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    bill = batch.insert_bill(
+        sess,
+        "xx",
+        "4432",
+        to_utc(ct_datetime(2020, 1, 1)),
+        to_utc(ct_datetime(2020, 1, 3)),
+        to_utc(ct_datetime(2020, 1, 5)),
+        Decimal("482"),
+        Decimal("5.67"),
+        Decimal("0.00"),
+        Decimal("8.55"),
+        bill_type_N,
+        {"vat": {5: {"vat": Decimal("0"), "net": Decimal("34.66")}}},
+        supply,
+    )
+    insert_read_types(sess)
 
-        mocker.patch("chellow.e.views.render_template", autospec=True)
+    sess.commit()
 
-        read_add_get(bill_id)
+    response = client.get(f"/e/supplier_bills/{bill.id}/add_read")
+    patterns = []
+    match(response, 200, *patterns)
 
 
 def test_scenario_edit_post(sess, client):

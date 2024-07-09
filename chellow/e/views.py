@@ -79,7 +79,6 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
-    PropDict,
     c_months_u,
     csv_make_val,
     ct_datetime,
@@ -3732,24 +3731,15 @@ def pc_get(pc_id):
 
 @e.route("/supplier_bills/<int:bill_id>/add_read")
 def read_add_get(bill_id):
-    read_types = g.sess.query(ReadType).order_by(ReadType.code)
-    estimated_read_type_id = (
-        g.sess.query(ReadType.id).filter(ReadType.code == "E").scalar()
-    )
-    tprs = g.sess.query(Tpr).order_by(Tpr.code)
+    read_types = g.sess.scalars(select(ReadType).order_by(ReadType.code))
+    estimated_read_type = ReadType.get_by_code(g.sess, "E")
+    tprs = g.sess.scalars(select(Tpr).order_by(Tpr.code))
     bill = Bill.get_by_id(g.sess, bill_id)
     coefficient = 1
     mpan_str = msn = previous_date = previous_value = previous_type_id = None
 
     era = bill.supply.find_era_at(g.sess, bill.start_date)
     if era is not None:
-        era_properties = PropDict(
-            f"{chellow.utils.url_root}eras/{era.id}", loads(era.properties)
-        )
-        try:
-            coefficient = float(era_properties["coefficient"])
-        except KeyError:
-            pass
         mpan_str = era.imp_mpan_core
         msn = era.msn
 
@@ -3778,7 +3768,7 @@ def read_add_get(bill_id):
         previous_date=previous_date,
         previous_value=previous_value,
         previous_type_id=previous_type_id,
-        estimated_read_type_id=estimated_read_type_id,
+        estimated_read_type_id=estimated_read_type.id,
     )
 
 

@@ -6687,28 +6687,7 @@ def insert_dtc_meter_types(sess):
         DtcMeterType.insert(sess, code, desc)
 
 
-def db_init(sess, root_path):
-    db_name = config["PGDATABASE"]
-    log_message("Initializing database.")
-
-    ct_now = ct_datetime_now()
-    last_month_start, _ = list(
-        c_months_u(finish_year=ct_now.year, finish_month=ct_now.month, months=2)
-    )[0]
-
-    insert_voltage_levels(sess)
-    sess.commit()
-
-    for code in ("editor", "viewer", "party-viewer"):
-        UserRole.insert(sess, code)
-    sess.commit()
-
-    insert_sources(sess)
-    sess.commit()
-
-    insert_generator_types(sess)
-    sess.commit()
-
+def insert_read_types(sess):
     for code, desc in (
         ("A", "Actual Change of Supplier Read"),
         ("D", "Deemed (Settlement Registers) or Estimated (Non-Settlement Registers)"),
@@ -6731,6 +6710,31 @@ def db_init(sess, root_path):
         ("Z", "Actual Change of Tenancy Read"),
     ):
         sess.add(ReadType(code, desc))
+
+
+def db_init(sess, root_path):
+    db_name = config["PGDATABASE"]
+    log_message("Initializing database.")
+
+    ct_now = ct_datetime_now()
+    last_month_start, _ = list(
+        c_months_u(finish_year=ct_now.year, finish_month=ct_now.month, months=2)
+    )[0]
+
+    insert_voltage_levels(sess)
+    sess.commit()
+
+    for code in ("editor", "viewer", "party-viewer"):
+        UserRole.insert(sess, code)
+    sess.commit()
+
+    insert_sources(sess)
+    sess.commit()
+
+    insert_generator_types(sess)
+    sess.commit()
+
+    insert_read_types(sess)
     sess.commit()
 
     insert_cops(sess)
