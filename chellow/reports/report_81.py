@@ -12,7 +12,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
-from chellow.models import Contract, Era, Session, User
+from chellow.models import Contract, Era, RSession, User
 from chellow.utils import c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
 from chellow.views import chellow_redirect
 
@@ -21,7 +21,7 @@ def content(user_id, contract_id, end_year, end_month, months):
     caches = {}
     f = supply_source = None
     try:
-        with Session() as sess:
+        with RSession() as sess:
             contract = Contract.get_dc_by_id(sess, contract_id)
 
             month_list = list(

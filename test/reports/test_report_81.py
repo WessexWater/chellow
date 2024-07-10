@@ -44,6 +44,7 @@ def virtual_bill(ds):
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
     user_id = user.id
+    dc_contract_id = dc_contract.id
 
     sess.commit()
     f = StringIO()
@@ -52,7 +53,7 @@ def virtual_bill(ds):
     end_year = 2020
     end_month = 1
     months = 1
-    content(user_id, dc_contract.id, end_year, end_month, months)
+    content(user_id, dc_contract_id, end_year, end_month, months)
     actual = f.getvalue()
     expected = [
         "imp_mpan_core",
