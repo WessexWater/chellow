@@ -470,10 +470,8 @@ def _process(
                     diffs.append("gsp_group")
 
                 chellow_msn = era.msn
-                if chellow_msn is None:
-                    chellow_msn = ""
 
-                if chellow_msn != ecoes["msn"]:
+                if chellow_msn.split(",")[0] != ecoes["msn"]:
                     problem += "The meter serial numbers don't match. "
                     diffs.append("msn")
                     if mpan_spaces not in ignore_mpan_cores_msn:
