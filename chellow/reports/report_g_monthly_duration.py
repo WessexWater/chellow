@@ -110,7 +110,7 @@ def _process_era(
             f"contain the 'kwh' key."
         )
 
-    billed_kwh = billed_gbp = 0
+    billed_kwh = billed_net_gbp = billed_vat_gbp = billed_gross_gbp = 0
 
     g_era_associates = {s.site.code for s in g_era.site_g_eras if not s.is_physical}
 
@@ -127,7 +127,9 @@ def _process_era(
         ).total_seconds() + (30 * 60)
         overlap_proportion = overlap_duration / bill_duration
         billed_kwh += overlap_proportion * float(g_bill.kwh)
-        billed_gbp += overlap_proportion * float(g_bill.net)
+        billed_net_gbp += overlap_proportion * float(g_bill.net)
+        billed_vat_gbp += overlap_proportion * float(g_bill.vat)
+        billed_gross_gbp += overlap_proportion * float(g_bill.gross)
 
     associated_site_ids = ",".join(sorted(g_era_associates))
     g_era_rows.append(
@@ -149,12 +151,14 @@ def _process_era(
                 kwh,
                 gbp,
                 billed_kwh,
-                billed_gbp,
+                billed_net_gbp,
+                billed_vat_gbp,
+                billed_gross_gbp,
             ]
         ]
         + [make_val(bill.get(t)) for t in vb_titles]
     )
-    return kwh, gbp, billed_kwh, billed_gbp
+    return kwh, gbp, billed_kwh, billed_net_gbp, billed_vat_gbp, billed_gross_gbp
 
 
 def content(
@@ -227,7 +231,14 @@ def content(
                 "associated_site_ids",
                 "month",
             ]
-            summary_titles = ["kwh", "gbp", "billed_kwh", "billed_gbp"]
+            summary_titles = [
+                "kwh",
+                "gbp",
+                "billed_kwh",
+                "billed_net_gbp",
+                "billed_vat_gbp",
+                "billed_gross_gbp",
+            ]
 
             vb_titles = []
             conts = (
@@ -264,7 +275,8 @@ def content(
                     GEra.start_date <= month_finish,
                     or_(GEra.finish_date == null(), GEra.finish_date >= month_start),
                 ):
-                    site_kwh = site_gbp = site_billed_kwh = site_billed_gbp = 0
+                    site_kwh = site_gbp = site_billed_kwh = site_billed_net_gbp = 0
+                    site_billed_vat_gbp = site_billed_gross_gbp = 0
 
                     g_eras_q = (
                         select(GEra)
@@ -290,7 +302,14 @@ def content(
 
                     for g_era in sess.scalars(g_eras_q):
                         try:
-                            kwh, gbp, billed_kwh, billed_gbp = _process_era(
+                            (
+                                kwh,
+                                gbp,
+                                billed_kwh,
+                                billed_net_gbp,
+                                billed_vat_gbp,
+                                billed_gross_gbp,
+                            ) = _process_era(
                                 report_context,
                                 sess,
                                 site,
@@ -305,7 +324,9 @@ def content(
                             site_kwh += kwh
                             site_gbp += gbp
                             site_billed_kwh += billed_kwh
-                            site_billed_gbp += billed_gbp
+                            site_billed_net_gbp += billed_net_gbp
+                            site_billed_vat_gbp += billed_vat_gbp
+                            site_billed_gross_gbp += billed_gross_gbp
                         except BadRequest as e:
                             raise BadRequest(
                                 f"Problem with g_era {g_era.id}: {e.description}"
@@ -328,7 +349,9 @@ def content(
                                 site_kwh,
                                 site_gbp,
                                 site_billed_kwh,
-                                site_billed_gbp,
+                                site_billed_net_gbp,
+                                site_billed_vat_gbp,
+                                site_billed_gross_gbp,
                             ]
                         ]
                     )
