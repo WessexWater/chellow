@@ -3,9 +3,11 @@ from collections import defaultdict
 from decimal import Decimal
 from io import StringIO
 
+from dateutil.relativedelta import relativedelta
+
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
+from chellow.utils import parse_mpan_core, to_ct, to_utc
 
 
 def parse_date(date_str):
@@ -55,7 +57,11 @@ def _handle_0100(headers, pre_record, record):
 def _handle_0101(headers, pre_record, record):
     parts = _chop_record(record, start_date=DATE_LENGTH, finish_date=DATE_LENGTH)
     headers["start_date"] = parse_date(parts["start_date"])
-    headers["finish_date"] = to_utc(to_ct(parse_date_naive(parts["finish_date"]) - HH))
+    headers["finish_date"] = to_utc(
+        to_ct(
+            parse_date_naive(parts["finish_date"]) + relativedelta(hours=23, minutes=30)
+        )
+    )
 
 
 CHARGE_UNITS_LOOKUP = {
@@ -132,6 +138,12 @@ CONSUMPTION_UNITS_LOOKUP = {"KWH": "kWh", "KVA": "kVA", "KVARH": "kVArh", "KW": 
 
 REGISTER_CODE_LOOKUP = {"DAY": "00040", "NIGHT": "00206", "SINGLE": "00001"}
 
+READ_TYPE_LOOKUP = {
+    " ": "E",
+    "E": "E",
+    "N": "N",
+}
+
 
 def _handle_0461(headers, pre_record, record):
     parts = _chop_record(
@@ -161,6 +173,8 @@ def _handle_0461(headers, pre_record, record):
     prev_read_date_str = parts["prev_read_date"].strip()
     if len(prev_read_date_str) > 0:
         tpr_code = REGISTER_CODE_LOOKUP[parts["register_code"].strip()]
+        prev_type_code = READ_TYPE_LOOKUP[parts["prev_read_type"]]
+        pres_type_code = READ_TYPE_LOOKUP[parts["pres_read_type"]]
 
         headers["reads"].append(
             {
@@ -171,16 +185,29 @@ def _handle_0461(headers, pre_record, record):
                 "tpr_code": tpr_code,
                 "prev_date": parse_date(parts["prev_read_date"]),
                 "prev_value": Decimal(parts["prev_read_value"]),
-                "prev_type_code": parts["prev_read_type"],
+                "prev_type_code": prev_type_code,
                 "pres_date": parse_date(parts["pres_read_date"]),
                 "pres_value": Decimal(parts["pres_read_value"]),
-                "pres_type_code": parts["pres_read_type"],
+                "pres_type_code": pres_type_code,
             }
         )
 
 
 def _handle_0470(headers, pre_record, record):
     pass
+
+
+def _handle_0860(headers, pre_record, record):
+    parts = _chop_record(
+        record,
+        metering_gbp=12,
+        unknown_1=12,
+        unknown_2=12,
+        metering_date=DATE_LENGTH,
+        description=80,
+    )
+    bd = headers["breakdown"]
+    bd["metering-gbp"] += Decimal(parts["metering_gbp"]) / Decimal("100")
 
 
 def _handle_1455(headers, pre_record, record):
@@ -261,6 +288,7 @@ LINE_HANDLERS = {
     "0460": _handle_0460,
     "0461": _handle_0461,
     "0470": _handle_0470,
+    "0860": _handle_0860,
     "1455": _handle_1455,
     "1460": _handle_1460,
     "1500": _handle_1500,
