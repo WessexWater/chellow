@@ -98,7 +98,8 @@ def test_handle_1455():
             "0000000000034",  # ccl_kwh=13
             "xxxxxxxx",  # unknown_1=8
             "000000000003.00",  # ccl_rate=15
-            "0000000000876",  # ccl_gbp=13
+            "000000000876",  # ccl_gbp=12
+            "0       ",  # unknown_2=8
         )
     )
     _handle_1455(headers, pre_record, record)
