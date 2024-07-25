@@ -21,7 +21,7 @@ importer = None
 
 def api_get(s, path, params=None):
     url = f"https://api.nationalgrideso.com/api/3/action/{path}"
-    res = s.get(url, params=params)
+    res = s.get(url, params=params, timeout=120)
     try:
         res_j = res.json()
     except requests.exceptions.JSONDecodeError as e:
