@@ -124,7 +124,7 @@ def test_hh(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")

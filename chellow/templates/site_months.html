@@ -32,9 +32,9 @@
 
 	<p>
 		This is a table of inflows and outflows of electricity from the site from the public
-		electricity network, from generators and from third parties. The 'used' quantity is
+		electricity grid, from generators and from third parties. The 'used' quantity is
 		found by taking the sum of all the imports and subtracting all the exports. The
-		'displaced' quantity is: generated - parasitic - export_to_network. Under the
+		'displaced' quantity is: generated - parasitic - export_to_grid. Under the
 		category of 'third parties', virtual supplies are included, which don't physically
 		exist and are there for financial reporting purposes.
 	</p>
@@ -67,13 +67,13 @@
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.displaced.kwh)}}</th>
-				<th>{{"{:,.1f}".format(total.imp_net.md)}}</th>
+				<th>{{"{:,.1f}".format(total.imp_grid.md)}}</th>
 				<th>
-					{% if total.imp_net.md_date %}
-						{{total.imp_net.md_date|hh_format}}
+					{% if total.imp_grid.md_date %}
+						{{total.imp_grid.md_date|hh_format}}
 					{% endif %}
 				</th>
-				<th>{{"{:,.1f}".format(total.imp_net.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.imp_grid.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.imp_3p.md)}}</th>
 				<th>
 					{% if total.imp_3p.md_date %}
@@ -88,13 +88,13 @@
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.imp_gen.kwh)}}</th>
-				<th>{{"{:,.1f}".format(total.exp_net.md)}}</th>
+				<th>{{"{:,.1f}".format(total.exp_grid.md)}}</th>
 				<th>
-					{% if total.exp_net.md_date %}
-						{{total.exp_net.md_date|hh_format}}
+					{% if total.exp_grid.md_date %}
+						{{total.exp_grid.md_date|hh_format}}
 					{% endif %}
 				</th>
-				<th>{{"{:,.1f}".format(total.exp_net.kwh)}}</th>
+				<th>{{"{:,.1f}".format(total.exp_grid.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.exp_3p.md)}}</th>
 				<th>
 					{% if total.exp_3p.md_date %}
@@ -180,13 +180,13 @@
 					</td>
 					<td>{{ "{:,.1f}".format(month.displaced.kwh)}}</td>
 
-					<td>{{ "{:,.1f}".format(month.imp_net.md)}}</td>
+					<td>{{ "{:,.1f}".format(month.imp_grid.md)}}</td>
 					<td>
-						{% if month.imp_net.md_date %}
-							{{month.imp_net.md_date|hh_format}}
+						{% if month.imp_grid.md_date %}
+							{{month.imp_grid.md_date|hh_format}}
 						{% endif %}
 					</td>
-					<td>{{ "{:,.1f}".format(month.imp_net.kwh)}}</td>
+					<td>{{ "{:,.1f}".format(month.imp_grid.kwh)}}</td>
 
 					<td>{{ "{:,.1f}".format(month.imp_3p.md)}}</td>
 					<td>
@@ -205,13 +205,13 @@
 					</td>
 					<td>{{ "{:,.1f}".format(month.imp_gen.kwh)}}</td>
 
-					<td>{{ "{:,.1f}".format(month.exp_net.md)}}</td>
+					<td>{{ "{:,.1f}".format(month.exp_grid.md)}}</td>
 					<td>
-						{% if month.exp_net.md_date %}
-							{{month.exp_net.md_date|hh_format}}
+						{% if month.exp_grid.md_date %}
+							{{month.exp_grid.md_date|hh_format}}
 						{% endif %}
 					</td>
-					<td>{{ "{:,.1f}".format(month.exp_net.kwh)}}</td>
+					<td>{{ "{:,.1f}".format(month.exp_grid.kwh)}}</td>
 
 					<td>{{ "{:,.1f}".format(month.exp_3p.md)}}</td>
 					<td>

@@ -141,7 +141,7 @@ def test_process_triad_hh(sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -220,8 +220,8 @@ def test_process_triad_hh(sess):
         "msp-kw": 0,
         "msp-kwh": 0,
         "msp-kva": 0,
-        "hist-import-net-kvarh": 0,
-        "hist-export-net-kvarh": 0,
+        "hist-import-grid-kvarh": 0,
+        "hist-export-grid-kvarh": 0,
         "anti-msp-kwh": 0,
         "anti-msp-kw": 0,
         "hist-imp-msp-kvarh": 0,

@@ -90,7 +90,7 @@ def test_content(mocker, sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -216,7 +216,7 @@ def test_process_2010(mocker, sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -334,7 +334,7 @@ def test_process_2010(mocker, sess):
             "",
             "",
             "1",
-            "net",
+            "grid",
             "",
             "_L",
             "22",
@@ -472,7 +472,7 @@ def test_process_2024(mocker, sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -590,7 +590,7 @@ def test_process_2024(mocker, sess):
             "",
             "",
             "1",
-            "net",
+            "grid",
             "",
             "_L",
             "22",

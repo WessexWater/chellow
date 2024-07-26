@@ -93,7 +93,7 @@ def test_content(mocker, sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source_net = Source.get_by_code(sess, "net")
+    source_grid = Source.get_by_code(sess, "grid")
     insert_generator_types(sess)
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
@@ -102,7 +102,7 @@ def test_content(mocker, sess):
     dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
     supply = site.insert_e_supply(
         sess,
-        source_net,
+        source_grid,
         None,
         "Bob",
         utc_datetime(2000, 1, 1),

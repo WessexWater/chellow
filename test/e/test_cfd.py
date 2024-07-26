@@ -240,7 +240,7 @@ def test_hh(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -303,9 +303,9 @@ def test_hh(sess, mocker):
         "ct-year": 2020,
         "exp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
-        "hist-export-net-kvarh": 0,
+        "hist-export-grid-kvarh": 0,
         "hist-imp-msp-kvarh": 0,
-        "hist-import-net-kvarh": 0,
+        "hist-import-grid-kvarh": 0,
         "hist-kwh": 0,
         "hist-start": utc_datetime(2020, 1, 1, 0, 0),
         "imp-msp-kvar": 0,
@@ -435,7 +435,7 @@ def test_hh_use_period(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -498,9 +498,9 @@ def test_hh_use_period(sess, mocker):
         "ct-year": 2020,
         "exp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
-        "hist-export-net-kvarh": 0,
+        "hist-export-grid-kvarh": 0,
         "hist-imp-msp-kvarh": 0,
-        "hist-import-net-kvarh": 0,
+        "hist-import-grid-kvarh": 0,
         "hist-kwh": 0,
         "hist-start": utc_datetime(2020, 1, 1, 0, 0),
         "imp-msp-kvar": 0,
@@ -632,7 +632,7 @@ def test_hh_use_ilr(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -695,9 +695,9 @@ def test_hh_use_ilr(sess, mocker):
         "ct-year": 2020,
         "exp-msp-kvar": 0,
         "exp-msp-kvarh": 0,
-        "hist-export-net-kvarh": 0,
+        "hist-export-grid-kvarh": 0,
         "hist-imp-msp-kvarh": 0,
-        "hist-import-net-kvarh": 0,
+        "hist-import-grid-kvarh": 0,
         "hist-kwh": 0,
         "hist-start": utc_datetime(2020, 1, 1, 0, 0),
         "imp-msp-kvar": 0,

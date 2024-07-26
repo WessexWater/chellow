@@ -63,8 +63,8 @@ cons_types = ["construction", "commissioning", "operation"]
 lec_cats = list(
     (f"{v}-kwh", f"hist-{v}-kwh")
     for v in [
-        "import-net",
-        "export-net",
+        "import-grid",
+        "export-grid",
         "import-gen",
         "export-gen",
         "import-3rd-party",
@@ -265,9 +265,9 @@ def displaced_era(
         era = site_era.era
         source_code = era.supply.source.code
         if site_era.is_physical and (
-            source_code in ("gen", "gen-net")
+            source_code in ("gen", "gen-grid")
             or (
-                source_code == "net"
+                source_code == "grid"
                 and sess.query(Channel)
                 .filter(
                     Channel.era == era,
@@ -280,7 +280,7 @@ def displaced_era(
         ):
             has_displaced = True
 
-        if source_code in ("net", "gen-net") and era.imp_mpan_core is not None:
+        if source_code in ("grid", "gen-grid") and era.imp_mpan_core is not None:
             eras[
                 "_".join(
                     (
@@ -482,8 +482,8 @@ def datum_range(sess, caches, years_back, start_date, finish_date):
                         "exp-msp-kvar": 0,
                         "msp-kw": 0,
                         "msp-kwh": 0,
-                        "hist-import-net-kvarh": 0,
-                        "hist-export-net-kvarh": 0,
+                        "hist-import-grid-kvarh": 0,
+                        "hist-export-grid-kvarh": 0,
                         "anti-msp-kwh": 0,
                         "anti-msp-kw": 0,
                         "imp-msp-kvarh": 0,
@@ -740,8 +740,8 @@ class SiteSource(DataSource):
         hist_map = {}
 
         for hist_date in hh_range(self.caches, self.history_start, self.history_finish):
-            export_net_kwh = 0
-            import_net_kwh = 0
+            export_grid_kwh = 0
+            import_grid_kwh = 0
             export_gen_kwh = 0
             import_gen_kwh = 0
             import_3rd_party_kwh = 0
@@ -749,16 +749,16 @@ class SiteSource(DataSource):
             export_3rd_party_kwh = 0
             while hh_start_date == hist_date:
                 statuses.add(status)
-                if not imp_related and source_code in ("net", "gen-net"):
-                    export_net_kwh += hh_value
-                if imp_related and source_code in ("net", "gen-net"):
-                    import_net_kwh += hh_value
+                if not imp_related and source_code in ("grid", "gen-grid"):
+                    export_grid_kwh += hh_value
+                if imp_related and source_code in ("grid", "gen-grid"):
+                    import_grid_kwh += hh_value
                 if (imp_related and source_code == "gen") or (
-                    not imp_related and source_code == "gen-net"
+                    not imp_related and source_code == "gen-grid"
                 ):
                     import_gen_kwh += hh_value
                 if (not imp_related and source_code == "gen") or (
-                    imp_related and source_code == "gen-net"
+                    imp_related and source_code == "gen-grid"
                 ):
                     export_gen_kwh += hh_value
                 if (imp_related and source_code == "3rd-party") or (
@@ -781,8 +781,8 @@ class SiteSource(DataSource):
 
             hh_values = {
                 "status": status,
-                "hist-import-net-kwh": import_net_kwh,
-                "hist-export-net-kwh": export_net_kwh,
+                "hist-import-grid-kwh": import_grid_kwh,
+                "hist-export-grid-kwh": export_grid_kwh,
                 "hist-import-gen-kwh": import_gen_kwh,
                 "hist-export-gen-kwh": export_gen_kwh,
                 "hist-import-3rd-party-kwh": import_3rd_party_kwh,
@@ -794,7 +794,7 @@ class SiteSource(DataSource):
             hh_values["hist-kwh"] = hh_values["hist-used-gen-msp-kwh"] = (
                 hh_values["hist-import-gen-kwh"]
                 - hh_values["hist-export-gen-kwh"]
-                - hh_values["hist-export-net-kwh"]
+                - hh_values["hist-export-grid-kwh"]
             )
 
             hh_values["msp-kwh"] = hh_values["used-gen-msp-kwh"] = hh_values[
@@ -805,12 +805,12 @@ class SiteSource(DataSource):
 
             hh_values["hist-used-kwh"] = (
                 hh_values["hist-used-gen-msp-kwh"]
-                + hh_values["hist-import-net-kwh"]
+                + hh_values["hist-import-grid-kwh"]
                 + hh_values["hist-used-3rd-party-kwh"]
             )
 
             hh_values["used-kwh"] = hh_values["hist-used-kwh"]
-            hh_values["import-net-kwh"] = hh_values["hist-import-net-kwh"]
+            hh_values["import-grid-kwh"] = hh_values["hist-import-grid-kwh"]
             hh_values["msp-kw"] = hh_values["used-gen-msp-kw"] = (
                 hh_values["used-gen-msp-kwh"] * 2
             )
@@ -835,8 +835,8 @@ class SiteSource(DataSource):
             for hh in self.hh_data:
                 try:
                     delt_hh = self.deltas["hhs"][hh["start-date"]]
-                    hh["import-net-kwh"] = delt_hh["import-net-kwh"]
-                    hh["export-net-kwh"] = delt_hh["export-net-kwh"]
+                    hh["import-grid-kwh"] = delt_hh["import-grid-kwh"]
+                    hh["export-grid-kwh"] = delt_hh["export-grid-kwh"]
                     hh["import-gen-kwh"] = delt_hh["import-gen-kwh"]
                     hh["msp-kwh"] = delt_hh["msp-kwh"]
                     hh["used-kwh"] = delt_hh["used-kwh"]

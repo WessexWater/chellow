@@ -553,7 +553,7 @@ def test_general_import_era_insert(sess):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -689,7 +689,7 @@ def test_general_import_era_insert_nhh(sess):
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, vf, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -1011,7 +1011,7 @@ def test_general_import_supply_insert_HH(sess):
     llfc = dno.insert_llfc(sess, llfc_code, "Imp", voltage_level, False, True, vf, None)
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source_code = "net"
+    source_code = "grid"
     Source.get_by_code(sess, source_code)
     insert_energisation_statuses(sess)
     energisation_status_code = "E"
@@ -1112,7 +1112,7 @@ def test_general_import_supply_insert_NHH(sess):
     llfc = dno.insert_llfc(sess, llfc_code, "Imp", voltage_level, False, True, vf, None)
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source_code = "net"
+    source_code = "grid"
     Source.get_by_code(sess, source_code)
     insert_energisation_statuses(sess)
     energisation_status_code = "E"

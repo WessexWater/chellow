@@ -177,7 +177,7 @@ def displaced_virtual_bill(ds):
     insert_sources(sess)
     insert_generator_types(sess)
     generator_type = GeneratorType.get_by_code(sess, "turb")
-    source = Source.get_by_code(sess, "gen-net")
+    source = Source.get_by_code(sess, "gen-grid")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")

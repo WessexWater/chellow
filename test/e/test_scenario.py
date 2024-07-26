@@ -57,8 +57,8 @@ def test_make_site_deltas(mocker):
         {
             "start-date": utc_datetime(2019, 3, 1),
             "used-kwh": 0,
-            "export-net-kwh": 0,
-            "import-net-kwh": 0,
+            "export-grid-kwh": 0,
+            "import-grid-kwh": 0,
             "msp-kwh": 0,
         }
     ]
@@ -74,7 +74,7 @@ def test_make_site_deltas(mocker):
         sess, report_context, site, scenario_hh, forecast_from, supply_id
     )
 
-    assert len(res["supply_deltas"][False]["net"]["site"]) == 0
+    assert len(res["supply_deltas"][False]["grid"]["site"]) == 0
 
 
 def test_make_site_deltas_nhh(mocker):
@@ -133,8 +133,8 @@ def test_make_site_deltas_nhh(mocker):
         {
             "start-date": utc_datetime(2019, 3, 1),
             "used-kwh": 0,
-            "export-net-kwh": 0,
-            "import-net-kwh": 0,
+            "export-grid-kwh": 0,
+            "import-grid-kwh": 0,
             "msp-kwh": 0,
         }
     ]
@@ -151,7 +151,7 @@ def test_make_site_deltas_nhh(mocker):
         sess, report_context, site, scenario_hh, forecast_from, supply_id
     )
 
-    assert res["supply_deltas"][True]["net"]["site"] == {hh_start_date: -10.0}
+    assert res["supply_deltas"][True]["grid"]["site"] == {hh_start_date: -10.0}
 
 
 def test_make_calcs_new_generation(mocker, sess):
@@ -290,7 +290,7 @@ def displaced_virtual_bill(ds):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc_imp, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -363,4 +363,4 @@ def displaced_virtual_bill(ds):
     )
     assert calcs[1][1] == "displaced"
     assert calcs[2][1] == "CI017_extra_gen_TRUE"
-    assert calcs[3][2] == "CI017_extra_net_export"
+    assert calcs[3][2] == "CI017_extra_grid_export"

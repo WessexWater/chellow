@@ -29,9 +29,11 @@ def match_tables(expected_table, actual_table):
             f"{actual_row}\n"
         )
         for j, (expected_val, actual_val) in enumerate(zip(expected_row, actual_row)):
-            assert (
-                expected_val == actual_val
-            ), f"On row {i} column {j}, {expected_val} != {actual_val}"
+            assert expected_val == actual_val, (
+                f"On row {i} column {j}, {expected_val} != {actual_val}\n"
+                f"{expected_row}\n"
+                f"{actual_row}\n"
+            )
 
 
 def match_repeat(client, path, match, seconds=5):

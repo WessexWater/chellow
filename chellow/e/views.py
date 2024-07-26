@@ -4168,16 +4168,16 @@ def em_hh_data_get(site_id):
                 sup_hh[prefix + "kwh"] = datum.value
                 sup_hh[prefix + "status"] = datum.status
 
-                if not imp_related and source_code in ("net", "gen-net"):
+                if not imp_related and source_code in ("grid", "gen-grid"):
                     hh_dict["export_kwh"] += hh_float_value
-                if imp_related and source_code in ("net", "gen-net"):
+                if imp_related and source_code in ("grid", "gen-grid"):
                     hh_dict["import_kwh"] += hh_float_value
                 if (imp_related and source_code == "gen") or (
-                    not imp_related and source_code == "gen-net"
+                    not imp_related and source_code == "gen-grid"
                 ):
                     hh_dict["generated_kwh"] += hh_float_value
                 if (not imp_related and source_code == "gen") or (
-                    imp_related and source_code == "gen-net"
+                    imp_related and source_code == "gen-grid"
                 ):
                     hh_dict["parasitic_kwh"] += hh_float_value
                 if (imp_related and source_code == "3rd-party") or (
@@ -4213,9 +4213,9 @@ def site_energy_management_months_get(site_id):
     site = Site.get_by_id(g.sess, site_id)
 
     typs = (
-        "imp_net",
+        "imp_grid",
         "imp_3p",
-        "exp_net",
+        "exp_grid",
         "exp_3p",
         "used",
         "displaced",
@@ -4332,7 +4332,7 @@ def site_add_e_supply_form_get(site_id):
         sources = g.sess.scalars(select(Source).order_by(Source.code))
         source_id = req_int_none("source_id")
         if source_id is None:
-            source = Source.get_by_code(g.sess, "net")
+            source = Source.get_by_code(g.sess, "grid")
         else:
             source = Source.get_by_id(g.sess, source_id)
         generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
@@ -5894,7 +5894,7 @@ def supply_edit_post(supply_id):
             source_id = req_int("source_id")
             gsp_group_id = req_int("gsp_group_id")
             source = Source.get_by_id(g.sess, source_id)
-            if source.code in ("gen", "gen-net"):
+            if source.code in ("gen", "gen-grid"):
                 generator_type_id = req_int("generator_type_id")
                 generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
             else:

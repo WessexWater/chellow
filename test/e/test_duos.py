@@ -421,7 +421,7 @@ def test_SiteSource(sess):
         sess, "510", "PC 5-8 & HH HV", voltage_level, True, True, valid_from, None
     )
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "D")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")

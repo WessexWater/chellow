@@ -1110,16 +1110,16 @@ def site_hh_data_get(site_id):
                 sup_hh[f"{prefix}kwh"] = datum.value
                 sup_hh[f"{prefix}status"] = datum.status
 
-                if not imp_related and source_code in ("net", "gen-net"):
+                if not imp_related and source_code in ("grid", "gen-grid"):
                     hh_dict["export_kwh"] += datum.value
-                if imp_related and source_code in ("net", "gen-net"):
+                if imp_related and source_code in ("grid", "gen-grid"):
                     hh_dict["import_kwh"] += datum.value
                 if (imp_related and source_code == "gen") or (
-                    not imp_related and source_code == "gen-net"
+                    not imp_related and source_code == "gen-grid"
                 ):
                     hh_dict["generated_kwh"] += datum.value
                 if (not imp_related and source_code == "gen") or (
-                    imp_related and source_code == "gen-net"
+                    imp_related and source_code == "gen-grid"
                 ):
                     hh_dict["parasitic_kwh"] += datum.value
                 if (imp_related and source_code == "3rd-party") or (
@@ -1609,7 +1609,7 @@ def site_used_graph_get(site_id):
         .join(Era)
         .join(Source)
         .join(SiteEra)
-        .filter(SiteEra.site == site, not_(Source.code.in_(("sub", "gen-net"))))
+        .filter(SiteEra.site == site, not_(Source.code.in_(("sub", "gen-grid"))))
         .distinct()
         .all()
     )
@@ -1774,9 +1774,9 @@ def site_months_get(site_id):
     site = Site.get_by_id(g.sess, site_id)
 
     typs = (
-        "imp_net",
+        "imp_grid",
         "imp_3p",
-        "exp_net",
+        "exp_grid",
         "exp_3p",
         "used",
         "displaced",
@@ -2263,16 +2263,16 @@ def site_gen_graph_get(site_id):
                 is_complete = False
 
             to_adds = []
-            if imp_related and source_code in ("net", "gen-net"):
+            if imp_related and source_code in ("grid", "gen-grid"):
                 to_adds.append(("imp", "pos"))
-            if not imp_related and source_code in ("net", "gen-net"):
+            if not imp_related and source_code in ("grid", "gen-grid"):
                 to_adds.append(("exp", "pos"))
             if (imp_related and source_code == "gen") or (
-                not imp_related and source_code == "gen-net"
+                not imp_related and source_code == "gen-grid"
             ):
                 to_adds.append(("gen", "pos"))
             if (not imp_related and source_code == "gen") or (
-                imp_related and source_code == "gen-net"
+                imp_related and source_code == "gen-grid"
             ):
                 to_adds.append(("gen", "neg"))
             if (imp_related and source_code == "3rd-party") or (

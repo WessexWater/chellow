@@ -105,7 +105,7 @@
 
 
   /* HH data to use instead of the data in the database. For each site code,
-     you can specify the hh data that's used, generated, parasitic or gen_net
+     you can specify the hh data that's used, generated, parasitic or gen_grid
      on the site. */
 
   "hh_data": {
@@ -173,12 +173,12 @@
 	Taking 'generated' as an example, for each half-hour Chellow will calculate the
  	difference between the <code>scenario_generated</code> and the
  	<code>existing_generated</code>. If <code>scenario_generated</code> &gt;=
- 	<code>existing_generated</code> then any <code>imported_net</code> will be reduced
- 	first, then <code>exported_net</code> will be increased until all the difference is
+ 	<code>existing_generated</code> then any <code>imported_grid</code> will be reduced
+ 	first, then <code>exported_grid</code> will be increased until all the difference is
  	exhausted. Otherwise if <code>scenario_generated</code> &lt;
- 	<code>existing_generated</code> then <code>exported_net</code> will be reduced first,
- 	and then <code>imported_net</code> will be increased. A similar approach is taken with
- 	used, parasitic and gen_net kWh.
+ 	<code>existing_generated</code> then <code>exported_grid</code> will be reduced first,
+ 	and then <code>imported_grid</code> will be increased. A similar approach is taken with
+ 	used, parasitic and gen_grid kWh.
 </p>
 
 <p>

@@ -89,14 +89,14 @@ def make_site_deltas(
     delts = site_deltas["supply_deltas"] = {}
     for is_import in (True, False):
         delts[is_import] = {}
-        for src in ("gen", "net", "gen-net", "3rd-party", "3rd-party-reverse", "sub"):
+        for src in ("gen", "grid", "gen-grid", "3rd-party", "3rd-party-reverse", "sub"):
             delts[is_import][src] = {"site": {}}
 
     earliest_delta = to_utc(Datetime.max)
     latest_delta = to_utc(Datetime.min)
 
     found_hh = False
-    for typ in ("used", "generated", "parasitic", "gen_net"):
+    for typ in ("used", "generated", "parasitic", "gen_grid"):
         hh_str = site_scenario_hh.get(typ, "")
         hh_data = site_scenario_hh[typ] = {}
         for row in csv.reader(StringIO(hh_str)):
@@ -129,7 +129,7 @@ def make_site_deltas(
     scenario_used = site_scenario_hh["used"]
     scenario_generated = site_scenario_hh["generated"]
     scenario_parasitic = site_scenario_hh["parasitic"]
-    scenario_gen_net = site_scenario_hh["gen_net"]
+    scenario_gen_grid = site_scenario_hh["gen_grid"]
 
     earliest_delta_ct = to_ct(earliest_delta)
     for month_start, month_finish in c_months_u(
@@ -170,7 +170,7 @@ def make_site_deltas(
 
             for hh in ss.hh_data:
                 sdatum = hh_map[hh["start-date"]]
-                sdatum["import-net-kwh"] += hh["msp-kwh"]
+                sdatum["import-grid-kwh"] += hh["msp-kwh"]
                 sdatum["used-kwh"] += hh["msp-kwh"]
 
         for era in (
@@ -185,7 +185,7 @@ def make_site_deltas(
                 Era.imp_mpan_core != null(),
                 Era.start_date <= chunk_finish,
                 or_(Era.finish_date == null(), Era.finish_date >= chunk_start),
-                Source.code == "gen-net",
+                Source.code == "gen-grid",
             )
         ):
             if supply_ids is not None and era.supply_id not in supply_ids:
@@ -201,65 +201,65 @@ def make_site_deltas(
             for hh in ss.hh_data:
                 sdatum = hh_map[hh["start-date"]]
                 try:
-                    sdatum["gen-net-kwh"] += hh["msp-kwh"]
+                    sdatum["gen-grid-kwh"] += hh["msp-kwh"]
                 except KeyError:
-                    sdatum["gen-net-kwh"] = hh["msp-kwh"]
+                    sdatum["gen-grid-kwh"] = hh["msp-kwh"]
 
         for hh_start, hh in hh_map.items():
             if hh_start in scenario_used:
                 used_delt = scenario_used[hh_start] - hh["used-kwh"]
-                imp_net_delt = 0
-                exp_net_delt = 0
+                imp_grid_delt = 0
+                exp_grid_delt = 0
 
                 if used_delt < 0:
-                    diff = hh["import-net-kwh"] + used_delt
+                    diff = hh["import-grid-kwh"] + used_delt
                     if diff < 0:
-                        imp_net_delt -= hh["import-net-kwh"]
-                        exp_net_delt -= diff
+                        imp_grid_delt -= hh["import-grid-kwh"]
+                        exp_grid_delt -= diff
                     else:
-                        imp_net_delt += used_delt
+                        imp_grid_delt += used_delt
                 else:
-                    diff = hh["export-net-kwh"] - used_delt
+                    diff = hh["export-grid-kwh"] - used_delt
                     if diff < 0:
-                        exp_net_delt -= hh["export-net-kwh"]
-                        imp_net_delt -= diff
+                        exp_grid_delt -= hh["export-grid-kwh"]
+                        imp_grid_delt -= diff
                     else:
-                        exp_net_delt -= used_delt
+                        exp_grid_delt -= used_delt
 
                 try:
-                    delts[False]["net"]["site"][hh_start] += exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] += exp_grid_delt
                 except KeyError:
-                    delts[False]["net"]["site"][hh_start] = exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] = exp_grid_delt
 
                 try:
-                    delts[True]["net"]["site"][hh_start] += imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] += imp_grid_delt
                 except KeyError:
-                    delts[True]["net"]["site"][hh_start] = imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] = imp_grid_delt
 
-                hh["import-net-kwh"] += imp_net_delt
-                hh["export-net-kwh"] += exp_net_delt
+                hh["import-grid-kwh"] += imp_grid_delt
+                hh["export-grid-kwh"] += exp_grid_delt
                 hh["used-kwh"] += used_delt
-                hh["msp-kwh"] -= exp_net_delt
+                hh["msp-kwh"] -= exp_grid_delt
 
             if hh_start in scenario_generated:
                 imp_gen_delt = scenario_generated[hh_start] - hh["import-gen-kwh"]
-                imp_net_delt = 0
-                exp_net_delt = 0
+                imp_grid_delt = 0
+                exp_grid_delt = 0
 
                 if imp_gen_delt < 0:
-                    diff = hh["export-net-kwh"] + imp_gen_delt
+                    diff = hh["export-grid-kwh"] + imp_gen_delt
                     if diff < 0:
-                        exp_net_delt -= hh["export-net-kwh"]
-                        imp_net_delt -= diff
+                        exp_grid_delt -= hh["export-grid-kwh"]
+                        imp_grid_delt -= diff
                     else:
-                        exp_net_delt += imp_gen_delt
+                        exp_grid_delt += imp_gen_delt
                 else:
-                    diff = hh["import-net-kwh"] - imp_gen_delt
+                    diff = hh["import-grid-kwh"] - imp_gen_delt
                     if diff < 0:
-                        imp_net_delt -= hh["import-net-kwh"]
-                        exp_net_delt -= diff
+                        imp_grid_delt -= hh["import-grid-kwh"]
+                        exp_grid_delt -= diff
                     else:
-                        imp_net_delt -= imp_gen_delt
+                        imp_grid_delt -= imp_gen_delt
 
                 try:
                     delts[True]["gen"]["site"][hh_start] += imp_gen_delt
@@ -267,39 +267,39 @@ def make_site_deltas(
                     delts[True]["gen"]["site"][hh_start] = imp_gen_delt
 
                 try:
-                    delts[False]["net"]["site"][hh_start] += exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] += exp_grid_delt
                 except KeyError:
-                    delts[False]["net"]["site"][hh_start] = exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] = exp_grid_delt
 
                 try:
-                    delts[True]["net"]["site"][hh_start] += imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] += imp_grid_delt
                 except KeyError:
-                    delts[True]["net"]["site"][hh_start] = imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] = imp_grid_delt
 
-                hh["import-net-kwh"] += imp_net_delt
-                hh["export-net-kwh"] += exp_net_delt
+                hh["import-grid-kwh"] += imp_grid_delt
+                hh["export-grid-kwh"] += exp_grid_delt
                 hh["import-gen-kwh"] += imp_gen_delt
-                hh["msp-kwh"] -= imp_net_delt
+                hh["msp-kwh"] -= imp_grid_delt
 
             if hh_start in scenario_parasitic:
                 exp_gen_delt = scenario_parasitic[hh_start] - hh["export-gen-kwh"]
-                imp_net_delt = 0
-                exp_net_delt = 0
+                imp_grid_delt = 0
+                exp_grid_delt = 0
 
                 if exp_gen_delt < 0:
-                    diff = hh["import-net-kwh"] + exp_gen_delt
+                    diff = hh["import-grid-kwh"] + exp_gen_delt
                     if diff < 0:
-                        imp_net_delt -= hh["import-net-kwh"]
-                        exp_net_delt -= diff
+                        imp_grid_delt -= hh["import-grid-kwh"]
+                        exp_grid_delt -= diff
                     else:
-                        imp_net_delt += exp_gen_delt
+                        imp_grid_delt += exp_gen_delt
                 else:
-                    diff = hh["export-net-kwh"] - exp_gen_delt
+                    diff = hh["export-grid-kwh"] - exp_gen_delt
                     if diff < 0:
-                        exp_net_delt -= hh["export-net-kwh"]
-                        imp_net_delt -= diff
+                        exp_grid_delt -= hh["export-grid-kwh"]
+                        imp_grid_delt -= diff
                     else:
-                        exp_net_delt -= exp_gen_delt
+                        exp_grid_delt -= exp_gen_delt
 
                 try:
                     delts[False]["gen"]["site"][hh_start] += imp_gen_delt
@@ -307,34 +307,34 @@ def make_site_deltas(
                     delts[False]["gen"]["site"][hh_start] = exp_gen_delt
 
                 try:
-                    delts[False]["net"]["site"][hh_start] += exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] += exp_grid_delt
                 except KeyError:
-                    delts[False]["net"]["site"][hh_start] = exp_net_delt
+                    delts[False]["grid"]["site"][hh_start] = exp_grid_delt
 
                 try:
-                    delts[True]["net"]["site"][hh_start] += imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] += imp_grid_delt
                 except KeyError:
-                    delts[True]["net"]["site"][hh_start] = imp_net_delt
+                    delts[True]["grid"]["site"][hh_start] = imp_grid_delt
 
-                hh["import-net-kwh"] += imp_net_delt
-                hh["export-net-kwh"] += exp_net_delt
+                hh["import-grid-kwh"] += imp_grid_delt
+                hh["export-grid-kwh"] += exp_grid_delt
                 hh["export-gen-kwh"] += exp_gen_delt
-                hh["msp-kwh"] -= imp_net_delt
+                hh["msp-kwh"] -= imp_grid_delt
 
-            if hh_start in scenario_gen_net:
-                gen_net_delt = scenario_gen_net[hh_start] - hh["gen-net-kwh"]
+            if hh_start in scenario_gen_grid:
+                gen_grid_delt = scenario_gen_grid[hh_start] - hh["gen-grid-kwh"]
 
                 try:
-                    delts[False]["gen-net"]["site"][hh_start] += gen_net_delt
+                    delts[False]["gen-grid"]["site"][hh_start] += gen_grid_delt
                 except KeyError:
-                    delts[False]["gen-net"]["site"][hh_start] = gen_net_delt
+                    delts[False]["gen-grid"]["site"][hh_start] = gen_grid_delt
 
-                hh["import-gen-kwh"] += gen_net_delt
-                hh["export-net-kwh"] += gen_net_delt
+                hh["import-gen-kwh"] += gen_grid_delt
+                hh["export-grid-kwh"] += gen_grid_delt
 
             site_deltas["hhs"][hh_start] = hh
 
-    sup_deltas = site_deltas["supply_deltas"][False]["net"]["site"]
+    sup_deltas = site_deltas["supply_deltas"][False]["grid"]["site"]
     if all(v == 0 for v in sup_deltas.values()):
         sup_deltas.clear()
 
@@ -569,10 +569,10 @@ def make_calcs(
 
             calcs.append(("0", imp_ss_name, exp_ss_name, imp_ss, exp_ss))
 
-        # Check if exp net deltas haven't been consumed
-        sup_deltas = site_deltas["supply_deltas"][False]["net"]
+        # Check if exp grid deltas haven't been consumed
+        sup_deltas = site_deltas["supply_deltas"][False]["grid"]
         if len(list(t for t in sup_deltas["site"] if ss_start <= t <= ss_finish)) > 0:
-            ss_name = site.code + "_extra_net_export"
+            ss_name = site.code + "_extra_grid_export"
             ss = SupplySource(
                 sess,
                 ss_start,

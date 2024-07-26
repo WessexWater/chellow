@@ -76,7 +76,7 @@ def test_content(mocker, sess):
     llfc = dno.insert_llfc(sess, "510", "HV", voltage_level, False, True, vf, None)
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")

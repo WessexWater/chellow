@@ -66,7 +66,8 @@ def content(contract_id, end_year, end_month, months, user):
                     or_(Era.finish_date == null(), Era.finish_date >= start_date),
                     Era.start_date <= finish_date,
                     or_(
-                        Source.code.in_(("gen", "gen-net")), Era.exp_mpan_core != null()
+                        Source.code.in_(("gen", "gen-grid")),
+                        Era.exp_mpan_core != null(),
                     ),
                 )
                 .distinct()
@@ -153,7 +154,7 @@ def content(contract_id, end_year, end_month, months, user):
                                 "channel.era_id = era.id and era.supply_id = "
                                 "supply.id and supply.source_id = source.id and "
                                 "channel.channel_type = 'ACTIVE' and not "
-                                "(source.code = 'net' and channel.imp_related "
+                                "(source.code = 'grid' and channel.imp_related "
                                 "is true) and hh_datum.start_date >= "
                                 ":month_start and hh_datum.start_date "
                                 "<= :month_finish and "
@@ -181,17 +182,17 @@ def content(contract_id, end_year, end_month, months, user):
                         gen_breakdown = {}
                         exported = 0
                         while hh_start == hh_date:
-                            if not imp_related and source_code in ("net", "gen-net"):
+                            if not imp_related and source_code in ("grid", "gen-grid"):
                                 exported += hh_val
                             if (imp_related and source_code == "gen") or (
-                                not imp_related and source_code == "gen-net"
+                                not imp_related and source_code == "gen-grid"
                             ):
                                 gen_breakdown[gen_type_code] = (
                                     gen_breakdown.setdefault(gen_type_code, 0) + hh_val
                                 )
 
                             if (not imp_related and source_code == "gen") or (
-                                imp_related and source_code == "gen-net"
+                                imp_related and source_code == "gen-grid"
                             ):
                                 gen_breakdown[gen_type_code] = (
                                     gen_breakdown.setdefault(gen_type_code, 0) - hh_val

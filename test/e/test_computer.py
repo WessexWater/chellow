@@ -97,7 +97,7 @@ def test_SiteSource_init_hh_data(sess, mocker):
     llfc = dno.insert_llfc(sess, "510", "HH HV", voltage_level, False, True, vf, None)
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -182,14 +182,14 @@ def test_SiteSource_init_hh_data(sess, mocker):
         "msp-kva": 0,
         "msp-kw": 0,
         "msp-kwh": 0,
-        "hist-import-net-kvarh": 0,
-        "hist-export-net-kvarh": 0,
+        "hist-import-grid-kvarh": 0,
+        "hist-export-grid-kvarh": 0,
         "anti-msp-kwh": 0,
         "anti-msp-kw": 0,
         "hist-imp-msp-kvarh": 0,
         "hist-kwh": 0,
-        "hist-import-net-kwh": 0,
-        "hist-export-net-kwh": 0,
+        "hist-import-grid-kwh": 0,
+        "hist-export-grid-kwh": 0,
         "hist-import-gen-kwh": 0,
         "hist-export-gen-kwh": 0,
         "hist-import-3rd-party-kwh": 0,
@@ -198,8 +198,8 @@ def test_SiteSource_init_hh_data(sess, mocker):
         "used-3rd-party-kwh": 0,
         "hist-used-gen-msp-kwh": 0,
         "used-gen-msp-kwh": 0,
-        "import-net-kwh": 0,
-        "export-net-kwh": 0,
+        "import-grid-kwh": 0,
+        "export-grid-kwh": 0,
         "import-gen-kwh": 0,
         "export-gen-kwh": 0,
         "import-3rd-party-kwh": 0,
@@ -396,7 +396,7 @@ def test_init_hh_data(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -566,7 +566,7 @@ def test_init_hh_data_export(sess, mocker):
         None,
     )
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -757,7 +757,7 @@ def test_SupplySource_init_hh(sess, mocker):
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
@@ -936,7 +936,7 @@ def test_SupplySource_init_nhh(sess, mocker):
         None,
     )
     insert_sources(sess)
-    source = Source.get_by_code(sess, "net")
+    source = Source.get_by_code(sess, "grid")
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "D")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")

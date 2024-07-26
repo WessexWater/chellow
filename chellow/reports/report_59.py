@@ -139,8 +139,8 @@ def _process_site(
             "site-name": site.name,
         }
         for sname in (
-            "import-net",
-            "export-net",
+            "import-grid",
+            "export-grid",
             "import-gen",
             "export-gen",
             "import-3rd-party",
@@ -148,10 +148,11 @@ def _process_site(
             "msp",
             "used",
             "used-3rd-party",
-            "billed-import-net",
         ):
-            for xname in ("kwh", "gbp"):
+            for xname in ("kwh", "net-gbp"):
                 vals[f"{sname}-{xname}"] = 0
+        for suf in ("kwh", "net-gbp", "vat-gbp", "gross-gbp"):
+            vals[f"billed-import-grid-{suf}"] = 0
 
         if imp_mpan_core == "displaced":
             try:
@@ -172,9 +173,15 @@ def _process_site(
                     },
                 )
 
-            vals["billed-supplier-import-net-gbp"] = None
-            vals["billed-dc-import-net-gbp"] = None
-            vals["billed-mop-import-net-gbp"] = None
+            vals["billed-supplier-import-grid-net-gbp"] = None
+            vals["billed-supplier-import-grid-vat-gbp"] = None
+            vals["billed-supplier-import-grid-gross-gbp"] = None
+            vals["billed-dc-import-grid-net-gbp"] = None
+            vals["billed-dc-import-grid-vat-gbp"] = None
+            vals["billed-dc-import-grid-gross-gbp"] = None
+            vals["billed-mop-import-grid-net-gbp"] = None
+            vals["billed-mop-import-grid-vat-gbp"] = None
+            vals["billed-mop-import-grid-gross-gbp"] = None
 
             vals["used-kwh"] = vals["displaced-kwh"] = sum(
                 hh["msp-kwh"] for hh in imp_ss.hh_data
@@ -184,7 +191,7 @@ def _process_site(
 
             gbp = disp_supplier_bill.get("net-gbp", 0)
 
-            vals["used-gbp"] = vals["displaced-gbp"] = gbp
+            vals["used-net-gbp"] = vals["displaced-net-gbp"] = gbp
 
             vals["imp-supplier-contract"] = imp_ss.supplier_contract.name
             vals["metering-type"] = imp_ss.era.meter_category
@@ -217,9 +224,10 @@ def _process_site(
 
             site_sources.add(source_code)
 
-            vals["billed-supplier-import-net-gbp"] = 0
-            vals["billed-dc-import-net-gbp"] = 0
-            vals["billed-mop-import-net-gbp"] = 0
+            for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                vals["billed-supplier-import-grid-{suf}"] = 0
+                vals["billed-dc-import-grid-{suf}"] = 0
+                vals["billed-mop-import-grid-{suf}"] = 0
 
             if imp_ss is None:
                 imp_bad_hhs = imp_bad_kwh = imp_supplier_contract_name = None
@@ -256,26 +264,26 @@ def _process_site(
 
                 gbp = imp_supplier_bill.get("net-gbp", 0)
 
-                if source_code in ("net", "gen-net"):
-                    vals["import-net-gbp"] += gbp
-                    vals["import-net-kwh"] += kwh
-                    vals["used-gbp"] += gbp
+                if source_code in ("grid", "gen-grid"):
+                    vals["import-grid-net-gbp"] += gbp
+                    vals["import-grid-kwh"] += kwh
+                    vals["used-net-gbp"] += gbp
                     vals["used-kwh"] += kwh
-                    if source_code == "gen-net":
+                    if source_code == "gen-grid":
                         vals["export-gen-kwh"] += kwh
                 elif source_code == "3rd-party":
-                    vals["import-3rd-party-gbp"] += gbp
+                    vals["import-3rd-party-net-gbp"] += gbp
                     vals["import-3rd-party-kwh"] += kwh
-                    vals["used-3rd-party-gbp"] += gbp
+                    vals["used-3rd-party-net-gbp"] += gbp
                     vals["used-3rd-party-kwh"] += kwh
-                    vals["used-gbp"] += gbp
+                    vals["used-net-gbp"] += gbp
                     vals["used-kwh"] += kwh
                 elif source_code == "3rd-party-reverse":
-                    vals["export-3rd-party-gbp"] += gbp
+                    vals["export-3rd-party-net-gbp"] += gbp
                     vals["export-3rd-party-kwh"] += kwh
-                    vals["used-3rd-party-gbp"] -= gbp
+                    vals["used-3rd-party-net-gbp"] -= gbp
                     vals["used-3rd-party-kwh"] -= kwh
-                    vals["used-gbp"] -= gbp
+                    vals["used-net-gbp"] -= gbp
                     vals["used-kwh"] -= kwh
                 elif source_code == "gen":
                     vals["import-gen-kwh"] += kwh
@@ -312,24 +320,24 @@ def _process_site(
                 gbp = exp_supplier_bill.get("net-gbp", 0)
 
                 if source_code in ("net", "gen-net"):
-                    vals["export-net-gbp"] += gbp
-                    vals["export-net-kwh"] += kwh
+                    vals["export-grid-net-gbp"] += gbp
+                    vals["export-grid-net-kwh"] += kwh
                     if source_code == "gen-net":
                         vals["import-gen-kwh"] += kwh
 
                 elif source_code == "3rd-party":
-                    vals["export-3rd-party-gbp"] += gbp
+                    vals["export-3rd-party-net-gbp"] += gbp
                     vals["export-3rd-party-kwh"] += kwh
-                    vals["used-3rd-party-gbp"] -= gbp
+                    vals["used-3rd-party-net-gbp"] -= gbp
                     vals["used-3rd-party-kwh"] -= kwh
-                    vals["used-gbp"] -= gbp
+                    vals["used-net-gbp"] -= gbp
                     vals["used-kwh"] -= kwh
                 elif source_code == "3rd-party-reverse":
-                    vals["import-3rd-party-gbp"] += gbp
+                    vals["import-3rd-party-net-gbp"] += gbp
                     vals["import-3rd-party-kwh"] += kwh
-                    vals["used-3rd-party-gbp"] += gbp
+                    vals["used-3rd-party-net-gbp"] += gbp
                     vals["used-3rd-party-kwh"] += kwh
-                    vals["used-gbp"] += gbp
+                    vals["used-net-gbp"] += gbp
                     vals["used-kwh"] += kwh
                 elif source_code == "gen":
                     vals["export-gen-kwh"] += kwh
@@ -360,14 +368,14 @@ def _process_site(
             gbp += mop_bill["net-gbp"]
 
             if source_code in ("3rd-party", "3rd-party-reverse"):
-                vals["import-3rd-party-gbp"] += gbp
-                vals["used-3rd-party-gbp"] += gbp
+                vals["import-3rd-party-net-gbp"] += gbp
+                vals["used-3rd-party-net-gbp"] += gbp
             else:
-                vals["import-net-gbp"] += gbp
-            vals["used-gbp"] += gbp
+                vals["import-grid-net-gbp"] += gbp
+            vals["used-net-gbp"] += gbp
 
             generator_type = sss.generator_type_code
-            if source_code in ("gen", "gen-net"):
+            if source_code in ("gen", "gen-grid"):
                 site_gen_types.add(generator_type)
 
             era_category = sss.measurement_type
@@ -391,17 +399,25 @@ def _process_site(
                     min(bill_finish, sss.finish_date) - max(bill_start, sss.start_date)
                 ).total_seconds() + (30 * 60)
                 proportion = overlap_duration / bill_duration
-                vals["billed-import-net-kwh"] += proportion * float(bill.kwh)
-                bill_prop_gbp = proportion * float(bill.net)
-                vals["billed-import-net-gbp"] += bill_prop_gbp
+                vals["billed-import-grid-kwh"] += proportion * float(bill.kwh)
+                bill_prop_net_gbp = proportion * float(bill.net)
+                bill_prop_vat_gbp = proportion * float(bill.vat)
+                bill_prop_gross_gbp = proportion * float(bill.gross)
+                vals["billed-import-grid-net-gbp"] += bill_prop_net_gbp
+                vals["billed-import-grid-vat-gbp"] += bill_prop_vat_gbp
+                vals["billed-import-grid-gross-gbp"] += bill_prop_gross_gbp
                 if bill_role_code == "X":
-                    vals["billed-supplier-import-net-gbp"] += bill_prop_gbp
+                    role_name = "supplier"
                 elif bill_role_code == "C":
-                    vals["billed-dc-import-net-gbp"] += bill_prop_gbp
+                    role_name = "dc"
                 elif bill_role_code == "M":
-                    vals["billed-mop-import-net-gbp"] += bill_prop_gbp
+                    role_name = "mop"
                 else:
                     raise BadRequest("Role code not recognized.")
+
+                vals[f"billed-{role_name}-import-grid-net-gbp"] += bill_prop_net_gbp
+                vals[f"billed-{role_name}-import-grid-vat-gbp"] += bill_prop_vat_gbp
+                vals[f"billed-{role_name}-import-grid-gross-gbp"] += bill_prop_gross_gbp
 
             vals["imp-mpan-core"] = imp_mpan_core
             vals["exp-mpan-core"] = exp_mpan_core
@@ -526,8 +542,8 @@ def _process_site(
                         "pc": last_era.pc.code,
                     }
                     for name in (
-                        "import-net",
-                        "export-net",
+                        "import-grid",
+                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -535,13 +551,14 @@ def _process_site(
                         "displaced",
                         "used",
                         "used-3rd-party",
-                        "billed-import-net",
                     ):
-                        for sname in ("kwh", "gbp"):
-                            vals[name + "-" + sname] = 0
-                    vals["billed-supplier-import-net-gbp"] = 0
-                    vals["billed-dc-import-net-gbp"] = 0
-                    vals["billed-mop-import-net-gbp"] = 0
+                        for sname in ("kwh", "net-gbp"):
+                            vals[f"{name}-{sname}"] = 0
+                    for suf in ("kwh", "net-gbp", "vat-gbp", "gross-gbp"):
+                        vals[f"billed-import-grid-{suf}"] = 0
+                        vals[f"billed-supplier-import-grid-{suf}"] = 0
+                        vals[f"billed-dc-import-grid-{suf}"] = 0
+                        vals[f"billed-mop-import-grid-{suf}"] = 0
 
                     for bill in bills:
                         bill_role_code = bill.batch.contract.market_role.code
@@ -556,20 +573,30 @@ def _process_site(
                         ).total_seconds() + (30 * 60)
                         proportion = overlap_duration / bill_duration
                         bill_prop_kwh = proportion * float(bill.kwh)
-                        bill_prop_gbp = proportion * float(bill.net)
+                        bill_prop_net_gbp = proportion * float(bill.net)
+                        bill_prop_vat_gbp = proportion * float(bill.vat)
+                        bill_prop_gross_gbp = proportion * float(bill.gross)
                         if bill_role_code == "X":
-                            key = "billed-supplier-import-net-gbp"
+                            key = "supplier"
                         elif bill_role_code == "C":
-                            key = "billed-dc-import-net-gbp"
+                            key = "dc"
                         elif bill_role_code == "M":
-                            key = "billed-mop-import-net-gbp"
+                            key = "mop"
                         else:
                             raise BadRequest("Role code not recognized.")
 
                         for data in vals, site_data:
-                            data["billed-import-net-kwh"] += bill_prop_kwh
-                            data["billed-import-net-gbp"] += bill_prop_gbp
-                            data[key] += bill_prop_gbp
+                            data["billed-import-grid-kwh"] += bill_prop_kwh
+                            data["billed-import-grid-net-gbp"] += bill_prop_net_gbp
+                            data[
+                                f"billed-{key}-import-grid-net-gbp"
+                            ] += bill_prop_net_gbp
+                            data[
+                                f"billed-{key}-import-grid-vat-gbp"
+                            ] += bill_prop_vat_gbp
+                            data[
+                                f"billed-{key}-import-grid-gross-gbp"
+                            ] += bill_prop_gross_gbp
 
                     era_rows.append([make_val(vals.get(t)) for t in era_titles])
         first_era = (
@@ -604,8 +631,8 @@ def _process_site(
                 if len(bills) > 0:
                     month_data = {}
                     for name in (
-                        "import-net",
-                        "export-net",
+                        "import-grid",
+                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -613,13 +640,14 @@ def _process_site(
                         "displaced",
                         "used",
                         "used-3rd-party",
-                        "billed-import-net",
                     ):
-                        for sname in ("kwh", "gbp"):
-                            month_data[name + "-" + sname] = 0
-                    month_data["billed-supplier-import-net-gbp"] = 0
-                    month_data["billed-dc-import-net-gbp"] = 0
-                    month_data["billed-mop-import-net-gbp"] = 0
+                        for sname in ("kwh", "net-gbp"):
+                            month_data[f"{name}-{sname}"] = 0
+                    for suf in ("kwh", "net-gbp", "vat-gbp", "gross-gbp"):
+                        month_data["billed-import-grid-{suf}"],
+                        month_data["billed-supplier-import-grid-{suf}"] = 0
+                        month_data["billed-dc-import-grid-{suf}"] = 0
+                        month_data["billed-mop-import-grid-{suf}"] = 0
 
                     for bill in bills:
                         bill_role_code = bill.batch.contract.market_role.code
@@ -634,20 +662,31 @@ def _process_site(
                         ).total_seconds() + (30 * 60)
                         proportion = overlap_duration / bill_duration
                         bill_prop_kwh = proportion * float(bill.kwh)
-                        bill_prop_gbp = proportion * float(bill.net)
+                        bill_prop_net_gbp = proportion * float(bill.net)
+                        bill_prop_vat_gbp = proportion * float(bill.vat)
+                        bill_prop_gross_gbp = proportion * float(bill.gross)
                         if bill_role_code == "X":
-                            key = "billed-supplier-import-net-gbp"
+                            role_name = "supplier"
                         elif bill_role_code == "C":
-                            key = "billed-dc-import-net-gbp"
+                            key = "dc"
                         elif bill_role_code == "M":
-                            key = "billed-mop-import-net-gbp"
+                            key = "mop"
                         else:
                             raise BadRequest("Role code not recognized.")
 
                         for data in month_data, site_data:
-                            data["billed-import-net-kwh"] += bill_prop_kwh
-                            data["billed-import-net-gbp"] += bill_prop_gbp
-                            data[key] += bill_prop_gbp
+                            data["billed-import-grid-kwh"] += bill_prop_kwh
+                            data["billed-import-grid-net-gbp"] += bill_prop_net_gbp
+                            data[f"billed-{role_name}-import-grid-kwh"] += bill_prop_kwh
+                            data[
+                                f"billed-{role_name}-import-grid-net-gbp"
+                            ] += bill_prop_net_gbp
+                            data[
+                                f"billed-{role_name}-import-grid-vat-gbp"
+                            ] += bill_prop_vat_gbp
+                            data[
+                                f"billed-{role_name}-import-grid-gross-gbp"
+                            ] += bill_prop_gross_gbp
 
                     imp_supplier_contract = first_era.imp_supplier_contract
                     exp_supplier_contract = first_era.exp_supplier_contract
@@ -900,8 +939,8 @@ def content(
                 "md-used-kw",
             ]
             summary_titles = [
-                "import-net-kwh",
-                "export-net-kwh",
+                "import-grid-kwh",
+                "export-grid-kwh",
                 "import-gen-kwh",
                 "export-gen-kwh",
                 "import-3rd-party-kwh",
@@ -909,20 +948,28 @@ def content(
                 "displaced-kwh",
                 "used-kwh",
                 "used-3rd-party-kwh",
-                "import-net-gbp",
-                "export-net-gbp",
-                "import-gen-gbp",
-                "export-gen-gbp",
-                "import-3rd-party-gbp",
-                "export-3rd-party-gbp",
-                "displaced-gbp",
-                "used-gbp",
-                "used-3rd-party-gbp",
-                "billed-import-net-kwh",
-                "billed-import-net-gbp",
-                "billed-supplier-import-net-gbp",
-                "billed-dc-import-net-gbp",
-                "billed-mop-import-net-gbp",
+                "import-grid-net-gbp",
+                "export-grid-net-gbp",
+                "import-gen-net-gbp",
+                "export-gen-net-gbp",
+                "import-3rd-party-net-gbp",
+                "export-3rd-party-net-gbp",
+                "displaced-net-gbp",
+                "used-net-gbp",
+                "used-3rd-party-net-gbp",
+                "billed-import-grid-kwh",
+                "billed-import-grid-net-gbp",
+                "billed-import-grid-vat-gbp",
+                "billed-import-grid-gross-gbp",
+                "billed-supplier-import-grid-net-gbp",
+                "billed-supplier-import-grid-vat-gbp",
+                "billed-supplier-import-grid-gross-gbp",
+                "billed-dc-import-grid-net-gbp",
+                "billed-dc-import-grid-vat-gbp",
+                "billed-dc-import-grid-gross-gbp",
+                "billed-mop-import-grid-net-gbp",
+                "billed-mop-import-grid-vat-gbp",
+                "billed-mop-import-grid-gross-gbp",
             ]
 
             title_dict = {}

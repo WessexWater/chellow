@@ -456,7 +456,7 @@ class Source(Base, PersistentClass):
     def get_by_code(sess, code):
         source = sess.query(Source).filter_by(code=code.strip()).first()
         if source is None:
-            raise BadRequest("There's no source with the code '" + code + "'")
+            raise BadRequest(f"There's no source with the code '{code}'")
         return source
 
     __tablename__ = "source"
@@ -1780,8 +1780,8 @@ class Site(Base, PersistentClass):
     def hh_data(self, sess, start_date, finish_date, exclude_virtual=False):
         cache = {}
         keys = {
-            "net": {True: ["imp_net"], False: ["exp_net"]},
-            "gen-net": {True: ["imp_net", "exp_gen"], False: ["exp_net", "imp_gen"]},
+            "grid": {True: ["imp_grid"], False: ["exp_grid"]},
+            "gen-grid": {True: ["imp_grid", "exp_gen"], False: ["exp_grid", "imp_gen"]},
             "gen": {True: ["imp_gen"], False: ["exp_gen"]},
             "3rd-party": {True: ["imp_3p"], False: ["exp_3p"]},
             "3rd-party-reverse": {True: ["exp_3p"], False: ["imp_3p"]},
@@ -1829,8 +1829,8 @@ class Site(Base, PersistentClass):
         for hh_start in hh_range(cache, start_date, finish_date):
             dd = {
                 "start_date": hh_start,
-                "imp_net": 0,
-                "exp_net": 0,
+                "imp_grid": 0,
+                "exp_grid": 0,
                 "imp_gen": 0,
                 "exp_gen": 0,
                 "imp_3p": 0,
@@ -1844,8 +1844,8 @@ class Site(Base, PersistentClass):
                     db_data, (None, None, None, None)
                 )
 
-            dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_net"]
-            dd["used"] = dd["displaced"] + dd["imp_net"] + dd["imp_3p"] - dd["exp_3p"]
+            dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_grid"]
+            dd["used"] = dd["displaced"] + dd["imp_grid"] + dd["imp_3p"] - dd["exp_3p"]
 
         return data
 
@@ -4223,15 +4223,15 @@ class Supply(Base, PersistentClass):
 
         self.name = name
         self.source = source
-        if source.code in ("gen", "gen-net") and generator_type is None:
+        if source.code in ("gen", "gen-grid") and generator_type is None:
             raise BadRequest(
-                "If the source is 'gen' or 'gen-net', there must be a generator type."
+                "If the source is 'gen' or 'gen-grid', there must be a generator type."
             )
 
-        if source.code == "net" and dno.dno_code == "99":
-            raise BadRequest("A network supply can't have a DNO code  of 99.")
+        if source.code == "grid" and dno.dno_code == "99":
+            raise BadRequest("A grid supply can't have a DNO code  of 99.")
 
-        if source.code in ("gen", "gen-net"):
+        if source.code in ("gen", "gen-grid"):
             self.generator_type = generator_type
         else:
             self.generator_type = None
@@ -4746,7 +4746,7 @@ class Report(Base, PersistentClass):
 
 
 class SiteGroup:
-    EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators."
+    EXPORT_GRID_GT_IMPORT_GEN = "Export to grid > import from generators."
     EXPORT_GEN_GT_IMPORT = "Export to generators > import."
     EXPORT_3P_GT_IMPORT = "Export to 3rd party > import."
 
@@ -4759,8 +4759,8 @@ class SiteGroup:
     def hh_data(self, sess):
         caches = {}
         keys = {
-            "net": {True: ["imp_net"], False: ["exp_net"]},
-            "gen-net": {True: ["imp_net", "exp_gen"], False: ["exp_net", "imp_gen"]},
+            "grid": {True: ["imp_grid"], False: ["exp_grid"]},
+            "gen-grid": {True: ["imp_grid", "exp_gen"], False: ["exp_grid", "imp_gen"]},
             "gen": {True: ["imp_gen"], False: ["exp_gen"]},
             "3rd-party": {True: ["imp_3p"], False: ["exp_3p"]},
             "3rd-party-reverse": {True: ["exp_3p"], False: ["imp_3p"]},
@@ -4770,8 +4770,8 @@ class SiteGroup:
             hh_start: {
                 "start_date": hh_start,
                 "status": "A",
-                "imp_net": 0,
-                "exp_net": 0,
+                "imp_grid": 0,
+                "exp_grid": 0,
                 "imp_gen": 0,
                 "exp_gen": 0,
                 "imp_3p": 0,
@@ -4828,9 +4828,9 @@ class SiteGroup:
                     if dd["status"] == "A":
                         dd["status"] = "E"
 
-                dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_net"]
+                dd["displaced"] = dd["imp_gen"] - dd["exp_gen"] - dd["exp_grid"]
                 dd["used"] = (
-                    dd["displaced"] + dd["imp_net"] + dd["imp_3p"] - dd["exp_3p"]
+                    dd["displaced"] + dd["imp_grid"] + dd["imp_3p"] - dd["exp_3p"]
                 )
 
         return data.values()
@@ -4856,7 +4856,7 @@ class SiteGroup:
         for hh in self.hh_data(sess):
             hh_start_date = hh["start_date"]
 
-            if hh["exp_net"] > hh["imp_gen"] and hh["status"] == "A":
+            if hh["exp_grid"] > hh["imp_gen"] and hh["status"] == "A":
                 if snag_1_start is None:
                     snag_1_start = hh_start_date
 
@@ -4865,7 +4865,7 @@ class SiteGroup:
                 if resolve_1_start is not None:
                     self.delete_snag(
                         sess,
-                        SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+                        SiteGroup.EXPORT_GROSS_GT_IMPORT_GEN,
                         resolve_1_start,
                         resolve_1_finish,
                     )
@@ -4879,13 +4879,13 @@ class SiteGroup:
                 if snag_1_start is not None:
                     self.add_snag(
                         sess,
-                        SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+                        SiteGroup.EXPORT_GRID_GT_IMPORT_GEN,
                         snag_1_start,
                         snag_1_finish,
                     )
                     snag_1_start = None
 
-            if hh["exp_gen"] > hh["imp_net"] + hh["imp_gen"] and hh["status"] == "A":
+            if hh["exp_gen"] > hh["imp_grid"] + hh["imp_gen"] and hh["status"] == "A":
                 if snag_2_start is None:
                     snag_2_start = hh_start_date
 
@@ -4915,7 +4915,7 @@ class SiteGroup:
                     snag_2_start = None
 
             if (
-                hh["exp_3p"] > hh["imp_net"] + hh["imp_gen"] + hh["imp_3p"]
+                hh["exp_3p"] > hh["imp_grid"] + hh["imp_gen"] + hh["imp_3p"]
                 and hh["status"] == "A"
             ):
                 if snag_3_start is None:
@@ -4948,13 +4948,13 @@ class SiteGroup:
 
         if snag_1_start is not None:
             self.add_snag(
-                sess, SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag_1_start, snag_1_finish
+                sess, SiteGroup.EXPORT_GRID_GT_IMPORT_GEN, snag_1_start, snag_1_finish
             )
 
         if resolve_1_start is not None:
             self.delete_snag(
                 sess,
-                SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+                SiteGroup.EXPORT_GRID_GT_IMPORT_GEN,
                 resolve_1_start,
                 resolve_1_finish,
             )
@@ -6556,9 +6556,9 @@ def insert_comms(sess):
 
 def insert_sources(sess):
     for code, desc in (
-        ("net", "Public distribution system."),
+        ("grid", "Public grid."),
         ("sub", "Sub meter"),
-        ("gen-net", "Generator connected directly to network."),
+        ("gen-grid", "Generator connected directly to the grid."),
         ("gen", "Generator."),
         ("3rd-party", "Third party supply."),
         ("3rd-party-reverse", "Third party supply with import going out of the site."),
@@ -7502,6 +7502,17 @@ def db_upgrade_48_to_49(sess, root_path):
         sess.flush()
 
 
+def db_upgrade_49_to_50(sess, root_path):
+    source = Source.get_by_code(sess, "net")
+    source.code = "grid"
+    source.name = "Public grid."
+    sess.flush()
+    source = Source.get_by_code(sess, "gen-net")
+    source.code = "gen-grid"
+    source.name = "Generator connected directly to the grid."
+    sess.flush()
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7536,6 +7547,7 @@ upgrade_funcs.extend(
         db_upgrade_46_to_47,
         db_upgrade_47_to_48,
         db_upgrade_48_to_49,
+        db_upgrade_49_to_50,
     ]
 )
 
