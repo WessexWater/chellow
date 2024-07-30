@@ -1501,7 +1501,7 @@ def report_run_row_get(row_id):
                 "virtual-problem",
             ):
                 toks = t.split("-")
-                name = toks[1]
+                name = "-".join(toks[1:-1])
                 try:
                     table = elements[name]
                 except KeyError:
