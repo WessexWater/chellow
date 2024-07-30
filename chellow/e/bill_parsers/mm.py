@@ -80,6 +80,11 @@ CHARGE_UNITS_LOOKUP = {
 }
 
 ELEMENT_LOOKUP = {
+    "1ANNUAL": "duos-red",
+    "2ANNUAL": "duos-amber",
+    "3ANNUAL": "duos-green",
+    "7ANNUAL": "duos-fixed",
+    "9ANNUAL": "duos-reactive",
     "10ANNUAL": "standing",
     "20RS0108": "single",
     "30ANNUAL": "mop",
@@ -119,7 +124,7 @@ def _handle_0460(headers, pre_record, record):
     gbp = Decimal(parts["gbp"]) / 100
     quantity = Decimal(parts["quantity"])
     rate = Decimal(parts["rate"])
-    element_name = ELEMENT_LOOKUP[parts["code"]]
+    element_name = ELEMENT_LOOKUP[parts["code"].strip()]
     breakdown = headers["breakdown"]
     breakdown[f"{element_name}-{units}"] += quantity
     rate_name = f"{element_name}-rate"
