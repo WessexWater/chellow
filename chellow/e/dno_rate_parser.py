@@ -314,7 +314,14 @@ def tab_ehv(sheet, gsp_rates):
                 llfc = None if llfc_val is None else str(llfc_val).strip()
                 if llfc not in (None, ""):
                     band_col = col_find(title_row, "residual")
-                    band = "" if band_col is None else int(get_decimal(row, band_col))
+                    if band_col is None:
+                        band = 0
+                    else:
+                        band_val = get_value(row, band_col)
+                        if band_val is None:
+                            band = 0
+                        else:
+                            band = int(band_val)
                     tariffs[llfc] = {
                         "super-red-gbp-per-kwh": get_rate(
                             row, col_match(title_row, f"{polarity} super red")

@@ -156,3 +156,40 @@ def test_tab_ehv():
         },
         "super_red": [],
     }
+
+
+def test_tab_ehv_null_band():
+    wb = Workbook()
+    wb.create_sheet("Annex 2 EHV charges")
+    sheet = wb.worksheets[1]
+    sheet.insert_rows(0, 10)
+    sheet.insert_cols(0, 15)
+    sheet["A10"].value = "Import Unique Identifier"
+    sheet["B10"].value = "LLFC"
+    sheet["E10"].value = "LLFC"
+    sheet["H10"].value = "Residual Charging Band"
+    sheet["I10"].value = "Import Super Red unit charge (p/kWh)"
+    sheet["J10"].value = "Import fixed charge (p/day)"
+    sheet["K10"].value = "Import capacity charge (p/kVA/day)"
+    sheet["L10"].value = "Import exceeded capacity charge (p/kVA/day)"
+    sheet["B11"].value = "198"
+    sheet["H11"].value = None
+    sheet["I11"].value = "4.124"
+    sheet["J11"].value = "18767.69"
+    sheet["K11"].value = "1.40"
+    sheet["L11"].value = "1.40"
+
+    rates = {}
+    tab_ehv(sheet, rates)
+    assert rates == {
+        "tariffs": {
+            "198": {
+                "super-red-gbp-per-kwh": Decimal("0.04124"),
+                "gbp-per-mpan-per-day": Decimal("187.67690"),
+                "gbp-per-kva-per-day": Decimal("0.01400"),
+                "excess-gbp-per-kva-per-day": Decimal("0.01400"),
+                "description": "Designated EHV0",
+            }
+        },
+        "super_red": [],
+    }
