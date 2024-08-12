@@ -259,12 +259,13 @@ def _process_site(
             ):
                 for sname in ("kwh", "net-gbp"):
                     month_data[f"{name}-{sname}"] = 0
-            month_data["billed-import-kwh"] = 0
-            for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
-                month_data[f"billed-import-{suf}"] = 0
-                month_data[f"billed-supplier-import-{suf}"] = 0
-                month_data[f"billed-dc-import-{suf}"] = 0
-                month_data[f"billed-mop-import-{suf}"] = 0
+            for polarity in ("import", "export"):
+                month_data[f"billed-{polarity}-kwh"] = 0
+                for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                    month_data[f"billed-{polarity}-{suf}"] = 0
+                    month_data[f"billed-supplier-{polarity}-{suf}"] = 0
+                    month_data[f"billed-dc-{polarity}-{suf}"] = 0
+                    month_data[f"billed-mop-{polarity}-{suf}"] = 0
 
             if imp_ss is not None:
                 imp_supplier_contract = imp_ss.supplier_contract
@@ -1032,7 +1033,6 @@ def content(
                 data_source_bill = Object()
                 data_source_bill.start_date = month_start
                 data_source_bill.finish_date = month_finish
-
                 for site in sites:
                     if by_hh:
                         sf = [
