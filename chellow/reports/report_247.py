@@ -61,9 +61,6 @@ def write_spreadsheet(
     site_rows,
     era_rows,
     read_rows,
-    bill_check_site_rows,
-    bill_check_era_rows,
-    is_bill_check,
 ):
     fl.seek(0)
     fl.truncate()
@@ -71,9 +68,6 @@ def write_spreadsheet(
         f.append_table("Site Level", site_rows)
         f.append_table("Era Level", era_rows)
         f.append_table("Normal Reads", read_rows)
-        if is_bill_check:
-            f.append_table("Bill Check Site", bill_check_site_rows)
-            f.append_table("Bill Check Era", bill_check_era_rows)
 
 
 def make_bill_row(titles, bill):
@@ -721,14 +715,7 @@ class Object:
     pass
 
 
-def content(
-    scenario_props,
-    base_name,
-    user_id,
-    compression,
-    now,
-    is_bill_check,
-):
+def content(scenario_props, base_name, user_id, compression, now):
     report_context = {}
 
     try:
@@ -750,8 +737,6 @@ def content(
     site_rows = []
     era_rows = []
     normal_read_rows = []
-    bill_check_site_rows = []
-    bill_check_era_rows = []
     try:
         with RSession() as sess:
             start_year = scenario_props["scenario_start_year"]
@@ -820,9 +805,6 @@ def content(
                 sites = sites.where(Site.code.in_(site_codes))
 
             user = User.get_by_id(sess, user_id)
-
-            if is_bill_check:
-                base_name.append("bill_check")
 
             rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
 
@@ -1023,16 +1005,17 @@ def content(
             )
             site_rows.append(site_header_titles + summary_titles)
             era_rows.append(era_titles)
-            bill_check_site_rows.append(site_header_titles + summary_titles)
-            bill_check_era_rows.append(era_titles)
 
             sites = sites.all()
             normal_reads = set()
 
             for month_start, month_finish in month_pairs:
-                data_source_bill = Object()
-                data_source_bill.start_date = month_start
-                data_source_bill.finish_date = month_finish
+                if scenario_props.get("is_bill_check", False):
+                    data_source_bill = Object()
+                    data_source_bill.start_date = month_start
+                    data_source_bill.finish_date = month_finish
+                else:
+                    data_source_bill = None
                 for site in sites:
                     if by_hh:
                         sf = [
@@ -1058,25 +1041,8 @@ def content(
                                 title_dict,
                                 era_rows,
                                 site_rows,
-                                None,
+                                data_source_bill,
                             )
-                            if is_bill_check:
-                                _process_site(
-                                    sess,
-                                    report_context,
-                                    forecast_from,
-                                    start,
-                                    finish,
-                                    site,
-                                    scenario_props,
-                                    supply_ids,
-                                    now,
-                                    summary_titles,
-                                    title_dict,
-                                    bill_check_era_rows,
-                                    bill_check_site_rows,
-                                    data_source_bill,
-                                )
                         except BadRequest as e:
                             raise BadRequest(f"Site Code {site.code}: {e.description}")
 
@@ -1088,29 +1054,13 @@ def content(
                     normal_read_rows.append(row)
 
                 write_spreadsheet(
-                    rf,
-                    compression,
-                    site_rows,
-                    era_rows,
-                    normal_read_rows,
-                    bill_check_site_rows,
-                    bill_check_era_rows,
-                    is_bill_check,
+                    rf, compression, site_rows, era_rows, normal_read_rows
                 )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
-        write_spreadsheet(
-            rf,
-            compression,
-            site_rows,
-            era_rows,
-            normal_read_rows,
-            bill_check_site_rows,
-            bill_check_era_rows,
-            is_bill_check,
-        )
+        write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
@@ -1121,16 +1071,7 @@ def content(
             ef.write(msg + "\n")
             ef.close()
         else:
-            write_spreadsheet(
-                rf,
-                compression,
-                site_rows,
-                era_rows,
-                normal_read_rows,
-                bill_check_site_rows,
-                bill_check_era_rows,
-                is_bill_check,
-            )
+            write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
     finally:
         if rf is not None:
             rf.close()
@@ -1145,22 +1086,22 @@ def do_post(sess):
         scenario = Scenario.get_by_id(sess, scenario_id)
         scenario_props = scenario.props
         base_name.append(scenario.name)
-
     else:
+        scenario_props = {}
+        base_name.append("monthly_duration")
+
+    if "finish_year" in request.values:
         year = req_int("finish_year")
         month = req_int("finish_month")
         months = req_int("months")
         start_date, _ = next(
             c_months_c(finish_year=year, finish_month=month, months=months)
         )
-        by_hh = req_bool("by_hh")
-        scenario_props = {
-            "scenario_start_year": start_date.year,
-            "scenario_start_month": start_date.month,
-            "scenario_duration": months,
-            "by_hh": by_hh,
-        }
-        base_name.append("monthly_duration")
+        scenario_props["scenario_start_year"] = start_date.year
+        scenario_props["scenario_start_month"] = start_date.month
+        scenario_props["scenario_duration"] = months
+
+    scenario_props["by_hh"] = req_bool("by_hh")
 
     try:
         if "site_id" in request.values:
@@ -1193,18 +1134,9 @@ def do_post(sess):
         else:
             compression = True
 
-        is_bill_check = req_bool("is_bill_check")
-
         user = g.user
 
-        args = (
-            scenario_props,
-            base_name,
-            user.id,
-            compression,
-            now,
-            is_bill_check,
-        )
+        args = (scenario_props, base_name, user.id, compression, now)
         threading.Thread(target=content, args=args).start()
         return chellow_redirect("/downloads", 303)
     except BadRequest as e:

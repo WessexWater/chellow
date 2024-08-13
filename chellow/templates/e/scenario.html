@@ -14,6 +14,9 @@
 		<fieldset>
 			<legend>Run With Monthly Duration</legend>
 			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<label>Months</label> {{input_text('months', initial=scenario_duration, size=2, maxlength=2)}}
+			<label>Finish month</label>
+		 	{{input_date('finish', scenario_finish_date, resolution='month')}}
 			<label>Site Codes</label>
 			{{input_textarea('site_codes', '', 5, 40,
 			  placeholder='One on each line, includes all if left blank')}}    						

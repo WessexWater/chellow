@@ -99,16 +99,9 @@ def test_with_scenario(mocker, sess, client):
 
     base_name = ["New Gen"]
     user = User.get_by_email_address(sess, "admin@example.com")
-    is_bill_check = False
     scenario_props["site_codes"] = [site_code]
-    args = (
-        scenario_props,
-        base_name,
-        user.id,
-        False,
-        now,
-        is_bill_check,
-    )
+    scenario_props["by_hh"] = False
+    args = (scenario_props, base_name, user.id, False, now)
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -137,21 +130,13 @@ def test_do_post_without_scenario(mocker, sess, client):
 
     base_name = ["monthly_duration"]
     user = User.get_by_email_address(sess, "admin@example.com")
-    is_bill_check = False
     scenario_props = {
         "scenario_start_year": 2009,
         "scenario_start_month": 8,
         "scenario_duration": 1,
         "by_hh": False,
     }
-    args = (
-        scenario_props,
-        base_name,
-        user.id,
-        False,
-        now,
-        is_bill_check,
-    )
+    args = (scenario_props, base_name, user.id, False, now)
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -368,20 +353,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
@@ -673,20 +650,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
@@ -911,20 +880,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     site_table = list(sheet.tables[0].rows)
@@ -1384,20 +1345,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
 
@@ -1726,20 +1679,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
@@ -2073,20 +2018,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     site_table = list(sheet.tables[0].rows)
@@ -2727,20 +2664,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     site_table = list(sheet.tables[0].rows)
@@ -3202,20 +3131,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
@@ -3577,20 +3498,12 @@ def displaced_virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     era_table = list(sheet.tables[1].rows)
@@ -3920,19 +3833,11 @@ def test_content_error(mocker):
     user_id = 0
     compression = False
     now = to_utc(ct_datetime(2020, 1, 1))
-    is_bill_check = False
     with pytest.raises(
         AttributeError,
         match="'NoneType' object has no attribute 'write'",
     ):
-        content(
-            scenario_props,
-            base_name,
-            user_id,
-            compression,
-            now,
-            is_bill_check,
-        )
+        content(scenario_props, base_name, user_id, compression, now)
 
 
 def test_content_no_mpan_cores(mocker, sess, client):
@@ -3950,15 +3855,7 @@ def test_content_no_mpan_cores(mocker, sess, client):
     sess.commit()
     compression = False
     now = to_utc(ct_datetime(2020, 1, 1))
-    is_bill_check = False
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[0].rows)
 
@@ -4220,20 +4117,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     site_table = list(sheet.tables[0].rows)
@@ -4677,20 +4566,12 @@ def virtual_bill(ds):
     base_name = ["monthly_duration"]
     compression = False
     now = utc_datetime(2020, 1, 1)
-    is_bill_check = False
 
     mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(
-        scenario_props,
-        base_name,
-        user_id,
-        compression,
-        now,
-        is_bill_check,
-    )
+    content(scenario_props, base_name, user_id, compression, now)
 
     sheet = odio.parse_spreadsheet(mock_file)
     site_table = list(sheet.tables[0].rows)

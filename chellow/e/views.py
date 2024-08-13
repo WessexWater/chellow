@@ -80,6 +80,7 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
+    c_months_c,
     c_months_u,
     csv_make_val,
     ct_datetime,
@@ -3943,7 +3944,20 @@ def scenario_add_get():
 @e.route("/scenarios/<int:scenario_id>")
 def scenario_get(scenario_id):
     scenario = Scenario.get_by_id(g.sess, scenario_id)
-    return render_template("scenario.html", scenario=scenario)
+    props = scenario.props
+    _, finish_date_ct = list(
+        c_months_c(
+            start_year=props["scenario_start_year"],
+            start_month=props["scenario_start_month"],
+            months=props["scenario_duration"],
+        )
+    )[-1]
+    return render_template(
+        "scenario.html",
+        scenario=scenario,
+        scenario_finish_date=to_utc(finish_date_ct),
+        scenario_duration=props["scenario_duration"],
+    )
 
 
 @e.route("/scenarios/<int:scenario_id>/edit")
