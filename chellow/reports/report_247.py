@@ -287,7 +287,7 @@ def _process_site(
                     month_data["import-3rd-party-kwh"] += kwh
                     month_data["used-3rd-party-net-gbp"] += gbp
                     month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-gbp"] += gbp
+                    month_data["used-net-gbp"] += gbp
                     month_data["used-kwh"] += kwh
                 elif source_code == "3rd-party-reverse":
                     month_data["export-3rd-party-net-gbp"] += gbp
