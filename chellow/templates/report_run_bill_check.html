@@ -38,7 +38,7 @@
 					<td>{{run.creator}}</td>
 					<td>{{run.title}}</td>
 					<td>{{run.state}}</td>
-					<td>{{rows|length}}</td>
+					<td>{{rows|length}} (truncated at {{ROW_LIMIT}})</td>
 					<td>
 						{% if 'sum_difference' in summary %}
 							{{"%.2f"|format(summary.sum_difference)}}</td>

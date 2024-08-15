@@ -1341,12 +1341,12 @@ def report_run_get(run_id):
             q = q.filter(
                 ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
             )
-
+        ROW_LIMIT = 200
         rows = (
             q.order_by(
                 func.abs(ReportRunRow.data["values"][order_by].as_float()).desc()
             )
-            .limit(200)
+            .limit(ROW_LIMIT)
             .all()
         )
         return render_template(
@@ -1357,6 +1357,7 @@ def report_run_get(run_id):
             elements=elements,
             element=element,
             hide_checked=hide_checked,
+            ROW_LIMIT=ROW_LIMIT,
         )
 
     elif run.name == "asset_comparison":
