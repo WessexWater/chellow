@@ -37,6 +37,7 @@ from chellow.models import (
     BatchFile,
     Bill,
     BillType,
+    CHANNEL_TYPES,
     Channel,
     ClockInterval,
     Comm,
@@ -193,13 +194,25 @@ def csv_bills_get():
 
 @e.route("/eras/<int:era_id>/add_channel")
 def channel_add_get(era_id):
+    channel_sets = {True: set(CHANNEL_TYPES), False: set(CHANNEL_TYPES)}
     era = Era.get_by_id(g.sess, era_id)
-    channels = (
-        g.sess.query(Channel)
-        .filter(Channel.era == era)
+    channels = g.sess.scalars(
+        select(Channel)
+        .where(Channel.era == era)
         .order_by(Channel.imp_related, Channel.channel_type)
+    ).all()
+    for channel in channels:
+        channel_sets[channel.imp_related].remove(channel.channel_type)
+    add_channels = [
+        {"imp_related": imp_related, "channel_type": channel_type}
+        for imp_related, channel_set in channel_sets.items()
+        for channel_type in CHANNEL_TYPES
+        if channel_type in channel_set
+    ]
+
+    return render_template(
+        "channel_add.html", era=era, channels=channels, add_channels=add_channels
     )
-    return render_template("channel_add.html", era=era, channels=channels)
 
 
 @e.route("/eras/<int:era_id>/add_channel", methods=["POST"])

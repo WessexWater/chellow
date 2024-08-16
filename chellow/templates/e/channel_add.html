@@ -13,10 +13,12 @@
 {% endblock %}
 
 {% block content %}
+
 	<table>
 		<caption>Existing Channels</caption>	
 		<thead>
 			<tr>
+				<th>View</th>
 				<th>Import / Export Related?</th>
 				<th>Type</th>
 			</tr>
@@ -24,6 +26,7 @@
 		<tbody>
 			{% for channel in channels %}
 				<tr>
+					<td><a href="/e/channels/{{channel.id}}">View</a></td>
 					<td>
 						{% if channel.imp_related %}
 							Import
@@ -39,23 +42,40 @@
 		<tbody>
 	</table>
 
-	<form action="/e/eras/{{era.id}}/add_channel" method="post">
-		<fieldset>
-			<legend>Add a channel</legend>	
-			<label>Import / Export</label>
-			<select name="imp_related">
-				{% for lb, vl in (('Import Related', 'true'), ('Export Related', 'false')) %}
-					{{input_option('is_import', vl, lb)}}
-				{% endfor %}
-			</select>
-			<label>Channel Type</label>
-			<select name="channel_type">
-				{{input_option('channel_type', 'ACTIVE', 'ACTIVE')}}
-				{{input_option('channel_type', 'REACTIVE_IMP', 'REACTIVE_IMP')}}
-				{{input_option('channel_type', 'REACTIVE_EXP', 'REACTIVE_EXP')}}
-			</select>
-			<input type="submit" value="Add">
-		</fieldset>
-	</form>
+	<table>
+		<caption>Add Channels</caption>	
+		<thead>
+			<tr>
+				<th>Import / Export Related?</th>
+				<th>Type</th>
+				<th>Add</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for channel in add_channels %}
+				<tr>
+					<td>
+						{% if channel.imp_related %}
+							Import
+						{% else %}
+							Export
+						{% endif %}
+					</td>
+					<td>
+						{{channel.channel_type}}
+					</td>
+					<td>
+						<form action="/e/eras/{{era.id}}/add_channel" method="post">
+							<fieldset>
+								<input type="hidden" name="imp_related" value="{{channel.imp_related|lower}}">
+								<input type="hidden" name="channel_type" value="{{channel.channel_type}}">
+								<input type="submit" value="Add">
+							</fieldset>
+						</form>
+					</td>
+				</tr>
+			{% endfor %}
+		<tbody>
+	</table>
 
 {% endblock %}
