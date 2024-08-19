@@ -227,7 +227,7 @@ def _process(
             prev_row = ecoes_mpans[mpan_spaces]
             msn = ecoes_row["msn"]
             if len(msn) > 0:
-                prev_msns = prev_row.split(",")
+                prev_msns = prev_row["msn"].split(",")
                 prev_msns.append(msn)
                 prev_row["msn"] = ", ".join(prev_msns)
         else:
