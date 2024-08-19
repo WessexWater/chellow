@@ -298,15 +298,6 @@ def _process(
         ecoes_disconnected = ecoes_es == ""
         current_chell = mpan_spaces in mpans
 
-        if ecoes["meter_count"] > 1:
-            problem += (
-                f"There are {ecoes['meter_count']} meters associated with this MPAN "
-                f"core in ECOES, but Chellow only supports one meter per supply at the "
-                f"moment. If there really should be multiple meters for this supply, "
-                f"let me know and I'll add support for it in Chellow."
-            )
-            ignore = False
-
         if ecoes_disconnected and current_chell:
             problem += "Disconnected in ECOES, but current in Chellow. "
             ignore = False
