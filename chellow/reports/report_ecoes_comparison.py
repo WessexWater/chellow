@@ -465,7 +465,9 @@ def _process(
 
                 chellow_msn = era.msn
 
-                if set(chellow_msn.split(",")) != set(ecoes["msn"].split()):
+                if set([m.strip() for m in chellow_msn.split(",")]) != set(
+                    [m.strip() for m in ecoes["msn"].split()]
+                ):
                     problem += "The meter serial numbers don't match. "
                     diffs.append("msn")
                     if mpan_spaces not in ignore_mpan_cores_msn:
