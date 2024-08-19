@@ -225,9 +225,12 @@ def _process(
         ecoes_row["mpan_spaces"] = mpan_spaces
         if mpan_spaces in ecoes_mpans:
             prev_row = ecoes_mpans[mpan_spaces]
-            prev_row["meter_count"] += 1
+            msn = ecoes_row["msn"]
+            if len(msn) > 0:
+                prev_msns = prev_row["msn"].split(",")
+                prev_msns.append(msn)
+                prev_row["msn"] = ", ".join(prev_msns)
         else:
-            ecoes_row["meter_count"] = 1
             ecoes_mpans[mpan_spaces] = ecoes_row
 
     titles = (
@@ -294,15 +297,6 @@ def _process(
 
         ecoes_disconnected = ecoes_es == ""
         current_chell = mpan_spaces in mpans
-
-        if ecoes["meter_count"] > 1:
-            problem += (
-                f"There are {ecoes['meter_count']} meters associated with this MPAN "
-                f"core in ECOES, but Chellow only supports one meter per supply at the "
-                f"moment. If there really should be multiple meters for this supply, "
-                f"let me know and I'll add support for it in Chellow."
-            )
-            ignore = False
 
         if ecoes_disconnected and current_chell:
             problem += "Disconnected in ECOES, but current in Chellow. "
@@ -471,7 +465,9 @@ def _process(
 
                 chellow_msn = era.msn
 
-                if chellow_msn.split(",")[0] != ecoes["msn"]:
+                if set([m.strip() for m in chellow_msn.split(",")]) != set(
+                    [m.strip() for m in ecoes["msn"].split(",")]
+                ):
                     problem += "The meter serial numbers don't match. "
                     diffs.append("msn")
                     if mpan_spaces not in ignore_mpan_cores_msn:
