@@ -225,46 +225,35 @@ def import_operational_costs_levy(sess, log, set_progress, s):
 RUN_TYPES = ("II", "SF", "R1", "R2", "R3", "RF", "DF")
 
 
-def _reconciled_days(log, s, search_from):
-    runs = {}
+def _reconciled_quarters(log, s, search_from):
+    quarters = {}
 
-    records = [
-        r
-        for r in api_records(log, s, "e0e163cb-ba36-416d-83fe-976992d61516")
-        if r["Settlement_Date"] > search_from
-    ]
-    if len(records) > 0:
-        prev_settlement_date = _parse_date(records[0]["Settlement_Date"])
-        runs = {}
-        for record in records:
-            settlement_date = _parse_date(record["Settlement_Date"])
-            if settlement_date != prev_settlement_date:
-                yield prev_settlement_date, runs
-                runs = {}
+    for record in api_records(log, s, "e0e163cb-ba36-416d-83fe-976992d61516"):
+        settlement_date = _parse_date(record["Settlement_Date"])
+        if settlement_date > search_from:
+            settlement_date_ct = to_ct(settlement_date)
+            quarter_start_ct_month = int((settlement_date_ct.month - 1) / 3) * 3 + 1
+            quarter_start = to_utc(
+                ct_datetime(settlement_date_ct.year, quarter_start_ct_month, 1)
+            )
+            try:
+                quarter = quarters[quarter_start]
+            except KeyError:
+                quarter = quarters[quarter_start] = {}
+
+            try:
+                day = quarter[settlement_date]
+            except KeyError:
+                day = quarter[settlement_date] = {}
 
             settlement_run_type = record["Settlement_Run_Type"]
-            runs[settlement_run_type] = record
-            prev_settlement_date = settlement_date
+            day[settlement_run_type] = record
 
-        yield settlement_date, runs
-
-
-def _reconciled_daily_quarters(log, s, search_from):
-    quarter = {}
-    for settlement_date, lcc_runs in _reconciled_days(log, s, search_from):
-        try:
-            runs = quarter[settlement_date]
-        except KeyError:
-            runs = quarter[settlement_date] = {}
-
-        for run_type, record in lcc_runs.items():
-            runs[run_type] = record
-
-        settlement_next_ct = to_ct(settlement_date) + relativedelta(days=1)
-
-        if settlement_next_ct.month in (1, 4, 7, 10) and settlement_next_ct.day == 1:
-            yield quarter
-            quarter = {}
+    # Only return complate quarters
+    if len(quarters) > 0:
+        last_start = sorted(quarters.keys())[-1]
+        del quarters[last_start]
+    return quarters
 
 
 def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
@@ -277,7 +266,7 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    search_from = "1996-04-01"
+    search_from = to_utc(ct_datetime(1996, 4, 1))
     for rs in sess.scalars(
         select(RateScript)
         .where(RateScript.contract == contract)
@@ -305,12 +294,12 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
             day_ct += relativedelta(days=1)
 
         if complete:
-            search_from = quarter_finish_ct.strftime("%Y-%m-%d")
+            search_from = to_utc(quarter_finish_ct)
         else:
             break
 
-    for quarter in _reconciled_daily_quarters(log, s, search_from):
-        quarter_start = sorted(quarter.keys())[0]
+    for quarter_start, quarter in _reconciled_quarters(log, s, search_from).items():
+
         rs = sess.execute(
             select(RateScript).where(
                 RateScript.contract == contract,

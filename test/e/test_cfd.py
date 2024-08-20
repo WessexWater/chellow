@@ -1,6 +1,6 @@
 from chellow.e.cfd import (
     _find_quarter_rs,
-    _reconciled_days,
+    _reconciled_quarters,
     hh,
     import_forecast_ilr_tra,
 )
@@ -33,9 +33,9 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_reconciled_days(mocker):
+def test_reconciled_quarters(mocker):
     s = mocker.Mock()
-    search_from = "2023-01-01"
+    search_from = to_utc(ct_datetime(2023, 1, 1))
     log = mocker.Mock()
     result = [
         {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "DF"},
@@ -44,23 +44,8 @@ def test_reconciled_days(mocker):
         {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "RF"},
     ]
     mocker.patch("chellow.e.cfd.api_records", return_value=result)
-    actual = list(_reconciled_days(log, s, search_from))
-    expected = [
-        (
-            utc_datetime(2023, 3, 29, 23, 0),
-            {
-                "DF": {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "DF"},
-                "RF": {"Settlement_Date": "2023-03-30", "Settlement_Run_Type": "RF"},
-            },
-        ),
-        (
-            utc_datetime(2023, 3, 30, 23, 0),
-            {
-                "DF": {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "DF"},
-                "RF": {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "RF"},
-            },
-        ),
-    ]
+    actual = _reconciled_quarters(log, s, search_from)
+    expected = {}
     assert actual == expected
 
 
