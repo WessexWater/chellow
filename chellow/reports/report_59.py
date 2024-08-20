@@ -84,6 +84,37 @@ def make_bill_row(titles, bill):
     return [bill.get(t) for t in titles]
 
 
+def _add_bills(month_data, bills, chunk_start, chunk_finish):
+    for bill in bills:
+        bill_role_code = bill.batch.contract.market_role.code
+        bill_start = bill.start_date
+        bill_finish = bill.finish_date
+        bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
+        overlap_duration = (
+            min(bill_finish, chunk_finish) - max(bill_start, chunk_start)
+        ).total_seconds() + (30 * 60)
+        proportion = overlap_duration / bill_duration
+        bill_prop_kwh = proportion * float(bill.kwh)
+        bill_prop_net_gbp = proportion * float(bill.net)
+        bill_prop_vat_gbp = proportion * float(bill.vat)
+        bill_prop_gross_gbp = proportion * float(bill.gross)
+        if bill_role_code == "X":
+            role_name = "supplier"
+        elif bill_role_code == "C":
+            role_name = "dc"
+        elif bill_role_code == "M":
+            role_name = "mop"
+        else:
+            raise BadRequest("Role code not recognized.")
+
+        month_data["billed-import-kwh"] += bill_prop_kwh
+        month_data["billed-import-net-gbp"] += bill_prop_net_gbp
+        month_data[f"billed-import-{role_name}-kwh"] += bill_prop_kwh
+        month_data[f"billed-import-{role_name}-net-gbp"] += bill_prop_net_gbp
+        month_data[f"billed-import-{role_name}-vat-gbp"] += bill_prop_vat_gbp
+        month_data[f"billed-import-{role_name}-gross-gbp"] += bill_prop_gross_gbp
+
+
 def _process_site(
     sess,
     report_context,
@@ -560,41 +591,13 @@ def _process_site(
                         vals[f"billed-import-dc-{suf}"] = 0
                         vals[f"billed-import-mop-{suf}"] = 0
 
-                    for bill in bills:
-                        bill_role_code = bill.batch.contract.market_role.code
-                        bill_start = bill.start_date
-                        bill_finish = bill.finish_date
-                        bill_duration = (bill_finish - bill_start).total_seconds() + (
-                            30 * 60
-                        )
-                        overlap_duration = (
-                            min(bill_finish, chunk_finish)
-                            - max(bill_start, chunk_start)
-                        ).total_seconds() + (30 * 60)
-                        proportion = overlap_duration / bill_duration
-                        bill_prop_kwh = proportion * float(bill.kwh)
-                        bill_prop_net_gbp = proportion * float(bill.net)
-                        bill_prop_vat_gbp = proportion * float(bill.vat)
-                        bill_prop_gross_gbp = proportion * float(bill.gross)
-                        if bill_role_code == "X":
-                            key = "supplier"
-                        elif bill_role_code == "C":
-                            key = "dc"
-                        elif bill_role_code == "M":
-                            key = "mop"
-                        else:
-                            raise BadRequest("Role code not recognized.")
-
-                        for data in vals, site_data:
-                            data["billed-import-kwh"] += bill_prop_kwh
-                            data["billed-import-net-gbp"] += bill_prop_net_gbp
-                            data[f"billed-import-{key}-net-gbp"] += bill_prop_net_gbp
-                            data[f"billed-import-{key}-vat-gbp"] += bill_prop_vat_gbp
-                            data[
-                                f"billed-import-{key}-gross-gbp"
-                            ] += bill_prop_gross_gbp
+                    _add_bills(vals, bills, chunk_start, chunk_finish)
 
                     era_rows.append([make_val(vals.get(t)) for t in era_titles])
+                    for t in summary_titles:
+                        v = vals.get(t)
+                        if v is not None:
+                            site_data[t] += v
         first_era = (
             sess.execute(
                 select(Era).where(Era.supply == supply).order_by(Era.start_date)
@@ -640,49 +643,12 @@ def _process_site(
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     for suf in ("kwh", "net-gbp", "vat-gbp", "gross-gbp"):
-                        month_data["billed-import-{suf}"],
-                        month_data["billed-import-supplier-{suf}"] = 0
-                        month_data["billed-import-dc-{suf}"] = 0
-                        month_data["billed-import-mop-{suf}"] = 0
+                        month_data[f"billed-import-{suf}"] = 0
+                        month_data[f"billed-import-supplier-{suf}"] = 0
+                        month_data[f"billed-import-dc-{suf}"] = 0
+                        month_data[f"billed-import-mop-{suf}"] = 0
 
-                    for bill in bills:
-                        bill_role_code = bill.batch.contract.market_role.code
-                        bill_start = bill.start_date
-                        bill_finish = bill.finish_date
-                        bill_duration = (bill_finish - bill_start).total_seconds() + (
-                            30 * 60
-                        )
-                        overlap_duration = (
-                            min(bill_finish, chunk_finish)
-                            - max(bill_start, chunk_start)
-                        ).total_seconds() + (30 * 60)
-                        proportion = overlap_duration / bill_duration
-                        bill_prop_kwh = proportion * float(bill.kwh)
-                        bill_prop_net_gbp = proportion * float(bill.net)
-                        bill_prop_vat_gbp = proportion * float(bill.vat)
-                        bill_prop_gross_gbp = proportion * float(bill.gross)
-                        if bill_role_code == "X":
-                            role_name = "supplier"
-                        elif bill_role_code == "C":
-                            key = "dc"
-                        elif bill_role_code == "M":
-                            key = "mop"
-                        else:
-                            raise BadRequest("Role code not recognized.")
-
-                        for data in month_data, site_data:
-                            data["billed-import-kwh"] += bill_prop_kwh
-                            data["billed-import-net-gbp"] += bill_prop_net_gbp
-                            data[f"billed-import-{role_name}-kwh"] += bill_prop_kwh
-                            data[
-                                f"billed-import-{role_name}-net-gbp"
-                            ] += bill_prop_net_gbp
-                            data[
-                                f"billed-import-{role_name}-vat-gbp"
-                            ] += bill_prop_vat_gbp
-                            data[
-                                f"billed-import-{role_name}-gross-gbp"
-                            ] += bill_prop_gross_gbp
+                    _add_bills(month_data, bills, chunk_start, chunk_finish)
 
                     imp_supplier_contract = first_era.imp_supplier_contract
                     exp_supplier_contract = first_era.exp_supplier_contract
@@ -715,6 +681,10 @@ def _process_site(
                     ] + [month_data[t] for t in summary_titles]
 
                     era_rows.append([make_val(v) for v in out])
+                    for t in summary_titles:
+                        v = month_data.get(t)
+                        if v is not None:
+                            site_data[t] += v
 
     for _, v in sorted(supplies_data.items()):
         row = [make_val(v.get(t)) for t in supply_titles]
