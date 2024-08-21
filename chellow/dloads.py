@@ -25,16 +25,22 @@ def startup(instance_path, run_deleter=True):
     global download_id
     global download_path
 
-    if run_deleter:
-        file_deleter = FileDeleter()
-        file_deleter.start()
-
     download_path = instance_path / "downloads"
     download_path.mkdir(parents=True, exist_ok=True)
+
+    # Delete any files marked RUNNING that are hanging around
+    for fl in download_path.iterdir():
+        if fl.name[SERIAL_DIGITS:].startswith("_RUNNING_"):
+            new_name = fl.name.replace("_RUNNING_", "_INTERRUPTED_", 1)
+            fl.rename(fl.parent / new_name)
 
     dirs = sorted(download_path.iterdir(), reverse=True)
     if len(dirs) > 0:
         download_id = int(dirs[0].name[:SERIAL_DIGITS]) + 1
+
+    if run_deleter:
+        file_deleter = FileDeleter()
+        file_deleter.start()
 
 
 class DloadFile:
