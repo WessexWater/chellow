@@ -5,7 +5,7 @@ import traceback
 
 from flask import g, request
 
-from sqlalchemy import null, or_, true
+from sqlalchemy import null, or_, select, true
 from sqlalchemy.orm import joinedload
 
 from chellow.dloads import open_file
@@ -25,36 +25,38 @@ def content(start_date, finish_date, site_id, user_id):
             writer = csv.writer(f, lineterminator="\n")
             write_row(
                 writer,
-                "Site Id",
-                "Site Name",
-                "Associated Site Ids",
-                "Sources",
-                "Generator Types",
-                "HH Start Clock-Time",
-                "Imported kWh",
-                "Displaced kWh",
-                "Exported kWh",
-                "Used kWh",
-                "Parasitic kWh",
-                "Generated kWh",
-                "3rd Party Import",
-                "3rd Party Export",
-                "Meter Type",
+                "site_id",
+                "site_name",
+                "associated_site_ids",
+                "sources",
+                "generator_types",
+                "hh_start_clock_time",
+                "imported_kwh",
+                "displaced_kwh",
+                "exported_kwh",
+                "used_kwh",
+                "parasitic_kwh",
+                "generated_kwh",
+                "3rd_party_import",
+                "3rd_party_export",
+                "meter_type",
             )
 
-            sites = sess.query(Site).order_by(Site.code)
+            sites_q = select(Site).order_by(Site.code)
             if site_id is not None:
-                sites = sites.filter(Site.id == site_id)
+                sites_q = sites_q.where(Site.id == site_id)
 
-            for site in sites:
+            for site in sess.scalars(sites_q):
                 sources = set()
                 generator_types = set()
                 assoc = site.find_linked_sites(sess, start_date, finish_date)
                 metering_type = ""
-                for era in (
-                    sess.query(Era)
+                for era in sess.scalars(
+                    select(Era)
                     .join(SiteEra)
-                    .filter(
+                    .join(Supply)
+                    .join(Source)
+                    .where(
                         SiteEra.site == site,
                         SiteEra.is_physical == true(),
                         Era.start_date <= finish_date,
@@ -90,9 +92,9 @@ def content(start_date, finish_date, site_id, user_id):
                         sources_str,
                         generators_str,
                         hh["start_date"],
-                        hh["imp_net"],
+                        hh["imp_grid"],
                         hh["displaced"],
-                        hh["exp_net"],
+                        hh["exp_grid"],
                         hh["used"],
                         hh["exp_gen"],
                         hh["imp_gen"],
