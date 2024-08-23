@@ -4012,7 +4012,8 @@ def site_energy_management_get(site_id):
     now = utc_datetime_now()
     last_month = now - relativedelta(months=1)
 
-    eras = g.sess.execute(
+    supply_dicts = []
+    for era in g.sess.scalars(
         select(Era)
         .join(SiteEra)
         .join(Supply)
@@ -4022,12 +4023,16 @@ def site_energy_management_get(site_id):
             Era.finish_date == null(),
             Party.dno_code != "88",
         )
-    ).scalars()
+    ):
+        first_era = g.sess.scalars(
+            select(Era).where(Era.supply == era.supply).order_by(Era.start_date)
+        ).first()
+        supply_dicts.append({"last_era": era, "first_era": first_era})
 
     return render_template(
         "em_site.html",
         site=site,
-        eras=eras,
+        supply_dicts=supply_dicts,
         now=now,
         last_month=last_month,
     )

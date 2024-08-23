@@ -22,6 +22,7 @@
 			<tr>
 				<th>View</th>
 				<th>Name</th>
+				<th>From</th>
 				<th>Source</th>
 				<th>Generator Type</th>
 				<th>DNO</th>
@@ -34,24 +35,26 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for era in eras %}
-				{% set supply = era.supply %}
+			{% for supply_dict in supply_dicts %}
+				{% set last_era = supply_dict.last_era %}
+				{% set supply = last_era.supply %}
 				<tr>
 					<td>
 						<a href="/e/supplies/{{supply.id}}">view</a>
 					</td>
 					<td>{{supply.name}}</td>
+					<td>{{supply_dict.first_era.start_date|hh_format}}</td>
 					<td>{{supply.source.code}}</td>
 					<td>{{supply.generator_type.code}}</td>
 					<td><a href="/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a></td>
 					<td>
-						{% if era.imp_mpan_core %}
-							{{era.imp_mpan_core}}
+						{% if last_era.imp_mpan_core %}
+							{{last_era.imp_mpan_core}}
 						{% endif %}
 					</td>
 					<td>
-						{% if era.exp_mpan_core %}
-							{{era.exp_mpan_core}}
+						{% if last_era.exp_mpan_core %}
+							{{last_era.exp_mpan_core}}
 						{% endif %}
 					</td>
 					<td>
@@ -70,8 +73,8 @@
 							<a href="/reports/5/output/?site_id={{osite.id}}">{{osite.code}}</a>
 						{% endfor %}
 					</td>
-					<td>{{era.meter_category}}</td>
-					<td>{{era.msn}}</td>
+					<td>{{last_era.meter_category}}</td>
+					<td>{{last_era.msn}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
