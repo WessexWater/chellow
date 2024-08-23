@@ -278,6 +278,10 @@ def _handle_1500(headers, pre_record, record):
     }
 
 
+def _handle_1700(headers, pre_record, record):
+    pass
+
+
 def _handle_2000(headers, pre_record, record):
     pass
 
@@ -299,6 +303,7 @@ LINE_HANDLERS = {
     "1455": _handle_1455,
     "1460": _handle_1460,
     "1500": _handle_1500,
+    "1700": _handle_1700,
     "2000": _handle_2000,
     "9999": _handle_9999,
 }
