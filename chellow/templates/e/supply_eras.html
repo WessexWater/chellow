@@ -243,114 +243,114 @@
 							{% set bill = bill_dict['bill'] %}
 							{% set rows_high = bill_dict['rows_high'] %}
 							{% if bill_dict.first_collapsible %}
-							<tr style="background-color: silver; cursor: pointer;">
-									<td style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-											class="expander_{{bill_dict.collapse_id}}"
-											onClick="expandBills({{bill_dict.collapse_id}})">
-											+
-									</td>
-									<td style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
-											colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
-											class="collapser_{{bill_dict.collapse_id}}"
-											onClick="collapseBills({{bill_dict.collapse_id}})">
-											-
-									</td>
-							</tr>
+								<tr style="background-color: silver; cursor: pointer;">
+										<td style="text-decoration: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+												colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+												class="expander_{{bill_dict.collapse_id}}"
+												onClick="expandBills({{bill_dict.collapse_id}})">
+												+
+										</td>
+										<td style="text-decoration: none; display: none; padding-top: 0px; padding-bottom: 0px; font-size: x-small;"
+												colspan="{{9 + imp_bills['inner_headers']|length * 4 + imp_bills['num_outer_cols'] * 5}}"
+												class="collapser_{{bill_dict.collapse_id}}"
+												onClick="collapseBills({{bill_dict.collapse_id}})">
+												-
+										</td>
+								</tr>
 							{% endif %}
 
 							<tr {% if bill_dict.collapsible %}
 									class="collapsible_{{bill_dict.collapse_id}}"
 									style="display: none; background-color: silver;"
 									{% endif %}>
-									<td rowspan="{{ rows_high }}">
+								<td rowspan="{{ rows_high }}">
 											<a href="/e/supplier_bills/{{bill.id}}">View</a>
-									</td>
-									<td rowspan="{{ rows_high }}">
-											<label title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</label>
-									</td>
-									<td rowspan="{{ rows_high }}">
-											<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
-									</td>
-									<td rowspan="{{ rows_high }}">
-											<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
-									</td>
-									<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-									<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-									<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-									<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-									<td rowspan="{{ rows_high }}">
-											<a href="/bill_types/{{bill.bill_type.id}}"
+								</td>
+								<td rowspan="{{ rows_high }}">
+									<label title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</label>
+								</td>
+								<td rowspan="{{ rows_high }}">
+									<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
+								</td>
+								<td rowspan="{{ rows_high }}">
+									<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
+								</td>
+								<td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+								<td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+								<td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+								<td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+								<td rowspan="{{ rows_high }}">
+									<a href="/bill_types/{{bill.bill_type.id}}"
 												 title="{{bill.bill_type.description}}">{{bill.bill_type.code}}</a>
-									</td>
-									{% for read_row in read_rows %}
+								</td>
+								{% for read_row in read_rows %}
 									{% if not loop.first %}
-							<tr {% if bill_dict.collapsible %}
-									class="collapsible_{{bill_dict.collapse_id}}"
-									style="display: none; background-color: silver;"
-									{% endif %}>
+										<tr {% if bill_dict.collapsible %}
+											class="collapsible_{{bill_dict.collapse_id}}"
+											style="display: none; background-color: silver;"
+										{% endif %}>
 									{% endif %}
 									{% for read in read_row['inner_reads'] %}
-									<td style="border-right: none;">
+										<td style="border-right: none;">
 											{% if read %}
-											<a title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</a>
+												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 											{% endif %}
-									</td>
-									<td style="border-left: none; text-align: right;">
+										</td>
+										<td style="border-left: none; text-align: right;">
 											{% if read %}
-											{{ read.previous_type.code }}
+												<a href="/e/read_types/{{read.previous_type.id}}" title="{{read.previous_type.description}}">{{ read.previous_type.code }}</a>
 											{% endif %}
-									</td>
-									<td style="border-right: none;">
+										</td>
+										<td style="border-right: none;">
 											{% if read %}
-											<a title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</a>
+												<label title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</label>
 											{% endif %}
-									</td>
-									<td style="border-left: none; text-align: right;">
+										</td>
+										<td style="border-left: none; text-align: right;">
 											{% if read %}
-											{{ read.present_type.code }}
+												<a href="/e/read_types/{{read.present_type.id}}" title="{{read.present_type.description}}">{{ read.present_type.code }}</a>
 											{% endif %}
-									</td>
+										</td>
 									{% endfor %}
 									{% for read in read_row['outer_reads'] %}
-									<td>
+										<td>
 											{% if read %}
-											{% if read.tpr %}
-											<a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
-											{% else %}
-											MD
+												{% if read.tpr %}
+													<a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a>
+												{% else %}
+													MD
+												{% endif %}
 											{% endif %}
-											{% endif %}
-									</td>
-									<td style="border-right: none;">
+										</td>
+										<td style="border-right: none;">
 											{% if read %}
-											<a title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</a>
+												<label title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</label>
 											{% endif %}
-									</td>
-									<td style="border-left: none; text-align: right;">
+										</td>
+										<td style="border-left: none; text-align: right;">
 											{% if read %}
-											{{read.previous_type.code}}
+											<a href="/e/read_types/{{read.previous_type.id}}" title="{{read.previous_type.description}}">{{read.previous_type.code}}</a>
 											{% endif %}
-									</td>
-									<td style="border-right: none;">
+										</td>
+										<td style="border-right: none;">
 											{% if read %}
-											<a title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</a>
+												<label title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</label>
 											{% endif %}
-									</td>
-									<td style="border-left: none; text-align: right;">
+										</td>
+										<td style="border-left: none; text-align: right;">
 											{% if read %}
-											{{read.present_type.code}}
+											<a href="/e/read_types/{{read.present_type.id}}" title="{{read.present_type.description}}">{{read.present_type.code}}</a>
 											{% endif %}
-									</td>
-									{% if not loop.first %}
+										</td>
+										{% if not loop.first %}
+											</tr>
+										{% endif %}
+									{% endfor %}
+								{% endfor %}
 							</tr>
-							{% endif %}
-							{% endfor %}
-							{% endfor %}
-							</tr>
-							{% endfor %}
+						{% endfor %}
 					</tbody>
-			</table>
+				</table>
 
 				<table>
 						{% set exp_bills = era_bundle['exp_bills'] %}
