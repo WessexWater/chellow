@@ -17,7 +17,7 @@ from flask import (
     request,
 )
 
-from sqlalchemy import false, select, text, true
+from sqlalchemy import false, func, select, text, true
 from sqlalchemy.orm import joinedload
 
 
@@ -352,9 +352,18 @@ def supply_edit_post(g_supply_id):
 def batches_get():
     g_contract_id = req_int("g_contract_id")
     g_contract = GContract.get_by_id(g.sess, g_contract_id)
-    g_batches = (
-        g.sess.query(GBatch)
-        .filter(GBatch.g_contract == g_contract)
+    g_batches = g.sess.execute(
+        select(
+            GBatch,
+            func.count(GBill.id),
+            func.coalesce(func.sum(GBill.net), 0),
+            func.coalesce(func.sum(GBill.vat), 0),
+            func.coalesce(func.sum(GBill.gross), 0),
+            func.coalesce(func.sum(GBill.kwh), 0),
+        )
+        .join(GBill, isouter=True)
+        .where(GBatch.g_contract == g_contract)
+        .group_by(GBatch.id)
         .order_by(GBatch.reference.desc())
     )
     return render_template("batches.html", g_contract=g_contract, g_batches=g_batches)

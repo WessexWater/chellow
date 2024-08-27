@@ -14,17 +14,28 @@
 	<table>
 		<thead>
 			<tr>
+				<th>View</th>
 				<th>Reference</th>
 				<th>Description</th>
+				<th>Number Of Bills</th>
+				<th>Net GBP</th>
+				<th>VAT GBP</th>
+				<th>Gross GBP</th>
+				<th>kWh</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for g_batch in g_batches %}
+			{% for row in g_batches %}
+				{% set g_batch = row[0] %}
 				<tr>
-					<td>
-						<a href="/g/batches/{{g_batch.id}}">{{g_batch.reference}}</a>
-					</td>
+					<td><a href="/g/batches/{{g_batch.id}}">View</a></td>
+					<td>{{g_batch.reference}}</td>
 					<td>{{g_batch.description}}</td>
+					<td>{{ "{:,}".format(row[1]) }}</td>
+					<td>{{ "£{:,}".format(row[2]) }}</td>
+					<td>{{ "£{:,}".format(row[3]) }}</td>
+					<td>{{ "£{:,}".format(row[4]) }}</td>
+					<td>{{ "{:,}".format(row[5]) }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
