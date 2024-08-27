@@ -4865,7 +4865,7 @@ class SiteGroup:
                 if resolve_1_start is not None:
                     self.delete_snag(
                         sess,
-                        SiteGroup.EXPORT_GROSS_GT_IMPORT_GEN,
+                        SiteGroup.EXPORT_GRID_GT_IMPORT_GEN,
                         resolve_1_start,
                         resolve_1_finish,
                     )
