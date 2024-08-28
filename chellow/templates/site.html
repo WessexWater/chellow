@@ -181,8 +181,6 @@ Table of site level monthly kWh, MD kWh etc.</a>
 			{{ input_number('months', initial='1', size='2', maxlength='2', required=True) }}
 			<label>Final Month</label>
 			{{ input_date('finish', last_month_finish, resolution='month') }}
-			<label>Include bill check tabs?</label>
-			{{input_checkbox('is_bill_check')}}
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>			
