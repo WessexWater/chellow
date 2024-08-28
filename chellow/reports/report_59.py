@@ -57,17 +57,7 @@ from chellow.views import chellow_redirect
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
 
 
-def write_spreadsheet(
-    fl,
-    compressed,
-    site_rows,
-    supply_rows,
-    era_rows,
-    read_rows,
-    bill_check_site_rows,
-    bill_check_era_rows,
-    is_bill_check,
-):
+def write_spreadsheet(fl, compressed, site_rows, supply_rows, era_rows, read_rows):
     fl.seek(0)
     fl.truncate()
     with odio.create_spreadsheet(fl, "1.2", compressed=compressed) as f:
@@ -75,9 +65,6 @@ def write_spreadsheet(
         f.append_table("Supply Level", supply_rows)
         f.append_table("Era Level", era_rows)
         f.append_table("Normal Reads", read_rows)
-        if is_bill_check:
-            f.append_table("Bill Check Site", bill_check_site_rows)
-            f.append_table("Bill Check Era", bill_check_era_rows)
 
 
 def make_bill_row(titles, bill):
@@ -627,8 +614,41 @@ def _process_site(
                     .scalars()
                     .all()
                 )
+                imp_supplier_contract = first_era.imp_supplier_contract
+                exp_supplier_contract = first_era.exp_supplier_contract
                 if len(bills) > 0:
-                    month_data = {}
+                    era_vals = {
+                        "creation-date": now,
+                        "start-date": start_date,
+                        "finish-date": finish_date,
+                        "imp-mpan-core": last_era.imp_mpan_core,
+                        "exp-mpan-core": last_era.exp_mpan_core,
+                        "site-code": site.code,
+                        "site-name": site.name,
+                        "associated-site-codes": None,
+                        "era-start-date": None,
+                        "era-finish-date": None,
+                        "imp-supplier-contract": (
+                            None
+                            if imp_supplier_contract is None
+                            else imp_supplier_contract.name
+                        ),
+                        "imp-non-actual-hhs": None,
+                        "imp-non-actual-kwh": None,
+                        "exp-supplier-contract": (
+                            None
+                            if exp_supplier_contract is None
+                            else exp_supplier_contract.name
+                        ),
+                        "exp-non-actual-hhs": None,
+                        "exp-non-actual-kwh": None,
+                        "metering-type": last_era.meter_category,
+                        "source": last_era.supply.source.code,
+                        "generator-type": None,
+                        "supply-name": last_era.supply.name,
+                        "msn": last_era.msn,
+                        "pc": last_era.pc.code,
+                    }
                     for name in (
                         "import-grid",
                         "export-grid",
@@ -641,48 +661,18 @@ def _process_site(
                         "used-3rd-party",
                     ):
                         for sname in ("kwh", "net-gbp"):
-                            month_data[f"{name}-{sname}"] = 0
+                            era_vals[f"{name}-{sname}"] = 0
                     for suf in ("kwh", "net-gbp", "vat-gbp", "gross-gbp"):
-                        month_data[f"billed-import-{suf}"] = 0
-                        month_data[f"billed-import-supplier-{suf}"] = 0
-                        month_data[f"billed-import-dc-{suf}"] = 0
-                        month_data[f"billed-import-mop-{suf}"] = 0
+                        era_vals[f"billed-import-{suf}"] = 0
+                        era_vals[f"billed-import-supplier-{suf}"] = 0
+                        era_vals[f"billed-import-dc-{suf}"] = 0
+                        era_vals[f"billed-import-mop-{suf}"] = 0
 
-                    _add_bills(month_data, bills, chunk_start, chunk_finish)
+                    _add_bills(era_vals, bills, chunk_start, chunk_finish)
 
-                    imp_supplier_contract = first_era.imp_supplier_contract
-                    exp_supplier_contract = first_era.exp_supplier_contract
-                    out = [
-                        now,
-                        last_era.imp_mpan_core,
-                        (
-                            None
-                            if imp_supplier_contract is None
-                            else imp_supplier_contract.name
-                        ),
-                        last_era.exp_mpan_core,
-                        (
-                            None
-                            if exp_supplier_contract is None
-                            else exp_supplier_contract.name
-                        ),
-                        None,
-                        last_era.meter_category,
-                        last_era.supply.source.code,
-                        None,
-                        last_era.supply.name,
-                        last_era.msn,
-                        last_era.pc.code,
-                        site.code,
-                        site.name,
-                        None,
-                        start_date,
-                        finish_date,
-                    ] + [month_data[t] for t in summary_titles]
-
-                    era_rows.append([make_val(v) for v in out])
+                    era_rows.append([make_val(vals.get(t)) for t in era_titles])
                     for t in summary_titles:
-                        v = month_data.get(t)
+                        v = era_vals.get(t)
                         if v is not None:
                             site_data[t] += v
 
@@ -746,9 +736,6 @@ def content(
     supply_rows = []
     era_rows = []
     normal_read_rows = []
-    bill_check_site_rows = []
-    bill_check_supply_rows = []
-    bill_check_era_rows = []
 
     try:
         with RSession() as rsess:
@@ -850,6 +837,7 @@ def content(
                     )
 
             by_hh = scenario_props.get("by_hh", False)
+            is_bill_check = scenario_props.get("is_bill_check", False)
 
             era_header_titles = [
                 "creation-date",
@@ -1009,14 +997,15 @@ def content(
             supply_titles = supply_header_titles + summary_titles
             supply_rows.append(supply_titles)
             era_rows.append(era_titles)
-            bill_check_site_rows.append(site_header_titles + summary_titles)
-            bill_check_era_rows.append(era_titles)
 
             normal_reads = set()
 
-            data_source_bill = Object()
-            data_source_bill.start_date = start_date
-            data_source_bill.finish_date = finish_date
+            if is_bill_check:
+                data_source_bill = Object()
+                data_source_bill.start_date = start_date
+                data_source_bill.finish_date = finish_date
+            else:
+                data_source_bill = None
 
             for site in rsess.scalars(sites):
                 if by_hh:
@@ -1046,28 +1035,8 @@ def content(
                             supply_titles,
                             supply_rows,
                             site_rows,
-                            None,
+                            data_source_bill,
                         )
-                        if is_bill_check:
-                            _process_site(
-                                rsess,
-                                report_context,
-                                forecast_from,
-                                start,
-                                finish,
-                                site,
-                                scenario_props,
-                                supply_ids,
-                                now,
-                                summary_titles,
-                                title_dict,
-                                era_titles,
-                                bill_check_era_rows,
-                                supply_titles,
-                                bill_check_supply_rows,
-                                bill_check_site_rows,
-                                data_source_bill,
-                            )
                     except BadRequest as e:
                         raise BadRequest(f"Site Code {site.code}: {e.description}")
 
@@ -1078,31 +1047,14 @@ def content(
 
                 rsess.rollback()  # Evict from cache
             write_spreadsheet(
-                rf,
-                compression,
-                site_rows,
-                supply_rows,
-                era_rows,
-                normal_read_rows,
-                bill_check_site_rows,
-                bill_check_era_rows,
-                is_bill_check,
+                rf, compression, site_rows, supply_rows, era_rows, normal_read_rows
             )
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
         write_spreadsheet(
-            rf,
-            compression,
-            site_rows,
-            supply_rows,
-            era_rows,
-            normal_read_rows,
-            bill_check_site_rows,
-            bill_check_supply_rows,
-            bill_check_era_rows,
-            is_bill_check,
+            rf, compression, site_rows, supply_rows, era_rows, normal_read_rows
         )
     except BaseException:
         msg = traceback.format_exc()
@@ -1114,17 +1066,7 @@ def content(
             ef.write(msg + "\n")
             ef.close()
         else:
-            write_spreadsheet(
-                rf,
-                compression,
-                site_rows,
-                era_rows,
-                normal_read_rows,
-                bill_check_site_rows,
-                bill_check_supply_rows,
-                bill_check_era_rows,
-                is_bill_check,
-            )
+            write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
     finally:
         if rf is not None:
             rf.close()
