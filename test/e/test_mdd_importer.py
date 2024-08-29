@@ -1,5 +1,7 @@
 from sqlalchemy import select
 
+from utils import match
+
 from chellow.e.mdd_importer import (
     _import_MTC_in_PES_Area,
     _import_Market_Participant_Role,
@@ -23,10 +25,14 @@ from chellow.models import (
     MtcParticipant,
     MtcSsc,
     Participant,
+    Party,
     Pc,
+    Site,
     Ssc,
     Tpr,
     VoltageLevel,
+    insert_energisation_statuses,
+    insert_sources,
     insert_voltage_levels,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
@@ -452,7 +458,7 @@ def test_import_mdd(mocker, sess):
     paths = tuple((p, "") for p in path_list)
     s = mocker.Mock()
 
-    rate_server_import(sess, log, set_progress, s, paths)
+    rate_server_import(sess, log, set_progress, s, paths, with_88_99=False)
 
 
 def test_import_mdd_two_versions(mocker, sess):
@@ -505,4 +511,134 @@ def test_import_mdd_two_versions(mocker, sess):
     log = mocker.Mock()
     set_progress = mocker.Mock()
     s = mocker.Mock()
-    rate_server_import(sess, log, set_progress, s, paths)
+    rate_server_import(sess, log, set_progress, s, paths, with_88_99=False)
+
+
+def test_88(mocker, sess, client):
+    site = Site.insert(sess, "CI017", "Water Works")
+    insert_energisation_statuses(sess)
+    insert_sources(sess),
+    insert_voltage_levels(sess)
+    sess.commit()
+
+    log = mocker.Mock()
+    set_progress = mocker.Mock()
+
+    files = {
+        "2022/electricity/mdd/50/Market_Participant_Role_50.csv": [[]],
+        "2022/electricity/mdd/50/Clock_Interval_50.csv": [[]],
+        "2022/electricity/mdd/50/GSP_Group_50.csv": [[]],
+        "2022/electricity/mdd/50/Line_Loss_Factor_Class_50.csv": [[]],
+        "2022/electricity/mdd/50/Market_Participant_50.csv": [
+            [],
+            ["CIDC", "Independent"],
+            ["CROW", "Riddle"],
+        ],
+        "2022/electricity/mdd/50/Market_Role_50.csv": [[], ["R", "Distribution"]],
+        "2022/electricity/mdd/50/Measurement_Requirement_50.csv": [[]],
+        "2022/electricity/mdd/50/Meter_Timeswitch_Class_50.csv": [
+            [],
+            [
+                "845",
+                "01/04/1996",
+                "",
+                "HH COP5 And Above With Comms",
+                "T",
+                "F",
+                "C5",
+                "CR",
+                "F",
+                "F",
+                "",
+            ],
+        ],
+        "2022/electricity/mdd/50/MTC_in_PES_Area_50.csv": [[]],
+        "2022/electricity/mdd/50/MTC_Meter_Type_50.csv": [
+            [],
+            ["C5", "5th", "01/04/1996", ""],
+        ],
+        "2022/electricity/mdd/50/MTC_Payment_Type_50.csv": [
+            [],
+            ["CR", "Credit", "01/04/1996", ""],
+        ],
+        "2022/electricity/mdd/50/Profile_Class_50.csv": [
+            [],
+            ["00", "01/04/1996", "Half-hourly", "", ""],
+        ],
+        "2022/electricity/mdd/50/Standard_Settlement_Configuration_50.csv": [[]],
+        "2022/electricity/mdd/50/Time_Pattern_Regime_50.csv": [[]],
+        "2022/electricity/mdd/50/Valid_MTC_LLFC_Combination_50.csv": [[]],
+        "2022/electricity/mdd/50/Valid_MTC_SSC_Combination_50.csv": [[]],
+        "2022/electricity/mdd/50/Valid_MTC_LLFC_SSC_Combination_50.csv": [[]],
+        "2022/electricity/mdd/50/Valid_MTC_LLFC_SSC_PC_Combination_50.csv": [[]],
+    }
+
+    def mock_get_csv_reader(s, url):
+        return files[url]
+
+    mocker.patch(
+        "chellow.e.mdd_importer._get_csv_reader", side_effect=mock_get_csv_reader
+    )
+
+    path_list = (
+        ("2022", "electricity", "mdd", "50", "Market_Participant_Role_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Clock_Interval_50.csv"),
+        ("2022", "electricity", "mdd", "50", "GSP_Group_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Line_Loss_Factor_Class_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Market_Participant_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Market_Role_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Measurement_Requirement_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Meter_Timeswitch_Class_50.csv"),
+        ("2022", "electricity", "mdd", "50", "MTC_in_PES_Area_50.csv"),
+        ("2022", "electricity", "mdd", "50", "MTC_Meter_Type_50.csv"),
+        ("2022", "electricity", "mdd", "50", "MTC_Payment_Type_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Profile_Class_50.csv"),
+        (
+            "2022",
+            "electricity",
+            "mdd",
+            "50",
+            "Standard_Settlement_Configuration_50.csv",
+        ),
+        ("2022", "electricity", "mdd", "50", "Time_Pattern_Regime_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Valid_MTC_LLFC_Combination_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Valid_MTC_SSC_Combination_50.csv"),
+        ("2022", "electricity", "mdd", "50", "Valid_MTC_LLFC_SSC_Combination_50.csv"),
+        (
+            "2022",
+            "electricity",
+            "mdd",
+            "50",
+            "Valid_MTC_LLFC_SSC_PC_Combination_50.csv",
+        ),
+    )
+    paths = tuple((p, "/".join(p)) for p in path_list)
+    s = mocker.Mock()
+
+    rate_server_import(sess, log, set_progress, s, paths, with_88_99=True)
+    dno_88 = Party.get_dno_by_code(sess, "88", to_utc(ct_datetime(2020, 1, 1)))
+    dno_99 = Party.get_dno_by_code(sess, "99", to_utc(ct_datetime(2020, 1, 1)))
+    sess.commit()
+
+    query_string = {
+        "dno_id": dno_88.id,
+        "source_id": "",
+        "pc_id": "",
+        "mtc_participant_id": "",
+    }
+    response = client.get(
+        f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string
+    )
+    patterns = []
+    match(response, 200, *patterns)
+    query_string = {
+        "dno_id": dno_99.id,
+        "source_id": "",
+        "pc_id": "",
+        "mtc_participant_id": "",
+    }
+    response = client.get(
+        f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string
+    )
+    patterns = []
+    match(response, 200, *patterns)

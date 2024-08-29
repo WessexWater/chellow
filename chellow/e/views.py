@@ -4354,29 +4354,15 @@ def site_add_e_supply_form_get(site_id):
             EnergisationStatus.code
         )
         default_energisation_status = EnergisationStatus.get_by_code(g.sess, "E")
-
+        gsp_groups_q = select(GspGroup).order_by(GspGroup.code)
+        gsp_groups = g.sess.scalars(gsp_groups_q)
+        RateScriptAliasStart = aliased(RateScript)
+        RateScriptAliasFinish = aliased(RateScript)
         if "start_year" in request.values:
             start_date = req_date("start")
         else:
             start_date = to_utc(ct_datetime(ct_now.year, ct_now.month, ct_now.day))
 
-        site = Site.get_by_id(g.sess, site_id)
-        sources = g.sess.scalars(select(Source).order_by(Source.code))
-        source_id = req_int_none("source_id")
-        if source_id is None:
-            source = Source.get_by_code(g.sess, "grid")
-        else:
-            source = Source.get_by_id(g.sess, source_id)
-        generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
-        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-        eras = (
-            g.sess.query(Era)
-            .join(SiteEra)
-            .filter(SiteEra.site == site)
-            .order_by(Era.start_date.desc())
-        )
-        RateScriptAliasStart = aliased(RateScript)
-        RateScriptAliasFinish = aliased(RateScript)
         mop_contracts = g.sess.scalars(
             select(Contract)
             .join(MarketRole)
@@ -4431,12 +4417,15 @@ def site_add_e_supply_form_get(site_id):
             )
             .order_by(Contract.name)
         ).all()
-        pcs = g.sess.query(Pc).order_by(Pc.code)
-        pc_id = req_int_none("pc_id")
-        if pc_id is None:
-            pc = Pc.get_by_code(g.sess, "00")
+
+        site = Site.get_by_id(g.sess, site_id)
+        sources = g.sess.scalars(select(Source).order_by(Source.code))
+        source_id = req_int_none("source_id")
+        if source_id is None:
+            source = Source.get_by_code(g.sess, "grid")
         else:
-            pc = Pc.get_by_id(g.sess, pc_id)
+            source = Source.get_by_id(g.sess, source_id)
+        generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
 
         dnos = g.sess.scalars(
             select(Party)
@@ -4444,11 +4433,35 @@ def site_add_e_supply_form_get(site_id):
             .where(MarketRole.code == "R")
             .order_by(Party.dno_code)
         ).all()
+        pcs = g.sess.query(Pc).order_by(Pc.code)
         dno_id = req_int_none("dno_id")
         if dno_id is None:
             dno = dnos[0]
         else:
             dno = Party.get_by_id(g.sess, dno_id)
+
+        dno_contract = Contract.get_dno_by_name(g.sess, dno.dno_code)
+        dno_rate_script = dno_contract.find_rate_script_at(g.sess, start_date)
+        dno_props = dno_rate_script.make_script()
+        allowed_gsp_group_codes = list(dno_props.keys())
+
+        gsp_groups = g.sess.scalars(
+            select(GspGroup)
+            .where(GspGroup.code.in_(allowed_gsp_group_codes))
+            .order_by(GspGroup.code)
+        )
+
+        eras = (
+            g.sess.query(Era)
+            .join(SiteEra)
+            .filter(SiteEra.site == site)
+            .order_by(Era.start_date.desc())
+        )
+        pc_id = req_int_none("pc_id")
+        if pc_id is None:
+            pc = Pc.get_by_code(g.sess, "00")
+        else:
+            pc = Pc.get_by_id(g.sess, pc_id)
 
         participant = dno.participant
 

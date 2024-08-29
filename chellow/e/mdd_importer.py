@@ -247,8 +247,6 @@ def _import_Market_Participant_Role(sess, rows, ctx):
         name = values[4]
         dno_code_str = values[14]
         dno_code = None if len(dno_code_str) == 0 else dno_code_str
-        if dno_code == "99":
-            continue
 
         if party is None:
             participant.insert_party(
@@ -324,7 +322,7 @@ def _import_Meter_Timeswitch_Class(sess, rows, ctx):
             has_comms_str = values[8]  # MTC Communication Indicator
             has_comms = parse_bool(has_comms_str)
             is_hh_str = values[9]  # MTC Type Indicator
-            is_hh = parse_bool(is_hh_str)
+            is_hh = is_hh_str == "H"
             tpr_count_str = values[10]  # TPR Count
             tpr_count = None if tpr_count_str == "" else int(tpr_count_str)
 
@@ -837,7 +835,101 @@ def _import_Valid_MTC_LLFC_SSC_PC_Combination(sess, rows, ctx):
             )
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def add_88_99(sess, ctx):
+    rows = [
+        [
+            "CIDC",
+            "R",
+            "01/01/2000",
+            "",
+            "Virtual",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "88",
+        ],
+        [
+            "CROW",
+            "R",
+            "01/04/1996",
+            "",
+            "Non-settlement",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "99",
+        ],
+    ]
+    _import_Market_Participant_Role(sess, rows, ctx)
+    rows = [
+        ["845", "01/04/1996", "CIDC", "01/04/1996", ""],
+        ["845", "01/04/1996", "CROW", "01/04/1996", ""],
+    ]
+    _import_MTC_in_PES_Area(sess, rows, ctx)
+    rows = [
+        ["CIDC", "", "", "005", "01/04/2010", "EG_HV_Intermittent", "C", ""],
+        ["CIDC", "", "", "006", "01/04/2010", "EG_HV_Non_Intermittent", "C", ""],
+        ["CIDC", "", "", "110", "01/01/2000", "Profile 3 Unrestricted", "A", ""],
+        ["CIDC", "", "", "210", "01/01/2000", "Profile 4 Economy 7", "A", ""],
+        ["CIDC", "", "", "510", "01/01/2000", "PC 5-8 & HH HV", "A", ""],
+        ["CIDC", "", "", "521", "01/01/2000", "Export (HV)", "C", ""],
+        [
+            "CIDC",
+            "",
+            "",
+            "524",
+            "01/04/2010",
+            "HV Generation Non intermittent",
+            "C",
+            "",
+        ],
+        ["CIDC", "", "", "570", "01/01/2000", "PC 5-8 & HH LV", "A", ""],
+        ["CIDC", "", "", "581", "01/01/2000", "Export (LV)", "C", ""],
+        ["CIDC", "", "", "658", "01/04/1996", "HV HH metered", "A", ""],
+        ["CROW", "", "", "510", "01/04/1996", "PC 5-8 & HH HV", "A", ""],
+        ["CROW", "", "", "521", "01/04/1996", "Export (HV)", "C", ""],
+        ["CROW", "", "", "570", "01/04/1996", "PC 5-8 & HH LV", "A", ""],
+        ["CROW", "", "", "581", "01/04/1996", "Export (LV)", "C", ""],
+    ]
+
+    _import_Line_Loss_Factor_Class(sess, rows, ctx)
+    rows = [
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "005", "01/04/2010", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "006", "01/04/2010", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "110", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "210", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "510", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "521", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "524", "01/04/2010", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "570", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "581", "01/01/2000", ""],
+        ["845", "01/04/1996", "CIDC", "01/04/1996", "658", "01/01/2000", ""],
+        ["845", "01/04/1996", "CROW", "01/04/1996", "510", "01/04/1996", ""],
+        ["845", "01/04/1996", "CROW", "01/04/1996", "521", "01/04/1996", ""],
+        ["845", "01/04/1996", "CROW", "01/04/1996", "570", "01/04/1996", ""],
+        ["845", "01/04/1996", "CROW", "01/04/1996", "581", "01/04/1996", ""],
+    ]
+    _import_Valid_MTC_LLFC_Combination(sess, rows, ctx)
+
+
+def _get_csv_reader(s, url):
+    csv_file = StringIO(download(s, url).decode("utf8"))
+    return csv.reader(csv_file)
+
+
+def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
     log("Starting to check for a new MDD version")
     mdd_entries = {}
     for path, url in paths:
@@ -872,8 +964,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
     version = None
 
     for file_name, url in fl_entries.items():
-        csv_file = StringIO(download(s, url).decode("utf8"))
-        csv_reader = iter(csv.reader(csv_file))
+        csv_reader = iter(_get_csv_reader(s, url))
         next(csv_reader)  # Skip titles
 
         table_name_elements = file_name.split("_")
@@ -929,7 +1020,10 @@ def rate_server_import(sess, log, set_progress, s, paths):
             func(sess, gnames[tname], ctx)
         else:
             raise BadRequest(f"Can't find {tname} on the rate server.")
-
+    if with_88_99:
+        log("Starting to add MDD data for 88 and 99 DNOs")
+        add_88_99(sess, ctx)
+        log("Finished adding MDD data for 88 and 99 DNOs")
     config = Contract.get_non_core_by_name(sess, "configuration")
     state = config.make_state()
     state["mdd_version"] = version

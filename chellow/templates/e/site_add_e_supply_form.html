@@ -32,6 +32,14 @@
 		</select>
 	{% endif %}
 	<label>Meter Serial Number</label> {{input_text('msn')}}
+
+	<label>DNO</label>
+	<select name="dno_id">
+		{% for dno in dnos %}
+			{{input_option( 'dno_id', dno.id, dno.dno_code + ' ' + dno.name)}}
+		{% endfor %}
+	</select>
+
 	<label>GSP Group</label>
 	<select name="gsp_group_id">
 		{% for gsp_group in gsp_groups %}
@@ -87,13 +95,6 @@
 	<select name="pc_id">
 		{% for p in pcs %}
 			{{input_option('pc_id', p.id, p.code + ' ' + p.name, initial=pc.id)}}
-		{% endfor %}
-	</select>
-
-	<label>DNO</label>
-	<select name="dno_id">
-		{% for dno in dnos %}
-			{{input_option( 'dno_id', dno.id, dno.dno_code + ' ' + dno.name)}}
 		{% endfor %}
 	</select>
 

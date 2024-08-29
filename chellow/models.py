@@ -1598,15 +1598,13 @@ class Contract(Base, PersistentClass):
         sess.delete(self)
 
     def find_rate_script_at(self, sess, date):
-        return (
-            sess.query(RateScript)
-            .filter(
+        return sess.scalars(
+            select(RateScript).where(
                 RateScript.contract == self,
                 RateScript.start_date <= date,
                 or_(RateScript.finish_date == null(), RateScript.finish_date >= date),
             )
-            .first()
-        )
+        ).first()
 
     def start_date(self):
         return self.start_rate_script.start_date
