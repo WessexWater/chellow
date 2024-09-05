@@ -15,7 +15,7 @@ classifiers = [
 ]
 dependencies = [
 	"odio==0.0.23",
-	"pypdf==3.17.0",
+	"pypdf==4.3.1",
 	"pg8000==1.31.1",
 	"Flask==2.3.3",
 	"SQLAlchemy==2.0.30",
@@ -27,8 +27,7 @@ dependencies = [
 	"waitress==2.1.2",
 	"pep3143daemon==0.0.6",
 	"pip>=9.0.1",
-	"paramiko==3.4.0",
-  "cryptography==42.0.8", # Remove this when paramiko upgraded
+	"paramiko==3.4.1",
 	"pympler==1.0.1",
 	"psutil==5.9.5",
 	"xlrd==2.0.1",
