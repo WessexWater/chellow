@@ -5898,11 +5898,23 @@ def supply_months_get(supply_id):
 @e.route("/supplies/<int:supply_id>/edit")
 def supply_edit_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
-    sources = g.sess.query(Source).order_by(Source.code)
-    generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
-    gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-    eras = (
-        g.sess.query(Era).filter(Era.supply == supply).order_by(Era.start_date.desc())
+    sources = g.sess.scalars(select(Source).order_by(Source.code))
+    generator_types = g.sess.scalars(select(GeneratorType).order_by(GeneratorType.code))
+
+    dno_contract = Contract.get_dno_by_name(g.sess, supply.dno.dno_code)
+    dno_rate_script = dno_contract.find_rate_script_at(
+        g.sess, supply.eras[-1].start_date
+    )
+    dno_props = dno_rate_script.make_script()
+    allowed_gsp_group_codes = list(dno_props.keys())
+
+    gsp_groups = g.sess.scalars(
+        select(GspGroup)
+        .where(GspGroup.code.in_(allowed_gsp_group_codes))
+        .order_by(GspGroup.code)
+    )
+    eras = g.sess.scalars(
+        select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
     )
     return render_template(
         "supply_edit.html",
@@ -5914,50 +5926,127 @@ def supply_edit_get(supply_id):
     )
 
 
+@e.route("/supplies/<int:supply_id>/edit", methods=["DELETE"])
+def supply_edit_delete(supply_id):
+    try:
+        supply = Supply.get_by_id(g.sess, supply_id)
+
+        site_id = None
+        for site_era in supply.eras[-1].site_eras:
+            if site_era.is_physical:
+                site_id = site_era.site.id
+                break
+
+        supply.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/sites/{site_id}", 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        sources = g.sess.scalars(select(Source).order_by(Source.code))
+        generator_types = g.sess.scalars(
+            select(GeneratorType).order_by(GeneratorType.code)
+        )
+        dno_contract = Contract.get_dno_by_name(g.sess, supply.dno.dno_code)
+        dno_rate_script = dno_contract.find_rate_script_at(
+            g.sess, supply.eras[-1].start_date
+        )
+        dno_props = dno_rate_script.make_script()
+        allowed_gsp_group_codes = list(dno_props.keys())
+
+        gsp_groups = g.sess.scalars(
+            select(GspGroup)
+            .where(GspGroup.code.in_(allowed_gsp_group_codes))
+            .order_by(GspGroup.code)
+        )
+        eras = g.sess.scalars(
+            select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
+        )
+        return make_response(
+            render_template(
+                "supply_edit.html",
+                supply=supply,
+                sources=sources,
+                generator_types=generator_types,
+                gsp_groups=gsp_groups,
+                eras=eras,
+            ),
+            400,
+        )
+
+
+@e.route("/supplies/<int:supply_id>/edit", methods=["PATCH"])
+def supply_edit_patch(supply_id):
+    try:
+        supply = Supply.get_by_id(g.sess, supply_id)
+
+        name = req_str("name")
+        source_id = req_int("source_id")
+        gsp_group_id = req_int("gsp_group_id")
+        source = Source.get_by_id(g.sess, source_id)
+        if source.code in ("gen", "gen-grid"):
+            generator_type_id = req_int("generator_type_id")
+            generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
+        else:
+            generator_type = None
+        gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
+        supply.update(name, source, generator_type, gsp_group, supply.dno)
+        g.sess.commit()
+        return hx_redirect(f"/supplies/{supply.id}", 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        sources = g.sess.scalars(select(Source).order_by(Source.code))
+        generator_types = g.sess.scalars(
+            select(GeneratorType).order_by(GeneratorType.code)
+        )
+        dno_contract = Contract.get_dno_by_name(g.sess, supply.dno.dno_code)
+        dno_rate_script = dno_contract.find_rate_script_at(
+            g.sess, supply.eras[-1].start_date
+        )
+        dno_props = dno_rate_script.make_script()
+        allowed_gsp_group_codes = list(dno_props.keys())
+
+        gsp_groups = g.sess.scalars(
+            select(GspGroup)
+            .where(GspGroup.code.in_(allowed_gsp_group_codes))
+            .order_by(GspGroup.code)
+        )
+        eras = g.sess.scalars(
+            select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
+        )
+        return make_response(
+            render_template(
+                "supply_edit.html",
+                supply=supply,
+                sources=sources,
+                generator_types=generator_types,
+                gsp_groups=gsp_groups,
+                eras=eras,
+            ),
+            400,
+        )
+
+
 @e.route("/supplies/<int:supply_id>/edit", methods=["POST"])
 def supply_edit_post(supply_id):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
 
-        if "delete" in request.form:
-            site_id = None
-            for site_era in supply.eras[-1].site_eras:
-                if site_era.is_physical:
-                    site_id = site_era.site.id
-                    break
-
-            supply.delete(g.sess)
-            g.sess.commit()
-            return credirect(f"/sites/{site_id}", 303)
-        elif "insert_era" in request.form:
-            start_date = req_date("start")
-            supply.insert_era_at(g.sess, start_date)
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply.id}", 303)
-        else:
-            name = req_str("name")
-            source_id = req_int("source_id")
-            gsp_group_id = req_int("gsp_group_id")
-            source = Source.get_by_id(g.sess, source_id)
-            if source.code in ("gen", "gen-grid"):
-                generator_type_id = req_int("generator_type_id")
-                generator_type = GeneratorType.get_by_id(g.sess, generator_type_id)
-            else:
-                generator_type = None
-            gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
-            supply.update(name, source, generator_type, gsp_group, supply.dno)
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply.id}", 303)
+        start_date = req_date("start")
+        supply.insert_era_at(g.sess, start_date)
+        g.sess.commit()
+        return chellow_redirect(f"/supplies/{supply.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
-        sources = g.sess.query(Source).order_by(Source.code)
-        generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
-        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-        eras = (
-            g.sess.query(Era)
-            .filter(Era.supply == supply)
-            .order_by(Era.start_date.desc())
+        sources = g.sess.scalars(select(Source).order_by(Source.code))
+        generator_types = g.sess.scalars(
+            select(GeneratorType).order_by(GeneratorType.code)
+        )
+        gsp_groups = g.sess.scalars(select(GspGroup).order_by(GspGroup.code))
+        eras = g.sess.scalars(
+            select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
         )
         return make_response(
             render_template(
