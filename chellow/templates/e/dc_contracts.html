@@ -13,6 +13,7 @@
 		<caption>Current DC Contracts</caption>
 		<thead>
 			<tr>
+				<th>View</th>
 				<th>Name</th>
 				<th>Start Date</th>
 				<th>DC</th>
@@ -21,14 +22,10 @@
 		<tbody>
 			{% for contract in current_dc_contracts %}
 				<tr>
-					<td>
-						<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a>
-					</td>
+					<td><a href="/e/dc_contracts/{{contract.id}}">View</a></td>
+					<td>{{contract.name}}</td>
 					<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
-					<td>
-						<a href="/e/parties/{{contract.party.id}}"
-							>{{contract.party.name}}</a>
-					</td>
+					<td><a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a></td>
 				</tr>
 			{% endfor %}
 		</tbody>
