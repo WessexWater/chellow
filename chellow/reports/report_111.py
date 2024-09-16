@@ -2,7 +2,7 @@ import csv
 import sys
 import threading
 import traceback
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import g, request
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.sql.expression import null, true
 
@@ -27,7 +27,6 @@ from chellow.models import (
     Contract,
     Era,
     Llfc,
-    MarketRole,
     MtcParticipant,
     RSession,
     RegisterRead,
@@ -380,19 +379,19 @@ def _process_supply(
         while enlarged:
             enlarged = False
             covered_elems = find_elements(bill)
-            covered_bills = OrderedDict(
+            covered_bills = dict(
                 (b.id, b)
-                for b in sess.query(Bill)
-                .join(Batch)
-                .join(Contract)
-                .join(MarketRole)
-                .filter(
-                    Bill.supply == supply,
-                    Bill.start_date <= covered_finish,
-                    Bill.finish_date >= covered_start,
-                    MarketRole.code == market_role_code,
+                for b in sess.scalars(
+                    select(Bill)
+                    .join(Batch)
+                    .where(
+                        Bill.supply == supply,
+                        Bill.start_date <= covered_finish,
+                        Bill.finish_date >= covered_start,
+                        Batch.contract == contract,
+                    )
+                    .order_by(Bill.start_date, Bill.issue_date)
                 )
-                .order_by(Bill.start_date, Bill.issue_date)
             )
             while True:
                 to_del = None
