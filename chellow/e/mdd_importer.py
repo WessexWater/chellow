@@ -248,6 +248,10 @@ def _import_Market_Participant_Role(sess, rows, ctx):
         dno_code_str = values[14]
         dno_code = None if len(dno_code_str) == 0 else dno_code_str
 
+        if participant_code == "CIDC" and dno_code == "99":
+            # We already use 99 with CROW
+            continue
+
         if party is None:
             participant.insert_party(
                 sess,

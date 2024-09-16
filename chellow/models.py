@@ -7511,6 +7511,19 @@ def db_upgrade_49_to_50(sess, root_path):
     sess.flush()
 
 
+def db_upgrade_50_to_51(sess, root_path):
+    participant_cidc = Participant.get_by_code(sess, "CIDC")
+    dno_99 = sess.scalars(
+        select(Party).where(
+            Party.dno_code == "99", Party.participant == participant_cidc
+        )
+    ).one_or_none()
+    if dno_99 is not None:
+        sess.execute(delete(Llfc).where(Llfc.dno == dno_99))
+
+        sess.execute(delete(Party).where(Party.id == dno_99.id))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7546,6 +7559,7 @@ upgrade_funcs.extend(
         db_upgrade_47_to_48,
         db_upgrade_48_to_49,
         db_upgrade_49_to_50,
+        db_upgrade_50_to_51,
     ]
 )
 
