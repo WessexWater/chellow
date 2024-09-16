@@ -2677,6 +2677,19 @@ def test_read_add_get_existing_era(sess, client):
     match(response, 200, *patterns)
 
 
+def test_scenario_get(sess, client):
+    props = {
+        "scenario_start_year": 2010,
+        "scenario_start_month": 5,
+    }
+    scenario = Scenario.insert(sess, "scenario 1", props)
+    sess.commit()
+
+    response = client.get(f"/e/scenarios/{scenario.id}")
+
+    match(response, 200)
+
+
 def test_scenario_edit_post(sess, client):
     props = {
         "scenario_start_year": 2010,

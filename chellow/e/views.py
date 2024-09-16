@@ -3943,20 +3943,58 @@ def scenario_add_get():
 
 @e.route("/scenarios/<int:scenario_id>")
 def scenario_get(scenario_id):
+    start_date = None
+    finish_date = None
+    duration = 1
+
     scenario = Scenario.get_by_id(g.sess, scenario_id)
     props = scenario.props
-    _, finish_date_ct = list(
-        c_months_c(
-            start_year=props["scenario_start_year"],
-            start_month=props["scenario_start_month"],
-            months=props["scenario_duration"],
+    site_codes = "\n".join(props.get("site_codes", []))
+    try:
+        duration = props["scenario_duration"]
+        _, finish_date_ct = list(
+            c_months_c(
+                start_year=props["scenario_start_year"],
+                start_month=props["scenario_start_month"],
+                months=duration,
+            )
+        )[-1]
+        finish_date = to_utc(finish_date_ct)
+    except KeyError:
+        pass
+
+    try:
+        start_date = to_utc(
+            ct_datetime(
+                props["scenario_start_year"],
+                props["scenario_start_month"],
+                props["scenario_start_day"],
+                props["scenario_start_hour"],
+                props["scenario_start_minute"],
+            )
         )
-    )[-1]
+    except KeyError:
+        pass
+
+    try:
+        finish_date = to_utc(
+            ct_datetime(
+                props["scenario_finish_year"],
+                props["scenario_finish_month"],
+                props["scenario_finish_day"],
+                props["scenario_finish_hour"],
+                props["scenario_finish_minute"],
+            )
+        )
+    except KeyError:
+        pass
     return render_template(
         "scenario.html",
         scenario=scenario,
-        scenario_finish_date=to_utc(finish_date_ct),
-        scenario_duration=props["scenario_duration"],
+        scenario_start_date=start_date,
+        scenario_finish_date=finish_date,
+        scenario_duration=duration,
+        site_codes=site_codes,
     )
 
 

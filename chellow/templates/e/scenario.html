@@ -28,8 +28,12 @@
 		<fieldset>
 			<legend>Run With Duration</legend>
 			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<label>Start Date</label>
+			{{ input_date('start', scenario_start_date) }}
+			<label>Finish Date</label>
+			{{ input_date('finish', scenario_finish_date) }}
 			<label>Site Codes</label>
-			{{input_textarea('site_codes', '', 5, 40,
+			{{input_textarea('site_codes', site_codes, 5, 40,
 			  placeholder='One on each line, includes all if left blank')}}    						
 			<input type="submit" value="Run">
 		</fieldset>	
