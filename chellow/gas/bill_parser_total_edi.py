@@ -110,10 +110,10 @@ def _process_CCD2(elements, headers):
     units_billed = to_decimal(nuct) / units_divisor
     breakdown[key] += units_billed
 
-    if "start_date" not in headers:
+    if tpref == "standing" or "start_date" not in headers:
         headers["start_date"] = to_date(csdt[0])
 
-    if "finish_date" not in headers:
+    if tpref == "standing" or "finish_date" not in headers:
         headers["finish_date"] = _to_finish_date(cedt[0])
 
     if "mprn" not in headers:
