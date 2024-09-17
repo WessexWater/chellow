@@ -217,7 +217,7 @@ def _handle_0860(headers, pre_record, record):
 
 def _handle_1455(headers, pre_record, record):
     parts = _chop_record(
-        record, ccl_kwh=13, unknown_1=8, ccl_rate=15, ccl_gbp=12, unkown_2=8
+        record, ccl_kwh=13, unknown_1=10, ccl_rate=13, ccl_gbp=12, unkown_2=8
     )
     bd = headers["breakdown"]
     bd["ccl-kwh"] += Decimal(parts["ccl_kwh"])
