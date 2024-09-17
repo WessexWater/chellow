@@ -1,5 +1,6 @@
 import decimal
 import itertools
+from codecs import iterdecode
 
 from werkzeug.exceptions import BadRequest
 
@@ -13,7 +14,7 @@ def create_parser(reader, mpan_map, messages):
 class StarkDf2HhParser:
     def __init__(self, reader, mpan_map, messages):
         self.line = self.line_number = None
-        self.reader = zip(itertools.count(1), reader)
+        self.reader = zip(itertools.count(1), iterdecode(reader, "utf-8"))
 
         self.line_number, self.line = next(self.reader)
         if self.line.strip().upper() != "#F2":

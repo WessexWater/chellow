@@ -1,5 +1,6 @@
 import csv
 import itertools
+from codecs import iterdecode
 from datetime import datetime as Datetime
 from decimal import Decimal
 
@@ -14,7 +15,8 @@ def create_parser(reader, mpan_map, messages):
 
 class HhParserCsvSimple:
     def __init__(self, reader, mpan_map, messages):
-        self.shredder = zip(itertools.count(1), csv.reader(reader))
+        s = iterdecode(reader, "utf-8")
+        self.shredder = zip(itertools.count(1), csv.reader(s))
         next(self.shredder)  # skip the title line
         self.values = None
 

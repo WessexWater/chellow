@@ -1,11 +1,12 @@
 from decimal import Decimal
+from io import BytesIO
 
 from chellow.e.hh_parser_df2 import create_parser
 from chellow.utils import utc_datetime
 
 
 def test_parser():
-    reader = [
+    reader_lines = [
         "#F2",
         "#O 2248274887874-jlkkk38",
         "#S 1",
@@ -13,6 +14,7 @@ def test_parser():
         "16/04/2024,01:00,0.064,A",
         "16/04/2024,01:30,0,A",
     ]
+    reader = BytesIO("\n".join(reader_lines).encode("utf8"))
     mpan_map = {}
     messages = []
 

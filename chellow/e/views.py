@@ -3,7 +3,7 @@ import os
 import threading
 from collections import defaultdict
 from datetime import datetime as Datetime
-from io import StringIO
+from io import BytesIO, StringIO
 from itertools import chain, islice
 from random import random
 
@@ -1233,7 +1233,7 @@ def dc_contracts_hh_imports_post(contract_id):
         contract = Contract.get_dc_by_id(g.sess, contract_id)
 
         file_item = req_file("import_file")
-        f = StringIO(str(file_item.stream.read(), "utf-8"))
+        f = BytesIO(file_item.stream.read())
         f.seek(0, os.SEEK_END)
         file_size = f.tell()
         f.seek(0)

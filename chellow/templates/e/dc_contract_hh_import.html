@@ -21,15 +21,16 @@
 				Reached line number {{process.converter.line_number}}.
 			{% endif %}
 		</p>
-	{% elif process.messages|length == 0 %}
+	{% elif process.error is none %}
 		<p>The import has completed successfully.</p>
 	{% else %}
-		<p>The import failed:</p>
-		<ul>
-			{% for message in process.messages %}
-				<li>{{message}}</li>
-			{% endfor %}
-		</ul>
+		<p>The import failed. {{process.error}}</p>
 	{% endif %}
+	
+	<ul>
+		{% for message in process.messages %}
+			<li>{{message}}</li>
+		{% endfor %}
+	</ul>
 
 {% endblock %}

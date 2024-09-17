@@ -8,7 +8,7 @@ import traceback
 from collections import defaultdict, deque
 from datetime import datetime as Datetime, timedelta as Timedelta
 from decimal import Decimal
-from io import StringIO, TextIOWrapper
+from io import StringIO
 from pathlib import Path
 
 import jinja2
@@ -40,7 +40,7 @@ from chellow.utils import (
 processes = defaultdict(list)
 tasks = {}
 
-extensions = [".df2", ".simple.csv", ".bg.csv"]
+extensions = [".df2", ".simple.csv", ".bg.csv", ".vital.xlsx"]
 
 
 class HhDataImportProcess(threading.Thread):
@@ -277,7 +277,7 @@ class HhImportTask(threading.Thread):
             self.log(f"File size is {fsize} bytes.")
             self.log(f"Treating files as type {file_type}")
             self.importer = HhDataImportProcess(
-                self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
+                self.contract_id, 0, f, fpath + file_type, fsize
             )
 
             self.importer.run()
@@ -412,7 +412,7 @@ class HhImportTask(threading.Thread):
             self.log(f"File size is {fsize} bytes.")
             self.log(f"Treating files as type {file_type}")
             self.importer = HhDataImportProcess(
-                self.contract_id, 0, TextIOWrapper(f, "utf8"), fpath + file_type, fsize
+                self.contract_id, 0, f, fpath + file_type, fsize
             )
 
             self.importer.run()
