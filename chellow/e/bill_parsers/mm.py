@@ -278,6 +278,20 @@ def _handle_1500(headers, pre_record, record):
     }
 
 
+def _handle_1600(headers, pre_record, record):
+    parts = _chop_record(
+        record,
+        unknown_1=12,
+        unknown_2=12,
+        late_payment_fee=12,
+        late_payment_date=DATE_LENGTH,
+        description=50,
+    )
+    late_payment_gbp = Decimal(parts["late_payment_fee"]) / Decimal(100)
+
+    headers["breakdown"]["late_payment_gbp"] += late_payment_gbp
+
+
 def _handle_1700(headers, pre_record, record):
     pass
 
@@ -303,6 +317,7 @@ LINE_HANDLERS = {
     "1455": _handle_1455,
     "1460": _handle_1460,
     "1500": _handle_1500,
+    "1600": _handle_1600,
     "1700": _handle_1700,
     "2000": _handle_2000,
     "9999": _handle_9999,
