@@ -184,6 +184,136 @@ def test_batch_edit_delete(sess, client):
     )
 
 
+def test_batch_csv_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    mprn = "750278673"
+    g_supply = site.insert_g_supply(
+        sess,
+        mprn,
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    breakdown = {"units_consumed": 771}
+
+    insert_bill_types(sess)
+
+    bill_type_n = BillType.get_by_code(sess, "N")
+
+    g_bill = g_batch.insert_g_bill(
+        sess,
+        g_supply,
+        bill_type_n,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        breakdown,
+    )
+    insert_g_read_types(sess)
+
+    g_read_type_A = GReadType.get_by_code(sess, "A")
+
+    g_bill.insert_g_read(
+        sess,
+        "ghu5438gt",
+        g_unit_M3,
+        1,
+        37,
+        Decimal(800),
+        utc_datetime(2020, 1, 1),
+        g_read_type_A,
+        Decimal(900),
+        utc_datetime(2020, 1, 31),
+        g_read_type_A,
+    )
+    sess.commit()
+
+    response = client.get(f"/g/batches/{g_batch.id}/csv")
+    match(response, 200)
+
+    lines = [
+        [
+            "Contract",
+            "Batch Reference",
+            "Bill Reference",
+            "Account",
+            "Issued",
+            "From",
+            "To",
+            "kWh",
+            "Net",
+            "VAT",
+            "Gross",
+            "Type",
+            "breakdown",
+            "0_msn",
+            "0_unit",
+            "0_correction_factor",
+            "0_calorific_value",
+            "0_prev_date",
+            "0_prev_value",
+            "0_prev_type",
+            "0_pres_date",
+            "0_pres_value",
+            "0_pres_type",
+        ],
+        [
+            "Fusion 2020",
+            "b1",
+            "55h883",
+            "dhgh883",
+            "2019-04-03 01:00",
+            "2020-01-01 00:00",
+            "2020-01-31 23:30",
+            "45",
+            "12.40",
+            "1.20",
+            "14.52",
+            "N",
+            '"{\n  ""units_consumed"": 771,\n}"',
+            "ghu5438gt",
+            "M3",
+            "1",
+            "37",
+            "2020-01-01 00:00",
+            "800",
+            "A",
+            "2020-01-31 00:00",
+            "900",
+            "A",
+        ],
+    ]
+    pattern = "\r\n".join(",".join(line) for line in lines) + "\r\n"
+    actual = response.get_data(as_text=True)
+    assert pattern == actual
+
+
 def test_bill_get(client, sess):
     site = Site.insert(sess, "22488", "Water Works")
 

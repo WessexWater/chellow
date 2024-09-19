@@ -50,7 +50,6 @@ from chellow.models import (
 from chellow.utils import (
     HH,
     csv_make_val,
-    hh_format,
     req_bool,
     req_date,
     req_decimal,
@@ -1457,47 +1456,88 @@ def exit_zone_get(g_exit_zone_id):
 @gas.route("/batches/<int:g_batch_id>/csv")
 def batch_csv_get(g_batch_id):
     g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+    rows = []
+    max_reads = 0
+    for g_bill in g.sess.scalars(
+        select(GBill)
+        .where(GBill.g_batch == g_batch)
+        .order_by(GBill.reference, GBill.start_date)
+        .options(
+            joinedload(GBill.bill_type),
+            joinedload(GBill.g_reads).joinedload(GRegisterRead.g_unit),
+            joinedload(GBill.g_reads).joinedload(GRegisterRead.pres_type),
+            joinedload(GBill.g_reads).joinedload(GRegisterRead.prev_type),
+        )
+    ).unique():
+        row = [
+            g_batch.g_contract.name,
+            g_batch.reference,
+            g_bill.reference,
+            g_bill.account,
+            g_bill.issue_date,
+            g_bill.start_date,
+            g_bill.finish_date,
+            g_bill.kwh,
+            g_bill.net,
+            g_bill.vat,
+            g_bill.gross,
+            g_bill.bill_type.code,
+            g_bill.breakdown,
+        ]
+        g_reads = g_bill.g_reads
+        max_reads = max(max_reads, len(g_reads))
+        for g_read in g_reads:
+            row.extend(
+                [
+                    g_read.msn,
+                    g_read.g_unit.code,
+                    g_read.correction_factor,
+                    g_read.calorific_value,
+                    g_read.prev_date,
+                    g_read.prev_value,
+                    g_read.prev_type.code,
+                    g_read.pres_date,
+                    g_read.pres_value,
+                    g_read.pres_type.code,
+                ]
+            )
+        rows.append(row)
+
     si = StringIO()
     cw = csv.writer(si)
-    cw.writerow(
-        [
-            "Contract",
-            "Batch Reference",
-            "Bill Reference",
-            "Account",
-            "Issued",
-            "From",
-            "To",
-            "kWh",
-            "Net",
-            "VAT",
-            "Gross",
-            "Type",
-        ]
-    )
-    for g_bill in (
-        g.sess.query(GBill)
-        .filter(GBill.g_batch == g_batch)
-        .order_by(GBill.reference, GBill.start_date)
-        .options(joinedload(GBill.bill_type))
-    ):
-        cw.writerow(
-            [
-                g_batch.g_contract.name,
-                g_batch.reference,
-                g_bill.reference,
-                g_bill.account,
-                hh_format(g_bill.issue_date),
-                hh_format(g_bill.start_date),
-                hh_format(g_bill.finish_date),
-                str(g_bill.kwh),
-                str(g_bill.net),
-                str(g_bill.vat),
-                str(g_bill.gross),
-                g_bill.bill_type.code,
-            ]
-        )
-
+    read_titles = [
+        "msn",
+        "unit",
+        "correction_factor",
+        "calorific_value",
+        "prev_date",
+        "prev_value",
+        "prev_type",
+        "pres_date",
+        "pres_value",
+        "pres_type",
+    ]
+    titles = [
+        "Contract",
+        "Batch Reference",
+        "Bill Reference",
+        "Account",
+        "Issued",
+        "From",
+        "To",
+        "kWh",
+        "Net",
+        "VAT",
+        "Gross",
+        "Type",
+        "breakdown",
+    ]
+    for i in range(max_reads):
+        for rt in read_titles:
+            titles.append(f"{i}_{rt}")
+    cw.writerow(titles)
+    for row in rows:
+        cw.writerow(csv_make_val(v) for v in row)
     disp = f'attachment; filename="g_batch_{g_batch.id}.csv"'
     output = make_response(si.getvalue())
     output.headers["Content-Disposition"] = disp
