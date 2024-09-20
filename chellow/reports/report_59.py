@@ -670,7 +670,7 @@ def _process_site(
 
                     _add_bills(era_vals, bills, chunk_start, chunk_finish)
 
-                    era_rows.append([make_val(vals.get(t)) for t in era_titles])
+                    era_rows.append([make_val(era_vals.get(t)) for t in era_titles])
                     for t in summary_titles:
                         v = era_vals.get(t)
                         if v is not None:
@@ -1066,7 +1066,9 @@ def content(
             ef.write(msg + "\n")
             ef.close()
         else:
-            write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+            write_spreadsheet(
+                rf, compression, site_rows, supply_rows, era_rows, normal_read_rows
+            )
     finally:
         if rf is not None:
             rf.close()
