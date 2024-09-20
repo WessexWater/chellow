@@ -2,6 +2,12 @@
 	<div
 			hx-get="/e/sites/{{site.id}}/energy_management/totals?mem_id={{mem_id}}"
 		 	hx-trigger="every 3s">
+		<label>
+			Calculating:
+			<progress value="0" max="12">
+				0 months
+			</progress>
+		</label>
   </div>
 {% elif site_info.status == 'running' %}
 	<label>
@@ -11,6 +17,11 @@
 		</progress>
 	</label>
 {% else %}
+	{% if site_info['problem']|length > 0 %}
+		<pre>
+			{{site_info['problem']}}
+		</pre>
+	{% endif %}
   <table>
 		<caption>Last 12 months</caption>
 		<thead>
@@ -30,4 +41,12 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<h3>Log</h3>
+
+	<ul>
+		{% for line in site_info.log %}
+			<li>>{{line}}</li>
+		{% endfor %}
+	</ul>
 {% endif %}

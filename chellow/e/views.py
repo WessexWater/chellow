@@ -6,7 +6,6 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO, StringIO
 from itertools import chain, islice
-from random import random
 
 
 from dateutil.relativedelta import relativedelta
@@ -4156,16 +4155,10 @@ def em_totals(site_id):
     if "mem_id" in request.values:
         mem_id = req_int("mem_id")
         site_info = chellow.dloads.get_mem_val(mem_id)
-        random_number = random()
 
         status_code = 200 if site_info["status"] == "running" else 286
         return make_response(
-            render_template(
-                "em_totals.html",
-                site=site,
-                site_info=site_info,
-                random_number=random_number,
-            ),
+            render_template("em_totals.html", site=site, site_info=site_info),
             status_code,
         )
 
