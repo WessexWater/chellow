@@ -1,12 +1,18 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Channel Snags
+	&raquo; DC Contracts &raquo; 
+	{% if contract %}
+		{{contract.name}} &raquo;
+	{% endif %}
+	Channel Snags
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
-	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	{% if contract %}
+		<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	{% endif %}
  	Channel Snags
 {% endblock %}
 
@@ -31,7 +37,11 @@
 	<form action="/e/channel_snags">
 		<fieldset>
 			<legend>Show Channel Snags</legend>	
-			<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
+			<input type="hidden" name="dc_contract_id" value="
+				{%- if contract -%}
+					{{contract.id}}
+				{%- endif -%}
+			">
 			<label>Hide snags &lt; days old</label>
 		 	{{input_text('days_hidden', '0', 3, 3)}}
 			<label>Include ignored snags</label> {{input_checkbox('is_ignored', False)}} 
@@ -51,6 +61,7 @@
 		<thead>
 			<tr>
 				<th>View</th>
+				<th>Contract</th>
 				<th>Import MPAN Core</th>
 				<th>Export MPAN Core</th>
 				<th>Sites</th>
@@ -73,6 +84,7 @@
 							{% endfor %}
 						</ul>
 					</td>
+					<td>{{snag_group.era.dc_contract}}</td>
 					<td>
 						{% if snag_group.era.imp_mpan_core %}
 							{{snag_group.era.imp_mpan_core}}

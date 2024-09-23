@@ -340,38 +340,41 @@ def channel_edit_post(channel_id):
 
 @e.route("/channel_snags")
 def channel_snags_get():
-    contract_id = req_int("dc_contract_id")
-    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    contract_id = req_int_none("dc_contract_id")
+    if contract_id is None:
+        contract = None
+    else:
+        contract = Contract.get_dc_by_id(g.sess, contract_id)
     days_hidden = req_int("days_hidden")
     is_ignored = req_bool("is_ignored")
 
-    total_snags = (
-        g.sess.query(Snag)
+    cutoff_date = utc_datetime_now() - relativedelta(days=days_hidden)
+
+    total_snags_q = (
+        select(func.count())
+        .select_from(Snag)
         .join(Channel)
         .join(Era)
-        .filter(
-            Snag.is_ignored == false(),
-            Era.dc_contract == contract,
-            Snag.start_date < utc_datetime_now() - relativedelta(days=days_hidden),
-        )
-        .count()
+        .where(Snag.is_ignored == false(), Snag.start_date < cutoff_date)
     )
-    snags = (
-        g.sess.query(Snag)
+    snags_q = (
+        select(Snag)
         .join(Channel)
         .join(Era)
         .join(Era.site_eras)
         .join(SiteEra.site)
-        .filter(
-            Snag.is_ignored == is_ignored,
-            Era.dc_contract == contract,
-            Snag.start_date < utc_datetime_now() - relativedelta(days=days_hidden),
-        )
+        .where(Snag.is_ignored == is_ignored, Snag.start_date < cutoff_date)
         .order_by(Site.code, Era.id, Snag.start_date, Snag.finish_date, Snag.channel_id)
     )
+    if contract is not None:
+        total_snags_q = total_snags_q.where(Era.dc_contract == contract)
+        snags_q = snags_q.where(Era.dc_contract == contract)
+
+    total_snags = g.sess.execute(total_snags_q)
+
     snag_groups = []
     prev_snag = None
-    for snag in islice(snags, 200):
+    for snag in islice(g.sess.scalars(snags_q), 200):
         if (
             prev_snag is None
             or snag.channel.era != prev_snag.channel.era
@@ -382,10 +385,12 @@ def channel_snags_get():
             era = snag.channel.era
             snag_group = {
                 "snags": [],
-                "sites": g.sess.query(Site)
-                .join(Site.site_eras)
-                .filter(SiteEra.era == era)
-                .order_by(Site.code),
+                "sites": g.sess.scalars(
+                    select(Site)
+                    .join(Site.site_eras)
+                    .where(SiteEra.era == era)
+                    .order_by(Site.code)
+                ),
                 "era": era,
                 "description": snag.description,
                 "start_date": snag.start_date,
@@ -398,7 +403,6 @@ def channel_snags_get():
     return render_template(
         "channel_snags.html",
         contract=contract,
-        snags=snags,
         total_snags=total_snags,
         snag_groups=snag_groups,
         is_ignored=is_ignored,

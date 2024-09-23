@@ -7,6 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import g
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import false, select, true
 
 from chellow.dloads import open_file
@@ -21,7 +22,14 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.utils import csv_make_val, hh_before, req_bool, req_int, utc_datetime_now
+from chellow.utils import (
+    csv_make_val,
+    hh_before,
+    req_bool,
+    req_int,
+    req_int_none,
+    utc_datetime_now,
+)
 from chellow.views import chellow_redirect
 
 
@@ -30,9 +38,17 @@ def content(contract_id, days_hidden, is_ignored, user_id):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            f = open_file("channel_snags.csv", user, mode="w", newline="")
+            if contract_id is None:
+                contract = None
+                namef = "all"
+            else:
+                contract = Contract.get_dc_by_id(sess, contract_id)
+                namef = "".join(x if x.isalnum() else "_" for x in contract.name)
+
+            f = open_file(f"channel_snags_{namef}.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
             titles = (
+                "contract",
                 "Hidden Days",
                 "Chellow Id",
                 "Imp MPAN Core",
@@ -50,8 +66,6 @@ def content(contract_id, days_hidden, is_ignored, user_id):
             )
             writer.writerow(titles)
 
-            contract = Contract.get_dc_by_id(sess, contract_id)
-
             now = utc_datetime_now()
             cutoff_date = now - relativedelta(days=days_hidden)
             q = (
@@ -63,7 +77,6 @@ def content(contract_id, days_hidden, is_ignored, user_id):
                 .join(Site, SiteEra.site_id == Site.id)
                 .where(
                     SiteEra.is_physical == true(),
-                    Era.dc_contract == contract,
                     Snag.start_date < cutoff_date,
                 )
                 .order_by(
@@ -75,7 +88,11 @@ def content(contract_id, days_hidden, is_ignored, user_id):
                     Snag.start_date,
                     Snag.id,
                 )
+                .options(joinedload(Era.dc_contract))
             )
+            if contract is not None:
+                q = q.where(Era.dc_contract == contract)
+
             if not is_ignored:
                 q = q.where(Snag.is_ignored == false())
 
@@ -97,6 +114,7 @@ def content(contract_id, days_hidden, is_ignored, user_id):
                         age_of_snag = delta.days
 
                 vals = {
+                    "contract": era.dc_contract.name,
                     "Hidden Days": days_hidden,
                     "Chellow Id": snag.id,
                     "Imp MPAN Core": imp_mc,
@@ -124,7 +142,7 @@ def content(contract_id, days_hidden, is_ignored, user_id):
 
 
 def do_get(sess):
-    contract_id = req_int("dc_contract_id")
+    contract_id = req_int_none("dc_contract_id")
     days_hidden = req_int("days_hidden")
     is_ignored = req_bool("is_ignored")
 
