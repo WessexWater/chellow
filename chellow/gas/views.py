@@ -129,12 +129,11 @@ def supply_get(g_supply_id):
     try:
         g_era_bundles = []
         g_supply = GSupply.get_by_id(g.sess, g_supply_id)
-        g_eras = (
-            g.sess.query(GEra)
-            .filter(GEra.g_supply == g_supply)
+        g_eras = g.sess.scalars(
+            select(GEra)
+            .where(GEra.g_supply == g_supply)
             .order_by(GEra.start_date.desc())
-            .all()
-        )
+        ).all()
         for g_era in g_eras:
             physical_site = (
                 g.sess.query(Site)

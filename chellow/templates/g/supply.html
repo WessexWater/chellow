@@ -242,22 +242,22 @@
 						{% endif %}
 					>
 						<td rowspan="{{rows_high}}">
-							<a href="/g/bills/{{g_bill.id}}">{{g_bill.id}}</a>
+							<a href="/g/bills/{{g_bill.id}}">view</a>
 						</td>
 						<td rowspan="{{rows_high}}">
-							<a
+							<span
 									title="{{g_bill.start_date|hh_format}}"
-							>{{g_bill.start_date|hh_format('date')}}</a>
+							>{{g_bill.start_date|hh_format('date')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
-							<a
+							<span
 									title="{{g_bill.finish_date|hh_format}}"
-							>{{g_bill.finish_date|hh_format('date')}}</a>
+							>{{g_bill.finish_date|hh_format('date')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
-							<a
+							<span
 									title="{{g_bill.issue_date|hh_format}}"
-							>{{g_bill.issue_date|hh_format('date')}}</a>
+							>{{g_bill.issue_date|hh_format('date')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
 							<a
@@ -287,26 +287,34 @@
 								{% endif %}
 								<td style="border-right: none;">
 									{% if read %}
-										<a
+										<span
 												title="{{read.prev_date|hh_format}} {{read.msn }}"
-										>{{read.prev_value}}</a>
+										>{{read.prev_value}}</span>
 									{% endif %}
 								</td>
 								<td style="border-left: none; text-align: right;">
 									{% if read %}
-										{{ read.prev_type.code }}
+										<a
+											href="/g/read_types/{{read.prev_type.id}}"
+											title="{{read.prev_type.description}}"
+										>
+											{{ read.prev_type.code }}
+										</a>
 									{% endif %}
 								</td>
 								<td style="border-right: none;">
 									{% if read %}
-										<a
+										<span
 												title="{{read.pres_date|hh_format}} {{read.msn}}"
-										>{{read.pres_value}}</a>
+										>{{read.pres_value}}</span>
 									{% endif %}
 								</td>
 								<td style="border-left: none; text-align: right;">
 									{% if read %}
-										{{read.pres_type.code}}
+										<a
+											href="/g/read_types/{{read.pres_type.id}}"
+											title="{{read.pres_type.description}}"
+										>{{read.pres_type.code}}</a>
 									{% endif %}
 								</td>
 								{% if not loop.first %}
