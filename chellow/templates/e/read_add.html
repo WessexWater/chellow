@@ -33,9 +33,7 @@
 			</select>
 			<fieldset>
 				<legend>Previous Read</legend>
-				<fieldset>
-					<label>Date</label> {{input_date('previous', previous_date)}}
-				</fieldset>
+				<label>Date</label> {{input_date('previous', previous_date)}}
 				<label>Value</label> {{input_text('previous_value', previous_value)}}
 				<label>Type</label>
 				<select name="previous_type_id">
@@ -46,10 +44,7 @@
 			</fieldset>
 			<fieldset>
 				<legend>Present Read</legend>
-				<fieldset>
-					<label>Date</label>
-					{{input_date('present', None)}}
-				</fieldset>
+				<label>Date</label> {{input_date('present', None)}}
 				<label>Value</label> {{input_text('present_value', 0)}}
 				<label>Type</label>
 				<select name="present_type_id">

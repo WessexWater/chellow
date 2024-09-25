@@ -3749,7 +3749,7 @@ def pc_get(pc_id):
 
 @e.route("/supplier_bills/<int:bill_id>/add_read")
 def read_add_get(bill_id):
-    read_types = g.sess.scalars(select(ReadType).order_by(ReadType.code))
+    read_types = g.sess.scalars(select(ReadType).order_by(ReadType.code)).all()
     estimated_read_type = ReadType.get_by_code(g.sess, "E")
     tprs = g.sess.scalars(select(Tpr).order_by(Tpr.code))
     bill = Bill.get_by_id(g.sess, bill_id)
@@ -3761,15 +3761,14 @@ def read_add_get(bill_id):
         mpan_str = era.imp_mpan_core
         msn = era.msn
 
-    prev_read = (
-        g.sess.query(RegisterRead)
+    prev_read = g.sess.scalars(
+        select(RegisterRead)
         .join(Bill)
-        .filter(
+        .where(
             Bill.supply == bill.supply, RegisterRead.present_date <= bill.finish_date
         )
         .order_by(RegisterRead.present_date.desc())
-        .first()
-    )
+    ).first()
     if prev_read is not None:
         previous_date = prev_read.present_date
         previous_value = prev_read.present_value

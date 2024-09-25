@@ -2673,7 +2673,10 @@ def test_read_add_get_existing_era(sess, client):
     sess.commit()
 
     response = client.get(f"/e/supplier_bills/{bill.id}/add_read")
-    patterns = []
+    patterns = [
+        r'<select name="present_type_id">\s*'
+        r'<option value="1">A Actual Change of Supplier Read</option>'
+    ]
     match(response, 200, *patterns)
 
 
