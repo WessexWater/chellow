@@ -1220,7 +1220,7 @@ def dc_contract_edit_post(contract_id):
 
 
 @e.route("/dc_contracts/<int:contract_id>/hh_imports")
-def dc_contracts_hh_imports_get(contract_id):
+def dc_contract_hh_imports_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     processes = chellow.e.hh_importer.get_hh_import_processes(contract.id)
     return render_template(
@@ -1232,7 +1232,7 @@ def dc_contracts_hh_imports_get(contract_id):
 
 
 @e.route("/dc_contracts/<int:contract_id>/hh_imports", methods=["POST"])
-def dc_contracts_hh_imports_post(contract_id):
+def dc_contract_hh_imports_post(contract_id):
     try:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
 
