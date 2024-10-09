@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	{% if request.method == "GET" and request.values.delete %}
+		<form method="post" action="/report_runs/{{run.id}}">
+			<fieldset>
+				<legend>Are you sure you want to delete this report run?</legend>
+				<input type="submit" name="delete" value="delete"> 
+				<a href="/report_runs/{{run.id}}">Cancel</a>
+			</fieldset>
+		</form>
+	{% else %}
+		<table>
+			<caption>Monthly Duration Report</caption>
+			<thead>
+				<tr>
+					<th>Date Created</th>
+					<th>Created By</th>
+					<th>Title</th>
+					<th>State</th>
+					<th>Delete</th>
+					<th>Download Spreadsheet</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{run.date_created|hh_format}}</td>
+					<td>{{run.creator}}</td>
+					<td>{{run.title}}</td>
+					<td>{{run.state}}</td>
+					<td>
+						<form action="/report_runs/{{run.id}}">
+							<fieldset style="border: none;">
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</td>
+					<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table class="sticky">
+			<caption>
+				Organisation Level
+			</caption>
+			<thead>
+				<tr>
+					{% for title in org_rows[0].data.titles %}
+						<th>{{title}}</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for org_row in org_rows %}
+					<tr>
+						{% for title in org_row.data.titles %}
+							<td>{{org_row.data['values'][title]}}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

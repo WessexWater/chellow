@@ -24,6 +24,7 @@ from chellow.models import (
     Era,
     MeasurementRequirement,
     RSession,
+    ReportRun,
     Scenario,
     Site,
     SiteEra,
@@ -122,8 +123,10 @@ def _process_site(
     now,
     summary_titles,
     title_dict,
-    era_rows,
+    org_rows,
     site_rows,
+    era_rows,
+    normal_reads,
     data_source_bill,
 ):
     scenario_hh = scenario_props.get("hh_data", {})
@@ -147,7 +150,6 @@ def _process_site(
 
     site_category = None
     site_sources = set()
-    normal_reads = set()
     site_month_data = defaultdict(int)
     for i, (order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss) in enumerate(
         sorted(calcs, key=str)
@@ -155,8 +157,6 @@ def _process_site(
         if imp_mpan_core == "displaced":
             month_data = {}
             for sname in (
-                "import-grid",
-                "export-grid",
                 "import-gen",
                 "export-gen",
                 "import-3rd-party",
@@ -169,7 +169,11 @@ def _process_site(
                 for xname in ("kwh", "net-gbp"):
                     month_data[f"{sname}-{xname}"] = 0
             month_data["billed-import-kwh"] = 0
+            month_data["import-grid-kwh"] = 0
+            month_data["export-grid-kwh"] = 0
             for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                month_data[f"import-grid-{suf}"] = 0
+                month_data[f"export-grid-{suf}"] = 0
                 month_data[f"billed-import-{suf}"] = 0
                 month_data[f"billed-supplier-import-{suf}"] = None
                 month_data[f"billed-dc-import-{suf}"] = None
@@ -240,8 +244,6 @@ def _process_site(
             site_sources.add(source_code)
             month_data = {}
             for name in (
-                "import-grid",
-                "export-grid",
                 "import-gen",
                 "export-gen",
                 "import-3rd-party",
@@ -255,7 +257,9 @@ def _process_site(
                     month_data[f"{name}-{sname}"] = 0
             for polarity in ("import", "export"):
                 month_data[f"billed-{polarity}-kwh"] = 0
+                month_data[f"{polarity}-grid-kwh"] = 0
                 for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                    month_data[f"{polarity}-grid-{suf}"] = 0
                     month_data[f"billed-{polarity}-{suf}"] = 0
                     month_data[f"billed-supplier-{polarity}-{suf}"] = 0
                     month_data[f"billed-dc-{polarity}-{suf}"] = 0
@@ -267,28 +271,32 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
                 imp_supplier_bill = imp_ss.supplier_bill
 
-                gbp = imp_supplier_bill.get("net-gbp", 0)
+                net_gbp = imp_supplier_bill.get("net-gbp", 0)
+                vat_gbp = imp_supplier_bill.get("vat-gbp", 0)
+                gross_gbp = imp_supplier_bill.get("gross-gbp", 0)
 
                 if source_code in ("grid", "gen-grid"):
-                    month_data["import-grid-net-gbp"] += gbp
+                    month_data["import-grid-net-gbp"] += net_gbp
+                    month_data["import-grid-vat-gbp"] += vat_gbp
+                    month_data["import-grid-gross-gbp"] += gross_gbp
                     month_data["import-grid-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                     if source_code == "gen-grid":
                         month_data["export-gen-kwh"] += kwh
                 elif source_code == "3rd-party":
-                    month_data["import-3rd-party-net-gbp"] += gbp
+                    month_data["import-3rd-party-net-gbp"] += net_gbp
                     month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] += gbp
+                    month_data["used-3rd-party-net-gbp"] += net_gbp
                     month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["export-3rd-party-net-gbp"] += gbp
+                    month_data["export-3rd-party-net-gbp"] += net_gbp
                     month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] -= gbp
+                    month_data["used-3rd-party-net-gbp"] -= net_gbp
                     month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-net-gbp"] -= gbp
+                    month_data["used-net-gbp"] -= net_gbp
                     month_data["used-kwh"] -= kwh
                 elif source_code == "gen":
                     month_data["import-gen-kwh"] += kwh
@@ -299,27 +307,31 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 exp_supplier_bill = exp_ss.supplier_bill
 
-                gbp = exp_supplier_bill.get("net-gbp", 0)
+                net_gbp = exp_supplier_bill.get("net-gbp", 0)
+                vat_gbp = exp_supplier_bill.get("vat-gbp", 0)
+                gross_gbp = exp_supplier_bill.get("gross-gbp", 0)
 
                 if source_code in ("grid", "gen-grid"):
-                    month_data["export-grid-net-gbp"] += gbp
+                    month_data["export-grid-net-gbp"] += net_gbp
+                    month_data["export-grid-vat-gbp"] += vat_gbp
+                    month_data["export-grid-gross-gbp"] += gross_gbp
                     month_data["export-grid-kwh"] += kwh
                     if source_code == "gen-grid":
                         month_data["import-gen-kwh"] += kwh
 
                 elif source_code == "3rd-party":
-                    month_data["export-3rd-party-net-gbp"] += gbp
+                    month_data["export-3rd-party-net-gbp"] += net_gbp
                     month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] -= gbp
+                    month_data["used-3rd-party-net-gbp"] -= net_gbp
                     month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-net-gbp"] -= gbp
+                    month_data["used-net-gbp"] -= net_gbp
                     month_data["used-kwh"] -= kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["import-3rd-party-net-gbp"] += gbp
+                    month_data["import-3rd-party-net-gbp"] += net_gbp
                     month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] += gbp
+                    month_data["used-3rd-party-net-gbp"] += net_gbp
                     month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                 elif source_code == "gen":
                     month_data["export-gen-kwh"] += kwh
@@ -493,8 +505,6 @@ def _process_site(
                 if len(bills) > 0:
                     month_data = {}
                     for name in (
-                        "import-grid",
-                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -507,7 +517,11 @@ def _process_site(
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     month_data["billed-import-kwh"] = 0
+                    month_data["import-grid-kwh"] = 0
+                    month_data["export-grid-kwh"] = 0
                     for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                        month_data[f"import-grid-{suf}"] = 0
+                        month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-import-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
                         month_data[f"billed-dc-import-{suf}"] = 0
@@ -610,8 +624,6 @@ def _process_site(
                 if len(bills) > 0:
                     month_data = {}
                     for name in (
-                        "import-grid",
-                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -624,8 +636,12 @@ def _process_site(
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     month_data["billed-import-kwh"] = 0
+                    month_data["import-grid-kwh"] = 0
+                    month_data["export-grid-kwh"] = 0
                     for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
                         month_data[f"billed-import-{suf}"] = 0
+                        month_data[f"import-grid-{suf}"] = 0
+                        month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
                         month_data[f"billed-dc-import-{suf}"] = 0
                         month_data[f"billed-mop-import-{suf}"] = 0
@@ -708,7 +724,7 @@ def _process_site(
     ] + [site_month_data[k] for k in summary_titles]
 
     site_rows.append([make_val(v) for v in site_row])
-    return normal_reads
+    return site_month_data
 
 
 class Object:
@@ -734,6 +750,7 @@ def content(scenario_props, base_name, user_id, compression, now):
         ind_cont = report_context["contract_names"] = {}
 
     sess = rf = None
+    org_rows = []
     site_rows = []
     era_rows = []
     normal_read_rows = []
@@ -806,7 +823,8 @@ def content(scenario_props, base_name, user_id, compression, now):
 
             user = User.get_by_id(sess, user_id)
 
-            rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
+            fname = "_".join(base_name) + ".ods"
+            rf = open_file(fname, user, mode="wb")
 
             for rate_script in scenario_props.get("rates", []):
                 contract_id = rate_script["contract_id"]
@@ -858,7 +876,21 @@ def content(scenario_props, base_name, user_id, compression, now):
                     )
 
             by_hh = scenario_props.get("by_hh", False)
+            org_header_titles = [
+                "creation-date",
+                "month",
+            ]
 
+            site_header_titles = [
+                "creation-date",
+                "site-id",
+                "site-name",
+                "associated-site-ids",
+                "month",
+                "metering-type",
+                "sources",
+                "generator-types",
+            ]
             era_header_titles = [
                 "creation-date",
                 "imp-mpan-core",
@@ -888,16 +920,6 @@ def content(scenario_props, base_name, user_id, compression, now):
                 "associated-site-ids",
                 "month",
             ]
-            site_header_titles = [
-                "creation-date",
-                "site-id",
-                "site-name",
-                "associated-site-ids",
-                "month",
-                "metering-type",
-                "sources",
-                "generator-types",
-            ]
             summary_titles = [
                 "import-grid-kwh",
                 "export-grid-kwh",
@@ -909,7 +931,11 @@ def content(scenario_props, base_name, user_id, compression, now):
                 "used-kwh",
                 "used-3rd-party-kwh",
                 "import-grid-net-gbp",
+                "import-grid-vat-gbp",
+                "import-grid-gross-gbp",
                 "export-grid-net-gbp",
+                "export-grid-vat-gbp",
+                "export-grid-gross-gbp",
                 "import-gen-net-gbp",
                 "export-gen-net-gbp",
                 "import-3rd-party-net-gbp",
@@ -1003,6 +1029,7 @@ def content(scenario_props, base_name, user_id, compression, now):
                 + [None]
                 + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
             )
+            org_rows.append(org_header_titles + summary_titles)
             site_rows.append(site_header_titles + summary_titles)
             era_rows.append(era_titles)
 
@@ -1016,6 +1043,7 @@ def content(scenario_props, base_name, user_id, compression, now):
                     data_source_bill.finish_date = month_finish
                 else:
                     data_source_bill = None
+                org_month_data = defaultdict(int)
                 for site in sites:
                     if by_hh:
                         sf = [
@@ -1027,7 +1055,7 @@ def content(scenario_props, base_name, user_id, compression, now):
 
                     for start, finish in sf:
                         try:
-                            normal_reads = normal_reads | _process_site(
+                            site_month_data = _process_site(
                                 sess,
                                 report_context,
                                 forecast_from,
@@ -1039,10 +1067,16 @@ def content(scenario_props, base_name, user_id, compression, now):
                                 now,
                                 summary_titles,
                                 title_dict,
-                                era_rows,
+                                org_rows,
                                 site_rows,
+                                era_rows,
+                                normal_reads,
                                 data_source_bill,
                             )
+                            for k, v in site_month_data.items():
+                                if v is not None:
+                                    org_month_data[k] += v
+
                         except BadRequest as e:
                             raise BadRequest(f"Site Code {site.code}: {e.description}")
 
@@ -1053,9 +1087,29 @@ def content(scenario_props, base_name, user_id, compression, now):
                     row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                     normal_read_rows.append(row)
 
+                org_row = [now, month_start] + [
+                    org_month_data[k] for k in summary_titles
+                ]
+                org_rows.append([make_val(v) for v in org_row])
+
                 write_spreadsheet(
                     rf, compression, site_rows, era_rows, normal_read_rows
                 )
+        if scenario_props.get("save_report_run", False):
+            report_run_id = ReportRun.w_insert(
+                "monthly_duration", user_id, fname, {"scenario": scenario_props}
+            )
+            for tab, rows in (
+                ("org", org_rows),
+                ("site", site_rows),
+                ("era", era_rows),
+            ):
+                titles = rows[0]
+                for row in rows[1:]:
+                    values = dict(zip(titles, row))
+                    ReportRun.w_insert_row(report_run_id, tab, titles, values, {})
+            ReportRun.w_update(report_run_id, "finished")
+
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")

@@ -1287,8 +1287,9 @@ def download_delete(fname):
 @home.route("/report_runs")
 def report_runs_get():
     runs = g.sess.query(ReportRun).order_by(ReportRun.date_created.desc())
+    importer = chellow.rrun.get_importer()
 
-    return render_template("report_runs.html", runs=runs)
+    return render_template("report_runs.html", runs=runs, importer=importer)
 
 
 @home.route("/report_runs/<int:run_id>")
@@ -1374,6 +1375,21 @@ def report_run_get(run_id):
             "report_run_asset_comparison.html",
             run=run,
             rows=rows,
+        )
+    elif run.name == "monthly_duration":
+        org_rows = (
+            g.sess.execute(
+                select(ReportRunRow)
+                .filter(ReportRunRow.report_run == run, ReportRunRow.tab == "org")
+                .order_by(ReportRunRow.data["values"]["month"])
+            )
+            .scalars()
+            .all()
+        )
+        return render_template(
+            "report_run_monthly_duration_org.html",
+            run=run,
+            org_rows=org_rows,
         )
 
     elif run.name == "ecoes_comparison":

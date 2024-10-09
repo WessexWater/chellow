@@ -25,6 +25,7 @@ import chellow.e.views
 import chellow.gas.cv
 import chellow.gas.views
 import chellow.national_grid
+import chellow.rrun
 import chellow.testing
 from chellow.models import (
     Contract,
@@ -60,6 +61,7 @@ def get_importer_modules():
         chellow.e.bmarketidx,
         chellow.national_grid,
         chellow.rate_server,
+        chellow.rrun,
     )
 
 

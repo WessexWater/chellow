@@ -35,4 +35,35 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<h2>Report Run Deleter</h2>
+
+	{% if importer %}
+
+		<table>
+			<tr>
+				<th>Is Going?</th>
+				<td>{{importer.going.is_set()}}</td>
+			</tr>
+			{% if importer.going.is_set() %}
+				<tr>
+					<th>Progress</th>
+					<td>{{importer.progress}}</td>
+				</tr>
+			{% endif %}
+		</table>
+
+
+		<h4 id="log">Log</h4>
+
+		<ul>
+			{% for message in importer.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+
+	{% else %}
+		<p>Deleter not present.</p>
+	{% endif %}
 {% endblock %}
