@@ -1082,7 +1082,7 @@ def content(scenario_props, base_name, user_id, compression, now):
         )
         for tab, rows in (("org", org_rows), ("site", site_rows), ("era", era_rows)):
             titles = rows[0]
-            for row in rows:
+            for row in rows[1:]:
                 values = dict(zip(titles, row))
                 ReportRun.w_insert_row(report_run_id, tab, titles, values, {})
         ReportRun.w_update(report_run_id, "finished")
