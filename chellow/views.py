@@ -1375,6 +1375,21 @@ def report_run_get(run_id):
             run=run,
             rows=rows,
         )
+    elif run.name == "monthly_duration":
+        org_rows = (
+            g.sess.execute(
+                select(ReportRunRow)
+                .filter(ReportRunRow.report_run == run, ReportRunRow.tab == "org")
+                .order_by(ReportRunRow.data["values"]["month"])
+            )
+            .scalars()
+            .all()
+        )
+        return render_template(
+            "report_run_monthly_duration_org.html",
+            run=run,
+            org_rows=org_rows,
+        )
 
     elif run.name == "ecoes_comparison":
         rows = (

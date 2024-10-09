@@ -24,6 +24,7 @@ from chellow.models import (
     Era,
     MeasurementRequirement,
     RSession,
+    ReportRun,
     Scenario,
     Site,
     SiteEra,
@@ -122,8 +123,10 @@ def _process_site(
     now,
     summary_titles,
     title_dict,
-    era_rows,
+    org_rows,
     site_rows,
+    era_rows,
+    normal_reads,
     data_source_bill,
 ):
     scenario_hh = scenario_props.get("hh_data", {})
@@ -147,7 +150,6 @@ def _process_site(
 
     site_category = None
     site_sources = set()
-    normal_reads = set()
     site_month_data = defaultdict(int)
     for i, (order, imp_mpan_core, exp_mpan_core, imp_ss, exp_ss) in enumerate(
         sorted(calcs, key=str)
@@ -708,7 +710,7 @@ def _process_site(
     ] + [site_month_data[k] for k in summary_titles]
 
     site_rows.append([make_val(v) for v in site_row])
-    return normal_reads
+    return site_month_data
 
 
 class Object:
@@ -734,6 +736,7 @@ def content(scenario_props, base_name, user_id, compression, now):
         ind_cont = report_context["contract_names"] = {}
 
     sess = rf = None
+    org_rows = []
     site_rows = []
     era_rows = []
     normal_read_rows = []
@@ -806,7 +809,8 @@ def content(scenario_props, base_name, user_id, compression, now):
 
             user = User.get_by_id(sess, user_id)
 
-            rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
+            fname = "_".join(base_name) + ".ods"
+            rf = open_file(fname, user, mode="wb")
 
             for rate_script in scenario_props.get("rates", []):
                 contract_id = rate_script["contract_id"]
@@ -858,7 +862,21 @@ def content(scenario_props, base_name, user_id, compression, now):
                     )
 
             by_hh = scenario_props.get("by_hh", False)
+            org_header_titles = [
+                "creation-date",
+                "month",
+            ]
 
+            site_header_titles = [
+                "creation-date",
+                "site-id",
+                "site-name",
+                "associated-site-ids",
+                "month",
+                "metering-type",
+                "sources",
+                "generator-types",
+            ]
             era_header_titles = [
                 "creation-date",
                 "imp-mpan-core",
@@ -887,16 +905,6 @@ def content(scenario_props, base_name, user_id, compression, now):
                 "site-name",
                 "associated-site-ids",
                 "month",
-            ]
-            site_header_titles = [
-                "creation-date",
-                "site-id",
-                "site-name",
-                "associated-site-ids",
-                "month",
-                "metering-type",
-                "sources",
-                "generator-types",
             ]
             summary_titles = [
                 "import-grid-kwh",
@@ -1003,6 +1011,7 @@ def content(scenario_props, base_name, user_id, compression, now):
                 + [None]
                 + ["exp-supplier-" + t for t in title_dict["exp-supplier"]]
             )
+            org_rows.append(org_header_titles + summary_titles)
             site_rows.append(site_header_titles + summary_titles)
             era_rows.append(era_titles)
 
@@ -1016,6 +1025,7 @@ def content(scenario_props, base_name, user_id, compression, now):
                     data_source_bill.finish_date = month_finish
                 else:
                     data_source_bill = None
+                org_month_data = defaultdict(int)
                 for site in sites:
                     if by_hh:
                         sf = [
@@ -1027,7 +1037,7 @@ def content(scenario_props, base_name, user_id, compression, now):
 
                     for start, finish in sf:
                         try:
-                            normal_reads = normal_reads | _process_site(
+                            site_month_data = _process_site(
                                 sess,
                                 report_context,
                                 forecast_from,
@@ -1039,10 +1049,16 @@ def content(scenario_props, base_name, user_id, compression, now):
                                 now,
                                 summary_titles,
                                 title_dict,
-                                era_rows,
+                                org_rows,
                                 site_rows,
+                                era_rows,
+                                normal_reads,
                                 data_source_bill,
                             )
+                            for k, v in site_month_data.items():
+                                if v is not None:
+                                    org_month_data[k] += v
+
                         except BadRequest as e:
                             raise BadRequest(f"Site Code {site.code}: {e.description}")
 
@@ -1053,9 +1069,24 @@ def content(scenario_props, base_name, user_id, compression, now):
                     row = [mpan_core, r.date, r.msn, r.type] + list(r.reads)
                     normal_read_rows.append(row)
 
+                org_row = [now, month_start] + [
+                    org_month_data[k] for k in summary_titles
+                ]
+                org_rows.append([make_val(v) for v in org_row])
+
                 write_spreadsheet(
                     rf, compression, site_rows, era_rows, normal_read_rows
                 )
+        report_run_id = ReportRun.w_insert(
+            "monthly_duration", user_id, fname, {"scenario": scenario_props}
+        )
+        for tab, rows in (("org", org_rows), ("site", site_rows), ("era", era_rows)):
+            titles = rows[0]
+            for row in rows:
+                values = dict(zip(titles, row))
+                ReportRun.w_insert_row(report_run_id, tab, titles, values, {})
+        ReportRun.w_update(report_run_id, "finished")
+
     except BadRequest as e:
         msg = e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")

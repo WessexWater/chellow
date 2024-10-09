@@ -6402,6 +6402,14 @@ class ReportRun(Base, PersistentClass):
         return report_run
 
     @staticmethod
+    def w_insert(name, user_id, title, data):
+        with Session() as wsess:
+            user = User.get_by_id(wsess, user_id)
+            report_run = ReportRun.insert(wsess, name, user, title, data)
+            wsess.commit()
+            return report_run.id
+
+    @staticmethod
     def w_update(report_run_id, state):
         with Session() as wsess:
             report_run = ReportRun.get_by_id(wsess, report_run_id)
