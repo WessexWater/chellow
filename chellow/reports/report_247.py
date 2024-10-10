@@ -157,8 +157,6 @@ def _process_site(
         if imp_mpan_core == "displaced":
             month_data = {}
             for sname in (
-                "import-grid",
-                "export-grid",
                 "import-gen",
                 "export-gen",
                 "import-3rd-party",
@@ -171,7 +169,11 @@ def _process_site(
                 for xname in ("kwh", "net-gbp"):
                     month_data[f"{sname}-{xname}"] = 0
             month_data["billed-import-kwh"] = 0
+            month_data["import-grid-kwh"] = 0
+            month_data["export-grid-kwh"] = 0
             for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                month_data[f"import-grid-{suf}"] = 0
+                month_data[f"export-grid-{suf}"] = 0
                 month_data[f"billed-import-{suf}"] = 0
                 month_data[f"billed-supplier-import-{suf}"] = None
                 month_data[f"billed-dc-import-{suf}"] = None
@@ -242,8 +244,6 @@ def _process_site(
             site_sources.add(source_code)
             month_data = {}
             for name in (
-                "import-grid",
-                "export-grid",
                 "import-gen",
                 "export-gen",
                 "import-3rd-party",
@@ -257,7 +257,9 @@ def _process_site(
                     month_data[f"{name}-{sname}"] = 0
             for polarity in ("import", "export"):
                 month_data[f"billed-{polarity}-kwh"] = 0
+                month_data[f"{polarity}-grid-kwh"] = 0
                 for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                    month_data[f"{polarity}-grid-{suf}"] = 0
                     month_data[f"billed-{polarity}-{suf}"] = 0
                     month_data[f"billed-supplier-{polarity}-{suf}"] = 0
                     month_data[f"billed-dc-{polarity}-{suf}"] = 0
@@ -269,28 +271,32 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in imp_ss.hh_data)
                 imp_supplier_bill = imp_ss.supplier_bill
 
-                gbp = imp_supplier_bill.get("net-gbp", 0)
+                net_gbp = imp_supplier_bill.get("net-gbp", 0)
+                vat_gbp = imp_supplier_bill.get("vat-gbp", 0)
+                gross_gbp = imp_supplier_bill.get("gross-gbp", 0)
 
                 if source_code in ("grid", "gen-grid"):
-                    month_data["import-grid-net-gbp"] += gbp
+                    month_data["import-grid-net-gbp"] += net_gbp
+                    month_data["import-grid-vat-gbp"] += vat_gbp
+                    month_data["import-grid-gross-gbp"] += gross_gbp
                     month_data["import-grid-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                     if source_code == "gen-grid":
                         month_data["export-gen-kwh"] += kwh
                 elif source_code == "3rd-party":
-                    month_data["import-3rd-party-net-gbp"] += gbp
+                    month_data["import-3rd-party-net-gbp"] += net_gbp
                     month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] += gbp
+                    month_data["used-3rd-party-net-gbp"] += net_gbp
                     month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["export-3rd-party-net-gbp"] += gbp
+                    month_data["export-3rd-party-net-gbp"] += net_gbp
                     month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] -= gbp
+                    month_data["used-3rd-party-net-gbp"] -= net_gbp
                     month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-net-gbp"] -= gbp
+                    month_data["used-net-gbp"] -= net_gbp
                     month_data["used-kwh"] -= kwh
                 elif source_code == "gen":
                     month_data["import-gen-kwh"] += kwh
@@ -301,27 +307,31 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 exp_supplier_bill = exp_ss.supplier_bill
 
-                gbp = exp_supplier_bill.get("net-gbp", 0)
+                net_gbp = exp_supplier_bill.get("net-gbp", 0)
+                vat_gbp = exp_supplier_bill.get("vat-gbp", 0)
+                gross_gbp = exp_supplier_bill.get("gross-gbp", 0)
 
                 if source_code in ("grid", "gen-grid"):
-                    month_data["export-grid-net-gbp"] += gbp
+                    month_data["export-grid-net-gbp"] += net_gbp
+                    month_data["export-grid-vat-gbp"] += vat_gbp
+                    month_data["export-grid-gross-gbp"] += gross_gbp
                     month_data["export-grid-kwh"] += kwh
                     if source_code == "gen-grid":
                         month_data["import-gen-kwh"] += kwh
 
                 elif source_code == "3rd-party":
-                    month_data["export-3rd-party-net-gbp"] += gbp
+                    month_data["export-3rd-party-net-gbp"] += net_gbp
                     month_data["export-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] -= gbp
+                    month_data["used-3rd-party-net-gbp"] -= net_gbp
                     month_data["used-3rd-party-kwh"] -= kwh
-                    month_data["used-net-gbp"] -= gbp
+                    month_data["used-net-gbp"] -= net_gbp
                     month_data["used-kwh"] -= kwh
                 elif source_code == "3rd-party-reverse":
-                    month_data["import-3rd-party-net-gbp"] += gbp
+                    month_data["import-3rd-party-net-gbp"] += net_gbp
                     month_data["import-3rd-party-kwh"] += kwh
-                    month_data["used-3rd-party-net-gbp"] += gbp
+                    month_data["used-3rd-party-net-gbp"] += net_gbp
                     month_data["used-3rd-party-kwh"] += kwh
-                    month_data["used-net-gbp"] += gbp
+                    month_data["used-net-gbp"] += net_gbp
                     month_data["used-kwh"] += kwh
                 elif source_code == "gen":
                     month_data["export-gen-kwh"] += kwh
@@ -495,8 +505,6 @@ def _process_site(
                 if len(bills) > 0:
                     month_data = {}
                     for name in (
-                        "import-grid",
-                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -509,7 +517,11 @@ def _process_site(
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     month_data["billed-import-kwh"] = 0
+                    month_data["import-grid-kwh"] = 0
+                    month_data["export-grid-kwh"] = 0
                     for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+                        month_data[f"import-grid-{suf}"] = 0
+                        month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-import-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
                         month_data[f"billed-dc-import-{suf}"] = 0
@@ -612,8 +624,6 @@ def _process_site(
                 if len(bills) > 0:
                     month_data = {}
                     for name in (
-                        "import-grid",
-                        "export-grid",
                         "import-gen",
                         "export-gen",
                         "import-3rd-party",
@@ -626,8 +636,12 @@ def _process_site(
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     month_data["billed-import-kwh"] = 0
+                    month_data["import-grid-kwh"] = 0
+                    month_data["export-grid-kwh"] = 0
                     for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
                         month_data[f"billed-import-{suf}"] = 0
+                        month_data[f"import-grid-{suf}"] = 0
+                        month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
                         month_data[f"billed-dc-import-{suf}"] = 0
                         month_data[f"billed-mop-import-{suf}"] = 0
@@ -917,7 +931,11 @@ def content(scenario_props, base_name, user_id, compression, now):
                 "used-kwh",
                 "used-3rd-party-kwh",
                 "import-grid-net-gbp",
+                "import-grid-vat-gbp",
+                "import-grid-gross-gbp",
                 "export-grid-net-gbp",
+                "export-grid-vat-gbp",
+                "export-grid-gross-gbp",
                 "import-gen-net-gbp",
                 "export-gen-net-gbp",
                 "import-3rd-party-net-gbp",
