@@ -31,62 +31,33 @@
 							{{ user.email_address }}
 						{%- endif -%}">
 
-				<label>Role</label>
-				<input type="radio" name="user_role_code" value="editor"
-						{%- if request.values.user_role_editor -%}
-							{%- if request.values.user_role_editor == 'editor' %}
-								checked
-							{%- endif -%}
-						{%- else -%}
-							{%- if user.user_role.code == 'editor' %}
-								checked
-							{%- endif -%}
-						{%- endif -%}
-				>
-				<label>Editor</label>
-				<input type="radio" name="user_role_code" value="viewer"
-				{% if request.values.user_role_code %}
-					{% if request.values.user_role_code == 'viewer' %}
-						checked
-					{% endif %}
-				{% else %}
-					{% if user.user_role.code == 'viewer' %}
-						checked
-					{% endif %}
-				{% endif %}
-				>
-				<label>Viewer</label>
-				<input
-						type="radio" name="user_role_code"
-						value="party-viewer"
-						{%- if request.values.user_role_code -%}
-							{%- if request.values.user_role_code == 'party-viewer' -%}
-								checked
-							{%- endif -%}
-						{%- else -%}
-							{%- if user.user_role.code == 'party-viewer' -%}
-								checked
-							{% endif %}
-						{% endif %}>
-				<label>Party Viewer</label>
-				<select name="party_id">
-					{% for party in parties %}
-						<option value="{{ party.id }}"
-							{%- if request.values.party_id -%}
-								{%- if request.values.party_id == party.id %}
-									selected
+				<fieldset>
+					<legend>Role</legend>
+					<label>Editor</label>
+					<input type="radio" name="user_role_code" value="editor"
+							{%- if request.values.user_role_editor -%}
+								{%- if request.values.user_role_editor == 'editor' %}
+									checked
 								{%- endif -%}
 							{%- else -%}
-								{%- if user.party.id == party.id %}
-									selected
+								{%- if user.user_role.code == 'editor' %}
+									checked
 								{%- endif -%}
 							{%- endif -%}
-						>
-							{{ party.name }} {{ party.participant.code }}
-							{{ party.market_role.description }}
-						</option>
-					{% endfor %}
-				</select>
+					>
+					<label>Viewer</label>
+					<input type="radio" name="user_role_code" value="viewer"
+					{% if request.values.user_role_code %}
+						{% if request.values.user_role_code == 'viewer' %}
+							checked
+						{% endif %}
+					{% else %}
+						{% if user.user_role.code == 'viewer' %}
+							checked
+						{% endif %}
+					{% endif %}
+					>
+				</fieldset>
 				<input type="submit" value="Update">
 			</fieldset>
 		</form>
