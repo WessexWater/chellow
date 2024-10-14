@@ -83,7 +83,8 @@ def make_create_future_func_monthly(contract_name, fnames):
 def make_site_deltas(
     sess, report_context, site, scenario_hh, forecast_from, supply_ids
 ):
-    site_scenario_hh = scenario_hh.get(site.code, {})
+    site_scenario_hh_str = scenario_hh.get(site.code, {})
+    site_scenario_hh = {}
 
     site_deltas = {"hhs": {}}
     delts = site_deltas["supply_deltas"] = {}
@@ -97,7 +98,7 @@ def make_site_deltas(
 
     found_hh = False
     for typ in ("used", "generated", "parasitic", "gen_grid"):
-        hh_str = site_scenario_hh.get(typ, "")
+        hh_str = site_scenario_hh_str.get(typ, "")
         hh_data = site_scenario_hh[typ] = {}
         for row in csv.reader(StringIO(hh_str)):
             cells = [cell.strip() for cell in row]

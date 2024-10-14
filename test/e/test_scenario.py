@@ -77,6 +77,72 @@ def test_make_site_deltas(mocker):
     assert len(res["supply_deltas"][False]["grid"]["site"]) == 0
 
 
+def test_make_site_deltas_hh_multi_month(mocker):
+    era_1 = mocker.Mock()
+    era_1.start_date = utc_datetime(2018, 1, 1)
+    era_1.finish_date = None
+    filter_returns = iter([[era_1], []])
+
+    class Sess:
+        def query(self, *args):
+            return self
+
+        def join(self, *args):
+            return self
+
+        def filter(self, *args):
+            return next(filter_returns)
+
+    sess = Sess()
+    report_context = {}
+    site = mocker.Mock()
+    site.code = "1"
+    scenario_hh = {site.code: {"used": "2019-03-01 00:00, 0"}}
+    forecast_from = utc_datetime(2019, 4, 1)
+    supply_id = None
+
+    ss = mocker.patch("chellow.e.scenario.SiteSource", autospec=True)
+    ss_instance = ss.return_value
+    ss_instance.hh_data = [
+        {
+            "start-date": utc_datetime(2019, 3, 1),
+            "used-kwh": 0,
+            "export-grid-kwh": 0,
+            "import-grid-kwh": 0,
+            "msp-kwh": 0,
+        }
+    ]
+
+    se = mocker.patch("chellow.e.scenario.SiteEra", autospec=True)
+    se.site = mocker.Mock()
+
+    sup_s = mocker.patch("chellow.e.scenario.SupplySource", autospec=True)
+    sup_s_instance = sup_s.return_value
+    sup_s_instance.hh_data = {}
+
+    res = make_site_deltas(
+        sess, report_context, site, scenario_hh, forecast_from, supply_id
+    )
+    filter_returns = iter([[era_1], []])
+
+    class Sess:
+        def query(self, *args):
+            return self
+
+        def join(self, *args):
+            return self
+
+        def filter(self, *args):
+            return next(filter_returns)
+
+    sess = Sess()
+    res = make_site_deltas(
+        sess, report_context, site, scenario_hh, forecast_from, supply_id
+    )
+
+    assert len(res["supply_deltas"][False]["grid"]["site"]) == 0
+
+
 def test_make_site_deltas_nhh(mocker):
     era_1 = mocker.Mock()
     era_1.start_date = utc_datetime(2018, 1, 1)
