@@ -40,7 +40,7 @@ from chellow.utils import (
 processes = defaultdict(list)
 tasks = {}
 
-extensions = [".df2", ".simple.csv", ".bg.csv", ".vital.xlsx"]
+extensions = [".df2", ".simple.csv", ".bg.csv", ".vital.xlsx", ".edf.csv"]
 
 
 class HhDataImportProcess(threading.Thread):
