@@ -4,9 +4,12 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
+from sqlalchemy import select
+
 from werkzeug.exceptions import BadRequest
 
 from chellow.edi_lib import parse_edi, to_date, to_decimal
+from chellow.models import GEra, Session
 from chellow.utils import HH, to_ct, to_utc
 
 # From Total 2024-05-29
@@ -28,6 +31,7 @@ SUPPLIER_CODE_MAP = {
     "STD": ("standing", Decimal("1000"), Decimal("1")),
     "MET": ("commodity", Decimal("100000"), Decimal("1000")),
     "CCL": ("ccl", Decimal("100000"), Decimal("1000")),
+    "SUN": ("sundry", Decimal("1000"), Decimal("100")),
 }
 
 UNIT_MAP = {"M3": "M3", "HH": "HCUF", "HCUF": "HCUF"}
@@ -110,14 +114,19 @@ def _process_CCD2(elements, headers):
     units_billed = to_decimal(nuct) / units_divisor
     breakdown[key] += units_billed
 
-    if tpref == "standing" or "start_date" not in headers:
-        headers["start_date"] = to_date(csdt[0])
+    start_date = to_date(csdt[0])
+    if start_date is not None and (tpref == "standing" or "start_date" not in headers):
+        headers["start_date"] = start_date
 
-    if tpref == "standing" or "finish_date" not in headers:
-        headers["finish_date"] = _to_finish_date(cedt[0])
+    finish_date = _to_finish_date(cedt[0])
+    if finish_date is not None and (
+        tpref == "standing" or "finish_date" not in headers
+    ):
+        headers["finish_date"] = finish_date
 
-    if "mprn" not in headers:
-        headers["mprn"] = mloc[0]
+    mprn = mloc[0]
+    if "mprn" not in headers and len(mprn) > 0:
+        headers["mprn"] = mprn
 
     if len(conb) > 0 and len(conb[0]) > 0:
         headers["breakdown"]["units_consumed"] += to_decimal(conb) / Decimal("1000")
@@ -152,6 +161,93 @@ def _process_CCD2(elements, headers):
         )
 
 
+def _process_CCD3(elements, headers):
+    breakdown = headers["breakdown"]
+    ccde = elements["CCDE"]
+    nuct = elements["NUCT"]
+    mtnr = elements["MTNR"]
+    conb = elements["CONB"]
+    adjf = elements["ADJF"]
+    prdt = elements["PRDT"]
+    pvdt = elements["PVDT"]
+    prrd = elements["PRRD"]
+    cppu = elements["CPPU"]
+    ctot = elements["CTOT"]
+    csdt = elements["CSDT"]
+    cedt = elements["CEDT"]
+    mloc = elements["MLOC"]
+
+    ccde_supplier_code = ccde[2]
+    tpref, rate_divisor, units_divisor = SUPPLIER_CODE_MAP[ccde_supplier_code]
+
+    rate_str = cppu[0]
+    if len(rate_str.strip()) > 0:
+        rate_key = f"{tpref}_rate"
+        if rate_key not in breakdown:
+            breakdown[rate_key] = set()
+        rate = Decimal(rate_str) / rate_divisor
+        breakdown[rate_key].add(rate)
+
+    breakdown[f"{tpref}_gbp"] += to_decimal(ctot) / Decimal("100")
+
+    if len(nuct) > 1:
+        suff = NUCT_LOOKUP[nuct[1].strip()]
+        key = f"{tpref}_{suff}"
+        units_billed = to_decimal(nuct) / units_divisor
+        breakdown[key] += units_billed
+
+    start_date = to_date(csdt[0])
+    if start_date is not None and (tpref == "standing" or "start_date" not in headers):
+        headers["start_date"] = start_date
+
+    finish_date = _to_finish_date(cedt[0])
+    if finish_date is not None and (
+        tpref == "standing" or "finish_date" not in headers
+    ):
+        headers["finish_date"] = finish_date
+
+    mprn = mloc[0]
+    if "mprn" not in headers and len(mprn) > 0:
+        headers["mprn"] = mprn
+
+    if len(conb) > 0 and len(conb[0]) > 0:
+        headers["breakdown"]["units_consumed"] += to_decimal(conb) / Decimal("1000")
+
+    if tpref == "commodity":
+        headers["kwh"] += units_billed
+
+    if len(prrd) > 0 and len(prrd[0]) > 0:
+        pres_read_date = to_date(prdt[0])
+        prev_read_date = to_date(pvdt[0])
+
+        pres_read_value = Decimal(prrd[0])
+        pres_read_type = READ_TYPE_MAP[prrd[1]]
+        prev_read_value = Decimal(prrd[2])
+        prev_read_type = READ_TYPE_MAP[prrd[3]]
+        msn = mtnr[0]
+        unit = UNIT_MAP[conb[1]]
+        correction_factor = Decimal(adjf[1]) / Decimal(100000)
+
+        headers["reads"].append(
+            {
+                "msn": msn,
+                "unit": unit,
+                "correction_factor": correction_factor,
+                "prev_date": prev_read_date,
+                "prev_value": prev_read_value,
+                "prev_type_code": prev_read_type,
+                "pres_date": pres_read_date,
+                "pres_value": pres_read_value,
+                "pres_type_code": pres_read_type,
+            }
+        )
+
+
+def _process_CLO(elements, headers):
+    cloc = elements["CLOC"]
+    headers["account"] = cloc[2]
+
+
 def _process_MTR(elements, headers):
     if headers["message_type"] == "UTLBIL":
         breakdown = headers["breakdown"]
@@ -159,11 +255,35 @@ def _process_MTR(elements, headers):
             if isinstance(v, set):
                 breakdown[k] = sorted(v)
 
+        account = headers["account"]
+        try:
+            mprn = headers["mprn"]
+        except KeyError:
+            with Session() as sess:
+                g_era = sess.scalars(
+                    select(GEra)
+                    .where(GEra.account == account)
+                    .order_by(GEra.start_date)
+                ).first()
+                if g_era is None:
+                    raise BadRequest(
+                        f"Couldn't find an MPRN, and then couldn't fine a supply "
+                        f"with account {account}."
+                    )
+                else:
+                    mprn = g_era.g_supply.mprn
+
+        start_date = headers["start_date"]
+        if "finish_date" in headers:
+            finish_date = headers["finish_date"]
+        else:
+            finish_date = start_date
+
         return {
             "raw_lines": "\n".join(headers["raw_lines"]),
-            "mprn": headers["mprn"],
+            "mprn": mprn,
             "reference": headers["reference"],
-            "account": headers["mprn"],
+            "account": account,
             "reads": headers["reads"],
             "kwh": headers["kwh"],
             "breakdown": headers["breakdown"],
@@ -171,8 +291,8 @@ def _process_MTR(elements, headers):
             "vat_gbp": headers["vat"],
             "gross_gbp": headers["gross"],
             "bill_type_code": headers["bill_type_code"],
-            "start_date": headers["start_date"],
-            "finish_date": headers["finish_date"],
+            "start_date": start_date,
+            "finish_date": finish_date,
             "issue_date": headers["issue_date"],
         }
 
@@ -215,10 +335,10 @@ CODE_FUNCS = {
     "BTL": _process_NOOP,
     "CCD1": _process_NOOP,
     "CCD2": _process_CCD2,
-    "CCD3": _process_NOOP,
+    "CCD3": _process_CCD3,
     "CCD4": _process_NOOP,
     "CDT": _process_NOOP,
-    "CLO": _process_NOOP,
+    "CLO": _process_CLO,
     "END": _process_NOOP,
     "FIL": _process_NOOP,
     "MHD": _process_MHD,
