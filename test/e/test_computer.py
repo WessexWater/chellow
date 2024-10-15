@@ -1003,6 +1003,135 @@ def test_SupplySource_init_nhh(sess, mocker):
     SupplySource(sess, start_date, finish_date, forecast_date, era, is_import, caches)
 
 
+def test_SupplySource_init_era_maps(sess, mocker):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    exp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "521", "Export (HV)", voltage_level, False, False, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "grid")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        "773",
+        dc_contract,
+        "ghyy3",
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        None,
+        None,
+        None,
+        None,
+        None,
+        "22 7867 6232 781",
+        "521",
+        exp_supplier_contract,
+        "7748",
+        361,
+    )
+    era = supply.eras[0]
+    active_channel = era.insert_channel(sess, False, "ACTIVE")
+    active_data_raw = [
+        {
+            "start_date": utc_datetime(2009, 8, 10),
+            "value": 10,
+            "status": "A",
+        }
+    ]
+    active_channel.add_hh_data(sess, active_data_raw)
+    era.insert_channel(sess, True, "REACTIVE_IMP")
+
+    sess.commit()
+
+    caches = {}
+    start_date = utc_datetime(2009, 7, 31, 23, 00)
+    finish_date = utc_datetime(2009, 8, 31, 22, 30)
+    forecast_date = utc_datetime(2019, 8, 31, 22, 30)
+    is_import = False
+    new_sc = 10000
+    era_maps = {vf: {"exp_sc": new_sc}}
+    ss = SupplySource(
+        sess,
+        start_date,
+        finish_date,
+        forecast_date,
+        era,
+        is_import,
+        caches,
+        era_maps=era_maps,
+    )
+
+    assert ss.sc == new_sc
+
+
 def test_SiteSource_get_data_sources(mocker):
     mocker.patch.object(SiteSource, "__init__", lambda *x: None)
     mocker.patch("chellow.e.computer.displaced_era")

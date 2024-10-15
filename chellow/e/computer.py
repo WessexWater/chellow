@@ -993,7 +993,10 @@ class SupplySource(DataSource):
             else:
                 self.llfc = era.imp_llfc
 
-            self.sc = era.imp_sc
+            if "imp_sc" in self.era_map:
+                self.sc = self.era_map["imp_sc"]
+            else:
+                self.sc = era.imp_sc
             self.supplier_account = era.imp_supplier_account
 
             if era.imp_supplier_contract.id in self.era_map_supplier_contracts:
@@ -1020,7 +1023,10 @@ class SupplySource(DataSource):
             else:
                 self.llfc = era.exp_llfc
 
-            self.sc = 0 if era.exp_sc is None else era.exp_sc
+            if "exp_sc" in self.era_map:
+                self.sc = self.era_map["exp_sc"]
+            else:
+                self.sc = era.exp_sc
             self.supplier_account = era.exp_supplier_account
 
             if era.exp_supplier_contract is None:
