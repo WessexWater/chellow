@@ -172,7 +172,8 @@ def _handle_0461(headers, pre_record, record):
     mpan_core = parse_mpan_core(parts["mpan_core"])
     headers["mpan_core"] = mpan_core
     units = CONSUMPTION_UNITS_LOOKUP[parts["units"].strip()]
-    if units == "kWh":
+    register_code = parts["register_code"].strip()
+    if units == "kWh" and not register_code.startswith("NOCHARGE"):
         headers["kwh"] += Decimal(parts["quantity"])
 
     prev_read_date_str = parts["prev_read_date"].strip()
