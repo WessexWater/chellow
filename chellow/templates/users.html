@@ -74,24 +74,6 @@
 						checked
 					{% endif %}
 				>
-				<label>Party Viewer</label>
-				<input type="radio" name="user_role_code" value="party-viewer"
-					{% if request.values.user_role_code == 'party-viewer' %}
-						checked
-					{% endif %}
-				>
-				<label>Party Viewer Party</label>
-				<select name="party_id">
-					{% for party in parties %}
-						<option value="{{ party.id }}"
-							{%- if request.values.user_role_id == party.id -%}
-								selected
-							{% endif %}
-						>{{ party.name }} {{ party.participant.code }}
-							{{ party.market_role.description }}
-						</option>
-					{% endfor %}
-				</select>
 			</fieldset>
 			<input type="submit" value="Add">
 		</fieldset>
