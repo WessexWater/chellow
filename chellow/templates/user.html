@@ -23,7 +23,7 @@
 		<form method="post">
 			<fieldset>
 				<legend>Update details</legend>	
-				<label>Username</label>
+				<label>Username (case sensitive)</label>
 				<input name="email_address" size="100" value="
 						{%- if request.values.email_address -%}
 							{{ request.values.email_address }}
@@ -67,11 +67,11 @@
 				<fieldset>
 					<legend>Change password</legend>	
 					<input type="hidden" name="change_password">
-					<label>Current password</label>
+					<label>Current password (case sensitive)</label>
 					<input type="password" name="current_password">
-					<label>New password</label>
+					<label>New password (case sensitive)</label>
 					<input type="password" name="new_password">
-					<label>Confirm new Password</label>
+					<label>Confirm new Password (case sensitive)</label>
 					<input type="password" name="confirm_new_password">
 					<input type="submit" value="Change">
 				</fieldset>

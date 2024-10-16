@@ -50,10 +50,10 @@
 		<fieldset>
 			<legend>Add new user</legend>	
 
-			<label>Username</label>
+			<label>Username (case sensitive)</label>
 			{{input_text('email_address')}}
 			{% if not ad_auth_on %}
-				<label>Password</label>
+				<label>Password (case sensitive)</label>
 				<input type="password" name="password">
 			{% endif %}
 			<fieldset>
