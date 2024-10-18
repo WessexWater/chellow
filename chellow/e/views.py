@@ -728,9 +728,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2822,9 +2822,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5164,9 +5164,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -6159,9 +6159,9 @@ def supply_note_edit_delete(supply_id, index):
         supply.note = dumps(supply_note)
         g.sess.commit()
         res = make_response()
-        res.headers[
-            "HX-Redirect"
-        ] = f"{chellow.utils.url_root}/e/supplies/{supply_id}/notes"
+        res.headers["HX-Redirect"] = (
+            f"{chellow.utils.url_root}/e/supplies/{supply_id}/notes"
+        )
         return res
     except BadRequest as e:
         flash(e.description)
