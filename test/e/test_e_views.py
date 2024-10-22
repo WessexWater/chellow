@@ -33,7 +33,6 @@ from chellow.models import (
     MtcSsc,
     Participant,
     Pc,
-    Scenario,
     Site,
     Source,
     Ssc,
@@ -2678,44 +2677,6 @@ def test_read_add_get_existing_era(sess, client):
         r'<option value="1">A Actual Change of Supplier Read</option>'
     ]
     match(response, 200, *patterns)
-
-
-def test_scenario_get(sess, client):
-    props = {
-        "scenario_start_year": 2010,
-        "scenario_start_month": 5,
-    }
-    scenario = Scenario.insert(sess, "scenario 1", props)
-    sess.commit()
-
-    response = client.get(f"/e/scenarios/{scenario.id}")
-
-    match(response, 200)
-
-
-def test_scenario_edit_post(sess, client):
-    props = {
-        "scenario_start_year": 2010,
-        "scenario_start_month": 5,
-        "scenario_duration": 2,
-    }
-    scenario = Scenario.insert(sess, "scenario 1", props)
-    sess.commit()
-
-    data = {
-        "name": "scenario_bau",
-        "properties": """
-{
-  "local_rates": [],
-  "scenario_start_year": 2015,
-  "scenario_start_month": 6,
-  "scenario_duration": 1
-}""",
-    }
-
-    response = client.post(f"/e/scenarios/{scenario.id}/edit", data=data)
-
-    match(response, 303, r"/scenarios/1")
 
 
 def test_site_add_e_supply_form_get(client, sess):

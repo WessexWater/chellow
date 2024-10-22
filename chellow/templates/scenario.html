@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; {{scenario.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/scenarios">Scenarios</a> &raquo; {{scenario.name}} 
+ 	[<a href="/scenarios/{{scenario.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	{% if scenario_props.get('utility') == 'gas' %}
+		<form action="/reports/g_monthly_duration">
+			<legend>Run With Monthly Duration</legend>
+			<fieldset>
+				<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+				<label>Months</label> {{input_text('months', '1', 2, 2)}}
+				<label>Finish Month</label>
+				{{input_date('finish', month_finish, resolution='month')}}
+				<input type="submit" value="Run">
+			</fieldset>
+		</form>
+	{% else %}
+		<form action="/reports/247" method="post">
+			<fieldset>
+				<legend>Run With Monthly Duration</legend>
+				<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+				<label>Months</label> {{input_text('months', initial=scenario_duration, size=2, maxlength=2)}}
+				<label>Finish month</label>
+				{{input_date('finish', scenario_finish_date, resolution='month')}}
+				<label>Site Codes</label>
+				{{input_textarea('site_codes', '', 5, 40,
+					placeholder='One on each line, includes all if left blank')}}    						
+				<input type="submit" value="Run">
+			</fieldset>	
+		</form>
+
+		<form action="/reports/59" method="post">
+			<fieldset>
+				<legend>Run With Duration</legend>
+				<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+				<label>Start Date</label>
+				{{ input_date('start', scenario_start_date) }}
+				<label>Finish Date</label>
+				{{ input_date('finish', scenario_finish_date) }}
+				<label>Site Codes</label>
+				{{input_textarea('site_codes', site_codes, 5, 40,
+					placeholder='One on each line, includes all if left blank')}}    						
+				<input type="submit" value="Run">
+			</fieldset>	
+		</form>
+	{% endif %}
+
+	<h2>Properties</h2>	
+
+	<pre>{{scenario.properties}}</pre>
+
+	{% include "/scenario_docs.html" %}
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; {{scenario.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/scenarios">Scenarios</a> &raquo; 
+	<a href="/scenarios/{{scenario.id}}">{{scenario.name}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+
+	<form method="post" action="/scenarios/{{scenario.id}}/edit">
+		<fieldset>
+			<legend>Update Scenario</legend>	
+			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<label>Name</label> {{input_text('name', scenario.name)}}
+			<label>Properties</label>
+			{{input_textarea('properties', scenario.properties, 20, 80, show_pos=True)}}
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>
+
+	{% include "scenario_docs.html" %}
+	
+	<form hx-delete="/scenarios/{{scenario.id}}/edit"
+			hx-confirm="Are you sure you want to delete this scenario?">
+		<fieldset>
+			<legend>Delete this scenario</legend>	
+			<input type="hidden" name="scenario_id" value="{{scenario.id}}">
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+{% endblock %}

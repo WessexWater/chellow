@@ -68,7 +68,6 @@ from chellow.models import (
     ReadType,
     RegisterRead,
     Report,
-    Scenario,
     Site,
     SiteEra,
     Snag,
@@ -80,7 +79,6 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
-    c_months_c,
     c_months_u,
     csv_make_val,
     ct_datetime,
@@ -3908,142 +3906,6 @@ def read_types_get():
 def read_type_get(read_type_id):
     read_type = ReadType.get_by_id(g.sess, read_type_id)
     return render_template("read_type.html", read_type=read_type)
-
-
-@e.route("/scenarios")
-def scenarios_get():
-    scenarios = g.sess.query(Scenario).order_by(Scenario.name).all()
-    return render_template("scenarios.html", scenarios=scenarios)
-
-
-@e.route("/scenarios/add", methods=["POST"])
-def scenario_add_post():
-    try:
-        name = req_str("name")
-        properties = req_zish("properties")
-        scenario = Scenario.insert(g.sess, name, properties)
-        g.sess.commit()
-        return chellow_redirect(f"/scenarios/{scenario.id}", 303)
-    except BadRequest as e:
-        g.sess.rollback()
-        flash(e.description)
-        scenarios = g.sess.query(Scenario).order_by(Scenario.name)
-        return make_response(
-            render_template("scenario_add.html", scenarios=scenarios), 400
-        )
-
-
-@e.route("/scenarios/add")
-def scenario_add_get():
-    now = utc_datetime_now()
-    props = {
-        "scenario_start_month": now.month,
-        "scenario_start_year": now.year,
-        "scenario_duration": 1,
-    }
-    return render_template("scenario_add.html", initial_props=dumps(props))
-
-
-@e.route("/scenarios/<int:scenario_id>")
-def scenario_get(scenario_id):
-    start_date = None
-    finish_date = None
-    duration = 1
-
-    scenario = Scenario.get_by_id(g.sess, scenario_id)
-    props = scenario.props
-    site_codes = "\n".join(props.get("site_codes", []))
-    try:
-        duration = props["scenario_duration"]
-        _, finish_date_ct = list(
-            c_months_c(
-                start_year=props["scenario_start_year"],
-                start_month=props["scenario_start_month"],
-                months=duration,
-            )
-        )[-1]
-        finish_date = to_utc(finish_date_ct)
-    except KeyError:
-        pass
-
-    try:
-        start_date = to_utc(
-            ct_datetime(
-                props["scenario_start_year"],
-                props["scenario_start_month"],
-                props["scenario_start_day"],
-                props["scenario_start_hour"],
-                props["scenario_start_minute"],
-            )
-        )
-    except KeyError:
-        pass
-
-    try:
-        finish_date = to_utc(
-            ct_datetime(
-                props["scenario_finish_year"],
-                props["scenario_finish_month"],
-                props["scenario_finish_day"],
-                props["scenario_finish_hour"],
-                props["scenario_finish_minute"],
-            )
-        )
-    except KeyError:
-        pass
-    return render_template(
-        "scenario.html",
-        scenario=scenario,
-        scenario_start_date=start_date,
-        scenario_finish_date=finish_date,
-        scenario_duration=duration,
-        site_codes=site_codes,
-    )
-
-
-@e.route("/scenarios/<int:scenario_id>/edit")
-def scenario_edit_get(scenario_id):
-    scenario = Scenario.get_by_id(g.sess, scenario_id)
-    return render_template("scenario_edit.html", scenario=scenario)
-
-
-@e.route("/scenarios/<int:scenario_id>/edit", methods=["POST"])
-def scenario_edit_post(scenario_id):
-    try:
-        scenario = Scenario.get_by_id(g.sess, scenario_id)
-        name = req_str("name")
-        properties = req_zish("properties")
-        scenario.update(name, properties)
-        g.sess.commit()
-        return chellow_redirect(f"/scenarios/{scenario.id}", 303)
-    except BadRequest as e:
-        g.sess.rollback()
-        description = e.description
-        flash(description)
-        return make_response(
-            render_template(
-                "scenario_edit.html",
-                scenario=scenario,
-            ),
-            400,
-        )
-
-
-@e.route("/scenarios/<int:scenario_id>/edit", methods=["DELETE"])
-def scenario_edit_delete(scenario_id):
-    try:
-        scenario = Scenario.get_by_id(g.sess, scenario_id)
-        scenario.delete(g.sess)
-        g.sess.commit()
-        res = make_response()
-        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/scenarios"
-        return res
-    except BadRequest as e:
-        g.sess.rollback()
-        flash(e.description)
-        return make_response(
-            render_template("scenario_edit.html", scenario=scenario), 400
-        )
 
 
 @e.route("/sites/<int:site_id>/energy_management")

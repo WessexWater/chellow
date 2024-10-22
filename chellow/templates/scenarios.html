@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios
+{% endblock %}
+
+{% block nav %}
+	Scenarios [<a href="/scenarios/add">add</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<thead>
+			<tr>
+				<th>Scenario</th>
+				<th>View</th>
+				<th>Edit</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for scenario in scenarios %}
+				<tr>
+					<td>{{scenario.name}}</td>
+					<td><a href="/scenarios/{{scenario.id}}">View</a></td>
+					<td>[<a href="/scenarios/{{scenario.id}}/edit">edit</a>]</td>
+					<td>
+						{% if 'description' in scenario.props %}
+							{{scenario.props.description}}
+						{% else %}
+							To add a description to the scenario, add something like
+							<code>"description": "My description",</code>
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

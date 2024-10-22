@@ -5,7 +5,6 @@ from io import BytesIO
 import odio
 
 from utils import match_tables
-import chellow.reports.report_g_monthly_duration
 from chellow.models import (
     BillType,
     Contract,
@@ -17,18 +16,22 @@ from chellow.models import (
     MarketRole,
     Participant,
     Site,
+    User,
     insert_bill_types,
     insert_g_read_types,
     insert_g_reading_frequencies,
     insert_g_units,
 )
+from chellow.reports.report_g_monthly_duration import content
 
 
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_supply(mocker, sess, client):
-    site = Site.insert(sess, "22488", "Water Works")
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site_code = "22488"
+    site = Site.insert(sess, site_code, "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
@@ -36,9 +39,7 @@ def test_supply(mocker, sess, client):
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.get_by_code(sess, "Z")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     g_cv_rate_script = {
         "cvs": {
             "EA": {
@@ -46,30 +47,18 @@ def test_supply(mocker, sess, client):
             }
         }
     }
-    GContract.insert_industry(
-        sess, "cv", "", {}, utc_datetime(2000, 1, 1), None, g_cv_rate_script
-    )
+    GContract.insert_industry(sess, "cv", "", {}, vf, None, g_cv_rate_script)
     ug_rate_script = {
         "ug_gbp_per_kwh": {"EA1": Decimal("40.1")},
     }
-    GContract.insert_industry(
-        sess, "ug", "", {}, utc_datetime(2000, 1, 1), None, ug_rate_script
-    )
+    GContract.insert_industry(sess, "ug", "", {}, vf, None, ug_rate_script)
     ccl_rate_script = {
         "ccl_gbp_per_kwh": Decimal("0.00525288"),
     }
-    GContract.insert_industry(
-        sess, "ccl", "", {}, utc_datetime(2000, 1, 1), None, ccl_rate_script
-    )
+    GContract.insert_industry(sess, "ccl", "", {}, vf, None, ccl_rate_script)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     charge_script = """
 import chellow.gas.ccl
@@ -127,21 +116,15 @@ def virtual_bill(ds):
         "standing_rate": 0.1,
     }
     g_contract = GContract.insert(
-        sess,
-        False,
-        "Fusion 2020",
-        charge_script,
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        g_contract_rate_script,
+        sess, False, "Fusion 2020", charge_script, {}, vf, None, g_contract_rate_script
     )
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     msn = "hgeu8rhg"
+    mprn = "87614362"
     g_supply = site.insert_g_supply(
         sess,
-        "87614362",
+        mprn,
         "main",
         g_exit_zone,
         utc_datetime(2010, 1, 1),
@@ -191,6 +174,8 @@ def virtual_bill(ds):
         utc_datetime(2015, 9, 25),
         g_read_type_A,
     )
+    user = User.get_by_email_address(sess, "admin@example.com")
+    user_id = user.id
     sess.commit()
 
     mock_file = BytesIO()
@@ -200,25 +185,18 @@ def virtual_bill(ds):
         return_value=mock_file,
     )
 
-    user = mocker.Mock()
-    site_id = site.id
-    g_supply_id = g_supply.id
     compression = False
-    finish_year = 2015
-    finish_month = 9
-    months = 1
     now = utc_datetime(2020, 9, 1)
 
-    chellow.reports.report_g_monthly_duration.content(
-        site_id,
-        g_supply_id,
-        user,
-        compression,
-        finish_year,
-        finish_month,
-        months,
-        now=now,
-    )
+    scenario_props = {
+        "site_codes": [site_code],
+        "mprns": [mprn],
+        "scenario_duration": 1,
+        "scenario_start_year": 2015,
+        "scenario_start_month": 9,
+    }
+    base_name = ["g_monthly_supply"]
+    content(scenario_props, user_id, compression, now, base_name)
 
     sheet = odio.parse_spreadsheet(mock_file)
     table = list(sheet.tables[1].rows)
@@ -232,13 +210,15 @@ def virtual_bill(ds):
             "msn",
             "unit",
             "contract",
-            "site_id",
+            "site_code",
             "site_name",
-            "associated_site_ids",
+            "associated_site_codes",
             "era-start",
             "month",
             "kwh",
-            "gbp",
+            "net_gbp",
+            "vat_gbp",
+            "gross_gbp",
             "billed_kwh",
             "billed_net_gbp",
             "billed_vat_gbp",
@@ -269,10 +249,12 @@ def virtual_bill(ds):
             "Fusion 2020",
             "22488",
             "Water Works",
-            "",
+            None,
             Datetime(2010, 1, 1, 0, 0),
             Datetime(2015, 9, 30, 23, 30),
             10888.888888888665,
+            1146.1869155555785,
+            0.0,
             1146.1869155555785,
             45.0,
             12.4,

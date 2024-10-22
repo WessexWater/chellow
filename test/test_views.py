@@ -28,6 +28,7 @@ from chellow.models import (
     Pc,
     Report,
     ReportRun,
+    Scenario,
     Site,
     Snag,
     Source,
@@ -135,6 +136,44 @@ def test_local_reports_post(client, sess):
 
     report = sess.execute(select(Report)).scalar_one()
     assert report.template == ""
+
+
+def test_scenario_get(sess, client):
+    props = {
+        "scenario_start_year": 2010,
+        "scenario_start_month": 5,
+    }
+    scenario = Scenario.insert(sess, "scenario 1", props)
+    sess.commit()
+
+    response = client.get(f"/scenarios/{scenario.id}")
+
+    match(response, 200)
+
+
+def test_scenario_edit_post(sess, client):
+    props = {
+        "scenario_start_year": 2010,
+        "scenario_start_month": 5,
+        "scenario_duration": 2,
+    }
+    scenario = Scenario.insert(sess, "scenario 1", props)
+    sess.commit()
+
+    data = {
+        "name": "scenario_bau",
+        "properties": """
+{
+  "local_rates": [],
+  "scenario_start_year": 2015,
+  "scenario_start_month": 6,
+  "scenario_duration": 1
+}""",
+    }
+
+    response = client.post(f"/scenarios/{scenario.id}/edit", data=data)
+
+    match(response, 303, r"/scenarios/1")
 
 
 def test_site_get(client, sess):

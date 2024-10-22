@@ -1,4 +1,3 @@
-import sys
 import threading
 import traceback
 
@@ -14,32 +13,34 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.e.computer
 from chellow.dloads import open_file
-from chellow.e.computer import contract_func
+from chellow.e.computer import contract_func, forecast_date
 from chellow.gas.engine import GDataSource
 from chellow.models import (
     GBill,
     GContract,
     GEra,
     GSupply,
-    Session,
+    RSession,
+    ReportRun,
+    Scenario,
     Site,
     SiteGEra,
+    User,
 )
 from chellow.utils import (
+    c_months_c,
     c_months_u,
-    ct_datetime_now,
     hh_format,
     hh_max,
     hh_min,
     make_val,
     req_bool,
     req_int,
+    req_str,
+    to_utc,
+    utc_datetime_now,
 )
 from chellow.views import chellow_redirect
-
-
-CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
-meter_order = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
 
 
 def write_spreadsheet(fl, compressed, site_rows, era_rows):
@@ -61,6 +62,7 @@ def _process_era(
     g_era_rows,
     vb_titles,
     now,
+    summary_titles,
 ):
     g_supply = g_era.g_supply
 
@@ -91,28 +93,30 @@ def _process_era(
             f"Problem with virtual bill for g_supplier_contrat {contract.id}."
         ) from e
 
-    try:
-        gbp = bill["net_gbp"]
-    except KeyError:
-        gbp = 0
-        bill["problem"] += (
-            f"For the supply {ss.mprn} the virtual bill {bill} "
-            f"from the contract {contract.name} does not contain "
-            f"the net_gbp key."
-        )
-    try:
-        kwh = bill["kwh"]
-    except KeyError:
-        kwh = 0
-        bill["problem"] += (
-            f"For the supply {ss.mprn} the virtual bill "
-            f"{bill} from the contract {contract.name} does not "
-            f"contain the 'kwh' key."
-        )
+    summary_data = {
+        "kwh": 0,
+        "net_gbp": 0,
+        "vat_gbp": 0,
+        "gross_gbp": 0,
+        "billed_kwh": 0,
+        "billed_net_gbp": 0,
+        "billed_vat_gbp": 0,
+        "billed_gross_gbp": 0,
+    }
 
-    billed_kwh = billed_net_gbp = billed_vat_gbp = billed_gross_gbp = 0
+    for key in ("kwh", "net_gbp", "vat_gbp", "gross_gbp"):
+        try:
+            summary_data[key] += bill[key]
+        except KeyError:
+            bill["problem"] += (
+                f"For the supply {ss.mprn} the virtual bill {bill} "
+                f"from the contract {contract.name} does not contain "
+                f"the {key} key."
+            )
 
-    g_era_associates = {s.site.code for s in g_era.site_g_eras if not s.is_physical}
+    associated_site_codes = {
+        s.site.code for s in g_era.site_g_eras if not s.is_physical
+    }
 
     for g_bill in sess.query(GBill).filter(
         GBill.g_supply == g_supply,
@@ -126,13 +130,12 @@ def _process_era(
             min(bill_finish, ss_finish) - max(bill_start, ss_start)
         ).total_seconds() + (30 * 60)
         overlap_proportion = overlap_duration / bill_duration
-        billed_kwh += overlap_proportion * float(g_bill.kwh)
-        billed_net_gbp += overlap_proportion * float(g_bill.net)
-        billed_vat_gbp += overlap_proportion * float(g_bill.vat)
-        billed_gross_gbp += overlap_proportion * float(g_bill.gross)
+        summary_data["billed_kwh"] += overlap_proportion * float(g_bill.kwh)
+        summary_data["billed_net_gbp"] += overlap_proportion * float(g_bill.net)
+        summary_data["billed_vat_gbp"] += overlap_proportion * float(g_bill.vat)
+        summary_data["billed_gross_gbp"] += overlap_proportion * float(g_bill.gross)
 
-    associated_site_ids = ",".join(sorted(g_era_associates))
-    g_era_rows.append(
+    g_era_row = (
         [
             make_val(v)
             for v in [
@@ -145,71 +148,117 @@ def _process_era(
                 contract.name,
                 site.code,
                 site.name,
-                associated_site_ids,
+                associated_site_codes,
                 g_era.start_date,
                 month_finish,
-                kwh,
-                gbp,
-                billed_kwh,
-                billed_net_gbp,
-                billed_vat_gbp,
-                billed_gross_gbp,
             ]
         ]
+        + [make_val(summary_data[t]) for t in summary_titles]
         + [make_val(bill.get(t)) for t in vb_titles]
     )
-    return kwh, gbp, billed_kwh, billed_net_gbp, billed_vat_gbp, billed_gross_gbp
+    g_era_rows.append(g_era_row)
+    return summary_data
 
 
-def content(
-    site_id, g_supply_id, user, compression, finish_year, finish_month, months, now=None
-):
-    if now is None:
-        now = ct_datetime_now()
+def content(scenario_props, user_id, compression, now, base_name):
     report_context = {}
-    month_list = list(
-        c_months_u(finish_year=finish_year, finish_month=finish_month, months=months)
-    )
-    start_date, finish_date = month_list[0][0], month_list[-1][-1]
-
     try:
-        with Session() as sess:
-            base_name = [
-                "g_monthly_duration",
+        with RSession() as sess:
+            start_year = scenario_props["scenario_start_year"]
+            start_month = scenario_props["scenario_start_month"]
+            months = scenario_props["scenario_duration"]
+
+            month_pairs = list(
+                c_months_u(
+                    start_year=start_year, start_month=start_month, months=months
+                )
+            )
+            start_date = month_pairs[0][0]
+            finish_date = month_pairs[-1][-1]
+
+            base_name.append(
                 hh_format(start_date)
                 .replace(" ", "_")
                 .replace(":", "")
-                .replace("-", ""),
-                "for",
-                str(months),
-                "months",
-            ]
-
-            forecast_from = chellow.e.computer.forecast_date()
-
-            sites = (
-                sess.query(Site)
-                .join(SiteGEra)
-                .join(GEra)
-                .filter(SiteGEra.is_physical == true())
-                .distinct()
-                .order_by(Site.code)
+                .replace("-", "")
             )
-            if site_id is not None:
-                site = Site.get_by_id(sess, site_id)
-                sites = sites.filter(Site.id == site.id)
-                base_name.append("site")
-                base_name.append(site.code)
-            if g_supply_id is not None:
-                g_supply = GSupply.get_by_id(sess, g_supply_id)
-                base_name.append("g_supply")
-                base_name.append(str(g_supply.id))
-                sites = sites.filter(GEra.g_supply == g_supply)
 
-            rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
+            base_name.append("for")
+            base_name.append(str(months))
+            base_name.append("months")
+
+            if "forecast_from" in scenario_props:
+                forecast_from = scenario_props["forecast_from"]
+            else:
+                forecast_from = None
+
+            if forecast_from is None:
+                forecast_from = forecast_date()
+            else:
+                forecast_from = to_utc(forecast_from)
+
+            sites = sess.query(Site).distinct().order_by(Site.code)
+
+            mprns = scenario_props.get("mprns")
+            g_supply_ids = None
+            if mprns is not None:
+                g_supply_ids = []
+                for mprn in mprns:
+                    g_supply = GSupply.get_by_mprn(sess, mprn)
+                    g_supply_ids.append(g_supply.id)
+
+                if len(g_supply_ids) == 1:
+                    base_name.append("g_supply")
+                    base_name.append(str(g_supply.id))
+                else:
+                    base_name.append("mprns")
+
+                sites = (
+                    sites.join(SiteGEra)
+                    .join(GEra)
+                    .join(GSupply)
+                    .where(GSupply.id.in_(g_supply_ids))
+                )
+
+            site_codes = scenario_props.get("site_codes")
+            if site_codes is not None:
+                if len(site_codes) == 1:
+                    base_name.append("site")
+                    base_name.append(site_codes[0])
+                else:
+                    base_name.append("sitecodes")
+                sites = sites.where(Site.code.in_(site_codes))
+
+            user = User.get_by_id(sess, user_id)
+            fname = "_".join(base_name) + ".ods"
+            rf = open_file(fname, user, mode="wb")
+            org_rows = []
             site_rows = []
             g_era_rows = []
 
+            org_header_titles = [
+                "creation_date",
+                "month",
+            ]
+            summary_titles = [
+                "kwh",
+                "net_gbp",
+                "vat_gbp",
+                "gross_gbp",
+                "billed_kwh",
+                "billed_net_gbp",
+                "billed_vat_gbp",
+                "billed_gross_gbp",
+            ]
+            org_titles = org_header_titles + summary_titles
+            site_header_titles = [
+                "creation_date",
+                "site_code",
+                "site_name",
+                "associated_site_codes",
+                "month",
+            ]
+            site_titles = site_header_titles + summary_titles
             era_header_titles = [
                 "creation_date",
                 "mprn",
@@ -218,26 +267,11 @@ def content(
                 "msn",
                 "unit",
                 "contract",
-                "site_id",
+                "site_code",
                 "site_name",
-                "associated_site_ids",
+                "associated_site_codes",
                 "era-start",
                 "month",
-            ]
-            site_header_titles = [
-                "creation_date",
-                "site_id",
-                "site_name",
-                "associated_site_ids",
-                "month",
-            ]
-            summary_titles = [
-                "kwh",
-                "gbp",
-                "billed_kwh",
-                "billed_net_gbp",
-                "billed_vat_gbp",
-                "billed_gross_gbp",
             ]
 
             vb_titles = []
@@ -252,8 +286,8 @@ def content(
                 .distinct()
                 .order_by(GContract.id)
             )
-            if g_supply_id is not None:
-                conts = conts.filter(GEra.g_supply_id == g_supply_id)
+            if g_supply_ids is not None:
+                conts = conts.where(GEra.g_supply_id.in_(g_supply_ids))
             for cont in conts:
                 title_func = chellow.e.computer.contract_func(
                     report_context, cont, "virtual_bill_titles"
@@ -267,16 +301,47 @@ def content(
                     if title not in vb_titles:
                         vb_titles.append(title)
 
-            g_era_rows.append(era_header_titles + summary_titles + vb_titles)
+            org_rows.append(org_header_titles + summary_titles)
             site_rows.append(site_header_titles + summary_titles)
+            g_era_rows.append(era_header_titles + summary_titles + vb_titles)
 
-            for month_start, month_finish in month_list:
+            for month_start, month_finish in month_pairs:
+                org_row = {
+                    "creation_date": now,
+                    "month": month_start,
+                    "kwh": 0,
+                    "net_gbp": 0,
+                    "vat_gbp": 0,
+                    "gross_gbp": 0,
+                    "billed_kwh": 0,
+                    "billed_net_gbp": 0,
+                    "billed_vat_gbp": 0,
+                    "billed_gross_gbp": 0,
+                }
                 for site in sites.filter(
                     GEra.start_date <= month_finish,
                     or_(GEra.finish_date == null(), GEra.finish_date >= month_start),
                 ):
-                    site_kwh = site_gbp = site_billed_kwh = site_billed_net_gbp = 0
-                    site_billed_vat_gbp = site_billed_gross_gbp = 0
+                    linked_sites = {
+                        s.code
+                        for s in site.find_linked_sites(sess, month_start, month_finish)
+                    }
+
+                    site_row = {
+                        "creation_date": now,
+                        "site_code": site.code,
+                        "site_name": site.name,
+                        "associated_site_codes": linked_sites,
+                        "month": month_finish,
+                        "kwh": 0,
+                        "net_gbp": 0,
+                        "vat_gbp": 0,
+                        "gross_gbp": 0,
+                        "billed_kwh": 0,
+                        "billed_net_gbp": 0,
+                        "billed_vat_gbp": 0,
+                        "billed_gross_gbp": 0,
+                    }
 
                     g_eras_q = (
                         select(GEra)
@@ -297,19 +362,12 @@ def content(
                         )
                         .order_by(GEra.id)
                     )
-                    if g_supply_id is not None:
-                        g_eras_q = g_eras_q.where(GEra.g_supply_id == g_supply_id)
+                    if g_supply_ids is not None:
+                        g_eras_q = g_eras_q.where(GEra.g_supply_id.in_(g_supply_ids))
 
                     for g_era in sess.scalars(g_eras_q):
                         try:
-                            (
-                                kwh,
-                                gbp,
-                                billed_kwh,
-                                billed_net_gbp,
-                                billed_vat_gbp,
-                                billed_gross_gbp,
-                            ) = _process_era(
+                            summary_data = _process_era(
                                 report_context,
                                 sess,
                                 site,
@@ -320,47 +378,39 @@ def content(
                                 g_era_rows,
                                 vb_titles,
                                 now,
+                                summary_titles,
                             )
-                            site_kwh += kwh
-                            site_gbp += gbp
-                            site_billed_kwh += billed_kwh
-                            site_billed_net_gbp += billed_net_gbp
-                            site_billed_vat_gbp += billed_vat_gbp
-                            site_billed_gross_gbp += billed_gross_gbp
                         except BadRequest as e:
                             raise BadRequest(
                                 f"Problem with g_era {g_era.id}: {e.description}"
                             )
+                        for k, v in summary_data.items():
+                            org_row[k] += v
+                            site_row[k] += v
 
-                    linked_sites = ", ".join(
-                        s.code
-                        for s in site.find_linked_sites(sess, month_start, month_finish)
-                    )
-
-                    site_rows.append(
-                        [
-                            make_val(v)
-                            for v in [
-                                now,
-                                site.code,
-                                site.name,
-                                linked_sites,
-                                month_finish,
-                                site_kwh,
-                                site_gbp,
-                                site_billed_kwh,
-                                site_billed_net_gbp,
-                                site_billed_vat_gbp,
-                                site_billed_gross_gbp,
-                            ]
-                        ]
-                    )
+                    site_rows.append([make_val(site_row[t]) for t in site_titles])
                     sess.rollback()
+                org_rows.append([make_val(org_row[t]) for t in org_titles])
                 write_spreadsheet(rf, compression, site_rows, g_era_rows)
+
+        if scenario_props.get("save_report_run", False):
+            report_run_id = ReportRun.w_insert(
+                "g_monthly_duration", user_id, fname, {"scenario": scenario_props}
+            )
+            for tab, rows in (
+                ("org", org_rows),
+                ("site", site_rows),
+                ("era", g_era_rows),
+            ):
+                titles = rows[0]
+                for row in rows[1:]:
+                    values = dict(zip(titles, row))
+                    ReportRun.w_insert_row(report_run_id, tab, titles, values, {})
+            ReportRun.w_update(report_run_id, "finished")
 
     except BaseException:
         msg = traceback.format_exc()
-        sys.stderr.write(msg + "\n")
+        print(msg)
         site_rows.append(["Problem " + msg])
         write_spreadsheet(rf, compression, site_rows, g_era_rows)
     finally:
@@ -374,24 +424,55 @@ def content(
 
 
 def do_get(sess):
-    finish_year = req_int("finish_year")
-    finish_month = req_int("finish_month")
-    months = req_int("months")
+    now = utc_datetime_now()
+    base_name = []
+    if "scenario_id" in request.values:
+        scenario_id = req_int("scenario_id")
+        scenario = Scenario.get_by_id(sess, scenario_id)
+        scenario_props = scenario.props
+        base_name.append(scenario.name)
+    else:
+        scenario_props = {}
+        base_name.append("g_monthly_duration")
 
-    site_id = req_int("site_id") if "site_id" in request.values else None
+    if "finish_year" in request.values:
+        year = req_int("finish_year")
+        month = req_int("finish_month")
+        months = req_int("months")
+        start_date, _ = next(
+            c_months_c(finish_year=year, finish_month=month, months=months)
+        )
+        scenario_props["scenario_start_year"] = start_date.year
+        scenario_props["scenario_start_month"] = start_date.month
+        scenario_props["scenario_duration"] = months
+
+    if "site_id" in request.values:
+        site_id = req_int("site_id")
+        scenario_props["site_codes"] = [Site.get_by_id(sess, site_id).code]
+
+    if "site_codes" in request.values:
+        site_codes_raw_str = req_str("site_codes")
+        site_codes_str = site_codes_raw_str.strip()
+        if len(site_codes_str) > 0:
+            site_codes = []
+
+            for site_code in site_codes_str.splitlines():
+                Site.get_by_code(sess, site_code)  # Check valid
+                site_codes.append(site_code)
+
+            scenario_props["site_codes"] = site_codes
 
     if "g_supply_id" in request.values:
         g_supply_id = req_int("g_supply_id")
-    else:
-        g_supply_id = None
+        g_supply = GSupply.get_by_id(sess, g_supply_id)
+        scenario_props["mprns"] = [g_supply.mprn]
 
     if "compression" in request.values:
         compression = req_bool("compression")
     else:
         compression = True
 
-    user = g.user
-    args = (site_id, g_supply_id, user, compression, finish_year, finish_month, months)
+    args = scenario_props, g.user.id, compression, now, base_name
 
     threading.Thread(target=content, args=args).start()
     return chellow_redirect("/downloads", 303)

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Scenarios &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/scenarios">Scenarios</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+	<form action="/e/scenarios/add" method="post">
+		<fieldset>
+			<legend>Add a scenario</legend>	
+			<label>Name</label> {{input_text('name')}}
+			<label>Properties</label>
+			{{input_textarea('properties', initial_props, 20, 80, show_pos=True)}}
+			<input type="submit" value="Add">
+		</fieldset>	
+	</form>
+{% endblock %}
