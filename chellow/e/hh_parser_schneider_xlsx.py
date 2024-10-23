@@ -54,21 +54,49 @@ def get_int(sheet, col, row):
     return int(get_cell(sheet, col, row).value)
 
 
-def parse_line(sheet, row):
-    timestamp_cell = get_cell(sheet, "A", row)
-    timestamp_str = timestamp_cell.value
-    # 2024-10-02 00:00:00 +1H, DST
-    ts_str = timestamp_str.split(",")[0]
-    ts_naive = Datetime.strptime(ts_str[:19], "%Y-%m-%d %H:%M:%S")
-    is_dst = ts_str[21] == 1
-    if is_dst:
-        start_date = to_utc(to_ct(ts_naive))
-    else:
-        start_date = to_utc(ts_naive)
-    start_date = validate_hh_start(start_date)
+def find_hhs(sheet, set_line_number, mpan_core):
+    pres_reading = None
+    for row in range(2, len(sheet["A"]) + 1):
+        set_line_number(row)
+        try:
+            timestamp_cell = get_cell(sheet, "A", row)
+            timestamp_str = timestamp_cell.value
+            if timestamp_str is None:
+                continue
 
-    reading = get_dec(sheet, "B", row)
-    return start_date, reading
+            # 2024-10-02 00:00:00 +1H, DST
+            ts_str = timestamp_str.split(",")[0]
+            ts_naive = Datetime.strptime(ts_str[:19], "%Y-%m-%d %H:%M:%S")
+            # Sometimes has seconds
+            ts_naive = Datetime(
+                ts_naive.year,
+                ts_naive.month,
+                ts_naive.day,
+                ts_naive.hour,
+                ts_naive.minute,
+            )
+            is_dst = ts_str[21] == 1
+            if is_dst:
+                start_date = to_utc(to_ct(ts_naive))
+            else:
+                start_date = to_utc(ts_naive)
+            start_date = validate_hh_start(start_date)
+
+            reading = get_dec(sheet, "B", row)
+
+            if pres_reading is not None:
+                datum = {
+                    "mpan_core": mpan_core,
+                    "channel_type": "ACTIVE",
+                    "start_date": start_date,
+                    "value": pres_reading - reading,
+                    "status": "A",
+                }
+                yield datum
+            pres_reading = reading
+        except BadRequest as e:
+            e.description = f"Problem at line number: {row}: {e.description}"
+            raise e
 
 
 class HhParserSchneiderXlsx:
@@ -77,30 +105,13 @@ class HhParserSchneiderXlsx:
         self.sheet = book.worksheets[0]
         imp_name = get_str(self.sheet, "B", 1).strip()
         self.mpan_core = parse_mpan_core(mpan_map[imp_name])
-        self.row_iter = iter(range(3, len(self.sheet["A"]) + 1))
-        _, self.pres_reading = parse_line(self.sheet, 2)
+        self.line_number = 0
+
+    def _set_line_number(self, line_number):
+        self.line_number = line_number
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        try:
-            self.line_number = next(self.row_iter)
-            start_date, reading = parse_line(self.sheet, self.line_number)
-            datum = {
-                "mpan_core": self.mpan_core,
-                "channel_type": "ACTIVE",
-                "start_date": start_date,
-                "value": self.pres_reading - reading,
-                "status": "A",
-            }
-            self.pres_reading = reading
-            return datum
-        except BadRequest as e:
-            e.description = (
-                f"Problem at line number: {self.line_number}: {e.description}"
-            )
-            raise e
+        return find_hhs(self.sheet, self._set_line_number, self.mpan_core)
 
     def close(self):
         self.shredder.close()
