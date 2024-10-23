@@ -85,14 +85,15 @@ def find_hhs(sheet, set_line_number, mpan_core):
             reading = get_dec(sheet, "B", row)
 
             if pres_reading is not None:
-                datum = {
-                    "mpan_core": mpan_core,
-                    "channel_type": "ACTIVE",
-                    "start_date": start_date,
-                    "value": pres_reading - reading,
-                    "status": "A",
-                }
-                yield datum
+                value = pres_reading - reading
+                if value >= 0:
+                    yield {
+                        "mpan_core": mpan_core,
+                        "channel_type": "ACTIVE",
+                        "start_date": start_date,
+                        "value": value,
+                        "status": "A",
+                    }
             pres_reading = reading
         except BadRequest as e:
             e.description = f"Problem at line number: {row}: {e.description}"
