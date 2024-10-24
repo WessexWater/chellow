@@ -224,11 +224,11 @@
       "XJJK4",
   ],
 
-  /* Rates */
+  /* Supplier Rates */
 
-  "rates": [
+  "supplier_rates": [
     {
-      "contract_id": 46,
+      "g_contract_id": 46,
       "start_date": 2014-10-01T00:00:00Z,
       "finish_date": 2015-05-01T00:00:00Z,
       "script": {
@@ -237,7 +237,7 @@
     },
 
     {
-      "contract_id": 3,
+      "g_contract_id": 3,
       "start_date": 2015-01-01T00:00:00Z,
       "finish_date": 2015-03-01T00:00:00Z,
       "script": {
@@ -246,8 +246,29 @@
     }
   ],
 
+  /* Industry Rates */
 
-  "era_maps": {
+  "industry_rates": [
+    {
+      "g_contract_id": 46,
+      "start_date": 2014-10-01T00:00:00Z,
+      "finish_date": 2015-05-01T00:00:00Z,
+      "script": {
+        "gbp_per_msp_kwh": 0.667
+      }
+    },
+
+    {
+      "g_contract_id": 3,
+      "start_date": 2015-01-01T00:00:00Z,
+      "finish_date": 2015-03-01T00:00:00Z,
+      "script": {
+        "gbp_per_gsp_kwh": 5.77
+      }
+    }
+  ],
+
+  "g_era_maps": {
     2012-09-01T00:00:00Z: {
 		},
   },

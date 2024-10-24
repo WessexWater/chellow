@@ -14,7 +14,7 @@ from werkzeug.exceptions import BadRequest
 import chellow.e.computer
 from chellow.dloads import open_file
 from chellow.e.computer import contract_func, forecast_date
-from chellow.gas.engine import GDataSource
+from chellow.gas.engine import GDataSource, g_rates
 from chellow.models import (
     GBill,
     GContract,
@@ -28,11 +28,13 @@ from chellow.models import (
     User,
 )
 from chellow.utils import (
+    PropDict,
     c_months_c,
     c_months_u,
     hh_format,
     hh_max,
     hh_min,
+    hh_range,
     make_val,
     req_bool,
     req_int,
@@ -163,6 +165,16 @@ def _process_era(
 def content(scenario_props, user_id, compression, now, base_name):
     report_context = {}
     try:
+        eng = report_context["g_engine"]
+    except KeyError:
+        eng = report_context["g_engine"] = {}
+
+    try:
+        rss_cache = eng["rates"]
+    except KeyError:
+        rss_cache = eng["rates"] = {}
+
+    try:
         with RSession() as sess:
             start_year = scenario_props["scenario_start_year"]
             start_month = scenario_props["scenario_start_month"]
@@ -197,7 +209,7 @@ def content(scenario_props, user_id, compression, now, base_name):
             else:
                 forecast_from = to_utc(forecast_from)
 
-            sites = sess.query(Site).distinct().order_by(Site.code)
+            sites = select(Site).join(SiteGEra).distinct().order_by(Site.code)
 
             mprns = scenario_props.get("mprns")
             g_supply_ids = None
@@ -214,10 +226,7 @@ def content(scenario_props, user_id, compression, now, base_name):
                     base_name.append("mprns")
 
                 sites = (
-                    sites.join(SiteGEra)
-                    .join(GEra)
-                    .join(GSupply)
-                    .where(GSupply.id.in_(g_supply_ids))
+                    sites.join(GEra).join(GSupply).where(GSupply.id.in_(g_supply_ids))
                 )
 
             site_codes = scenario_props.get("site_codes")
@@ -228,6 +237,53 @@ def content(scenario_props, user_id, compression, now, base_name):
                 else:
                     base_name.append("sitecodes")
                 sites = sites.where(Site.code.in_(site_codes))
+
+            for is_industry, rates_prop in (
+                (True, "industry_rates"),
+                (False, "supplier_rates"),
+            ):
+
+                for rate_script in scenario_props.get(rates_prop, []):
+                    g_contract_id = rate_script["g_contract_id"]
+                    try:
+                        i_cache = rss_cache[is_industry]
+                    except KeyError:
+                        i_cache = rss_cache[is_industry] = {}
+
+                    try:
+                        cont_cache = i_cache[g_contract_id]
+                    except KeyError:
+                        cont_cache = i_cache[g_contract_id] = {}
+
+                    try:
+                        rate_script_start = rate_script["start_date"]
+                    except KeyError:
+                        raise BadRequest(
+                            f"Problem in the scenario properties. Can't find the "
+                            f"'start_date' key of the contract {g_contract_id} in the "
+                            f"'{rates_prop}' map."
+                        )
+
+                    try:
+                        rate_script_finish = rate_script["finish_date"]
+                    except KeyError:
+                        raise BadRequest(
+                            f"Problem in the scenario properties. Can't find the "
+                            f"'finish_date' key of the contract {g_contract_id} in the "
+                            f"'{rates_prop}' map."
+                        )
+
+                    for dt in hh_range(
+                        report_context, rate_script_start, rate_script_finish
+                    ):
+                        g_rates(sess, report_context, g_contract_id, dt, is_industry)
+
+                    for dt in hh_range(
+                        report_context, rate_script_start, rate_script_finish
+                    ):
+                        storage = cont_cache[dt]._storage.copy()
+                        storage.update(rate_script["script"])
+                        cont_cache[dt] = PropDict("scenario properties", storage)
 
             user = User.get_by_id(sess, user_id)
             fname = "_".join(base_name) + ".ods"
@@ -279,7 +335,7 @@ def content(scenario_props, user_id, compression, now, base_name):
                 sess.query(GContract)
                 .join(GEra)
                 .join(GSupply)
-                .filter(
+                .where(
                     GEra.start_date <= finish_date,
                     or_(GEra.finish_date == null(), GEra.finish_date >= start_date),
                 )
@@ -318,9 +374,13 @@ def content(scenario_props, user_id, compression, now, base_name):
                     "billed_vat_gbp": 0,
                     "billed_gross_gbp": 0,
                 }
-                for site in sites.filter(
-                    GEra.start_date <= month_finish,
-                    or_(GEra.finish_date == null(), GEra.finish_date >= month_start),
+                for site in sess.scalars(
+                    sites.where(
+                        GEra.start_date <= month_finish,
+                        or_(
+                            GEra.finish_date == null(), GEra.finish_date >= month_start
+                        ),
+                    )
                 ):
                     linked_sites = {
                         s.code

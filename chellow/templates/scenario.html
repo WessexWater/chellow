@@ -15,9 +15,9 @@
 			<legend>Run With Monthly Duration</legend>
 			<fieldset>
 				<input type="hidden" name="scenario_id" value="{{scenario.id}}">
-				<label>Months</label> {{input_text('months', '1', 2, 2)}}
+				<label>Months</label> {{input_text('months', initial=scenario_duration, size=2, maxlength=2)}}
 				<label>Finish Month</label>
-				{{input_date('finish', month_finish, resolution='month')}}
+				{{input_date('finish', scenario_finish_date, resolution='month')}}
 				<input type="submit" value="Run">
 			</fieldset>
 		</form>
