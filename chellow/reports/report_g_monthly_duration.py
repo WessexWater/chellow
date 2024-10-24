@@ -265,17 +265,17 @@ def content(scenario_props, user_id, compression, now, base_name):
                         )
 
                     try:
-                        rate_script_start = rate_script["start_date"]
+                        rate_script_finish = rate_script["finish_date"]
                     except KeyError:
                         raise BadRequest(
                             f"Problem in the scenario properties. Can't find the "
-                            f"'start_date' key of the contract {g_contract_id} in the "
+                            f"'finish_date' key of the contract {g_contract_id} in the "
                             f"'{rates_prop}' map."
                         )
 
                     props = PropDict("scenario properties", rate_script["script"])
                     for dt in hh_range(
-                        report_context, rate_script_start, rate_script["finish_date"]
+                        report_context, rate_script_start, rate_script_finish
                     ):
                         cont_cache[dt] = props
 

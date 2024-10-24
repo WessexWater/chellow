@@ -76,8 +76,14 @@ def get_g_engine_cache(caches, name):
     try:
         return caches["g_engine"][name]
     except KeyError:
-        caches["g_engine"] = defaultdict(dict)
-        return caches["g_engine"][name]
+        try:
+            gcache = caches["g_engine"]
+        except KeyError:
+            gcache = caches["g_enine"] = {}
+
+        cache = gcache[name] = {}
+
+        return cache
 
 
 def g_contract_func(caches, contract, func_name):
