@@ -5,11 +5,11 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/e/scenarios">Scenarios</a> &raquo; Add
+	<a href="/scenarios">Scenarios</a> &raquo; Add
 {% endblock %}
 
 {% block content %}
-	<form action="/e/scenarios/add" method="post">
+	<form action="/scenarios/add" method="post">
 		<fieldset>
 			<legend>Add a scenario</legend>	
 			<label>Name</label> {{input_text('name')}}
