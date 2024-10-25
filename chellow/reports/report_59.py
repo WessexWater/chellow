@@ -16,7 +16,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.dloads import open_file
 from chellow.e.computer import contract_func, forecast_date
-from chellow.e.scenario import make_calcs, make_site_deltas
+from chellow.e.scenario import make_calcs, make_site_deltas, scenario_fill_cache
 from chellow.models import (
     Bill,
     Contract,
@@ -34,7 +34,6 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
-    PropDict,
     c_months_u,
     ct_datetime,
     ct_datetime_now,
@@ -716,21 +715,6 @@ def content(
 ):
     report_context = {}
 
-    try:
-        comp = report_context["computer"]
-    except KeyError:
-        comp = report_context["computer"] = {}
-
-    try:
-        rate_cache = comp["rates"]
-    except KeyError:
-        rate_cache = comp["rates"] = {}
-
-    try:
-        ind_cont = report_context["contract_names"]
-    except KeyError:
-        ind_cont = report_context["contract_names"] = {}
-
     rsess = rf = None
     site_rows = []
     supply_rows = []
@@ -786,55 +770,7 @@ def content(
 
             user = User.get_by_id(rsess, user_id)
             rf = open_file("_".join(base_name) + ".ods", user, mode="wb")
-
-            for rate_script in scenario_props.get("rates", []):
-                contract_id = rate_script["contract_id"]
-                try:
-                    cont_cache = rate_cache[contract_id]
-                except KeyError:
-                    cont_cache = rate_cache[contract_id] = {}
-
-                try:
-                    rate_script_start = rate_script["start_date"]
-                except KeyError:
-                    raise BadRequest(
-                        f"Problem in the scenario properties. Can't find the "
-                        f"'start_date' key of the contract {contract_id} in the "
-                        f"'rates' map."
-                    )
-
-                try:
-                    rate_script_start = rate_script["start_date"]
-                except KeyError:
-                    raise BadRequest(
-                        f"Problem in the scenario properties. Can't find the "
-                        f"'start_date' key of the contract {contract_id} in the "
-                        f"'rates' map."
-                    )
-
-                props = PropDict("scenario properties", rate_script["script"])
-                for dt in hh_range(
-                    report_context, rate_script_start, rate_script["finish_date"]
-                ):
-                    cont_cache[dt] = props
-
-            for rate_script in scenario_props.get("industry_rates", []):
-                contract_name = rate_script["contract_name"]
-                try:
-                    cont_cache = ind_cont[contract_name]
-                except KeyError:
-                    cont_cache = ind_cont[contract_name] = {}
-
-                rfinish = rate_script["finish_date"]
-                if rfinish is None:
-                    raise BadRequest(
-                        f"For the industry rate {contract_name} the finish_date can't "
-                        f"be null."
-                    )
-                for dt in hh_range(report_context, rate_script["start_date"], rfinish):
-                    cont_cache[dt] = PropDict(
-                        "scenario properties", rate_script["script"]
-                    )
+            scenario_fill_cache(report_context, rsess, scenario_props)
 
             by_hh = scenario_props.get("by_hh", False)
             is_bill_check = scenario_props.get("is_bill_check", False)

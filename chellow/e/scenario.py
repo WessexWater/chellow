@@ -15,13 +15,16 @@ from chellow.e.computer import (
     contract_func,
     datum_range,
     displaced_era,
+    hh_rate,
 )
 from chellow.models import Era, Llfc, MtcParticipant, Pc, SiteEra, Source, Supply
 from chellow.utils import (
+    PropDict,
     c_months_u,
     hh_format,
     hh_max,
     hh_min,
+    hh_range,
     parse_hh_start,
     to_ct,
     to_utc,
@@ -661,3 +664,46 @@ class ScenarioSource:
 
                 hh["msp-kwh"] += delt
                 hh["msp-kw"] += delt * 2
+
+
+def scenario_fill_cache(report_context, sess, scenario_props):
+    try:
+        comp = report_context["computer"]
+    except KeyError:
+        comp = report_context["computer"] = {}
+
+    try:
+        rate_cache = comp["rates"]
+    except KeyError:
+        rate_cache = comp["rates"] = {}
+
+    for rate_script in scenario_props.get("rates", []):
+        contract_id = rate_script["contract_id"]
+        try:
+            cont_cache = rate_cache[contract_id]
+        except KeyError:
+            cont_cache = rate_cache[contract_id] = {}
+
+        try:
+            rate_script_start = rate_script["start_date"]
+        except KeyError:
+            raise BadRequest(
+                f"Problem in the scenario properties. Can't find the 'start_date' key "
+                f"of the contract {contract_id} in the 'rates' map."
+            )
+
+        try:
+            rate_script_finish = rate_script["finish_date"]
+        except KeyError:
+            raise BadRequest(
+                f"Problem in the scenario properties. Can't find the 'finish_date' "
+                f"key of the contract {contract_id} in the 'rates' map."
+            )
+
+        for dt in hh_range(report_context, rate_script_start, rate_script_finish):
+            hh_rate(sess, report_context, contract_id, dt)
+
+        for dt in hh_range(report_context, rate_script_start, rate_script_finish):
+            storage = cont_cache[dt]._storage.copy()
+            storage.update(rate_script["script"])
+            cont_cache[dt] = PropDict("scenario properties", storage)

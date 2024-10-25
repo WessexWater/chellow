@@ -127,12 +127,30 @@ def non_core_rate(sess, caches, contract_id_or_name, date):
 
 def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
     try:
-        return caches["computer"]["rates"][market_role_code][contract_id_or_name][date]
+        ccache = caches["computer"]
+    except KeyError:
+        ccache = caches["computer"] = {}
+
+    try:
+        contract_id = ccache[market_role_code][contract_id_or_name]
     except KeyError:
         try:
-            ccache = caches["computer"]
+            mr_cache = ccache[market_role_code]
         except KeyError:
-            ccache = caches["computer"] = {}
+            mr_cache = ccache[market_role_code] = {}
+
+        if market_role_code is None:
+            contract_id = Contract.get_by_id(sess, contract_id_or_name).id
+        else:
+            contract_id = Contract.get_by_role_code_name(
+                sess, market_role_code, contract_id_or_name
+            ).id
+
+        mr_cache[contract_id_or_name] = contract_id
+
+    try:
+        return ccache["rates"][contract_id][date]
+    except KeyError:
 
         try:
             rss_cache = ccache["rates"]
@@ -140,24 +158,14 @@ def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
             rss_cache = ccache["rates"] = {}
 
         try:
-            mr_cache = rss_cache[market_role_code]
+            cont_cache = rss_cache[contract_id]
         except KeyError:
-            mr_cache = rss_cache[market_role_code] = {}
-
-        try:
-            cont_cache = mr_cache[contract_id_or_name]
-        except KeyError:
-            cont_cache = mr_cache[contract_id_or_name] = {}
+            cont_cache = rss_cache[contract_id] = {}
 
         try:
             return cont_cache[date]
         except KeyError:
-            if market_role_code is None:
-                contract = Contract.get_by_id(sess, contract_id_or_name)
-            else:
-                contract = Contract.get_by_role_code_name(
-                    sess, market_role_code, contract_id_or_name
-                )
+            contract = Contract.get_by_id(sess, contract_id)
 
             year_after = date + YEAR
             year_before = date - YEAR
