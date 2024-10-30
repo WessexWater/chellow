@@ -1013,7 +1013,7 @@ def test_supply_edit_post(client, sess):
     }
 
     response = client.post(f"/g/supplies/{g_supply.id}/edit", data=data)
-    assert response.headers["Location"] == f"http://localhost/g/supplies/{g_supply.id}"
+    assert response.headers["Location"] == f"/g/supplies/{g_supply.id}"
 
     match(response, 303)
 

@@ -74,7 +74,6 @@ def create_app(testing=False, instance_path=None):
     app.register_blueprint(chellow.views.home)
     app.register_blueprint(chellow.e.views.e)
     app.register_blueprint(chellow.gas.views.gas)
-    chellow.utils.root_path = app.root_path
 
     api = chellow.api.api
     api.init_app(app, endpoint="/api/v1")
@@ -90,6 +89,7 @@ def create_app(testing=False, instance_path=None):
             props = configuration.make_properties()
             api_props = props.get("api", {})
             api.description = api_props.get("description", "Access Chellow data")
+            chellow.utils.url_root = props.get("url_root", "")
 
     chellow.dloads.startup(Path(app.instance_path), run_deleter=(not testing))
 
@@ -115,20 +115,6 @@ def create_app(testing=False, instance_path=None):
             )
         )
         print(msg)
-
-        try:
-            scheme = request.headers["X-Forwarded-Proto"]
-        except KeyError:
-            config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-            props = config_contract.make_properties()
-            scheme = props.get("redirect_scheme", "http")
-
-        try:
-            host = request.headers["X-Forwarded-Host"]
-        except KeyError:
-            host = request.host
-
-        chellow.utils.url_root = scheme + "://" + host
 
     @app.before_request
     def check_permissions(*args, **kwargs):
