@@ -178,6 +178,7 @@ def content(
                 "bill-kwh",
                 "bill-net-gbp",
                 "bill-vat-gbp",
+                "bill-gross-gbp",
                 "bill-start-date",
                 "bill-finish-date",
                 "imp-mpan-core",
@@ -371,7 +372,13 @@ def _process_supply(
 
         covered_start = bill_start
         covered_finish = bill_start
-        covered_bdown = {"sum-msp-kwh": 0, "net-gbp": 0, "vat-gbp": 0, "problem": ""}
+        covered_bdown = {
+            "sum-msp-kwh": 0,
+            "net-gbp": 0,
+            "vat-gbp": 0,
+            "gross-gbp": 0,
+            "problem": "",
+        }
 
         vb_elems = set()
         enlarged = True
@@ -439,9 +446,23 @@ def _process_supply(
         primary_covered_bill = None
         for covered_bill in covered_bills.values():
             bill_ids.discard(covered_bill.id)
-            covered_bdown["net-gbp"] += float(covered_bill.net)
-            covered_bdown["vat-gbp"] += float(covered_bill.vat)
             covered_bdown["sum-msp-kwh"] += float(covered_bill.kwh)
+            for elem, val in (
+                ("net", covered_bill.net),
+                ("vat", covered_bill.vat),
+                ("gross", covered_bill.gross),
+            ):
+                covered_bdown[f"{elem}-gbp"] += float(val)
+                covered_elems.add(elem)
+                add_gap(
+                    caches,
+                    gaps,
+                    elem,
+                    covered_bill.start_date,
+                    covered_bill.finish_date,
+                    False,
+                    val,
+                )
             for k, v in loads(covered_bill.breakdown).items():
                 if k in ("raw_lines", "raw-lines", "vat"):
                     continue
@@ -599,7 +620,7 @@ def _process_supply(
 
             for dt, bl in vb_hhs.items():
                 for k, v in bl.items():
-                    if all((k.endswith("-gbp"), k != "net-gbp", v != 0)):
+                    if k.endswith("-gbp") and v != 0:
                         add_gap(caches, gaps, k[:-4], dt, dt, True, v)
 
             for k in virtual_bill.keys():
@@ -625,13 +646,13 @@ def _process_supply(
                 f"virtual bill. "
             )
 
-        try:
-            del virtual_bill["net-gbp"]
-        except KeyError:
-            pass
-
+        virtual_bill.pop("net-gbp", None)
+        virtual_bill.pop("gross-gbp", None)
         virtual_bill["net-gbp"] = sum(
-            v for k, v in virtual_bill.items() if k.endswith("-gbp")
+            v for k, v in virtual_bill.items() if k.endswith("-gbp") and k != "vat-gbp"
+        )
+        virtual_bill["gross-gbp"] = virtual_bill["net-gbp"] + virtual_bill.get(
+            "vat-gbp", 0
         )
 
         era = supply.find_era_at(sess, bill_finish)
@@ -665,6 +686,7 @@ def _process_supply(
             "bill-kwh": bill.kwh,
             "bill-net-gbp": bill.net,
             "bill-vat-gbp": bill.vat,
+            "bill-gross-gbp": bill.gross,
             "bill-start-date": bill_start,
             "bill-finish-date": bill_finish,
             "imp-mpan-core": imp_mpan_core,
