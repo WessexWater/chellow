@@ -94,7 +94,7 @@ ELEMENT_LOOKUP = {
     "30RS0123": "night",
     "90ANNUAL": "duos-fixed",
     "9QANNUAL": "duos-availability",
-    "9UANNUAL": "duos-excess-availability",
+    "9UANNUAL": "tnuos",
     "40ANNUAL": "maximum-demand",
     "20ANNUAL": "triad",
     "70ANNUAL": "elexon",
