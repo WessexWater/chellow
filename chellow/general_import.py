@@ -83,7 +83,8 @@ ALLOWED_ACTIONS = ("insert", "update", "delete")
 
 def general_import_era(sess, action, vals, args):
     if action == "update":
-        mpan_core = add_arg(args, "mpan_core", vals, 0)
+        mpan_core_str = add_arg(args, "mpan_core", vals, 0)
+        mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         date_str = add_arg(args, "date", vals, 1)
         dt = parse_hh_start(date_str)
@@ -150,11 +151,9 @@ def general_import_era(sess, action, vals, args):
 
         ssc_code = add_arg(args, "SSC", vals, 13)
         if ssc_code == NO_CHANGE:
-            ssc = era.ssc
+            ssc_code = era.ssc.code
         elif len(ssc_code) == 0:
-            ssc = None
-        else:
-            ssc = Ssc.get_by_code(sess, ssc_code)
+            ssc_code = None
 
         es_code = add_arg(args, "Energisation Status", vals, 14)
         if es_code == NO_CHANGE:
@@ -162,11 +161,11 @@ def general_import_era(sess, action, vals, args):
         else:
             es = EnergisationStatus.get_by_code(sess, es_code)
 
-        properties = add_arg(args, "Properties", vals, 15)
-        if properties == NO_CHANGE:
-            properties = loads(era.properties)
+        dtc_meter_type_code = add_arg(args, "DTC Meter Type", vals, 15)
+        if dtc_meter_type_code == NO_CHANGE:
+            dtc_meter_type = era.dtc_meter_type
         else:
-            properties = loads(properties)
+            dtc_meter_type = DtcMeterType.get_by_code(sess, dtc_meter_type_code)
 
         imp_mpan_core = add_arg(args, "Import MPAN Core", vals, 16)
         imp_llfc_code = None
@@ -266,9 +265,9 @@ def general_import_era(sess, action, vals, args):
             mtc_code,
             cop,
             comm,
-            ssc,
+            ssc_code,
             es,
-            properties,
+            dtc_meter_type,
             imp_mpan_core,
             imp_llfc_code,
             imp_supplier_contract,
