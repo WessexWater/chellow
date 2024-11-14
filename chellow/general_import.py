@@ -149,11 +149,13 @@ def general_import_era(sess, action, vals, args):
         comm_code = add_arg(args, "Comms Type", vals, 12)
         comm = era.comm if comm_code == NO_CHANGE else Comm.get_by_code(sess, comm_code)
 
-        ssc_code = add_arg(args, "SSC", vals, 13)
-        if ssc_code == NO_CHANGE:
-            ssc_code = era.ssc.code
-        elif len(ssc_code) == 0:
+        ssc_code_str = add_arg(args, "SSC", vals, 13)
+        if ssc_code_str == NO_CHANGE:
+            ssc_code = None if era.ssc is None else era.ssc.code
+        elif len(ssc_code_str) == 0:
             ssc_code = None
+        else:
+            ssc_code = ssc_code_str
 
         es_code = add_arg(args, "Energisation Status", vals, 14)
         if es_code == NO_CHANGE:
