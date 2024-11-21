@@ -1709,7 +1709,6 @@ class GeneralImporter(threading.Thread):
         threading.Thread.__init__(self)
         self.line_number = None
         self.f = f
-        self.rd_lock = threading.Lock()
         self.error_message = None
         self.args = []
         self.hh_data = []
@@ -1771,27 +1770,16 @@ class GeneralImporter(threading.Thread):
                 HhDatum.insert(sess, hh_data)
                 sess.commit()
         except BadRequest as e:
-            try:
-                self.rd_lock.acquire()
-                self.error_message = e.description
-            finally:
-                self.rd_lock.release()
+            self.error_message = e.description
         except BaseException:
-            try:
-                self.rd_lock.acquire()
-                self.error_message = traceback.format_exc()
-            finally:
-                self.rd_lock.release()
+            self.error_message = traceback.format_exc()
 
 
 def start_process(f):
-    try:
+    with process_lock:
         global process_id
-        process_lock.acquire()
         proc_id = process_id
         process_id += 1
-    finally:
-        process_lock.release()
 
     process = GeneralImporter(f)
     processes[proc_id] = process
@@ -1800,16 +1788,9 @@ def start_process(f):
 
 
 def get_process_ids():
-    try:
-        process_lock.acquire()
+    with process_lock:
         return processes.keys()
-    finally:
-        process_lock.release()
 
 
 def get_process(id):
-    try:
-        process_lock.acquire()
-        return processes[id]
-    finally:
-        process_lock.release()
+    return processes[id]
