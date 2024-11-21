@@ -1704,6 +1704,34 @@ for k in tuple(globals().keys()):
         typ_funcs[k[len(PREFIX) :]] = globals()[k]
 
 
+def _process_line(sess, hh_data, line, args):
+
+    action = add_arg(args, "action", line, 0).lower()
+    if action not in ALLOWED_ACTIONS:
+        raise BadRequest(f"The 'action' field must be one of {ALLOWED_ACTIONS}")
+    typ = add_arg(args, "type", line, 1).lower()
+    vals = line[2:]
+    if typ == "hh_datum":
+        if action == "insert":
+            hh_data.append(
+                {
+                    "mpan_core": parse_mpan_core(add_arg(args, "MPAN Core", vals, 0)),
+                    "start_date": parse_hh_start(add_arg(args, "Start Date", vals, 1)),
+                    "channel_type": parse_channel_type(
+                        add_arg(args, "Channel Type", vals, 2)
+                    ),
+                    "value": Decimal(add_arg(args, "Value", vals, 3)),
+                    "status": add_arg(args, "Status", vals, 4),
+                }
+            )
+    else:
+        try:
+            typ_func = typ_funcs[typ]
+            typ_func(sess, action, vals, args)
+        except KeyError:
+            raise BadRequest(f"The type {typ} is not recognized.")
+
+
 class GeneralImporter(threading.Thread):
     def __init__(self, f):
         threading.Thread.__init__(self)
@@ -1711,13 +1739,8 @@ class GeneralImporter(threading.Thread):
         self.f = f
         self.error_message = None
         self.args = []
-        self.hh_data = []
-
-    def get_fields(self):
-        fields = {"line_number": self.line_number, "error_message": self.error_message}
-        if self.error_message is not None:
-            fields["csv_line"] = self.args
-        return fields
+        self.failed_args = []
+        self.failed_lines = []
 
     def run(self):
         try:
@@ -1734,41 +1757,21 @@ class GeneralImporter(threading.Thread):
                     if len(line) > 0 and line[0].startswith("#"):
                         continue
 
-                    action = add_arg(self.args, "action", line, 0).lower()
-                    if action not in ALLOWED_ACTIONS:
-                        raise BadRequest(
-                            f"The 'action' field must be one of {ALLOWED_ACTIONS}"
-                        )
-                    typ = add_arg(self.args, "type", line, 1).lower()
-                    vals = line[2:]
-                    if typ == "hh_datum":
-                        if action == "insert":
-                            hh_data.append(
-                                {
-                                    "mpan_core": parse_mpan_core(
-                                        add_arg(self.args, "MPAN Core", vals, 0)
-                                    ),
-                                    "start_date": parse_hh_start(
-                                        add_arg(self.args, "Start Date", vals, 1)
-                                    ),
-                                    "channel_type": parse_channel_type(
-                                        add_arg(self.args, "Channel Type", vals, 2)
-                                    ),
-                                    "value": Decimal(
-                                        add_arg(self.args, "Value", vals, 3)
-                                    ),
-                                    "status": add_arg(self.args, "Status", vals, 4),
-                                }
-                            )
-                    else:
-                        try:
-                            typ_func = typ_funcs[typ]
-                            typ_func(sess, action, vals, self.args)
-                        except KeyError:
-                            raise BadRequest(f"The type {typ} is not recognized.")
+                    try:
+                        with sess.begin_nested():
+                            _process_line(sess, hh_data, line, self.args)
+
+                    except BadRequest as e:
+                        self.args.insert(0, ("Error", e.description))
+                        self.failed_args.append(self.args)
+                        self.failed_lines.append(line)
 
                 HhDatum.insert(sess, hh_data)
-                sess.commit()
+
+                if len(self.failed_lines) == 0:
+                    sess.commit()
+                else:
+                    sess.rollback()
         except BadRequest as e:
             self.error_message = e.description
         except BaseException:

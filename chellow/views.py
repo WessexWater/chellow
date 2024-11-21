@@ -755,14 +755,13 @@ def general_imports_post():
 @home.route("/general_imports/<int:import_id>")
 def general_import_get(import_id):
     try:
-        proc = chellow.general_import.get_process(import_id)
-        fields = proc.get_fields()
-        fields["is_alive"] = proc.is_alive()
-        fields["process_id"] = import_id
-        return render_template("general_import.html", **fields)
+        importer = chellow.general_import.get_process(import_id)
+        return render_template(
+            "general_import.html", import_id=import_id, importer=importer
+        )
     except BadRequest as e:
         flash(e.description)
-        return render_template("general_import.html", process_id=import_id)
+        return render_template("general_import.html", import_id=import_id)
 
 
 @home.route("/edi_viewer")
