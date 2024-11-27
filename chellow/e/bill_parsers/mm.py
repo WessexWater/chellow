@@ -147,6 +147,7 @@ READ_TYPE_LOOKUP = {
     " ": "E",
     "E": "E",
     "N": "N",
+    "S": "N",
 }
 
 
