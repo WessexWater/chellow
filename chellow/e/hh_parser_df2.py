@@ -4,7 +4,12 @@ from codecs import iterdecode
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import HH, parse_mpan_core, utc_datetime
+from chellow.utils import HH, hh_format, parse_mpan_core, utc_datetime
+
+
+def _append_new_message(messages, message):
+    if len(messages) == 0 or messages[-1] != message:
+        messages.append(message)
 
 
 def create_parser(reader, mpan_map, messages):
@@ -41,14 +46,6 @@ class StarkDf2HhParser:
                 if lline.startswith("#O"):
                     outstation_parts = lline[2:].split("-")
                     self.core = parse_mpan_core(outstation_parts[0])
-                    if self.core in self.mpan_map and self.mpan_map[self.core] is None:
-                        msg = f"The MPAN core {self.core} has been ignored"
-                        if len(self.messages) == 0 or self.messages[-1] != msg:
-                            self.messages.append(
-                                f"The MPAN core {self.core} has been ignored"
-                            )
-                        self.core = None
-                        continue
 
                 elif lline.startswith("#S"):
                     sensor = int(lline[2:].strip())
@@ -87,11 +84,31 @@ class StarkDf2HhParser:
                         raise BadRequest("Problem parsing the value: " + fields[2])
                     status = fields[3][-1]
 
-                    if self.core is None:
-                        continue
+                    mpan_core = self.core
+                    if self.core in self.mpan_map:
+                        mapping = self.mpan_map[self.core]
+                        from_date = mapping["from"]
+                        to_date = mapping["to"]
+                        if from_date <= start_date <= to_date:
+                            mpan_core = mapping["mpan"]
+
+                            if mpan_core is None:
+                                _append_new_message(
+                                    self.messages,
+                                    f"The MPAN core {self.core} is ignored from "
+                                    f"{hh_format(from_date)} to {hh_format(to_date)}",
+                                )
+                                continue
+                            else:
+                                _append_new_message(
+                                    self.messages,
+                                    f"The MPAN core {self.core} is changed to "
+                                    f"{mpan_core} from {hh_format(from_date)} to "
+                                    f"{hh_format(to_date)}",
+                                )
 
                     local_datum = {
-                        "mpan_core": self.core,
+                        "mpan_core": mpan_core,
                         "channel_type": self.channel_type,
                         "start_date": start_date,
                         "value": value,
