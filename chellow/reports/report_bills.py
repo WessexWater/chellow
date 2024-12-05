@@ -3,7 +3,7 @@ import threading
 import traceback
 from collections import defaultdict
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -11,7 +11,6 @@ from sqlalchemy.orm import joinedload
 from chellow.dloads import open_file
 from chellow.models import Batch, Bill, Session, User
 from chellow.utils import csv_make_val, req_int
-from chellow.views import chellow_redirect
 
 
 def _content(sess, writer, batch_id):
@@ -111,4 +110,4 @@ def do_get(sess):
     batch_id = req_int("batch_id")
     args = g.user.id, batch_id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

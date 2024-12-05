@@ -5,7 +5,7 @@ from datetime import datetime as Datetime
 
 from dateutil.relativedelta import relativedelta
 
-from flask import g
+from flask import g, redirect
 
 import pytz
 
@@ -17,7 +17,6 @@ from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.models import Era, Session, Site, SiteEra, Supply, User
 from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
-from chellow.views import chellow_redirect
 
 
 def content(
@@ -164,4 +163,4 @@ def do_get(sess):
         g.user.id,
     )
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

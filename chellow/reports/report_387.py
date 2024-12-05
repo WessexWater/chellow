@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
@@ -18,7 +18,6 @@ from chellow.utils import (
     req_date,
     req_int,
 )
-from chellow.views import chellow_redirect
 
 
 def content(supply_id, start_date, finish_date, user):
@@ -162,4 +161,4 @@ def do_get(sess):
 
     args = supply_id, start_date, finish_date, g.user
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

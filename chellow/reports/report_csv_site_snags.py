@@ -3,7 +3,7 @@ import threading
 import traceback
 from datetime import datetime as Datetime, timedelta as Timedelta
 
-from flask import g
+from flask import g, redirect
 
 import pytz
 
@@ -13,7 +13,6 @@ from sqlalchemy.sql.expression import null
 from chellow.dloads import open_file
 from chellow.models import Session, Site, Snag, User
 from chellow.utils import hh_format
-from chellow.views import chellow_redirect
 
 
 def content(user_id):
@@ -81,4 +80,4 @@ def content(user_id):
 def do_get(sess):
     args = (g.user.id,)
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

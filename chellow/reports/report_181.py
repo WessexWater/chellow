@@ -2,7 +2,7 @@ import csv
 import threading
 import traceback
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null
@@ -23,7 +23,6 @@ from chellow.utils import (
     req_int,
     to_utc,
 )
-from chellow.views import chellow_redirect
 
 
 def _make_sites(sess, year_start, year_finish, site_id, source_codes):
@@ -169,4 +168,4 @@ def do_get(sess):
     site_id = req_int("site_id") if "site_id" in request.values else None
     year = req_int("year")
     threading.Thread(target=content, args=(year, site_id, g.user.id)).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

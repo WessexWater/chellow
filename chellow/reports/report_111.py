@@ -9,7 +9,7 @@ from itertools import combinations
 
 from dateutil.relativedelta import relativedelta
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload, subqueryload
@@ -49,7 +49,6 @@ from chellow.utils import (
     req_str,
     to_utc,
 )
-from chellow.views import chellow_redirect
 
 
 def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):
@@ -298,7 +297,7 @@ def do_post(sess):
         report_run.id,
     )
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect(f"/report_runs/{report_run.id}", 303)
+    return redirect(f"/report_runs/{report_run.id}", 303)
 
 
 def _process_supply(

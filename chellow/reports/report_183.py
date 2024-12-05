@@ -4,7 +4,7 @@ import threading
 import traceback
 from io import StringIO
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
@@ -22,7 +22,6 @@ from chellow.utils import (
     to_ct,
     to_utc,
 )
-from chellow.views import chellow_redirect
 
 
 def _write_row(writer, titles, vals, total):
@@ -241,7 +240,7 @@ def do_post(sess):
         file_name = f"sites_hh_data_{site_id}_{finish_date_str}.csv"
         args = site_id, start_date, finish_date, g.user.id, file_name
         threading.Thread(target=site_content, args=args).start()
-        return chellow_redirect("/downloads", 303)
+        return redirect("/downloads", 303)
     else:
         typ = req_str("type")
         site_codes_str = req_str("site_codes")
@@ -252,4 +251,4 @@ def do_post(sess):
         file_name = f"sites_hh_data_{finish_date_str}_filter.zip"
         args = site_codes, typ, start_date, finish_date, g.user.id, file_name
         threading.Thread(target=none_content, args=args).start()
-        return chellow_redirect("/downloads", 303)
+        return redirect("/downloads", 303)

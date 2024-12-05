@@ -2,7 +2,7 @@ import csv
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy.sql import func, select
 
@@ -16,7 +16,6 @@ from chellow.models import (
     User,
 )
 from chellow.utils import csv_make_val
-from chellow.views import chellow_redirect
 
 
 def content(user_id):
@@ -142,4 +141,4 @@ def content(user_id):
 
 def do_get(sess):
     threading.Thread(target=content, args=(g.user.id,)).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

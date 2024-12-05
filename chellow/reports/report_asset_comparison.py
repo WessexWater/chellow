@@ -4,7 +4,7 @@ import threading
 import traceback
 from io import StringIO
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -14,7 +14,6 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.dloads import open_file
 from chellow.models import Contract, Era, ReportRun, Session, Site, SiteEra, User
-from chellow.views import chellow_redirect
 
 STATUSES_ACTIVE = ("IN USE / IN SERVICE", "STORED SPARE")
 STATUSES_INACTIVE = ("DEMOLISHED", "SOLD", "ABANDONED")
@@ -194,4 +193,4 @@ def do_post(sess):
     sess.commit()
     args = user.id, StringIO(file_item.read().decode("utf8")), report_run.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect(f"/report_runs/{report_run.id}", 303)
+    return redirect(f"/report_runs/{report_run.id}", 303)

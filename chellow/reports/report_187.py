@@ -2,7 +2,7 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import null, or_, select, text, true
 
@@ -20,7 +20,6 @@ from chellow.utils import (
     req_str,
     to_ct,
 )
-from chellow.views import chellow_redirect
 
 
 def csv_str(row):
@@ -267,4 +266,4 @@ def do_post(sess):
     args = start_date, finish_date, supply_id, mpan_cores, is_zipped, g.user.id
 
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

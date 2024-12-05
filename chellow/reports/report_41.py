@@ -4,7 +4,7 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_
 from sqlalchemy.sql.expression import null, true
@@ -23,7 +23,6 @@ from chellow.utils import (
     req_int,
     to_utc,
 )
-from chellow.views import chellow_redirect
 
 
 def _make_eras(sess, nov_start, year_finish, supply_id):
@@ -211,4 +210,4 @@ def do_get(sess):
     year = req_int("year")
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
     threading.Thread(target=content, args=(year, supply_id, g.user.id)).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

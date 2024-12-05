@@ -5,7 +5,7 @@ import traceback
 
 from dateutil.relativedelta import relativedelta
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_, text
 from sqlalchemy.orm import joinedload
@@ -42,7 +42,6 @@ from chellow.utils import (
     req_int,
     req_str,
 )
-from chellow.views import chellow_redirect
 
 
 def content(user_id, date, supply_id, mpan_cores):
@@ -528,4 +527,4 @@ def do_get(session):
 
     args = user.id, date, supply_id, mpan_cores
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

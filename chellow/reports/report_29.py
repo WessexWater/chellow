@@ -3,12 +3,11 @@ import sys
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from chellow.dloads import open_file
 from chellow.models import Session, Site, User
 from chellow.utils import c_months_u, csv_make_val, req_int, req_str, to_ct
-from chellow.views import chellow_redirect
 
 
 def _write_row(writer, total, values, titles):
@@ -78,4 +77,4 @@ def do_get(sess):
     site_id = req_int("site_id")
     args = start_date, finish_date, site_id, typ, g.user.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

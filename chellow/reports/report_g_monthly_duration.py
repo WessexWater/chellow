@@ -1,7 +1,7 @@
 import threading
 import traceback
 
-from flask import g, request
+from flask import g, redirect, request
 
 import odio
 
@@ -42,7 +42,6 @@ from chellow.utils import (
     to_utc,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect
 
 
 def write_spreadsheet(fl, compressed, site_rows, era_rows):
@@ -535,4 +534,4 @@ def do_get(sess):
     args = scenario_props, g.user.id, compression, now, base_name
 
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

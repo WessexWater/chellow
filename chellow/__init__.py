@@ -89,7 +89,6 @@ def create_app(testing=False, instance_path=None):
             props = configuration.make_properties()
             api_props = props.get("api", {})
             api.description = api_props.get("description", "Access Chellow data")
-            chellow.utils.url_root = props.get("url_root", "")
 
     chellow.dloads.startup(Path(app.instance_path), run_deleter=(not testing))
 

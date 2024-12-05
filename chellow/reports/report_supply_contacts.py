@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -21,7 +21,6 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.views import chellow_redirect
 
 
 FNAME = "supply_contacts"
@@ -127,4 +126,4 @@ def do_get(sess):
     report_run = ReportRun.insert(sess, FNAME, g.user, FNAME, {})
     sess.commit()
     threading.Thread(target=content, args=(g.user.id, report_run.id)).start()
-    return chellow_redirect(f"/report_runs/{report_run.id}", 303)
+    return redirect(f"/report_runs/{report_run.id}", 303)

@@ -2,7 +2,7 @@ import csv
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
@@ -14,7 +14,6 @@ from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.models import Contract, Era, RSession, User
 from chellow.utils import c_months_u, csv_make_val, hh_format, hh_max, hh_min, req_int
-from chellow.views import chellow_redirect
 
 
 def content(user_id, contract_id, end_year, end_month, months):
@@ -147,4 +146,4 @@ def do_get(sess):
 
     args = g.user.id, contract_id, end_year, end_month, months
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

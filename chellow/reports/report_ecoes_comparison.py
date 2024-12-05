@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 import requests
 
@@ -26,7 +26,6 @@ from chellow.models import (
     User,
 )
 from chellow.utils import csv_make_val, req_bool
-from chellow.views import chellow_redirect
 
 
 FNAME = "ecoes_comparison"
@@ -615,4 +614,4 @@ def do_get(sess):
     sess.commit()
     args = g.user.id, show_ignored, report_run.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect(f"/report_runs/{report_run.id}", 303)
+    return redirect(f"/report_runs/{report_run.id}", 303)

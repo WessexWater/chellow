@@ -16,6 +16,7 @@ from flask import (
     flash,
     g,
     make_response,
+    redirect,
     render_template as rtemplate,
     request,
 )
@@ -105,14 +106,13 @@ from chellow.utils import (
     utc_datetime_now,
 )
 from chellow.views import (
-    chellow_redirect as credirect,
     hx_redirect as chx_redirect,
     requires_editor,
 )
 
 
 def chellow_redirect(path, code=None):
-    return credirect(f"/e{path}", code)
+    return redirect(f"/e{path}", code)
 
 
 def hx_redirect(path, code=None):
@@ -1421,9 +1421,7 @@ def dno_rate_script_edit_delete(dno_rate_script_id):
         dno = Party.get_dno_by_code(g.sess, contract.name, rate_script.start_date)
         contract.delete_rate_script(g.sess, rate_script)
         g.sess.commit()
-        res = make_response()
-        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/dnos/{dno.id}"
-        return res
+        return hx_redirect(f"/dnos/{dno.id}")
     except BadRequest as e:
         flash(e.description)
         return render_template(
@@ -6020,11 +6018,7 @@ def supply_note_edit_delete(supply_id, index):
         del supply_note["notes"][index]
         supply.note = dumps(supply_note)
         g.sess.commit()
-        res = make_response()
-        res.headers["HX-Redirect"] = (
-            f"{chellow.utils.url_root}/e/supplies/{supply_id}/notes"
-        )
-        return res
+        return hx_redirect(f"/supplies/{supply_id}/notes")
     except BadRequest as e:
         flash(e.description)
         supply_note = loads(supply.note)

@@ -7,7 +7,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import null, or_, select, true
 from sqlalchemy.orm import joinedload
@@ -18,7 +18,6 @@ import chellow.gas.engine
 from chellow.dloads import open_file
 from chellow.models import GBatch, GBill, GContract, GEra, Session, Site, SiteGEra, User
 from chellow.utils import csv_make_val, hh_max, hh_min, req_date, req_int, to_utc
-from chellow.views import chellow_redirect
 
 
 def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_id):
@@ -361,4 +360,4 @@ def do_get(sess):
 
     args = g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, g.user.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

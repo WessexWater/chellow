@@ -6,7 +6,7 @@ from datetime import datetime as Datetime
 
 from dateutil.relativedelta import relativedelta
 
-from flask import flash, g, make_response, render_template, request
+from flask import flash, g, make_response, redirect, render_template, request
 
 import odio
 
@@ -48,7 +48,6 @@ from chellow.utils import (
     to_utc,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect
 
 
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
@@ -1129,7 +1128,7 @@ def do_post(sess):
 
         args = (scenario_props, base_name, user.id, compression, now)
         threading.Thread(target=content, args=args).start()
-        return chellow_redirect("/downloads", 303)
+        return redirect("/downloads", 303)
     except BadRequest as e:
         flash(e.description)
         if "scenario_id" in request.values:

@@ -13,7 +13,6 @@ from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
 
-import chellow.bank_holidays
 from chellow.e.computer import hh_rate
 from chellow.models import (
     BillType,
@@ -323,8 +322,7 @@ def g_rates(sess, caches, g_contract_id_or_name, date, is_industry):
             prefix = "industry" if g_contract.is_industry else "supplier"
 
             vals = PropDict(
-                f"the rate script {chellow.utils.url_root}/g/{prefix}_rate_scripts/"
-                f"{rs.id} ",
+                f"the rate script /g/{prefix}_rate_scripts/{rs.id} ",
                 loads(rs.script),
                 [],
             )

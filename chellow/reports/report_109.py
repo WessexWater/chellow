@@ -4,7 +4,7 @@ import threading
 import traceback
 from datetime import datetime as Datetime
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import or_, text
 from sqlalchemy.sql.expression import null
@@ -13,7 +13,6 @@ from chellow.dloads import open_file
 from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import c_months_u, hh_format, hh_range, req_int
-from chellow.views import chellow_redirect
 
 
 def to_val(v):
@@ -274,4 +273,4 @@ def do_get(sess):
     contract_id = req_int("supplier_contract_id")
     args = contract_id, end_year, end_month, months, g.user
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

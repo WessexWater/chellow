@@ -2,7 +2,7 @@ import csv
 import threading
 import traceback
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
@@ -32,7 +32,6 @@ from chellow.utils import (
     req_int,
     to_ct,
 )
-from chellow.views import chellow_redirect
 
 
 def _process_era(
@@ -202,10 +201,7 @@ def create_csv(f, sess, start_date, finish_date, contract_id):
                 )
                 writer.writerow(csv_make_val(vals.get(t)) for t in titles)
             except BadRequest as e:
-                raise BadRequest(
-                    f"Problem with {chellow.utils.url_root}eras/{era.id}/edit "
-                    f"{e.description}"
-                )
+                raise BadRequest(f"Problem with /e/eras/{era.id}/edit {e.description}")
 
             sess.rollback()  # Avoid long-running transaction
 
@@ -243,4 +239,4 @@ def do_get(sess):
     threading.Thread(
         target=content, args=(start_date, finish_date, contract_id, g.user.id)
     ).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

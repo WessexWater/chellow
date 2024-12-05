@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
@@ -16,7 +16,6 @@ from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource, forecast_date
 from chellow.models import GEra, GSupply, Session
 from chellow.utils import csv_make_val, req_date, req_int
-from chellow.views import chellow_redirect
 
 
 def content(date, g_supply_id, user):
@@ -136,4 +135,4 @@ def do_get(session):
 
     args = (date, g_supply_id, user)
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

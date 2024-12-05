@@ -13,6 +13,7 @@ from flask import (
     flash,
     g,
     make_response,
+    redirect,
     render_template as rtemplate,
     request,
 )
@@ -60,11 +61,11 @@ from chellow.utils import (
     utc_datetime,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect as credirect, hx_redirect as chx_redirect
+from chellow.views import hx_redirect as chx_redirect
 
 
 def chellow_redirect(path, code=None):
-    return credirect(f"/g{path}", code)
+    return redirect(f"/g{path}", code)
 
 
 def hx_redirect(path, code=None):

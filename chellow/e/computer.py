@@ -16,8 +16,6 @@ from werkzeug.exceptions import BadRequest
 
 from zish import dumps
 
-import chellow.bank_holidays
-import chellow.utils
 from chellow.models import (
     Bill,
     BillType,
@@ -218,11 +216,7 @@ def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
                     f"The market role code {market_role_code} isn't recognized."
                 )
 
-            vals = PropDict(
-                f"the rate script {chellow.utils.url_root}{seg}{rs.id} ",
-                loads(rs.script),
-                [],
-            )
+            vals = PropDict(f"the rate script {seg}{rs.id} ", loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals

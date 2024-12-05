@@ -3,7 +3,7 @@ import sys
 import threading
 import traceback
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import null, or_, select, true
 from sqlalchemy.orm import joinedload
@@ -11,7 +11,6 @@ from sqlalchemy.orm import joinedload
 from chellow.dloads import open_file
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply, User
 from chellow.utils import req_date, req_int, write_row
-from chellow.views import chellow_redirect
 
 
 TYPE_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
@@ -122,4 +121,4 @@ def do_get(sess):
 
     args = start_date, finish_date, site_id, g.user.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

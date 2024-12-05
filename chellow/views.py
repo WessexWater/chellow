@@ -135,19 +135,9 @@ from chellow.utils import (
 home = Blueprint("home", __name__, url_prefix="", template_folder="templates")
 
 
-def chellow_redirect(path, code=None):
-    location = chellow.utils.url_root + path
-    if code is None:
-        res = redirect(location)
-    else:
-        res = redirect(location, code)
-
-    return res
-
-
 def hx_redirect(path, status=None):
     res = Response(status=status)
-    res.headers["HX-Redirect"] = chellow.utils.url_root + path
+    res.headers["HX-Redirect"] = path
     return res
 
 
@@ -165,7 +155,7 @@ def requires_editor(f):
 @home.route("/configuration", methods=["GET"])
 def configuration():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
-    return chellow_redirect(f"/non_core_contracts/{config.id}")
+    return redirect(f"/non_core_contracts/{config.id}")
 
 
 @home.route("/health")
@@ -215,7 +205,7 @@ def local_reports_post():
             return Response("There's already a report with that name.", status=400)
         else:
             raise
-    return chellow_redirect(f"/local_reports/{report.id}", 303)
+    return redirect(f"/local_reports/{report.id}", 303)
 
 
 @home.route("/local_reports/<int:report_id>")
@@ -229,7 +219,7 @@ def local_report_post(report_id):
     report = Report.get_by_id(g.sess, report_id)
     if "delete" in request.values:
         g.sess.delete(report)
-        return chellow_redirect("/local_reports", 303)
+        return redirect("/local_reports", 303)
 
     else:
         name = req_str("name")
@@ -243,7 +233,7 @@ def local_report_post(report_id):
                 return Response("There's already a report with that name.", status=400)
             else:
                 raise
-        return chellow_redirect(f"/local_reports/{report.id}", 303)
+        return redirect(f"/local_reports/{report.id}", 303)
 
 
 @home.route("/scenarios")
@@ -259,7 +249,7 @@ def scenario_add_post():
         properties = req_zish("properties")
         scenario = Scenario.insert(g.sess, name, properties)
         g.sess.commit()
-        return chellow_redirect(f"/scenarios/{scenario.id}", 303)
+        return redirect(f"/scenarios/{scenario.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -352,16 +342,13 @@ def scenario_edit_post(scenario_id):
         properties = req_zish("properties")
         scenario.update(name, properties)
         g.sess.commit()
-        return chellow_redirect(f"/scenarios/{scenario.id}", 303)
+        return redirect(f"/scenarios/{scenario.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         description = e.description
         flash(description)
         return make_response(
-            render_template(
-                "scenario_edit.html",
-                scenario=scenario,
-            ),
+            render_template("scenario_edit.html", scenario=scenario),
             400,
         )
 
@@ -372,9 +359,7 @@ def scenario_edit_delete(scenario_id):
         scenario = Scenario.get_by_id(g.sess, scenario_id)
         scenario.delete(g.sess)
         g.sess.commit()
-        res = make_response()
-        res.headers["HX-Redirect"] = f"{chellow.utils.url_root}/e/scenarios"
-        return res
+        return hx_redirect("/scenarios")
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -633,7 +618,7 @@ def users_post():
             party = g.sess.query(Party).get(party_id)
         user = User.insert(g.sess, email_address, password, role, party)
         g.sess.commit()
-        return chellow_redirect("/users/" + str(user.id), 303)
+        return redirect("/users/" + str(user.id), 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -669,11 +654,11 @@ def user_post(user_id):
                 raise BadRequest("The password must be at least 6 characters long.")
             user.set_password(new_password)
             g.sess.commit()
-            return chellow_redirect("/users/" + str(user.id), 303)
+            return redirect("/users/" + str(user.id), 303)
         elif "delete" in request.values:
             g.sess.delete(user)
             g.sess.commit()
-            return chellow_redirect("/users", 303)
+            return redirect("/users", 303)
         else:
             email_address = req_str("email_address")
             user_role_code = req_str("user_role_code")
@@ -684,7 +669,7 @@ def user_post(user_id):
                 party = Party.get_by_id(g.sess, party_id)
             user.update(email_address, user_role, party)
             g.sess.commit()
-            return chellow_redirect("/users/" + str(user.id), 303)
+            return redirect("/users/" + str(user.id), 303)
     except BadRequest as e:
         flash(e.description)
         parties = (
@@ -743,7 +728,7 @@ def general_imports_post():
         )
         f.seek(0)
         proc_id = chellow.general_import.start_process(f)
-        return chellow_redirect("/general_imports/" + str(proc_id), 303)
+        return redirect(f"/general_imports/{proc_id}", 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
@@ -921,7 +906,7 @@ def site_edit_post(site_id):
             site.delete(g.sess)
             g.sess.commit()
             flash("Site deleted successfully.")
-            return chellow_redirect("/sites", 303)
+            return redirect("/sites", 303)
 
         elif "update" in request.form:
             code = req_str("code")
@@ -929,7 +914,7 @@ def site_edit_post(site_id):
             site.update(code, name)
             g.sess.commit()
             flash("Site updated successfully.")
-            return chellow_redirect(f"/sites/{site.id}", 303)
+            return redirect(f"/sites/{site.id}", 303)
 
         elif "insert_gas" in request.form:
             name = req_str("name")
@@ -967,7 +952,7 @@ def site_edit_post(site_id):
                 soq,
             )
             g.sess.commit()
-            return chellow_redirect(f"/g/supplies/{g_supply.id}", 303)
+            return redirect(f"/g/supplies/{g_supply.id}", 303)
         else:
             raise BadRequest(
                 "The request must contain one of the following parameter names: "
@@ -1049,7 +1034,7 @@ def site_add_post():
         name = req_str("name")
         site = Site.insert(g.sess, code, name)
         g.sess.commit()
-        return chellow_redirect("/sites/" + str(site.id), 303)
+        return redirect(f"/sites/{site.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return render_template("site_add.html")
@@ -1079,7 +1064,7 @@ def sites_get():
         )
 
         if len(sites) == 1:
-            return chellow_redirect(f"/sites/{sites[0].id}")
+            return redirect(f"/sites/{sites[0].id}")
         else:
             return render_template("sites.html", sites=sites, limit=LIMIT)
     else:
@@ -1147,9 +1132,9 @@ limit :max_results"""
         )
 
         if len(e_eras) == 1 and len(g_eras) == 0:
-            return chellow_redirect(f"/e/supplies/{e_eras[0].supply.id}", 307)
+            return redirect(f"/e/supplies/{e_eras[0].supply.id}", 307)
         elif len(e_eras) == 0 and len(g_eras) == 1:
-            return chellow_redirect(f"/g/supplies/{g_eras[0].g_supply.id}", 307)
+            return redirect(f"/g/supplies/{g_eras[0].g_supply.id}", 307)
         else:
             return render_template(
                 "supplies.html", e_eras=e_eras, g_eras=g_eras, max_results=max_results
@@ -1595,7 +1580,7 @@ def report_run_post(run_id):
     run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
     run.delete(g.sess)
     g.sess.commit()
-    return chellow_redirect("/report_runs", 303)
+    return redirect("/report_runs", 303)
 
 
 @home.route("/report_runs/<int:run_id>/spreadsheet")
@@ -1705,7 +1690,7 @@ def report_run_row_post(row_id):
         g.sess.commit()
         flash("Update successful")
 
-    return chellow_redirect(f"/report_run_rows/{row_id}", 303)
+    return redirect(f"/report_run_rows/{row_id}", 303)
 
 
 @home.route("/non_core_contracts")
@@ -1905,17 +1890,17 @@ def non_core_contract_edit_post(contract_id):
         if "delete" in request.values:
             contract.delete(g.sess)
             g.sess.commit()
-            return chellow_redirect("/non_core_contracts", 303)
+            return redirect("/non_core_contracts", 303)
         if "update_state" in request.values:
             state = req_zish("state")
             contract.update_state(state)
             g.sess.commit()
-            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
+            return redirect(f"/non_core_contracts/{contract.id}", 303)
         else:
             properties = req_zish("properties")
             contract.update_properties(properties)
             g.sess.commit()
-            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
+            return redirect(f"/non_core_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(
@@ -2014,7 +1999,7 @@ def national_grid_get():
 def national_grid_post():
     importer = chellow.national_grid.importer
     importer.go()
-    return chellow_redirect("/national_grid", 303)
+    return redirect("/national_grid", 303)
 
 
 @home.route("/non_core_contracts/<int:contract_id>/add_rate_script")
@@ -2037,7 +2022,7 @@ def non_core_rate_script_add_post(contract_id):
         start_date = req_date("start")
         rate_script = contract.insert_rate_script(g.sess, start_date, {})
         g.sess.commit()
-        return chellow_redirect("/non_core_rate_scripts/" + str(rate_script.id), 303)
+        return redirect(f"/non_core_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
         now = utc_datetime_now()
@@ -2109,7 +2094,7 @@ def non_core_rate_script_edit_post(rs_id):
         if "delete" in request.values:
             contract.delete_rate_script(g.sess, rate_script)
             g.sess.commit()
-            return chellow_redirect(f"/non_core_contracts/{contract.id}", 303)
+            return redirect(f"/non_core_contracts/{contract.id}", 303)
         else:
             script = req_zish("script")
             start_date = req_hh_date("start")
@@ -2121,7 +2106,7 @@ def non_core_rate_script_edit_post(rs_id):
                 g.sess, rate_script, start_date, finish_date, script
             )
             g.sess.commit()
-            return chellow_redirect(f"/non_core_rate_scripts/{rate_script.id}", 303)
+            return redirect(f"/non_core_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -2152,7 +2137,7 @@ def non_core_auto_importer_post(contract_id):
         except ModuleNotFoundError:
             importer = import_module(f"chellow.e.{contract.name}").get_importer()
         importer.go()
-        return chellow_redirect(f"/non_core_contracts/{contract.id}/auto_importer", 303)
+        return redirect(f"/non_core_contracts/{contract.id}/auto_importer", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -2262,7 +2247,7 @@ def rate_server_get():
 def rate_server_post():
     importer = chellow.rate_server.importer
     importer.go()
-    return chellow_redirect("/rate_server", 303)
+    return redirect("/rate_server", 303)
 
 
 @home.route("/tester")
@@ -2275,7 +2260,7 @@ def tester_get():
 def tester_post():
     tester = chellow.testing.tester
     tester.go()
-    return chellow_redirect("/tester", 303)
+    return redirect("/tester", 303)
 
 
 @home.route("/user_roles")

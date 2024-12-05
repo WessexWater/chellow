@@ -2,7 +2,7 @@ import csv
 import threading
 import traceback
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import joinedload
@@ -21,7 +21,6 @@ from chellow.models import (
     User,
 )
 from chellow.utils import c_months_u, csv_make_val, req_int
-from chellow.views import chellow_redirect
 
 
 def content(year, month, months, supply_id, user_id):
@@ -189,4 +188,4 @@ def do_get(sess):
     supply_id = req_int("supply_id") if "supply_id" in request.values else None
     args = year, month, months, supply_id, g.user.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

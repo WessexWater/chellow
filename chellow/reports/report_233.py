@@ -5,7 +5,7 @@ import traceback
 
 from dateutil.relativedelta import relativedelta
 
-from flask import g
+from flask import g, redirect
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import false, select, true
@@ -30,7 +30,6 @@ from chellow.utils import (
     req_int_none,
     utc_datetime_now,
 )
-from chellow.views import chellow_redirect
 
 
 def content(contract_id, days_hidden, is_ignored, user_id):
@@ -148,4 +147,4 @@ def do_get(sess):
 
     args = contract_id, days_hidden, is_ignored, g.user.id
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)

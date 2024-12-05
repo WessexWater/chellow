@@ -3,7 +3,7 @@ import threading
 import traceback
 from io import StringIO
 
-from flask import g, request
+from flask import g, redirect, request
 
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
@@ -23,7 +23,6 @@ from chellow.utils import (
     to_ct,
     to_utc,
 )
-from chellow.views import chellow_redirect
 
 
 def _write_row(writer, titles, vals, total):
@@ -266,4 +265,4 @@ def handle_request(mpan_cores=None):
         user.id,
     )
     threading.Thread(target=content, args=args).start()
-    return chellow_redirect("/downloads", 303)
+    return redirect("/downloads", 303)
