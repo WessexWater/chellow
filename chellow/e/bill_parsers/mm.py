@@ -36,7 +36,16 @@ def _handle_0000(headers, pre_record, record):
 
 
 def _handle_0050(headers, pre_record, record):
-    pass
+    parts = _chop_record(
+        record,
+        issue_date=DATE_LENGTH,
+        unknown_1=12,
+        unknown_2=12,
+        unknown_3=12,
+        unknown_4=12,
+        late_payment=12,
+    )
+    headers["late_payment"] = Decimal(parts["late_payment"]) / Decimal(100)
 
 
 def _handle_0051(headers, pre_record, record):
@@ -45,8 +54,11 @@ def _handle_0051(headers, pre_record, record):
 
 def _handle_0100(headers, pre_record, record):
     issue_date = headers["issue_date"]
+    late_payment = headers.get("late_payment")
     headers.clear()
     headers["issue_date"] = issue_date
+    if late_payment is not None:
+        headers["late_payment"] = late_payment
     headers["account"] = pre_record[33:41]
     headers["reference"] = pre_record[41:46]
     headers["kwh"] = Decimal("0")
@@ -263,6 +275,16 @@ def _handle_1500(headers, pre_record, record):
         net=12,
         vat=12,
     )
+    breakdown = headers["breakdown"]
+    net = Decimal("0.00") + Decimal(parts["net"]) / Decimal("100")
+    gross = Decimal("0.00") + Decimal(parts["gross"]) / Decimal("100")
+    if "late_payment" in headers:
+        late_payment_gbp = headers["late_payment"]
+        net += late_payment_gbp
+        gross += late_payment_gbp
+        breakdown["late-payment-gbp"] += late_payment_gbp
+        del headers["late_payment"]
+
     return {
         "bill_type_code": "N",
         "mpan_core": headers["mpan_core"],
@@ -272,10 +294,10 @@ def _handle_1500(headers, pre_record, record):
         "start_date": headers["start_date"],
         "finish_date": headers["finish_date"],
         "kwh": headers["kwh"],
-        "net": Decimal("0.00") + Decimal(parts["net"]) / Decimal("100"),
+        "net": net,
         "vat": Decimal("0.00") + Decimal(parts["vat"]) / Decimal("100"),
-        "gross": Decimal("0.00") + Decimal(parts["gross"]) / Decimal("100"),
-        "breakdown": headers["breakdown"],
+        "gross": gross,
+        "breakdown": breakdown,
         "reads": headers["reads"],
     }
 
@@ -291,7 +313,7 @@ def _handle_1600(headers, pre_record, record):
     )
     late_payment_gbp = Decimal(parts["late_payment_fee"]) / Decimal(100)
 
-    headers["breakdown"]["late_payment_gbp"] += late_payment_gbp
+    headers["breakdown"]["late-payment-gbp"] += late_payment_gbp
 
 
 def _handle_1700(headers, pre_record, record):
