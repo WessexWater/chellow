@@ -187,6 +187,7 @@ def test_content(mocker, sess):
             "vat_2_percent",
             "vat_2_net",
             "vat_2_vat",
+            "breakdown",
         ],
         [
             "Fusion Supplier 2000",
@@ -208,6 +209,8 @@ def test_content(mocker, sess):
             "",
             "",
             "",
+            '{\n  "vat": {\n    5: {\n      "net": 3,'
+            '\n      "vat": 6,\n    },\n  },\n}',
         ],
     ]
     print(table)

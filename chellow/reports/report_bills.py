@@ -35,6 +35,7 @@ def _content(sess, writer, batch_id):
         "vat_2_percent",
         "vat_2_net",
         "vat_2_vat",
+        "breakdown",
     ]
     writer.writerow(titles)
 
@@ -78,6 +79,7 @@ def _content(sess, writer, batch_id):
             "vat_2_percent": None,
             "vat_2_net": None,
             "vat_2_vat": None,
+            "breakdown": bill.breakdown,
         }
         for i, (percentage, vbd) in enumerate(sorted(vat_breakdown.items()), 1):
             vals[f"vat_{i}_percentage"] = percentage
