@@ -10,7 +10,6 @@ import traceback
 import types
 from collections import OrderedDict
 from datetime import datetime as Datetime
-from decimal import Decimal
 from functools import wraps
 from importlib import import_module
 from io import DEFAULT_BUFFER_SIZE, StringIO
@@ -50,7 +49,6 @@ from sqlalchemy import (
     true,
 )
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.attributes import flag_modified
 
 from werkzeug.exceptions import BadRequest, Forbidden
@@ -1153,123 +1151,6 @@ def report_get(report_id):
 def report_post(report_id):
     report_module = importlib.import_module(f"chellow.reports.report_{report_id}")
     return report_module.do_post(g.sess)
-
-
-@home.route("/sites/<int:site_id>/hh_data")
-def site_hh_data_get(site_id):
-    caches = {}
-    site = Site.get_by_id(g.sess, site_id)
-
-    year = req_int("year")
-    month = req_int("month")
-    start_date, finish_date = next(
-        c_months_u(start_year=year, start_month=month, months=1)
-    )
-
-    supplies = (
-        g.sess.query(Supply)
-        .join(Era)
-        .join(SiteEra)
-        .join(Source)
-        .filter(
-            SiteEra.site == site,
-            SiteEra.is_physical == true(),
-            Era.start_date <= finish_date,
-            or_(Era.finish_date == null(), Era.finish_date >= start_date),
-            Source.code != "sub",
-        )
-        .order_by(Supply.id)
-        .distinct()
-        .options(joinedload(Supply.source), joinedload(Supply.generator_type))
-        .all()
-    )
-
-    data = iter(
-        g.sess.query(HhDatum)
-        .join(Channel)
-        .join(Era)
-        .filter(
-            Channel.channel_type == "ACTIVE",
-            Era.supply_id.in_([s.id for s in supplies]),
-            HhDatum.start_date >= start_date,
-            HhDatum.start_date <= finish_date,
-        )
-        .order_by(HhDatum.start_date, Era.supply_id)
-        .options(
-            joinedload(HhDatum.channel)
-            .joinedload(Channel.era)
-            .joinedload(Era.supply)
-            .joinedload(Supply.source)
-        )
-    )
-    datum = next(data, None)
-
-    hh_data = []
-    for hh_date in hh_range(caches, start_date, finish_date):
-        sups = []
-        hh_dict = {
-            "start_date": hh_date,
-            "supplies": sups,
-            "export_kwh": Decimal(0),
-            "import_kwh": Decimal(0),
-            "parasitic_kwh": Decimal(0),
-            "generated_kwh": Decimal(0),
-            "third_party_import_kwh": Decimal(0),
-            "third_party_export_kwh": Decimal(0),
-        }
-        hh_data.append(hh_dict)
-        for supply in supplies:
-            sup_hh = {}
-            sups.append(sup_hh)
-            while (
-                datum is not None
-                and datum.start_date == hh_date
-                and datum.channel.era.supply_id == supply.id
-            ):
-                channel = datum.channel
-                imp_related = channel.imp_related
-                source_code = channel.era.supply.source.code
-
-                prefix = "import_" if imp_related else "export_"
-                sup_hh[f"{prefix}kwh"] = datum.value
-                sup_hh[f"{prefix}status"] = datum.status
-
-                if not imp_related and source_code in ("grid", "gen-grid"):
-                    hh_dict["export_kwh"] += datum.value
-                if imp_related and source_code in ("grid", "gen-grid"):
-                    hh_dict["import_kwh"] += datum.value
-                if (imp_related and source_code == "gen") or (
-                    not imp_related and source_code == "gen-grid"
-                ):
-                    hh_dict["generated_kwh"] += datum.value
-                if (not imp_related and source_code == "gen") or (
-                    imp_related and source_code == "gen-grid"
-                ):
-                    hh_dict["parasitic_kwh"] += datum.value
-                if (imp_related and source_code == "3rd-party") or (
-                    not imp_related and source_code == "3rd-party-reverse"
-                ):
-                    hh_dict["third_party_import_kwh"] += datum.value
-                if (not imp_related and source_code == "3rd-party") or (
-                    imp_related and source_code == "3rd-party-reverse"
-                ):
-                    hh_dict["third_party_export_kwh"] += datum.value
-                datum = next(data, None)
-
-        hh_dict["displaced_kwh"] = (
-            hh_dict["generated_kwh"] - hh_dict["export_kwh"] - hh_dict["parasitic_kwh"]
-        )
-        hh_dict["used_kwh"] = sum(
-            (
-                hh_dict["import_kwh"],
-                hh_dict["displaced_kwh"],
-                hh_dict["third_party_import_kwh"] - hh_dict["third_party_export_kwh"],
-            )
-        )
-
-    return render_template(
-        "site_hh_data.html", site=site, supplies=supplies, hh_data=hh_data
-    )
 
 
 @home.route("/sites/<int:site_id>")

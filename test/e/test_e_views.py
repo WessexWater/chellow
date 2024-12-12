@@ -3059,6 +3059,23 @@ def test_site_add_e_supply_post_fail(client, sess):
     match(response, 400)
 
 
+def test_site_hh_data(sess, client):
+    site = Site.insert(sess, "CI017", "Water Works")
+    sess.commit()
+
+    query_string = {
+        "start_year": "2022",
+        "start_month": "3",
+    }
+    response = client.get(f"/e/sites/{site.id}/hh_data", query_string=query_string)
+
+    patterns = [
+        r'<input type="hidden" name="start_year" value="2022">',
+        r'<input type="hidden" name="start_month" value="3">',
+    ]
+    match(response, 200, *patterns)
+
+
 def test_supplier_batches_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
