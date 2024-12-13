@@ -7,7 +7,7 @@ from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
+from chellow.utils import c_months_u, ct_datetime, parse_mpan_core, to_ct, to_utc
 
 
 def get_cell(sheet, col, row):
@@ -86,6 +86,63 @@ ELEM_LOOKUP = {
 }
 
 
+def _parse_gduos_sheet(sheet, mpan_core, issue_date):
+    bills = []
+    for row in range(2, len(sheet["A"]) + 1):
+        val = get_cell(sheet, "A", row).value
+        if val is None or val == "":
+            break
+
+        start_date_str = get_str(sheet, "B", row)
+        start_date_ct = to_ct(Datetime.strptime(start_date_str, "%Y-%m"))
+        start_date, finish_date = next(
+            c_months_u(
+                start_year=start_date_ct.year, start_month=start_date_ct.month, months=1
+            )
+        )
+
+        element_desc = get_str(sheet, "D", row).strip()
+        units = get_dec(sheet, "E", row)
+        rate = get_dec(sheet, "F", row)
+        net = round(get_dec(sheet, "G", row), 2)
+
+        titles = ELEM_LOOKUP[element_desc]
+        if titles is None:
+            continue
+
+        breakdown = {
+            titles["gbp"]: net,
+            titles["units"]: units,
+            titles["rate"]: [rate],
+        }
+        bill = {
+            "bill_type_code": "N",
+            "kwh": Decimal(0),
+            "vat": Decimal("0.00"),
+            "net": net,
+            "gross": net,
+            "reads": [],
+            "breakdown": breakdown,
+            "account": mpan_core,
+            "issue_date": issue_date,
+            "start_date": start_date,
+            "finish_date": finish_date,
+            "mpan_core": mpan_core,
+            "reference": "_".join(
+                (
+                    to_ct(start_date).strftime("%Y%m%d"),
+                    to_ct(finish_date).strftime("%Y%m%d"),
+                    to_ct(issue_date).strftime("%Y%m%d"),
+                    mpan_core,
+                    titles["name"],
+                )
+            ),
+        }
+
+        bills.append(bill)
+    return bills
+
+
 def _make_raw_bills(book):
     bills = []
     sheet = book.worksheets[0]
@@ -135,56 +192,8 @@ def _make_raw_bills(book):
         }
     )
     sheet = book.worksheets[3]
-    for row in range(2, len(sheet["A"]) + 1):
-        val = get_cell(sheet, "A", row).value
-        if val is None or val == "":
-            break
+    bills.extend(_parse_gduos_sheet(sheet, mpan_core, issue_date))
 
-        start_date_str = get_str(sheet, "B", row)
-        start_date_ct = to_ct(Datetime.strptime(start_date_str, "%Y-%m"))
-        start_date = to_utc(start_date_ct)
-        finish_date = to_utc(start_date_ct + relativedelta(months=1) - HH)
-
-        element_desc = get_str(sheet, "D", row).strip()
-        units = get_dec(sheet, "E", row)
-        rate = get_dec(sheet, "F", row)
-        net = round(get_dec(sheet, "G", row), 2)
-
-        titles = ELEM_LOOKUP[element_desc]
-        if titles is None:
-            continue
-
-        breakdown = {
-            titles["gbp"]: net,
-            titles["units"]: units,
-            titles["rate"]: [rate],
-        }
-
-        bills.append(
-            {
-                "bill_type_code": "N",
-                "kwh": Decimal(0),
-                "vat": Decimal("0.00"),
-                "net": net,
-                "gross": net,
-                "reads": [],
-                "breakdown": breakdown,
-                "account": mpan_core,
-                "issue_date": issue_date,
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "mpan_core": mpan_core,
-                "reference": "_".join(
-                    (
-                        to_ct(start_date).strftime("%Y%m%d"),
-                        to_ct(finish_date).strftime("%Y%m%d"),
-                        to_ct(issue_date).strftime("%Y%m%d"),
-                        mpan_core,
-                        titles["name"],
-                    )
-                ),
-            }
-        )
     return bills
 
 
