@@ -114,6 +114,7 @@ ELEMENT_LOOKUP = {
     "20RS0050": "duos-amber",
     "30RS0050": "duos-red",
     "9CANNUAL": "duos-reactive",
+    "40RS0050": "duos-super-red",
 }
 
 
