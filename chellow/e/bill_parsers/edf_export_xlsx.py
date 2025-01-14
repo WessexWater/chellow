@@ -83,6 +83,12 @@ ELEM_LOOKUP = {
         "units": "duos-red-kwh",
         "rate": "duos-red-gbp-per-kwh",
     },
+    "Unit Rate Super Red": {
+        "name": "duos-super-red",
+        "gbp": "duos-super-red-gbp",
+        "units": "duos-super-red-kwh",
+        "rate": "duos-super-red-gbp-per-kwh",
+    },
 }
 
 
