@@ -772,7 +772,7 @@ def content(scenario_props, base_name, user_id, compression, now):
             else:
                 forecast_from = to_utc(forecast_from)
 
-            sites = sess.query(Site).distinct().order_by(Site.code)
+            base_site_set = set()
 
             mpan_cores = scenario_props.get("mpan_cores")
             supply_ids = None
@@ -788,12 +788,14 @@ def content(scenario_props, base_name, user_id, compression, now):
                 else:
                     base_name.append("mpan_cores")
 
-                sites = (
-                    sites.join(SiteEra)
+                for site in sess.scalars(
+                    select(Site)
+                    .join(SiteEra)
                     .join(Era)
                     .join(Supply)
                     .where(Supply.id.in_(supply_ids))
-                )
+                ):
+                    base_site_set.add(site.id)
 
             site_codes = scenario_props.get("site_codes")
             if site_codes is not None:
@@ -802,7 +804,10 @@ def content(scenario_props, base_name, user_id, compression, now):
                     base_name.append(site_codes[0])
                 else:
                     base_name.append("sitecodes")
-                sites = sites.where(Site.code.in_(site_codes))
+
+                for site_code in site_codes:
+                    site = Site.get_by_code(sess, site_code)
+                    base_site_set.add(site.id)
 
             user = User.get_by_id(sess, user_id)
 
@@ -969,7 +974,6 @@ def content(scenario_props, base_name, user_id, compression, now):
             site_rows.append(site_header_titles + summary_titles)
             era_rows.append(era_titles)
 
-            sites = sites.all()
             normal_reads = set()
 
             for month_start, month_finish in month_pairs:
@@ -980,7 +984,40 @@ def content(scenario_props, base_name, user_id, compression, now):
                 else:
                     data_source_bill = None
                 org_month_data = defaultdict(int)
-                for site in sites:
+
+                if len(base_site_set) > 0:
+                    site_set = base_site_set
+                else:
+                    site_set = set()
+                    for site in sess.scalars(
+                        select(Site)
+                        .join(SiteEra)
+                        .join(Era)
+                        .where(
+                            Era.start_date <= month_finish,
+                            or_(
+                                Era.finish_date == null(),
+                                Era.finish_date >= month_start,
+                            ),
+                        )
+                    ):
+                        site_set.add(site.id)
+                    for site in sess.scalars(
+                        select(Site)
+                        .join(SiteEra)
+                        .join(Era)
+                        .join(Supply)
+                        .join(Bill)
+                        .where(
+                            Bill.start_date <= month_finish,
+                            Bill.finish_date >= month_start,
+                        )
+                    ):
+                        site_set.add(site.id)
+
+                for site in sess.scalars(
+                    select(Site).where(Site.id.in_(site_set)).order_by(Site.code)
+                ):
                     if by_hh:
                         sf = [
                             (d, d)

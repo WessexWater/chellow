@@ -8,7 +8,7 @@ import pytest
 
 from sqlalchemy import select
 
-from utils import match
+from utils import match, match_tables
 
 from zish import loads
 
@@ -460,7 +460,7 @@ def virtual_bill(ds):
         ],
     ]
 
-    assert expected == table
+    match_tables(expected, table)
 
 
 def test_missing_mop_script(mocker, sess):
@@ -1818,7 +1818,7 @@ def virtual_bill(ds):
         ],
     ]
 
-    assert expected == table
+    match_tables(expected, table)
 
 
 def test_supply_end_two_eras_in_month(mocker, sess):
