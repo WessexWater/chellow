@@ -18,8 +18,8 @@ from flask import (
     request,
 )
 
-from sqlalchemy import false, func, select, text, true
-from sqlalchemy.orm import joinedload
+from sqlalchemy import false, func, null, select, text, true
+from sqlalchemy.orm import aliased, joinedload
 
 
 from werkzeug.exceptions import BadRequest
@@ -1547,12 +1547,38 @@ def batch_csv_get(g_batch_id):
 
 @gas.route("/supplier_contracts")
 def supplier_contracts_get():
-    contracts = g.sess.execute(
+    GRateScriptAliasFinish = aliased(GRateScript)
+
+    current_contracts = g.sess.scalars(
         select(GContract)
-        .where(GContract.is_industry == false())
+        .join(
+            GRateScriptAliasFinish,
+            GContract.finish_g_rate_script_id == GRateScriptAliasFinish.id,
+        )
+        .where(
+            GContract.is_industry == false(),
+            GRateScriptAliasFinish.finish_date == null(),
+        )
         .order_by(GContract.name)
-    ).scalars()
-    return render_template("supplier_contracts.html", contracts=contracts)
+    )
+    ended_contracts = g.sess.scalars(
+        select(GContract)
+        .join(
+            GRateScriptAliasFinish,
+            GContract.finish_g_rate_script_id == GRateScriptAliasFinish.id,
+        )
+        .where(
+            GContract.is_industry == false(),
+            GRateScriptAliasFinish.finish_date != null(),
+        )
+        .order_by(GContract.name)
+    )
+
+    return render_template(
+        "supplier_contracts.html",
+        current_contracts=current_contracts,
+        ended_contracts=ended_contracts,
+    )
 
 
 @gas.route("/supplier_contracts/<int:contract_id>")

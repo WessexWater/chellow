@@ -11,6 +11,29 @@
 {% block content %}
 
 	<table>
+		<caption>Current Contracts</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for g_contract in current_contracts %}
+				<tr>
+					<td>
+						<a href="/g/supplier_contracts/{{g_contract.id}}">{{g_contract.name}}</a>
+					</td>
+					<td>
+						{{g_contract.start_g_rate_script.start_date|hh_format}}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
+		<caption>Ended Contracts</caption>
 		<thead>
 			<tr>
 				<th>Name</th>
@@ -19,7 +42,7 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for g_contract in contracts %}
+			{% for g_contract in ended_contracts %}
 				<tr>
 					<td>
 						<a href="/g/supplier_contracts/{{g_contract.id}}">{{g_contract.name}}</a>
@@ -34,5 +57,4 @@
 			{% endfor %}
 		</tbody>
 	</table>
-
 {% endblock %}
