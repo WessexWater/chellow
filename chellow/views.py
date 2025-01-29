@@ -1365,6 +1365,74 @@ def report_run_get(run_id):
             hide_checked=hide_checked,
             ROW_LIMIT=ROW_LIMIT,
         )
+    elif run.name == "g_bill_check":
+        row = (
+            g.sess.query(ReportRunRow)
+            .filter(ReportRunRow.report_run == run)
+            .order_by(ReportRunRow.id)
+            .first()
+        )
+        elements = []
+        summary = {}
+        if row is None:
+            pass
+
+        else:
+            titles = row.data["titles"]
+            diff_titles = [
+                t for t in titles if t.startswith("difference_") and t.endswith("_gbp")
+            ]
+            diff_selects = [
+                func.sum(ReportRunRow.data["values"][t].as_float()) for t in diff_titles
+            ]
+            sum_diffs = (
+                g.sess.query(*diff_selects).filter(ReportRunRow.report_run == run).one()
+            )
+
+            for t, sum_diff in zip(diff_titles, sum_diffs):
+                elem = t[11:-4]
+                sdiff = 0 if sum_diff is None else sum_diff
+                if elem == "net":
+                    summary["sum_difference"] = sdiff
+                else:
+                    elements.append((elem, sdiff))
+
+            elements.sort(key=lambda x: abs(x[1]), reverse=True)
+            elements.insert(0, ("net", summary["sum_difference"]))
+
+        if "order_by" in request.values:
+            order_by = req_str("order_by")
+        else:
+            order_by = "difference_net_gbp"
+
+        g_contract = GContract.get_by_id(g.sess, run.data["g_contract_id"])
+        g_contract_props = g_contract.make_properties()
+        props = g_contract_props.get("report_run", {})
+        sort_absolute = props.get("sort_absolute", True)
+        show_elements = props.get("show_elements", True)
+        columns = props.get("columns", [f"difference_{el[0]}_gbp" for el in elements])
+
+        ROW_LIMIT = 200
+        q = select(ReportRunRow).where(ReportRunRow.report_run == run).limit(ROW_LIMIT)
+        if sort_absolute:
+            q = q.order_by(
+                func.abs(ReportRunRow.data["values"][order_by].as_float()).desc()
+            )
+        else:
+            q = q.order_by(ReportRunRow.data["values"][order_by].as_float().desc())
+        rows = g.sess.scalars(q).all()
+        return render_template(
+            "report_run_g_bill_check.html",
+            run=run,
+            rows=rows,
+            summary=summary,
+            elements=elements,
+            order_by=order_by,
+            ROW_LIMIT=ROW_LIMIT,
+            sort_absolute=sort_absolute,
+            show_elements=show_elements,
+            columns=columns,
+        )
 
     elif run.name == "asset_comparison":
         rows = (
@@ -1547,6 +1615,51 @@ def report_run_row_get(row_id):
         tables.sort(key=lambda t: t["order"], reverse=True)
         return render_template(
             "report_run_row_bill_check.html", row=row, raw_data=raw_data, tables=tables
+        )
+    elif row.report_run.name == "g_bill_check":
+        values = row.data["values"]
+        elements = {}
+        for t in row.data["values"].keys():
+
+            if (
+                t.startswith("covered_")
+                or t.startswith("virtual_")
+                or t.startswith("difference_")
+            ) and t not in (
+                "covered_from",
+                "covered_to",
+                "covered_bills",
+                "covered_problem",
+                "virtual_problem",
+            ):
+                toks = t.split("_")
+                name = "_".join(toks[1:-1])
+                try:
+                    table = elements[name]
+                except KeyError:
+                    table = elements[name] = {"order": 0}
+
+                if "titles" not in table:
+                    table["titles"] = []
+                table["titles"].append(toks[0] + "_" + "_".join(toks[2:]))
+                if "values" not in table:
+                    table["values"] = []
+                table["values"].append(values[t])
+                if t.startswith("difference_") and t.endswith("-gbp"):
+                    table["order"] = abs(values[t])
+
+        for k, v in elements.items():
+            if k == "net":
+                continue
+            v["name"] = k
+            tables.append(v)
+
+        tables.sort(key=lambda t: t["order"], reverse=True)
+        return render_template(
+            "report_run_row_g_bill_check.html",
+            row=row,
+            raw_data=raw_data,
+            tables=tables,
         )
 
     else:

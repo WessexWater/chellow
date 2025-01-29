@@ -170,20 +170,20 @@ def supply_get(g_supply_id):
             )
 
             g_bills = (
-                g.sess.query(GBill)
-                .filter(GBill.g_supply == g_supply)
+                select(GBill)
+                .where(GBill.g_supply == g_supply)
                 .order_by(
                     GBill.start_date.desc(),
                     GBill.issue_date.desc(),
                     GBill.reference.desc(),
                 )
             )
-            if g_era.finish_date is not None:
-                g_bills = g_bills.filter(GBill.start_date <= g_era.finish_date)
+            if g_era != g_eras[0]:
+                g_bills = g_bills.where(GBill.start_date < g_era.finish_date)
             if g_era != g_eras[-1]:
-                g_bills = g_bills.filter(GBill.start_date >= g_era.start_date)
+                g_bills = g_bills.where(GBill.start_date >= g_era.start_date)
 
-            for g_bill in g_bills:
+            for g_bill in g.sess.scalars(g_bills):
                 g_reads = (
                     g.sess.query(GRegisterRead)
                     .filter(GRegisterRead.g_bill == g_bill)
@@ -220,7 +220,7 @@ def supply_get(g_supply_id):
 
         RELATIVE_YEAR = relativedelta(years=1)
 
-        now = Datetime.utcnow()
+        now = utc_datetime_now()
         triad_year = (now - RELATIVE_YEAR).year if now.month < 3 else now.year
         this_month_start = Datetime(now.year, now.month, 1)
         last_month_start = this_month_start - relativedelta(months=1)

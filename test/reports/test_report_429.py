@@ -1,7 +1,8 @@
+import csv
 from decimal import Decimal
 from io import StringIO
 
-from utils import match
+from utils import match, match_tables
 
 import chellow.reports.report_429
 from chellow.models import (
@@ -13,6 +14,7 @@ from chellow.models import (
     GUnit,
     MarketRole,
     Participant,
+    ReportRun,
     Site,
     User,
     insert_bill_types,
@@ -54,6 +56,7 @@ def test_process_g_bill_ids(mocker):
     titles = []
     csv_writer = mocker.Mock()
     g_contract = mocker.Mock()
+    report_run_id = 1
 
     chellow.reports.report_429._process_g_bill_ids(
         sess,
@@ -65,6 +68,7 @@ def test_process_g_bill_ids(mocker):
         vbf,
         titles,
         csv_writer,
+        report_run_id,
     )
 
     find_g_era_at.assert_not_called()
@@ -195,6 +199,7 @@ def virtual_bill(ds):
         1,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch_id = g_batch.id
 
     breakdown = {"units_consumed": 771}
     insert_bill_types(sess)
@@ -215,39 +220,124 @@ def virtual_bill(ds):
         "",
         breakdown,
     )
+    g_bill_id = g_bill.id
     user = User.get_by_email_address(sess, "admin@example.com")
+    user_id = user.id
+    report_run = ReportRun.insert(sess, "g_bill_check", None, "", {})
+    report_run_id = report_run.id
     sess.commit()
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_429.open_file", return_value=mock_file)
 
-    chellow.reports.report_429.content(g_batch.id, g_bill.id, None, None, None, user.id)
+    chellow.reports.report_429.content(
+        g_batch_id, g_bill_id, None, None, None, user_id, report_run_id
+    )
 
-    actual = mock_file.getvalue()
+    mock_file.seek(0)
+    actual = list(csv.reader(mock_file))
     expected = [
-        "batch,bill_reference,bill_type,bill_start_date,bill_finish_date,"
-        "mprn,supply_name,site_code,site_name,covered_start,covered_finish,"
-        "covered_bill_ids,covered_units_consumed,virtual_units_consumed,"
-        "covered_correction_factor,virtual_correction_factor,"
-        "covered_unit_code,virtual_unit_code,covered_unit_factor,"
-        "virtual_unit_factor,covered_calorific_value,virtual_calorific_value,"
-        "covered_kwh,virtual_kwh,covered_gas_rate,virtual_gas_rate,"
-        "covered_gas_gbp,virtual_gas_gbp,difference_gas_gbp,covered_ccl_rate,"
-        "virtual_ccl_rate,covered_standing_rate,virtual_standing_rate,"
-        "covered_standing_gbp,virtual_standing_gbp,difference_standing_gbp,"
-        "covered_net_gbp,virtual_net_gbp,difference_net_gbp,covered_vat_gbp,"
-        "virtual_vat_gbp,difference_vat_gbp,covered_gross_gbp,"
-        "virtual_gross_gbp,difference_gross_gbp,covered_problem,"
-        "virtual_problem",
-        "b1,55h883,N,2020-01-01 00:00,2020-01-31 23:30,87614362,main,22488,"
-        "Water Works,2020-01-01 00:00,2020-01-31 23:30,1,771,0,,1.0,,M3,,1.0"
-        ",,39.2,45,0.0,,0.1,,0.0,,,0.00339,,0.1,,0.1,,12.40,0.1,12.3,1.20,0,"
-        "1.2,14.52,0.1,14.42,,",
+        [
+            "batch",
+            "bill_reference",
+            "bill_type",
+            "bill_start_date",
+            "bill_finish_date",
+            "mprn",
+            "supply_name",
+            "site_code",
+            "site_name",
+            "covered_start",
+            "covered_finish",
+            "covered_bill_ids",
+            "covered_units_consumed",
+            "virtual_units_consumed",
+            "covered_correction_factor",
+            "virtual_correction_factor",
+            "" "covered_unit_code",
+            "virtual_unit_code",
+            "covered_unit_factor",
+            "virtual_unit_factor",
+            "covered_calorific_value",
+            "virtual_calorific_value",
+            "covered_kwh",
+            "virtual_kwh",
+            "covered_gas_rate",
+            "virtual_gas_rate",
+            "covered_gas_gbp",
+            "virtual_gas_gbp",
+            "difference_gas_gbp",
+            "covered_ccl_rate",
+            "virtual_ccl_rate",
+            "covered_standing_rate",
+            "virtual_standing_rate",
+            "covered_standing_gbp",
+            "virtual_standing_gbp",
+            "difference_standing_gbp",
+            "covered_net_gbp",
+            "virtual_net_gbp",
+            "difference_net_gbp",
+            "covered_vat_gbp",
+            "virtual_vat_gbp",
+            "difference_vat_gbp",
+            "covered_gross_gbp",
+            "virtual_gross_gbp",
+            "difference_gross_gbp",
+            "covered_problem",
+            "virtual_problem",
+        ],
+        [
+            "b1",
+            "55h883",
+            "N",
+            "2020-01-01 00:00",
+            "2020-01-31 23:30",
+            "87614362",
+            "main",
+            "22488",
+            "Water Works",
+            "2020-01-01 00:00",
+            "2020-01-31 23:30",
+            "1",
+            "771",
+            "0",
+            "",
+            "1.0",
+            "",
+            "M3",
+            "",
+            "1.0",
+            "",
+            "39.2",
+            "45",
+            "0.0",
+            "",
+            "0.1",
+            "",
+            "0.0",
+            "0.0",
+            "",
+            "0.00339",
+            "",
+            "0.1",
+            "",
+            "0.1",
+            "-0.1",
+            "12.40",
+            "0.1",
+            "12.3",
+            "1.20",
+            "0",
+            "" "1.2",
+            "14.52",
+            "0.1",
+            "14.42",
+            "",
+            "",
+        ],
     ]
-    expected_str = "\r\n".join(expected) + "\r\n"
-
-    assert actual == expected_str
+    match_tables(expected, actual)
 
 
 def test_batch_http(mocker, sess, client):
@@ -268,7 +358,9 @@ def test_batch_http(mocker, sess, client):
 
     match(response, 303)
 
-    args = g_batch.id, None, None, None, None, user.id
+    report_run_id = 1
+
+    args = g_batch.id, None, None, None, None, user.id, report_run_id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)
 
 
@@ -338,5 +430,7 @@ def test_bill_http(mocker, sess, client):
 
     match(response, 303)
 
-    args = None, g_bill.id, None, None, None, user.id
+    report_run_id = 1
+
+    args = None, g_bill.id, None, None, None, user.id, report_run_id
     mock_Thread.assert_called_with(target=chellow.reports.report_429.content, args=args)

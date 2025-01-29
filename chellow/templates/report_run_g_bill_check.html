@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	{% if request.method == "GET" and request.values.delete %}
+		<form method="post" action="/report_runs/{{run.id}}">
+			<fieldset>
+				<legend>Are you sure you want to delete this report run?</legend>
+				<input type="submit" name="delete" value="delete"> 
+				<a href="/report_runs/{{run.id}}">Cancel</a>
+			</fieldset>
+		</form>
+	{% else %}
+		<table>
+			<caption>Bill Check</caption>
+			<thead>
+				<tr>
+					<th>Date Created</th>
+					<th>Created By</th>
+					<th>Title</th>
+					<th>State</th>
+					<th>Number Of Rows</th>
+					<th>Sum Of Difference GBP</th>
+					<th>Delete</th>
+					<th>Download Spreadsheet</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{run.date_created|hh_format}}</td>
+					<td>{{run.creator}}</td>
+					<td>{{run.title}}</td>
+					<td>{{run.state}}</td>
+					<td>{{rows|length}} (truncated at {{ROW_LIMIT}})</td>
+					<td>
+						{% if 'sum_difference' in summary and summary.sum_difference is not none %}
+							{{"%.2f"|format(summary.sum_difference)}}</td>
+						{% endif %}
+					<td>
+						<form action="/report_runs/{{run.id}}">
+							<fieldset style="border: none;">
+								<input type="submit" name="delete" value="Delete">
+							</fieldset>
+						</form>
+					</td>
+					<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
+				</tr>
+			</tbody>
+		</table>
+
+		{% if summary.missing_bills|length > 0 %}
+			<table class="sticky">
+				<caption>
+					Some Missing Bills (<a href="/report_runs/{{report_run}}">x</a>)
+				</caption>
+				<thead>
+					<tr>
+						<th>View</th>
+						<th>Import MPAN Core</th>
+						<th>Export MPAN Core</th>
+						<th>Start</th>
+						<th>Finish</th>
+						<th>Problem</th>
+						<th>Estimated Difference GBP</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for row in rows %}
+						<tr>
+							<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+							{% for title in row.data.titles %}
+								<td>{{row.data['values'][title]}}</td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+
+		{% if show_elements %}
+			<table class="sticky">
+				<caption>Elements</caption>
+				<thead>
+					<tr>
+						<th>Element</th>
+						{% for elname, diff in elements  %}
+							<th>{{elname}}</th>
+						{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Sum of differences (GBP)</td>
+						{% for elname, diff in elements  %}
+							{% if diff is not none %}
+								<td>{{"%.2f"|format(diff)}}</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				</tbody>
+			</table>
+		{% endif %}
+
+		<table class="sticky">
+			<caption>
+				Rows - Ordered By
+				{% if sort_absolute %}
+					Absolute
+				{% endif %}
+				{{order_by}}
+			</caption>
+			<thead>
+				<tr>
+					<th rowspan="2">View</th>
+					<th rowspan="2">Batch</th>
+					<th rowspan="2">Site</th>
+					<th rowspan="2">MPRN</th>
+					<th rowspan="2">Covered Bills</th>
+					<th rowspan="2">Covered Start</th>
+					<th rowspan="2">Covered Finish</th>
+					<th colspan="{{columns|length}}">Difference</th>
+					<th rowspan="2">Problem</th>
+				</tr>
+				<tr>
+					{% for column in columns %}
+						<th>
+							{{' '.join(column.split('_')[1:])}}
+							{% if order_by == column %}
+								↑
+							{% else %}
+								<a href="/report_runs/{{run.id}}?order_by={{column}}">↑</a>
+							{% endif %}
+						</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for row in rows %}
+					{% set values = row.data['values'] %}
+					<tr>
+						<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+						<td><a href="/g/batches/{{values.g_batch_id}}">{{values.batch}}</a></td>
+						<td>
+							<a href="/sites/{{values.site_id}}" title="{{values.site_name}}">{{values.site_code}}</a>
+						</td>
+						<td>
+							<a href="/g/supplies/{{values.g_supply_id}}">{{values.mprn}}</a>
+						</td>
+						<td>	
+							{% if values['covered_bill_ids'] is not none %}
+								{% for bill_id in values['covered_bill_ids'] %}
+										<a href="/g/bills/{{bill_id}}">{{bill_id}}</a>
+										{% if bill_id == values.g_bill_id %}
+										{% endif %}
+								{% endfor %}
+							{% endif %}
+						</td>
+						<td><span title="{{values.covered_start}}">{{values.covered_start[:10]}}</span></td>
+						<td><span title="{{values.covered_finish}}">{{values.covered_finish[:10]}}</span></td>
+						{% for title in columns %}
+							<td>	
+								{% if title in values and values[title] is not none %}
+									{{"%.2f"|format(values[title])}}
+								{% endif %}
+							</td>
+						{% endfor %}
+						<td>
+							{{ values.covered_problem }} {{ values.virtual_problem }}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

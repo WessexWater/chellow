@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{row.report_run.id}} &raquo; Row {{row.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo;
+	<a href="/report_runs/{{row.report_run.id}}">{{row.report_run.id}}</a>
+	&raquo; Row {{row.id}}
+{% endblock %}
+
+{% block content %}
+	{% set values = row.data['values'] %}
+	{% set properties = row.data.get('properties', {}) %}
+	{% if row.report_run.name == 'bill_check' %}
+		<table>
+			<caption>Bill Check</caption>	
+			<thead>
+				<tr>
+					<th rowspan="2">Batch</th>
+					<th colspan="8">Bill</th>
+					<th colspan="2">MPAN Core</th>
+					<th colspan="2">Site</th>
+					<th rowspan="2">Checking</th>
+				</tr>
+				<tr>
+					<th>Reference</th>
+					<th>Type</th>
+					<th>kWh</th>
+					<th>Net GBP</th>
+					<th>VAT GBP</th>
+					<th>Gross GBP</th>
+					<th>Start</th>
+					<th>Finish</th>
+					<th>Import</th>
+					<th>Export</th>
+					<th>Code</th>
+					<th>Name</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>
+						{% if values.batch_id != None %}
+							<a href="/e/supplier_batches/{{values.batch_id}}">{{values['batch']}}</a>
+						{% endif %}
+					</td>
+					<td>
+						{% if values.bill_id != None %}
+							<a href="/e/supplier_bills/{{values.bill_id}}">{{
+								values['bill-reference']}}</a>
+						{% endif %}
+					</td>
+					<td>{{values['bill-type']}}</td>
+					<td>{{values['bill-kwh']}}</td>
+					<td>{{values['bill-net-gbp']}}</td>
+					<td>{{values['bill-vat-gbp']}}</td>
+					<td>{{values['bill-gross-gbp']}}</td>
+					<td>{{values['bill-start-date']}}</td>
+					<td>{{values['bill-finish-date']}}</td>
+					<td>
+						{% if values['imp-mpan-core'] != None %}
+						<a href="/e/supplies/{{values.supply_id}}">{{
+							values['imp-mpan-core']}}</a>
+						{% endif %}
+					</td>
+					<td>
+						{% if values['exp-mpan-core'] != None %}
+							<a href="/e/supplies/{{values.supply_id}}">{{
+								values['exp-mpan-core']}}</a>
+						{% endif %}
+					</td>
+					<td>
+						{% if values.site_id != None %}
+							<a href="/sites/{{values.site_id}}">{{
+								values['site-code']}}</a>
+						{% endif %}
+					</td>
+					<td>{{values['site-name']}}</td>
+					<td>
+						<form action="/report_run_rows/{{row.id}}" method="post">
+							<fieldset>
+								{{input_textarea(
+									'note', properties.note, 5, 40,
+									placeholder='Notes on checking go here...')}}
+								<br>
+								<br>
+								<label>Checked?
+									{{input_checkbox('is_checked', properties.is_checked)}}
+								</label>
+								<input type="submit" name="update" value="Update">
+							</fieldset>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<table>
+			<caption>Covered</caption>
+			<thead>
+				<tr>
+					<th>From</th>
+					<th>To</th>
+					<th>Bills</th>
+					<th>Metered kWh</th>
+					<th>Net GBP</th>
+					<th>Virtual Net GBP</th>
+					<th>Difference GBP</th>
+					<th>Problem</th>
+					<th>Virtual Problem</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>{{values['covered-from']}}</td>
+					<td>{{values['covered-to']}}</td>
+					<td>
+						{% if values['covered-bills'] != None %}
+							<ul>
+								{% for bill_id in values['covered-bills'] %}
+									<li>
+										<a href="/e/supplier_bills/{{bill_id}}">{{bill_id}}</a>
+										{% if bill_id == values.bill_id %}
+											(This bill)
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					</td>
+					<td>
+						{% if values['metered-kwh'] != None %}
+							{{"%.0f"|format(values['metered-kwh'])}}
+						{% endif %}
+					</td>
+					<td>{{values['covered-net-gbp']}}</td>
+					<td>
+						{% if values['virtual-net-gbp'] != None %}
+							{{"%.2f"|format(values['virtual-net-gbp'])}}
+						{% endif %}
+					</td>
+					<td>
+						{% if values['difference-net-gbp'] != None %}
+							{{"%.2f"|format(values['difference-net-gbp'])}}
+						{% endif %}
+					</td>
+					<td>{{values['covered-problem']}}</td>
+					<td>{{values['virtual-problem']}}</td>
+				</tr>
+			</tbody>
+		</table>
+
+		{% for table in tables %}
+			<table>
+				<caption>{{table.name}}</caption>
+				<thead>
+					<tr>
+						{% for title in table.titles %}
+							<th>{{title}}</th>
+						{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						{% for v in table['values'] %}
+							<td>{{v}}</td>
+						{% endfor %}
+					</tr>
+				</tbody>
+			</table>
+		{% endfor %}
+
+		<h2>Raw</h2>	
+		<pre>{{raw_data}}</pre>
+
+	{% else %}
+		<table>
+			<caption>Report Run Row</caption>	
+			<tbody>
+				{% for title in row.data.titles %}
+					<tr>
+						<th>{{title}}</th>
+						<td>{{row.data['values'][title]}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

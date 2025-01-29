@@ -230,7 +230,7 @@ table.sticky {
   position: relative;
 }
 
-table.sticky th {
+table.sticky thead {
   position: sticky;
   top: 0;
   background: white;

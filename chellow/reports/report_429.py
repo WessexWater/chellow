@@ -16,16 +16,34 @@ from werkzeug.exceptions import BadRequest
 
 import chellow.gas.engine
 from chellow.dloads import open_file
-from chellow.models import GBatch, GBill, GContract, GEra, Session, Site, SiteGEra, User
+from chellow.models import (
+    GBatch,
+    GBill,
+    GContract,
+    GEra,
+    RSession,
+    ReportRun,
+    Site,
+    SiteGEra,
+    User,
+)
 from chellow.utils import csv_make_val, hh_max, hh_min, req_date, req_int, to_utc
 
 
-def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_id):
+def content(
+    g_batch_id,
+    g_bill_id,
+    g_contract_id,
+    start_date,
+    finish_date,
+    user_id,
+    report_run_id,
+):
     forecast_date = to_utc(Datetime.max)
     report_context = {}
     sess = tmp_file = None
     try:
-        with Session() as sess:
+        with RSession() as sess:
             user = User.get_by_id(sess, user_id)
 
             tmp_file = open_file("g_bill_check.csv", user, mode="w")
@@ -108,13 +126,17 @@ def content(g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, user_
                         vbf,
                         titles,
                         csv_writer,
+                        report_run_id,
                     )
+        ReportRun.w_update(report_run_id, "finished")
     except BadRequest as e:
         tmp_file.write(f"Problem: {e.description}")
+        ReportRun.w_update(report_run_id, "problem")
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
         tmp_file.write(f"Problem {msg}")
+        ReportRun.w_update(report_run_id, "interrupted")
     finally:
         tmp_file.close()
 
@@ -129,6 +151,7 @@ def _process_g_bill_ids(
     vbf,
     titles,
     csv_writer,
+    report_run_id,
 ):
     g_bill_id = list(sorted(g_bill_ids))[0]
     g_bill_ids.remove(g_bill_id)
@@ -144,6 +167,7 @@ def _process_g_bill_ids(
         "covered_bill_ids": [],
         "virtual_problem": "",
     }
+    site_id = None
     read_dict = defaultdict(set)
     for g_read in g_bill.g_reads:
         if not all(
@@ -264,7 +288,7 @@ def _process_g_bill_ids(
                     else:
                         v = getattr(g_read, title)
                     vals[k].add(v)
-
+    elements = set()
     for g_era in sess.execute(
         select(GEra).where(
             GEra.g_supply == g_supply,
@@ -283,6 +307,7 @@ def _process_g_bill_ids(
             .filter(SiteGEra.is_physical == true(), SiteGEra.g_era == g_era)
             .one()
         )
+        site_id = site.id
         vals["site_code"] = site.code
         vals["site_name"] = site.name
 
@@ -313,6 +338,9 @@ def _process_g_bill_ids(
             except TypeError as detail:
                 raise BadRequest(f"For key {vk} and value {v}. {detail}")
 
+            if k.endswith("_gbp"):
+                elements.add(k[:-4])
+
     if g_bill.id not in covered_bills.keys():
         g_bill = covered_bills[sorted(covered_bills.keys())[0]]
 
@@ -324,22 +352,36 @@ def _process_g_bill_ids(
     vals["mprn"] = g_supply.mprn
     vals["supply_name"] = g_supply.name
 
-    for k, v in vals.items():
-        if k == "covered_bill_ids":
-            vals[k] = " | ".join(str(b) for b in v)
-        else:
-            vals[k] = csv_make_val(v)
-
     for i, title in enumerate(titles):
         if title.startswith("difference_"):
-            try:
-                covered_val = float(vals[titles[i - 2]])
-                virtual_val = float(vals[titles[i - 1]])
-                vals[title] = covered_val - virtual_val
-            except KeyError:
-                vals[title] = None
+            covered_val = float(vals.get(titles[i - 2], 0))
+            virtual_val = float(vals.get(titles[i - 1], 0))
+            vals[title] = covered_val - virtual_val
 
     csv_writer.writerow([csv_make_val(vals.get(k)) for k in titles])
+    vals["g_bill_id"] = g_bill.id
+    vals["g_batch_id"] = g_bill.g_batch.id
+    vals["g_supply_id"] = g_supply.id
+    vals["site_id"] = site_id
+    for element in sorted(elements):
+        rate_name = f"difference_{element}_rate"
+        covered_rates = vals.get(f"covered_{element}_rate", [0])
+        virtual_rates = vals.get(f"virtual_{element}_rate", [0])
+        if len(covered_rates) == 1 and len(virtual_rates) == 1:
+            vals[rate_name] = (
+                float(covered_rates.pop()) * 100 - float(virtual_rates.pop()) * 100
+            )
+        else:
+            vals[rate_name] = 0
+
+    try:
+        covered_kwh = float(vals["covered_kwh"])
+        virtual_kwh = float(vals["virtual_kwh"])
+        vals["difference_kwh"] = covered_kwh - virtual_kwh
+    except KeyError:
+        vals["difference_kwh"] = None
+
+    ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
 
 
 def do_get(sess):
@@ -347,17 +389,39 @@ def do_get(sess):
 
     if "g_batch_id" in request.values:
         g_batch_id = req_int("g_batch_id")
+        g_batch = GBatch.get_by_id(g.sess, g_batch_id)
+        run_g_contract_id = g_batch.g_contract.id
     elif "g_bill_id" in request.values:
         g_bill_id = req_int("g_bill_id")
+        g_bill = GBill.get_by_id(g.sess, g_bill_id)
+        run_g_contract_id = g_bill.g_batch.g_contract.id
     elif "g_contract_id" in request.values:
         g_contract_id = req_int("g_contract_id")
         start_date = req_date("start_date")
         finish_date = req_date("finish_date")
+        run_g_contract_id = g_contract_id
     else:
         raise BadRequest(
             "The bill check needs a g_batch_id, g_bill_id or g_contract_id."
         )
 
-    args = g_batch_id, g_bill_id, g_contract_id, start_date, finish_date, g.user.id
+    report_run = ReportRun.insert(
+        sess,
+        "g_bill_check",
+        g.user,
+        "g_bill_check",
+        {"g_contract_id": run_g_contract_id},
+    )
+    sess.commit()
+
+    args = (
+        g_batch_id,
+        g_bill_id,
+        g_contract_id,
+        start_date,
+        finish_date,
+        g.user.id,
+        report_run.id,
+    )
     threading.Thread(target=content, args=args).start()
-    return redirect("/downloads", 303)
+    return redirect(f"/report_runs/{report_run.id}", 303)
