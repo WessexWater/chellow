@@ -642,6 +642,7 @@ def _process_site(
                         month_data[f"import-grid-{suf}"] = 0
                         month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
+                        month_data[f"billed-supplier-export-{suf}"] = 0
                         month_data[f"billed-dc-import-{suf}"] = 0
                         month_data[f"billed-mop-import-{suf}"] = 0
                     _add_bills(month_data, first_era, bills, chunk_start, chunk_finish)
