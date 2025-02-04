@@ -629,15 +629,16 @@ def _process_site(
                         "displaced",
                         "used",
                         "used-3rd-party",
-                        "billed-export",
                     ):
                         for sname in ("kwh", "net-gbp"):
                             month_data[f"{name}-{sname}"] = 0
                     month_data["billed-import-kwh"] = 0
+                    month_data["billed-export-kwh"] = 0
                     month_data["import-grid-kwh"] = 0
                     month_data["export-grid-kwh"] = 0
                     for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
                         month_data[f"billed-import-{suf}"] = 0
+                        month_data[f"billed-export-{suf}"] = 0
                         month_data[f"import-grid-{suf}"] = 0
                         month_data[f"export-grid-{suf}"] = 0
                         month_data[f"billed-supplier-import-{suf}"] = 0
