@@ -4251,7 +4251,10 @@ def site_add_e_supply_form_get(site_id):
     try:
         ct_now = ct_datetime_now()
         cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
+        comms = g.sess.scalars(select(Comm).order_by(Comm.code))
+        dtc_meter_types = g.sess.scalars(
+            select(DtcMeterType).order_by(DtcMeterType.code)
+        )
         energisation_statuses = g.sess.query(EnergisationStatus).order_by(
             EnergisationStatus.code
         )
@@ -4515,6 +4518,7 @@ def site_add_e_supply_form_get(site_id):
             start_date=start_date,
             imp_llfcs=imp_llfcs,
             exp_llfcs=exp_llfcs,
+            dtc_meter_types=dtc_meter_types,
         )
     except BadRequest as e:
         g.sess.rollback()

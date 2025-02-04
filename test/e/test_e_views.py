@@ -2697,6 +2697,7 @@ def test_site_add_e_supply_form_get(client, sess):
     Contract.insert_dc(sess, "Fusion DC 2000", participant, "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
+    insert_dtc_meter_types(sess)
     Contract.insert_supplier(
         sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
@@ -2759,6 +2760,12 @@ def test_site_add_e_supply_form_get(client, sess):
         r'<select name="mtc_participant_id">\s*'  # Make sure only HH MTCs are shown
         r'<option value="1">845 HH COP5 And Above With Comms</option>\s*'
         r"</select>\s*",
+        r'<select name="dtc_meter_type_id">\s*'
+        r'<option value="">Unmetered</option>\s*'
+        r'<option value="23">'
+        r"2ADEF Single Element with ALCS, Boost "
+        r"Function and APC that is compliant with SMETS2"
+        r"</option>\s*",
     ]
     match(response, 200, *patterns)
 
