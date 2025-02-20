@@ -119,11 +119,15 @@ def contract_func(caches, contract, func_name):
     return ns.get(func_name, None)
 
 
-def non_core_rate(sess, caches, contract_id_or_name, date):
-    return hh_rate(sess, caches, contract_id_or_name, date, market_role_code="Z")
+def non_core_rate(sess, caches, contract_id_or_name, date, exact=False):
+    return hh_rate(
+        sess, caches, contract_id_or_name, date, market_role_code="Z", exact=exact
+    )
 
 
-def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
+def hh_rate(
+    sess, caches, contract_id_or_name, date, market_role_code=None, exact=False
+):
     try:
         ccache = caches["computer"]
     except KeyError:
@@ -181,18 +185,20 @@ def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
             )
 
             if rs is None:
-                rs = (
+                last_rs = (
                     sess.query(RateScript)
                     .filter(RateScript.contract == contract)
                     .order_by(RateScript.start_date.desc())
                     .first()
                 )
-                if date < rs.start_date:
+                if date < last_rs.start_date:
                     cstart = year_before
-                    cfinish = min(year_after, rs.start_date - HH)
+                    cfinish = min(year_after, last_rs.start_date - HH)
                 else:
-                    cstart = max(rs.finish_date + HH, year_before)
+                    cstart = max(last_rs.finish_date + HH, year_before)
                     cfinish = year_after
+                if not exact:
+                    rs = last_rs
             else:
                 cstart = max(rs.start_date, year_before)
                 if rs.finish_date is None:
@@ -200,23 +206,26 @@ def hh_rate(sess, caches, contract_id_or_name, date, market_role_code=None):
                 else:
                     cfinish = min(rs.finish_date, year_after)
 
-            market_role_code = rs.contract.market_role.code
-            if market_role_code == "M":
-                seg = "/e/mop_rate_scripts/"
-            elif market_role_code == "C":
-                seg = "/e/dc_rate_scripts/"
-            elif market_role_code == "X":
-                seg = "/e/supplier_rate_scripts/"
-            elif market_role_code == "Z":
-                seg = "/non_core_rate_scripts/"
-            elif market_role_code == "R":
-                seg = "/e/dno_rate_scripts/"
+            if rs is None:
+                vals = None
             else:
-                raise Exception(
-                    f"The market role code {market_role_code} isn't recognized."
-                )
+                market_role_code = rs.contract.market_role.code
+                if market_role_code == "M":
+                    seg = "/e/mop_rate_scripts/"
+                elif market_role_code == "C":
+                    seg = "/e/dc_rate_scripts/"
+                elif market_role_code == "X":
+                    seg = "/e/supplier_rate_scripts/"
+                elif market_role_code == "Z":
+                    seg = "/non_core_rate_scripts/"
+                elif market_role_code == "R":
+                    seg = "/e/dno_rate_scripts/"
+                else:
+                    raise Exception(
+                        f"The market role code {market_role_code} isn't recognized."
+                    )
 
-            vals = PropDict(f"the rate script {seg}{rs.id} ", loads(rs.script), [])
+                vals = PropDict(f"the rate script {seg}{rs.id} ", loads(rs.script), [])
             for dt in hh_range(caches, cstart, cfinish):
                 if dt not in cont_cache:
                     cont_cache[dt] = vals
@@ -572,8 +581,10 @@ class DataSource:
             self.rate_cache = self.caches["computer"]["rates"]
             return val
 
-    def non_core_rate(self, contract_name_or_id, date):
-        return non_core_rate(self.sess, self.caches, contract_name_or_id, date)
+    def non_core_rate(self, contract_name_or_id, date, exact=False):
+        return non_core_rate(
+            self.sess, self.caches, contract_name_or_id, date, exact=exact
+        )
 
     def _add_problem(self, problem):
         self.supplier_bill["problem"] += problem

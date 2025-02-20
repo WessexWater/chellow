@@ -36,7 +36,11 @@ def hh(data_source, run="DF"):
             h["tlm"] = tlm = cache[h["start-date"]][gsp_group_code][run]
         except KeyError:
             h_start = h["start-date"]
-            rates = data_source.non_core_rate("tlms", h_start)["tlms"]
+            vals = data_source.non_core_rate("tlms", h_start, exact=True)
+            if vals is None:
+                vals = data_source.non_core_rate("tlms", h["hist-start"])
+
+            rates = vals["tlms"]
 
             key = key_format(h_start)
             try:
