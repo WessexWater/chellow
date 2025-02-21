@@ -1617,6 +1617,11 @@ def report_run_row_get(row_id):
             "report_run_row_bill_check.html", row=row, raw_data=raw_data, tables=tables
         )
     elif row.report_run.name == "g_bill_check":
+        g_contract = GContract.get_by_id(g.sess, row.report_run.data["g_contract_id"])
+        g_contract_props = g_contract.make_properties()
+        props = g_contract_props.get("report_run", {})
+        table_names_hide = props.get("table_names_hide", [])
+
         values = row.data["values"]
         elements = {}
         for t in row.data["values"].keys():
@@ -1625,34 +1630,31 @@ def report_run_row_get(row_id):
                 t.startswith("covered_")
                 or t.startswith("virtual_")
                 or t.startswith("difference_")
-            ) and t not in (
-                "covered_from",
-                "covered_to",
-                "covered_bills",
-                "covered_problem",
-                "virtual_problem",
-            ):
+            ) and t.endswith("_gbp"):
                 toks = t.split("_")
                 name = "_".join(toks[1:-1])
+                if name in ("vat", "gross", "net") or name in table_names_hide:
+                    continue
                 try:
                     table = elements[name]
                 except KeyError:
-                    table = elements[name] = {"order": 0}
+                    table = elements[name] = {"order": 0, "name": name, "parts": set()}
+                    tables.append(table)
 
-                if "titles" not in table:
-                    table["titles"] = []
-                table["titles"].append(toks[0] + "_" + "_".join(toks[2:]))
-                if "values" not in table:
-                    table["values"] = []
-                table["values"].append(values[t])
-                if t.startswith("difference_") and t.endswith("-gbp"):
-                    table["order"] = abs(values[t])
+        for t in row.data["values"].keys():
 
-        for k, v in elements.items():
-            if k == "net":
-                continue
-            v["name"] = k
-            tables.append(v)
+            toks = t.split("_")
+            if toks[0] in ("covered", "virtual", "difference"):
+                tail = "_".join(toks[1:])
+                for element in elements.keys():
+                    table = elements[element]
+                    elstr = f"{element}_"
+                    if tail.startswith(elstr):
+                        part = tail[len(elstr) :]
+                        if part != "gbp":
+                            table["parts"].add(part)
+                        if t.startswith("difference_") and t.endswith("_gbp"):
+                            table["order"] = abs(values[t])
 
         tables.sort(key=lambda t: t["order"], reverse=True)
         return render_template(

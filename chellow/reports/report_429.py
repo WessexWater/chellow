@@ -6,6 +6,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
+from numbers import Number
 
 from flask import g, redirect, request
 
@@ -364,22 +365,61 @@ def _process_g_bill_ids(
     vals["g_supply_id"] = g_supply.id
     vals["site_id"] = site_id
     for element in sorted(elements):
-        rate_name = f"difference_{element}_rate"
-        covered_rates = vals.get(f"covered_{element}_rate", [0])
-        virtual_rates = vals.get(f"virtual_{element}_rate", [0])
-        if len(covered_rates) == 1 and len(virtual_rates) == 1:
-            vals[rate_name] = (
-                float(covered_rates.pop()) * 100 - float(virtual_rates.pop()) * 100
-            )
-        else:
-            vals[rate_name] = 0
+        for key in tuple(vals.keys()):
+            if not key.endswith("_gbp"):
+                covered_prefix = f"covered_{element}_"
+                virtual_prefix = f"virtual_{element}_"
+                if key.startswith(covered_prefix):
+                    part_name = key[len(covered_prefix) :]
+                elif key.startswith(virtual_prefix):
+                    part_name = key[len(virtual_prefix) :]
+                else:
+                    continue
+                virtual_part = vals.get(f"virtual_{element}_{part_name}", {0})
+                covered_part = vals.get(f"covered_{element}_{part_name}", {0})
+                if isinstance(virtual_part, set) and len(virtual_part) == 1:
+                    virtual_part = float(next(iter(virtual_part)))
+                if isinstance(covered_part, set) and len(covered_part) == 1:
+                    covered_part = float(next(iter(covered_part)))
 
-    try:
-        covered_kwh = float(vals["covered_kwh"])
-        virtual_kwh = float(vals["virtual_kwh"])
-        vals["difference_kwh"] = covered_kwh - virtual_kwh
-    except KeyError:
-        vals["difference_kwh"] = None
+                if isinstance(virtual_part, Number) and isinstance(
+                    covered_part, Number
+                ):
+                    diff = float(covered_part) - float(virtual_part)
+                else:
+                    diff = 0
+
+                vals[f"difference_{element}_{part_name}"] = diff
+
+    for suffix in (
+        "kwh",
+        "units_consumed",
+    ):
+        try:
+            covered = float(vals[f"covered_{suffix}"])
+            virtual = float(vals[f"virtual_{suffix}"])
+            vals[f"difference_{suffix}"] = covered - virtual
+        except KeyError:
+            vals[f"difference_{suffix}"] = 0
+
+    for prefix in (
+        "correction_factor",
+        "unit_code",
+        "calorific_value",
+    ):
+        covered = vals.get(f"covered_{prefix}", [0])
+        virtual = vals.get(f"virtual_{prefix}", [0])
+        if len(covered) == 1 and len(virtual) == 1:
+            if covered == virtual:
+                diff = 0
+            else:
+                try:
+                    diff = float(next(iter(covered))) - float(next(iter(virtual)))
+                except ValueError:
+                    diff = False
+        else:
+            diff = False
+        vals[f"difference_{prefix}"] = diff
 
     ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
 
