@@ -374,12 +374,35 @@ def _process_g_bill_ids(
         else:
             vals[rate_name] = 0
 
-    try:
-        covered_kwh = float(vals["covered_kwh"])
-        virtual_kwh = float(vals["virtual_kwh"])
-        vals["difference_kwh"] = covered_kwh - virtual_kwh
-    except KeyError:
-        vals["difference_kwh"] = None
+    for prefix in (
+        "kwh",
+        "units_consumed",
+    ):
+        try:
+            covered = float(vals["covered_kwh"])
+            virtual = float(vals["virtual_kwh"])
+            vals[f"difference_{prefix}"] = covered - virtual
+        except KeyError:
+            vals["difference_{prefix}"] = None
+
+    for prefix in (
+        "correction_factor",
+        "unit_code",
+        "calorific_value",
+    ):
+        covered = vals.get(f"covered_{prefix}", [0])
+        virtual = vals.get(f"virtual_{prefix}", [0])
+        if len(covered) == 1 and len(virtual) == 1:
+            if covered == virtual:
+                diff = 0
+            else:
+                try:
+                    diff = float(covered.pop()) - float(virtual.pop())
+                except ValueError:
+                    diff = False
+        else:
+            diff = False
+        vals[f"difference_{prefix}"] = diff
 
     ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
 

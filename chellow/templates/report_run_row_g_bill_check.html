@@ -1,5 +1,16 @@
 {% extends "base.html" %}
 
+{% block inside_head %}
+	<style>
+		section.elements {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 4em;
+			align-items: flex-start;
+		}
+	</style>
+{% endblock %}
+
 {% block title %}
 	&raquo; Report Runs &raquo; {{row.report_run.id}} &raquo; Row {{row.id}}
 {% endblock %}
@@ -9,6 +20,7 @@
 	<a href="/report_runs/{{row.report_run.id}}">{{row.report_run.id}}</a>
 	&raquo; Row {{row.id}}
 {% endblock %}
+
 
 {% block content %}
 	{% set values = row.data['values'] %}
@@ -59,83 +71,125 @@
 			</tr>
 		</tbody>
 	</table>
-	{#
-	<table>
-		<caption>Covered</caption>
-		<thead>
-			<tr>
-				<th>From</th>
-				<th>To</th>
-				<th>Bills</th>
-				<th>Metered kWh</th>
-				<th>Net GBP</th>
-				<th>Virtual Net GBP</th>
-				<th>Difference GBP</th>
-				<th>Problem</th>
-				<th>Virtual Problem</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>{{values['covered-from']}}</td>
-				<td>{{values['covered-to']}}</td>
-				<td>
-					{% if values['covered-bills'] != None %}
-						<ul>
-							{% for bill_id in values['covered-bills'] %}
-								<li>
-									<a href="/e/supplier_bills/{{bill_id}}">{{bill_id}}</a>
-									{% if bill_id == values.bill_id %}
-										(This bill)
-									{% endif %}
-								</li>
-							{% endfor %}
-						</ul>
-					{% endif %}
-				</td>
-				<td>
-					{% if values['metered-kwh'] != None %}
-						{{"%.0f"|format(values['metered-kwh'])}}
-					{% endif %}
-				</td>
-				<td>{{values['covered-net-gbp']}}</td>
-				<td>
-					{% if values['virtual-net-gbp'] != None %}
-						{{"%.2f"|format(values['virtual-net-gbp'])}}
-					{% endif %}
-				</td>
-				<td>
-					{% if values['difference-net-gbp'] != None %}
-						{{"%.2f"|format(values['difference-net-gbp'])}}
-					{% endif %}
-				</td>
-				<td>{{values['covered-problem']}}</td>
-				<td>{{values['virtual-problem']}}</td>
-			</tr>
-		</tbody>
-	</table>
 
-	{% for table in tables %}
+	<section class="elements">
 		<table>
-			<caption>{{table.name}}</caption>
+			<caption>GBP</caption>
 			<thead>
 				<tr>
-					{% for title in table.titles %}
-						<th>{{title}}</th>
-					{% endfor %}
+					<th>Part</th>
+					<th>Covered</th>
+					<th>Virtual</th>
+					<th>Difference</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					{% for v in table['values'] %}
-						<td>{{v}}</td>
-					{% endfor %}
+					<td>gross</td>
+					<td>{{values.covered_gross_gbp}}</td>
+					<td>{{values.virtual_gross_gbp}}</td>
+					<td>{{values.difference_gross_gbp}}</td>
 				</tr>
-			</tbody>
+				<tr>
+					<td>net</td>
+					<td>{{values.covered_net_gbp}}</td>
+					<td>{{values.virtual_net_gbp}}</td>
+					<td>{{values.difference_net_gbp}}</td>
+				</tr>
+				<tr>
+					<td>vat</td>
+					<td>{{values.covered_vat_gbp}}</td>
+					<td>{{values.virtual_vat_gbp}}</td>
+					<td>{{values.difference_vat_gbp}}</td>
+				</tr>
+				<tr>
+					<td>vat_rate</td>
+					<td>{{values.covered_vat_rate}}</td>
+					<td>{{values.virtual_vat_rate}}</td>
+					<td>{{values.difference_vat_rate}}</td>
+				</tr>
+				<tr>
+					<td>is_commercial</td>
+					<td>{{values.covered_is_commercial}}</td>
+					<td>{{values.virtual_is_commercial}}</td>
+					<td>{{values.difference_is_commercial}}</td>
+				</tr>
 		</table>
-	{% endfor %}
+
+		<table>
+			<caption>kWh</caption>
+			<thead>
+				<tr>
+					<th>Part</th>
+					<th>Covered</th>
+					<th>Virtual</th>
+					<th>Difference</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>kwh</td>
+					<td>{{values.covered_kwh}}</td>
+					<td>{{values.virtual_kwh}}</td>
+					<td>{{values.difference_kwh}}</td>
+				</tr>
+				<tr>
+					<td>units_consumed</td>
+					<td>{{values.covered_units_consumed}}</td>
+					<td>{{values.virtual_units_consumed}}</td>
+					<td>{{values.difference_units_consumed}}</td>
+				</tr>
+				<tr>
+					<td>correction_factor</td>
+					<td>{{values.covered_correction_factor}}</td>
+					<td>{{values.virtual_correction_factor}}</td>
+					<td>{{values.difference_correction_factor}}</td>
+				</tr>
+				<tr>
+					<td>unit_code</td>
+					<td>{{values.covered_unit_code}}</td>
+					<td>{{values.virtual_unit_code}}</td>
+					<td>{{values.difference_unit_code}}</td>
+				</tr>
+				<tr>
+					<td>calorific_value</td>
+					<td>{{values.covered_calorific_value}}</td>
+					<td>{{values.virtual_calorific_value}}</td>
+					<td>{{values.difference_calorific_value}}</td>
+				</tr>
+		</table>
+
+		{% for table in tables %}
+			<table>
+				<caption>{{table.name}}</caption>
+				<thead>
+					<tr>
+						<th>Part</th>
+						<th>Covered</th>
+						<th>Virtual</th>
+						<th>Difference</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>gbp</td>
+						<td>{{values["covered_" + table.name + "_gbp"]}}</td>
+						<td>{{values["virtual_" + table.name + "_gbp"]}}</td>
+						<td>{{values["difference_" + table.name + "_gbp"]}}</td>
+					</tr>
+					{% for part in table['parts']|sort %}
+						<tr>
+							<td>{{part}}</td>
+							<td>{{values["covered_" + table.name + "_" + part]}}</td>
+							<td>{{values["virtual_" + table.name + "_" + part]}}</td>
+							<td>{{values["difference_" + table.name + "_" + part]}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endfor %}
+	</section>
 
 	<h2>Raw</h2>	
 	<pre>{{raw_data}}</pre>
-	#}
 {% endblock %}
