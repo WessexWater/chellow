@@ -17,7 +17,7 @@ dependencies = [
 	"odio==0.0.23",
 	"pypdf==4.3.1",
 	"pg8000==1.31.1",
-	"Flask==2.3.3",
+	"Flask==3.1.0",
 	"SQLAlchemy==2.0.30",
 	"flask-restx==1.2.0",
 	"openpyxl==3.1.2",

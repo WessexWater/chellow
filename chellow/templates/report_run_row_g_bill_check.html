@@ -84,36 +84,45 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>gross</td>
-					<td>{{values.covered_gross_gbp}}</td>
-					<td>{{values.virtual_gross_gbp}}</td>
-					<td>{{values.difference_gross_gbp}}</td>
-				</tr>
-				<tr>
-					<td>net</td>
-					<td>{{values.covered_net_gbp}}</td>
-					<td>{{values.virtual_net_gbp}}</td>
-					<td>{{values.difference_net_gbp}}</td>
-				</tr>
-				<tr>
-					<td>vat</td>
-					<td>{{values.covered_vat_gbp}}</td>
-					<td>{{values.virtual_vat_gbp}}</td>
-					<td>{{values.difference_vat_gbp}}</td>
-				</tr>
-				<tr>
-					<td>vat_rate</td>
-					<td>{{values.covered_vat_rate}}</td>
-					<td>{{values.virtual_vat_rate}}</td>
-					<td>{{values.difference_vat_rate}}</td>
-				</tr>
-				<tr>
-					<td>is_commercial</td>
-					<td>{{values.covered_is_commercial}}</td>
-					<td>{{values.virtual_is_commercial}}</td>
-					<td>{{values.difference_is_commercial}}</td>
-				</tr>
+				{% if 'difference_gross_gbp' in values %}
+					<tr>
+						<td>gross</td>
+						<td>{{"%.2f"|format(values.covered_gross_gbp)}}</td>
+						<td>{{"%.2f"|format(values.virtual_gross_gbp)}}</td>
+						<td>{{"%.2f"|format(values.difference_gross_gbp)}}</td>
+					</tr>
+				{% endif %}
+					<tr>
+						<td>net</td>
+						<td>{{"%.2f"|format(values.covered_net_gbp)}}</td>
+						<td>{{"%.2f"|format(values.virtual_net_gbp)}}</td>
+						<td>{{"%.2f"|format(values.difference_net_gbp)}}</td>
+					</tr>
+				{% if 'difference_vat_gbp' in values %}
+					<tr>
+						<td>vat</td>
+						<td>{{"%.2f"|format(values.covered_vat_gbp)}}</td>
+						<td>{{"%.2f"|format(values.virtual_vat_gbp)}}</td>
+						<td>{{"%.2f"|format(values.difference_vat_gbp)}}</td>
+					</tr>
+				{% endif %}
+				{% if 'difference_vat_rate' in values %}
+					<tr>
+						<td>vat_rate</td>
+						<td>{{"%.2f"|format(values.covered_vat_rate)}}</td>
+						<td>{{"%.2f"|format(values.virtual_vat_rate)}}</td>
+						<td>{{"%.2f"|format(values.difference_vat_rate)}}</td>
+					</tr>
+				{% endif %}
+				{% if 'difference_is_commercial' in values %}
+					<tr>
+						<td>is_commercial</td>
+						<td>{{values.covered_is_commercial}}</td>
+						<td>{{values.virtual_is_commercial}}</td>
+						<td>{{values.difference_is_commercial}}</td>
+					</tr>
+				{% endif %}
+
 		</table>
 
 		<table>
@@ -129,21 +138,43 @@
 			<tbody>
 				<tr>
 					<td>kwh</td>
-					<td>{{values.covered_kwh}}</td>
-					<td>{{values.virtual_kwh}}</td>
-					<td>{{values.difference_kwh}}</td>
+					<td>{{"%.2f"|format(values.covered_kwh)}}</td>
+					<td>{{"%.2f"|format(values.virtual_kwh)}}</td>
+					<td>{{"%.2f"|format(values.difference_kwh)}}</td>
 				</tr>
 				<tr>
 					<td>units_consumed</td>
-					<td>{{values.covered_units_consumed}}</td>
-					<td>{{values.virtual_units_consumed}}</td>
-					<td>{{values.difference_units_consumed}}</td>
+					<td>
+						{% if 'covered_units_consumed' in values %}
+							{{"%.2f"|format(values.covered_units_consumed)}}
+						{% endif %}
+					</td>
+					<td>{{"%.2f"|format(values.virtual_units_consumed)}}</td>
+					<td>{{"%.2f"|format(values.difference_units_consumed)}}</td>
 				</tr>
 				<tr>
 					<td>correction_factor</td>
-					<td>{{values.covered_correction_factor}}</td>
-					<td>{{values.virtual_correction_factor}}</td>
-					<td>{{values.difference_correction_factor}}</td>
+					<td>
+						{% if values.covered_correction_factor is number %}
+							{{"%.2f"|format(values.covered_correction_factor)}}
+						{% else %}
+							{{values.covered_correction_factor}}
+						{% endif %}
+					</td>
+					<td>
+						{% if values.virtual_correction_factor is number %}
+							{{"%.2f"|format(values.virtual_correction_factor)}}
+						{% else %}
+							{{values.virtual_correction_factor}}
+						{% endif %}
+					</td>
+					<td>
+						{% if values.difference_correction_factor is number %}
+							{{"%.2f"|format(values.difference_correction_factor)}}</td>
+						{% else %}
+							{{values.difference_correction_factor}}
+						{% endif %}
+					</td>
 				</tr>
 				<tr>
 					<td>unit_code</td>
@@ -158,6 +189,7 @@
 					<td>{{values.difference_calorific_value}}</td>
 				</tr>
 		</table>
+		"%.2f"|format(
 
 		{% for table in tables %}
 			<table>
@@ -173,16 +205,40 @@
 				<tbody>
 					<tr>
 						<td>gbp</td>
-						<td>{{values["covered_" + table.name + "_gbp"]}}</td>
-						<td>{{values["virtual_" + table.name + "_gbp"]}}</td>
-						<td>{{values["difference_" + table.name + "_gbp"]}}</td>
+						{% for pref in ('covered_', 'virtual_', 'difference_') %}
+							<td>
+								{% set k = pref + table.name + "_gbp" %}
+								{% if k in values %}
+									{% set val = values[k] %}
+								{% else %}
+									{% set val = '' %}
+								{% endif %}
+								{% if val is number %}
+									{{"%.2f"|format(val)}}
+								{% else %}
+									{{val}}
+								{% endif %}
+							</td>
+						{% endfor %}
 					</tr>
 					{% for part in table['parts']|sort %}
 						<tr>
 							<td>{{part}}</td>
-							<td>{{values["covered_" + table.name + "_" + part]}}</td>
-							<td>{{values["virtual_" + table.name + "_" + part]}}</td>
-							<td>{{values["difference_" + table.name + "_" + part]}}</td>
+							{% for pref in ('covered_', 'virtual_', 'difference_') %}
+								<td>
+									{% set k = pref + table.name + "_" + part %}
+									{% if k in values %}
+										{% set val = values[k] %}
+									{% else %}
+										{% set val = '' %}
+									{% endif %}
+									{% if val is number %}
+										{{"%.2f"|format(val)}}
+									{% else %}
+										{{val}}
+									{% endif %}
+								</td>
+							{% endfor %}
 						</tr>
 					{% endfor %}
 				</tbody>
