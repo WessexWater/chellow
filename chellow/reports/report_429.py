@@ -369,7 +369,8 @@ def _process_g_bill_ids(
         virtual_rates = vals.get(f"virtual_{element}_rate", [0])
         if len(covered_rates) == 1 and len(virtual_rates) == 1:
             vals[rate_name] = (
-                float(covered_rates.pop()) * 100 - float(virtual_rates.pop()) * 100
+                float(next(iter(covered_rates))) * 100
+                - float(next(iter(virtual_rates))) * 100
             )
         else:
             vals[rate_name] = 0
@@ -397,7 +398,7 @@ def _process_g_bill_ids(
                 diff = 0
             else:
                 try:
-                    diff = float(covered.pop()) - float(virtual.pop())
+                    diff = float(next(iter(covered))) - float(next(iter(virtual)))
                 except ValueError:
                     diff = False
         else:

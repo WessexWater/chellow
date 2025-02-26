@@ -106,7 +106,7 @@
 						<td>{{"%.2f"|format(values.difference_vat_gbp)}}</td>
 					</tr>
 				{% endif %}
-				{% if 'difference_vat_rate' in values %}
+				{% if 'difference_vat_rate' in values and values.difference_vat_rate != 0 %}
 					<tr>
 						<td>vat_rate</td>
 						<td>{{values.covered_vat_rate}}</td>
@@ -138,39 +138,39 @@
 			<tbody>
 				<tr>
 					<td>kwh</td>
-					<td>{{"%.2f"|format(values.covered_kwh)}}</td>
-					<td>{{"%.2f"|format(values.virtual_kwh)}}</td>
-					<td>{{"%.2f"|format(values.difference_kwh)}}</td>
+					<td>{{":0,.2f"|format(values.covered_kwh)}}</td>
+					<td>{{":0,.2f"|format(values.virtual_kwh)}}</td>
+					<td>{{":0,.2f"|format(values.difference_kwh)}}</td>
 				</tr>
 				<tr>
 					<td>units_consumed</td>
 					<td>
 						{% if 'covered_units_consumed' in values %}
-							{{"%.2f"|format(values.covered_units_consumed)}}
+							{{":0,.2f"|format(values.covered_units_consumed)}}
 						{% endif %}
 					</td>
-					<td>{{"%.2f"|format(values.virtual_units_consumed)}}</td>
-					<td>{{"%.2f"|format(values.difference_units_consumed)}}</td>
+					<td>{{":0,.2f"|format(values.virtual_units_consumed)}}</td>
+					<td>{{":0,.2f"|format(values.difference_units_consumed)}}</td>
 				</tr>
 				<tr>
 					<td>correction_factor</td>
 					<td>
 						{% if values.covered_correction_factor is number %}
-							{{"%.2f"|format(values.covered_correction_factor)}}
+							{{":0,.2f"|format(values.covered_correction_factor)}}
 						{% else %}
 							{{values.covered_correction_factor}}
 						{% endif %}
 					</td>
 					<td>
 						{% if values.virtual_correction_factor is number %}
-							{{"%.2f"|format(values.virtual_correction_factor)}}
+							{{":0,.2f"|format(values.virtual_correction_factor)}}
 						{% else %}
 							{{values.virtual_correction_factor}}
 						{% endif %}
 					</td>
 					<td>
 						{% if values.difference_correction_factor is number %}
-							{{"%.2f"|format(values.difference_correction_factor)}}</td>
+							{{":0,.2f"|format(values.difference_correction_factor)}}</td>
 						{% else %}
 							{{values.difference_correction_factor}}
 						{% endif %}
@@ -213,7 +213,7 @@
 									{% set val = '' %}
 								{% endif %}
 								{% if val is number %}
-									{{"%.2f"|format(val)}}
+									{{":0,.2f"|format(val)}}
 								{% else %}
 									{{val}}
 								{% endif %}
@@ -232,7 +232,7 @@
 										{% set val = '' %}
 									{% endif %}
 									{% if val is number %}
-										{{"%.2f"|format(val)}}
+										{{":0,.2f"|format(val)}}
 									{% else %}
 										{{val}}
 									{% endif %}
