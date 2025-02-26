@@ -109,8 +109,8 @@
 				{% if 'difference_vat_rate' in values %}
 					<tr>
 						<td>vat_rate</td>
-						<td>{{"%.2f"|format(values.covered_vat_rate)}}</td>
-						<td>{{"%.2f"|format(values.virtual_vat_rate)}}</td>
+						<td>{{values.covered_vat_rate}}</td>
+						<td>{{values.virtual_vat_rate}}</td>
 						<td>{{"%.2f"|format(values.difference_vat_rate)}}</td>
 					</tr>
 				{% endif %}
@@ -189,7 +189,6 @@
 					<td>{{values.difference_calorific_value}}</td>
 				</tr>
 		</table>
-		"%.2f"|format(
 
 		{% for table in tables %}
 			<table>
