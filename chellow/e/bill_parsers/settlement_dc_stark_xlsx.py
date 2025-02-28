@@ -85,7 +85,7 @@ class Parser:
                         hours=23, minutes=30
                     )
 
-                    net = round(self.get_dec("W", row), 2)
+                    net = round(self.get_dec("AO", row), 2)
 
                     cop_3_meters = self.get_int("G", row)
                     cop_3_rate = self.get_dec("H", row)
