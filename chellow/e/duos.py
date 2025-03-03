@@ -696,7 +696,10 @@ def datum_2012_02_23(ds, hh):
                             hh["ct-month"] < slot["finish-month"]
                             or (
                                 hh["ct-month"] == slot["finish-month"]
-                                and hh["ct-day"] <= slot["finish-day"]
+                                and (
+                                    slot["finish-day"] == "last"
+                                    or hh["ct-day"] <= slot["finish-day"]
+                                )
                             )
                         )
                     ):
