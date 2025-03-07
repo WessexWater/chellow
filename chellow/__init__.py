@@ -22,6 +22,7 @@ import chellow.e.hh_importer
 import chellow.e.rcrc
 import chellow.e.system_price
 import chellow.e.views
+import chellow.fake_batch_updater
 import chellow.gas.cv
 import chellow.gas.views
 import chellow.national_grid
@@ -62,6 +63,7 @@ def get_importer_modules():
         chellow.national_grid,
         chellow.rate_server,
         chellow.rrun,
+        chellow.fake_batch_updater,
     )
 
 

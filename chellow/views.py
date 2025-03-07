@@ -72,6 +72,7 @@ import chellow.national_grid
 import chellow.rate_server
 from chellow.edi_lib import SEGMENTS, parse_edi
 from chellow.models import (
+    Batch,
     BillType,
     Channel,
     Comm,
@@ -79,6 +80,7 @@ from chellow.models import (
     Cop,
     EnergisationStatus,
     Era,
+    GBatch,
     GContract,
     GEra,
     GExitZone,
@@ -154,6 +156,41 @@ def requires_editor(f):
 def configuration():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
     return redirect(f"/non_core_contracts/{config.id}")
+
+
+@home.route("/fake_batch_updater")
+def fake_batch_updater_get():
+    importer = chellow.fake_batch_updater.importer
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+
+    e_fake_batches = g.sess.scalars(
+        select(Batch).where(
+            Batch.reference.startswith("e_fake_batch_"),
+        )
+    )
+
+    g_fake_batches = g.sess.scalars(
+        select(GBatch).where(
+            GBatch.reference.startswith("g_fake_batch_"),
+        )
+    )
+
+    return render_template(
+        "fake_batch_updater.html",
+        importer=importer,
+        config_state=config.make_state(),
+        config_properties=props.get("fake_batch_updater", {}),
+        e_fake_batches=e_fake_batches,
+        g_fake_batches=g_fake_batches,
+    )
+
+
+@home.route("/fake_batch_updater", methods=["POST"])
+def fake_batch_updater_post():
+    importer = chellow.fake_batch_updater.importer
+    importer.go()
+    return redirect("/fake_batch_updater", 303)
 
 
 @home.route("/health")
