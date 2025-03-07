@@ -92,29 +92,35 @@ CHARGE_UNITS_LOOKUP = {
 }
 
 ELEMENT_LOOKUP = {
-    "1ANNUAL": "duos-red",
-    "2ANNUAL": "duos-amber",
-    "3ANNUAL": "duos-green",
-    "7ANNUAL": "duos-fixed",
-    "9ANNUAL": "duos-reactive",
-    "10ANNUAL": "standing",
-    "20RS0108": "single",
-    "30ANNUAL": "mop",
-    "50ANNUAL": "dc",
-    "9WANNUAL": "site-fee",
-    "20RS0123": "day",
-    "30RS0123": "night",
-    "90ANNUAL": "duos-fixed",
-    "9QANNUAL": "duos-availability",
-    "9UANNUAL": "tnuos",
-    "40ANNUAL": "maximum-demand",
-    "20ANNUAL": "triad",
-    "70ANNUAL": "elexon",
-    "10RS0050": "duos-red",
-    "20RS0050": "duos-amber",
-    "30RS0050": "duos-red",
-    "9CANNUAL": "duos-reactive",
-    "40RS0050": "duos-super-red",
+    "1ANNUAL": {"UNIT": "duos-red"},
+    "2ANNUAL": {"UNIT": "duos-amber"},
+    "3ANNUAL": {"UNIT": "duos-green"},
+    "20RS0108": {"UNIT": "single"},
+    "10ANNUAL": {
+        "STDG": "standing",
+        "DCDA": "dc",
+    },
+    "9ANNUAL": {"REAP": "duos-reactive"},
+    "7ANNUAL": {"STDG": "duos-fixed"},
+    "30ANNUAL": {"MOP1": "mop"},
+    "50ANNUAL": {"COMM": "dc"},
+    "9WANNUAL": {
+        "STDG": "site-fee",
+        "AVAL": "duos-availability",
+    },
+    "20RS0123": {"UNIT": "day"},
+    "30RS0123": {"UNIT": "night"},
+    "90ANNUAL": {"STDG": "duos-fixed"},
+    "9QANNUAL": {"AVAL": "duos-availability"},
+    "9UANNUAL": {"TNUOS": "tnuos"},
+    "40ANNUAL": {"MD": "maximum-demand"},
+    "20ANNUAL": {"LOADU": "triad"},
+    "70ANNUAL": {"SAG": "elexon"},
+    "10RS0050": {"UNIT": "duos-red"},
+    "20RS0050": {"UNIT": "duos-amber"},
+    "30RS0050": {"UNIT": "duos-red"},
+    "9CANNUAL": {"REAP": "duos-reactive"},
+    "40RS0050": {"UNIT": "duos-super-red"},
 }
 
 
@@ -133,11 +139,12 @@ def _handle_0460(headers, pre_record, record):
         unknown_3=51,
         days=2,
     )
-    units = CHARGE_UNITS_LOOKUP[parts["units"].strip()]
+    units_code = parts["units"].strip()
+    units = CHARGE_UNITS_LOOKUP[units_code]
     gbp = Decimal(parts["gbp"]) / 100
     quantity = Decimal(parts["quantity"])
     rate = Decimal(parts["rate"])
-    element_name = ELEMENT_LOOKUP[parts["code"].strip()]
+    element_name = ELEMENT_LOOKUP[parts["code"].strip()][units_code]
     breakdown = headers["breakdown"]
     breakdown[f"{element_name}-{units}"] += quantity
     rate_name = f"{element_name}-rate"
@@ -289,7 +296,7 @@ def _handle_1500(headers, pre_record, record):
         del headers["late_payment"]
 
     return {
-        "bill_type_code": "N",
+        "bill_type_code": "W" if net < 0 else "N",
         "mpan_core": headers["mpan_core"],
         "account": headers["account"],
         "reference": headers["reference"],

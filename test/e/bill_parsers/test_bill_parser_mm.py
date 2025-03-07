@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from chellow.e.bill_parsers.mm import (
     _handle_0101,
+    _handle_0460,
     _handle_0461,
     _handle_0860,
     _handle_1455,
@@ -23,6 +24,39 @@ def test_handle_0101():
     assert headers == {
         "start_date": to_utc(ct_datetime(2024, 6, 18)),
         "finish_date": to_utc(ct_datetime(2024, 6, 18, 23, 30)),
+    }
+
+
+def test_handle_0460():
+    headers = {"breakdown": defaultdict(int, {"vat": {}}), "reads": []}
+    pre_record = ""
+    record = "".join(
+        (
+            "xxxxxxxxxxxx",  # unknown_1=12
+            "xxxxxxxxxxxx",  # unknown_2=12
+            "10RS0050",  # code=8
+            "000000000871",  # quantity=12
+            "UNIT                  ",  # units=22
+            "00000000000.0429",  # rate=16
+            "20240401",  # unknown_date=DATE_LENGTH
+            "000000761.59",  # gbp=12
+            "                                   ",  # charge_description=35,
+            "xxx",  # unknown_3=51
+            "21",  # days=2
+        )
+    )
+    _handle_0460(headers, pre_record, record)
+    assert headers == {
+        "reads": [],
+        "breakdown": defaultdict(
+            int,
+            {
+                "duos-red-gbp": Decimal("7.6159"),
+                "duos-red-kwh": Decimal("871"),
+                "duos-red-rate": {Decimal("0.0429")},
+                "vat": {},
+            },
+        ),
     }
 
 
