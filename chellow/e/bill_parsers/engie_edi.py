@@ -205,7 +205,7 @@ def _process_CCD2(elements, headers):
 
     try:
         reads = headers["reads"]
-        del headers["reads"][:]
+        headers["reads"] = []
     except KeyError:
         reads = []
 
@@ -267,7 +267,7 @@ def _process_CCD3(elements, headers):
 
     try:
         reads = headers["reads"]
-        del headers["reads"][:]
+        headers["reads"] = []
     except KeyError:
         reads = []
 
