@@ -90,6 +90,8 @@ TCOD_MAP = {
     "632209": ("summer-night-gbp", "summer-night-rate", "summer-night-kwh"),
     "663682": ("summer-weekday-gbp", "summer-weekday-rate", "summer-weekday-kwh"),
     "299992": ("summer-weekend-gbp", "summer-weekend-rate", "summer-weekend-kwh"),
+    "211000": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+    "790618": ("tnuos-gbp", None, None),
     "447769": ("triad-gbp", "triad-rate", "triad-kw"),
     "647721": ("triad-gbp", "triad-rate", "triad-kw"),
     "276631": ("triad-gbp", "triad-rate", "triad-kw"),
