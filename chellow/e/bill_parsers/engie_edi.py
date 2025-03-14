@@ -74,6 +74,7 @@ TCOD_MAP = {
     "257303": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "661439": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "661441": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
+    "504364": ("ebrs-gbp", None, "ebrs-kwh"),
     "563023": ("ebrs-gbp", None, "ebrs-kwh"),
     "823408": ("ebrs-gbp", None, "ebrs-kwh"),
     "871593": ("ebrs-gbp", "ebrs-rate", "ebrs-kwh"),
