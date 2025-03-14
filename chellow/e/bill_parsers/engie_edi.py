@@ -65,6 +65,8 @@ TCOD_MAP = {
         "duos-excess-availability-rate",
         "duos-excess-availability-kva",
     ),
+    "301541": ("duos-fixed-gbp", None, None),
+    "099335": ("duos-fixed-gbp", None, None),
     "986159": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
     "838286": ("duos-reactive-gbp", "duos-reactive-rate", "duos-reactive-kvarh"),
     "242643": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
