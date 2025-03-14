@@ -65,6 +65,8 @@ TCOD_MAP = {
         "duos-excess-availability-rate",
         "duos-excess-availability-kva",
     ),
+    "301541": ("duos-fixed-gbp", None, None),
+    "099335": ("duos-fixed-gbp", None, None),
     "986159": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
     "838286": ("duos-reactive-gbp", "duos-reactive-rate", "duos-reactive-kvarh"),
     "242643": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
@@ -74,12 +76,15 @@ TCOD_MAP = {
     "257303": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "661439": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
     "661441": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
+    "504364": ("ebrs-gbp", None, "ebrs-kwh"),
     "563023": ("ebrs-gbp", None, "ebrs-kwh"),
     "823408": ("ebrs-gbp", None, "ebrs-kwh"),
     "871593": ("ebrs-gbp", "ebrs-rate", "ebrs-kwh"),
     "873894": ("ebrs-gbp", "ebrs-rate", "ebrs-kwh"),
     "309707": ("fit-gbp", "fit-rate", "fit-kwh"),
     "994483": ("reconciliation-gbp", None, None),
+    "310129": ("meter-rental-gbp", None, None),
+    "452415": ("meter-rental-gbp", None, None),
     "544936": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
     "265091": ("night-gbp", "night-rate", "night-kwh"),
     "483457": ("peak-gbp", "peak-rate", "peak-kwh"),
@@ -90,6 +95,8 @@ TCOD_MAP = {
     "632209": ("summer-night-gbp", "summer-night-rate", "summer-night-kwh"),
     "663682": ("summer-weekday-gbp", "summer-weekday-rate", "summer-weekday-kwh"),
     "299992": ("summer-weekend-gbp", "summer-weekend-rate", "summer-weekend-kwh"),
+    "211000": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+    "790618": ("tnuos-gbp", None, None),
     "447769": ("triad-gbp", "triad-rate", "triad-kw"),
     "647721": ("triad-gbp", "triad-rate", "triad-kw"),
     "276631": ("triad-gbp", "triad-rate", "triad-kw"),
@@ -97,6 +104,12 @@ TCOD_MAP = {
     "264929": ("winter-weekday-gbp", "winter-weekday-rate", "winter-weekday-kwh"),
     "638187": ("winter-weekend-gbp", "winter-weekend-rate", "winter-weekend-kwh"),
     "700285": ("duo-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
+}
+
+TPR_LOOKUP = {
+    "Day": "00043",
+    "Off Peak / Weekends": "00210",
+    "Night": "00210",
 }
 
 
@@ -111,6 +124,7 @@ def _process_BCD(elements, headers):
 
 
 def _process_CCD1(elements, headers):
+    tcod = elements["TCOD"]
     pres_read_date = to_finish_date(elements["PRDT"][0])
 
     prev_read_date = to_finish_date(elements["PVDT"][0])
@@ -137,6 +151,7 @@ def _process_CCD1(elements, headers):
         tpr_code = None
     else:
         units = "kWh"
+        tpr_code = TPR_LOOKUP[tcod[1]]
 
     try:
         reads = headers["reads"]
@@ -203,7 +218,7 @@ def _process_CCD2(elements, headers):
 
     try:
         reads = headers["reads"]
-        del headers["reads"][:]
+        headers["reads"] = []
     except KeyError:
         reads = []
 
@@ -265,14 +280,14 @@ def _process_CCD3(elements, headers):
 
     try:
         reads = headers["reads"]
-        del headers["reads"][:]
+        headers["reads"] = []
     except KeyError:
         reads = []
 
     return {
         "bill_type_code": headers["bill_type_code"],
         "issue_date": headers["issue_date"],
-        "reference": headers["reference"],
+        "reference": headers["reference"] + "_" + eln_gbp[:-4],
         "mpan_core": mpan_core,
         "account": mpan_core,
         "start_date": start_date,
