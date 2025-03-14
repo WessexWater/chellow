@@ -28,7 +28,7 @@ def test_CODE_FUNCS():
 def test_process_CCD1(mocker):
     elements = {
         "CCDE": ["1", "f"],
-        "TCOD": ["584867", "AAHEDC"],
+        "TCOD": ["584867", "Day"],
         "TMOD": ["1", "2", "3", "4"],
         "MTNR": ["rikt8"],
         "MLOC": ["alskdj"],
@@ -60,7 +60,7 @@ def test_process_CCD1(mocker):
                 "mpan": "   al skdj  ",
                 "coefficient": Decimal("0.00688"),
                 "units": "kWh",
-                "tpr_code": "1",
+                "tpr_code": "00043",
                 "prev_date": utc_datetime(2018, 8, 1, 22, 30),
                 "prev_value": Decimal("78649"),
                 "prev_type_code": "N",
