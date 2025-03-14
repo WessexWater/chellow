@@ -101,6 +101,12 @@ TCOD_MAP = {
     "700285": ("duo-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
 }
 
+TPR_LOOKUP = {
+    "Day": "00043",
+    "Off Peak / Weekends": "00210",
+    "Night": "00210",
+}
+
 
 def _process_BCD(elements, headers):
     issue_date = to_date(elements["IVDT"][0])
@@ -113,6 +119,7 @@ def _process_BCD(elements, headers):
 
 
 def _process_CCD1(elements, headers):
+    tcod = elements["TCOD"]
     pres_read_date = to_finish_date(elements["PRDT"][0])
 
     prev_read_date = to_finish_date(elements["PVDT"][0])
@@ -139,6 +146,7 @@ def _process_CCD1(elements, headers):
         tpr_code = None
     else:
         units = "kWh"
+        tpr_code = TPR_LOOKUP[tcod[1]]
 
     try:
         reads = headers["reads"]
