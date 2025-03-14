@@ -282,7 +282,7 @@ def _process_CCD3(elements, headers):
     return {
         "bill_type_code": headers["bill_type_code"],
         "issue_date": headers["issue_date"],
-        "reference": headers["reference"],
+        "reference": headers["reference"] + "_" + eln_gbp[:-4],
         "mpan_core": mpan_core,
         "account": mpan_core,
         "start_date": start_date,
