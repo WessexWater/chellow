@@ -104,13 +104,15 @@ TCOD_MAP = {
     "220894": ("winter-night-gbp", "winter-night-rate", "winter-night-kwh"),
     "264929": ("winter-weekday-gbp", "winter-weekday-rate", "winter-weekday-kwh"),
     "638187": ("winter-weekend-gbp", "winter-weekend-rate", "winter-weekend-kwh"),
-    "700285": ("duo-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
+    "700285": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
 }
 
 TPR_LOOKUP = {
     "Day": "00043",
     "Off Peak / Weekends": "00210",
     "Night": "00210",
+    "Default Rate": "00043",
+    "Single": "00210",
 }
 
 
