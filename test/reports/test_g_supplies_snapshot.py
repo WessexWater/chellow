@@ -130,8 +130,8 @@ def virtual_bill(ds):
         g_contract,
         "d7gthekrg",
         g_reading_frequency_M,
-        1,
-        1,
+        8,
+        22,
     )
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
 
@@ -224,8 +224,8 @@ def virtual_bill(ds):
             "2010-01-01 00:00",
             "",
             "M",
-            "4",
-            "5",
+            "8",
+            "22",
         ],
     ]
 
