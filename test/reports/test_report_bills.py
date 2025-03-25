@@ -168,6 +168,7 @@ def test_content(mocker, sess):
 
     expected = [
         [
+            "chellow_id",
             "supplier_contract",
             "batch_reference",
             "bill_reference",
@@ -190,6 +191,7 @@ def test_content(mocker, sess):
             "breakdown",
         ],
         [
+            "1",
             "Fusion Supplier 2000",
             "b",
             "ref",

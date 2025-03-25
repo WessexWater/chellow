@@ -1052,6 +1052,12 @@ def general_import_bill(sess, action, vals, args):
             breakdown,
         )
 
+    elif action == "delete":
+        bill_id_str = add_arg(args, "Bill Chellow Id", vals, 0)
+        bill_id = int(bill_id_str)
+        bill = Bill.get_by_id(sess, bill_id)
+        bill.delete(sess)
+
 
 def general_import_g_bill(sess, action, vals, args):
     if action == "insert":

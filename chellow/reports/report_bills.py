@@ -16,6 +16,7 @@ from chellow.utils import csv_make_val, req_int
 def _content(sess, writer, batch_id):
     batch = Batch.get_by_id(sess, batch_id)
     titles = [
+        "chellow_id",
         "supplier_contract",
         "batch_reference",
         "bill_reference",
@@ -60,6 +61,7 @@ def _content(sess, writer, batch_id):
                 vbd["net"] += vat_vals["net"]
 
         vals = {
+            "chellow_id": bill.id,
             "supplier_contract": batch.contract.name,
             "batch_reference": batch.reference,
             "bill_reference": bill.reference,
