@@ -1628,7 +1628,6 @@ def era_edit_get(era_id):
 def era_edit_form_get(era_id):
     try:
         era = Era.get_by_id(g.sess, era_id)
-        ct_now = ct_datetime_now()
         comms = g.sess.scalars(select(Comm).order_by(Comm.code))
         energisation_statuses = g.sess.scalars(
             select(EnergisationStatus).order_by(EnergisationStatus.code)
@@ -1641,7 +1640,7 @@ def era_edit_form_get(era_id):
         if "start_year" in request.values:
             start_date = req_date("start")
         else:
-            start_date = to_utc(ct_datetime(ct_now.year, ct_now.month, ct_now.day))
+            start_date = era.start_date
 
         is_ended = req_bool("is_ended")
         if is_ended:
