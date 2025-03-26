@@ -1594,8 +1594,14 @@ class Contract(Base, PersistentClass):
     def delete(self, sess):
         if len(self.batches) > 0:
             raise BadRequest("Can't delete a contract that has batches.")
+        for rs in self.rate_scripts[1:]:
+            self.delete_rate_script(sess, rs)
+        rs = self.rate_scripts[0]
+        rs.contract_id = None
         self.rate_scripts[:] = []
         sess.delete(self)
+        sess.flush()
+        sess.delete(rs)
 
     def find_rate_script_at(self, sess, date):
         return sess.scalars(
