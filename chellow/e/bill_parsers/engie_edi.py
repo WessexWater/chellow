@@ -86,6 +86,7 @@ TCOD_MAP = {
     "309707": ("fit-gbp", "fit-rate", "fit-kwh"),
     "310129": ("meter-rental-gbp", None, None),
     "452415": ("meter-rental-gbp", None, None),
+    "371265": ("meter-rental-gbp", None, None),
     "544936": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
     "265091": ("night-gbp", "night-rate", "night-kwh"),
     "483457": ("peak-gbp", "peak-rate", "peak-kwh"),
