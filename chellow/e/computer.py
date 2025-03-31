@@ -1575,6 +1575,16 @@ def _find_hhs(caches, sess, pairs, chunk_start, chunk_finish):
     if hh_after(pairs[-1]["start-date"], chunk_finish):
         del pairs[-1]
 
+    # If nothing left
+    if len(pairs) == 0:
+        pairs.append(
+            {
+                "start-date": chunk_start,
+                "finish-date": chunk_finish,
+                "tprs": {"00001": 0},
+            }
+        )
+
     # squash
     if hh_before(pairs[0]["start-date"], chunk_start):
         pairs[0]["start-date"] = chunk_start

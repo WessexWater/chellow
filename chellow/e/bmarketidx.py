@@ -229,7 +229,5 @@ def startup():
 
 @atexit.register
 def shutdown():
-    global bmarketidx_importer
-
     if bmarketidx_importer is not None:
         bmarketidx_importer.stop()
