@@ -48,7 +48,7 @@ def hh(data_source, use_bill_check=False):
 
     for h in data_source.hh_data:
         try:
-            h["cfd-rate"] = cfd_cache[h["start-date"]]
+            h["cfd-rates"] = cfd_cache[h["start-date"]]
         except KeyError:
             h_start = h["start-date"]
             if use_bill_check:
@@ -104,7 +104,10 @@ def hh(data_source, use_bill_check=False):
                 levy_rate_str = effective_ocl_rate
             levy_rate = float(levy_rate_str) / 1000
 
-            h["cfd-rate"] = cfd_cache[h_start] = base_rate + levy_rate
+            h["cfd-rates"] = cfd_cache[h_start] = {
+                "interim": base_rate,
+                "operational": levy_rate,
+            }
 
 
 def lcc_import(sess, log, set_progress, s):
