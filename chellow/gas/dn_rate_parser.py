@@ -248,7 +248,7 @@ def find_nts_rates(file_name, file_like, col):
 
     for sheet in book.worksheets:
         title = sheet.title.strip().lower()
-        if title.startswith("nts unit rates"):
+        if title.startswith("nts unit rates") or title.startswith("ngt unit rates"):
             rates["so_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 11)
             rates["so_exit_gbp_per_kwh"] = get_nts_rate(sheet, col, 13)
             rates["to_entry_gbp_per_kwh"] = get_nts_rate(sheet, col, 10)
