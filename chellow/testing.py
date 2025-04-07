@@ -8,8 +8,8 @@ from sqlalchemy.sql.expression import select
 from chellow.models import (
     Contract,
     GContract,
+    RSession,
     Report,
-    Session,
 )
 from chellow.utils import ct_datetime_now
 
@@ -62,7 +62,7 @@ class Tester(threading.Thread):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
                 self.global_alert = None
-                with Session() as sess:
+                with RSession() as sess:
                     try:
                         _run(self.log, sess)
                     except BaseException:
