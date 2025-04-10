@@ -93,7 +93,10 @@ CHARGE_UNITS_LOOKUP = {
 
 ELEMENT_LOOKUP = {
     "1ANNUAL": {"UNIT": "duos-red"},
-    "2ANNUAL": {"UNIT": "duos-amber"},
+    "2ANNUAL": {
+        "UNIT": "duos-amber",
+        "LOADU": "triad",
+    },
     "3ANNUAL": {"UNIT": "duos-green"},
     "20RS0108": {"UNIT": "single"},
     "10ANNUAL": {
