@@ -381,7 +381,7 @@ def general_import_era(sess, action, vals, args):
             else:
                 ssc_code = ssc.code
         elif len(ssc_code) > 0:
-            Ssc.get_by_code(sess, ssc_code)
+            Ssc.get_by_code(sess, ssc_code, start_date)
         else:
             ssc_code = None
 
