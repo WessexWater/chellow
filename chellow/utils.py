@@ -67,12 +67,15 @@ def req_zish(name):
 def req_date(prefix, resolution="minute"):
     year = req_int(f"{prefix}_year")
     month = req_int(f"{prefix}_month")
-    day = req_int(f"{prefix}_day")
 
     try:
-        if resolution == "day":
+        if resolution == "month":
+            d = ct_datetime(year, month)
+        elif resolution == "day":
+            day = req_int(f"{prefix}_day")
             d = ct_datetime(year, month, day)
         elif resolution == "minute":
+            day = req_int(f"{prefix}_day")
             hour = req_int(f"{prefix}_hour")
             minute = req_int(f"{prefix}_minute")
             d = ct_datetime(year, month, day, hour, minute)

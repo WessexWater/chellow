@@ -1538,6 +1538,19 @@ def report_run_get(run_id):
             run=run,
             rows=rows,
         )
+    elif run.name == "missing_e_bills":
+        rows = g.sess.scalars(
+            select(ReportRunRow)
+            .filter(ReportRunRow.report_run == run)
+            .order_by(
+                ReportRunRow.data["values"]["month_start"],
+            )
+        ).all()
+        return render_template(
+            "report_run_missing_e_bills.html",
+            run=run,
+            rows=rows,
+        )
 
     else:
         order_by = "row.id"
@@ -1561,12 +1574,12 @@ def report_run_get(run_id):
         )
 
 
-@home.route("/report_runs/<int:run_id>", methods=["POST"])
-def report_run_post(run_id):
+@home.route("/report_runs/<int:run_id>", methods=["DELETE"])
+def report_run_delete(run_id):
     run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
     run.delete(g.sess)
     g.sess.commit()
-    return redirect("/report_runs", 303)
+    return hx_redirect("/report_runs", 303)
 
 
 @home.route("/report_runs/<int:run_id>/spreadsheet")

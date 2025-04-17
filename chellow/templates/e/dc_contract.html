@@ -97,7 +97,18 @@
 			<input type="submit" value="Download">
 		</fieldset>
 	</form>
-	<br>
+
+	<form action="/reports/missing_bills">
+		<fieldset>
+			<legend>Download Missing Bills</legend>
+			<input type="hidden" name="contract_id" value="{{dc_contract.id}}">
+			
+			<label>Months</label> <input name="months" value="1" maxlength="2" size="2">
+			<label>Last Month</label> {{input_date('finish', last_month_finish, 'month')}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
+
 	<h3>Script</h3>
 
 	<pre>{{dc_contract.charge_script}}</pre>

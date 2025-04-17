@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Report Runs &raquo; {{run.id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/report_runs">Report Runs</a> &raquo; {{run.id}}
+{% endblock %}
+
+{% block content %}
+	<table class="sticky">
+		<caption>Missing Electricity Bills Summary</caption>
+		<thead>
+			<tr>
+				<th>Date Created</th>
+				<th>Created By</th>
+				<th>State</th>
+				<th>Number Of Rows</th>
+				<th>Delete</th>
+				<th>Download Spreadsheet</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{run.date_created|hh_format}}</td>
+				<td>{{run.creator}}</td>
+				<td>{{run.state}}</td>
+				<td>{{rows|length}}</td>
+				<td>
+					<form hx-delete="/report_runs/{{run.id}}/edit"
+							hx-confirm="Are you sure you want to delete this report run?">
+						<fieldset style="border: none;">
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
+				</td>
+				<td>
+					<a href="/report_runs/{{run.id}}/spreadsheet">Download</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table class="sticky">
+		<caption>
+			Missing Electricity Bills
+		</caption>
+		<thead>
+			<tr>
+				<th>Contract</th>
+				<th>Month</th>
+				<th>Supply</th>
+				<th>Import MPAN</th>
+				<th>Export MPAN</th>
+				<th>Account</th>
+				<th>Site</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in rows %}
+				{% set values = row.data['values'] %}
+				<tr>
+					<td>
+						{% if values['market_role_code'] == 'M' %}
+							<a href="/e/mop_contracts/{{values['contract_id']}}">{{values['contract_name']}}</a>
+						{% elif values['market_role_code'] == 'C' %}
+							<a href="/e/dc_contracts/{{values['contract_id']}}">{{values['contract_name']}}</a>
+						{% elif values['market_role_code'] == 'X' %}
+							<a href="/e/supplier_contracts/{{values['contract_id']}}">{{values['contract_name']}}</a>
+						{% endif %}
+					</td>
+					<td>{{values['month_start'][:7]}}</td>
+					<td>
+						<a href="/e/supplies/{{values['supply_id']}}">View</a>
+					</td>
+					<td>
+						{% if values['imp_mpan_core'] is not none %}
+							{{values['imp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td>
+						{% if values['exp_mpan_core'] is not none %}
+							{{values['exp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td>{{values['account']}}</td>
+					<td>
+						<a href="/sites/{{values['site_id']}}" title="{{values['site_name']}}">
+							{{values['site_code']}}
+						</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

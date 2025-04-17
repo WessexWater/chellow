@@ -650,15 +650,15 @@ def update_vls(sess, logger, vls, dno_code, fy_start, rs_finish):
         llfc = sess.execute(q).scalar_one_or_none()
 
         if llfc is None:
-            raise BadRequest(
+            logger(
                 f"There is no LLFC with the code '{vl_code}' associated with the DNO "
-                f"{dno.code} from {hh_format(fy_start)} to {hh_format(rs_finish)}."
+                f"{dno.dno_code} from {hh_format(fy_start)} to {hh_format(rs_finish)}."
             )
+        else:
+            vl_voltage_level = VoltageLevel.get_by_code(sess, vl["voltage_level"])
+            llfc.voltage_level = vl_voltage_level
 
-        vl_voltage_level = VoltageLevel.get_by_code(sess, vl["voltage_level"])
-        llfc.voltage_level = vl_voltage_level
-
-        llfc.is_substation = vl["is_substation"]
-        if sess.is_modified(llfc):
-            logger(f"Updated LLFC {llfc.code} of DNO {dno_code}")
-            sess.flush()
+            llfc.is_substation = vl["is_substation"]
+            if sess.is_modified(llfc):
+                logger(f"Updated LLFC {llfc.code} of DNO {dno_code}")
+                sess.flush()
