@@ -8,7 +8,15 @@ from chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx import Parser
 from chellow.utils import utc_datetime
 
 
-def test(sess):
+def test(mocker, sess):
+    rates = {
+        "annual_rates": {
+            "non_settlement": {"*": {"IP": {"*": {"gbp_per_meter": Decimal("45")}}}}
+        }
+    }
+    mocker.patch(
+        "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
+    )
     with open(
         "test/e/bill_parsers/test_bill_parser_nonsettlement_dc_stark_xlsx/"
         "bills.nonsettlement.dc.stark.xlsx",
@@ -18,7 +26,15 @@ def test(sess):
         parser.make_raw_bills()
 
 
-def test_old(sess):
+def test_old(mocker, sess):
+    rates = {
+        "annual_rates": {
+            "non_settlement": {"*": {"IP": {"*": {"gbp_per_meter": Decimal("45")}}}}
+        }
+    }
+    mocker.patch(
+        "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
+    )
     with open(
         "test/e/bill_parsers/test_bill_parser_nonsettlement_dc_stark_xlsx/"
         "bills_old.nonsettlement.dc.stark.xlsx",
@@ -28,7 +44,7 @@ def test_old(sess):
         parser.make_raw_bills()
 
 
-def test_one_bill(sess):
+def test_one_bill(mocker, sess):
     f = BytesIO()
     wb = Workbook()
     sheet = wb.worksheets[0]
@@ -70,6 +86,14 @@ def test_one_bill(sess):
 
     wb.save(f)
     f.seek(0)
+    rates = {
+        "annual_rates": {
+            "non_settlement": {"*": {"IP": {"*": {"gbp_per_meter": Decimal("45")}}}}
+        }
+    }
+    mocker.patch(
+        "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
+    )
     p = Parser(f)
     result = p.make_raw_bills()
 
@@ -77,17 +101,18 @@ def test_one_bill(sess):
         {
             "bill_type_code": "N",
             "kwh": Decimal("0"),
-            "vat": Decimal("1.00"),
-            "net": Decimal("5.00"),
-            "gross": Decimal("6.00"),
+            "vat": Decimal("0.75"),
+            "net": Decimal("3.75"),
+            "gross": Decimal("4.50"),
             "reads": [],
             "breakdown": {
                 "raw_lines": [],
                 "cop": ["5"],
                 "settlement-status": ["non_settlement"],
                 "msn": ["7864739737"],
-                "meter-rate": [Decimal("60.00")],
-                "meter-gbp": Decimal("5.00"),
+                "meter-rate": [Decimal("45")],
+                "meter-gbp": Decimal("3.75"),
+                "months": 1,
             },
             "account": "20 8875 7371 777",
             "issue_date": utc_datetime(2022, 2, 1),

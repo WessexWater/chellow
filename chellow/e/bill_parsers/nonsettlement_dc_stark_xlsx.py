@@ -111,11 +111,9 @@ class Parser:
                     if check != "Billed":
                         continue
                     rates = hh_rate(sess, caches, 0, start_date)
-                    meter_rate = float(
-                        rates["annual_rates"]["non_settlement"]["*"]["IP"]["*"][
-                            "gbp_per_meter"
-                        ]
-                    )
+                    meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"][
+                        "*"
+                    ]["gbp_per_meter"]
                     months = (finish_date_ct.year - start_date_ct.year) * 12 + (
                         finish_date_ct.month - start_date_ct.month + 1
                     )
