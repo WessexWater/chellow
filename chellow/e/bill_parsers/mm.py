@@ -59,7 +59,7 @@ def _handle_0100(headers, pre_record, record):
     headers["issue_date"] = issue_date
     if late_payment is not None:
         headers["late_payment"] = late_payment
-    headers["account"] = pre_record[33:41]
+    headers["account"] = pre_record[43:52]
     headers["reference"] = pre_record[41:46]
     headers["kwh"] = Decimal("0")
     headers["breakdown"] = defaultdict(int, {"vat": {}})

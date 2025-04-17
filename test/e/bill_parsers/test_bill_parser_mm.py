@@ -2,6 +2,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 from chellow.e.bill_parsers.mm import (
+    _handle_0100,
     _handle_0101,
     _handle_0460,
     _handle_0461,
@@ -9,6 +10,29 @@ from chellow.e.bill_parsers.mm import (
     _handle_1455,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_handle_0100():
+    headers = {"issue_date": to_utc(ct_datetime(2023, 5, 2))}
+    pre_record = (
+        "5126507752002028004650                    "
+        "002371905000002390596120850903650220  "
+    )
+    record = "".join(
+        (
+            "20240618",  # start_date=DATE_LENGTH
+            "20240618",  # finish_date=DATE_LENGTH)
+        )
+    )
+    _handle_0100(headers, pre_record, record)
+    assert headers == {
+        "issue_date": to_utc(ct_datetime(2023, 5, 2)),
+        "account": "023719050",
+        "breakdown": {"vat": {}},
+        "kwh": Decimal("0"),
+        "reads": [],
+        "reference": " 0023",
+    }
 
 
 def test_handle_0101():
