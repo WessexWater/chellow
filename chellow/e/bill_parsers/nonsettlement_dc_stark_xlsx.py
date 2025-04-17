@@ -4,6 +4,7 @@ from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
+from chellow.e.computer import hh_rate
 from chellow.models import Session
 from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
@@ -14,12 +15,6 @@ def get_ct_date(title_row, row, name):
 
 def get_start_date(title_row, row, name):
     return to_utc(get_ct_date(title_row, row, name))
-
-
-def get_finish_date(title_row, row, name):
-    d = get_ct_date(title_row, row, name)
-
-    return to_utc(ct_datetime(d.year, d.month, d.day, 23, 30))
 
 
 def get_value(title_row, row, name):
@@ -61,9 +56,6 @@ def get_int(title_row, row, name):
     return int(get_value(title_row, row, name))
 
 
-METER_RATE = Decimal("60.00")
-
-
 class Parser:
     def __init__(self, f):
         self.book = load_workbook(f)
@@ -86,6 +78,7 @@ class Parser:
 
     def make_raw_bills(self):
         row_index = None
+        caches = {}
         try:
             with Session() as sess:
                 bills = []
@@ -101,14 +94,30 @@ class Parser:
                     mpan_core = parse_mpan_core(
                         str(get_int(title_row, row, "mpan ref"))
                     )
-                    start_date = get_start_date(title_row, row, "start")
+                    start_date_ct = get_ct_date(title_row, row, "start")
+                    start_date = to_utc(start_date_ct)
                     issue_date = start_date
-                    finish_date = get_finish_date(title_row, row, "end")
+                    finish_date_ct = get_ct_date(title_row, row, "end")
+                    finish_date = to_utc(
+                        ct_datetime(
+                            finish_date_ct.year,
+                            finish_date_ct.month,
+                            finish_date_ct.day,
+                            23,
+                            30,
+                        )
+                    )
                     check = get_str(title_row, row, "check")
                     if check != "Billed":
                         continue
-
-                    net = METER_RATE / 12
+                    rates = hh_rate(sess, caches, 0, start_date)
+                    meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"][
+                        "*"
+                    ]["gbp_per_meter"]
+                    months = (finish_date_ct.year - start_date_ct.year) * 12 + (
+                        finish_date_ct.month - start_date_ct.month + 1
+                    )
+                    net = round(Decimal(float(meter_rate) / 12 * months), 2)
                     vat = round(net * Decimal("0.2"), 2)
 
                     breakdown = {
@@ -116,7 +125,8 @@ class Parser:
                         "cop": ["5"],
                         "settlement-status": ["non_settlement"],
                         "msn": [msn],
-                        "meter-rate": [METER_RATE],
+                        "meter-rate": [meter_rate],
+                        "months": months,
                         "meter-gbp": net,
                     }
 
