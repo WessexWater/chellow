@@ -144,6 +144,7 @@ def run_import(sess, log, set_progress):
         ).one_or_none()
 
         if fake_batch is not None:
+            log("Found existing fake batch")
             first_fake_bill = sess.scalars(
                 select(GBill)
                 .where(GBill.g_batch == fake_batch)
@@ -158,6 +159,7 @@ def run_import(sess, log, set_progress):
                 fake_batch = None
 
         if fake_batch is None:
+            log("Adding a new fake batch")
             fake_batch = g_contract.insert_g_batch(sess, fake_batch_name, "Fake Batch")
             raw_bills = fb_func(
                 sess,
@@ -168,6 +170,7 @@ def run_import(sess, log, set_progress):
                 current_month_finish,
             )
             if raw_bills is not None and len(raw_bills) > 0:
+                log("About to insert raw bills")
                 for raw_bill in raw_bills:
                     bill_type = BillType.get_by_code(sess, raw_bill["bill_type_code"])
                     g_supply = GSupply.get_by_mprn(sess, raw_bill["mprn"])
@@ -210,6 +213,7 @@ def run_import(sess, log, set_progress):
                             pres_type,
                         )
                     sess.commit()
+            sess.commit()
 
 
 LAST_RUN_KEY = "fake_batch_updater_last_run"
