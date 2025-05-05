@@ -36,6 +36,8 @@ def _handle_0000(headers, pre_record, record):
 
 
 def _handle_0050(headers, pre_record, record):
+    pass
+    """
     parts = _chop_record(
         record,
         issue_date=DATE_LENGTH,
@@ -46,6 +48,7 @@ def _handle_0050(headers, pre_record, record):
         late_payment=12,
     )
     headers["late_payment"] = Decimal(parts["late_payment"]) / Decimal(100)
+    """
 
 
 def _handle_0051(headers, pre_record, record):
