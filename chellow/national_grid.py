@@ -20,7 +20,7 @@ importer = None
 
 
 def api_get(s, path, params=None):
-    url = f"https://api.nationalgrideso.com/api/3/action/{path}"
+    url = f"https://api.neso.energy/api/3/action/{path}"
     res = s.get(url, params=params, timeout=120)
     try:
         res_j = res.json()
