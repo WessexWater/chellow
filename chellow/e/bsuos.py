@@ -127,7 +127,7 @@ def _save_cache(sess, cache):
             del yr_cache[month]
 
 
-BASE_URL = "https://data.neso.energy/backend/dataset/"
+BASE_URL = "https://api.neso.energy/backend/dataset/"
 PATHS = (
     "d6a4bf54-c63f-4014-a716-49fd3878ca52/resource/"
     "0eda5e28-1dc6-48da-8663-c00e12f2a1e2/download/current_ii_bsuos_data-11.csv",
