@@ -32,6 +32,7 @@ SUPPLIER_CODE_MAP = {
     "MET": ("commodity", Decimal("100000"), Decimal("1000")),
     "CCL": ("ccl", Decimal("100000"), Decimal("1000")),
     "SUN": ("sundry", Decimal("1000"), Decimal("100")),
+    "ADJ": ("sundry", Decimal("1000"), Decimal("100")),
 }
 
 UNIT_MAP = {"M3": "M3", "HH": "HCUF", "HCUF": "HCUF"}
