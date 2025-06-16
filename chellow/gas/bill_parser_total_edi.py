@@ -55,7 +55,7 @@ def _process_ADJ(elements, headers):
 def _process_BCD(elements, headers):
     ivdt = elements["IVDT"]
     headers["issue_date"] = to_date(ivdt[0])
-
+    headers["start_date"] = to_date(ivdt[0])
     invn = elements["INVN"]
     headers["reference"] = invn[0]
 
