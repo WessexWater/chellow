@@ -2172,54 +2172,7 @@ def era_edit_delete(era_id):
         return hx_redirect(f"/supplies/{supply.id}")
     except BadRequest as e:
         flash(e.description)
-        energisation_statuses = g.sess.query(EnergisationStatus).order_by(
-            EnergisationStatus.code
-        )
-        pcs = g.sess.query(Pc).order_by(Pc.code)
-        cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
-        gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-        mop_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == "M")
-            .order_by(Contract.name)
-        )
-        dc_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code.in_(("C", "D")))
-            .order_by(Contract.name)
-        )
-        supplier_contracts = (
-            g.sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == "X")
-            .order_by(Contract.name)
-        )
-        site_eras = (
-            g.sess.query(SiteEra)
-            .join(Site)
-            .filter(SiteEra.era == era)
-            .order_by(Site.code)
-            .all()
-        )
-        return make_response(
-            render_template(
-                "era_edit.html",
-                era=era,
-                pcs=pcs,
-                cops=cops,
-                comms=comms,
-                gsp_groups=gsp_groups,
-                mop_contracts=mop_contracts,
-                dc_contracts=dc_contracts,
-                supplier_contracts=supplier_contracts,
-                site_eras=site_eras,
-                energisation_statuses=energisation_statuses,
-            ),
-            400,
-        )
+        return hx_redirect(f"/eras/{era.id}/edit", code=307)
 
 
 @e.route("/eras/<int:era_id>/add_supplier_bill")
