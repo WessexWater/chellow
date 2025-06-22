@@ -144,7 +144,7 @@ def run_import(sess, log, set_progress):
         ).one_or_none()
 
         if fake_batch is not None:
-            log("Found existing fake batch")
+            log(f"Found existing fake batch {fake_batch_name}")
             first_fake_bill = sess.scalars(
                 select(GBill)
                 .where(GBill.g_batch == fake_batch)
@@ -157,10 +157,25 @@ def run_import(sess, log, set_progress):
                 fake_batch.delete(sess)
                 sess.flush()
                 fake_batch = None
+                log(f"Deleted fake batch {fake_batch_name}")
 
         if fake_batch is None:
-            log("Adding a new fake batch")
-            fake_batch = g_contract.insert_g_batch(sess, fake_batch_name, "Fake Batch")
+            latest_bill = sess.scalars(
+                select(GBill)
+                .join(GBatch)
+                .where(GBatch.g_contract == g_contract)
+                .order_by(GBill.finish_date.desc())
+            ).first()
+            if latest_bill is None:
+                log(
+                    "No actual bills found for this contract, so not creating fake "
+                    "batch"
+                )
+                continue
+            if latest_bill.finish_date >= last_month_start:
+                log("Actual bills found in the last month, so not creating fake batch")
+                continue
+
             raw_bills = fb_func(
                 sess,
                 log,
@@ -170,6 +185,10 @@ def run_import(sess, log, set_progress):
                 current_month_finish,
             )
             if raw_bills is not None and len(raw_bills) > 0:
+                log(f"Adding a new fake batch {fake_batch_name}")
+                fake_batch = g_contract.insert_g_batch(
+                    sess, fake_batch_name, "Fake Batch"
+                )
                 log("About to insert raw bills")
                 for raw_bill in raw_bills:
                     bill_type = BillType.get_by_code(sess, raw_bill["bill_type_code"])
@@ -213,6 +232,8 @@ def run_import(sess, log, set_progress):
                             pres_type,
                         )
                     sess.commit()
+            else:
+                log("No raw bills available, so not adding fake batch")
             sess.commit()
 
 
