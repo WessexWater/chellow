@@ -18,6 +18,7 @@ from chellow.utils import (
     hh_range,
     req_date,
     req_int,
+    to_ct,
 )
 
 
@@ -44,10 +45,11 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
             )
             writer.writerow(titles)
 
+            finish_date_ct = to_ct(finish_date)
             months = list(
                 c_months_u(
-                    finish_year=finish_date.year,
-                    finish_month=finish_date.month,
+                    finish_year=finish_date_ct.year,
+                    finish_month=finish_date_ct.month,
                     months=months_length,
                 )
             )
