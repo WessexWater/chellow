@@ -28,7 +28,7 @@ from sqlalchemy.orm import aliased, joinedload
 
 from werkzeug.exceptions import BadRequest
 
-from zish import dumps, loads
+from zish import ZishException, dumps, loads
 
 import chellow.e.dno_rate_parser
 import chellow.e.lcc
@@ -4910,62 +4910,83 @@ def supplier_batches_get():
 @e.route("/supplier_batches/<int:batch_id>")
 def supplier_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-
     num_bills = sum_net_gbp = sum_vat_gbp = sum_gross_gbp = sum_kwh = 0
     vat_breakdown = {}
-    bills = (
-        g.sess.execute(
-            select(Bill)
-            .where(Bill.batch == batch)
-            .order_by(Bill.reference)
-            .options(joinedload(Bill.bill_type))
+
+    try:
+
+        bills = (
+            g.sess.execute(
+                select(Bill)
+                .where(Bill.batch == batch)
+                .order_by(Bill.reference)
+                .options(joinedload(Bill.bill_type))
+            )
+            .scalars()
+            .all()
         )
-        .scalars()
-        .all()
-    )
-    for bill in bills:
-        num_bills += 1
-        sum_net_gbp += bill.net
-        sum_vat_gbp += bill.vat
-        sum_gross_gbp += bill.gross
-        sum_kwh += bill.kwh
+        for bill in bills:
+            num_bills += 1
+            sum_net_gbp += bill.net
+            sum_vat_gbp += bill.vat
+            sum_gross_gbp += bill.gross
+            sum_kwh += bill.kwh
 
-        bd = bill.bd
-        if "vat" in bd:
-            for vat_percentage, vat_vals in bd["vat"].items():
-                try:
-                    vbd = vat_breakdown[vat_percentage]
-                except KeyError:
-                    vbd = vat_breakdown[vat_percentage] = defaultdict(int)
+            try:
+                bd = bill.bd
 
-                vbd["vat"] += vat_vals["vat"]
-                vbd["net"] += vat_vals["net"]
+                if "vat" in bd:
+                    for vat_percentage, vat_vals in bd["vat"].items():
+                        try:
+                            vbd = vat_breakdown[vat_percentage]
+                        except KeyError:
+                            vbd = vat_breakdown[vat_percentage] = defaultdict(int)
 
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    properties = config_contract.make_properties()
-    if "batch_reports" in properties:
-        batch_reports = []
-        for report_id in properties["batch_reports"]:
-            batch_reports.append(Report.get_by_id(g.sess, report_id))
-    else:
-        batch_reports = None
+                        vbd["vat"] += vat_vals["vat"]
+                        vbd["net"] += vat_vals["net"]
+            except ZishException as e:
+                raise BadRequest(f"Problem with bill {bill.id}") from e
 
-    importer_ids = sorted(
-        chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
-    )
-    return render_template(
-        "supplier_batch.html",
-        batch=batch,
-        bills=bills,
-        batch_reports=batch_reports,
-        num_bills=num_bills,
-        sum_net_gbp=sum_net_gbp,
-        sum_vat_gbp=sum_vat_gbp,
-        sum_gross_gbp=sum_gross_gbp,
-        sum_kwh=sum_kwh,
-        vat_breakdown=vat_breakdown,
-        importer_ids=importer_ids,
-    )
+        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+        properties = config_contract.make_properties()
+        if "batch_reports" in properties:
+            batch_reports = []
+            for report_id in properties["batch_reports"]:
+                batch_reports.append(Report.get_by_id(g.sess, report_id))
+        else:
+            batch_reports = None
+
+        importer_ids = sorted(
+            chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
+        )
+        return render_template(
+            "supplier_batch.html",
+            batch=batch,
+            bills=bills,
+            batch_reports=batch_reports,
+            num_bills=num_bills,
+            sum_net_gbp=sum_net_gbp,
+            sum_vat_gbp=sum_vat_gbp,
+            sum_gross_gbp=sum_gross_gbp,
+            sum_kwh=sum_kwh,
+            vat_breakdown=vat_breakdown,
+            importer_ids=importer_ids,
+        )
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template(
+                "supplier_batch.html",
+                batch=batch,
+                num_bills=num_bills,
+                sum_net_gbp=sum_net_gbp,
+                sum_vat_gbp=sum_vat_gbp,
+                vat_breakdown=vat_breakdown,
+                sum_gross_gbp=sum_gross_gbp,
+                sum_kwh=sum_kwh,
+            ),
+            400,
+        )
 
 
 @e.route("/supplier_batches/<int:batch_id>/edit")
