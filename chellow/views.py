@@ -1696,7 +1696,8 @@ def report_run_row_get(row_id):
             toks = t.split("_")
             if toks[0] in ("covered", "virtual", "difference"):
                 tail = "_".join(toks[1:])
-                for element in elements.keys():
+                for element in sorted(elements.keys(), key=len, reverse=True):
+
                     table = elements[element]
                     elstr = f"{element}_"
                     if tail.startswith(elstr):
@@ -1705,6 +1706,7 @@ def report_run_row_get(row_id):
                             table["parts"].add(part)
                         if t.startswith("difference_") and t.endswith("_gbp"):
                             table["order"] = abs(values[t])
+                        break
 
         tables.sort(key=lambda t: t["order"], reverse=True)
         return render_template(

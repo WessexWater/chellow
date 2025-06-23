@@ -21,6 +21,7 @@ from chellow.models import (
     DtcMeterType,
     EnergisationStatus,
     Era,
+    GBill,
     GContract,
     GEra,
     GExitZone,
@@ -1112,6 +1113,77 @@ def general_import_g_bill(sess, action, vals, args):
         )
 
         for i in range(14, len(vals), 10):
+            msn = add_arg(args, "Meter Serial Number", vals, i)
+            g_unit_code = add_arg(args, "Unit", vals, i + 1)
+            g_unit = GUnit.get_by_code(sess, g_unit_code)
+            correction_factor_str = add_arg(args, "Correction Factor", vals, i + 2)
+            correction_factor = Decimal(correction_factor_str)
+            calorific_value_str = add_arg(args, "Calorific Value", vals, i + 3)
+            calorific_value = Decimal(calorific_value_str)
+
+            prev_date_str = add_arg(args, "Previous Date", vals, i + 4)
+            prev_date = parse_hh_start(prev_date_str)
+            prev_value_str = add_arg(args, "Previous Value", vals, i + 5)
+            prev_value = Decimal(prev_value_str)
+
+            prev_type_str = add_arg(args, "Previous Type", vals, i + 6)
+            prev_type = GReadType.get_by_code(sess, prev_type_str)
+
+            pres_date_str = add_arg(args, "Present Date", vals, i + 7)
+            pres_date = parse_hh_start(pres_date_str)
+            pres_value_str = add_arg(args, "Present Value", vals, i + 8)
+            pres_value = Decimal(pres_value_str)
+
+            pres_type_str = add_arg(args, "Present Type", vals, i + 9)
+            pres_type = GReadType.get_by_code(sess, pres_type_str)
+
+            g_bill.insert_g_read(
+                sess,
+                msn,
+                g_unit,
+                correction_factor,
+                calorific_value,
+                prev_value,
+                prev_date,
+                prev_type,
+                pres_value,
+                pres_date,
+                pres_type,
+            )
+
+
+def general_import_g_register_read(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
+
+        g_contract = GContract.get_supplier_by_name(sess, contract_name)
+
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+
+        g_batch = g_contract.get_g_batch_by_reference(sess, batch_reference)
+
+        mprn = add_arg(args, "MPRN", vals, 2)
+        g_supply = GSupply.get_by_mprn(sess, mprn)
+
+        bill_start_date_str = add_arg(args, "Bill Start Date", vals, 3)
+        bill_start_date = parse_hh_start(bill_start_date_str)
+
+        g_bill = sess.scalars(
+            select(GBill).where(
+                GBill.g_batch == g_batch,
+                GBill.g_supply == g_supply,
+                GBill.start_date == bill_start_date,
+            )
+        ).first()
+
+        if g_bill is None:
+            raise BadRequest(
+                f"Can't find a bill in batch {batch_reference} in contract "
+                f"{contract_name} with MPRN {mprn} starting at "
+                f"{hh_format(bill_start_date)}"
+            )
+
+        for i in range(4, len(vals), 10):
             msn = add_arg(args, "Meter Serial Number", vals, i)
             g_unit_code = add_arg(args, "Unit", vals, i + 1)
             g_unit = GUnit.get_by_code(sess, g_unit_code)

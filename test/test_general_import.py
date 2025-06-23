@@ -8,12 +8,14 @@ from chellow.general_import import (
     general_import_g_batch,
     general_import_g_bill,
     general_import_g_era,
+    general_import_g_register_read,
     general_import_g_supply,
     general_import_llfc,
     general_import_site,
     general_import_supply,
 )
 from chellow.models import (
+    BillType,
     Comm,
     Contract,
     Cop,
@@ -62,15 +64,16 @@ def test_general_import_g_batch(mocker):
     general_import_g_batch(sess, action, vals, args)
 
 
-def test_general_import_g_bill(sess):
+def test_general_import_g_register_reads(sess):
     vf = to_utc(ct_datetime(2000, 1, 1))
     site_code = "22488"
     site = Site.insert(sess, site_code, "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    g_unit_code = "M3"
     insert_g_units(sess)
-    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    g_unit_M3 = GUnit.get_by_code(sess, g_unit_code)
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.insert(sess, "Z", "non core")
     participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
@@ -80,7 +83,7 @@ def test_general_import_g_bill(sess):
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     mprn = "87614362"
     msn = "hgeu8rhg"
-    site.insert_g_supply(
+    g_supply = site.insert_g_supply(
         sess,
         mprn,
         "main",
@@ -97,8 +100,26 @@ def test_general_import_g_bill(sess):
         1,
     )
     batch_name = "b1"
-    g_contract.insert_g_batch(sess, batch_name, "batch 1")
+    g_batch = g_contract.insert_g_batch(sess, batch_name, "batch 1")
     insert_bill_types(sess)
+    bill_type_N = BillType.get_by_code(sess, "N")
+    insert_g_read_types(sess)
+    g_batch.insert_g_bill(
+        sess,
+        g_supply,
+        bill_type_N,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        to_utc(ct_datetime(2015, 9, 1)),
+        utc_datetime(2015, 9, 30, 22, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        {},
+    )
     sess.commit()
 
     action = "insert"
@@ -106,20 +127,20 @@ def test_general_import_g_bill(sess):
         g_contract_name,
         batch_name,
         mprn,
-        "2019-09-08 00:00",
-        "2019-10-01 00:00",
-        "2019-10-31 23:30",
+        "2015-09-01 00:00",
+        msn,
+        g_unit_code,
         "0.00",
         "0.00",
+        "2015-09-01 00:00",
         "0.00",
-        "77hwgtlll",
-        "7876hrwlju",
-        "N",
-        "{}",
-        "0",
+        "A",
+        "2015-10-01 00:00",
+        "10.00",
+        "A",
     ]
     args = []
-    general_import_g_bill(sess, action, vals, args)
+    general_import_g_register_read(sess, action, vals, args)
 
 
 def test_general_import_g_bill_reads(sess):

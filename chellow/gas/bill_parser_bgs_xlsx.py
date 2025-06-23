@@ -1,16 +1,16 @@
 import csv
+from collections import defaultdict
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 from enum import Enum, auto
 from io import BytesIO
 
-from dateutil.relativedelta import relativedelta
 
 from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import to_ct, to_utc
+from chellow.utils import c_months_u, to_ct, to_utc
 
 
 class Title(Enum):
@@ -35,17 +35,14 @@ class Title(Enum):
 
 COLUMNS = {
     Title.CUSTOMER: ["Customer"],
-    Title.PRODUCT: ["Product"],
-    Title.BROKER_NAME: ["Broker Name"],
     Title.ACCOUNT: ["Account"],
     Title.MPRN: ["MPRN"],
     Title.BILL: ["Bill"],
-    Title.SUPPLY_ADDRESS: ["Supply Address"],
-    Title.BILL_DATE: ["Bill Date"],
-    Title.BILLING_PERIOD: ["Billing Period"],
-    Title.CHARGE_TYPE: ["Charge Type"],
-    Title.CHARGE_PERIOD_FROM: ["Charge Period From"],
-    Title.CHARGE_PERIOD_END: ["Charge Period End"],
+    Title.BILL_DATE: ["Bill Date", "BillDate"],
+    Title.BILLING_PERIOD: ["Billing Period", "BillingPeriod"],
+    Title.CHARGE_TYPE: ["Charge Type", "ChargeType"],
+    Title.CHARGE_PERIOD_FROM: ["Charge Period From", "ChargePeriodFrom"],
+    Title.CHARGE_PERIOD_END: ["Charge Period End", "ChargePeriodEnd"],
     Title.QUANTITY: ["Quantity"],
     Title.QUNIT: ["QUnit"],
     Title.CHARGE: ["Charge"],
@@ -127,34 +124,21 @@ def get_int(sheet, row, col):
         )
 
 
-"""
-def _bd_add(bd, el_name, val):
-    if el_name.split("-")[-1] in ("rate", "kva"):
-        if el_name not in bd:
-            bd[el_name] = set()
-        bd[el_name].add(val)
-    else:
-        if el_name not in bd:
-            bd[el_name] = 0
-        try:
-            bd[el_name] += val
-        except TypeError as e:
-            raise BadRequest(
-                f"Problem with element name {el_name} and value '{val}': {e}"
-            )
-"""
-
 ELEMENT_LOOKUP = {
+    "CCL": "ccl",
+    "Fixed Management Fee": "admin_fixed",
+    "Gas": "admin_variable",
     "Management Fee": "admin_variable",
+    "Metering and Data": "metering",
     "LDZ Customer Capacity": "dn_customer_capacity_fixed",
+    "LDZ Customer Fixed": "dn_customer_fixed",
     "LDZ System Capacity": "dn_system_capacity_fixed",
-    "LDZ System Commodity": "dn_system_capacity",
-    "Metering Charges": "metering",
+    "LDZ System Commodity": "dn_system_commodity",
     "NTS Exit Capacity (ECN)": "dn_ecn_fixed",
     "NTS SO Exit": "so_exit_commodity",
     "NTS TO Exit": "to_exit_commodity",
     "Unidentified Gas": "ug",
-    "WAP": "wap",
+    "WAP": "commodity",
 }
 
 QUNIT_LOOKUP = {
@@ -165,15 +149,15 @@ QUNIT_LOOKUP = {
 
 def _parse_row(bills, sheet, row, title_row):
     column_map = make_column_map(title_row)
-    mprn = get_value(sheet, row, column_map[Title.MPRN])
+    mprn_raw = get_value(sheet, row, column_map[Title.MPRN])
+    mprn = str(mprn_raw)
     reference = get_value(sheet, row, column_map[Title.BILL])
     account = get_value(sheet, row, column_map[Title.ACCOUNT])
     issue_date = get_date(sheet, row, column_map[Title.BILL_DATE])
-    start_date = get_date(sheet, row, column_map[Title.CHARGE_PERIOD_FROM])
-    finish_date = to_utc(
-        to_ct(get_date_naive(sheet, row, column_map[Title.CHARGE_PERIOD_END]))
-        + relativedelta(hours=23, minutes=30)
-    )
+    period_naive = get_date_naive(sheet, row, column_map[Title.BILLING_PERIOD])
+    start_date, finish_date = list(
+        c_months_u(start_year=period_naive.year, start_month=period_naive.month)
+    )[0]
 
     try:
         mprn_values = bills[mprn]
@@ -181,14 +165,9 @@ def _parse_row(bills, sheet, row, title_row):
         mprn_values = bills[mprn] = {}
 
     try:
-        start_date_values = mprn_values[start_date]
+        bill = mprn_values[period_naive]
     except KeyError:
-        start_date_values = mprn_values[start_date] = {}
-
-    try:
-        bill = start_date_values[finish_date]
-    except KeyError:
-        bill = start_date_values[finish_date] = {
+        bill = mprn_values[period_naive] = {
             "bill_type_code": "N",
             "mprn": mprn,
             "reference": reference,
@@ -197,10 +176,12 @@ def _parse_row(bills, sheet, row, title_row):
             "start_date": start_date,
             "finish_date": finish_date,
             "kwh": Decimal("0"),
+            "breakdown": defaultdict(int, {}),
             "net_gbp": Decimal("0.00"),
             "vat_gbp": Decimal("0.00"),
             "gross_gbp": Decimal("0.00"),
-            "breakdown": {},
+            "raw_lines": str([(c.value) for c in sheet[row]]),
+            "reads": [],
         }
 
     bd = bill["breakdown"]
@@ -209,38 +190,42 @@ def _parse_row(bills, sheet, row, title_row):
     qunit = get_value(sheet, row, column_map[Title.QUNIT])
     charge = get_dec(sheet, row, column_map[Title.CHARGE]) / Decimal("100")
     total = get_dec(sheet, row, column_map[Title.TOTAL])
-    if element_desc.startswith("20% VAT on "):
+    if element_desc == "VAT":
         bill["net_gbp"] += quantity
         bill["vat_gbp"] += total
         bill["gross_gbp"] += quantity + total
+        if "vat_rate" not in bd:
+            bd["vat_rate"] = set()
+        bd["vat_rate"].add(charge)
     else:
         element_name = ELEMENT_LOOKUP[element_desc]
-        if element_name == "admin_variable":
+        if element_name == "commodity":
             bill["kwh"] += quantity
-        bd[f"{element_name}_gbp"] = total
+        bd[f"{element_name}_gbp"] += total
         element_qunit = QUNIT_LOOKUP[qunit]
-        bd[f"{element_name}_{element_qunit}"] = quantity
-        bd[f"{element_name}_rate"] = charge
+        bd[f"{element_name}_{element_qunit}"] += quantity
+        rate_name = f"{element_name}_rate"
+        if rate_name not in bd:
+            bd[rate_name] = set()
+        bd[rate_name].add(charge)
 
 
 def _make_raw_bills(sheet):
     bills = {}
     rows = tuple(sheet.rows)
-    title_row = rows[1]
-    for row_index, row in enumerate(rows[2:], start=3):
+    title_row = rows[0]
+    for row_index, row in enumerate(rows[1:], start=2):
         val = row[0].value
         if val not in (None, ""):
             try:
                 _parse_row(bills, sheet, row_index, title_row)
             except BadRequest as e:
-                raise BadRequest(f"On row {row_index + 1}: {e.description}")
-    print("bills", bills)
+                raise BadRequest(f"On row {row_index}: {e.description}")
 
     raw_bills = []
     for mprn, mprn_values in bills.items():
-        for period_stat, period_start_values in mprn_values.items():
-            for period_finish, bill in period_start_values.items():
-                raw_bills.append(bill)
+        for period, raw_bill in mprn_values.items():
+            raw_bills.append(raw_bill)
 
     return raw_bills
 

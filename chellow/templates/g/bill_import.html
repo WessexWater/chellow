@@ -33,7 +33,7 @@
 	</ul>
 	
 	{% if failed_bills|length > 0 %}
-		<table>
+		<table class="sticky">
 			<caption>Failed Bills</caption>
 			<thead>
 				<tr>
@@ -77,7 +77,7 @@
 						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_gbp}}</td>
 						<td>{{bill.gross_gbp}}</td>
-						<td>{{bill.breakdown|dumps}}</td>
+						<td><pre>{{bill.breakdown|dumps}}</pre></td>
 						{% for read in bill.reads %}
 							<td>{{read.calorific_value}}</td>
 							<td>{{read.correction_factor}}</td>
@@ -97,7 +97,7 @@
 	{% endif %}
 
 	{% if successful_bills|length > 0 %}
-		<table>
+		<table class="sticky">
 			<caption>Successful Bills</caption>
 			<thead>
 				<tr>
@@ -141,7 +141,7 @@
 						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_gbp}}</td>
 						<td>{{bill.gross_gbp}}</td>
-						<td>{{bill.breakdown|dumps}}</td>
+						<td><pre>{{bill.breakdown|dumps}}</pre></td>
 						{% for g_read in bill.reads %}
 							<td>{{g_read.msn}}</td>
 							<td>{{g_read.prev_date|hh_format}}</td>
