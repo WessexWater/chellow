@@ -44,7 +44,8 @@ class Parser:
         val = cell.value
         if not isinstance(val, Datetime):
             raise BadRequest(
-                f"Problem reading {val} as a timestamp at {cell.coordinate}."
+                f"The value {val} at {cell.coordinate} is of type {type(val)}, but "
+                f"expected a timestamp."
             )
         return val
 
