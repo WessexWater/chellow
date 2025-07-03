@@ -89,7 +89,10 @@ def _find_complete_date(caches, sess, contract, cache):
         rates["id"] = rs.id
         cache["rate_scripts"].append(rates)
         timestamps = cache["timestamps"]
-        tlms = rates["tlms"]
+        try:
+            tlms = rates["tlms"]
+        except KeyError:
+            tlms = rates["tlms"] = {}
         complete = True
         for dt in hh_range(caches, rs.start_date, rs.finish_date):
             timestamps[dt] = rates
@@ -236,6 +239,11 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
                     .order_by(RateScript.start_date.desc())
                     .first()
                 )
+                if hh_date < latest_rs.start_date:
+                    raise BadRequest(
+                        f"The start of the latest rate script must be before "
+                        f"{hh_format(hh_date)}"
+                    )
                 contract.update_rate_script(
                     sess,
                     latest_rs,

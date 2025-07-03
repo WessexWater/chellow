@@ -94,10 +94,8 @@ def _process_triad_hh(ds, rate_period, est_kw, hh):
     if ds.site is None:
         era = ds.supply.find_era_at(ds.sess, earliest_triad)
         if (
-            era is None
-            or era.get_channel(ds.sess, ds.is_import, "ACTIVE") is None
-            and est_kw is None
-        ):
+            era is None or era.get_channel(ds.sess, ds.is_import, "ACTIVE") is None
+        ) and est_kw is None:
             est_kw = 0.85 * max(datum["msp-kwh"] for datum in ds.hh_data) * 2
         if est_kw is not None:
             for est_datum in est_triad_kws:
