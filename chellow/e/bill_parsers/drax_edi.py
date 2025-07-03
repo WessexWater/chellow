@@ -167,7 +167,7 @@ def _process_BCD(elements, headers):
     bill_type_code = elements["BTCD"][0]
     sumo = elements["SUMO"]
     headers["start_date"] = to_date(sumo[0])
-    headers["finish_date"] = to_date(sumo[1]) - HH
+    headers["finish_date"] = to_finish_date(sumo[1])
 
     headers["issue_date"] = issue_date
     headers["bill_type_code"] = bill_type_code

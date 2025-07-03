@@ -5,6 +5,7 @@ from io import BytesIO
 
 from chellow.e.bill_parsers.drax_edi import (
     Parser,
+    _process_BCD,
     _process_BTL,
     _process_CCD1,
     _process_CCD3,
@@ -14,6 +15,26 @@ from chellow.e.bill_parsers.drax_edi import (
     _process_VAT,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_process_BCD(mocker):
+    reference = "lkasdhhgw"
+    elements = {
+        "IVDT": ["200416"],
+        "INVN": [reference],
+        "BTCD": ["N"],
+        "SUMO": ["200301", "200331"],
+    }
+    headers = {}
+    _process_BCD(elements, headers)
+    expected_headers = {
+        "bill_type_code": "N",
+        "finish_date": to_utc(ct_datetime(2020, 3, 31, 23, 30)),
+        "issue_date": to_utc(ct_datetime(2020, 4, 16)),
+        "start_date": to_utc(ct_datetime(2020, 3, 1)),
+        "reference": reference,
+    }
+    assert headers == expected_headers
 
 
 def test_process_BTL(mocker):
