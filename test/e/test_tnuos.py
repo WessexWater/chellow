@@ -16,6 +16,7 @@ from chellow.models import (
     Pc,
     Site,
     Source,
+    Ssc,
     VoltageLevel,
     insert_comms,
     insert_cops,
@@ -94,6 +95,7 @@ def test_process_banded_hh_ums(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    Ssc.insert(sess, "0393", "unrestricted", True, vf, None)
     supply = site.insert_e_supply(
         sess,
         source,
