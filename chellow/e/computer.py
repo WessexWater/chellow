@@ -1197,7 +1197,7 @@ class SupplySource(DataSource):
                     ).total_seconds()
                 )
                 if hist_era.pc.code == "00":
-                    ssc = Ssc.get_by_code(sess, "0393")
+                    ssc = Ssc.get_by_code(sess, "0393", chunk_start)
                 else:
                     ssc = hist_era.ssc
 
