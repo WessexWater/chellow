@@ -819,6 +819,7 @@ def test_SupplySource_init_hh(sess, mocker):
     )
 
     assert not ss.full_channels
+    assert ss.dtc_meter_type == dtc_meter_type
 
 
 def test_SupplySource_init_nhh(sess, mocker):

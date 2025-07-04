@@ -56,6 +56,19 @@ in Windows an environment variable can be set by doing:
   `admin@example.com` and the password `admin`, and then the home page should appear.
   Change the admin password from the `users` page.
 
+### Azure
+
+SSH into the machine and you'll be in ``/home/site/wwwroot``.
+
+* Create a virtual environment: ``python -m venv antenv``
+* Activate the virtual environment with: ``source antenv/bin/activate``
+*
+In ``/home/site/wwwroot`` create a file called ``app.py`` containing the following:
+
+    import chellow
+    
+    app = chellow.create_app()
+
 
 ### Manually Upgrading Chellow
 

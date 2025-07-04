@@ -22,6 +22,7 @@ from chellow.models import (
     Channel,
     ClockInterval,
     Contract,
+    DtcMeterType,
     Era,
     HhDatum,
     Llfc,
@@ -694,7 +695,14 @@ class SiteSource(DataSource):
                 self.dtc_meter_type_code = self.era_map_dtc_meter_types[
                     era_dtc_meter_type_code
                 ]
+                if self.dtc_meter_type_code is None:
+                    self.dtc_meter_type = None
+                else:
+                    self.dtc_meter_type = DtcMeterType.get_by_code(
+                        sess, era_dtc_meter_type_code
+                    )
             else:
+                self.dtc_meter_type = era.dtc_meter_type
                 self.dtc_meter_type_code = era_dtc_meter_type_code
 
             self.is_import = True
@@ -1086,7 +1094,14 @@ class SupplySource(DataSource):
             self.dtc_meter_type_code = self.era_map_dtc_meter_types[
                 era_dtc_meter_type_code
             ]
+            if self.dtc_meter_type_code is None:
+                self.dtc_meter_type_code = None
+            else:
+                self.dtc_meter_type = DtcMeterType.get_by_code(
+                    sess, self.dtc_meter_type_code
+                )
         else:
+            self.dtc_meter_type = era.dtc_meter_type
             self.dtc_meter_type_code = era_dtc_meter_type_code
 
         self.id = self.mpan_core
