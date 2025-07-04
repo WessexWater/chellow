@@ -1196,11 +1196,15 @@ class SupplySource(DataSource):
                         - Datetime(chunk_start.year, 1, 1)
                     ).total_seconds()
                 )
+                if hist_era.pc_code == "00":
+                    ssc = Ssc.get_by_code(sess, "0393")
+                else:
+                    ssc = hist_era.ssc
 
-                for tpr in (
-                    sess.query(Tpr)
+                for tpr in sess.scalars(
+                    select(Tpr)
                     .join(MeasurementRequirement)
-                    .filter(MeasurementRequirement.ssc == hist_era.ssc)
+                    .where(MeasurementRequirement.ssc == ssc)
                 ):
                     for hist_date in hh_range(self.caches, chunk_start, chunk_finish):
                         if is_tpr(sess, self.caches, tpr.code, hist_date):
