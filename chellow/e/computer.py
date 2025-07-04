@@ -1196,7 +1196,7 @@ class SupplySource(DataSource):
                         - Datetime(chunk_start.year, 1, 1)
                     ).total_seconds()
                 )
-                if hist_era.pc_code == "00":
+                if hist_era.pc.code == "00":
                     ssc = Ssc.get_by_code(sess, "0393")
                 else:
                     ssc = hist_era.ssc
