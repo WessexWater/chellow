@@ -27,7 +27,7 @@ from chellow.utils import (
 
 def hh(ds, rate_period="monthly", est_kw=None):
     for hh in ds.hh_data:
-        if hh["ct-is-month-end"]:
+        if hh["ct-is-month-end"] and ds.dtc_meter_type is not None:
             _process_triad_hh(ds, rate_period, est_kw, hh)
 
 
