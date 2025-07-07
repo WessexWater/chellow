@@ -471,14 +471,13 @@ def _process_site(
     if supply_ids is not None:
         q = q.where(Supply.id.in_(supply_ids))
     for supply in sess.execute(q).scalars():
-        last_era = (
-            sess.execute(
-                select(Era).where(Era.supply == supply).order_by(Era.start_date.desc())
-            )
-            .scalars()
-            .first()
-        )
-        if last_era.finish_date is not None and last_era.start_date <= finish_date:
+        last_era = sess.scalars(
+            select(Era)
+            .join(SiteEra)
+            .where(Era.supply == supply)
+            .order_by(Era.start_date.desc())
+        ).first()
+        if last_era.finish_date is not None and last_era.finish_date < finish_date:
             site_era = sess.execute(
                 select(SiteEra).where(
                     SiteEra.era == last_era,
