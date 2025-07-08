@@ -104,6 +104,7 @@ ELEMENT_MAP = {
                 "duos-availability-kva",
             ),
             "209269": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+            "065950": ("eii-gbp", "eii-rate", "eii-kwh"),
         },
         "DUSDIS": {
             "122568": ("nrg-gsp-losses-gbp", "nrg-rate", "nrg-gsp-losses-kwh"),
@@ -149,7 +150,6 @@ ELEMENT_MAP = {
     "930504": ("eii-gbp", None, None),
     "331201": ("eii-gbp", None, None),
     "307253": ("eii-gbp", "eii-rate", "eii-kwh"),
-    "065950": ("eii-gbp", "eii-rate", "eii-kwh"),
 }
 
 TPR_LOOKUP = {
