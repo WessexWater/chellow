@@ -27,11 +27,11 @@ def test_handle_0100():
     _handle_0100(headers, pre_record, record)
     assert headers == {
         "issue_date": to_utc(ct_datetime(2023, 5, 2)),
-        "account": "023719050",
+        "account": "0023719050",
         "breakdown": {"vat": {}},
         "kwh": Decimal("0"),
         "reads": [],
-        "reference": " 0023",
+        "reference": "000023905961",
     }
 
 

@@ -47,7 +47,9 @@ def _handle_0050(headers, pre_record, record):
         unknown_4=12,
         late_payment=12,
     )
-    headers["late_payment"] = Decimal(parts["late_payment"]) / Decimal(100)
+    headers["breakdown"]["late_payment"] += Decimal(parts["late_payment"]) / Decimal(
+        100
+    )
     """
 
 
@@ -57,13 +59,10 @@ def _handle_0051(headers, pre_record, record):
 
 def _handle_0100(headers, pre_record, record):
     issue_date = headers["issue_date"]
-    late_payment = headers.get("late_payment")
     headers.clear()
     headers["issue_date"] = issue_date
-    if late_payment is not None:
-        headers["late_payment"] = late_payment
-    headers["account"] = pre_record[43:52]
-    headers["reference"] = pre_record[41:46]
+    headers["account"] = pre_record[42:52]
+    headers["reference"] = pre_record[52:64]
     headers["kwh"] = Decimal("0")
     headers["breakdown"] = defaultdict(int, {"vat": {}})
     headers["reads"] = []
@@ -245,6 +244,17 @@ def _handle_0860(headers, pre_record, record):
     bd["metering-gbp"] += Decimal(parts["metering_gbp"]) / Decimal("100")
 
 
+def _handle_0960(headers, pre_record, record):
+    parts = _chop_record(
+        record,
+        days=3,
+        payment=12,
+        rate=6,
+    )
+    bd = headers["breakdown"]
+    bd["late_payment_gbp"] += Decimal(parts["payment"]) / Decimal(100)
+
+
 def _handle_1455(headers, pre_record, record):
     parts = _chop_record(
         record, ccl_kwh=13, unknown_1=10, ccl_rate=13, ccl_gbp=12, unkown_2=8
@@ -294,12 +304,6 @@ def _handle_1500(headers, pre_record, record):
     breakdown = headers["breakdown"]
     net = Decimal("0.00") + Decimal(parts["net"]) / Decimal("100")
     gross = Decimal("0.00") + Decimal(parts["gross"]) / Decimal("100")
-    if "late_payment" in headers:
-        late_payment_gbp = headers["late_payment"]
-        net += late_payment_gbp
-        gross += late_payment_gbp
-        breakdown["late-payment-gbp"] += late_payment_gbp
-        del headers["late_payment"]
 
     return {
         "bill_type_code": "W" if net < 0 else "N",
@@ -354,6 +358,7 @@ LINE_HANDLERS = {
     "0461": _handle_0461,
     "0470": _handle_0470,
     "0860": _handle_0860,
+    "0960": _handle_0960,
     "1455": _handle_1455,
     "1460": _handle_1460,
     "1500": _handle_1500,
