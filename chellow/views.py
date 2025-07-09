@@ -198,6 +198,11 @@ def health():
     return Response("healthy\n", mimetype="text/plain")
 
 
+@home.route("/robots933456.txt")
+def robots():
+    return Response("healthy\n", mimetype="text/plain")
+
+
 @home.route("/local_reports/<int:report_id>/output")
 def local_report_output_get(report_id):
     report = g.sess.execute(select(Report).where(Report.id == report_id)).scalar_one()

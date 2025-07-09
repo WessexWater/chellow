@@ -1,4 +1,6 @@
+import json
 import os
+from base64 import b64decode
 from datetime import datetime as Datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -127,17 +129,45 @@ def create_app(testing=False, instance_path=None):
             g.config = {}
         ad_props = g.config.get("ad_authentication", {})
         ad_auth_on = ad_props.get("on", False)
+        easy_auth_props = g.config.get("easy_auth", {})
+        easy_auth_on = easy_auth_props.get("on", False)
+        path = request.path
+        if path in ("/health", "/robots933456.txt"):
+            return
         if ad_auth_on:
             username = request.headers["X-Isrw-Proxy-Logon-User"].upper()
-            user = g.sess.query(User).filter(User.email_address == username).first()
+            user = g.sess.scalars(
+                select(User).where(User.email_address == username)
+            ).first()
             if user is None:
                 try:
                     username = ad_props["default_user"]
-                    user = (
-                        g.sess.query(User)
-                        .filter(User.email_address == username)
-                        .first()
-                    )
+                    user = g.sess.scalars(
+                        select(User).where(User.email_address == username)
+                    ).first()
+                except KeyError:
+                    user = None
+            if user is not None:
+                g.user = user
+        elif easy_auth_on:
+            jwt_enc = request.headers["X-MS-CLIENT-PRINCIPAL"]
+            jwt = json.loads(b64decode(jwt_enc))
+            for claim in jwt["claims"]:
+                if claim["typ"] == (
+                    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/"
+                    "emailaddress"
+                ):
+                    username = claim["val"]
+                    user = g.sess.scalars(
+                        select(User).where(User.email_address == username)
+                    ).first()
+                    break
+            if user is None:
+                try:
+                    username = easy_auth_props["default_user"]
+                    user = g.sess.scalars(
+                        select(User).where(User.email_address == username)
+                    ).first()
                 except KeyError:
                     user = None
             if user is not None:
@@ -156,25 +186,20 @@ def create_app(testing=False, instance_path=None):
                         key = None
 
                     email = ips[key]
-                    g.user = (
-                        g.sess.query(User).filter(User.email_address == email).first()
-                    )
+                    g.user = g.sess.scalars(
+                        select(User).where(User.email_address == email)
+                    ).first()
                 except KeyError:
                     pass
             else:
-                user = (
-                    g.sess.query(User)
-                    .filter(User.email_address == auth.username)
-                    .first()
-                )
+                user = g.sess.scalars(
+                    select(User).where(User.email_address == auth.username)
+                ).first()
                 if user is not None and user.password_matches(auth.password):
                     g.user = user
 
         # Got our user
-        path = request.path
         method = request.method
-        if path in ("/health",):
-            return
 
         if g.user is not None:
             if "X-Isrw-Proxy-Logon-User" in request.headers:
@@ -227,7 +252,9 @@ def create_app(testing=False, instance_path=None):
             g.sess.commit()
             return
 
-        if g.user is None or (not ad_auth_on and auth is None):
+        if (not easy_auth_on) and (
+            (g.user is None) or (not ad_auth_on and auth is None)
+        ):
             return Response(
                 "Could not verify your access level for that URL.\n"
                 "You have to login with proper credentials",
