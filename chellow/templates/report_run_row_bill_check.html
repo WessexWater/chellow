@@ -163,36 +163,36 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% if 'difference_gross_gbp' in values %}
+				{% if 'difference-gross_gbp' in values %}
 					<tr>
 						<td>gross</td>
-						<td>{{"{:0,.2f}".format(values.covered_gross_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.virtual_gross_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.difference_gross_gbp)}}</td>
+						<td>{{"{:0,.2f}".format(values['covered-gross-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-gross-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-gross-gbp'])}}</td>
 					</tr>
 				{% endif %}
-				{% if 'difference_net_gbp' in values %}
+				{% if 'difference-net-gbp' in values %}
 					<tr>
 						<td>net</td>
-						<td>{{"{:0,.2f}".format(values.covered_net_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.virtual_net_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.difference_net_gbp)}}</td>
+						<td>{{"{:0,.2f}".format(values['covered-net-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-net-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-net-gbp'])}}</td>
 					</tr>
 				{% endif %}
-				{% if 'difference_vat_gbp' in values %}
+				{% if 'difference-vat-gbp' in values %}
 					<tr>
 						<td>vat</td>
-						<td>{{"{:0,.2f}".format(values.covered_vat_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.virtual_vat_gbp)}}</td>
-						<td>{{"{:0,.2f}".format(values.difference_vat_gbp)}}</td>
+						<td>{{"{:0,.2f}".format(values['covered-vat-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-vat-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-vat-gbp'])}}</td>
 					</tr>
 				{% endif %}
-				{% if 'difference_vat_rate' in values and values.difference_vat_rate != 0 %}
+				{% if 'difference-vat-rate' in values and values['difference-vat-rate'] != 0 %}
 					<tr>
 						<td>vat_rate</td>
-						<td>{{values.covered_vat_rate}}</td>
-						<td>{{values.virtual_vat_rate}}</td>
-						<td>{{"{:0,.2f}".format(values.difference_vat_rate)}}</td>
+						<td>{{values['covered-vat-rate']}}</td>
+						<td>{{values['virtual-vat-rate']}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-vat-rate'])}}</td>
 					</tr>
 				{% endif %}
 			</tbody>
@@ -203,20 +203,68 @@
 				<caption>{{table.name}}</caption>
 				<thead>
 					<tr>
-						{% for title in table.titles %}
-							<th>{{title}}</th>
-						{% endfor %}
+						<th>Part</th>
+						<th>Covered</th>
+						<th>Virtual</th>
+						<th>Difference</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						{% for v in table['values'] %}
-							<td>{{v}}</td>
+						<td>gbp</td>
+						{% for pref in ('covered-', 'virtual-', 'difference-') %}
+							<td>
+								{% set k = pref + table.name + "-gbp" %}
+								{% if k in values %}
+									{% set val = values[k] %}
+								{% else %}
+									{% set val = '' %}
+								{% endif %}
+								{% if val is none %}
+								{% elif val is number %}
+									{{"{:0,.2f}".format(val)}}
+								{% else %}
+									{{val}}
+								{% endif %}
+							</td>
 						{% endfor %}
 					</tr>
+					{% for part in table['parts']|sort %}
+						<tr>
+							<td>{{part}}</td>
+							{% for pref in ('covered-', 'virtual-', 'difference-') %}
+								<td>
+									{% set k = pref + table.name + "-" + part %}
+									{% if k in values %}
+										{% set val = values[k] %}
+									{% else %}
+										{% set val = '' %}
+									{% endif %}
+									{% if val is none %}
+									{% elif val is number %}
+										{{"{:0,.2f}".format(val)}}
+									{% elif (val is string) or (val is boolean) %}
+										{{val}}
+									{% else %}
+										{% for v in val %}
+											{% if v is number %}
+												{{"{:0,.2f}".format(v)}}
+											{% else %}
+												{{v}}
+											{% endif %}
+											{% if not loop.last %}
+												|
+											{% endif %}
+										{% endfor %}
+									{% endif %}
+								</td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
 				</tbody>
 			</table>
 		{% endfor %}
+
 	</section>
 
 	<h2>Raw</h2>	
