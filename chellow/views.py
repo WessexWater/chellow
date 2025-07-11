@@ -1632,8 +1632,8 @@ def report_run_row_get(row_id):
         for t in values.keys():
 
             if (
-                t.startswith("covered_")
-                or t.startswith("virtual_")
+                t.startswith("covered-")
+                or t.startswith("virtual-")
                 or t.startswith("difference-")
             ) and t.endswith("-gbp"):
                 toks = t.split("-")
