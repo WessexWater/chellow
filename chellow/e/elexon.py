@@ -62,7 +62,12 @@ def run_import(sess, log, set_progress, scripting_key):
     s = requests.Session()
     s.verify = False
 
-    for mod_name in ("chellow.e.system_price", "chellow.e.tlms", "chellow.e.rcrc"):
+    for mod_name in (
+        "chellow.e.system_price",
+        "chellow.e.tlms",
+        "chellow.e.rcrc",
+        "chellow.e.lafs",
+    ):
         mod = import_module(mod_name)
         mod.elexon_import(sess, log, set_progress, s, scripting_key)
 

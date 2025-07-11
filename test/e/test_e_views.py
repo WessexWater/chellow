@@ -2023,6 +2023,37 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     assert len(bundles[1]["imp_bills"]["bill_dicts"]) == 1
 
 
+def test_lafs_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess,
+        "510",
+        "PC 5-8 & HH HV",
+        voltage_level,
+        False,
+        True,
+        vf,
+        None,
+    )
+    sess.commit()
+
+    query_string = {
+        "llfc_id": llfc.id,
+        "timestamp_year": 2020,
+        "timestamp_month": 1,
+    }
+    response = client.get("/e/lafs", query_string=query_string)
+    match(response, 200)
+
+
 def test_llfc_eidt_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
 

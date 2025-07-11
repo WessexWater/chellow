@@ -4,10 +4,10 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 from zipfile import ZipFile
 
-# from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import text
 
 from werkzeug.exceptions import BadRequest
+from werkzeug.http import parse_options_header
 
 from chellow.models import Contract, Party
 from chellow.rate_server import download
@@ -30,7 +30,12 @@ DO UPDATE SET (llfc_id, timestamp, value) =
     )
     fname = name_list[0]
     csv_file = StringIO(zip_file.read(fname).decode("utf-8"))
-    csv_dt = to_utc(to_ct(Datetime.strptime(fname[-12:-4], "%Y%m%d")))
+    try:
+        csv_dt = to_utc(to_ct(Datetime.strptime(fname[-12:-4], "%Y%m%d")))
+    except ValueError as e:
+        log(f"Can't parse the date in the file name {fname} {e}")
+        return
+
     for llfc_ids, timestamps, values in laf_days(
         sess, log, set_progress, csv_file, csv_dt
     ):
@@ -108,6 +113,67 @@ def laf_days(sess, log, set_progress, csv_file, csv_dt):
 
 LAF_START = "llf"
 LAF_END = "ptf.zip"
+
+
+def elexon_import(sess, log, set_progress, s, scripting_key):
+    log(
+        "Starting to check for new LAF files for participant codes in "
+        "configuration.properties.laf_importer.participant_codes"
+    )
+    conf = Contract.get_non_core_by_name(sess, "configuration")
+    props = conf.make_properties()
+    state = conf.make_state()
+
+    try:
+        laf_state = state["laf_importer"]
+    except KeyError:
+        laf_state = state["laf_importer"] = {}
+
+    url = "https://downloads.elexonportal.co.uk/svallf/download"
+
+    laf_props = props.get("laf_importer", {})
+    for participant_code in laf_props.get("participant_codes", []):
+        params = {"key": scripting_key, "ldso": participant_code, "format": "PTF"}
+
+        log(
+            f"Downloading from {url}?key={scripting_key}&ldso={participant_code}&"
+            f"format=PTF"
+        )
+        sess.rollback()  # Avoid long-running transactions
+        res = s.get(url, params=params)
+        log(f"Received {res.status_code} {res.reason}")
+        res.raise_for_status()
+        try:
+            cd_header = res.headers["Content-Disposition"]
+        except KeyError:
+            log("No Content-Disposition header found, so skipping.")
+            continue
+
+        cd = parse_options_header(cd_header)
+        file_name = cd[1]["filename"]
+
+        # File name llfetcl20220401ptf.zip
+        if not file_name.startswith(LAF_START):
+            raise BadRequest(f"A laf file must begin with '{LAF_START}'")
+        if not file_name.endswith(LAF_END):
+            raise BadRequest(f"A laf file must end with '{LAF_END}'")
+
+        participant_code = file_name[3:7]
+        timestamp = file_name[7:15]
+        log(f"File name {file_name}")
+
+        if timestamp > laf_state.get(participant_code, ""):
+            data = res.content
+            _process(sess, log, set_progress, BytesIO(data))
+            laf_state[participant_code] = timestamp
+            conf.update_state(state)
+            sess.commit()
+            log(f"Processed file {file_name}.")
+        else:
+            log(f"Already loaded {file_name}.")
+
+    log("Finished LAF files")
+    sess.commit()
 
 
 def find_participant_entries(paths, laf_state):

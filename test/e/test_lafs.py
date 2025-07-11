@@ -4,7 +4,7 @@ from zipfile import BadZipFile, ZipFile
 
 import pytest
 
-from chellow.e.laf_import import _process, find_participant_entries, laf_days
+from chellow.e.lafs import _process, find_participant_entries, laf_days
 from chellow.models import (
     Contract,
     MarketRole,

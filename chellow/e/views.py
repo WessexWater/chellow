@@ -2344,30 +2344,29 @@ def hh_datum_edit_post(datum_id):
 @e.route("/lafs")
 def lafs_get():
     llfc_id = req_int("llfc_id")
-    year = req_int("year")
-    month = req_int("month")
-
+    month_start = req_date("timestamp", resolution="month")
+    month_start_ct = to_ct(month_start)
     llfc = Llfc.get_by_id(g.sess, llfc_id)
     dno = llfc.dno
 
-    start_date, finish_date = next(
-        c_months_u(start_year=year, start_month=month, months=1)
-    )
-    lafs = (
-        g.sess.execute(
-            select(Laf)
-            .where(
-                Laf.llfc == llfc,
-                Laf.timestamp >= start_date,
-                Laf.timestamp <= finish_date,
-            )
-            .order_by(Laf.timestamp)
+    month_start, month_finish = next(
+        c_months_u(
+            start_year=month_start_ct.year, start_month=month_start_ct.month, months=1
         )
-        .scalars()
-        .all()
     )
+    lafs = g.sess.execute(
+        select(Laf)
+        .where(
+            Laf.llfc == llfc,
+            Laf.timestamp >= month_start,
+            Laf.timestamp <= month_finish,
+        )
+        .order_by(Laf.timestamp)
+    ).scalars()
 
-    return render_template("lafs.html", dno=dno, llfc=llfc, lafs=lafs)
+    return render_template(
+        "lafs.html", dno=dno, llfc=llfc, lafs=lafs, month_start=month_start
+    )
 
 
 @e.route("/lcc")

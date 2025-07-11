@@ -87,8 +87,8 @@ def run_import(sess, log, set_progress):
         "chellow.e.bsuos",
         "chellow.e.ccl",
         "chellow.e.dno_rate_parser",
-        "chellow.e.laf_import",
         "chellow.e.triad",
+        "chellow.e.lafs",
         "chellow.gas.ccl",
         "chellow.gas.dn_rate_parser",
     ):
