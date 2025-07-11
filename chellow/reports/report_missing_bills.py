@@ -46,15 +46,12 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
             writer.writerow(titles)
 
             finish_date_ct = to_ct(finish_date)
-            months = list(
-                c_months_u(
-                    finish_year=finish_date_ct.year,
-                    finish_month=finish_date_ct.month,
-                    months=months_length,
-                )
-            )
 
-            for month_start, month_finish in months:
+            for month_start, month_finish in c_months_u(
+                finish_year=finish_date_ct.year,
+                finish_month=finish_date_ct.month,
+                months=months_length,
+            ):
                 missing_bills = {}
                 missing_account = {}
                 account_missing_tuple = hh_range(caches, month_start, month_finish)
@@ -127,10 +124,10 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
                             "market_role_code": contract.market_role.code,
                         }
                         missing_bills[era.id] = values
-        for era_id, values in missing_bills.items():
-            if len(missing_account[values["account"]]) > 0:
-                writer.writerow(csv_make_val(values[t]) for t in titles)
-                ReportRun.w_insert_row(report_run_id, "", titles, values, {})
+                for era_id, values in missing_bills.items():
+                    if len(missing_account[values["account"]]) > 0:
+                        writer.writerow(csv_make_val(values[t]) for t in titles)
+                        ReportRun.w_insert_row(report_run_id, "", titles, values, {})
 
     except BaseException:
         msg = traceback.format_exc()
