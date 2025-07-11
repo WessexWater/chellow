@@ -350,7 +350,8 @@ def test_process_VAT(mocker):
         "vat": Decimal("1.50"),
         "gross": Decimal("8.50"),
         "breakdown": {
-            "vat": {Decimal("20"): {"vat": Decimal("1.50"), "net": Decimal("6.00")}}
+            "vat-rate": {Decimal("0.20")},
+            "vat": {Decimal("20"): {"vat": Decimal("1.50"), "net": Decimal("6.00")}},
         },
     }
     assert headers == expected_headers

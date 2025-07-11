@@ -449,11 +449,18 @@ def _process_MTR(elements, headers):
 
 
 def _process_VAT(elements, headers):
+    breakdown = headers["breakdown"]
     vat = Decimal("0.00") + to_decimal(elements["UVTT"]) / Decimal("100")
     vat_percentage = to_decimal(elements["VATP"]) / Decimal("1000")
+
+    if "vat_rate" in breakdown:
+        vat_rate = breakdown["vat-rate"]
+    else:
+        vat_rate = breakdown["vat-rate"] = set()
+    vat_rate.add(vat_percentage / Decimal("100"))
     vat_net = Decimal("0.00") + to_decimal(elements["UVLA"]) / Decimal("100")
 
-    headers["breakdown"]["vat"][vat_percentage] = {"vat": vat, "net": vat_net}
+    breakdown["vat"][vat_percentage] = {"vat": vat, "net": vat_net}
 
 
 def _process_NOOP(elements, headers):

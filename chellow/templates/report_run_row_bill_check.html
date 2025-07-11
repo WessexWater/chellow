@@ -13,142 +13,192 @@
 {% block content %}
 	{% set values = row.data['values'] %}
 	{% set properties = row.data.get('properties', {}) %}
-	{% if row.report_run.name == 'bill_check' %}
-		<table>
-			<caption>Bill Check</caption>	
-			<thead>
-				<tr>
-					<th rowspan="2">Batch</th>
-					<th colspan="8">Bill</th>
-					<th colspan="2">MPAN Core</th>
-					<th colspan="2">Site</th>
-					<th rowspan="2">Checking</th>
-				</tr>
-				<tr>
-					<th>Reference</th>
-					<th>Type</th>
-					<th>kWh</th>
-					<th>Net GBP</th>
-					<th>VAT GBP</th>
-					<th>Gross GBP</th>
-					<th>Start</th>
-					<th>Finish</th>
-					<th>Import</th>
-					<th>Export</th>
-					<th>Code</th>
-					<th>Name</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>
-						{% if values.batch_id != None %}
-							<a href="/e/supplier_batches/{{values.batch_id}}">{{values['batch']}}</a>
-						{% endif %}
-					</td>
-					<td>
-						{% if values.bill_id != None %}
-							<a href="/e/supplier_bills/{{values.bill_id}}">{{
-								values['bill-reference']}}</a>
-						{% endif %}
-					</td>
-					<td>{{values['bill-type']}}</td>
-					<td>{{values['bill-kwh']}}</td>
-					<td>{{values['bill-net-gbp']}}</td>
-					<td>{{values['bill-vat-gbp']}}</td>
-					<td>{{values['bill-gross-gbp']}}</td>
-					<td>{{values['bill-start-date']}}</td>
-					<td>{{values['bill-finish-date']}}</td>
-					<td>
-						{% if values['imp-mpan-core'] != None %}
+	<table>
+		<caption>Bill Check</caption>	
+		<thead>
+			<tr>
+				<th rowspan="2">Batch</th>
+				<th colspan="8">Bill</th>
+				<th colspan="2">MPAN Core</th>
+				<th colspan="2">Site</th>
+				<th rowspan="2">Checking</th>
+			</tr>
+			<tr>
+				<th>Reference</th>
+				<th>Type</th>
+				<th>kWh</th>
+				<th>Net GBP</th>
+				<th>VAT GBP</th>
+				<th>Gross GBP</th>
+				<th>Start</th>
+				<th>Finish</th>
+				<th>Import</th>
+				<th>Export</th>
+				<th>Code</th>
+				<th>Name</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					{% if values.batch_id != None %}
+						<a href="/e/supplier_batches/{{values.batch_id}}">{{values['batch']}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if values.bill_id != None %}
+						<a href="/e/supplier_bills/{{values.bill_id}}">{{
+							values['bill-reference']}}</a>
+					{% endif %}
+				</td>
+				<td>{{values['bill-type']}}</td>
+				<td>{{values['bill-kwh']}}</td>
+				<td>{{values['bill-net-gbp']}}</td>
+				<td>{{values['bill-vat-gbp']}}</td>
+				<td>{{values['bill-gross-gbp']}}</td>
+				<td>{{values['bill-start-date']}}</td>
+				<td>{{values['bill-finish-date']}}</td>
+				<td>
+					{% if values['imp-mpan-core'] != None %}
+					<a href="/e/supplies/{{values.supply_id}}">{{
+						values['imp-mpan-core']}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if values['exp-mpan-core'] != None %}
 						<a href="/e/supplies/{{values.supply_id}}">{{
-							values['imp-mpan-core']}}</a>
-						{% endif %}
-					</td>
-					<td>
-						{% if values['exp-mpan-core'] != None %}
-							<a href="/e/supplies/{{values.supply_id}}">{{
-								values['exp-mpan-core']}}</a>
-						{% endif %}
-					</td>
-					<td>
-						{% if values.site_id != None %}
-							<a href="/sites/{{values.site_id}}">{{
-								values['site-code']}}</a>
-						{% endif %}
-					</td>
-					<td>{{values['site-name']}}</td>
-					<td>
-						<form action="/report_run_rows/{{row.id}}" method="post">
-							<fieldset>
-								{{input_textarea(
-									'note', properties.note, 5, 40,
-									placeholder='Notes on checking go here...')}}
-								<br>
-								<br>
-								<label>Checked?
-									{{input_checkbox('is_checked', properties.is_checked)}}
-								</label>
-								<input type="submit" name="update" value="Update">
-							</fieldset>
-						</form>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+							values['exp-mpan-core']}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if values.site_id != None %}
+						<a href="/sites/{{values.site_id}}">{{
+							values['site-code']}}</a>
+					{% endif %}
+				</td>
+				<td>{{values['site-name']}}</td>
+				<td>
+					<form action="/report_run_rows/{{row.id}}" method="post">
+						<fieldset>
+							{{input_textarea(
+								'note', properties.note, 5, 40,
+								placeholder='Notes on checking go here...')}}
+							<br>
+							<br>
+							<label>Checked?
+								{{input_checkbox('is_checked', properties.is_checked)}}
+							</label>
+							<input type="submit" name="update" value="Update">
+						</fieldset>
+					</form>
+				</td>
+			</tr>
+		</tbody>
+	</table>
 
+	<table>
+		<caption>Covered</caption>
+		<thead>
+			<tr>
+				<th>From</th>
+				<th>To</th>
+				<th>Bills</th>
+				<th>Metered kWh</th>
+				<th>Net GBP</th>
+				<th>Virtual Net GBP</th>
+				<th>Difference GBP</th>
+				<th>Problem</th>
+				<th>Virtual Problem</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{values['covered-from']}}</td>
+				<td>{{values['covered-to']}}</td>
+				<td>
+					{% if values['covered-bills'] != None %}
+						<ul>
+							{% for bill_id in values['covered-bills'] %}
+								<li>
+									<a href="/e/supplier_bills/{{bill_id}}">{{bill_id}}</a>
+									{% if bill_id == values.bill_id %}
+										(This bill)
+									{% endif %}
+								</li>
+							{% endfor %}
+						</ul>
+					{% endif %}
+				</td>
+				<td>
+					{% if values['metered-kwh'] != None %}
+						{{"%.0f"|format(values['metered-kwh'])}}
+					{% endif %}
+				</td>
+				<td>{{values['covered-net-gbp']}}</td>
+				<td>
+					{% if values['virtual-net-gbp'] != None %}
+						{{"%.2f"|format(values['virtual-net-gbp'])}}
+					{% endif %}
+				</td>
+				<td>
+					{% if values['difference-net-gbp'] != None %}
+						{{"%.2f"|format(values['difference-net-gbp'])}}
+					{% endif %}
+				</td>
+				<td>{{values['covered-problem']}}</td>
+				<td>{{values['virtual-problem']}}</td>
+			</tr>
+		</tbody>
+	</table>
+  
+	<section class="elements">
 		<table>
-			<caption>Covered</caption>
+			<caption>GBP</caption>
 			<thead>
 				<tr>
-					<th>From</th>
-					<th>To</th>
-					<th>Bills</th>
-					<th>Metered kWh</th>
-					<th>Net GBP</th>
-					<th>Virtual Net GBP</th>
-					<th>Difference GBP</th>
-					<th>Problem</th>
-					<th>Virtual Problem</th>
+					<th>Part</th>
+					<th>Covered</th>
+					<th>Virtual</th>
+					<th>Difference</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr>
-					<td>{{values['covered-from']}}</td>
-					<td>{{values['covered-to']}}</td>
-					<td>
-						{% if values['covered-bills'] != None %}
-							<ul>
-								{% for bill_id in values['covered-bills'] %}
-									<li>
-										<a href="/e/supplier_bills/{{bill_id}}">{{bill_id}}</a>
-										{% if bill_id == values.bill_id %}
-											(This bill)
-										{% endif %}
-									</li>
-								{% endfor %}
-							</ul>
-						{% endif %}
-					</td>
-					<td>
-						{% if values['metered-kwh'] != None %}
-							{{"%.0f"|format(values['metered-kwh'])}}
-						{% endif %}
-					</td>
-					<td>{{values['covered-net-gbp']}}</td>
-					<td>
-						{% if values['virtual-net-gbp'] != None %}
-							{{"%.2f"|format(values['virtual-net-gbp'])}}
-						{% endif %}
-					</td>
-					<td>
-						{% if values['difference-net-gbp'] != None %}
-							{{"%.2f"|format(values['difference-net-gbp'])}}
-						{% endif %}
-					</td>
-					<td>{{values['covered-problem']}}</td>
-					<td>{{values['virtual-problem']}}</td>
-				</tr>
+				{% if 'difference-gross-gbp' in values %}
+					<tr>
+						<td>gross</td>
+						<td>{{"{:0,.2f}".format(values['covered-gross-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-gross-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-gross-gbp'])}}</td>
+					</tr>
+				{% endif %}
+				{% if 'difference-net-gbp' in values %}
+					<tr>
+						<td>net</td>
+						<td>{{"{:0,.2f}".format(values['covered-net-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-net-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-net-gbp'])}}</td>
+					</tr>
+				{% endif %}
+				{% if 'difference-vat-gbp' in values %}
+					<tr>
+						<td>vat</td>
+						<td>{{"{:0,.2f}".format(values['covered-vat-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['virtual-vat-gbp'])}}</td>
+						<td>{{"{:0,.2f}".format(values['difference-vat-gbp'])}}</td>
+					</tr>
+				{% endif %}
+				{% if 'difference-vat-rate' in values and values['difference-vat-rate'] != 0 %}
+					<tr>
+						<td>vat-rate</td>
+						<td>{{values['covered-vat-rate']}}</td>
+						<td>{{values['virtual-vat-rate']}}</td>
+						<td>
+							{% if values['difference-vat-rate'] is number %}
+								{{"{:0,.2f}".format(values['difference-vat-rate'])}}
+							{% endif %}
+						</td>
+					</tr>
+				{% endif %}
 			</tbody>
 		</table>
 
@@ -157,35 +207,70 @@
 				<caption>{{table.name}}</caption>
 				<thead>
 					<tr>
-						{% for title in table.titles %}
-							<th>{{title}}</th>
-						{% endfor %}
+						<th>Part</th>
+						<th>Covered</th>
+						<th>Virtual</th>
+						<th>Difference</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						{% for v in table['values'] %}
-							<td>{{v}}</td>
+						<td>gbp</td>
+						{% for pref in ('covered-', 'virtual-', 'difference-') %}
+							<td>
+								{% set k = pref + table.name + "-gbp" %}
+								{% if k in values %}
+									{% set val = values[k] %}
+								{% else %}
+									{% set val = '' %}
+								{% endif %}
+								{% if val is none %}
+								{% elif val is number %}
+									{{"{:0,.2f}".format(val)}}
+								{% else %}
+									{{val}}
+								{% endif %}
+							</td>
 						{% endfor %}
 					</tr>
+					{% for part in table['parts']|sort %}
+						<tr>
+							<td>{{part}}</td>
+							{% for pref in ('covered-', 'virtual-', 'difference-') %}
+								<td>
+									{% set k = pref + table.name + "-" + part %}
+									{% if k in values %}
+										{% set val = values[k] %}
+									{% else %}
+										{% set val = '' %}
+									{% endif %}
+									{% if val is none %}
+									{% elif val is number %}
+										{{"{:0,.2f}".format(val)}}
+									{% elif (val is string) or (val is boolean) %}
+										{{val}}
+									{% else %}
+										{% for v in val %}
+											{% if v is number %}
+												{{"{:0,.2f}".format(v)}}
+											{% else %}
+												{{v}}
+											{% endif %}
+											{% if not loop.last %}
+												|
+											{% endif %}
+										{% endfor %}
+									{% endif %}
+								</td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
 				</tbody>
 			</table>
 		{% endfor %}
 
-		<h2>Raw</h2>	
-		<pre>{{raw_data}}</pre>
+	</section>
 
-	{% else %}
-		<table>
-			<caption>Report Run Row</caption>	
-			<tbody>
-				{% for title in row.data.titles %}
-					<tr>
-						<th>{{title}}</th>
-						<td>{{row.data['values'][title]}}</td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
+	<h2>Raw</h2>	
+	<pre>{{raw_data}}</pre>
 {% endblock %}

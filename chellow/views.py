@@ -1629,42 +1629,40 @@ def report_run_row_get(row_id):
     if row.report_run.name == "bill_check":
         values = row.data["values"]
         elements = {}
-        for t in row.data["values"].keys():
-            if t == "difference-tpr-gbp":
-                continue
+        for t in values.keys():
 
             if (
                 t.startswith("covered-")
                 or t.startswith("virtual-")
                 or t.startswith("difference-")
-            ) and t not in (
-                "covered-from",
-                "covered-to",
-                "covered-bills",
-                "covered-problem",
-                "virtual-problem",
-            ):
+            ) and t.endswith("-gbp"):
                 toks = t.split("-")
                 name = "-".join(toks[1:-1])
+                if name in ("vat", "gross", "net", "tpr"):
+                    continue
                 try:
                     table = elements[name]
                 except KeyError:
-                    table = elements[name] = {"order": 0}
+                    table = elements[name] = {"order": 0, "name": name, "parts": set()}
+                    tables.append(table)
 
-                if "titles" not in table:
-                    table["titles"] = []
-                table["titles"].append(toks[0] + "-" + "-".join(toks[2:]))
-                if "values" not in table:
-                    table["values"] = []
-                table["values"].append(values[t])
-                if t.startswith("difference-") and t.endswith("-gbp"):
+                if t.startswith("difference-"):
                     table["order"] = abs(values[t])
 
-        for k, v in elements.items():
-            if k == "net":
-                continue
-            v["name"] = k
-            tables.append(v)
+        for t in values.keys():
+
+            toks = t.split("-")
+            if toks[0] in ("covered", "virtual", "difference"):
+                tail = "-".join(toks[1:])
+                for element in sorted(elements.keys(), key=len, reverse=True):
+
+                    table = elements[element]
+                    elstr = f"{element}-"
+                    if tail.startswith(elstr):
+                        part = tail[len(elstr) :]
+                        if part != "gbp":
+                            table["parts"].add(part)
+                        break
 
         tables.sort(key=lambda t: t["order"], reverse=True)
         return render_template(
@@ -1678,7 +1676,7 @@ def report_run_row_get(row_id):
 
         values = row.data["values"]
         elements = {}
-        for t in row.data["values"].keys():
+        for t in values.keys():
 
             if (
                 t.startswith("covered_")
@@ -1695,7 +1693,7 @@ def report_run_row_get(row_id):
                     table = elements[name] = {"order": 0, "name": name, "parts": set()}
                     tables.append(table)
 
-        for t in row.data["values"].keys():
+        for t in values.keys():
 
             toks = t.split("_")
             if toks[0] in ("covered", "virtual", "difference"):

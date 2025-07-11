@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import datetime as Datetime
 from decimal import Decimal
 from itertools import combinations
+from numbers import Number
 
 from dateutil.relativedelta import relativedelta
 
@@ -775,6 +776,33 @@ def _process_supply(
         values["batch_id"] = bill.batch.id
         values["supply_id"] = supply.id
         values["site_id"] = None if site_code is None else site.id
+        for key in tuple(values.keys()):
+            for element in sorted(long_map.keys(), key=len, reverse=True):
+                if not key.endswith("-gbp"):
+                    covered_prefix = f"covered-{element}-"
+                    virtual_prefix = f"virtual-{element}-"
+                    if key.startswith(covered_prefix):
+                        part_name = key[len(covered_prefix) :]
+                    elif key.startswith(virtual_prefix):
+                        part_name = key[len(virtual_prefix) :]
+                    else:
+                        continue
+                    virtual_part = values.get(f"virtual-{element}-{part_name}", {0})
+                    covered_part = values.get(f"covered-{element}-{part_name}", {0})
+                    if isinstance(virtual_part, set) and len(virtual_part) == 1:
+                        virtual_part = next(iter(virtual_part))
+                    if isinstance(covered_part, set) and len(covered_part) == 1:
+                        covered_part = next(iter(covered_part))
+
+                    if isinstance(virtual_part, Number) and isinstance(
+                        covered_part, Number
+                    ):
+                        diff = float(covered_part) - float(virtual_part)
+                    else:
+                        diff = None
+
+                    values[f"difference-{element}-{part_name}"] = diff
+                    break
         ReportRun.w_insert_row(
             report_run_id, "", report_run_titles, values, {"is_checked": False}
         )

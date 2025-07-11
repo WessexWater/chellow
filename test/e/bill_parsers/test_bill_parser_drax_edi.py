@@ -284,6 +284,7 @@ def test_process_VAT(mocker):
     _process_VAT(elements, headers)
     expected_headers = {
         "breakdown": {
+            "vat-rate": {Decimal("0.20")},
             "vat": {Decimal("20"): {"net": Decimal("6.00"), "vat": Decimal("1.50")}},
         }
     }
