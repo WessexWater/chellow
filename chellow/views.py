@@ -1634,10 +1634,10 @@ def report_run_row_get(row_id):
             if (
                 t.startswith("covered_")
                 or t.startswith("virtual_")
-                or t.startswith("difference_")
-            ) and t.endswith("_gbp"):
-                toks = t.split("_")
-                name = "_".join(toks[1:-1])
+                or t.startswith("difference-")
+            ) and t.endswith("-gbp"):
+                toks = t.split("-")
+                name = "-".join(toks[1:-1])
                 if name in ("vat", "gross", "net"):
                     continue
                 try:
@@ -1646,18 +1646,18 @@ def report_run_row_get(row_id):
                     table = elements[name] = {"order": 0, "name": name, "parts": set()}
                     tables.append(table)
 
-                if t.startswith("difference_"):
+                if t.startswith("difference-"):
                     table["order"] = abs(values[t])
 
         for t in values.keys():
 
-            toks = t.split("_")
+            toks = t.split("-")
             if toks[0] in ("covered", "virtual", "difference"):
-                tail = "_".join(toks[1:])
+                tail = "-".join(toks[1:])
                 for element in sorted(elements.keys(), key=len, reverse=True):
 
                     table = elements[element]
-                    elstr = f"{element}_"
+                    elstr = f"{element}-"
                     if tail.startswith(elstr):
                         part = tail[len(elstr) :]
                         if part != "gbp":
