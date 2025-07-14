@@ -114,7 +114,7 @@ ELEMENT_MAP = {
             "122568": ("nrg-gsp-losses-gbp", "nrg-rate", "nrg-gsp-losses-kwh"),
         },
         "DUSTRN": {
-            "122568": ("nrg-nbp-losses-gbp", "nrg-rate", "nrg-bp-losses-kwh"),
+            "122568": ("nrg-nbp-losses-gbp", "nrg-rate", "nrg-nbp-losses-kwh"),
         },
     },
     "ELX": {
