@@ -51,7 +51,11 @@ ELEMENT_MAP = {
                 "cfd-operational-kwh",
             ),
             "954379": ("cfd-interim-gbp", "cfd-interim-rate", "cfd-interim-kwh"),
-            "538249": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
+            "538249": (
+                "cm-settlement-levy-gbp",
+                "cm-settlement-levy-rate",
+                "cm-settlement-levy-kwh",
+            ),
             "568307": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
         },
     },
