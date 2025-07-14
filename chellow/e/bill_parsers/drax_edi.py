@@ -144,7 +144,7 @@ ELEMENT_MAP = {
     },
     "TUS": {
         "TNUOS": {
-            "012069": ("tnuos-gbp", "tnuos-rate", None),
+            "012069": ("triad-gbp", "triad-rate", "triad-kw"),
         },
     },
     "064305": ("fit-gbp", None, None),
