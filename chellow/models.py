@@ -4271,16 +4271,16 @@ class Supply(Base, PersistentClass):
 
     def find_eras(self, sess, start, finish):
         eras = (
-            sess.query(Era)
-            .filter(
+            select(Era)
+            .where(
                 Era.supply == self,
                 or_(Era.finish_date == null(), Era.finish_date >= start),
             )
             .order_by(Era.start_date)
         )
         if finish is not None:
-            eras = eras.filter(Era.start_date <= finish)
-        return eras.all()
+            eras = eras.where(Era.start_date <= finish)
+        return sess.scalars(eras).all()
 
     def update_era(
         self,

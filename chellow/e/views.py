@@ -5714,20 +5714,34 @@ def supply_post(supply_id):
         if "new_msn" in request.form:
             start_date_str = req_str("start_date")
             start_date = parse_hh_start(start_date_str)
+            if start_date is None:
+                raise BadRequest("The data of the MSN change is blank in ECOES.")
 
             msn = req_str("msn")
+            msg = ""
             era = supply.find_era_at(g.sess, start_date)
             if era is None:
-                raise BadRequest(f"There isn't an era at {start_date}")
-            if era.msn == msn:
-                raise BadRequest(f"The era at {start_date} already has the MSN {msn}")
+                raise BadRequest(f"There are no eras from {start_date|hh_format}")
+            else:
+                if era.start_date != start_date:
+                    era = supply.insert_era_at(g.sess, start_date)
+                    g.sess.commit()
+                for era in supply.find_eras(g.sess, start_date, None):
+                    if era.msn == msn:
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} already has the "
+                            f"MSN {msn}. "
+                        )
+                    else:
+                        era.msn = msn
 
-            if era.start_date != start_date:
-                era = supply.insert_era_at(g.sess, start_date)
-            era.msn = msn
-            g.sess.commit()
-            flash("MSN updated successfully")
-            return render_template("supply_post.html")
+                        g.sess.commit()
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} has been "
+                            f"successfully updated with the MSN {msn}. "
+                        )
+            flash(msg)
+        return render_template("supply_post.html")
 
     except BadRequest as e:
         flash(e.description)
