@@ -479,7 +479,7 @@ def _process(
 
                 chellow_dtc_meter_type = era.dtc_meter_type
                 if chellow_dtc_meter_type is None:
-                    chellow_meter_type = None
+                    chellow_meter_type = ""
                 else:
                     chellow_meter_type = chellow_dtc_meter_type.code
 
