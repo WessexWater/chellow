@@ -727,9 +727,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2771,9 +2771,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5123,9 +5123,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5716,16 +5716,20 @@ def supply_post(supply_id):
             start_date = parse_hh_start(start_date_str)
 
             msn = req_str("msn")
-            era = supply.find_era_at(g.sess, start_date)
-            if era is None:
-                raise BadRequest(f"There isn't an era at {start_date}")
-            if era.msn == msn:
-                raise BadRequest(f"The era at {start_date} already has the MSN {msn}")
+            msg = ""
+            eras = supply.find_eras(start_date, None)
+            if len(eras) == 0:
+                msg += f"There are no eras from {start_date}"
+            else:
+                for era in supply.find_eras(start_date, None):
+                    if era.msn == msn:
+                        msg += f"The era at {start_date} already has the MSN {msn}"
 
-            if era.start_date != start_date:
-                era = supply.insert_era_at(g.sess, start_date)
-            era.msn = msn
-            g.sess.commit()
+                    if era.start_date != start_date:
+                        era = supply.insert_era_at(g.sess, start_date)
+                    era.msn = msn
+
+                g.sess.commit()
             flash("MSN updated successfully")
             return render_template("supply_post.html")
 
