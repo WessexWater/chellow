@@ -5,12 +5,13 @@ from decimal import Decimal, InvalidOperation
 from enum import Enum, auto
 from io import BytesIO
 
+from dateutil.relativedelta import relativedelta
 
 from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import c_months_u, to_ct, to_utc
+from chellow.utils import to_ct, to_utc
 
 
 class Title(Enum):
@@ -151,13 +152,13 @@ def _parse_row(bills, sheet, row, title_row):
     column_map = make_column_map(title_row)
     mprn_raw = get_value(sheet, row, column_map[Title.MPRN])
     mprn = str(mprn_raw)
-    reference = get_value(sheet, row, column_map[Title.BILL])
+    reference = str(get_value(sheet, row, column_map[Title.BILL]))
     account = get_value(sheet, row, column_map[Title.ACCOUNT])
     issue_date = get_date(sheet, row, column_map[Title.BILL_DATE])
-    period_naive = get_date_naive(sheet, row, column_map[Title.BILLING_PERIOD])
-    start_date, finish_date = list(
-        c_months_u(start_year=period_naive.year, start_month=period_naive.month)
-    )[0]
+    charge_period_from = get_date(sheet, row, column_map[Title.CHARGE_PERIOD_FROM])
+    charge_period_end_naive = get_date_naive(
+        sheet, row, column_map[Title.CHARGE_PERIOD_END]
+    )
 
     try:
         mprn_values = bills[mprn]
@@ -165,16 +166,18 @@ def _parse_row(bills, sheet, row, title_row):
         mprn_values = bills[mprn] = {}
 
     try:
-        bill = mprn_values[period_naive]
+        bill = mprn_values[reference]
     except KeyError:
-        bill = mprn_values[period_naive] = {
-            "bill_type_code": "N",
+        bill = mprn_values[reference] = {
+            "bill_type_code": "W" if reference.startswith("CR") else "N",
             "mprn": mprn,
             "reference": reference,
             "account": account,
             "issue_date": issue_date,
-            "start_date": start_date,
-            "finish_date": finish_date,
+            "start_date": charge_period_from,
+            "finish_date": to_utc(
+                to_ct(charge_period_end_naive) + relativedelta(hours=23, minutes=30)
+            ),
             "kwh": Decimal("0"),
             "breakdown": defaultdict(int, {}),
             "net_gbp": Decimal("0.00"),
@@ -190,6 +193,8 @@ def _parse_row(bills, sheet, row, title_row):
     qunit = get_value(sheet, row, column_map[Title.QUNIT])
     charge = get_dec(sheet, row, column_map[Title.CHARGE]) / Decimal("100")
     total = get_dec(sheet, row, column_map[Title.TOTAL])
+    if bill["bill_type_code"] == "W":
+        quantity = quantity * -1
     if element_desc == "VAT":
         bill["net_gbp"] += quantity
         bill["vat_gbp"] += total
