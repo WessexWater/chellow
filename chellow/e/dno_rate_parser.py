@@ -54,7 +54,7 @@ def get_rate(row, idx):
         return None
 
     val = cell.value
-    if val is None:
+    if val in (None, "-"):
         return None
     elif isinstance(val, str) and len(val) == 0:
         return None
@@ -318,10 +318,11 @@ def tab_ehv(sheet, gsp_rates):
                         band = 0
                     else:
                         band_val = get_value(row, band_col)
-                        if band_val is None:
+                        if band_val in (None, ""):
                             band = 0
                         else:
                             band = int(band_val)
+
                     tariffs[llfc] = {
                         "super-red-gbp-per-kwh": get_rate(
                             row, col_match(title_row, f"{polarity} super red")
@@ -457,6 +458,7 @@ GSP_MAP = (
     ("mide", "_E"),
     ("sepd", "_H"),
     ("sweb", "_L"),
+    ("spd", "_N"),
 )
 
 
