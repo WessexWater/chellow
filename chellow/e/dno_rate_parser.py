@@ -426,19 +426,27 @@ def find_rates(file_name, file_like):
 
 
 GSP_MAP = (
+    ("eastern-power-networks-", "_A"),
     ("gsp a", "_A"),
     ("gsp b", "_B"),
     ("gsp c", "_C"),
+    ("lond", "_C"),
     ("gsp d", "_D"),
+    ("spm-", "_D"),
     ("gsp e", "_E"),
+    ("mide", "_E"),
     ("gsp f", "_F"),
+    ("enwl-", "_G"),
     ("gsp g", "_G"),
     ("gsp h", "_H"),
+    ("sepd", "_H"),
     ("gsp j", "_J"),
     ("gsp k", "_K"),
     ("gsp l", "_L"),
+    ("sweb", "_L"),
     ("gsp m", "_M"),
     ("gsp n", "_N"),
+    ("spd", "_N"),
     ("gsp p", "_P"),
     ("gsp_a", "_A"),
     ("gsp_b", "_B"),
@@ -454,11 +462,6 @@ GSP_MAP = (
     ("gsp_m", "_M"),
     ("gsp_n", "_N"),
     ("gsp_p", "_P"),
-    ("lond", "_C"),
-    ("mide", "_E"),
-    ("sepd", "_H"),
-    ("sweb", "_L"),
-    ("spd", "_N"),
 )
 
 
