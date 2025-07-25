@@ -10,7 +10,7 @@ jobs:
   # Label of the container job
   test:
     runs-on: ubuntu-latest
-    container: python:3.9
+    container: python:3.11
 
     services:
       postgres:
@@ -38,7 +38,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    container: python:3.9
+    container: python:3.11
     needs: test
     steps:
     - uses: actions/checkout@v4

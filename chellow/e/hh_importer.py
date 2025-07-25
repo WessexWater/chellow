@@ -201,7 +201,7 @@ class HhImportTask(threading.Thread):
                     lock.release()
 
     def run(self):
-        while not self.stopped.isSet():
+        while not self.stopped.is_set():
             self.import_now()
             timeout = None if self.is_error else self.wait_seconds
             self.going.wait(timeout=timeout)

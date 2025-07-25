@@ -7,7 +7,7 @@ name = "chellow"
 dynamic = ["version"]
 description = "Web Application for checking UK energy bills."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -42,31 +42,36 @@ dependencies = [
 path = "VERSION"
 
 [tool.tox]
-legacy_tox_ini = """
-[tox]
+requires = ["tox>=4.19"]
+envlist = ["py"]
 
-[testenv]
-recreate = True
-deps =
-    flake8
-    flake8-alphabetize
-    black
-    pytest
-    pytest-mock
-allowlist_externals =
-    echo
-passenv =
-    PGPORT
-    PGUSER
-    PGHOST
-    PGPASSWORD
-setenv =
-    PGDATABASE = toxchellow
-commands =
-    black --check .
-    flake8 .
-    pytest --exitfirst -W error
-    echo PGPORT is {env:PGPORT:unset}
-    echo PGUSER is {env:PGUSER:unset}
-    echo Test database is {env:PGDATABASE:unset} on {env:PGHOST:unset}
-"""
+[tool.tox.env_run_base]
+description = "Run test under {base_python}"
+passenv = ["PGPORT", "PGUSER", "PGHOST", "PGPASSWORD"]
+allowlist_externals = ["echo", "rm"]
+commands = [
+    ["black", "--check", "."],
+    ["flake8", "."],
+    ["validate-pyproject", "pyproject.toml"],
+    ["echo", "PGPORT is {env:PGPORT:unset}"],
+    ["echo", "PGUSER is {env:PGUSER:unset}"],
+    ["echo", "Test database is {env:PGDATABASE:unset} on {env:PGHOST:unset}"],
+    ["python", "-m", "pytest", "-v", "-x", "-W error", "test"],
+    ["rm", "-rf", "dist"],
+    ["python", "-m", "build"],
+    ["twine", "check", "dist/*"],
+]
+deps = [
+    "black",
+    "build",
+    "pytest",
+    "pytest-mock",
+    "pytest-benchmark",
+    "flake8",
+    "flake8-alphabetize",
+    "Flake8-pyproject",
+    "twine",
+    "validate-pyproject",
+]
+[tool.tox.env_run_base.setenv]
+PGDATABASE = "toxchellow"

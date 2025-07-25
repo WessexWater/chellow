@@ -46,7 +46,7 @@ in Windows an environment variable can be set by doing:
 
 `set PGUSER=postgres`
 
-* Install Python 3.9 (tested on the [CPython 3.9.8](http://www.python.org/) interpreter)
+* Install Python 3.11
 * Create a virtual environment: `python3 -m venv venv`
 * Activate the virtual environment: `source venv/bin/activate`
 * Install Chellow: `pip install chellow`
