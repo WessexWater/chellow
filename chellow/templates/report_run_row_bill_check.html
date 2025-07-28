@@ -192,7 +192,11 @@
 						<td>vat_rate</td>
 						<td>{{values['covered-vat-rate']}}</td>
 						<td>{{values['virtual-vat-rate']}}</td>
-						<td>{{"{:0,.2f}".format(values['difference-vat-rate'])}}</td>
+						<td>
+							{% if values['difference-vat-rate'] is number %}
+								{{"{:0,.2f}".format(values['difference-vat-rate'])}}
+							{% endif %}
+						</td>
 					</tr>
 				{% endif %}
 			</tbody>
