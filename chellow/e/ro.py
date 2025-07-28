@@ -15,4 +15,5 @@ def hh(supply_source):
 
         ro_kwh = hh["msp-kwh"]
         hh["ro-msp-kwh"] = ro_kwh
+        hh["ro-kwh"] = ro_kwh
         hh["ro-gbp"] = ro_kwh * ro_rate
