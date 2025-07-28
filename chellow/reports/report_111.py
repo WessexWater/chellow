@@ -790,16 +790,16 @@ def _process_supply(
                     virtual_part = values.get(f"virtual-{element}-{part_name}", {0})
                     covered_part = values.get(f"covered-{element}-{part_name}", {0})
                     if isinstance(virtual_part, set) and len(virtual_part) == 1:
-                        virtual_part = float(next(iter(virtual_part)))
+                        virtual_part = next(iter(virtual_part))
                     if isinstance(covered_part, set) and len(covered_part) == 1:
-                        covered_part = float(next(iter(covered_part)))
+                        covered_part = next(iter(covered_part))
 
                     if isinstance(virtual_part, Number) and isinstance(
                         covered_part, Number
                     ):
                         diff = float(covered_part) - float(virtual_part)
                     else:
-                        diff = 0
+                        diff = None
 
                     values[f"difference-{element}-{part_name}"] = diff
                     break
