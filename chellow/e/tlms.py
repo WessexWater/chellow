@@ -148,13 +148,7 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
 
             set_progress(values[0])
 
-            if values[3] == "":
-                for zone in GSP_GROUP_LOOKUP.keys():
-                    values[3] = zone
-                    _process_line(
-                        cache, sess, contract, log, values, complete_date, caches
-                    )
-            else:
+            if len(values) > 5:
                 _process_line(cache, sess, contract, log, values, complete_date, caches)
 
         for rscript in cache["rate_scripts"]:
