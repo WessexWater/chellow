@@ -2,7 +2,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
-import odio
+from odio import parse_document
 
 from utils import match_tables
 from chellow.models import (
@@ -198,8 +198,8 @@ def virtual_bill(ds):
     base_name = ["g_monthly_supply"]
     content(scenario_props, user_id, compression, now, base_name)
 
-    sheet = odio.parse_spreadsheet(mock_file)
-    table = list(sheet.tables[1].rows)
+    sheet = parse_document(mock_file)
+    table = list(sheet.tables[1].values)
 
     expected = [
         [
@@ -462,8 +462,8 @@ def virtual_bill(ds):
     }
     base_name = ["g_monthly_supply"]
     content(scenario_props, user_id, compression, now, base_name)
-    sheet = odio.parse_spreadsheet(mock_file)
-    table = list(sheet.tables[1].rows)
+    sheet = parse_document(mock_file)
+    table = list(sheet.tables[1].values)
 
     expected = [
         [

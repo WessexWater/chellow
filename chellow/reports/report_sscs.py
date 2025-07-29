@@ -5,7 +5,7 @@ import traceback
 
 from flask import g, redirect, request
 
-import odio
+from odio.v1_3 import create_spreadsheet
 
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
@@ -26,10 +26,11 @@ def write_spreadsheet(
 ):
     fl.seek(0)
     fl.truncate()
-    with odio.create_spreadsheet(fl, "1.2", compressed=compressed) as f:
-        f.append_table("SSCs", ssc_rows)
-        f.append_table("MRs", mr_rows)
-        f.append_table("TPRs", tpr_rows)
+    sheet = create_spreadsheet()
+    sheet.append_table("SSCs", ssc_rows)
+    sheet.append_table("MRs", mr_rows)
+    sheet.append_table("TPRs", tpr_rows)
+    sheet.save(fl, compressed=compressed)
 
 
 def content(

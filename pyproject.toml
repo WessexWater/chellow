@@ -14,7 +14,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-	"odio==0.0.23",
+	"odio==0.0.25",
 	"pypdf==4.3.1",
 	"pg8000==1.31.1",
 	"Flask==3.1.1",
