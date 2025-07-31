@@ -456,7 +456,7 @@ def _process_VAT(elements, headers):
     if "vat_rate" in breakdown:
         vat_rate = breakdown["vat-rate"]
     else:
-        vat_rate = breakdown["vat-rate"] = {}
+        vat_rate = breakdown["vat-rate"] = set()
     vat_rate.add(vat_percentage)
     vat_net = Decimal("0.00") + to_decimal(elements["UVLA"]) / Decimal("100")
 
