@@ -175,7 +175,7 @@
 											</li>
 										{% endfor %}
 									</ul>
-								{% else %}
+								{% elif values[title] is not none %}
 									{{values[title]}}
 								{% endif %}
 							</td>
