@@ -1638,7 +1638,7 @@ def report_run_row_get(row_id):
             ) and t.endswith("-gbp"):
                 toks = t.split("-")
                 name = "-".join(toks[1:-1])
-                if name in ("vat", "gross", "net"):
+                if name in ("vat", "gross", "net", "tpr"):
                     continue
                 try:
                     table = elements[name]
