@@ -330,6 +330,13 @@ def _process_VAT(elements, headers):
     else:
         vat_breakdown = bd["vat"] = {}
 
+    if "vat-rate" in bd:
+        vat_rate = bd["vat-rate"]
+    else:
+        vat_rate = bd["vat-rate"] = set()
+
+    vat_rate.add(vat_percentage / Decimal("100"))
+
     try:
         vat_values = vat_breakdown[vat_percentage]
     except KeyError:
