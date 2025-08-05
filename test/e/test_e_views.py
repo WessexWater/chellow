@@ -3463,11 +3463,11 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
     response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
     match(response, 200)
 
-    response = client.get("/e/supplier_bill_imports/0")
-    match(
-        response,
-        200,
-        r"All the bills have been successfully loaded and attached to the batch\.",
+    match_repeat(
+        client,
+        "/e/supplier_bill_imports/0",
+        "All the bills have been successfully loaded and attached to the batch.",
+        seconds=1,
     )
 
 

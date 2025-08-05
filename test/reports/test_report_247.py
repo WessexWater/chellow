@@ -2,7 +2,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
-from odio import parse_document
+from odio import parse_spreadsheet
 
 import pytest
 
@@ -360,8 +360,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
@@ -665,8 +665,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = (
         "For the contract Fusion Mop Contract there doesn't seem to be a "
@@ -895,8 +895,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -997,7 +997,7 @@ def virtual_bill(ds):
 
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",
@@ -1359,8 +1359,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -1461,7 +1461,7 @@ def virtual_bill(ds):
 
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",
@@ -1934,8 +1934,8 @@ def virtual_bill(ds):
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
     content(scenario_props, base_name, user_id, compression, now)
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
@@ -2277,8 +2277,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
@@ -2624,8 +2624,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -2725,7 +2725,7 @@ def virtual_bill(ds):
     ]
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",
@@ -3294,8 +3294,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -3396,7 +3396,7 @@ def virtual_bill(ds):
 
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",
@@ -3777,8 +3777,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
@@ -4152,8 +4152,8 @@ def displaced_virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    era_table = list(sheet.tables[1].values)
+    sheet = parse_spreadsheet(mock_file)
+    era_table = sheet.tables[1].rows
 
     era_expected = [
         [
@@ -4519,8 +4519,8 @@ def test_content_no_mpan_cores(mocker, sess, client):
     compression = False
     now = to_utc(ct_datetime(2020, 1, 1))
     content(scenario_props, base_name, user_id, compression, now)
-    sheet = parse_document(mock_file)
-    table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
@@ -4791,8 +4791,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -4893,7 +4893,7 @@ def virtual_bill(ds):
 
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",
@@ -5256,8 +5256,8 @@ def virtual_bill(ds):
 
     content(scenario_props, base_name, user_id, compression, now)
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -5358,7 +5358,7 @@ def virtual_bill(ds):
 
     assert site_expected == site_table
 
-    era_table = list(sheet.tables[1].values)
+    era_table = sheet.tables[1].rows
     era_expected = [
         [
             "creation-date",

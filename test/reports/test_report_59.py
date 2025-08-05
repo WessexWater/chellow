@@ -2,7 +2,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO
 
-from odio import parse_document
+from odio import parse_spreadsheet
 
 from sqlalchemy import select
 
@@ -439,8 +439,8 @@ def displaced_virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -532,7 +532,7 @@ def displaced_virtual_bill(ds):
     ]
     assert site_expected == site_table
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -729,7 +729,7 @@ def displaced_virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
     era_expected = [
         [
             "creation-date",
@@ -1326,8 +1326,8 @@ def virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -1462,7 +1462,7 @@ def virtual_bill(ds):
     ]
     match_tables(site_expected, site_table)
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -1563,7 +1563,7 @@ def virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
 
     era_expected = [
         [
@@ -1961,8 +1961,8 @@ def virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -2054,7 +2054,7 @@ def virtual_bill(ds):
     ]
     match_tables(site_expected, site_table)
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -2155,7 +2155,7 @@ def virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
 
     era_expected = [
         [
@@ -2624,8 +2624,8 @@ def virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -2717,7 +2717,7 @@ def virtual_bill(ds):
     ]
     match_tables(site_expected, site_table)
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -2818,7 +2818,7 @@ def virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
 
     era_expected = [
         [
@@ -3287,8 +3287,8 @@ def virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     site_expected = [
         [
@@ -3380,7 +3380,7 @@ def virtual_bill(ds):
     ]
     match_tables(site_expected, site_table)
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -3481,7 +3481,7 @@ def virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
 
     era_expected = [
         [
@@ -3853,12 +3853,12 @@ def virtual_bill(ds):
         is_bill_check,
     )
 
-    sheet = parse_document(mock_file)
-    site_table = list(sheet.tables[0].values)
+    sheet = parse_spreadsheet(mock_file)
+    site_table = sheet.tables[0].rows
 
     assert site_table[1][0].startswith("Problem Traceback")
 
-    supply_table = list(sheet.tables[1].values)
+    supply_table = sheet.tables[1].rows
     supply_expected = [
         [
             "creation-date",
@@ -3911,7 +3911,7 @@ def virtual_bill(ds):
     ]
     match_tables(supply_expected, supply_table)
 
-    era_table = list(sheet.tables[2].values)
+    era_table = sheet.tables[2].rows
 
     era_expected = [
         [

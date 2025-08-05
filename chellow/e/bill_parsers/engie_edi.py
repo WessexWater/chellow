@@ -54,7 +54,7 @@ TCOD_MAP = {
     "839829": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
     "649282": ("cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-kwh"),
     "068476": ("day-gbp", "day-rate", "day-kwh"),
-    "133186": ("day-gbp", "day-rate", "day-kwh"),
+    "133186": ("nrg-gbp", "nrg-rate", "nrg-kwh"),
     "400434": ("day-gbp", "day-rate", "day-kwh"),
     "219182": (
         "duos-availability-gbp",
@@ -109,7 +109,7 @@ TCOD_MAP = {
     "220894": ("winter-night-gbp", "winter-night-rate", "winter-night-kwh"),
     "264929": ("winter-weekday-gbp", "winter-weekday-rate", "winter-weekday-kwh"),
     "638187": ("winter-weekend-gbp", "winter-weekend-rate", "winter-weekend-kwh"),
-    "700285": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
+    "700285": ("standing-gbp", "standing-rate", "standing-days"),
 }
 
 TPR_LOOKUP = {

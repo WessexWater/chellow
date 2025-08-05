@@ -7,7 +7,7 @@ from dateutil.relativedelta import relativedelta
 
 from flask import flash, g, make_response, redirect, render_template, request
 
-from odio.v1_3 import create_spreadsheet
+from odio import create_spreadsheet
 
 from sqlalchemy import or_, select, true
 from sqlalchemy.sql.expression import null
@@ -58,12 +58,11 @@ CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
 def write_spreadsheet(fl, compressed, site_rows, supply_rows, era_rows, read_rows):
     fl.seek(0)
     fl.truncate()
-    sheet = create_spreadsheet()
-    sheet.append_table("Site Level", site_rows)
-    sheet.append_table("Supply Level", supply_rows)
-    sheet.append_table("Era Level", era_rows)
-    sheet.append_table("Normal Reads", read_rows)
-    sheet.save(fl, compressed=compressed)
+    with create_spreadsheet(fl, compressed=compressed) as sheet:
+        sheet.append_table("Site Level", site_rows)
+        sheet.append_table("Supply Level", supply_rows)
+        sheet.append_table("Era Level", era_rows)
+        sheet.append_table("Normal Reads", read_rows)
 
 
 def make_bill_row(titles, bill):

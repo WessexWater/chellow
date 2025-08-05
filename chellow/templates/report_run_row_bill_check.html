@@ -163,42 +163,65 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% if 'difference-gross-gbp' in values %}
-					<tr>
-						<td>gross</td>
-						<td>{{"{:0,.2f}".format(values['covered-gross-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['virtual-gross-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['difference-gross-gbp'])}}</td>
-					</tr>
-				{% endif %}
-				{% if 'difference-net-gbp' in values %}
-					<tr>
-						<td>net</td>
-						<td>{{"{:0,.2f}".format(values['covered-net-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['virtual-net-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['difference-net-gbp'])}}</td>
-					</tr>
-				{% endif %}
-				{% if 'difference-vat-gbp' in values %}
-					<tr>
-						<td>vat</td>
-						<td>{{"{:0,.2f}".format(values['covered-vat-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['virtual-vat-gbp'])}}</td>
-						<td>{{"{:0,.2f}".format(values['difference-vat-gbp'])}}</td>
-					</tr>
-				{% endif %}
-				{% if 'difference-vat-rate' in values and values['difference-vat-rate'] != 0 %}
-					<tr>
-						<td>vat-rate</td>
-						<td>{{values['covered-vat-rate']}}</td>
-						<td>{{values['virtual-vat-rate']}}</td>
-						<td>
-							{% if values['difference-vat-rate'] is number %}
-								{{"{:0,.2f}".format(values['difference-vat-rate'])}}
-							{% endif %}
-						</td>
-					</tr>
-				{% endif %}
+				<tr>
+					<td>gross</td>
+					<td>
+						{% if 'covered-gross-gbp' in values and values['covered-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(values['covered-gross-gbp'])}}
+						{% endif %}
+					</td>
+					<td>
+						{% if 'virtual-gross-gbp' in values and values['virtual-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(values['virtual-gross-gbp'])}}
+						{% endif %}
+					</td>
+					<td>
+						{% if 'difference-gross-gbp' in values and values['difference-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(values['difference-gross-gbp'])}}
+						{% endif %}
+					</td>
+				</tr>
+				<tr>
+					<td>net</td>
+					<td>
+						{% if 'covered-net-gbp' in values and values['covered-net-gbp'] is number %}
+							{{"{:0,.2f}".format(values['covered-net-gbp'])}}</td>
+						{% endif %}
+					<td>
+						{% if 'virtual-net-gbp' in values and values['virtual-net-gbp'] is number %}
+							{{"{:0,.2f}".format(values['virtual-net-gbp'])}}</td>
+						{% endif %}
+					<td>
+						{% if 'difference-net-gbp' in values and values['difference-net-gbp'] is number %}
+							{{"{:0,.2f}".format(values['difference-net-gbp'])}}</td>
+						{% endif %}
+				</tr>
+				<tr>
+					<td>vat</td>
+					<td>
+						{% if 'covered-vat-gbp' in values and values['covered-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(values['covered-vat-gbp'])}}</td>
+						{% endif %}
+					<td>
+						{% if 'virtual-vat-gbp' in values and values['virtual-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(values['virtual-vat-gbp'])}}</td>
+						{% endif %}
+					<td>
+						{% if 'difference-vat-gbp' in values and values['difference-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(values['difference-vat-gbp'])}}</td>
+						{% endif %}
+				</tr>
+				<tr>
+					<td>vat-rate</td>
+					<td>
+						{{values['covered-vat-rate']}}</td>
+					<td>{{values['virtual-vat-rate']}}</td>
+					<td>
+						{% if values['difference-vat-rate'] is number %}
+							{{"{:0,.2f}".format(values['difference-vat-rate'])}}
+						{% endif %}
+					</td>
+				</tr>
 			</tbody>
 		</table>
 
