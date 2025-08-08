@@ -288,6 +288,8 @@ def _process(
         chellow_supply_id = None
         chellow_era_id = None
         ignore = True
+        ecoes_dno_code = ecoes["mpan-core"]
+        ecoes_dno = Party.get_dno_by_code(sess, ecoes_dno_code)
         diffs = []
 
         try:
@@ -406,10 +408,13 @@ def _process(
 
                 chellow_llfc = llfc.code
                 chellow_llfc_desc = llfc.description
-                if ecoes["llfc"].zfill(3) != chellow_llfc:
+                ecoes_llfc_code = ecoes["llfc"].zfill(3)
+                if ecoes_llfc_code != chellow_llfc:
                     problem += "The LLFCs don't match. "
                     ignore = False
                     diffs.append("llfc")
+
+                ecoes_llfc = ecoes_dno.find_llfc_by_code(sess, ecoes_llfc_code)
 
                 chellow_ssc = era.ssc
                 if chellow_ssc is None:
@@ -505,6 +510,7 @@ def _process(
                 "ecoes_mtc_date": _parse_date(ecoes["mtc-date"]),
                 "chellow_mtc": chellow_mtc,
                 "ecoes_llfc": ecoes["llfc"],
+                "ecoes_llfc_desc": "" if ecoes_llfc is None else ecoes_llfc.description,
                 "ecoes_llfc_from": _parse_date(ecoes["llfc-from"]),
                 "chellow_llfc": chellow_llfc,
                 "chellow_llfc_desc": chellow_llfc_desc,
