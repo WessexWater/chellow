@@ -84,19 +84,24 @@
 				<tbody>
 					<tr>
 						<td>
-							<a href="/e/supplies/{{vals['chellow_supply_id']}}"
-								>{{vals['mpan_core']}}</a>
+							{% if vals['chellow_supply_id'] is none %}
+								{{vals['mpan_core']}}
+							{% else %}
+								<a href="/e/supplies/{{vals['chellow_supply_id']}}">{{vals['mpan_core']}}</a>
+							{% endif %}
 						</td>
 						<td>
-							<a href="/e/supplier_contracts/{{vals['chellow_supplier_contract_id']}}"
-								>{{vals['chellow_supplier_contract_name']}}</a>
+							{% if vals['chellow_supplier_contract_id'] is not none %}
+								<a href="/e/supplier_contracts/{{vals['chellow_supplier_contract_id']}}"
+									>{{vals['chellow_supplier_contract_name']}}</a>
+							{% endif %}
 						</td>
 						<td>
-							{% if 'chellow_era_id' in vals %}
+							{% if vals['chellow_era_id'] is not none %}
 								[<a href="/e/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
 							{% endif %}
 						<td>
-							{% if 'chellow_supply_id' in vals %}
+							{% if vals['chellow_supply_id'] is not none %}
 								[<a href="/e/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
 							{% endif %}
 						</td>
