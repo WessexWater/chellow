@@ -5730,6 +5730,51 @@ def supply_post(supply_id):
                         f"successfully updated with the MSN {msn}. "
                     )
             flash(msg)
+
+        if "new_llfc" in request.form:
+            start_date_str = req_str("start_date")
+            start_date = parse_hh_start(start_date_str)
+            if start_date is None:
+                raise BadRequest("The date of the MSN change is blank.")
+
+            llfc_code = req_str("llfc_code")
+            llfc = supply.dno.get_llfc_by_code(g.sess, llfc_code)
+            mpan_core = req_str("mpan_core")
+            msg = ""
+            era = supply.find_era_at(g.sess, start_date)
+            if era is not None and era.start_date != start_date:
+                era = supply.insert_era_at(g.sess, start_date)
+                g.sess.commit()
+            for era in supply.find_eras(g.sess, start_date, None):
+                if era.imp_mpan_core == mpan_core:
+                    if era.imp_llfc.code == llfc.code:
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} already has the "
+                            f"import LLFC {llfc.code}. "
+                        )
+                    else:
+                        era.imp_llfc = llfc
+
+                        g.sess.commit()
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} has been "
+                            f"successfully updated with the import LLFC {llfc.code}. "
+                        )
+                elif era.exp_mpan_core == mpan_core:
+                    if era.exp_llfc.code == llfc.code:
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} already has the "
+                            f"export LLFC {llfc.code}. "
+                        )
+                    else:
+                        era.exp_llfc = llfc
+
+                        g.sess.commit()
+                        msg += (
+                            f"The era at {hh_format(era.start_date)} has been "
+                            f"successfully updated with the export LLFC {llfc.code}. "
+                        )
+            flash(msg)
         return render_template("supply_post.html")
 
     except BadRequest as e:

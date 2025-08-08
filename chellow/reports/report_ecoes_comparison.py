@@ -25,7 +25,7 @@ from chellow.models import (
     Supply,
     User,
 )
-from chellow.utils import csv_make_val, req_bool
+from chellow.utils import csv_make_val, req_bool, utc_datetime_now
 
 
 FNAME = "ecoes_comparison"
@@ -146,6 +146,7 @@ def _process(
     report_run,
 ):
     writer = csv.writer(f, lineterminator="\n")
+    now = utc_datetime_now()
 
     mpans = []
 
@@ -274,6 +275,7 @@ def _process(
         chellow_pc = ""
         chellow_mtc = ""
         chellow_llfc = ""
+        chellow_llfc_desc = ""
         chellow_ssc = ""
         chellow_es = ""
         chellow_supplier = ""
@@ -287,6 +289,11 @@ def _process(
         chellow_supply_id = None
         chellow_era_id = None
         ignore = True
+        ecoes_dno_code = ecoes["mpan-core"][:2]
+        ecoes_dno = Party.get_dno_by_code(sess, ecoes_dno_code, now)
+        ecoes_llfc_desc = ""
+        chellow_site_code = ""
+        chellow_site_name = ""
         diffs = []
 
         try:
@@ -404,10 +411,16 @@ def _process(
                     ignore = False
 
                 chellow_llfc = llfc.code
-                if ecoes["llfc"].zfill(3) != chellow_llfc:
+                chellow_llfc_desc = llfc.description
+                ecoes_llfc_code = ecoes["llfc"].zfill(3)
+                if ecoes_llfc_code != chellow_llfc:
                     problem += "The LLFCs don't match. "
                     ignore = False
                     diffs.append("llfc")
+
+                ecoes_llfc = ecoes_dno.find_llfc_by_code(sess, ecoes_llfc_code, now)
+                if ecoes_llfc is not None:
+                    ecoes_llfc_desc = ecoes_llfc.description
 
                 chellow_ssc = era.ssc
                 if chellow_ssc is None:
@@ -466,6 +479,10 @@ def _process(
                     ignore = False
                     diffs.append("gsp_group")
 
+                chellow_site = era.get_physical_site(sess)
+                chellow_site_code = chellow_site.code
+                chellow_site_name = chellow_site.name
+
                 chellow_msn = era.msn
 
                 if set([m.strip() for m in chellow_msn.split(",")]) != set(
@@ -503,8 +520,10 @@ def _process(
                 "ecoes_mtc_date": _parse_date(ecoes["mtc-date"]),
                 "chellow_mtc": chellow_mtc,
                 "ecoes_llfc": ecoes["llfc"],
+                "ecoes_llfc_desc": ecoes_llfc_desc,
                 "ecoes_llfc_from": _parse_date(ecoes["llfc-from"]),
                 "chellow_llfc": chellow_llfc,
+                "chellow_llfc_desc": chellow_llfc_desc,
                 "ecoes_ssc": ecoes["ssc"],
                 "chellow_ssc": chellow_ssc,
                 "ecoes_es": ecoes["energisation-status"],
@@ -533,6 +552,8 @@ def _process(
                 "address": ", ".join(
                     [a for a in address_lines if len(a) > 0 and a != "NULL"]
                 ),
+                "chellow_site_code": chellow_site_code,
+                "chellow_site_name": chellow_site_name,
             }
             writer.writerow(csv_make_val(values[t]) for t in titles)
             values["chellow_supplier_contract_id"] = chellow_supplier_contract_id

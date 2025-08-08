@@ -64,26 +64,21 @@
 			<caption>{{vals['mpan_core_no_spaces']}}</caption>
 			<thead>
 				<tr>
-					<th rowspan="2">Mpan Core</th>
-					<th rowspan="2">Supplier Contract</th>
-					<th rowspan="2">Edit Era</th>
-					<th rowspan="2">Edit Supply</th>
+					<th>Source</th>
+					<th>Mpan Core</th>
+					<th>Supplier Contract</th>
+					<th>Edit Era</th>
+					<th>Edit Supply</th>
 					{% for diff in vals['diffs'] %}
-						<th colspan="2">{{diff}}</th>
+						<th>{{diff}}</th>
 					{% endfor %}
-					<th rowspan="2">Problem</th>
-					<th rowspan="2">Fix</th>
-					<th rowspan="2">ECOES Address</th>
-				</tr>
-				<tr>
-					{% for diff in vals['diffs'] %}
-						<th>Chellow</th>
-						<th>ECOES</th>
-					{% endfor %}
+					<th>Problem</th>
+					<th>Site</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
+					<td>Chellow</td>
 					<td>
 						{% if vals['chellow_supply_id'] is none %}
 							{{vals['mpan_core']}}
@@ -99,15 +94,55 @@
 					</td>
 					<td>
 						{% if vals['chellow_era_id'] is not none %}
-							[<a href="/e/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
+							[<a href="/e/eras/{{vals['chellow_era_id']}}/edit">edit</a>]
 						{% endif %}
+					</td>
 					<td>
 						{% if vals['chellow_supply_id'] is not none %}
 							[<a href="/e/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
 						{% endif %}
 					</td>
 					{% for diff in vals['diffs'] %}
-						<td>{{vals['chellow_' + diff]}}</td>
+						<td>
+							{{vals['chellow_' + diff]}}
+							{% if diff == 'llfc' %}
+								- {{vals['chellow_' + diff + '_desc']}}
+								<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
+									<fieldset>
+										<input type="hidden" name="llfc_code" value="{{vals['ecoes_llfc']}}">
+										<input type="hidden" name="mpan_core" value="{{vals['mpan_core']}}">
+										<input type="hidden" name="start_date"
+											value="{{vals['ecoes_llfc_from_date']}}">
+										<input type="submit" name="new_llfc" value="Fix">
+									</fieldset>
+								</form>
+							{% elif diff == 'msn' %}
+								<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
+									<fieldset>
+										<input type="hidden" name="msn" value="{{vals['ecoes_msn']}}">
+										<input type="hidden" name="start_date"
+											value="{{vals['ecoes_msn_install_date']}}">
+										<input type="submit" name="new_msn" value="Fix MSN">
+									</fieldset>
+								</form>
+							{% endif %}
+						</td>
+					{% endfor %}
+					<td rowspan="2">{{vals['problem']}}</td>
+					<td>{{vals['chellow_site_code']}} {{vals['chellow_site_name']}}</td>
+				</tr>
+				<tr>
+					<td>
+						ECOES
+					</td>
+					<td>
+					</td>
+					<td>
+					</td>
+					<td>
+					<td>
+					</td>
+					{% for diff in vals['diffs'] %}
 						<td>{{vals['ecoes_' + diff]}}
 							{% if diff == 'msn' %}
 								- {{vals['ecoes_msn_install_date']}}
@@ -116,7 +151,7 @@
 							{% elif diff == 'mtc' %}
 								- {{vals['ecoes_mtc_date']}}
 							{% elif diff == 'llfc' %}
-								- {{vals['ecoes_llfc_from']}}
+								{{vals['ecoes_llfc_desc']}} - From {{vals['ecoes_llfc_from']}}
 							{% elif diff == 'mop' %}
 								- {{vals['ecoes_mop_appoint_date']}}
 							{% elif diff == 'gsp_group' %}
@@ -124,19 +159,6 @@
 							{% endif %}
 						</td>
 					{% endfor %}
-					<td>{{vals['problem']}}</td>
-					<td>
-						{% if 'msn' in vals['diffs'] %}
-							<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
-								<fieldset>
-									<input type="hidden" name="msn" value="{{vals['ecoes_msn']}}">
-									<input type="hidden" name="start_date"
-										value="{{vals['ecoes_msn_install_date']}}">
-									<input type="submit" name="new_msn" value="Fix MSN">
-								</fieldset>
-							</form>
-						{% endif %}
-					</td>
 					<td>{{vals['address']}}</td>
 				</tr>
 			</tbody>
