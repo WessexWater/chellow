@@ -274,6 +274,7 @@ def _process(
         chellow_pc = ""
         chellow_mtc = ""
         chellow_llfc = ""
+        chellow_llfc_desc = ""
         chellow_ssc = ""
         chellow_es = ""
         chellow_supplier = ""
@@ -404,6 +405,7 @@ def _process(
                     ignore = False
 
                 chellow_llfc = llfc.code
+                chellow_llfc_desc = llfc.description
                 if ecoes["llfc"].zfill(3) != chellow_llfc:
                     problem += "The LLFCs don't match. "
                     ignore = False
@@ -505,6 +507,7 @@ def _process(
                 "ecoes_llfc": ecoes["llfc"],
                 "ecoes_llfc_from": _parse_date(ecoes["llfc-from"]),
                 "chellow_llfc": chellow_llfc,
+                "chellow_llfc_desc": chellow_llfc_desc,
                 "ecoes_ssc": ecoes["ssc"],
                 "chellow_ssc": chellow_ssc,
                 "ecoes_es": ecoes["energisation-status"],

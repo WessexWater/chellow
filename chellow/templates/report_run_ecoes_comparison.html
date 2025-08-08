@@ -107,7 +107,12 @@
 						{% endif %}
 					</td>
 					{% for diff in vals['diffs'] %}
-						<td>{{vals['chellow_' + diff]}}</td>
+						<td>
+							{{vals['chellow_' + diff]}}
+							{% if diff == 'llfc' %}
+								{{vals['chellow_' + diff + '_desc']}}
+							{% endif %}
+						</td>
 						<td>{{vals['ecoes_' + diff]}}
 							{% if diff == 'msn' %}
 								- {{vals['ecoes_msn_install_date']}}
