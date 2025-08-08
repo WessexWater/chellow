@@ -73,6 +73,7 @@
 						{% endfor %}
 						<th rowspan="2">Problem</th>
 						<th rowspan="2">Fix</th>
+						<th rowspan="2">ECOES Address</th>
 					</tr>
 					<tr>
 						{% for diff in vals['diffs'] %}
@@ -136,6 +137,7 @@
 								</form>
 							{% endif %}
 						</td>
+						<td>{{vals['address']}}</td>
 					</tr>
 				</tbody>
 			</table>

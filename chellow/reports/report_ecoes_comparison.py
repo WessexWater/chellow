@@ -329,40 +329,44 @@ def _process(
 
         if current_chell:
             mpans.remove(mpan_spaces)
-            era = sess.execute(
-                select(Era)
-                .filter(
-                    Era.finish_date == null(),
-                    or_(
-                        Era.imp_mpan_core == mpan_spaces,
-                        Era.exp_mpan_core == mpan_spaces,
-                    ),
+            era = (
+                sess.scalars(
+                    select(Era)
+                    .where(
+                        Era.finish_date == null(),
+                        or_(
+                            Era.imp_mpan_core == mpan_spaces,
+                            Era.exp_mpan_core == mpan_spaces,
+                        ),
+                    )
+                    .options(
+                        joinedload(Era.supply).joinedload(Supply.gsp_group),
+                        joinedload(Era.mop_contract)
+                        .joinedload(Contract.party)
+                        .joinedload(Party.participant),
+                        joinedload(Era.dc_contract)
+                        .joinedload(Contract.party)
+                        .joinedload(Party.participant),
+                        joinedload(Era.imp_supplier_contract)
+                        .joinedload(Contract.party)
+                        .joinedload(Party.participant),
+                        joinedload(Era.exp_supplier_contract)
+                        .joinedload(Contract.party)
+                        .joinedload(Party.participant),
+                        joinedload(Era.pc),
+                        joinedload(Era.imp_llfc),
+                        joinedload(Era.exp_llfc),
+                        joinedload(Era.mtc_participant).joinedload(
+                            MtcParticipant.meter_type
+                        ),
+                        joinedload(Era.ssc),
+                        joinedload(Era.energisation_status),
+                        joinedload(Era.channels),
+                    )
                 )
-                .options(
-                    joinedload(Era.supply).joinedload(Supply.gsp_group),
-                    joinedload(Era.mop_contract)
-                    .joinedload(Contract.party)
-                    .joinedload(Party.participant),
-                    joinedload(Era.dc_contract)
-                    .joinedload(Contract.party)
-                    .joinedload(Party.participant),
-                    joinedload(Era.imp_supplier_contract)
-                    .joinedload(Contract.party)
-                    .joinedload(Party.participant),
-                    joinedload(Era.exp_supplier_contract)
-                    .joinedload(Contract.party)
-                    .joinedload(Party.participant),
-                    joinedload(Era.pc),
-                    joinedload(Era.imp_llfc),
-                    joinedload(Era.exp_llfc),
-                    joinedload(Era.mtc_participant).joinedload(
-                        MtcParticipant.meter_type
-                    ),
-                    joinedload(Era.ssc),
-                    joinedload(Era.energisation_status),
-                    joinedload(Era.channels),
-                )
-            ).scalar()
+                .unique()
+                .one()
+            )
             chellow_supply_id = era.supply.id
             chellow_era_id = era.id
             chellow_es = era.energisation_status.code
@@ -489,6 +493,7 @@ def _process(
                     diffs.append("meter_type")
 
         if len(problem) > 0 and not (not show_ignored and ignore):
+            address_lines = [ecoes[f"address-line-{i}"] for i in range(1, 10)]
             values = {
                 "mpan_core": mpan_spaces,
                 "mpan_core_no_spaces": ecoes["mpan-core"],
@@ -525,6 +530,9 @@ def _process(
                 "chellow_meter_type": chellow_meter_type,
                 "ignored": ignore,
                 "problem": problem,
+                "address": ", ".join(
+                    [a for a in address_lines if len(a) > 0 and a != "NULL"]
+                ),
             }
             writer.writerow(csv_make_val(values[t]) for t in titles)
             values["chellow_supplier_contract_id"] = chellow_supplier_contract_id
