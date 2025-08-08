@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Dashboard}
+{% endblock %}
+
+{% block nav %}
+	Dashboard
+{% endblock %}
+
+{% block content %}
+
+	<div>
+	  <canvas id="ecoes_comparison"></canvas>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+	<script>
+		const ecoes_comparison = document.getElementById('ecoes_comparison');
+  	new Chart(ecoes_comparison, {
+			type: 'bar',
+			data: {
+				labels: [
+					{% for run in ecoes_runs %}
+						'{{run.date_created|hh_format}}',
+					{% endfor %}
+				],
+				datasets: [
+					{
+							label: 'Number Of Discrepancies',
+							data: [
+								{% for run in ecoes_runs %}
+									{{run.rows|length}},
+								{% endfor %}
+							],
+							borderWidth: 1
+					},
+				]
+			},
+			options: {
+				plugins: {
+					title: {
+						display: true,
+						text: 'Ecoes Comparison'
+					}
+				}
+			},
+		});
+	</script>
+
+{% endblock %}

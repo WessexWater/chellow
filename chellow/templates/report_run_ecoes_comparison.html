@@ -9,138 +9,137 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.method == "GET" and request.values.delete %}
-		<form method="post" action="/report_runs/{{run.id}}">
-			<fieldset>
-				<caption>Are you sure you want to delete this report run?</caption>
-				<input type="submit" name="delete" value="delete"> 
-				<a href="/report_runs/{{run.id}}">Cancel</a>
-			</fieldset>
-		</form>
-	{% else %}
+	<table>
+		<caption>ECOES Comparison</caption>
+		<thead>
+			<tr>
+				<th>Date Created</th>
+				<th>Created By</th>
+				<th>State</th>
+				<th>Number Of Rows</th>
+				<th>Delete</th>
+				<th>Download Spreadsheet</th>
+				<th>Re-run Report</th>
+				<th>Configuration</th>
+				<th>Update Report Run</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{run.date_created|hh_format}}</td>
+				<td>{{run.creator}}</td>
+				<td>{{run.state}}</td>
+				<td>{{rows|length}}</td>
+				<td>
+					<form action="/report_runs/{{run.id}}">
+						<fieldset>
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
+				</td>
+				<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
+				<td><a href="/reports/ecoes_comparison">Re-run</a></td>
+				<td>
+					The <a href="/configuration">configuration</a> is held under the
+					<code>ecoes</code> section and has keys <code>user_name</code>,
+					<code>password</code>, <code>prefix</code>,
+					<code>exclude_mpan_cores</code> and
+					<code>ignore_mpan_cores_msn</code>.
+				</td>
+				<td>
+					<form action="/report_runs/{{run.id}}" method="post">
+						<fieldset>
+							<label>Keep</label> {{input_checkbox('keep', run.data['keep'])}}
+							<input type="submit" name="update" value="Update">
+						</fieldset>
+					</form>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	{% for row in rows %}
+		{% set vals = row.data['values'] %}
 		<table>
-			<caption>ECOES Comparison</caption>
+			<caption>{{vals['mpan_core_no_spaces']}}</caption>
 			<thead>
 				<tr>
-					<th>Date Created</th>
-					<th>Created By</th>
-					<th>State</th>
-					<th>Number Of Rows</th>
-					<th>Delete</th>
-					<th>Download Spreadsheet</th>
-					<th>Re-run Report</th>
-					<th>Configuration</th>
+					<th rowspan="2">Mpan Core</th>
+					<th rowspan="2">Supplier Contract</th>
+					<th rowspan="2">Edit Era</th>
+					<th rowspan="2">Edit Supply</th>
+					{% for diff in vals['diffs'] %}
+						<th colspan="2">{{diff}}</th>
+					{% endfor %}
+					<th rowspan="2">Problem</th>
+					<th rowspan="2">Fix</th>
+					<th rowspan="2">ECOES Address</th>
+				</tr>
+				<tr>
+					{% for diff in vals['diffs'] %}
+						<th>Chellow</th>
+						<th>ECOES</th>
+					{% endfor %}
 				</tr>
 			</thead>
 			<tbody>
 				<tr>
-					<td>{{run.date_created|hh_format}}</td>
-					<td>{{run.creator}}</td>
-					<td>{{run.state}}</td>
-					<td>{{rows|length}}</td>
 					<td>
-						<form action="/report_runs/{{run.id}}">
-							<fieldset>
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
+						{% if vals['chellow_supply_id'] is none %}
+							{{vals['mpan_core']}}
+						{% else %}
+							<a href="/e/supplies/{{vals['chellow_supply_id']}}">{{vals['mpan_core']}}</a>
+						{% endif %}
 					</td>
-					<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
-					<td><a href="/reports/ecoes_comparison">Re-run</a></td>
 					<td>
-						The <a href="/configuration">configuration</a> is held under the
-						<code>ecoes</code> section and has keys <code>user_name</code>,
-						<code>password</code>, <code>prefix</code>,
-						<code>exclude_mpan_cores</code> and
-						<code>ignore_mpan_cores_msn</code>.
+						{% if vals['chellow_supplier_contract_id'] is not none %}
+							<a href="/e/supplier_contracts/{{vals['chellow_supplier_contract_id']}}"
+								>{{vals['chellow_supplier_contract_name']}}</a>
+						{% endif %}
 					</td>
+					<td>
+						{% if vals['chellow_era_id'] is not none %}
+							[<a href="/e/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
+						{% endif %}
+					<td>
+						{% if vals['chellow_supply_id'] is not none %}
+							[<a href="/e/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
+						{% endif %}
+					</td>
+					{% for diff in vals['diffs'] %}
+						<td>{{vals['chellow_' + diff]}}</td>
+						<td>{{vals['ecoes_' + diff]}}
+							{% if diff == 'msn' %}
+								- {{vals['ecoes_msn_install_date']}}
+							{% elif diff == 'supplier' %}
+								- {{vals['ecoes_supplier_registration_from']}}
+							{% elif diff == 'mtc' %}
+								- {{vals['ecoes_mtc_date']}}
+							{% elif diff == 'llfc' %}
+								- {{vals['ecoes_llfc_from']}}
+							{% elif diff == 'mop' %}
+								- {{vals['ecoes_mop_appoint_date']}}
+							{% elif diff == 'gsp_group' %}
+								- {{vals['ecoes_gsp_effective_from']}}
+							{% endif %}
+						</td>
+					{% endfor %}
+					<td>{{vals['problem']}}</td>
+					<td>
+						{% if 'msn' in vals['diffs'] %}
+							<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
+								<fieldset>
+									<input type="hidden" name="msn" value="{{vals['ecoes_msn']}}">
+									<input type="hidden" name="start_date"
+										value="{{vals['ecoes_msn_install_date']}}">
+									<input type="submit" name="new_msn" value="Fix MSN">
+								</fieldset>
+							</form>
+						{% endif %}
+					</td>
+					<td>{{vals['address']}}</td>
 				</tr>
 			</tbody>
 		</table>
-
-		{% for row in rows %}
-			{% set vals = row.data['values'] %}
-			<table>
-				<caption>{{vals['mpan_core_no_spaces']}}</caption>
-				<thead>
-					<tr>
-						<th rowspan="2">Mpan Core</th>
-						<th rowspan="2">Supplier Contract</th>
-						<th rowspan="2">Edit Era</th>
-						<th rowspan="2">Edit Supply</th>
-						{% for diff in vals['diffs'] %}
-							<th colspan="2">{{diff}}</th>
-						{% endfor %}
-						<th rowspan="2">Problem</th>
-						<th rowspan="2">Fix</th>
-						<th rowspan="2">ECOES Address</th>
-					</tr>
-					<tr>
-						{% for diff in vals['diffs'] %}
-							<th>Chellow</th>
-							<th>ECOES</th>
-						{% endfor %}
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>
-							{% if vals['chellow_supply_id'] is none %}
-								{{vals['mpan_core']}}
-							{% else %}
-								<a href="/e/supplies/{{vals['chellow_supply_id']}}">{{vals['mpan_core']}}</a>
-							{% endif %}
-						</td>
-						<td>
-							{% if vals['chellow_supplier_contract_id'] is not none %}
-								<a href="/e/supplier_contracts/{{vals['chellow_supplier_contract_id']}}"
-									>{{vals['chellow_supplier_contract_name']}}</a>
-							{% endif %}
-						</td>
-						<td>
-							{% if vals['chellow_era_id'] is not none %}
-								[<a href="/e/eras/{{vals['chellow_era_id']}}/edit">edit</a>]</td>
-							{% endif %}
-						<td>
-							{% if vals['chellow_supply_id'] is not none %}
-								[<a href="/e/supplies/{{vals['chellow_supply_id']}}/edit">edit</a>]
-							{% endif %}
-						</td>
-						{% for diff in vals['diffs'] %}
-							<td>{{vals['chellow_' + diff]}}</td>
-							<td>{{vals['ecoes_' + diff]}}
-								{% if diff == 'msn' %}
-									- {{vals['ecoes_msn_install_date']}}
-								{% elif diff == 'supplier' %}
-									- {{vals['ecoes_supplier_registration_from']}}
-								{% elif diff == 'mtc' %}
-									- {{vals['ecoes_mtc_date']}}
-								{% elif diff == 'llfc' %}
-									- {{vals['ecoes_llfc_from']}}
-								{% elif diff == 'mop' %}
-									- {{vals['ecoes_mop_appoint_date']}}
-								{% elif diff == 'gsp_group' %}
-									- {{vals['ecoes_gsp_effective_from']}}
-								{% endif %}
-							</td>
-						{% endfor %}
-						<td>{{vals['problem']}}</td>
-						<td>
-							{% if 'msn' in vals['diffs'] %}
-								<form hx-post="/e/supplies/{{vals['chellow_supply_id']}}">
-									<fieldset>
-										<input type="hidden" name="msn" value="{{vals['ecoes_msn']}}">
-										<input type="hidden" name="start_date"
-											value="{{vals['ecoes_msn_install_date']}}">
-										<input type="submit" name="new_msn" value="Fix MSN">
-									</fieldset>
-								</form>
-							{% endif %}
-						</td>
-						<td>{{vals['address']}}</td>
-					</tr>
-				</tbody>
-			</table>
-		{% endfor %}
-	{% endif %}
+	{% endfor %}
 {% endblock %}

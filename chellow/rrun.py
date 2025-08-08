@@ -5,7 +5,7 @@ import traceback
 
 from dateutil.relativedelta import relativedelta
 
-from sqlalchemy import select
+from sqlalchemy import false, select
 
 from chellow.models import ReportRun, Session
 from chellow.utils import utc_datetime_now
@@ -48,7 +48,10 @@ class ReportRunDeleter(threading.Thread):
                     now = utc_datetime_now()
                     cutoff_date = now - relativedelta(years=1)
                     for report_run in sess.scalars(
-                        select(ReportRun).where(ReportRun.date_created < cutoff_date)
+                        select(ReportRun).where(
+                            ReportRun.date_created < cutoff_date,
+                            ReportRun.data["keep"].as_boolean() == false(),
+                        )
                     ):
                         report_run.delete(sess)
                         sess.commit()

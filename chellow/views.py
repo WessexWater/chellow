@@ -157,6 +157,20 @@ def configuration():
     return redirect(f"/non_core_contracts/{config.id}")
 
 
+@home.route("/dashboard", methods=["GET"])
+def dashboard():
+    ecoes_runs = g.sess.scalars(
+        select(ReportRun)
+        .where(
+            ReportRun.name == "ecoes_comparison",
+            ReportRun.state == "finished",
+            ReportRun.data["keep"].as_boolean() == true(),
+        )
+        .order_by(ReportRun.date_created.desc())
+    ).all()
+    return render_template("dashboard.html", ecoes_runs=ecoes_runs)
+
+
 @home.route("/fake_batch_updater")
 def fake_batch_updater_get():
     importer = chellow.fake_batch_updater.importer
@@ -1584,6 +1598,19 @@ def report_run_delete(run_id):
     run.delete(g.sess)
     g.sess.commit()
     return hx_redirect("/report_runs", 303)
+
+
+@home.route("/report_runs/<int:run_id>", methods=["POST"])
+def report_run_post(run_id):
+    run = g.sess.scalar(select(ReportRun).where(ReportRun.id == run_id))
+    keep = req_bool("keep")
+
+    run_data = run.data
+    run_data["keep"] = keep
+    run.update_data(run_data)
+    g.sess.commit()
+    flash("Report Run Updated successfully")
+    return redirect(f"/report_runs/{run_id}", 303)
 
 
 @home.route("/report_runs/<int:run_id>/spreadsheet")
