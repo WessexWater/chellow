@@ -88,6 +88,8 @@ ELEMENT_MAP = {
             "209269": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
         },
         "DUS002": {
+            "185913": ("duos-yellow-gbp", "duos-yellow-rate", "duos-yellow-kwh"),
+            "517270": ("duos-black-gbp", "duos-black-rate", "duos-black-kwh"),
             "797790": (
                 "duos-reactive-gbp",
                 "duos-reactive-rate",
