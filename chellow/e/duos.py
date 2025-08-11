@@ -16,20 +16,17 @@ from chellow.utils import (
 )
 
 
-BANDS = ("super-red", "red", "amber", "green")
+BANDS = ("black", "super-red", "red", "amber", "yellow", "green")
 
-KEYS = dict(
-    (
-        band,
-        {
-            "kwh": f"duos-{band}-kwh",
-            "tariff-rate": f"{band}-gbp-per-kwh",
-            "bill-rate": f"duos-{band}-rate",
-            "gbp": f"duos-{band}-gbp",
-        },
-    )
+KEYS = {
+    band: {
+        "kwh": f"duos-{band}-kwh",
+        "tariff-rate": f"{band}-gbp-per-kwh",
+        "bill-rate": f"duos-{band}-rate",
+        "gbp": f"duos-{band}-gbp",
+    }
     for band in BANDS
-)
+}
 
 VL_LOOKUP = {
     "LV": {True: "lv-sub", False: "lv-net"},
@@ -704,6 +701,58 @@ def datum_2012_02_23(ds, hh):
                         )
                     ):
                         band = "super-red"
+                        break
+
+                bands_cache[start_date] = band
+    elif ds.dtc_meter_type_code is None:  # unmetered
+        try:
+            band = gsp_group_cache["ums-bands"][start_date]
+        except KeyError:
+            try:
+                bands_cache = gsp_group_cache["ums-bands"]
+            except KeyError:
+                bands_cache = gsp_group_cache["ums-bands"] = {}
+
+            try:
+                band = bands_cache[start_date]
+            except KeyError:
+                band = "green"
+                ct_hr = hh["ct-decimal-hour"]
+                ct_day = hh["ct-day"]
+                ct_month = hh["ct-month"]
+                weekend = hh["ct-day-of-week"] > 4
+                try:
+                    slots = ds.hh_rate(ds.dno_contract.id, start_date)[
+                        ds.gsp_group_code
+                    ]["ums_bands"]
+                except KeyError as e:
+                    raise BadRequest(str(e))
+
+                for slot in slots:
+                    if (
+                        slot["weekend"] == weekend
+                        and slot["start-decimal-hour"]
+                        <= ct_hr
+                        < slot["finish-decimal-hour"]
+                        and (
+                            ct_month > slot["start-month"]
+                            or (
+                                ct_month == slot["start-month"]
+                                and ct_day >= slot["start-day"]
+                            )
+                        )
+                        and (
+                            ct_month < slot["finish-month"]
+                            or (
+                                ct_month == slot["finish-month"]
+                                and (
+                                    slot["finish-day"] == "last"
+                                    or ct_day <= slot["finish-day"]
+                                )
+                            )
+                        )
+                    ):
+                        band = slot["band"]
                         break
 
                 bands_cache[start_date] = band

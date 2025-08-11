@@ -321,9 +321,9 @@ def _process_supply(
     while len(bill_ids) > 0:
         bill_id = list(sorted(bill_ids))[0]
         bill_ids.remove(bill_id)
-        bill = (
-            sess.query(Bill)
-            .filter(Bill.id == bill_id)
+        bill = sess.scalar(
+            select(Bill)
+            .where(Bill.id == bill_id)
             .options(
                 joinedload(Bill.batch),
                 joinedload(Bill.bill_type),
@@ -332,7 +332,6 @@ def _process_supply(
                 joinedload(Bill.reads).joinedload(RegisterRead.present_type),
                 joinedload(Bill.reads).joinedload(RegisterRead.previous_type),
             )
-            .one()
         )
         virtual_bill = {"problem": ""}
         supply = bill.supply

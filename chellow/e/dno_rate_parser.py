@@ -145,6 +145,204 @@ BAND_WEEKEND = {
     "notes": None,
 }
 
+PERIODS = {
+    "monday to friday (including bank holidays) april to march inclusive": [
+        {
+            "weekend": False,
+            "start-month": 4,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 3,
+            "finish-day": 31,
+        },
+    ],
+    "monday to friday (including bank holidays) april to october inclusive and march": [
+        {
+            "weekend": False,
+            "start-month": 4,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 3,
+            "finish-day": 31,
+        },
+    ],
+    "monday to friday (including bank holidays) june to august inclusive": [
+        {
+            "weekend": False,
+            "start-month": 6,
+            "start-day": 1,
+            "finish-month": 8,
+            "finish-day": 31,
+        },
+    ],
+    "monday to friday (including bank holidays) november to february inclusive": [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
+    "monday to friday (including bank holidays) november to february inclusive "
+    "(excluding 22nd dec to 4th jan inclusive)": [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 21,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 5,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
+    "monday to friday (including bank holidays) march to october inclusive": [
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+    ],
+    "monday to friday (including bank holidays) mar to oct inclusive": [
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+    ],
+    "monday to friday (including bank holidays) nov to feb inclusive": [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
+    (
+        "monday to friday nov to feb (excluding 22nd dec to 4th jan inclusive)"
+        "monday to friday (including bank holidays) nov to feb inclusive "
+        "(excluding 22nd dec to 4th jan inclusive)"
+    ): [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 21,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 5,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
+    (
+        "monday to friday (including bank holidays) "
+        "mar to oct inclusive (plus 22nd dec to 4th jan inclusive)"
+    ): [
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 12,
+            "start-day": 22,
+            "finish-month": 12,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 1,
+            "finish-day": 4,
+        },
+    ],
+    (
+        "monday to friday "
+        "(including bank holidays) "
+        "nov to feb inclusive (excluding 22nd dec to 4th jan inclusive)"
+    ): [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 21,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 4,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
+    "saturday and sunday all year": [
+        {
+            "weekend": True,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 31,
+        }
+    ],
+    (
+        "monday to friday (including bank holidays) november to february "
+        "monday to friday nov to feb"
+    ): [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 2,
+            "finish-day": "last",
+        }
+    ],
+}
+
 
 def str_to_hr(hr_str):
     for sep in (":", "."):
@@ -209,6 +407,7 @@ def tab_lv_hv(sheet, gsp_rates):
         tariffs = gsp_rates["tariffs"] = {}
 
     bands = gsp_rates["bands"] = []
+    ums_bands = gsp_rates["ums_bands"] = []
 
     class State(Enum):
         OUTSIDE = auto()
@@ -236,15 +435,31 @@ def tab_lv_hv(sheet, gsp_rates):
 
             if is_weekend is None:
                 state = State.OUTSIDE
-            else:
-                for i, band_name in enumerate(("red", "amber")):
-                    for slot in val_to_slots(get_value(row, i + 1)):
-                        bands.append(
+                continue
+
+            for i, band_name in enumerate(("red", "amber")):
+                for slot in val_to_slots(get_value(row, i + 1)):
+                    bands.append(
+                        {
+                            "weekend": is_weekend,
+                            "start": slot["start"],
+                            "finish": slot["finish"],
+                            "band": band_name,
+                        }
+                    )
+
+            val_6 = " ".join(get_value(row, 6).split()).lower()
+            periods = PERIODS[val_6]
+
+            for i, band_name in enumerate(("black", "yellow")):
+                for slot in val_to_slots(get_value(row, i + 8)):
+                    for period in periods:
+                        ums_bands.append(
                             {
-                                "weekend": is_weekend,
-                                "start": slot["start"],
-                                "finish": slot["finish"],
                                 "band": band_name,
+                                **period,
+                                "start-decimal-hour": slot["start"],
+                                "finish-decimal-hour": slot["finish"],
                             }
                         )
 
@@ -255,6 +470,9 @@ def tab_lv_hv(sheet, gsp_rates):
                 llfcs_str = ",".join(
                     chain(to_llfcs(get_value(row, 1)), to_llfcs(get_value(row, 10)))
                 )
+                is_ums = "unmetered supplies" in val_0.lower()
+                high_band = "black" if is_ums else "red"
+                medium_band = "yellow" if is_ums else "amber"
                 pcs_str = ",".join(to_pcs(row, 2))
                 tariffs[llfcs_str + "_" + pcs_str] = {
                     "description": val_0,
@@ -267,8 +485,10 @@ def tab_lv_hv(sheet, gsp_rates):
                     "excess-gbp-per-kva-per-day": get_zero_rate(
                         row, col_match(title_row, "exce")
                     ),
-                    "red-gbp-per-kwh": get_rag_rate(row, col_match(title_row, "red")),
-                    "amber-gbp-per-kwh": get_rag_rate(
+                    f"{high_band}-gbp-per-kwh": get_rag_rate(
+                        row, col_match(title_row, "red")
+                    ),
+                    f"{medium_band}-gbp-per-kwh": get_rag_rate(
                         row, col_match(title_row, "amber")
                     ),
                     "green-gbp-per-kwh": get_rag_rate(
@@ -344,54 +564,15 @@ def tab_ehv(sheet, gsp_rates):
                 state = EHV_BLANK
             else:
                 period_str = " ".join(get_value(row, 0).split()).lower()
-                periods = []
-
-                if period_str in (
-                    "monday to friday nov to feb (excluding "
-                    "22nd dec to 4th jan inclusive)",
-                    "monday to friday (including bank holidays) nov to feb inclusive "
-                    "(excluding 22nd dec to 4th jan inclusive)",
-                ):
-                    periods.append(
-                        {
-                            "weekend": False,
-                            "start-month": 11,
-                            "start-day": 1,
-                            "finish-month": 12,
-                            "finish-day": 21,
-                        }
-                    )
-                    periods.append(
-                        {
-                            "weekend": False,
-                            "start-month": 1,
-                            "start-day": 5,
-                            "finish-month": 2,
-                            "finish-day": "last",
-                        }
-                    )
-
-                elif period_str in (
-                    "monday to friday (including bank holidays) november to february",
-                    "monday to friday nov to feb",
-                ):
-                    periods.append(
-                        {
-                            "weekend": False,
-                            "start-month": 11,
-                            "start-day": 1,
-                            "finish-month": 2,
-                            "finish-day": "last",
-                        }
-                    )
+                periods = PERIODS[period_str]
 
                 for slot in val_to_slots(get_value(row, 3)):
                     for period in periods:
                         bands.append(
                             {
                                 **period,
-                                "start-hour": slot["start"],
-                                "finish-hour": slot["finish"],
+                                "start-decimal-hour": slot["start"],
+                                "finish-decimal-hour": slot["finish"],
                             }
                         )
 

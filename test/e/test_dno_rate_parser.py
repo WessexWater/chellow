@@ -106,6 +106,15 @@ def test_tab_lv_hv():
     sheet["E6"].value = "00:00 - 09:30\n21:20 - 24:00"
     sheet["A7"].value = "Notes"
 
+    sheet["G6"].value = (
+        "Monday to Friday\n(Including Bank Holidays)\n Nov to Feb Inclusive "
+        "(excluding 22nd Dec to 4th Jan inclusive)"
+    )
+    sheet["H6"].value = ""
+    sheet["I6"].value = "17:00 to 19:00"
+    sheet["J6"].value = "07:30 to 17:00\n19:00 to 21:30"
+    sheet["G7"].value = "Notes"
+
     rates = {}
     tab_lv_hv(sheet, rates)
     assert rates == {
@@ -117,6 +126,68 @@ def test_tab_lv_hv():
                 "weekend": True,
             }
         ],
+        "ums_bands": [
+            {
+                "band": "black",
+                "finish-month": 12,
+                "finish-day": 21,
+                "finish-decimal-hour": Decimal("19"),
+                "start-month": 11,
+                "start-day": 1,
+                "start-decimal-hour": Decimal("17"),
+                "weekend": False,
+            },
+            {
+                "band": "black",
+                "finish-day": "last",
+                "finish-decimal-hour": Decimal("19"),
+                "finish-month": 2,
+                "start-day": 4,
+                "start-decimal-hour": Decimal("17"),
+                "start-month": 1,
+                "weekend": False,
+            },
+            {
+                "band": "yellow",
+                "finish-day": 21,
+                "finish-decimal-hour": Decimal("17"),
+                "finish-month": 12,
+                "start-day": 1,
+                "start-decimal-hour": Decimal("7.5"),
+                "start-month": 11,
+                "weekend": False,
+            },
+            {
+                "band": "yellow",
+                "finish-day": "last",
+                "finish-decimal-hour": Decimal("17"),
+                "finish-month": 2,
+                "start-day": 4,
+                "start-decimal-hour": Decimal("7.5"),
+                "start-month": 1,
+                "weekend": False,
+            },
+            {
+                "band": "yellow",
+                "finish-day": 21,
+                "finish-decimal-hour": Decimal("21.5"),
+                "finish-month": 12,
+                "start-day": 1,
+                "start-decimal-hour": Decimal("19"),
+                "start-month": 11,
+                "weekend": False,
+            },
+            {
+                "band": "yellow",
+                "finish-day": "last",
+                "finish-decimal-hour": Decimal("21.5"),
+                "finish-month": 2,
+                "start-day": 4,
+                "start-decimal-hour": Decimal("19"),
+                "start-month": 1,
+                "weekend": False,
+            },
+        ],
         "tariffs": {},
     }
 
@@ -127,6 +198,13 @@ def test_tab_ehv():
     sheet = wb.worksheets[1]
     sheet.insert_rows(0, 10)
     sheet.insert_cols(0, 15)
+    sheet["A5"].value = "time periods"
+    sheet["A6"].value = (
+        "Monday to Friday (Including Bank Holidays) Nov to Feb Inclusive (excluding "
+        "22nd Dec to 4th Jan inclusive)"
+    )
+    sheet["D6"].value = "17:00 to 19:00"
+    sheet["A7"].value = "Notes"
     sheet["A10"].value = "Import Unique Identifier"
     sheet["B10"].value = "LLFC"
     sheet["E10"].value = "LLFC"
@@ -154,7 +232,26 @@ def test_tab_ehv():
                 "description": "Designated EHV2",
             }
         },
-        "super_red": [],
+        "super_red": [
+            {
+                "finish-day": 21,
+                "finish-decimal-hour": Decimal("19"),
+                "finish-month": 12,
+                "start-day": 1,
+                "start-decimal-hour": Decimal("17"),
+                "start-month": 11,
+                "weekend": False,
+            },
+            {
+                "finish-day": "last",
+                "finish-decimal-hour": Decimal("19"),
+                "finish-month": 2,
+                "start-day": 4,
+                "start-decimal-hour": Decimal("17"),
+                "start-month": 1,
+                "weekend": False,
+            },
+        ],
     }
 
 
