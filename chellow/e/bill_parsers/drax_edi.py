@@ -30,6 +30,7 @@ ELEMENT_MAP = {
     "ADH": {
         "ADHOC": {
             "020330": ("eii-gbp", None, None),
+            "590346": ("cfd-operational-gbp", None, None),
             "637050": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
         },
     },
