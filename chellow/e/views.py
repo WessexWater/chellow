@@ -57,6 +57,7 @@ from chellow.models import (
     Contract,
     Cop,
     DtcMeterType,
+    Element,
     EnergisationStatus,
     Era,
     GeneratorType,
@@ -738,9 +739,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2781,9 +2782,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5127,9 +5128,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5308,15 +5309,14 @@ def supplier_bill_import_get(import_id):
 @e.route("/supplier_bills/<int:bill_id>")
 def supplier_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
-    register_reads = (
-        g.sess.query(RegisterRead)
-        .filter(RegisterRead.bill == bill)
+    register_reads = g.sess.scalars(
+        select(RegisterRead)
+        .where(RegisterRead.bill == bill)
         .order_by(RegisterRead.present_date.desc())
     )
 
-    rate_scripts = (
-        g.sess.query(RateScript)
-        .filter(
+    rate_scripts = g.sess.scalars(
+        select(RateScript).where(
             RateScript.contract == bill.batch.contract,
             RateScript.start_date <= bill.finish_date,
             or_(
@@ -5324,12 +5324,15 @@ def supplier_bill_get(bill_id):
                 RateScript.finish_date >= bill.start_date,
             ),
         )
-        .all()
+    ).all()
+    elements = g.sess.scalars(
+        select(Element).where(Element.bill == bill).order_by(Element.name)
     )
     fields = {
         "bill": bill,
         "register_reads": register_reads,
         "rate_scripts": rate_scripts,
+        "elements": elements,
     }
     try:
         breakdown_dict = loads(bill.breakdown)
