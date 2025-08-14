@@ -21,7 +21,19 @@ from flask import (
     request,
 )
 
-from sqlalchemy import Float, case, cast, false, func, null, or_, select, text, true
+from sqlalchemy import (
+    Float,
+    case,
+    cast,
+    delete,
+    false,
+    func,
+    null,
+    or_,
+    select,
+    text,
+    true,
+)
 from sqlalchemy.orm import aliased, joinedload
 
 
@@ -726,9 +738,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2769,9 +2781,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5030,7 +5042,7 @@ def supplier_batch_post(batch_id):
             g.sess.commit()
             return hx_redirect(f"/supplier_batches/{batch.id}")
         elif "delete_import_bills" in request.values:
-            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
+            g.sess.execute(delete(Bill).where(Bill.batch == batch))
             g.sess.commit()
             import_id = chellow.e.bill_importer.start_bill_import(batch)
             return hx_redirect(f"/supplier_bill_imports/{import_id}")
@@ -5115,9 +5127,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
