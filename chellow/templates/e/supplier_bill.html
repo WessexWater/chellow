@@ -123,6 +123,32 @@
 	</table>
 
 	<table>
+		<legend>Elements [<a href="/e/supplier_bills/{{bill.id}}/add_element">add</a>]</legend>	
+		<thead>
+			<tr>
+				<th>Edit</th>
+				<th>Name</th>
+    		<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net GBP</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for element in elements %}
+				<tr>
+					<td>[<a href="/e/elements/{{element.id}}/edit">edit</a>]</td>
+					<td>{{element.name}}</td>
+					<td>{{element.start_date|hh_format}}</td>
+					<td>{{element.finish_date|hh_format}}</td>
+					<td>{{element.net}}</td>
+					<td>{{element.breakdown}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
 		<caption>Breakdown</caption>	
 		<thead>
 			<tr>
