@@ -1,4 +1,6 @@
-from io import BytesIO
+import csv
+
+from io import BytesIO, TextIOWrapper
 
 import chellow
 import chellow.e.bill_parsers.csv
@@ -9,8 +11,7 @@ def test_bill_parser_csv():
     Check bills have a UTC timezone
     """
 
-    f = BytesIO()
-    for vals in [
+    vals = [
         [
             "#InvoiceType",
             "Account Reference",
@@ -24,6 +25,7 @@ def test_bill_parser_csv():
             "VAT",
             "Gross",
             "Breakdown",
+            "Record Type",
             "R1 Meter Serial Number",
             "R1 MPAN",
             "R1 Coefficient",
@@ -49,6 +51,7 @@ def test_bill_parser_csv():
             "15.01",
             "0",
             "",
+            "read",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -74,6 +77,7 @@ def test_bill_parser_csv():
             "15.01",
             "0",
             "",
+            "read",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -85,6 +89,7 @@ def test_bill_parser_csv():
             "2011-01-06 23:30",
             "25927",
             "E",
+            "read",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -96,6 +101,7 @@ def test_bill_parser_csv():
             "2011-02-06 23:30",
             "46883",
             "E",
+            "read",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -108,12 +114,13 @@ def test_bill_parser_csv():
             "8553",
             "E",
         ],
-    ]:
-        line = ",".join(vals)
-        f.write(f"{line}\n".encode("utf8"))
-    f.seek(0)
-    parser = chellow.e.bill_parsers.csv.Parser(f)
-    for bill in parser.make_raw_bills():
-        for read in bill["reads"]:
-            for k in ("prev_date", "pres_date"):
-                assert read[k].tzinfo is not None
+    ]
+    with BytesIO() as f:
+        writer = csv.writer(TextIOWrapper(f, write_through=True))
+        writer.writerows(vals)
+        f.seek(0)
+        parser = chellow.e.bill_parsers.csv.Parser(f)
+        for bill in parser.make_raw_bills():
+            for read in bill["reads"]:
+                for k in ("prev_date", "pres_date"):
+                    assert read[k].tzinfo is not None
