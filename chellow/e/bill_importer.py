@@ -5,6 +5,8 @@ import traceback
 from io import BytesIO
 from pkgutil import iter_modules
 
+from sqlalchemy import select
+
 from werkzeug.exceptions import BadRequest
 
 import chellow
@@ -76,9 +78,9 @@ class BillImport(threading.Thread):
 
                 read_types = keydefaultdict(lambda k: ReadType.get_by_code(sess, k))
 
-                for bf in (
-                    sess.query(BatchFile)
-                    .filter(BatchFile.batch == batch)
+                for bf in sess.scalars(
+                    select(BatchFile)
+                    .where(BatchFile.batch == batch)
                     .order_by(BatchFile.upload_timestamp)
                 ):
                     self.parser = _process_batch_file(sess, bf, self._log)
@@ -110,7 +112,6 @@ class BillImport(threading.Thread):
                                     for raw_element in raw_bill["elements"]:
                                         bill.insert_element(
                                             sess,
-                                            bill,
                                             raw_element["name"],
                                             raw_element["start_date"],
                                             raw_element["finish_date"],
