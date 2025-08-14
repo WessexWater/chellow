@@ -705,6 +705,69 @@ class BatchFile(Base, PersistentClass):
         sess.flush()
 
 
+class Element(Base, PersistentClass):
+    __tablename__ = "element"
+    id = Column(Integer, primary_key=True)
+    bill_id = Column(Integer, ForeignKey("bill.id"), nullable=False, index=True)
+    name = Column(String, nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    net = Column(Numeric, nullable=False)
+    breakdown = Column(String, nullable=False)
+
+    def __init__(
+        self,
+        bill,
+        name,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+        self.bill = bill
+        self.name = name
+        self.update(start_date, finish_date, net, breakdown)
+
+    @property
+    def bd(self):
+        if not hasattr(self, "_bd"):
+            self._bd = loads(self.breakdown)
+        return self._bd
+
+    def update(
+        self,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+
+        if start_date > finish_date:
+            raise BadRequest(
+                f"The element start date {hh_format(start_date)} can't be after the "
+                f"finish date {hh_format(finish_date)}."
+            )
+
+        self.start_date = start_date
+        self.finish_date = finish_date
+
+        if net.as_tuple().exponent > -2:
+            raise BadRequest(
+                f"The 'net' field of an lement must be written to at least two "
+                f"decimal places. It's actually {net}"
+            )
+        self.net = net
+
+        if isinstance(breakdown, Mapping):
+            self.breakdown = dumps(breakdown)
+        else:
+            raise BadRequest("The 'breakdown' parameter must be a mapping type.")
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
 class Bill(Base, PersistentClass):
     __tablename__ = "bill"
     id = Column(Integer, primary_key=True)
@@ -724,6 +787,12 @@ class Bill(Base, PersistentClass):
     kwh = Column(Numeric, nullable=False)
     reads = relationship(
         "RegisterRead",
+        backref="bill",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    elements = relationship(
+        "Element",
         backref="bill",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -863,6 +932,21 @@ class Bill(Base, PersistentClass):
             else:
                 raise
         return read
+
+    def insert_element(
+        self,
+        sess,
+        bill,
+        name,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+        element = Element(bill, name, start_date, finish_date, net, breakdown)
+        sess.add(element)
+        sess.flush()
+        return element
 
     def delete(self, sess):
         sess.delete(self)

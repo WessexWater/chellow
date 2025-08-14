@@ -24,131 +24,131 @@ read_type_map = {
 ELEMENT_MAP = {
     "AAH": {
         "AAHEDC": {
-            "139039": ("aahedc-gbp", "aahedc-rate", "aahedc-kwh"),
+            "139039": ("aahedc", "aahedc-rate", "aahedc-kwh"),
         },
     },
     "ADH": {
         "ADHOC": {
-            "020330": ("eii-gbp", None, None),
-            "064305": ("fit-gbp", None, None),
-            "590346": ("cfd-operational-gbp", None, None),
-            "637050": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
+            "020330": ("eii", None, None),
+            "064305": ("fit", None, None),
+            "590346": ("cfd-operational", None, None),
+            "637050": ("meter-rental", "meter-rental-rate", "meter-rental-days"),
         },
     },
     "BUS": {
         "BSUOS": {
-            "269100": ("bsuos-gbp", "bsuos-rate", "bsuos-kwh"),
+            "269100": ("bsuos", "bsuos-rate", "bsuos-kwh"),
         },
     },
     "CCL": {
         "CCL": {
-            "422733": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
+            "422733": ("ccl", "ccl-rate", "ccl-kwh"),
         },
     },
     "CFD": {
         "CFD001": {
             "273237": (
-                "cfd-operational-gbp",
+                "cfd-operational",
                 "cfd-operational-rate",
                 "cfd-operational-kwh",
             ),
-            "954379": ("cfd-interim-gbp", "cfd-interim-rate", "cfd-interim-kwh"),
+            "954379": ("cfd-interim", "cfd-interim-rate", "cfd-interim-kwh"),
             "538249": (
-                "cm-settlement-levy-gbp",
+                "cm-settlement-levy",
                 "cm-settlement-levy-rate",
                 "cm-settlement-levy-kwh",
             ),
-            "568307": ("capacity-gbp", "capacity-rate", "capacity-kwh"),
+            "568307": ("capacity", "capacity-rate", "capacity-kwh"),
         },
     },
     "DCA": {
         "DCDA": {
-            "095469": ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days"),
+            "095469": ("meter-rental", "meter-rental-rate", "meter-rental-days"),
         },
     },
     "DUS": {
         "DUS001": {
             "794486": (
-                "duos-availability-gbp",
+                "duos-availability",
                 "duos-availability-rate",
                 "duos-availability-kva",
             ),
             "644819": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
             "797790": (
-                "duos-reactive-gbp",
+                "duos-reactive",
                 "duos-reactive-rate",
                 "duos-reactive-kvarh",
             ),
-            "806318": ("duos-green-gbp", "duos-green-rate", "duos-green-kwh"),
-            "716514": ("duos-amber-gbp", "duos-amber-rate", "duos-amber-kwh"),
-            "769979": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
+            "806318": ("duos-green", "duos-green-rate", "duos-green-kwh"),
+            "716514": ("duos-amber", "duos-amber-rate", "duos-amber-kwh"),
+            "769979": ("duos-red", "duos-red-rate", "duos-red-kwh"),
             "709522": (
-                "duos-excess-availability-gbp",
+                "duos-excess-availability",
                 "duos-excess-availability-rate",
                 "duos-excess-availability-kva",
             ),
-            "209269": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+            "209269": ("tnuos", "tnuos-rate", "tnuos-days"),
         },
         "DUS002": {
-            "185913": ("duos-yellow-gbp", "duos-yellow-rate", "duos-yellow-kwh"),
-            "517270": ("duos-black-gbp", "duos-black-rate", "duos-black-kwh"),
+            "185913": ("duos-yellow", "duos-yellow-rate", "duos-yellow-kwh"),
+            "517270": ("duos-black", "duos-black-rate", "duos-black-kwh"),
             "797790": (
-                "duos-reactive-gbp",
+                "duos-reactive",
                 "duos-reactive-rate",
                 "duos-reactive-kvarh",
             ),
-            "806318": ("duos-green-gbp", "duos-green-rate", "duos-green-kwh"),
-            "716514": ("duos-amber-gbp", "duos-amber-rate", "duos-amber-kwh"),
+            "806318": ("duos-green", "duos-green-rate", "duos-green-kwh"),
+            "716514": ("duos-amber", "duos-amber-rate", "duos-amber-kwh"),
             "709522": (
-                "duos-excess-availability-gbp",
+                "duos-excess-availability",
                 "duos-excess-availability-rate",
                 "duos-excess-availability-kva",
             ),
-            "769979": ("duos-red-gbp", "duos-red-rate", "duos-red-kwh"),
-            "644819": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
+            "769979": ("duos-red", "duos-red-rate", "duos-red-kwh"),
+            "644819": ("duos-fixed", "duos-fixed-rate", "duos-fixed-days"),
             "794486": (
-                "duos-availability-gbp",
+                "duos-availability",
                 "duos-availability-rate",
                 "duos-availability-kva",
             ),
-            "209269": ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
-            "065950": ("eii-gbp", "eii-rate", "eii-kwh"),
+            "209269": ("tnuos", "tnuos-rate", "tnuos-days"),
+            "065950": ("eii", "eii-rate", "eii-kwh"),
         },
         "DUSDIS": {
-            "122568": ("nrg-gsp-losses-gbp", "nrg-rate", "nrg-gsp-losses-kwh"),
+            "122568": ("nrg-gsp-losses", "nrg-rate", "nrg-gsp-losses-kwh"),
         },
         "DUSTRN": {
-            "122568": ("nrg-nbp-losses-gbp", "nrg-rate", "nrg-nbp-losses-kwh"),
+            "122568": ("nrg-nbp-losses", "nrg-rate", "nrg-nbp-losses-kwh"),
         },
     },
     "ELX": {
         "ELEXON": {
-            "489920": ("elexon-gbp", "elexon-rate", "elexon-nbp-kwh"),
+            "489920": ("elexon", "elexon-rate", "elexon-nbp-kwh"),
         },
     },
     "FIT": {
         "FIT_LV": {
-            "704107": ("fit-gbp", "fit-rate", "fit-kwh"),
+            "704107": ("fit", "fit-rate", "fit-kwh"),
         },
     },
     "NRG": {
         "HH0002": {
-            "033667": ("management-gbp", "management-rate", "management-kwh"),
-            "091890": ("shape-gbp", "shape-rate", "shape-kwh"),
-            "122568": ("nrg-msp-gbp", "nrg-rate", "nrg-msp-kwh"),
+            "033667": ("management", "management-rate", "management-kwh"),
+            "091890": ("shape", "shape-rate", "shape-kwh"),
+            "122568": ("nrg-msp", "nrg-rate", "nrg-msp-kwh"),
         },
     },
     "REN": {
         "REN001": {
-            "229128": ("ro-gbp", "ro-rate", "ro-kwh"),
+            "229128": ("ro", "ro-rate", "ro-kwh"),
         },
         "REN002": {
-            "019090": ("rego-gbp", "rego-rate", "rego-kwh"),
+            "019090": ("rego", "rego-rate", "rego-kwh"),
         },
     },
     "TUS": {
         "TNUOS": {
-            "012069": ("triad-gbp", "triad-rate", "triad-kw"),
+            "012069": ("triad", "triad-rate", "triad-kw"),
         },
     },
 }
@@ -194,6 +194,7 @@ def _process_BTL(elements, headers):
         "gross": Decimal("0.00") + to_decimal(tbtl) / Decimal("100"),
         "breakdown": headers["breakdown"],
         "reads": headers["reads"],
+        "elements": headers["elements"],
     }
 
 
@@ -311,13 +312,17 @@ def _process_CCD2(elements, headers):
 
 
 def _process_CCD3(elements, headers):
-    breakdown = headers["breakdown"]
+    elem_bd = {}
+    try:
+        elements = headers["elements"]
+    except KeyError:
+        elements = headers["elements"] = []
 
     supplier_code = elements["CCDE"][2]
     tariff_code = elements["TCOD"][0]
     mod_code = elements["TMOD"][0]
     try:
-        eln_gbp, eln_rate, eln_cons = ELEMENT_MAP[supplier_code][tariff_code][mod_code]
+        eln_name, eln_rate, eln_cons = ELEMENT_MAP[supplier_code][tariff_code][mod_code]
     except KeyError:
         raise BadRequest(
             f"Can't find the element key {supplier_code} -> {tariff_code} -> "
@@ -325,29 +330,39 @@ def _process_CCD3(elements, headers):
         )
 
     cons = elements["CONS"]
-    kwh = Decimal("0")
     if len(cons[0]) > 0:
         el_cons = to_decimal(cons) / Decimal("1000")
-        kwh = el_cons
-        breakdown[eln_cons] += kwh
+        elem_bd[eln_cons] += el_cons
+        if eln_name == "nrg-msp-gbp":
+            headers["kwh"] += el_cons
 
     bpri = elements["BPRI"]
     if len(bpri[0]) > 0:
         rate = to_decimal(bpri) / Decimal("100000")
-        if eln_rate in breakdown:
-            breakdown[eln_rate].add(rate)
+        if eln_rate in elem_bd:
+            elem_bd[eln_rate].add(rate)
         else:
-            breakdown[eln_rate] = {rate}
+            elem_bd[eln_rate] = {rate}
 
     if "CTOT" in elements:
         net = Decimal("0.00") + to_decimal(elements["CTOT"]) / Decimal("100")
     else:
         net = Decimal("0.00")
 
-    breakdown[eln_gbp] += net
+    csdt = elements["CSDT"]
+    start_date = to_date(csdt[0])
+    cedt = elements["CEDT"]
+    finish_date = to_finish_date(cedt[0])
 
-    if eln_gbp == "nrg-msp-gbp":
-        headers["kwh"] += kwh
+    elements.append(
+        {
+            "name": eln_name,
+            "start_date": start_date,
+            "finish_date": finish_date,
+            "net": net,
+            "breakdown": elem_bd,
+        }
+    )
 
 
 def _process_CCD4(elements, headers):

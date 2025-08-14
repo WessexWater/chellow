@@ -107,6 +107,16 @@ class BillImport(threading.Thread):
                                         raw_bill["breakdown"],
                                         supply,
                                     )
+                                    for raw_element in raw_bill["elements"]:
+                                        bill.insert_element(
+                                            sess,
+                                            bill,
+                                            raw_element["name"],
+                                            raw_element["start_date"],
+                                            raw_element["finish_date"],
+                                            raw_element["net"],
+                                            raw_element["breakdown"],
+                                        )
                                     for raw_read in raw_bill["reads"]:
                                         bill.insert_read(
                                             sess,
