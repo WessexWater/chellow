@@ -708,7 +708,9 @@ class BatchFile(Base, PersistentClass):
 class Element(Base, PersistentClass):
     __tablename__ = "element"
     id = Column(Integer, primary_key=True)
-    bill_id = Column(Integer, ForeignKey("bill.id"), nullable=False, index=True)
+    bill_id = Column(
+        Integer, ForeignKey("bill.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     name = Column(String, nullable=False, index=True)
     start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
@@ -936,14 +938,13 @@ class Bill(Base, PersistentClass):
     def insert_element(
         self,
         sess,
-        bill,
         name,
         start_date,
         finish_date,
         net,
         breakdown,
     ):
-        element = Element(bill, name, start_date, finish_date, net, breakdown)
+        element = Element(self, name, start_date, finish_date, net, breakdown)
         sess.add(element)
         sess.flush()
         return element
