@@ -44,7 +44,6 @@ class Parser:
 
     def make_raw_bills(self):
         raw_bills = []
-        next(iter(self.reader))  # skip title row
         blank_set = set(("",))
         for self.line_number, self.vals in enumerate(self.reader, start=2):
             try:
@@ -83,24 +82,50 @@ class Parser:
                     del self.vals[-1]
 
                 reads = []
-                for i in range(12, len(self.vals), 11):
-                    tpr_str = self.vals[i + 4].strip()
-                    tpr_code = None if len(tpr_str) == 0 else tpr_str.zfill(5)
-                    reads.append(
-                        {
-                            "msn": self.vals[i],
-                            "mpan": self.vals[i + 1],
-                            "coefficient": self.to_decimal(i + 2, "coefficient"),
-                            "units": self.vals[i + 3],
-                            "tpr_code": tpr_code,
-                            "prev_date": parse_date(self.vals, i + 5),
-                            "prev_value": Decimal(self.vals[i + 6]),
-                            "prev_type_code": self.vals[i + 7],
-                            "pres_date": parse_date(self.vals, i + 8),
-                            "pres_value": Decimal(self.vals[i + 9]),
-                            "pres_type_code": self.vals[i + 10],
-                        }
-                    )
+                elements = []
+                i = 12
+                while i < len(self.vals):
+                    typ = self.vals[i].strip().lower()
+                    if typ == "read":
+                        tpr_str = self.vals[i + 5].strip()
+                        tpr_code = None if len(tpr_str) == 0 else tpr_str.zfill(5)
+                        reads.append(
+                            {
+                                "msn": self.vals[i + 1],
+                                "mpan": self.vals[i + 2],
+                                "coefficient": self.to_decimal(i + 3, "coefficient"),
+                                "units": self.vals[i + 4],
+                                "tpr_code": tpr_code,
+                                "prev_date": parse_date(self.vals, i + 6),
+                                "prev_value": Decimal(self.vals[i + 7]),
+                                "prev_type_code": self.vals[i + 8],
+                                "pres_date": parse_date(self.vals, i + 9),
+                                "pres_value": Decimal(self.vals[i + 10]),
+                                "pres_type_code": self.vals[i + 11],
+                            }
+                        )
+                        i += 12
+                    elif typ == "element":
+                        breakdown_str = self.vals[i + 5].strip()
+                        if len(breakdown_str) == 0:
+                            breakdown = {}
+                        else:
+                            try:
+                                breakdown = loads(breakdown_str)
+                            except ZishLocationException as e:
+                                raise BadRequest(str(e))
+                        elements.append(
+                            {
+                                "name": self.vals[i + 1],
+                                "start_date": parse_date(self.vals, i + 2),
+                                "finish_date": parse_date(self.vals, i + 3),
+                                "net": Decimal(self.vals[i + 4]),
+                                "breakdown": breakdown,
+                            }
+                        )
+                        i += 6
+                    else:
+                        raise BadRequest("Record type {type} not recognized.")
 
                 raw_bill = {
                     "bill_type_code": bill_type_code,
@@ -116,6 +141,7 @@ class Parser:
                     "gross": gross,
                     "breakdown": breakdown,
                     "reads": reads,
+                    "elements": elements,
                 }
                 raw_bills.append(raw_bill)
             except BadRequest as e:
