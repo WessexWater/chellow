@@ -33,7 +33,7 @@ TCOD_MAP = {
     "255204": ("meter-rental", "rate", "days"),
     "345065": ("op-weekend", "rate", "kwh"),
     "350293": ("capacity", "rate", "kwh"),
-    "425779": ("ro-gbp", "rate", "kwh"),
+    "425779": ("ro", "rate", "kwh"),
     "534342": ("reconciliation", None, None),
     "583174": ("meter-rental", "rate", "days"),
     "584867": ("aahedc", "rate", "kwh"),
@@ -120,15 +120,16 @@ def _process_BCD(elements, headers):
 
     headers["issue_date"] = issue_date
     headers["start_date"] = to_date(sumo[0])
-    headers["finish_date"] = to_finish_date(sumo[1])
+    headers["finish_date"] = to_date(sumo[1]) - HH
     headers["bill_type_code"] = bill_type_code
     headers["reference"] = reference
     headers["elements"] = []
     headers["reads"] = []
+    headers["breakdown"] = {}
+    headers["kwh"] = Decimal("0")
 
 
 def _process_BTL(elements, headers):
-    sumo = elements["SUMO"]
     uvlt = elements["UVLT"]
     utva = elements["UTVA"]
     tbtl = elements["TBTL"]
@@ -139,12 +140,12 @@ def _process_BTL(elements, headers):
         "issue_date": headers["issue_date"],
         "mpan_core": headers["mpan_core"],
         "account": headers["account"],
-        "start_date": to_date(sumo[0]),
-        "finish_date": to_finish_date(sumo[1]),
+        "start_date": headers["start_date"],
+        "finish_date": headers["finish_date"],
         "kwh": headers["kwh"],
-        "net": Decimal("0.00") + to_decimal(uvlt),
-        "vat": Decimal("0.00") + to_decimal(utva),
-        "gross": Decimal("0.00") + to_decimal(tbtl),
+        "net": Decimal("0.00") + to_decimal(uvlt) / Decimal("100"),
+        "vat": Decimal("0.00") + to_decimal(utva) / Decimal("100"),
+        "gross": Decimal("0.00") + to_decimal(tbtl) / Decimal("100"),
         "breakdown": headers["breakdown"],
         "reads": headers["reads"],
         "elements": headers["elements"],
@@ -202,7 +203,6 @@ def _process_CCD2(elements, headers):
     breakdown = {}
 
     element_code = elements["TCOD"][0]
-    headers["element_code"] = element_code
     try:
         eln_name, eln_rate, eln_cons = TCOD_MAP[element_code]
     except KeyError:
@@ -212,19 +212,13 @@ def _process_CCD2(elements, headers):
     if eln_cons is not None and len(cons[0]) > 0:
         el_cons = to_decimal(cons) / Decimal("1000")
         if eln_name == "duos-availability":
-            breakdown[eln_cons] = [el_cons]
+            breakdown[eln_cons] = {el_cons}
         else:
             breakdown[eln_cons] = el_cons
 
     if eln_rate is not None:
         rate = to_decimal(elements["BPRI"]) / Decimal("100000")
-        breakdown[eln_rate] = [rate]
-
-    start_date = to_date(elements["CSDT"][0])
-    headers["bill_start_date"] = start_date
-
-    finish_date = to_date(elements["CEDT"][0]) - HH
-    headers["bill_finish_date"] = finish_date
+        breakdown[eln_rate] = {rate}
 
     net = Decimal("0.00")
     if "CTOT" in elements:
@@ -233,8 +227,8 @@ def _process_CCD2(elements, headers):
     headers["elements"].append(
         {
             "name": eln_name,
-            "start_date": start_date,
-            "finish_date": finish_date,
+            "start_date": to_date(elements["CSDT"][0]),
+            "finish_date": to_date(elements["CEDT"][0]) - HH,
             "net": net,
             "breakdown": breakdown,
         }
@@ -259,10 +253,7 @@ def _process_CCD3(elements, headers):
 
     if eln_rate is not None:
         rate = to_decimal(elements["BPRI"]) / Decimal("100000")
-        breakdown[eln_rate] = [rate]
-
-    start_date = to_date(elements["CSDT"][0])
-    finish_date = to_date(elements["CEDT"][0]) - HH
+        breakdown[eln_rate] = {rate}
 
     net = Decimal("0.00")
     if "CTOT" in elements:
@@ -271,8 +262,8 @@ def _process_CCD3(elements, headers):
     headers["elements"].append(
         {
             "name": eln_name,
-            "start_date": start_date,
-            "finish_date": finish_date,
+            "start_date": to_date(elements["CSDT"][0]),
+            "finish_date": to_date(elements["CEDT"][0]) - HH,
             "net": net,
             "breakdown": breakdown,
         }
@@ -300,9 +291,6 @@ def _process_CCD4(elements, headers):
         rate = to_decimal(elements["BPRI"], "100000")
         breakdown[eln_rate] = [rate]
 
-    start_date = to_date(elements["CSDT"][0])
-    finish_date = to_finish_date(elements["CEDT"][0])
-
     net = Decimal("0.00")
     if "CTOT" in elements:
         net += to_decimal(elements["CTOT"], "100")
@@ -310,8 +298,8 @@ def _process_CCD4(elements, headers):
     headers["elements"].append(
         {
             "name": eln_name,
-            "start_date": start_date,
-            "finish_date": finish_date,
+            "start_date": to_date(elements["CSDT"][0]),
+            "finish_date": to_date(elements["CEDT"][0]) - HH,
             "net": net,
             "breakdown": breakdown,
         }
@@ -417,7 +405,12 @@ class Parser:
         bills = []
         headers = {}
         bill = None
+        lines = []
         for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
+            if seg_name == "MHD":
+                lines = []
+            lines.append(line)
+
             try:
                 func = CODE_FUNCS[seg_name]
             except KeyError:
@@ -437,7 +430,9 @@ class Parser:
                 ) from e
 
             if bill is not None:
-                bill["breakdown"]["raw-lines"] = [line]
+                bill["breakdown"]["raw-lines"] = lines
                 bills.append(_customer_mods(headers, bill))
+            if seg_name == "MTR":
+                lines = []
 
         return bills
