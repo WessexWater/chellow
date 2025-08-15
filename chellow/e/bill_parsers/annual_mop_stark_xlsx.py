@@ -14,9 +14,15 @@ from chellow.utils import parse_mpan_core, to_utc
 def get_ct_date(row, idx):
     cell = get_cell(row, idx)
     val = cell.value
-    if not isinstance(val, Datetime):
-        raise BadRequest(f"Problem reading {val} as a timestamp at {cell.coordinate}.")
-    return val
+    if isinstance(val, Datetime):
+        return val
+    elif isinstance(val, str):
+        return Datetime.strptime(val, "dd/mm/yyyy")
+    else:
+        raise BadRequest(
+            f"The value {val} at {cell.coordinate} is of type {type(val)}, but "
+            f"expected a timestamp or string."
+        )
 
 
 def get_start_date(row, idx):
@@ -104,8 +110,6 @@ class Parser:
                     "raw-lines": [],
                     "comms": comms,
                     "settlement-status": [settlement_status],
-                    "meter-rate": [meter_rate],
-                    "meter-gbp": net,
                 }
                 bills.append(
                     {
@@ -129,6 +133,15 @@ class Parser:
                                 mpan_core,
                             )
                         ),
+                        "elements": [
+                            {
+                                "name": "meter",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "rate": {meter_rate},
+                                "net": net,
+                            }
+                        ],
                     }
                 )
         except BadRequest as e:

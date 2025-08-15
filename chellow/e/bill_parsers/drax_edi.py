@@ -51,7 +51,7 @@ ELEMENT_MAP = {
             "273237": ("cfd-operational", "rate", "kwh"),
             "954379": ("cfd-interim", "rate", "kwh"),
             "538249": ("cm-settlement-levy", "rate", "kwh"),
-            "568307": ("capacity", "capacity-rate", "capacity-kwh"),
+            "568307": ("capacity", "rate", "kwh"),
         },
     },
     "DCA": {
@@ -62,12 +62,12 @@ ELEMENT_MAP = {
     "DUS": {
         "DUS001": {
             "794486": ("duos-availability", "rate", "kva"),
-            "644819": ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days"),
+            "644819": ("duos-fixed-gbp", "rate", "days"),
             "797790": ("duos-reactive", "rate", "kvarh"),
             "806318": ("duos-green", "rate", "kwh"),
             "716514": ("duos-amber", "rate", "kwh"),
             "769979": ("duos-red", "rate", "kwh"),
-            "709522": ("duos-excess-availability", "rate", "availability-kva"),
+            "709522": ("duos-excess-availability", "rate", "kva"),
             "209269": ("tnuos", "rate", "days"),
         },
         "DUS002": {
@@ -77,10 +77,10 @@ ELEMENT_MAP = {
             "806318": ("duos-green", "rate", "kwh"),
             "716514": ("duos-amber", "rate", "kwh"),
             "709522": ("duos-excess-availability", "rate", "kva"),
-            "769979": ("duos-red", "duos-red-rate", "duos-red-kwh"),
-            "644819": ("duos-fixed", "duos-fixed-rate", "duos-fixed-days"),
+            "769979": ("duos-red", "rate", "kwh"),
+            "644819": ("duos-fixed", "rate", "days"),
             "794486": ("duos-availability", "rate", "kva"),
-            "209269": ("tnuos", "tnuos-rate", "tnuos-days"),
+            "209269": ("tnuos", "rate", "days"),
             "065950": ("eii", "rate", "kwh"),
         },
         "DUSDIS": {
