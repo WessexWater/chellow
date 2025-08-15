@@ -12,7 +12,7 @@ from chellow.e.bill_parsers.haven_edi_tprs import (
     _process_MTR,
     _process_VAT,
 )
-from chellow.utils import utc_datetime
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_process_MTR_UTLHDR(mocker):
@@ -245,6 +245,7 @@ def test_process_MHD(mocker):
         "is_ebatch": False,
         "issue_date": None,
         "bill_type_code": None,
+        "elements": [],
     }
     assert headers == expected_headers
     assert isinstance(headers["breakdown"], type(expected_headers["breakdown"]))
@@ -257,15 +258,25 @@ def test_process_CCD3(mocker):
         "TMOD": ["453043"],
         "CONS": [[]],
         "BPRI": ["10"],
+        "CSDT": ["250401"],
+        "CEDT": ["250430"],
     }
 
-    headers = {"kwh": Decimal("0"), "breakdown": {}}
+    headers = {"kwh": Decimal("0"), "elements": []}
 
     _process_CCD3(elements, headers)
 
     expected_headers = {
         "kwh": Decimal("0"),
-        "breakdown": {},
+        "elements": [
+            {
+                "name": "453043",
+                "start_date": to_utc(ct_datetime(2025, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+                "net": Decimal("0.00"),
+                "breakdown": {},
+            }
+        ],
     }
     assert headers == expected_headers
 
@@ -276,17 +287,28 @@ def test_process_CCD3_ebrs_kwh(mocker):
         "TCOD": ["R10001", "Day"],
         "TMOD": ["823408"],
         "NUCT": ["4127137"],
+        "CSDT": ["250401"],
+        "CEDT": ["250430"],
     }
 
-    headers = {"kwh": Decimal("0"), "breakdown": defaultdict(int, {})}
+    headers = {"elements": [], "kwh": Decimal("0"), "breakdown": {}}
 
     _process_CCD3(elements, headers)
 
     expected_headers = {
         "kwh": Decimal("0"),
-        "breakdown": {
-            "ebrs-kwh": Decimal("4127.137"),
-        },
+        "breakdown": {},
+        "elements": [
+            {
+                "name": "ebrs",
+                "start_date": to_utc(ct_datetime(2025, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+                "net": Decimal("0.00"),
+                "breakdown": {
+                    "kwh": Decimal("4127.137"),
+                },
+            }
+        ],
     }
     assert headers == expected_headers
 
@@ -310,12 +332,13 @@ def test_process_CCD_1(mocker):
 
     headers = {
         "reads": [],
+        "elements": [],
     }
 
     _process_CCD1(elements, headers)
 
     expected_headers = {
-        "mpan_core": "22 7583 4732 592",
+        "elements": [],
         "reads": [
             {
                 "msn": msn,
