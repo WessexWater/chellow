@@ -108,8 +108,6 @@ class Parser:
 
                 breakdown = {
                     "raw-lines": [],
-                    "comms": comms,
-                    "settlement-status": [settlement_status],
                 }
                 bills.append(
                     {
@@ -138,7 +136,11 @@ class Parser:
                                 "name": "meter",
                                 "start_date": start_date,
                                 "finish_date": finish_date,
-                                "rate": {meter_rate},
+                                "breakdown": {
+                                    "rate": {meter_rate},
+                                    "comms": {comms},
+                                    "settlement-status": {settlement_status},
+                                },
                                 "net": net,
                             }
                         ],
