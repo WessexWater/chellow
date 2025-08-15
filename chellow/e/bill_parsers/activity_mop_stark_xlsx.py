@@ -42,12 +42,15 @@ class Parser:
     def get_ct_date(self, col, row):
         cell = self.get_cell(col, row)
         val = cell.value
-        if not isinstance(val, Datetime):
+        if isinstance(val, Datetime):
+            return val
+        elif isinstance(val, str):
+            return Datetime.strptime(val, "dd/mm/yyyy")
+        else:
             raise BadRequest(
                 f"The value {val} at {cell.coordinate} is of type {type(val)}, but "
-                f"expected a timestamp."
+                f"expected a timestamp or string."
             )
-        return val
 
     def get_start_date(self, col, row):
         dt = self.get_ct_date(col, row)
@@ -92,8 +95,6 @@ class Parser:
 
                 breakdown = {
                     "raw-lines": [],
-                    "activity-name": [activity_name],
-                    "activity-gbp": net,
                 }
 
                 bills.append(
@@ -118,6 +119,15 @@ class Parser:
                                 mpan_core,
                             )
                         ),
+                        "elements": [
+                            {
+                                "name": "activity",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "net": net,
+                                "breakdown": {"activity-name": {activity_name}},
+                            }
+                        ],
                     }
                 )
         except BadRequest as e:
