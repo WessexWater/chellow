@@ -854,7 +854,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -868,6 +868,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2009, 7, 10),
+        utc_datetime(2009, 7, 10),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -1318,7 +1326,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -1332,6 +1340,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        to_utc(ct_datetime(2009, 7, 30, 23, 30)),
+        to_utc(ct_datetime(2009, 9, 30, 23, 30)),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")

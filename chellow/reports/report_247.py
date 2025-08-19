@@ -509,7 +509,9 @@ def _process_site(
             if site_era is not None:
                 chunk_start = max(start_date, last_era.finish_date + HH)
                 chunk_finish = finish_date
-                num_bills, bill_dict - _add_bills(last_era, chunk_start, chunk_finish)
+                num_bills, bill_dict = _add_bills(
+                    sess, last_era, chunk_start, chunk_finish
+                )
                 if num_bills > 0:
                     month_data = _create_month_data()
                     month_data.update(bill_dict)
@@ -595,7 +597,9 @@ def _process_site(
             if site_era is not None:
                 chunk_start = start_date
                 chunk_finish = hh_min(finish_date, first_era.start_date - HH)
-                num_bills, bill_dict = _add_bills(first_era, chunk_start, chunk_finish)
+                num_bills, bill_dict = _add_bills(
+                    sess, first_era, chunk_start, chunk_finish
+                )
                 if num_bills > 0:
                     month_data = _create_month_data()
                     month_data.update(bill_dict)
