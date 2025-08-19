@@ -1150,8 +1150,6 @@ def virtual_bill(ds):
 def test_bill_after_end_supply_and_after_month(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
-    start_date = utc_datetime(2009, 7, 31, 23, 00)
-    months = 1
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
@@ -1330,7 +1328,7 @@ def virtual_bill(ds):
         sess,
         "dd",
         "hjk",
-        start_date,
+        utc_datetime(2009, 7, 31, 23, 00),
         to_utc(ct_datetime(2009, 7, 30, 23, 30)),
         to_utc(ct_datetime(2009, 9, 30, 23, 30)),
         Decimal("10.00"),
@@ -1357,9 +1355,10 @@ def virtual_bill(ds):
 
     sess.commit()
 
+    months = 1
     scenario_props = {
-        "scenario_start_year": start_date.year,
-        "scenario_start_month": start_date.month,
+        "scenario_start_year": 2009,
+        "scenario_start_month": 7,
         "scenario_duration": months,
         "by_hh": False,
         "site_codes": [site_code],
