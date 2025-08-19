@@ -1,16 +1,4 @@
 def vb(ds):
-    to_exit_commodity_rate_set = ds.rate_sets["to_exit_commodity_rate"]
-    so_exit_commodity_rate_set = ds.rate_sets["so_exit_commodity_rate"]
-    dn_system_commodity_rate_set = ds.rate_sets["dn_system_commodity_rate"]
-    dn_system_capacity_rate_set = ds.rate_sets["dn_system_capacity_rate"]
-    dn_system_capacity_fixed_rate_set = ds.rate_sets["dn_system_capacity_fixed_rate"]
-    dn_customer_capacity_rate_set = ds.rate_sets["dn_customer_capacity_rate"]
-    dn_customer_capacity_fixed_rate_set = ds.rate_sets[
-        "dn_customer_capacity_fixed_rate"
-    ]
-    dn_customer_fixed_rate_set = ds.rate_sets["dn_customer_fixed_rate"]
-    dn_ecn_rate_set = ds.rate_sets["dn_ecn_rate"]
-    dn_ecn_fixed_rate_set = ds.rate_sets["dn_ecn_fixed_rate"]
 
     for hh in ds.hh_data:
         start_date = hh["start_date"]
@@ -19,11 +7,9 @@ def vb(ds):
         nts_rates = ds.g_industry_rates("nts_commodity", start_date)
 
         to_exit_commodity_rate = float(nts_rates["to_exit_gbp_per_kwh"])
-        to_exit_commodity_rate_set.add(to_exit_commodity_rate)
         hh["to_exit_commodity_rate"] = to_exit_commodity_rate
 
         so_exit_commodity_rate = float(nts_rates["so_exit_gbp_per_kwh"])
-        so_exit_commodity_rate_set.add(so_exit_commodity_rate)
         hh["so_exit_commodity_rate"] = so_exit_commodity_rate
 
         rates = ds.g_industry_rates("dn", start_date)
@@ -89,24 +75,18 @@ def vb(ds):
 
             dn_customer_fixed_rate = 0
 
-        dn_system_commodity_rate_set.add(dn_system_commodity_rate)
         hh["dn_system_commodity_rate"] = dn_system_commodity_rate
 
-        dn_system_capacity_rate_set.add(dn_system_capacity_rate)
         hh["dn_system_capacity_rate"] = dn_system_capacity_rate
 
         dn_system_capacity_fixed_rate = soq * dn_system_capacity_rate
-        dn_system_capacity_fixed_rate_set.add(dn_system_capacity_fixed_rate)
         hh["dn_system_capacity_fixed_rate"] = dn_system_capacity_fixed_rate
 
-        dn_customer_capacity_rate_set.add(dn_customer_capacity_rate)
         hh["dn_customer_capacity_rate"] = dn_customer_capacity_rate
 
         dn_customer_capacity_fixed_rate = soq * dn_customer_capacity_rate
-        dn_customer_capacity_fixed_rate_set.add(dn_customer_capacity_fixed_rate)
         hh["dn_customer_capacity_fixed_rate"] = dn_customer_capacity_fixed_rate
 
-        dn_customer_fixed_rate_set.add(dn_customer_fixed_rate)
         hh["dn_customer_fixed_rate"] = dn_customer_fixed_rate
 
         dn_ecn_rate = float(
@@ -114,9 +94,7 @@ def vb(ds):
                 "exit_capacity_gbp_per_kwh_per_day"
             ]
         )
-        dn_ecn_rate_set.add(dn_ecn_rate)
         hh["dn_ecn_rate"] = dn_ecn_rate
 
         dn_ecn_fixed_rate = dn_ecn_rate * soq
-        dn_ecn_fixed_rate_set.add(dn_ecn_fixed_rate)
         hh["dn_ecn_fixed_rate"] = dn_ecn_fixed_rate
