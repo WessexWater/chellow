@@ -11,7 +11,7 @@ from openpyxl import load_workbook
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import to_ct, to_utc
+from chellow.utils import hh_max, hh_min, to_ct, to_utc
 
 
 class Title(Enum):
@@ -159,6 +159,12 @@ def _parse_row(bills, sheet, row, title_row):
     charge_period_end_naive = get_date_naive(
         sheet, row, column_map[Title.CHARGE_PERIOD_END]
     )
+    if charge_period_end_naive is None:
+        charge_period_end = None
+    else:
+        charge_period_end = to_utc(
+            to_ct(charge_period_end_naive) + relativedelta(hours=23, minutes=30)
+        )
 
     try:
         mprn_values = bills[mprn]
@@ -174,18 +180,25 @@ def _parse_row(bills, sheet, row, title_row):
             "reference": reference,
             "account": account,
             "issue_date": issue_date,
-            "start_date": charge_period_from,
-            "finish_date": to_utc(
-                to_ct(charge_period_end_naive) + relativedelta(hours=23, minutes=30)
-            ),
             "kwh": Decimal("0"),
             "breakdown": defaultdict(int, {}),
             "net_gbp": Decimal("0.00"),
             "vat_gbp": Decimal("0.00"),
             "gross_gbp": Decimal("0.00"),
-            "raw_lines": str([(c.value) for c in sheet[row]]),
+            "raw_lines": [],
             "reads": [],
         }
+    if charge_period_from is not None:
+        if "start_date" in bill:
+            bill["start_date"] = hh_min(bill["start_date"], charge_period_from)
+        else:
+            bill["start_date"] = charge_period_from
+    if charge_period_end is not None:
+        if "finish_date" in bill:
+            bill["finish_date"] = hh_max(bill["finish_date"], charge_period_end)
+        else:
+            bill["finish_date"] = charge_period_end
+    bill["raw_lines"].append([c.value for c in sheet[row]])
 
     bd = bill["breakdown"]
     element_desc = get_value(sheet, row, column_map[Title.CHARGE_TYPE])
