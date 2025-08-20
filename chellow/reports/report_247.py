@@ -406,6 +406,7 @@ def _process_site(
             num_bills, bill_dict = _add_bills(
                 sess, sss.era, sss.start_date, sss.finish_date
             )
+            month_data.update(bill_dict)
 
             if imp_ss is None:
                 imp_supplier_contract_name = imp_voltage_level_code = None

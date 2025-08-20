@@ -1909,7 +1909,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -1923,6 +1923,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2009, 7, 10),
+        utc_datetime(2009, 7, 10),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -2251,7 +2259,7 @@ def virtual_bill(ds):
     era.attach_site(sess, site_2, True)
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -2265,6 +2273,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 31),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -2598,7 +2614,7 @@ def virtual_bill(ds):
     supply.insert_era_at(sess, utc_datetime(2000, 1, 15))
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -2612,6 +2628,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 31),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -3268,7 +3292,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -3282,6 +3306,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(1999, 12, 10),
+        utc_datetime(1999, 12, 15),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -3751,7 +3783,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -3765,6 +3797,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 30),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
@@ -4472,15 +4512,15 @@ def displaced_virtual_bill(ds):
             0.0,
             0.0,
             0.0,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             0.0,
             0.0,
             None,
@@ -4765,7 +4805,7 @@ def virtual_bill(ds):
     )
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
-    batch.insert_bill(
+    bill = batch.insert_bill(
         sess,
         "dd",
         "hjk",
@@ -4779,6 +4819,14 @@ def virtual_bill(ds):
         bill_type,
         {},
         supply,
+    )
+    bill.insert_element(
+        sess,
+        "nrg",
+        to_utc(ct_datetime(2009, 8, 1)),
+        to_utc(ct_datetime(2009, 8, 31, 23, 30)),
+        Decimal("10.00"),
+        {},
     )
 
     editor = UserRole.insert(sess, "editor")
