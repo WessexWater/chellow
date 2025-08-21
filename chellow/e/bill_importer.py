@@ -15,6 +15,7 @@ from chellow.models import (
     Batch,
     BatchFile,
     BillType,
+    Contract,
     ReadType,
     Session,
     Supply,
@@ -33,13 +34,20 @@ def find_parser_names():
 
 
 class BillImport(threading.Thread):
-    def __init__(self, batch):
+    def __init__(self, batch_contract):
         threading.Thread.__init__(self)
         global import_id
         self.import_id = import_id
         import_id += 1
 
-        self.batch_id = batch.id
+        if isinstance(batch_contract, Batch):
+            self.contract_id = None
+            self.batch_id = batch_contract.id
+        elif isinstance(batch_contract, Contract):
+            self.contract_id = batch_contract.id
+            self.batch_id = None
+        else:
+            raise BadRequest("batch_contract must be a Batch or Contract.")
         self.successful_bills = []
         self.failed_bills = []
         self.log = collections.deque()
@@ -68,7 +76,13 @@ class BillImport(threading.Thread):
     def run(self):
         try:
             with Session() as sess:
-                batch = Batch.get_by_id(sess, self.batch_id)
+                bf_q = select(BatchFile).order_by(BatchFile.upload_timestamp)
+                if self.batch_id is not None:
+                    batch = Batch.get_by_id(sess, self.batch_id)
+                    bf_q = bf_q.where(BatchFile.batch == batch)
+                elif self.contract_id is not None:
+                    contract = Contract.get_by_id(sess, self.contract_id)
+                    bf_q = bf_q.join(Batch).where(Batch.contract == contract)
 
                 bill_types = keydefaultdict(lambda k: BillType.get_by_code(sess, k))
 
@@ -78,15 +92,12 @@ class BillImport(threading.Thread):
 
                 read_types = keydefaultdict(lambda k: ReadType.get_by_code(sess, k))
 
-                for bf in sess.scalars(
-                    select(BatchFile)
-                    .where(BatchFile.batch == batch)
-                    .order_by(BatchFile.upload_timestamp)
-                ):
+                for bf in sess.scalars(bf_q):
                     self.parser = _process_batch_file(sess, bf, self._log)
                     for self.bill_num, raw_bill in enumerate(
                         self.parser.make_raw_bills()
                     ):
+                        batch = bf.batch
                         if "error" in raw_bill:
                             self.failed_bills.append(raw_bill)
                         else:
@@ -204,9 +215,23 @@ def start_bill_import(batch):
     return bi.import_id
 
 
+def start_bill_import_contract(contract):
+    with import_lock:
+        bi = BillImport(contract)
+        imports[bi.import_id] = bi
+        bi.start()
+
+    return bi.import_id
+
+
 def get_bill_import_ids(batch):
     with import_lock:
         return [k for k, v in imports.items() if v.batch_id == batch.id]
+
+
+def get_bill_import_ids_contract(contract):
+    with import_lock:
+        return [k for k, v in imports.items() if v.contract_id == contract.id]
 
 
 def get_bill_import(id):

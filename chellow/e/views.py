@@ -739,9 +739,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2782,9 +2782,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -4844,13 +4844,11 @@ def ssc_get(ssc_id):
     return render_template("ssc.html", ssc=ssc)
 
 
-@e.route("/supplier_contracts/<int:contract_id>/add_batch")
+@e.route("/supplier_contracts/<int:contract_id>/batches/add")
 def supplier_batch_add_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
-    batches = (
-        g.sess.query(Batch)
-        .filter(Batch.contract == contract)
-        .order_by(Batch.reference.desc())
+    batches = g.sess.scalars(
+        select(Batch).where(Batch.contract == contract).order_by(Batch.reference.desc())
     )
     next_batch_reference, next_batch_description = contract.get_next_batch_details(
         g.sess
@@ -4864,7 +4862,7 @@ def supplier_batch_add_get(contract_id):
     )
 
 
-@e.route("/supplier_contracts/<int:contract_id>/add_batch", methods=["POST"])
+@e.route("/supplier_contracts/<int:contract_id>/batches/add", methods=["POST"])
 def supplier_batch_add_post(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     try:
@@ -4878,9 +4876,9 @@ def supplier_batch_add_post(contract_id):
     except BadRequest as e:
         flash(e.description)
         g.sess.rollback()
-        batches = (
-            g.sess.query(Batch)
-            .filter(Batch.contract == contract)
+        batches = g.sess.scalars(
+            select(Batch)
+            .where(Batch.contract == contract)
             .order_by(Batch.reference.desc())
         )
         return make_response(
@@ -4891,10 +4889,12 @@ def supplier_batch_add_post(contract_id):
         )
 
 
-@e.route("/supplier_batches")
-def supplier_batches_get():
-    contract_id = req_int("supplier_contract_id")
+@e.route("/supplier_contracts/<int:contract_id>/batches")
+def supplier_batches_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    importer_ids = sorted(
+        chellow.e.bill_importer.get_bill_import_ids_contract(contract), reverse=True
+    )
     batches = g.sess.execute(
         select(
             Batch,
@@ -4909,7 +4909,35 @@ def supplier_batches_get():
         .group_by(Batch.id)
         .order_by(Batch.reference.desc())
     )
-    return render_template("supplier_batches.html", contract=contract, batches=batches)
+    return render_template(
+        "supplier_batches.html",
+        contract=contract,
+        batches=batches,
+        importer_ids=importer_ids,
+    )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/batches/edit")
+def supplier_batches_edit_get(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    return render_template("supplier_batches_edit.html", contract=contract)
+
+
+@e.route("/supplier_contracts/<int:contract_id>/batches/edit", methods=["POST"])
+def supplier_batches_edit_post(contract_id):
+    try:
+        contract = Contract.get_supplier_by_id(g.sess, contract_id)
+        for batch in g.sess.scalars(select(Batch).where(Batch.contract == contract)):
+            g.sess.execute(delete(Bill).where(Bill.batch == batch))
+            g.sess.commit()
+        import_id = chellow.e.bill_importer.start_bill_import_contract(contract)
+        return hx_redirect(f"/supplier_bill_imports/{import_id}")
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_batches_edit.html", contract=contract),
+            400,
+        )
 
 
 @e.route("/supplier_batches/<int:batch_id>")
@@ -5128,9 +5156,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5287,7 +5315,6 @@ def supplier_bill_add_post(batch_id):
 @e.route("/supplier_bill_imports/<int:import_id>")
 def supplier_bill_import_get(import_id):
     importer = chellow.e.bill_importer.get_bill_import(import_id)
-    batch = Batch.get_by_id(g.sess, importer.batch_id)
     fields = {}
     if importer is not None:
         imp_fields = importer.make_fields()
@@ -5301,9 +5328,20 @@ def supplier_bill_import_get(import_id):
             )
         fields.update(imp_fields)
         fields["status"] = importer.status()
-    return render_template(
-        "supplier_bill_import.html", batch=batch, importer=importer, **fields
-    )
+
+    if importer.batch_id is not None:
+        batch = Batch.get_by_id(g.sess, importer.batch_id)
+        return render_template(
+            "supplier_bill_import.html", batch=batch, importer=importer, **fields
+        )
+    elif importer.contract_id is not None:
+        contract = Contract.get_supplier_by_id(g.sess, importer.contract_id)
+        return render_template(
+            "supplier_bill_import_contract.html",
+            contract=contract,
+            importer=importer,
+            **fields,
+        )
 
 
 @e.route("/supplier_bills/<int:bill_id>")
