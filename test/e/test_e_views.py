@@ -3236,19 +3236,12 @@ def test_supplier_batches_get(sess, client):
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
     contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier",
-        participant,
-        "",
-        {},
-        vf,
-        None,
-        {},
+        sess, "Fusion Supplier", participant, "", {}, vf, None, {}
     )
     contract.insert_batch(sess, "b1", "batch 1")
     sess.commit()
 
-    response = client.get(f"/e/supplier_batches?supplier_contract_id={contract.id}")
+    response = client.get(f"/e/supplier_contracts/{contract.id}/batches")
     match(response, 200)
 
 
