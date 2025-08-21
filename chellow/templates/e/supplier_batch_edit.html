@@ -17,7 +17,7 @@
 
 {% block content %}
 	
-<form action="/e/supplier_batches/{{batch.id}}/edit" method="post">
+	<form action="/e/supplier_batches/{{batch.id}}/edit" method="post">
 		<fieldset>
 			<legend>Update batch</legend>
 			<label>Reference</label> {{input_text('reference', batch.reference)}}
