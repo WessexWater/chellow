@@ -739,9 +739,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2553,13 +2553,34 @@ def mop_batches_get():
     return render_template("mop_batches.html", contract=contract, batches=batches)
 
 
-@e.route("/mop_contracts/<int:contract_id>/add_batch")
+@e.route("/mop_contracts/<int:contract_id>/batches/edit")
+def mop_batches_edit_get(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    return render_template("mop_batches_edit.html", contract=contract)
+
+
+@e.route("/mop_contracts/<int:contract_id>/batches/edit", methods=["POST"])
+def mop_batches_edit_post(contract_id):
+    try:
+        contract = Contract.get_mop_by_id(g.sess, contract_id)
+        for batch in g.sess.scalars(select(Batch).where(Batch.contract == contract)):
+            g.sess.execute(delete(Bill).where(Bill.batch == batch))
+            g.sess.commit()
+        import_id = chellow.e.bill_importer.start_bill_import_contract(contract)
+        return hx_redirect(f"/mop_bill_imports/{import_id}")
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("mop_batches_edit.html", contract=contract),
+            400,
+        )
+
+
+@e.route("/mop_contracts/<int:contract_id>/batches/add")
 def mop_batch_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
-    batches = (
-        g.sess.query(Batch)
-        .filter(Batch.contract == contract)
-        .order_by(Batch.reference.desc())
+    batches = g.sess.scalars(
+        select(Batch).where(Batch.contract == contract).order_by(Batch.reference.desc())
     )
     next_batch_reference, next_batch_description = contract.get_next_batch_details(
         g.sess
@@ -2782,9 +2803,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5156,9 +5177,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
