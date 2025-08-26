@@ -40,7 +40,7 @@
 					<td>{{run.state}}</td>
 					<td>{{rows|length}} (truncated at {{ROW_LIMIT}})</td>
 					<td>
-						{% if 'sum_difference' in summary %}
+						{% if 'sum_difference' in summary and summary.sum_difference is not none %}
 							{{"%.2f"|format(summary.sum_difference)}}</td>
 						{% endif %}
 					<td>
