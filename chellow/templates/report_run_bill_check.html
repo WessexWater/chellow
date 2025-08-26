@@ -148,7 +148,7 @@
 						 {{values['period_finish']}}
 						</td>
 						<td>
-						 {{values['difference_net_gbp']}}
+						 {{"%.2f"|format(values['difference_net_gbp'])}}
 						</td>
 						{% for elem, diff in elements %}
 							<td>	
