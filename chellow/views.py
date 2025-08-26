@@ -1386,7 +1386,7 @@ def report_run_get(run_id):
                 else:
                     elements.append((elem, sum_diff))
 
-            elements.sort(key=lambda x: abs(x[1]), reverse=True)
+            elements.sort(key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True)
             elements.insert(0, ("net", summary["sum_difference"]))
 
         if "element" in request.values:
