@@ -3781,7 +3781,7 @@ def test_supplier_bill_get(sess, client):
         r"</thead>\s*"
         r"<tbody>\s*"
         r"<tr>\s*"
-        r'<td>\[<a href="/e/elements/1/edit">edit</a>\]</td>\s*'
+        r'<td>\[<a href="/e/supplier_elements/1/edit">edit</a>\]</td>\s*'
         r"<td>nrg</td>\s*"
         r"<td>2025-01-01 00:00</td>\s*"
         r"<td>2025-01-31 23:30</td>\s*"
