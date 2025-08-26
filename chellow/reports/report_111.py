@@ -382,8 +382,8 @@ def _process_period(
         .join(Batch)
         .where(
             Bill.supply == supply,
-            Bill.start_date <= period_finish,
-            Bill.finish_date >= period_start,
+            Element.start_date <= period_finish,
+            Element.finish_date >= period_start,
             Batch.contract == contract,
         )
     ):
@@ -393,7 +393,7 @@ def _process_period(
             actual_elem = actual_elems[element.name] = {"gbp": Decimal("0.00")}
 
         actual_elem["gbp"] += element.net
-        actual_net_gbp += element.net
+        actual_net_gbp += float(element.net)
 
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
@@ -437,6 +437,7 @@ def _process_period(
             joinedload(Era.supply).joinedload(Supply.source),
         )
     ).unique():
+        first_era = era
         chunk_start = hh_max(period_start, era.start_date)
         chunk_finish = hh_min(period_finish, era.finish_date)
 
@@ -544,18 +545,20 @@ def _process_period(
 
     return {
         "supply_id": supply.id,
-        "period_from": period_start,
-        "period_to": period_finish,
+        "period_start": period_start,
+        "period_finish": period_finish,
         "elements": val_elems,
         "site_id": None if site is None else site.id,
+        "site_code": None if site is None else site.code,
         "site_name": None if site is None else site.name,
-        "imp_mpan_core": None if era is None else era.imp_mpan_core,
-        "exp_mpan_core": None if era is None else era.exp_mpan_core,
+        "imp_mpan_core": None if first_era is None else era.imp_mpan_core,
+        "exp_mpan_core": None if first_era is None else era.exp_mpan_core,
         "contract_id": contract.id,
         "contract_name": contract.name,
         "elements": val_elems,
         "virtual_net_gbp": virtual_net_gbp,
         "actual_net_gbp": actual_net_gbp,
+        "difference_net_gbp": actual_net_gbp - virtual_net_gbp,
     }
 
 

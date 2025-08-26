@@ -727,8 +727,7 @@ class Element(Base, PersistentClass):
         breakdown,
     ):
         self.bill = bill
-        self.name = name
-        self.update(start_date, finish_date, net, breakdown)
+        self.update(name, start_date, finish_date, net, breakdown)
 
     @property
     def bd(self):
@@ -738,12 +737,14 @@ class Element(Base, PersistentClass):
 
     def update(
         self,
+        name,
         start_date,
         finish_date,
         net,
         breakdown,
     ):
 
+        self.name = name
         if start_date > finish_date:
             raise BadRequest(
                 f"The element start date {hh_format(start_date)} can't be after the "

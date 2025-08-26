@@ -1368,26 +1368,38 @@ def report_run_get(run_id):
             pass
 
         else:
-            titles = row.data["titles"]
-            diff_titles = [
-                t for t in titles if t.startswith("difference-") and t.endswith("-gbp")
-            ]
-            diff_selects = [
-                func.sum(ReportRunRow.data["values"][t].as_float()) for t in diff_titles
-            ]
-            sum_diffs = (
-                g.sess.query(*diff_selects).filter(ReportRunRow.report_run == run).one()
+            summary["sum_difference"] = g.sess.scalar(
+                select(
+                    func.sum(
+                        ReportRunRow.data["values"]["difference_net_gbp"].as_float()
+                    )
+                ).where(ReportRunRow.report_run == run)
             )
+            element_names = g.sess.scalars(
+                select(func.jsonb_object_keys(ReportRunRow.data["values"]["elements"]))
+                .where(ReportRunRow.report_run == run)
+                .distinct()
+            ).all()
+            diff_selects = [
+                func.sum(
+                    func.coalesce(
+                        ReportRunRow.data["values"]["elements"][n]["gbp"][
+                            "difference"
+                        ].as_float(),
+                        0,
+                    )
+                )
+                for n in element_names
+            ]
+            sum_diffs = g.sess.execute(
+                select(*diff_selects).filter(ReportRunRow.report_run == run)
+            ).one()
 
-            for t, sum_diff in zip(diff_titles, sum_diffs):
-                elem = t[11:-4]
-                if elem == "net":
-                    summary["sum_difference"] = sum_diff
-                else:
-                    elements.append((elem, sum_diff))
+            for elem, sum_diff in zip(element_names, sum_diffs):
+                print("sum_diff", sum_diff)
+                elements.append((elem, sum_diff))
 
             elements.sort(key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True)
-            elements.insert(0, ("net", summary["sum_difference"]))
 
         if "element" in request.values:
             element = req_str("element")

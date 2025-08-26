@@ -84,72 +84,36 @@
 			</table>
 		{% endif %}
 
-		<table class="sticky">
-			<caption>Elements</caption>
-			<thead>
-				<tr>
-					<th>Element</th>
-					{% for elname, diff in elements  %}
-						<th>{{elname}}</th>
-					{% endfor %}
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Sum of differences (GBP)</td>
-					{% for elname, diff in elements  %}
-							<td>{{"%.2f"|format(diff)}}</td>
-					{% endfor %}
-				</tr>
-				<tr>
-					<td rowspan="2">Order rows</td>
-					{% for elname, diff in elements  %}
-						<td>
-							{% if elname == element and not hide_checked %}
-								Order (show checked)
-							{% else %}
-								<a href="/report_runs/{{run.id}}?element={{elname}}&amp;hide_checked=false"
-									>Order (show checked)</a>
-							{% endif %}
-						</td>
-					{% endfor %}
-				</tr>
-				<tr>
-					{% for elname, diff in elements  %}
-						<td>
-							{% if elname == element and hide_checked %}
-								Order (hide checked)
-							{% else %}
-								<a href="/report_runs/{{run.id}}?element={{elname}}&amp;hide_checked=true"
-									>Order (hide checked)</a>
-							{% endif %}
-						</td>
-					{% endfor %}
-				</tr>
-			</tbody>
-		</table>
-
 		<table class="etheling etheling_sticky">
-			<caption>Rows - Ordered By Difference In {{element}}</caption>
-			{% set titles = [
-								'batch',	'bill-reference', 'imp-mpan-core',
-								'exp-mpan-core', 'site-code', 'site-name',
-								'covered-from', 'covered-to'
-				]
-			%}
+			<caption>Periods - Ordered By Difference In {{element}}</caption>
 			<thead>
 				<tr>
-					<th rowspan="2">View</th>
-					{% for title in titles %}
-						<th rowspan="2">{{title}}</th>
-					{% endfor %}
-					<th colspan="{{elements|length}}">Difference GBP</th>
-					<th rowspan="2">Note</th>
-				</tr>
-				<tr>
+					<th>View</th>
+					<th>Contract</th>
+					<th>Supply</th>
+					<th>Import MPAN Core</th>
+					<th>Export MPAN Core</th>
+					<th>Period Start</th>
+					<th>Period Finish</th>
+					<th>
+					  {% if element == 'net' %}
+						  &uparrow;
+						{% else %}
+						  <a href="/report_runs/{{run.id}}?element=net">&uparrow;</a>
+						{% endif %}
+						Difference Net GBP
+					</th>
 					{% for elem, diff in elements %}
-						<th>{{elem}}</th>
+						<th>
+							{% if elem == element %}
+								&uparrow;
+							{% else %}
+								<a href="/report_runs/{{run.id}}?element={{elem}}">&uparrow;</a>
+							{% endif %}
+							Difference {{elem}}
+						</th>
 					{% endfor %}
+					<th>Note</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -158,33 +122,35 @@
 					{% set properties = row.data.get('properties', {}) %}
 					<tr>
 						<td><a href="/report_run_rows/{{row.id}}">View</a></td>
-						{% for title in titles %}
-							<td>	
-								{%
-									if title == 'covered-bills' and
-									values['covered-bills'] != None
-								%}
-									<ul>
-										{% for bill_id in values['covered-bills'] %}
-											<li>
-												<a href="/e/supplier_bills/{{bill_id}}"
-														>{{bill_id}}</a>
-												{% if bill_id == values.bill_id %}
-													(This bill)
-												{% endif %}
-											</li>
-										{% endfor %}
-									</ul>
-								{% elif values[title] is not none %}
-									{{values[title]}}
-								{% endif %}
-							</td>
-						{% endfor %}
+						<td>
+							<a href="/e/supplier_contracts/{{values['contract_id']}}">{{values['contract_name']}}</a>
+						</td>
+						<td>
+							<a href="/e/supplies/{{values['supply_id']}}">View</a>
+						</td>
+						<td>
+							{% if values['imp_mpan_core'] is not none %}
+							  {{values['imp_mpan_core']}}
+							{% endif %}
+						</td>
+						<td>
+							{% if values['exp_mpan_core'] is not none %}
+							  {{values['exp_mpan_core']}}
+							{% endif %}
+						</td>
+						<td>
+						 {{values['period_start']}}
+						</td>
+						<td>
+						 {{values['period_finish']}}
+						</td>
+						<td>
+						 {{values['difference_net_gbp']}}
+						</td>
 						{% for elem, diff in elements %}
-							{% set title = 'difference-' + elem + '-gbp' %}
 							<td>	
-								{% if title in values %}
-									{{"%.2f"|format(values[title])}}
+								{% if elem in values.elements %}
+							    {{"%.2f"|format(values.elements[elem]['gbp']['difference'])}}
 								{% endif %}
 							</td>
 						{% endfor %}

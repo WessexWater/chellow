@@ -739,9 +739,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2803,9 +2803,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5177,9 +5177,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5567,6 +5567,88 @@ def supplier_contract_edit_post(contract_id):
                 ),
                 400,
             )
+
+
+@e.route("/supplier_bills/<int:bill_id>/add_element")
+def supplier_element_add_get(bill_id):
+    bill = Bill.get_by_id(g.sess, bill_id)
+
+    return render_template("supplier_element_add.html", bill=bill)
+
+
+@e.route("/supplier_bills/<int:bill_id>/add_element", methods=["POST"])
+def supplier_element_add_post(bill_id):
+    try:
+        bill = Bill.get_by_id(g.sess, bill_id)
+        name = req_str("name")
+        start_date = req_date("start")
+        finish_date = req_date("finish")
+        net = req_decimal("net")
+        breakdown = req_zish("breakdown")
+
+        element = bill.insert_element(
+            g.sess, name, start_date, finish_date, net, breakdown
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_elements/{element.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_element_add.html", bill=bill), 400
+        )
+
+
+@e.route("/supplier_elements/<int:element_id>")
+def supplier_element_get(element_id):
+    element = Element.get_by_id(g.sess, element_id)
+    return render_template("supplier_element.html", element=element)
+
+
+@e.route("/supplier_elements/<int:element_id>/edit")
+def supplier_element_edit_get(element_id):
+    element = Element.get_by_id(g.sess, element_id)
+    return render_template("supplier_element_edit.html", element=element)
+
+
+@e.route("/supplier_elements/<int:element_id>/edit", methods=["POST"])
+def supplier_element_edit_post(element_id):
+    try:
+        element = Element.get_by_id(g.sess, element_id)
+        name = req_str("name")
+        start_date = req_date("start")
+        finish_date = req_date("finish")
+        net = req_decimal("net")
+        breakdown = req_zish("breakdown")
+
+        element.update(
+            name,
+            start_date,
+            finish_date,
+            net,
+            breakdown,
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_elements/{element.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_element_edit.html", element=element), 400
+        )
+
+
+@e.route("/supplier_elements/<int:element_id>/edit", methods=["DELETE"])
+def supplier_element_edit_delete(element_id):
+    try:
+        element = Element.get_by_id(g.sess, element_id)
+        bill = element.bill
+        element.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_bills/{bill.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_element_edit.html", element=element), 400
+        )
 
 
 @e.route("/supplier_rate_scripts/<int:rate_script_id>")
