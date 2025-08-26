@@ -291,7 +291,8 @@ def virtual_bill(ds):
     )
     expected = [
         {
-            "actual_net_gbp": Decimal("10.00"),
+            "actual_net_gbp": 10,
+            "difference_net_gbp": 10,
             "contract_id": 4,
             "contract_name": "Fusion Supplier 2000",
             "elements": {
@@ -318,10 +319,11 @@ def virtual_bill(ds):
             },
             "exp_mpan_core": None,
             "imp_mpan_core": "22 7867 6232 781",
-            "period_from": utc_datetime(2009, 7, 10, 0, 0),
-            "period_to": utc_datetime(2009, 7, 10, 0, 0),
-            "site_id": None,
-            "site_name": None,
+            "period_start": utc_datetime(2009, 7, 10, 0, 0),
+            "period_finish": utc_datetime(2009, 7, 10, 0, 0),
+            "site_id": 1,
+            "site_code": "CI017",
+            "site_name": "Water Works",
             "supply_id": 1,
             "virtual_net_gbp": 0.0,
         },
