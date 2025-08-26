@@ -18,7 +18,6 @@ from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-from zish import ZishLocationException, loads
 
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func
@@ -69,17 +68,6 @@ def find_gaps(gaps):
                 gap_start = gap_hh
                 gap_finish = gap_start
         yield gap_start, gap_finish
-
-
-def find_elements(bill):
-    try:
-        keys = [k for k in loads(bill.breakdown).keys() if k.endswith("-gbp")]
-        return set(k[:-4] for k in keys)
-    except ZishLocationException as e:
-        raise BadRequest(
-            f"Can't parse the breakdown for bill id {bill.id} attached to batch id "
-            f"{bill.batch.id}: {e}"
-        )
 
 
 def content(
@@ -167,23 +155,14 @@ def content(
             virtual_bill_titles = virtual_bill_titles_func()
 
             titles = [
-                "batch",
-                "bill-reference",
-                "bill-type",
-                "bill-kwh",
-                "bill-net-gbp",
-                "bill-vat-gbp",
-                "bill-gross-gbp",
-                "bill-start-date",
-                "bill-finish-date",
-                "imp-mpan-core",
-                "exp-mpan-core",
-                "site-code",
-                "site-name",
-                "covered-from",
-                "covered-to",
-                "covered-bills",
-                "metered-kwh",
+                "supply_id",
+                "imp_mpan_core",
+                "exp_mpan_core",
+                "period_from",
+                "period_to",
+                "actual_net_gbp",
+                "site_code",
+                "site_name",
             ]
             for t in virtual_bill_titles:
                 titles.append("covered-" + t)
@@ -198,19 +177,13 @@ def content(
                 bill_map[bill.supply.id].add(bill.id)
 
             for supply_id, bill_ids in bill_map.items():
-                _process_supply(
-                    sess,
-                    caches,
-                    supply_id,
-                    bill_ids,
-                    forecast_date,
-                    contract,
-                    vbf,
-                    virtual_bill_titles,
-                    writer,
-                    titles,
-                    report_run_id,
-                )
+                for vals in _process_supply(
+                    sess, caches, supply_id, bill_ids, forecast_date, contract, vbf
+                ):
+                    writer.writerow(csv_make_val(vals.get(title)) for title in titles)
+                    ReportRun.w_insert_row(
+                        report_run_id, "", titles, vals, {"is_checked": False}
+                    )
         ReportRun.w_update(report_run_id, "finished")
 
     except BadRequest as e:
@@ -310,7 +283,7 @@ def _get_bill_status(sess, bill_statuses, bill):
                     Bill.supply == bill.supply,
                     Bill.start_date <= bill.finish_date,
                     Bill.finish_date >= bill.start_date,
-                    Contract.market_role == bill.contract.market_role,
+                    Contract.market_role == bill.batch.contract.market_role,
                 )
                 .order_by(Bill.start_date, Bill.issue_date)
             )
@@ -355,7 +328,7 @@ def _process_period(
     period_start,
     period_finish,
 ):
-    covered_elems = {}
+    actual_elems = {}
     vels = {}
     virtual_bill = {"problem": "", "elements": vels}
     market_role_code = contract.market_role.code
@@ -370,7 +343,7 @@ def _process_period(
             Batch.contract == contract,
         )
     ):
-        if _get_bill_status(bill_statuses, bill) is not None:
+        if _get_bill_status(sess, bill_statuses, bill) is not None:
 
             read_dict = {}
             for read in bill.reads:
@@ -402,6 +375,7 @@ def _process_period(
                     except KeyError:
                         read_dict[key] = typ
 
+    actual_net_gbp = 0
     for element in sess.scalars(
         select(Element)
         .join(Bill)
@@ -414,25 +388,28 @@ def _process_period(
         )
     ):
         try:
-            covered_elem = covered_elems[element.name]
+            actual_elem = actual_elems[element.name]
         except KeyError:
-            covered_elem = covered_elems[element.name] = {"net": Decimal("0.00")}
+            actual_elem = actual_elems[element.name] = {"gbp": Decimal("0.00")}
 
-        covered_elem["net"] += element.net
+        actual_elem["gbp"] += element.net
+        actual_net_gbp += element.net
 
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
                 v = float(v)
             try:
-                covered_elem[k] += v
+                actual_elem[k] += v
             except KeyError:
-                covered_elem[k] = v
+                actual_elem[k] = v
             except TypeError as detail:
                 raise BadRequest(
                     f"For key {k} in {element.bd} the value {v} can't be added to "
-                    f"the existing value {covered_elem[k]}. {detail}"
+                    f"the existing value {actual_elem[k]}. {detail}"
                 )
 
+    first_era = None
+    virtual_net_gbp = 0
     for era in sess.scalars(
         select(Era)
         .where(
@@ -440,6 +417,7 @@ def _process_period(
             Era.start_date <= period_finish,
             or_(Era.finish_date == null(), Era.finish_date >= period_start),
         )
+        .order_by(Era.start_date)
         .distinct()
         .options(
             joinedload(Era.channels),
@@ -458,7 +436,7 @@ def _process_period(
             joinedload(Era.supply).joinedload(Supply.gsp_group),
             joinedload(Era.supply).joinedload(Supply.source),
         )
-    ):
+    ).unique():
         chunk_start = hh_max(period_start, era.start_date)
         chunk_finish = hh_min(period_finish, era.finish_date)
 
@@ -508,7 +486,9 @@ def _process_period(
                 except KeyError:
                     vel = vels[vel_name] = {}
 
-        for k, v in vb.itmes():
+                virtual_net_gbp += v
+
+        for k, v in vb.items():
             for vel_name in sorted(vels.keys(), key=len, reverse=True):
                 pref = f"{vel_name}-"
                 if k.startswith(pref):
@@ -526,26 +506,25 @@ def _process_period(
 
                     break
     val_elems = {}
-    for k, v in vels.items():
-        try:
-            val_elem = val_elems[k]
-        except KeyError:
-            val_elem = val_elems[k] = {}
+    for typ, els in (("virtual", vels), ("actual", actual_elems)):
+        for el_k, el in els.items():
+            try:
+                val_elem = val_elems[el_k]
+            except KeyError:
+                val_elem = val_elems[el_k] = {}
 
-        val_elem["virtual"] = v
+            for k, v in el.items():
+                try:
+                    val_part = val_elem[k]
+                except KeyError:
+                    val_part = val_elem[k] = {}
 
-    for k, v in covered_elems.items():
-        try:
-            val_elem = val_elems[k]
-        except KeyError:
-            val_elem = val_elems[k] = {}
-
-        val_elem["actual"] = v
+                val_part[typ] = v
 
     for elname, val_elem in val_elems.items():
         for part_name, part in val_elem.items():
-            virtual_part = part["virtual"]
-            actual_part = part["actual"]
+            virtual_part = part.get("virtual", 0)
+            actual_part = part.get("actual", 0)
             if isinstance(virtual_part, set) and len(virtual_part) == 1:
                 virtual_part = next(iter(virtual_part))
             if isinstance(actual_part, set) and len(actual_part) == 1:
@@ -558,30 +537,30 @@ def _process_period(
 
             part["difference"] = diff
 
-    vals = {
+    if first_era is None:
+        site = None
+    else:
+        site = first_era.get_physical_site(sess)
+
+    return {
         "supply_id": supply.id,
-        "period-from": period_start,
-        "period-to": period_finish,
+        "period_from": period_start,
+        "period_to": period_finish,
         "elements": val_elems,
+        "site_id": None if site is None else site.id,
+        "site_name": None if site is None else site.name,
+        "imp_mpan_core": None if era is None else era.imp_mpan_core,
+        "exp_mpan_core": None if era is None else era.exp_mpan_core,
+        "contract_id": contract.id,
+        "contract_name": contract.name,
+        "elements": val_elems,
+        "virtual_net_gbp": virtual_net_gbp,
+        "actual_net_gbp": actual_net_gbp,
     }
 
-    return vals
 
-
-def _process_supply(
-    sess,
-    caches,
-    supply_id,
-    bill_ids,
-    forecast_date,
-    contract,
-    vbf,
-    virtual_bill_titles,
-    writer,
-    titles,
-    report_run_id,
-):
-    gaps = {}
+def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, vbf):
+    gaps = set()
     bill_statuses = {}
     supply = Supply.get_by_id(sess, supply_id)
     market_role_code = contract.market_role.code  # noqa: F841
@@ -590,21 +569,21 @@ def _process_supply(
     while len(bill_ids) > 0:
         bill_id = list(sorted(bill_ids))[0]
         bill_ids.remove(bill_id)
-        bill = Bill.get_by_id(bill_id)
-        for element in sess.scalars(
-            select(Element)
-            .join(Bill)
-            .join(Batch)
-            .where(
-                Batch.contract == contract,
-                Bill.supply == supply,
-                Bill.start_date <= bill.finish_date,
-                Bill.finish_date >= bill.start_date,
-            )
-        ):
-            if _get_bill_status(sess, bill_statuses, element.bill) is not None:
-                _add_gap(gaps, element.start_date, element.finish_date)
-                _add_gap(gaps, bill.start_date, bill.finish_date)
+        bill = Bill.get_by_id(sess, bill_id)
+        if _get_bill_status(sess, bill_statuses, bill) is not None:
+            _add_gap(caches, gaps, bill.start_date, bill.finish_date)
+            for element in sess.scalars(
+                select(Element)
+                .join(Bill)
+                .join(Batch)
+                .where(
+                    Batch.contract == contract,
+                    Bill.supply == supply,
+                    Bill.start_date <= bill.finish_date,
+                    Bill.finish_date >= bill.start_date,
+                )
+            ):
+                _add_gap(caches, gaps, element.start_date, element.finish_date)
 
     # Find enlarged gaps
     enlarged = True
@@ -622,11 +601,11 @@ def _process_supply(
                     Batch.contract == contract,
                 )
             ):
-                if _add_gap(gaps, element):
+                if _add_gap(caches, gaps, element.start_date, element.finish_date):
                     enlarged = True
 
     for period_start, period_finish in find_gaps(gaps):
-        vals = _process_period(
+        yield _process_period(
             sess,
             caches,
             supply,
@@ -637,8 +616,6 @@ def _process_supply(
             period_start,
             period_finish,
         )
-        writer.writerow(csv_make_val(vals[title]) for title in titles)
-        ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
 
         # Avoid long-running transactions
         sess.rollback()

@@ -1,4 +1,3 @@
-import csv
 from decimal import Decimal
 from io import StringIO
 
@@ -145,10 +144,10 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['rate'] = {rate}
+        bill_hh['nrg-kwh'] = hh['msp-kwh']
+        bill_hh['nrg-rate'] = {rate}
         bill_hh['off-rate'] = {0.1}
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * rate
+        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate
         bill_hh['net-gbp'] = sum(
             v for k, v in bill_hh.items() if k.endswith('gbp'))
         bill_hh['vat-gbp'] = 0
@@ -260,11 +259,17 @@ def virtual_bill(ds):
         Decimal("10.00"),
         Decimal("10.00"),
         bill_type,
-        {"rate": [Decimal("0.1")]},
+        {},
         supply,
     )
-    report_run = ReportRun.insert(sess, "bill_check", None, "", {})
-    report_run_id = report_run.id
+    bill.insert_element(
+        sess,
+        "nrg",
+        utc_datetime(2009, 7, 10),
+        utc_datetime(2009, 7, 10),
+        Decimal("10.00"),
+        {"rate": {Decimal("0.1")}},
+    )
     sess.commit()
 
     report_context = {}
@@ -272,67 +277,57 @@ def virtual_bill(ds):
     bill_ids = {bill.id}
     forecast_date = utc_datetime(2020, 7, 10)
     vbf = contract_func(report_context, supplier_contract, "virtual_bill")
-    virtual_bill_titles = [
-        "ccl-kwh",
-        "ccl-rate",
-        "ccl-gbp",
-        "net-gbp",
-        "vat-gbp",
-        "gross-gbp",
-        "sum-msp-kwh",
-        "rate",
-        "sum-msp-gbp",
-        "problem",
-    ]
-    titles = [
-        "batch",
-        "bill-reference",
-        "bill-type",
-        "bill-kwh",
-        "bill-net-gbp",
-        "bill-vat-gbp",
-        "bill-start-date",
-        "bill-finish-date",
-        "imp-mpan-core",
-        "exp-mpan-core",
-        "site-code",
-        "site-name",
-        "covered-from",
-        "covered-to",
-        "covered-bills",
-        "metered-kwh",
-    ]
-    for t in virtual_bill_titles:
-        titles.append("covered-" + t)
-        titles.append("virtual-" + t)
-        if t.endswith("-gbp"):
-            titles.append("difference-" + t)
 
-    f = StringIO()
-    writer = csv.writer(f)
+    vals = list(
+        _process_supply(
+            sess,
+            report_context,
+            supply_id,
+            bill_ids,
+            forecast_date,
+            supplier_contract,
+            vbf,
+        )
+    )
+    expected = [
+        {
+            "actual_net_gbp": Decimal("10.00"),
+            "contract_id": 4,
+            "contract_name": "Fusion Supplier 2000",
+            "elements": {
+                "nrg": {
+                    "gbp": {
+                        "actual": Decimal("10.00"),
+                        "difference": 10.0,
+                        "virtual": 0.0,
+                    },
+                    "kwh": {
+                        "difference": 0.0,
+                        "virtual": 0,
+                    },
+                    "rate": {
+                        "actual": [
+                            Decimal("0.1"),
+                        ],
+                        "difference": None,
+                        "virtual": {
+                            0.1,
+                        },
+                    },
+                },
+            },
+            "exp_mpan_core": None,
+            "imp_mpan_core": "22 7867 6232 781",
+            "period_from": utc_datetime(2009, 7, 10, 0, 0),
+            "period_to": utc_datetime(2009, 7, 10, 0, 0),
+            "site_id": None,
+            "site_name": None,
+            "supply_id": 1,
+            "virtual_net_gbp": 0.0,
+        },
+    ]
 
-    _process_supply(
-        sess,
-        report_context,
-        supply_id,
-        bill_ids,
-        forecast_date,
-        supplier_contract,
-        vbf,
-        virtual_bill_titles,
-        writer,
-        titles,
-        report_run_id,
-    )
-    expected = (
-        "a b,hjk,N,10.00,10.00,10.00,2009-07-10 01:00,2009-07-10 01:00,"
-        "22 7867 6232 781,,CI017,Water Works,2009-07-10 01:00,2009-07-10 01:00,"
-        "1,0,,,,,,,0,10.0,0,10.0,10.0,0,10.0,10.0,0,10.0,10.0,,0.1,0.1,,,0,,,"
-        "virtual-off-rate,0.1\r\n"
-    )
-    print(expected)
-    print(f.getvalue())
-    assert f.getvalue() == expected
+    assert vals == expected
 
 
 def test_content(sess, mocker):
