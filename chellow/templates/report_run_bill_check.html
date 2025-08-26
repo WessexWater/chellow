@@ -88,20 +88,24 @@
 			<caption>Periods - Ordered By Difference In {{element}}</caption>
 			<thead>
 				<tr>
-					<th>View</th>
-					<th>Contract</th>
-					<th>Supply</th>
-					<th>Import MPAN Core</th>
-					<th>Export MPAN Core</th>
-					<th>Period Start</th>
-					<th>Period Finish</th>
+					<th rowspan="2">View</th>
+					<th rowspan="2">Contract</th>
+					<th rowspan="2">Supply</th>
+					<th rowspan="2">Import MPAN Core</th>
+					<th rowspan="2">Export MPAN Core</th>
+					<th rowspan="2">Period Start</th>
+					<th rowspan="2">Period Finish</th>
+					<th colspan="{{elements|length + 1}}">Difference GBP</th>
+					<th rowspan="2">Note</th>
+				</tr>
+				<tr>
 					<th>
 					  {% if element == 'net' %}
 						  &uparrow;
 						{% else %}
 						  <a href="/report_runs/{{run.id}}?element=net">&uparrow;</a>
 						{% endif %}
-						Difference Net GBP
+					  Total	
 					</th>
 					{% for elem, diff in elements %}
 						<th>
@@ -110,10 +114,9 @@
 							{% else %}
 								<a href="/report_runs/{{run.id}}?element={{elem}}">&uparrow;</a>
 							{% endif %}
-							Difference {{elem}}
+							{{elem}}
 						</th>
 					{% endfor %}
-					<th>Note</th>
 				</tr>
 			</thead>
 			<tbody>
