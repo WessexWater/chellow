@@ -62,7 +62,7 @@ ELEMENT_MAP = {
     "DUS": {
         "DUS001": {
             "794486": ("duos-availability", "rate", "kva"),
-            "644819": ("duos-fixed-gbp", "rate", "days"),
+            "644819": ("duos-fixed", "rate", "days"),
             "797790": ("duos-reactive", "rate", "kvarh"),
             "806318": ("duos-green", "rate", "kwh"),
             "716514": ("duos-amber", "rate", "kwh"),
