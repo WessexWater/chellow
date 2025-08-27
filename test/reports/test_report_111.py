@@ -291,30 +291,52 @@ def virtual_bill(ds):
     )
     expected = [
         {
-            "actual_net_gbp": 10,
-            "difference_net_gbp": 10,
+            "actual_net_gbp": 10.0,
+            "difference_net_gbp": 10.0,
             "contract_id": 4,
             "contract_name": "Fusion Supplier 2000",
             "elements": {
                 "nrg": {
-                    "gbp": {
-                        "actual": Decimal("10.00"),
-                        "difference": 10.0,
-                        "virtual": 0.0,
-                    },
-                    "kwh": {
-                        "difference": 0.0,
-                        "virtual": 0,
-                    },
-                    "rate": {
-                        "actual": [
-                            Decimal("0.1"),
-                        ],
-                        "difference": None,
-                        "virtual": {
-                            0.1,
+                    "parts": {
+                        "gbp": {
+                            "actual": Decimal("10.00"),
+                            "difference": 10.0,
+                            "virtual": 0.0,
+                        },
+                        "kwh": {
+                            "difference": 0.0,
+                            "virtual": 0,
+                        },
+                        "rate": {
+                            "actual": [
+                                Decimal("0.1"),
+                            ],
+                            "difference": None,
+                            "virtual": {
+                                0.1,
+                            },
                         },
                     },
+                    "actual_elements": [
+                        {
+                            "bill": {
+                                "batch": {
+                                    "id": 1,
+                                    "reference": "a b",
+                                },
+                                "id": 1,
+                            },
+                            "breakdown": "{\n"
+                            '  "rate": [\n'
+                            "    0.1,\n"
+                            "  ],\n"
+                            "}",
+                            "finish_date": utc_datetime(2009, 7, 10, 0, 0),
+                            "id": 1,
+                            "net": Decimal("10.00"),
+                            "start_date": utc_datetime(2009, 7, 10, 0, 0),
+                        },
+                    ],
                 },
             },
             "exp_mpan_core": None,
