@@ -1383,7 +1383,7 @@ def report_run_get(run_id):
             diff_selects = [
                 func.sum(
                     func.coalesce(
-                        ReportRunRow.data["values"]["elements"][n]["gbp"][
+                        ReportRunRow.data["values"]["elements"][n]["parts"]["gbp"][
                             "difference"
                         ].as_float(),
                         0,
@@ -1396,7 +1396,6 @@ def report_run_get(run_id):
             ).one()
 
             for elem, sum_diff in zip(element_names, sum_diffs):
-                print("sum_diff", sum_diff)
                 elements.append((elem, sum_diff))
 
             elements.sort(key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True)

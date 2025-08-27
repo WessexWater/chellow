@@ -418,14 +418,21 @@ def _process_period(
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
                 v = float(v)
+
+            if isinstance(v, list):
+                v = set(v)
+
             try:
-                parts[k] += v
+                if isinstance(v, set):
+                    parts[k].update(v)
+                else:
+                    parts[k] += v
             except KeyError:
                 parts[k] = v
             except TypeError as detail:
                 raise BadRequest(
                     f"For key {k} in {element.bd} the value {v} can't be added to "
-                    f"the existing value {actual_elem[k]}. {detail}"
+                    f"the existing value {parts[k]}. {detail}"
                 )
 
     first_era = None
