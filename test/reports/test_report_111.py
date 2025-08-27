@@ -308,10 +308,10 @@ def virtual_bill(ds):
                             "virtual": 0,
                         },
                         "rate": {
-                            "actual": [
+                            "actual": {
                                 Decimal("0.1"),
-                            ],
-                            "difference": None,
+                            },
+                            "difference": 0.0,
                             "virtual": {
                                 0.1,
                             },
