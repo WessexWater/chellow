@@ -390,18 +390,38 @@ def _process_period(
         try:
             actual_elem = actual_elems[element.name]
         except KeyError:
-            actual_elem = actual_elems[element.name] = {"gbp": Decimal("0.00")}
+            actual_elem = actual_elems[element.name] = {
+                "parts": {"gbp": Decimal("0.00")},
+                "elements": [],
+            }
+        parts = actual_elem["parts"]
+        actual_elem["elements"].append(
+            {
+                "id": element.id,
+                "start_date": element.start_date,
+                "finish_date": element.finish_date,
+                "net": element.net,
+                "breakdown": element.breakdown,
+                "bill": {
+                    "id": element.bill.id,
+                    "batch": {
+                        "id": element.bill.batch.id,
+                        "reference": element.bill.batch.reference,
+                    },
+                },
+            }
+        )
 
-        actual_elem["gbp"] += element.net
+        parts["gbp"] += element.net
         actual_net_gbp += float(element.net)
 
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
                 v = float(v)
             try:
-                actual_elem[k] += v
+                parts[k] += v
             except KeyError:
-                actual_elem[k] = v
+                parts[k] = v
             except TypeError as detail:
                 raise BadRequest(
                     f"For key {k} in {element.bd} the value {v} can't be added to "
@@ -485,7 +505,7 @@ def _process_period(
                 try:
                     vel = vels[vel_name]
                 except KeyError:
-                    vel = vels[vel_name] = {}
+                    vel = vels[vel_name] = {"parts": {}, "elements": []}
 
                 virtual_net_gbp += v
 
@@ -493,7 +513,7 @@ def _process_period(
             for vel_name in sorted(vels.keys(), key=len, reverse=True):
                 pref = f"{vel_name}-"
                 if k.startswith(pref):
-                    vel = vels[vel_name]
+                    vel = vels[vel_name]["parts"]
                     vel_k = k[len(pref) :]
                     try:
                         if isinstance(vel[vel_k], set):
@@ -514,16 +534,29 @@ def _process_period(
             except KeyError:
                 val_elem = val_elems[el_k] = {}
 
-            for k, v in el.items():
+            for k, v in el["parts"].items():
                 try:
-                    val_part = val_elem[k]
+                    val_parts = val_elem["parts"]
                 except KeyError:
-                    val_part = val_elem[k] = {}
+                    val_parts = val_elem["parts"] = {}
+
+                try:
+                    val_part = val_parts[k]
+                except KeyError:
+                    val_part = val_parts[k] = {}
 
                 val_part[typ] = v
 
+            for el in el["elements"]:
+                try:
+                    elements = val_elem[f"{typ}_elements"]
+                except KeyError:
+                    elements = val_elem[f"{typ}_elements"] = []
+
+                elements.append(el)
+
     for elname, val_elem in val_elems.items():
-        for part_name, part in val_elem.items():
+        for part_name, part in val_elem["parts"].items():
             virtual_part = part.get("virtual", 0)
             actual_part = part.get("actual", 0)
             if isinstance(virtual_part, set) and len(virtual_part) == 1:

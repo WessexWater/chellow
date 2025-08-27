@@ -153,7 +153,7 @@
 						{% for elem, diff in elements %}
 							<td>	
 								{% if elem in values.elements %}
-							    {{"%.2f"|format(values.elements[elem]['gbp']['difference'])}}
+							    {{"%.2f"|format(values.elements[elem]['parts']['gbp']['difference'])}}
 								{% endif %}
 							</td>
 						{% endfor %}

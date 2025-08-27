@@ -1666,44 +1666,13 @@ def report_run_row_get(row_id):
     tables = []
 
     if row.report_run.name == "bill_check":
-        values = row.data["values"]
-        elements = {}
-        for t in values.keys():
-
-            if (
-                t.startswith("covered-")
-                or t.startswith("virtual-")
-                or t.startswith("difference-")
-            ) and t.endswith("-gbp"):
-                toks = t.split("-")
-                name = "-".join(toks[1:-1])
-                if name in ("vat", "gross", "net", "tpr"):
-                    continue
-                try:
-                    table = elements[name]
-                except KeyError:
-                    table = elements[name] = {"order": 0, "name": name, "parts": set()}
-                    tables.append(table)
-
-                if t.startswith("difference-"):
-                    table["order"] = abs(values[t])
-
-        for t in values.keys():
-
-            toks = t.split("-")
-            if toks[0] in ("covered", "virtual", "difference"):
-                tail = "-".join(toks[1:])
-                for element in sorted(elements.keys(), key=len, reverse=True):
-
-                    table = elements[element]
-                    elstr = f"{element}-"
-                    if tail.startswith(elstr):
-                        part = tail[len(elstr) :]
-                        if part != "gbp":
-                            table["parts"].add(part)
-                        break
-
-        tables.sort(key=lambda t: t["order"], reverse=True)
+        elements = row.data["values"]["elements"]
+        for el_name, _ in sorted(
+            list(elements.items()),
+            key=lambda x: abs(x[1]["parts"]["gbp"]["difference"]),
+            reverse=True,
+        ):
+            tables.append(el_name)
         return render_template(
             "report_run_row_bill_check.html", row=row, raw_data=raw_data, tables=tables
         )

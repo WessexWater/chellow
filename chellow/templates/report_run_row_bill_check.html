@@ -54,9 +54,9 @@
 				</td>
 				<td>{{values['period_start']}}</td>
 				<td>{{values['period_finish']}}</td>
-				<td>{{values['actual_net_gbp']}}</td>
-				<td>{{values['virtual_net_gbp']}}</td>
-				<td>{{values['difference_net_gbp']}}</td>
+				<td>{{"{:0,.2f}".format(values['actual_net_gbp'])}}</td>
+				<td>{{"{:0,.2f}".format(values['virtual_net_gbp'])}}</td>
+				<td>{{"{:0,.2f}".format(values['difference_net_gbp'])}}</td>
 			</tr>
 		</tbody>
 	</table>
@@ -138,72 +138,108 @@
 		</table>
 		-->
 
-		{% for el_name, element in values['elements'].items() %}
-			<table>
-				<caption>{{el_name}}</caption>
-				<thead>
-					<tr>
-						<th>Part</th>
-						<th>Actual</th>
-						<th>Virtual</th>
-						<th>Difference</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td>gbp</td>
-						{% for k in ('actual', 'virtual', 'difference') %}
-							<td style="text-align: right;">
-								{% set part = element['gbp'] %}
-								{% if k in part %}
-									{% set val = part[k] %}
-								{% else %}
-									{% set val = '' %}
-								{% endif %}
-								{% if val is none %}
-								{% elif val is number %}
-									{{"{:0,.2f}".format(val)}}
-								{% else %}
-									{{val}}
-								{% endif %}
-							</td>
+		{% for table in tables %}
+			{% set element = values['elements'][table] %}
+			{% set parts = element['parts'] %}
+
+			<div style="display: flex; gap: 4rem;">
+				<table>
+					<caption>{{table}}</caption>
+					<thead>
+						<tr>
+							<th>Part</th>
+							<th>Actual</th>
+							<th>Virtual</th>
+							<th>Difference</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>gbp</td>
+							{% for k in ('actual', 'virtual', 'difference') %}
+								<td style="text-align: right;">
+									{% set part = parts['gbp'] %}
+									{% if k in part %}
+										{% set val = part[k] %}
+									{% else %}
+										{% set val = '' %}
+									{% endif %}
+									{% if val is none %}
+									{% elif val is number %}
+										{{"{:0,.2f}".format(val)}}
+									{% else %}
+										{{val}}
+									{% endif %}
+								</td>
+							{% endfor %}
+						</tr>
+						{% for part_name, part in parts.items()|sort %}
+							{% if part_name != 'gbp' %}
+								<tr>
+									<td>{{part_name}}</td>
+									{% for k in ('actual', 'virtual', 'difference') %}
+										<td style="text-align: right;">
+											{% if k in part %}
+												{% set val = part[k] %}
+											{% else %}
+												{% set val = '' %}
+											{% endif %}
+											{% if val is none %}
+											{% elif val is number %}
+												{{"{:0,.2f}".format(val)}}
+											{% elif (val is string) or (val is boolean) %}
+												{{val}}
+											{% else %}
+												{% for v in val %}
+													{% if v is number %}
+														{{"{:0,.2f}".format(v)}}
+													{% else %}
+														{{v}}
+													{% endif %}
+													{% if not loop.last %}
+														|
+													{% endif %}
+												{% endfor %}
+											{% endif %}
+										</td>
+									{% endfor %}
+								</tr>
+							{% endif %}
 						{% endfor %}
-					</tr>
-					{% for part_name, part in element.items()|sort %}
-					  {% if part_name != 'gbp' %}
+					</tbody>
+				</table>
+
+				<table>
+					<caption>Actual {{table}} Elements</caption>
+					<thead>
+						<tr>
+							<th>View</th>
+							<th>Batch</th>
+							<th>Bill</th>
+							<th>Start Date</th>
+							<th>Finish Date</th>
+							<th>Net GBP</th>
+							<th>Breakdown</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for el in element['actual_elements'] %}
 							<tr>
-								<td>{{part_name}}</td>
-								{% for k in ('actual', 'virtual', 'difference') %}
-									<td style="text-align: right;">
-										{% if k in part %}
-											{% set val = part[k] %}
-										{% else %}
-											{% set val = '' %}
-										{% endif %}
-										{% if val is none %}
-										{% elif val is number %}
-											{{"{:0,.2f}".format(val)}}
-										{% elif (val is string) or (val is boolean) %}
-											{{val}}
-										{% else %}
-											{% for v in val %}
-												{% if v is number %}
-													{{"{:0,.2f}".format(v)}}
-												{% else %}
-													{{v}}
-												{% endif %}
-												{% if not loop.last %}
-													|
-												{% endif %}
-											{% endfor %}
-										{% endif %}
-									</td>
-								{% endfor %}
+								<td><a href="/e/supplier_elements/{{el.id}}">View</a></td>
+								<td>
+									<a href="/e/supplier_batches/{{el.bill.batch.id}}">{{el.bill.batch.reference}}</a>
+								</td>
+								<td><a href="/e/supplier_bills/{{el.bill.id}}">View</a></td>
+								<td>{{el.start_date}}</td>
+								<td>{{el.finish_date}}</td>
+								<td>{{el.net}}</td>
+								<td>{{el.breakdown}}</td>
 							</tr>
-						{% endif %}
-					{% endfor %}
-				</tbody>
-			</table>
+						{% endfor %}
+					</tbody>
+				</table>
+
+			</div>
 		{% endfor %}
 
 	</section>
