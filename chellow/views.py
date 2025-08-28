@@ -1408,19 +1408,28 @@ def report_run_get(run_id):
         hide_checked = req_bool("hide_checked")
 
         order_by = f"difference-{element}-gbp"
-        q = g.sess.query(ReportRunRow).filter(ReportRunRow.report_run == run)
+        ROW_LIMIT = 200
+        q = select(ReportRunRow).where(ReportRunRow.report_run == run).limit(ROW_LIMIT)
         if hide_checked:
             q = q.filter(
                 ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
             )
-        ROW_LIMIT = 200
-        rows = (
-            q.order_by(
-                func.abs(ReportRunRow.data["values"][order_by].as_float()).desc()
+        if element == "net":
+            q = q.order_by(
+                func.abs(
+                    ReportRunRow.data["values"]["difference_net_gbp"].as_float()
+                ).desc()
             )
-            .limit(ROW_LIMIT)
-            .all()
-        )
+        else:
+            q = q.order_by(
+                func.abs(
+                    ReportRunRow.data["values"]["elements"][element][
+                        "difference"
+                    ].as_float()
+                ).desc()
+            )
+
+        rows = g.sess.scalars(q).all()
         return render_template(
             "report_run_bill_check.html",
             run=run,
