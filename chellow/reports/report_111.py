@@ -60,10 +60,14 @@ def _add_gap_hh(gaps, hh_start, gap_type):
                 gaps[hh_start] = "middle"
             case ("start", "start"):
                 pass
+            case ("start", "finish"):
+                gaps[hh_start] = "start_finish"
             case ("finish", "finish"):
                 pass
-            case ("start_finish", _):
-                gaps[hh_start] = gap_type
+            case ("finish", "start"):
+                gaps[hh_start] = "start_finish"
+            case ("start_finish", "finish"):
+                pass
             case _:
                 raise BadRequest(f"Gap combination ({hh}, {gap_type}) not recognized.")
 
@@ -74,8 +78,8 @@ def _add_gap_hh(gaps, hh_start, gap_type):
 def _add_gap(caches, gaps, start_date, finish_date):
     hhs = hh_range(caches, start_date, finish_date)
     _add_gap_hh(gaps, hhs[0], "start")
-    _add_gap_hh(gaps, hhs[-1], "finish")
-    for hh_start in hhs[1:-1]:
+    _add_gap_hh(gaps, hhs[-1] + HH, "finish")
+    for hh_start in hhs[1:]:
         _add_gap_hh(gaps, hh_start, "middle")
 
 
@@ -86,7 +90,7 @@ def find_gaps(gaps):
             if "start" in gtype:
                 gap_start = ghh
             if "finish" in gtype:
-                yield gap_start, ghh
+                yield gap_start, ghh - HH
 
 
 def content(
