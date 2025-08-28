@@ -18,24 +18,43 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 def test_process_BTL():
     elements = {
-        "UVLT": ["76.30", "R"],
-        "UTVA": ["13.61", "R"],
-        "TBTL": ["82.93", "R"],
+        "UVLT": ["7630", "R"],
+        "UTVA": ["1361", "R"],
+        "TBTL": ["8293", "R"],
     }
+    issue_date = to_utc(ct_datetime(2025, 8, 3))
+    start_date = to_utc(ct_datetime(2025, 7, 1))
+    finish_date = to_utc(ct_datetime(2025, 7, 31, 23, 30))
     headers = {
         "bill_type_code": "N",
         "account": "hgteiulh",
         "mpan_core": "22 8872 1749 119",
         "reference": "dskghksldfj",
-        "issue_date": to_utc(ct_datetime(2025, 8, 3)),
-        "start_date": to_utc(ct_datetime(2025, 7, 1)),
-        "finish_date": to_utc(ct_datetime(2025, 7, 31, 23, 30)),
+        "issue_date": issue_date,
+        "start_date": start_date,
+        "finish_date": finish_date,
         "kwh": Decimal("77.34"),
         "breakdown": {},
         "reads": [],
         "elements": [],
     }
-    _process_BTL(elements, headers)
+    bill = _process_BTL(elements, headers)
+    assert bill == {
+        "account": "hgteiulh",
+        "bill_type_code": "N",
+        "breakdown": {},
+        "elements": [],
+        "finish_date": finish_date,
+        "gross": Decimal("-82.93"),
+        "issue_date": issue_date,
+        "kwh": Decimal("77.34"),
+        "mpan_core": "22 8872 1749 119",
+        "net": Decimal("-76.30"),
+        "reads": [],
+        "reference": "dskghksldfj",
+        "start_date": start_date,
+        "vat": Decimal("-13.61"),
+    }
 
 
 def test_process_MTR_UTLHDR():

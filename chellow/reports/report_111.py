@@ -50,24 +50,43 @@ from chellow.utils import (
 )
 
 
+def _add_gap_hh(gaps, hh_start, gap_type):
+    try:
+        hh = gaps[hh_start]
+        match (hh, gap_type):
+            case ("middle", _):
+                pass
+            case (_, "middle"):
+                gaps[hh_start] = "middle"
+            case ("start", "start"):
+                pass
+            case ("finish", "finish"):
+                pass
+            case ("start_finish", _):
+                gaps[hh_start] = gap_type
+            case _:
+                raise BadRequest(f"Gap combination ({hh}, {gap_type}) not recognized.")
+
+    except KeyError:
+        hh = gaps[hh_start] = gap_type
+
+
 def _add_gap(caches, gaps, start_date, finish_date):
-    for hh_start in hh_range(caches, start_date, finish_date):
-        gaps.add(hh_start)
+    hhs = hh_range(caches, start_date, finish_date)
+    _add_gap_hh(gaps, hhs[0], "start")
+    _add_gap_hh(gaps, hhs[-1], "finish")
+    for hh_start in hhs[1:-1]:
+        _add_gap_hh(gaps, hh_start, "middle")
 
 
 def find_gaps(gaps):
     if len(gaps) > 0:
-        hh_iter = iter(sorted(gaps))
-        gap_start = next(hh_iter)
-        gap_finish = gap_start
-        for gap_hh in hh_iter:
-            if gap_hh == gap_finish + HH:
-                gap_finish = gap_hh
-            else:
-                yield gap_start, gap_finish
-                gap_start = gap_hh
-                gap_finish = gap_start
-        yield gap_start, gap_finish
+        gap_start = None
+        for ghh, gtype in sorted(gaps.items()):
+            if "start" in gtype:
+                gap_start = ghh
+            if "finish" in gtype:
+                yield gap_start, ghh
 
 
 def content(
@@ -603,7 +622,7 @@ def _process_period(
 
 
 def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, vbf):
-    gaps = set()
+    gaps = {}
     bill_statuses = {}
     supply = Supply.get_by_id(sess, supply_id)
     market_role_code = contract.market_role.code  # noqa: F841
