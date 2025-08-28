@@ -3,9 +3,9 @@ from decimal import Decimal
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import parse_edi, to_ct_date, to_date, to_decimal, to_finish_date
-from chellow.models import Era, Session
-from chellow.utils import HH, ct_datetime, parse_mpan_core
+from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
+from chellow.models import Session
+from chellow.utils import parse_mpan_core
 
 
 read_type_map = {
@@ -35,45 +35,10 @@ def _process_BCD(elements, headers):
 
     sumo = elements["SUMO"]
     headers["start_date"] = to_date(sumo[0])
-    headers["is_ebatch"] = to_ct_date(sumo[1]) in (
-        ct_datetime(2020, 4, 1),
-        ct_datetime(2020, 3, 16),
-    )
-    if headers["is_ebatch"]:
-        headers["finish_date"] = to_date(sumo[1]) - HH
-    else:
-        headers["finish_date"] = to_finish_date(sumo[1])
+    headers["finish_date"] = to_finish_date(sumo[1])
 
 
 def _process_BTL(elements, headers):
-    if headers["message_type"] == "UTLBIL":
-        if headers["mpan_core"] is None:
-            sess = headers["sess"]
-            era = (
-                sess.query(Era)
-                .filter(Era.imp_supplier_account == headers["account"])
-                .first()
-            )
-            if era is not None:
-                headers["mpan_core"] = era.imp_mpan_core
-            sess.close()
-
-        reads = headers["reads"]
-        if headers["is_ebatch"]:
-            for r in headers["reads"]:
-                if r["pres_type_code"] == "C":
-                    r["pres_type_code"] = "E"
-
-        dup_reads = set()
-        new_reads = []
-        for r in reads:
-            k = tuple(v for n, v in sorted(r.items()))
-            if k in dup_reads:
-                continue
-            dup_reads.add(k)
-            new_reads.append(r)
-
-    sumo = elements["SUMO"]
     uvlt = elements["UVLT"]
     utva = elements["UTVA"]
     tbtl = elements["TBTL"]
@@ -84,14 +49,14 @@ def _process_BTL(elements, headers):
         "mpan_core": headers["mpan_core"],
         "reference": headers["reference"],
         "issue_date": headers["issue_date"],
-        "start_date": to_date(sumo[0]),
-        "finish_date": to_finish_date(sumo[1]),
+        "start_date": headers["start_date"],
+        "finish_date": headers["finish_date"],
         "kwh": headers["kwh"],
         "net": Decimal("0.00") + to_decimal(uvlt),
         "vat": Decimal("0.00") + to_decimal(utva),
         "gross": Decimal("0.00") + to_decimal(tbtl),
         "breakdown": headers["breakdown"],
-        "reads": new_reads,
+        "reads": headers["reads"],
         "elements": headers["elements"],
     }
 

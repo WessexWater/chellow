@@ -5,6 +5,7 @@ from io import BytesIO
 
 from chellow.e.bill_parsers.haven_edi_tprs import (
     Parser,
+    _process_BTL,
     _process_CCD1,
     _process_CCD3,
     _process_MAN,
@@ -15,7 +16,29 @@ from chellow.e.bill_parsers.haven_edi_tprs import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_process_MTR_UTLHDR(mocker):
+def test_process_BTL():
+    elements = {
+        "UVLT": ["76.30", "R"],
+        "UTVA": ["13.61", "R"],
+        "TBTL": ["82.93", "R"],
+    }
+    headers = {
+        "bill_type_code": "N",
+        "account": "hgteiulh",
+        "mpan_core": "22 8872 1749 119",
+        "reference": "dskghksldfj",
+        "issue_date": to_utc(ct_datetime(2025, 8, 3)),
+        "start_date": to_utc(ct_datetime(2025, 7, 1)),
+        "finish_date": to_utc(ct_datetime(2025, 7, 31, 23, 30)),
+        "kwh": Decimal("77.34"),
+        "breakdown": {},
+        "reads": [],
+        "elements": [],
+    }
+    _process_BTL(elements, headers)
+
+
+def test_process_MTR_UTLHDR():
     elements = {}
     headers = {"message_type": "UTLHDR", "breakdown": {}}
     bill = _process_MTR(elements, headers)
