@@ -9,160 +9,122 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.method == "GET" and request.values.delete %}
-		<form method="post" action="/report_runs/{{run.id}}">
-			<fieldset>
-				<legend>Are you sure you want to delete this report run?</legend>
-				<input type="submit" name="delete" value="delete"> 
-				<a href="/report_runs/{{run.id}}">Cancel</a>
-			</fieldset>
-		</form>
-	{% else %}
-		<table>
-			<caption>Bill Check</caption>
-			<thead>
-				<tr>
-					<th>Date Created</th>
-					<th>Created By</th>
-					<th>Title</th>
-					<th>State</th>
-					<th>Number Of Rows</th>
-					<th>Sum Of Difference GBP</th>
-					<th>Delete</th>
-					<th>Download Spreadsheet</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>{{run.date_created|hh_format}}</td>
-					<td>{{run.creator}}</td>
-					<td>{{run.title}}</td>
-					<td>{{run.state}}</td>
-					<td>{{rows|length}} (truncated at {{ROW_LIMIT}})</td>
-					<td>
-						{% if 'sum_difference' in summary and summary.sum_difference is not none %}
-							{{"%.2f"|format(summary.sum_difference)}}</td>
-						{% endif %}
-					<td>
-						<form action="/report_runs/{{run.id}}">
-							<fieldset style="border: none;">
-								<input type="submit" name="delete" value="Delete">
-							</fieldset>
-						</form>
-					</td>
-					<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
-				</tr>
-			</tbody>
-		</table>
+	<table>
+		<caption>Bill Check</caption>
+		<thead>
+			<tr>
+				<th>Date Created</th>
+				<th>Created By</th>
+				<th>Title</th>
+				<th>State</th>
+				<th>Number Of Rows</th>
+				<th>Sum Of Difference GBP</th>
+				<th>Delete</th>
+				<th>Download Spreadsheet</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{run.date_created|hh_format}}</td>
+				<td>{{run.creator}}</td>
+				<td>{{run.title}}</td>
+				<td>{{run.state}}</td>
+				<td>{{rows|length}} (truncated at {{ROW_LIMIT}})</td>
+				<td>
+					{% if 'sum_difference' in summary and summary.sum_difference is not none %}
+						{{"%.2f"|format(summary.sum_difference)}}</td>
+					{% endif %}
+				<td>
+					<form hx-delete="/report_runs/{{run.id}}"
+							hx-confirm="Are you sure you want to delete this report run?">
+						<fieldset style="border: none;">
+							<input type="submit" name="delete" value="Delete">
+						</fieldset>
+					</form>
+				</td>
+				<td><a href="/report_runs/{{run.id}}/spreadsheet">Download</a></td>
+			</tr>
+		</tbody>
+	</table>
 
-		{% if summary.missing_bills|length > 0 %}
-			<table class="sticky">
-				<caption>
-					Some Missing Bills (<a href="/report_runs/{{report_run}}">x</a>)
-				</caption>
-				<thead>
-					<tr>
-						<th>View</th>
-						<th>Import MPAN Core</th>
-						<th>Export MPAN Core</th>
-						<th>Start</th>
-						<th>Finish</th>
-						<th>Problem</th>
-						<th>Estimated Difference GBP</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for row in rows %}
-						<tr>
-							<td><a href="/report_run_rows/{{row.id}}">View</a></td>
-							{% for title in row.data.titles %}
-								<td>{{row.data['values'][title]}}</td>
-							{% endfor %}
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-
-		<table class="etheling etheling_sticky">
-			<caption>Periods - Ordered By Difference In {{element}}</caption>
-			<thead>
-				<tr>
-					<th rowspan="2">View</th>
-					<th rowspan="2">Contract</th>
-					<th rowspan="2">Supply</th>
-					<th rowspan="2">Import MPAN Core</th>
-					<th rowspan="2">Export MPAN Core</th>
-					<th rowspan="2">Period Start</th>
-					<th rowspan="2">Period Finish</th>
-					<th colspan="{{elements|length + 1}}">Difference GBP</th>
-					<th rowspan="2">Note</th>
-				</tr>
-				<tr>
+	<table class="etheling etheling_sticky">
+		<caption>Periods - Ordered By Difference In {{element}}</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">View</th>
+				<th rowspan="2">Contract</th>
+				<th rowspan="2">Supply</th>
+				<th rowspan="2">Import MPAN Core</th>
+				<th rowspan="2">Export MPAN Core</th>
+				<th rowspan="2">Period Start</th>
+				<th rowspan="2">Period Finish</th>
+				<th colspan="{{elements|length + 1}}">Difference GBP</th>
+				<th rowspan="2">Note</th>
+			</tr>
+			<tr>
+				<th>
+					{% if element == 'net' %}
+						&uparrow;
+					{% else %}
+						<a href="/report_runs/{{run.id}}?element=net">&uparrow;</a>
+					{% endif %}
+					Total	
+				</th>
+				{% for elem, diff in elements %}
 					<th>
-					  {% if element == 'net' %}
-						  &uparrow;
+						{% if elem == element %}
+							&uparrow;
 						{% else %}
-						  <a href="/report_runs/{{run.id}}?element=net">&uparrow;</a>
+							<a href="/report_runs/{{run.id}}?element={{elem}}">&uparrow;</a>
 						{% endif %}
-					  Total	
+						{{elem}}
 					</th>
-					{% for elem, diff in elements %}
-						<th>
-							{% if elem == element %}
-								&uparrow;
-							{% else %}
-								<a href="/report_runs/{{run.id}}?element={{elem}}">&uparrow;</a>
-							{% endif %}
-							{{elem}}
-						</th>
-					{% endfor %}
-				</tr>
-			</thead>
-			<tbody>
-				{% for row in rows %}
-					{% set values = row.data['values'] %}
-					{% set properties = row.data.get('properties', {}) %}
-					<tr>
-						<td><a href="/report_run_rows/{{row.id}}">View</a></td>
-						<td>
-							<a href="/e/supplier_contracts/{{values['contract_id']}}">{{values['contract_name']}}</a>
-						</td>
-						<td>
-							<a href="/e/supplies/{{values['supply_id']}}">View</a>
-						</td>
-						<td>
-							{% if values['imp_mpan_core'] is not none %}
-							  {{values['imp_mpan_core']}}
-							{% endif %}
-						</td>
-						<td>
-							{% if values['exp_mpan_core'] is not none %}
-							  {{values['exp_mpan_core']}}
-							{% endif %}
-						</td>
-						<td>
-						 {{values['period_start']}}
-						</td>
-						<td>
-						 {{values['period_finish']}}
-						</td>
-						<td>
-						 {{"%.2f"|format(values['difference_net_gbp'])}}
-						</td>
-						{% for elem, diff in elements %}
-							<td>	
-								{% if elem in values.elements %}
-							    {{"%.2f"|format(values.elements[elem]['parts']['gbp']['difference'])}}
-								{% endif %}
-							</td>
-						{% endfor %}
-						<td>
-							{{ properties.get('note', '') }}
-						</td>
-					</tr>
 				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
+			</tr>
+		</thead>
+		<tbody>
+			{% for row in rows %}
+				{% set data = row.data['data'] %}
+				{% set properties = row.data.get('properties', {}) %}
+				<tr>
+					<td><a href="/report_run_rows/{{row.id}}">View</a></td>
+					<td>
+						<a href="/e/supplier_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+					</td>
+					<td>
+						<a href="/e/supplies/{{data['supply_id']}}">View</a>
+					</td>
+					<td>
+						{% if data['imp_mpan_core'] is not none %}
+							{{data['imp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td>
+						{% if data['exp_mpan_core'] is not none %}
+							{{data['exp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td>
+					 {{data['period_start']}}
+					</td>
+					<td>
+					 {{data['period_finish']}}
+					</td>
+					<td>
+					 {{"%.2f"|format(data['difference_net_gbp'])}}
+					</td>
+					{% for elem, diff in elements %}
+						<td>	
+							{% if elem in data.elements %}
+								{{"%.2f"|format(data.elements[elem]['parts']['gbp']['difference'])}}
+							{% endif %}
+						</td>
+					{% endfor %}
+					<td>
+						{{ properties.get('note', '') }}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

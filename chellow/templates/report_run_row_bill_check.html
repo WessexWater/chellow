@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-	{% set values = row.data['values'] %}
+	{% set data = row.data['data'] %}
 	{% set properties = row.data.get('properties', {}) %}
 	<table>
 		<caption>Bill Check</caption>	
@@ -32,31 +32,31 @@
 		<tbody>
 			<tr>
 				<td>
-					{% if values.contract_id is not none %}
-						<a href="/e/supplier_contracts/{{values.contract_id}}">{{values['contract_name']}}</a>
+					{% if data.contract_id is not none %}
+						<a href="/e/supplier_contracts/{{data.contract_id}}">{{data['contract_name']}}</a>
 					{% endif %}
 				</td>
 				<td>
-					{% if values.supply_id != None %}
-						<a href="/e/supplies/{{values.supply_id}}">view</a>
+					{% if data.supply_id != None %}
+						<a href="/e/supplies/{{data.supply_id}}">view</a>
 					{% endif %}
 				</td>
-				<td>{{values['imp_mpan_core']}}</td>
+				<td>{{data['imp_mpan_core']}}</td>
 				<td>
-					{% if values['exp_mpan_core'] is not none %}
-					  {{values['exp_mpan_core']}}
+					{% if data['exp_mpan_core'] is not none %}
+					  {{data['exp_mpan_core']}}
 					{% endif %}
 				</td>
 				<td>
-					{% if values.site_id is not none %}
-					  <a href="/sites/{{values['site_id']}}">{{values['site_code']}} {{values['site_name']}}</a>
+					{% if data.site_id is not none %}
+					  <a href="/sites/{{data['site_id']}}">{{data['site_code']}} {{data['site_name']}}</a>
 					{% endif %}
 				</td>
-				<td>{{values['period_start']}}</td>
-				<td>{{values['period_finish']}}</td>
-				<td>{{"{:0,.2f}".format(values['actual_net_gbp'])}}</td>
-				<td>{{"{:0,.2f}".format(values['virtual_net_gbp'])}}</td>
-				<td>{{"{:0,.2f}".format(values['difference_net_gbp'])}}</td>
+				<td>{{data['period_start']}}</td>
+				<td>{{data['period_finish']}}</td>
+				<td>{{"{:0,.2f}".format(data['actual_net_gbp'])}}</td>
+				<td>{{"{:0,.2f}".format(data['virtual_net_gbp'])}}</td>
+				<td>{{"{:0,.2f}".format(data['difference_net_gbp'])}}</td>
 			</tr>
 		</tbody>
 	</table>
@@ -78,59 +78,59 @@
 				<tr>
 					<td>gross</td>
 					<td>
-						{% if 'covered-gross-gbp' in values and values['covered-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(values['covered-gross-gbp'])}}
+						{% if 'covered-gross-gbp' in data and data['covered-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(data['covered-gross-gbp'])}}
 						{% endif %}
 					</td>
 					<td>
-						{% if 'virtual-gross-gbp' in values and values['virtual-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(values['virtual-gross-gbp'])}}
+						{% if 'virtual-gross-gbp' in data and data['virtual-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(data['virtual-gross-gbp'])}}
 						{% endif %}
 					</td>
 					<td>
-						{% if 'difference-gross-gbp' in values and values['difference-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(values['difference-gross-gbp'])}}
+						{% if 'difference-gross-gbp' in data and data['difference-gross-gbp'] is number %}
+							{{"{:0,.2f}".format(data['difference-gross-gbp'])}}
 						{% endif %}
 					</td>
 				</tr>
 				<tr>
 					<td>net</td>
 					<td>
-						{% if 'covered-net-gbp' in values and values['covered-net-gbp'] is number %}
-							{{"{:0,.2f}".format(values['covered-net-gbp'])}}</td>
+						{% if 'covered-net-gbp' in data and data['covered-net-gbp'] is number %}
+							{{"{:0,.2f}".format(data['covered-net-gbp'])}}</td>
 						{% endif %}
 					<td>
-						{% if 'virtual-net-gbp' in values and values['virtual-net-gbp'] is number %}
-							{{"{:0,.2f}".format(values['virtual-net-gbp'])}}</td>
+						{% if 'virtual-net-gbp' in data and data['virtual-net-gbp'] is number %}
+							{{"{:0,.2f}".format(data['virtual-net-gbp'])}}</td>
 						{% endif %}
 					<td>
-						{% if 'difference-net-gbp' in values and values['difference-net-gbp'] is number %}
-							{{"{:0,.2f}".format(values['difference-net-gbp'])}}</td>
+						{% if 'difference-net-gbp' in data and data['difference-net-gbp'] is number %}
+							{{"{:0,.2f}".format(data['difference-net-gbp'])}}</td>
 						{% endif %}
 				</tr>
 				<tr>
 					<td>vat</td>
 					<td>
-						{% if 'covered-vat-gbp' in values and values['covered-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(values['covered-vat-gbp'])}}</td>
+						{% if 'covered-vat-gbp' in data and data['covered-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(data['covered-vat-gbp'])}}</td>
 						{% endif %}
 					<td>
-						{% if 'virtual-vat-gbp' in values and values['virtual-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(values['virtual-vat-gbp'])}}</td>
+						{% if 'virtual-vat-gbp' in data and data['virtual-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(data['virtual-vat-gbp'])}}</td>
 						{% endif %}
 					<td>
-						{% if 'difference-vat-gbp' in values and values['difference-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(values['difference-vat-gbp'])}}</td>
+						{% if 'difference-vat-gbp' in data and data['difference-vat-gbp'] is number %}
+							{{"{:0,.2f}".format(data['difference-vat-gbp'])}}</td>
 						{% endif %}
 				</tr>
 				<tr>
 					<td>vat-rate</td>
 					<td>
-						{{values['covered-vat-rate']}}</td>
-					<td>{{values['virtual-vat-rate']}}</td>
+						{{data['covered-vat-rate']}}</td>
+					<td>{{data['virtual-vat-rate']}}</td>
 					<td>
-						{% if values['difference-vat-rate'] is number %}
-							{{"{:0,.2f}".format(values['difference-vat-rate'])}}
+						{% if data['difference-vat-rate'] is number %}
+							{{"{:0,.2f}".format(data['difference-vat-rate'])}}
 						{% endif %}
 					</td>
 				</tr>
@@ -139,7 +139,7 @@
 		-->
 
 		{% for table in tables %}
-			{% set element = values['elements'][table] %}
+			{% set element = data['elements'][table] %}
 			{% set parts = element['parts'] %}
 
 			<div style="display: flex; gap: 4rem;">

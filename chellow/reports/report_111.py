@@ -114,7 +114,7 @@ def content(
         with RSession() as sess:
             user = User.get_by_id(sess, user_id)
             tmp_file = open_file(
-                f"bill_check_{fname_additional}.ods", user, mode="w", newline=""
+                f"bill_check_{fname_additional}.csv", user, mode="w", newline=""
             )
             writer = csv.writer(tmp_file, lineterminator="\n")
 
@@ -179,22 +179,25 @@ def content(
                 )
             virtual_bill_titles = virtual_bill_titles_func()
 
-            titles = [
+            titles = []
+            header_titles = [
                 "imp_mpan_core",
                 "exp_mpan_core",
-                "period_start_date",
-                "period_finish_date",
+                "site_code",
+                "site_name",
+                "period_start",
+                "period_finish",
                 "actual_net_gbp",
                 "virtual_net_gbp",
                 "difference_net_gbp",
-                "site_code",
-                "site_name",
             ]
+            titles.extend(header_titles)
             for t in virtual_bill_titles:
-                titles.append("actual-" + t)
-                titles.append("virtual-" + t)
-                if t.endswith("-gbp"):
-                    titles.append("difference-" + t)
+                if t not in ("net-gbp", "vat-gbp", "gross-gbp"):
+                    titles.append("actual-" + t)
+                    titles.append("virtual-" + t)
+                    if t.endswith("-gbp"):
+                        titles.append("difference-" + t)
 
             writer.writerow(titles)
 
@@ -206,20 +209,13 @@ def content(
                 for data in _process_supply(
                     sess, caches, supply_id, bill_ids, forecast_date, contract, vbf
                 ):
-                    vals = {
-                        "imp_mpan_core": data["imp_mpan_core"],
-                        "exp_mpan_core": data["exp_mpan_core"],
-                        "period_start_date": data["period_start_date"],
-                        "period_finish_date": data["period_finish_date"],
-                        "actual_net_gbp": data["actual_net_gbp"],
-                        "virtual_net_gbp": data["virtual_net_gbp"],
-                        "difference_net_gbp": data["difference_net_gbp"],
-                        "site_code": data["site_code"],
-                        "site_name": data["site_name"],
-                    }
+                    vals = {}
+                    for title in header_titles:
+                        vals[title] = data[title]
                     for el_name, el in data["elements"].items():
-                        for part_name, part_value in el["parts"].items():
-                            vals[f"{el_name}-{part_name}"] = part_value
+                        for part_name, part in el["parts"].items():
+                            for typ, value in part.items():
+                                vals[f"{typ}-{el_name}-{part_name}"] = value
 
                     writer.writerow(csv_make_val(vals.get(title)) for title in titles)
                     ReportRun.w_insert_row(

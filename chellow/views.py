@@ -1370,20 +1370,18 @@ def report_run_get(run_id):
         else:
             summary["sum_difference"] = g.sess.scalar(
                 select(
-                    func.sum(
-                        ReportRunRow.data["values"]["difference_net_gbp"].as_float()
-                    )
+                    func.sum(ReportRunRow.data["data"]["difference_net_gbp"].as_float())
                 ).where(ReportRunRow.report_run == run)
             )
             element_names = g.sess.scalars(
-                select(func.jsonb_object_keys(ReportRunRow.data["values"]["elements"]))
+                select(func.jsonb_object_keys(ReportRunRow.data["data"]["elements"]))
                 .where(ReportRunRow.report_run == run)
                 .distinct()
             ).all()
             diff_selects = [
                 func.sum(
                     func.coalesce(
-                        ReportRunRow.data["values"]["elements"][n]["parts"]["gbp"][
+                        ReportRunRow.data["data"]["elements"][n]["parts"]["gbp"][
                             "difference"
                         ].as_float(),
                         0,
@@ -1417,13 +1415,13 @@ def report_run_get(run_id):
         if element == "net":
             q = q.order_by(
                 func.abs(
-                    ReportRunRow.data["values"]["difference_net_gbp"].as_float()
+                    ReportRunRow.data["data"]["difference_net_gbp"].as_float()
                 ).desc()
             )
         else:
             q = q.order_by(
                 func.abs(
-                    ReportRunRow.data["values"]["elements"][element][
+                    ReportRunRow.data["data"]["elements"][element][
                         "difference"
                     ].as_float()
                 ).desc()
@@ -1674,7 +1672,7 @@ def report_run_row_get(row_id):
     tables = []
 
     if row.report_run.name == "bill_check":
-        elements = row.data["values"]["elements"]
+        elements = row.data["data"]["elements"]
         for el_name, _ in sorted(
             list(elements.items()),
             key=lambda x: abs(x[1]["parts"]["gbp"]["difference"]),
