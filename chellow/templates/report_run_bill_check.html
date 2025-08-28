@@ -111,12 +111,12 @@
 					 {{data['period_finish']}}
 					</td>
 					<td>
-					 {{"%.2f"|format(data['difference_net_gbp'])}}
+					  {{"{:0,.2f}".format(data['difference_net_gbp'])}}
 					</td>
 					{% for elem, diff in elements %}
 						<td>	
 							{% if elem in data.elements %}
-								{{"%.2f"|format(data.elements[elem]['parts']['gbp']['difference'])}}
+							  {{"{:0,.2f}".format(data.elements[elem]['parts']['gbp']['difference'])}}
 							{% endif %}
 						</td>
 					{% endfor %}
