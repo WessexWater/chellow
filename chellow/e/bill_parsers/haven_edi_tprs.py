@@ -43,6 +43,15 @@ def _process_BTL(elements, headers):
     utva = elements["UTVA"]
     tbtl = elements["TBTL"]
 
+    dup_reads = set()
+    new_reads = []
+    for r in headers["reads"]:
+        k = tuple(v for n, v in sorted(r.items()))
+        if k in dup_reads:
+            continue
+        dup_reads.add(k)
+        new_reads.append(r)
+
     return {
         "bill_type_code": headers["bill_type_code"],
         "account": headers["account"],
@@ -56,7 +65,7 @@ def _process_BTL(elements, headers):
         "vat": Decimal("0.00") + to_decimal(utva),
         "gross": Decimal("0.00") + to_decimal(tbtl),
         "breakdown": headers["breakdown"],
-        "reads": headers["reads"],
+        "reads": new_reads,
         "elements": headers["elements"],
     }
 
