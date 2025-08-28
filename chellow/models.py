@@ -6477,8 +6477,10 @@ class ReportRun(Base, PersistentClass):
         self.data = _jsonize(data)
         attributes.flag_modified(self, "data")
 
-    def insert_row(self, sess, tab, titles, values, properties):
+    def insert_row(self, sess, tab, titles, values, properties, data=None):
         vals = {"titles": titles, "values": values, "properties": properties}
+        if data is not None:
+            vals["data"] = data
         row = ReportRunRow(self, tab, vals)
         sess.add(row)
 
@@ -6516,10 +6518,10 @@ class ReportRun(Base, PersistentClass):
             wsess.commit()
 
     @staticmethod
-    def w_insert_row(report_run_id, tab, titles, values, properties):
+    def w_insert_row(report_run_id, tab, titles, values, properties, data=None):
         with Session() as wsess:
             report_run = ReportRun.get_by_id(wsess, report_run_id)
-            report_run.insert_row(wsess, tab, titles, values, properties)
+            report_run.insert_row(wsess, tab, titles, values, properties, data=data)
             wsess.commit()
 
 

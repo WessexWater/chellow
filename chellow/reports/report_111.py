@@ -68,6 +68,8 @@ def _add_gap_hh(gaps, hh_start, gap_type):
                 gaps[hh_start] = "start_finish"
             case ("start_finish", "finish"):
                 pass
+            case ("start_finish", "start"):
+                pass
             case _:
                 raise BadRequest(f"Gap combination ({hh}, {gap_type}) not recognized.")
 
@@ -112,7 +114,7 @@ def content(
         with RSession() as sess:
             user = User.get_by_id(sess, user_id)
             tmp_file = open_file(
-                f"bill_check_{fname_additional}.csv", user, mode="w", newline=""
+                f"bill_check_{fname_additional}.ods", user, mode="w", newline=""
             )
             writer = csv.writer(tmp_file, lineterminator="\n")
 
@@ -178,17 +180,18 @@ def content(
             virtual_bill_titles = virtual_bill_titles_func()
 
             titles = [
-                "supply_id",
                 "imp_mpan_core",
                 "exp_mpan_core",
-                "period_from",
-                "period_to",
+                "period_start_date",
+                "period_finish_date",
                 "actual_net_gbp",
+                "virtual_net_gbp",
+                "difference_net_gbp",
                 "site_code",
                 "site_name",
             ]
             for t in virtual_bill_titles:
-                titles.append("covered-" + t)
+                titles.append("actual-" + t)
                 titles.append("virtual-" + t)
                 if t.endswith("-gbp"):
                     titles.append("difference-" + t)
@@ -200,12 +203,32 @@ def content(
                 bill_map[bill.supply.id].add(bill.id)
 
             for supply_id, bill_ids in bill_map.items():
-                for vals in _process_supply(
+                for data in _process_supply(
                     sess, caches, supply_id, bill_ids, forecast_date, contract, vbf
                 ):
+                    vals = {
+                        "imp_mpan_core": data["imp_mpan_core"],
+                        "exp_mpan_core": data["exp_mpan_core"],
+                        "period_start_date": data["period_start_date"],
+                        "period_finish_date": data["period_finish_date"],
+                        "actual_net_gbp": data["actual_net_gbp"],
+                        "virtual_net_gbp": data["virtual_net_gbp"],
+                        "difference_net_gbp": data["difference_net_gbp"],
+                        "site_code": data["site_code"],
+                        "site_name": data["site_name"],
+                    }
+                    for el_name, el in data["elements"].items():
+                        for part_name, part_value in el["parts"].items():
+                            vals[f"{el_name}-{part_name}"] = part_value
+
                     writer.writerow(csv_make_val(vals.get(title)) for title in titles)
                     ReportRun.w_insert_row(
-                        report_run_id, "", titles, vals, {"is_checked": False}
+                        report_run_id,
+                        "",
+                        titles,
+                        vals,
+                        {"is_checked": False},
+                        data=data,
                     )
         ReportRun.w_update(report_run_id, "finished")
 
