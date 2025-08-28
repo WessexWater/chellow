@@ -89,10 +89,10 @@ def find_gaps(gaps):
     if len(gaps) > 0:
         gap_start = None
         for ghh, gtype in sorted(gaps.items()):
-            if "start" in gtype:
-                gap_start = ghh
             if "finish" in gtype:
                 yield gap_start, ghh - HH
+            if "start" in gtype:
+                gap_start = ghh
 
 
 def content(

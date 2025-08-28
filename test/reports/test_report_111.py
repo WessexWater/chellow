@@ -34,8 +34,26 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.reports.report_111 import _process_supply, content
+from chellow.reports.report_111 import _process_supply, content, find_gaps
 from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_find_gaps():
+    gaps = {
+        to_utc(ct_datetime(2025, 1, 1)): "start",
+        to_utc(ct_datetime(2025, 1, 1, 0, 30)): "start_finish",
+        to_utc(ct_datetime(2025, 1, 1, 1, 0)): "finish",
+    }
+    assert list(find_gaps(gaps)) == [
+        (
+            to_utc(ct_datetime(2025, 1, 1, 0, 0)),
+            to_utc(ct_datetime(2025, 1, 1, 0, 0)),
+        ),
+        (
+            to_utc(ct_datetime(2025, 1, 1, 0, 30)),
+            to_utc(ct_datetime(2025, 1, 1, 0, 30)),
+        ),
+    ]
 
 
 # End to end tests
