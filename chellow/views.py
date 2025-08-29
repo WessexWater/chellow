@@ -1421,7 +1421,7 @@ def report_run_get(run_id):
         else:
             q = q.order_by(
                 func.abs(
-                    ReportRunRow.data["data"]["elements"][element][
+                    ReportRunRow.data["data"]["elements"][element]["parts"]["gbp"][
                         "difference"
                     ].as_float()
                 ).desc()
