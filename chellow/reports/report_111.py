@@ -535,6 +535,7 @@ def _process_period(
             era,
             polarity,
             caches,
+            bill=True,
         )
         vbf(data_source)
 
