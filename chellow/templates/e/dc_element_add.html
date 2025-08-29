@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{bill.batch.contract.name}} &raquo; Batches &raquo; 
+	{{bill.batch.reference}} &raquo; {{bill.reference}} &raquo; Add Element
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/dc_contract/{{bill.batch.contract.id}}/batches">Batches</a> &raquo; 
+	<a href="/e/dc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
+	<a href="/e/dc_bills/{{bill.id}}">{{bill.reference}}</a> &raquo;
+ 	Add Element
+{% endblock %}
+
+{% block content %}
+	<form action="/e/dc_bills/{{bill.id}}/add_element" method="post">
+		<fieldset>
+			<legend>Add An Element</legend>
+
+			<label>Name</label> {{input_text('name')}}
+
+			<label>Start Date</label> {{input_date('start', start_date)}}
+
+			<label>Finish Date</label> {{input_date('finish')}}
+
+			<label>Net GBP</label> {{input_text('net', '0.00')}}
+
+			<label>Breakdown</label>
+			{{input_textarea('breakdown', '{}', 10, 80, show_pos=True)}}
+
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+{% endblock %}

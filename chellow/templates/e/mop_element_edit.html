@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{element.bill.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{element.bill.batch.reference}} &raquo; Bills &raquo;
+	{{element.bill.reference}} &raquo; {{element.name}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
+	<a href="/e/mop_contracts/{{element.bill.batch.contract.id}}">{{element.bill.batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/e/mop_contracts/{{element.bill.batch.contract.id}}/batches">Batches</a> &raquo; 
+	<a href="/e/mop_batches/{{element.bill.batch.id}}">{{element.bill.batch.reference}}</a> &raquo; 
+	<a href="/e/mop_bills/{{element.bill.id}}">{{element.bill.reference}}</a> &raquo;
+	<a href="/e/mop_elements/{{element.id}}">{{element.name}}</a> &raquo;
+ 	Edit
+{% endblock %}
+
+{% block content %}
+
+	<form method="post" action="/e/mop_elements/{{element.id}}/edit">
+		<fieldset>
+			<legend>Update This Element</legend>	
+			<label>Name</label> {{input_text('name', element.name)}}
+			<label>Start Date</label> {{input_date('start', element.start_date)}}
+			<label>Finish Date</label> {{input_date('finish', element.finish_date)}}
+			<label>Net GBP</label> {{input_text('net', element.net)}}
+			<label>Breakdown</label>
+			{{input_textarea('breakdown', element.breakdown, 10, 80, show_pos=True)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+  </form>
+
+		<h3>Example Breakdown</h3>
+
+		<pre>{
+  "nrg-kwh": 1000,
+  "nrg-rate": 0.1,
+}</pre>
+
+	<form hx-delete="/e/mop_elements/{{element.id}}/edit"
+			hx-confirm="Are you sure you want to delete this element?">
+		<fieldset>
+			<legend>Delete This Element</legend>	
+			<input type="submit" name="confirm_delete" value="Delete">
+		</fieldset>
+	</form>
+{% endblock %}
