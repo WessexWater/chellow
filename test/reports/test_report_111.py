@@ -313,6 +313,7 @@ def virtual_bill(ds):
             "difference_net_gbp": 10.0,
             "contract_id": 4,
             "contract_name": "Fusion Supplier 2000",
+            "market_role_code": "X",
             "elements": {
                 "nrg": {
                     "parts": {
