@@ -323,24 +323,15 @@ def test_duration_report_get(mocker):
 
 
 def test_dc_batches_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", valid_from, None, None)
-    contract = Contract.insert_dc(
-        sess,
-        "Fusion DC",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
-    )
+    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
     contract.insert_batch(sess, "b1", "batch 1")
     sess.commit()
 
-    response = client.get(f"/e/dc_batches?dc_contract_id={contract.id}")
+    response = client.get(f"/e/dc_contracts/{contract.id}/batches")
     match(response, 200)
 
 
@@ -2082,24 +2073,17 @@ def test_llfc_eidt_post(sess, client):
 
 
 def test_mop_batches_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "MOP")
-    participant.insert_party(sess, market_role_M, "Fusion", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion", vf, None, None)
     contract = Contract.insert_mop(
-        sess,
-        "Fusion MOP",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion MOP", participant, "", {}, vf, None, {}
     )
     contract.insert_batch(sess, "b1", "batch 1")
     sess.commit()
 
-    response = client.get(f"/e/mop_batches?mop_contract_id={contract.id}")
+    response = client.get(f"/e/mop_contracts/{contract.id}/batches")
     match(response, 200)
 
 
