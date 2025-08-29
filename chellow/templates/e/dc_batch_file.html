@@ -7,10 +7,9 @@
 
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
-	<a href="/e/dc_contracts/{{batch_file.batch.contract.id}}"
-		>{{batch_file.batch.contract.name}}</a> &raquo; 
-	<a href="/e/dc_batches?dc_contract_id={{batch_file.batch.contract.id}}">Batches</a>
+	<a href="/e/dc_contracts/{{batch_file.batch.contract.id}}">{{batch_file.batch.contract.name}}</a>
  	&raquo; 
+	<a href="/e/dc_contracts/{{batch_file.batch.contract.id}}/batches">Batches</a> &raquo; 
 	<a href="/e/dc_batches/{{batch_file.batch.id}}">{{batch_file.batch.reference}}</a>
  	&raquo; {{batch_file.filename}}
 	[<a href="/e/dc_batch_files/{{batch_file.id}}/edit">edit</a>]
