@@ -13,6 +13,15 @@
 {% block content %}
 	{% set data = row.data['data'] %}
 	{% set properties = row.data.get('properties', {}) %}
+	{% set market_role_code = data['market_role_code'] %}
+	{% if market_role_code == 'X' %}
+		{% set contract_type = 'supplier' %}
+	{% elif market_role_code == 'C' %}
+		{% set contract_type = 'dc' %}
+	{% elif market_role_code == 'M' %}
+		{% set contract_type = 'mop' %}
+	{% endif %}
+
 	<table>
 		<caption>Bill Check</caption>	
 		<thead>
@@ -33,7 +42,7 @@
 			<tr>
 				<td>
 					{% if data.contract_id is not none %}
-						<a href="/e/supplier_contracts/{{data.contract_id}}">{{data['contract_name']}}</a>
+					  <a href="/e/{{contract_type}}_contracts/{{data.contract_id}}">{{data['contract_name']}}</a>
 					{% endif %}
 				</td>
 				<td>
@@ -225,11 +234,12 @@
 					<tbody>
 						{% for el in element['actual_elements'] %}
 							<tr>
-								<td><a href="/e/supplier_elements/{{el.id}}">View</a></td>
+								<td><a href="/e/{{contract_type}}_elements/{{el.id}}">View</a></td>
 								<td>
-									<a href="/e/supplier_batches/{{el.bill.batch.id}}">{{el.bill.batch.reference}}</a>
+									<a href="/e/{{contract_type}}_batches/{{el.bill.batch.id}}"
+										  >{{el.bill.batch.reference}}</a>
 								</td>
-								<td><a href="/e/supplier_bills/{{el.bill.id}}">View</a></td>
+								<td><a href="/e/{{contract_type}}_bills/{{el.bill.id}}">View</a></td>
 								<td>{{el.start_date}}</td>
 								<td>{{el.finish_date}}</td>
 								<td>{{el.net}}</td>

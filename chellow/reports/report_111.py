@@ -642,6 +642,7 @@ def _process_period(
         "virtual_net_gbp": virtual_net_gbp,
         "actual_net_gbp": actual_net_gbp,
         "difference_net_gbp": actual_net_gbp - virtual_net_gbp,
+        "market_role_code": contract.market_role.code,
     }
 
 

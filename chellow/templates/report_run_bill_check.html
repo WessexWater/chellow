@@ -88,10 +88,17 @@
 			{% for row in rows %}
 				{% set data = row.data['data'] %}
 				{% set properties = row.data.get('properties', {}) %}
+				{% set market_role_code = data['market_role_code'] %}
 				<tr>
 					<td><a href="/report_run_rows/{{row.id}}">View</a></td>
 					<td style="white-space: nowrap">
-						<a href="/e/supplier_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% if market_role_code == 'X' %}
+							<a href="/e/supplier_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% elif market_role_code == 'C' %}
+							<a href="/e/dc_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% elif market_role_code == 'M' %}
+							<a href="/e/mop_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% endif %}
 					</td>
 					<td>
 						<a href="/e/supplies/{{data['supply_id']}}">View</a>
