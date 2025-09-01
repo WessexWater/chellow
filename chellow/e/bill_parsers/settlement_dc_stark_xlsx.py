@@ -87,58 +87,84 @@ class Parser:
 
                     net = round(self.get_dec("AO", row), 2)
 
+                    elements = []
+
                     cop_3_meters = self.get_int("G", row)
                     cop_3_rate = self.get_dec("H", row)
                     cop_3_gbp = self.get_dec("I", row)
+                    if cop_3_gbp != 0:
+                        elements.append(
+                            {
+                                "name": "mpan",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "net": cop_3_gbp,
+                                "breakdown": {
+                                    "rate": {cop_3_rate},
+                                    "meters": cop_3_meters,
+                                    "cop": {"3"},
+                                },
+                            }
+                        )
 
                     # Cop 5 meters
-                    self.get_int("J", row)
+                    cop_5_meters = self.get_int("J", row)
                     cop_5_rate = self.get_dec("K", row)
                     cop_5_gbp = self.get_dec("L", row)
+                    if cop_5_gbp != 0:
+                        elements.append(
+                            {
+                                "name": "mpan",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "net": cop_5_gbp,
+                                "breakdown": {
+                                    "rate": cop_5_rate,
+                                    "meters": cop_5_meters,
+                                    "cop": {"5"},
+                                },
+                            }
+                        )
 
                     ad_hoc_visits = self.get_dec("P", row)
                     ad_hoc_rate = self.get_dec("Q", row)
                     ad_hoc_gbp = self.get_dec("R", row)
-                    activity_names = set()
-                    activity_gbp = Decimal("0")
                     if ad_hoc_gbp != 0:
-                        activity_names.add("ad_hoc_visit")
-                        activity_gbp += ad_hoc_gbp
+                        elements.append(
+                            {
+                                "name": "ad-hoc",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "net": ad_hoc_gbp,
+                                "breakdown": {
+                                    "rate": {ad_hoc_rate},
+                                    "activity-name": {"ad_hoc_visit"},
+                                    "visits": ad_hoc_visits,
+                                },
+                            }
+                        )
 
-                    annual_visits = self.get_int("S", row)
-                    annual_rate = self.get_dec("T", row)
-                    annual_gbp = self.get_dec("U", row)
-                    if annual_gbp != 0:
-                        activity_names.add("annual_visit")
-                        activity_gbp += annual_gbp
-
-                    if cop_3_meters > 0:
-                        cop = "3"
-                        mpan_rate = cop_3_rate
-                        mpan_gbp = cop_3_gbp
-                    else:
-                        cop = "5"
-                        mpan_rate = cop_5_rate
-                        mpan_gbp = cop_5_gbp
+                    annual_visits_count = self.get_int("S", row)
+                    annual_visits_rate = self.get_dec("T", row)
+                    annual_visits_gbp = self.get_dec("U", row)
+                    if annual_visits_gbp != 0:
+                        elements.append(
+                            {
+                                "name": "annual_visits",
+                                "start_date": start_date,
+                                "finish_date": finish_date,
+                                "net": annual_visits_gbp,
+                                "breakdown": {
+                                    "rate": {annual_visits_rate},
+                                    "count": annual_visits_count,
+                                },
+                            }
+                        )
 
                     breakdown = {
                         "raw_lines": [],
-                        "cop": [cop],
                         "settlement-status": ["settlement"],
-                        "mpan-rate": [mpan_rate],
-                        "mpan-gbp": mpan_gbp,
-                        "ad-hoc-visits": ad_hoc_visits,
-                        "ad-hoc-rate": [ad_hoc_rate],
-                        "ad-hoc-gbp-info": ad_hoc_gbp,
-                        "annual-visits-count": annual_visits,
-                        "annual-visits-rate": [annual_rate],
-                        "annual-visits-gbp-info": annual_gbp,
                     }
-                    if len(activity_names) > 0:
-                        breakdown["activity-name"] = sorted(activity_names)
-
-                    if activity_gbp != 0:
-                        breakdown["activity-gbp"] = activity_gbp
 
                     bills.append(
                         {
@@ -162,6 +188,7 @@ class Parser:
                                     mpan_core,
                                 )
                             ),
+                            "elements": elements,
                         }
                     )
                     sess.rollback()

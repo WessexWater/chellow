@@ -110,6 +110,7 @@ class Parser:
                     check = get_str(title_row, row, "check")
                     if check != "Billed":
                         continue
+
                     rates = hh_rate(sess, caches, 0, start_date)
                     meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"][
                         "*"
@@ -119,15 +120,24 @@ class Parser:
                     )
                     net = round(Decimal(float(meter_rate) / 12 * months), 2)
                     vat = round(net * Decimal("0.2"), 2)
+                    elements = [
+                        {
+                            "name": "meter",
+                            "start_date": start_date,
+                            "finish_date": finish_date,
+                            "net": net,
+                            "breakdown": {
+                                "rate": {meter_rate},
+                                "months": months,
+                            },
+                        }
+                    ]
 
                     breakdown = {
                         "raw_lines": [],
                         "cop": ["5"],
                         "settlement-status": ["non_settlement"],
                         "msn": [msn],
-                        "meter-rate": [meter_rate],
-                        "months": months,
-                        "meter-gbp": net,
                     }
 
                     bills.append(
@@ -152,6 +162,7 @@ class Parser:
                                     mpan_core,
                                 )
                             ),
+                            "elements": elements,
                         }
                     )
                     sess.rollback()
