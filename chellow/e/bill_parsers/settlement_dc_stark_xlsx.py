@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import Session
-from chellow.utils import parse_mpan_core, to_utc
+from chellow.utils import parse_mpan_core, to_ct, to_utc
 
 
 class Parser:
@@ -72,7 +72,9 @@ class Parser:
             with Session() as sess:
                 bills = []
                 issue_date_str = self.get_str("A", 7)
-                issue_date = Datetime.strptime(issue_date_str[6:], "%d/%m/%Y %H:%M:%S")
+                issue_date = to_utc(
+                    to_ct(Datetime.strptime(issue_date_str[6:-3], "%d/%m/%Y %H:%M"))
+                )
                 for row in range(12, len(self.sheet["A"]) + 1):
                     val = self.get_cell("A", row).value
                     if val is None or val == "":
@@ -80,55 +82,44 @@ class Parser:
 
                     self._set_last_line(row_index, val)
                     mpan_core = parse_mpan_core(str(self.get_int("B", row)))
-                    start_date = self.get_start_date("D", row)
-                    finish_date = self.get_start_date("E", row) + relativedelta(
-                        hours=23, minutes=30
+                    start_date = to_utc(to_ct(self.get_start_date("D", row)))
+                    finish_date = to_utc(
+                        to_ct(self.get_start_date("E", row))
+                        + relativedelta(hours=23, minutes=30)
                     )
 
                     net = round(self.get_dec("AO", row), 2)
 
                     elements = []
 
-                    cop_3_meters = self.get_int("G", row)
-                    cop_3_rate = self.get_dec("H", row)
-                    cop_3_gbp = self.get_dec("I", row)
-                    if cop_3_gbp != 0:
-                        elements.append(
-                            {
-                                "name": "mpan",
-                                "start_date": start_date,
-                                "finish_date": finish_date,
-                                "net": cop_3_gbp,
-                                "breakdown": {
-                                    "rate": {cop_3_rate},
-                                    "meters": cop_3_meters,
-                                    "cop": {"3"},
-                                },
-                            }
-                        )
+                    for (col_meters, col_rate, col_net), cop in (
+                        ("GHI", "unmetered"),
+                        ("JKL", "2"),
+                        ("MNO", "3"),
+                        ("PQR", "5"),
+                        ("STU", "10"),
+                    ):
+                        meters = self.get_int(col_meters, row)
+                        rate = self.get_dec(col_rate, row)
+                        net = self.get_dec(col_net, row)
+                        if net != 0:
+                            elements.append(
+                                {
+                                    "name": "mpan",
+                                    "start_date": start_date,
+                                    "finish_date": finish_date,
+                                    "net": net,
+                                    "breakdown": {
+                                        "rate": {rate},
+                                        "meters": meters,
+                                        "cop": {cop},
+                                    },
+                                }
+                            )
 
-                    # Cop 5 meters
-                    cop_5_meters = self.get_int("J", row)
-                    cop_5_rate = self.get_dec("K", row)
-                    cop_5_gbp = self.get_dec("L", row)
-                    if cop_5_gbp != 0:
-                        elements.append(
-                            {
-                                "name": "mpan",
-                                "start_date": start_date,
-                                "finish_date": finish_date,
-                                "net": cop_5_gbp,
-                                "breakdown": {
-                                    "rate": cop_5_rate,
-                                    "meters": cop_5_meters,
-                                    "cop": {"5"},
-                                },
-                            }
-                        )
-
-                    ad_hoc_visits = self.get_dec("P", row)
-                    ad_hoc_rate = self.get_dec("Q", row)
-                    ad_hoc_gbp = self.get_dec("R", row)
+                    ad_hoc_visits = self.get_dec("AE", row)
+                    ad_hoc_rate = self.get_dec("AF", row)
+                    ad_hoc_gbp = self.get_dec("AG", row)
                     if ad_hoc_gbp != 0:
                         elements.append(
                             {
@@ -144,9 +135,9 @@ class Parser:
                             }
                         )
 
-                    annual_visits_count = self.get_int("S", row)
-                    annual_visits_rate = self.get_dec("T", row)
-                    annual_visits_gbp = self.get_dec("U", row)
+                    annual_visits_count = self.get_int("AK", row)
+                    annual_visits_rate = self.get_dec("AL", row)
+                    annual_visits_gbp = self.get_dec("AM", row)
                     if annual_visits_gbp != 0:
                         elements.append(
                             {

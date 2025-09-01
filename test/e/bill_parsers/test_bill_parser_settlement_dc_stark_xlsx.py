@@ -1,9 +1,11 @@
 from datetime import datetime as Datetime
+from decimal import Decimal
 from io import BytesIO
 
 from openpyxl import Workbook
 
 from chellow.e.bill_parsers.settlement_dc_stark_xlsx import Parser
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test(sess):
@@ -11,201 +13,238 @@ def test(sess):
     f = BytesIO()
     wb = Workbook()
     sheet = wb.worksheets[0]
-    data = [
-        [""],
-        [""],
-        [""],
-        [""],
-        [""],
-        ["SSIL Billing Backing Data - Wessex"],
-        ["Date: 03/05/2024 09:16:58"],
-        [""],
-        [""],
-        [
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "Unmetered",
-            "",
-            "",
-            "Code 2",
-            "",
-            "",
-            "Code 3",
-            "",
-            "",
-            "Code 5",
-            "",
-            "",
-            "Code 10",
-            "",
-            "",
-            "GSM",
-            "",
-            "",
-            "SavenergyOnline",
-            "",
-            "",
-            "Meter Proving Tests",
-            "",
-            "",
-            "Hand Held Visits (Ad hoc)",
-            "",
-            "",
-            "Hand Held Visits (Regular)",
-            "",
-            "",
-            "Annual Site Visits",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-        ],
-        [
-            "Sage",
-            "MPAN",
-            "Site",
-            "Bill From",
-            "Bill To",
-            "Contract Reference",
-            "Unmetered Quant",
-            "Unmetered Rate",
-            "Quarterly Unmetered Charge",
-            "No. COP 2 Meters",
-            "Annual COP 2 DC/DA Rate",
-            "Quarterly COP 2 Charge",
-            "No. COP 3 Meters",
-            "Annual COP 3 DC/DA Rate",
-            "Quarterly COP 3 Charge",
-            "No. COP 5 Meters",
-            "Annual COP 5 DC/DA Rate",
-            "Quarterly COP 5 Charge",
-            "No. COP 10 Meters",
-            "Annual COP 10 DC/DA Rate",
-            "Quarterly COP 10 Charge",
-            "No. GSM Meters",
-            "GSM Annual Rate",
-            "Quarterly GSM Charge",
-            "No. Meters",
-            "Annual SEO Rate",
-            "Quarterly SEO Charge",
-            "No. Meter Proving Test",
-            "Meter Proving Test Rate",
-            "Meter Proving Test Charge",
-            "No. Hand Held Visits (Adhoc)",
-            "Hand Held Visit (Adhoc) Rate",
-            "Hand Held Visit (Adhoc) Charge",
-            "No. Hand Held Visits (Regular)",
-            "Hand Held Visit (Regular) Rate",
-            "Hand Held Visit (Regular) Charge",
-            "No. Annual Site Visits",
-            "Annual Site Visit Rate",
-            "Annual Site Visit Charge",
-            "Hand Held Visit Dates",
-            "Grand Total",
-            "VAT @ 20% ",
-            "Grand Total",
-        ],
-        [
-            "W006",
-            "2200013784589",
-            "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET",
-            Datetime(2024, 4, 1),
-            Datetime(2024, 6, 30),
-            "GF002",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "99.50",
-            "0.00",
-            "1",
-            "114.43",
-            "28.61",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "1",
-            "0.00",
-            "0.00",
-            "0",
-            "25.00",
-            "0.00",
-            "0",
-            "20.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "20.00",
-            "0.00",
-            "",
-            "28.61",
-            "5.72",
-            "34.33",
-        ],
-        [
-            "W006",
-            "1470001573345",
-            "WICKWAR SEWAGE WORKS, OFF STATION ROAD, WICKWAR, WOTTON-UNDER-EDGE, "
-            "GLOUCESTERSHIRE",
-            Datetime(2024, 6, 12),
-            Datetime(2024, 6, 30),
-            "GF002",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "99.50",
-            "0.00",
-            "0.6333",
-            "114.43",
-            "5.96",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "0.6333",
-            "0.00",
-            "0.00",
-            "0",
-            "25.00",
-            "0.00",
-            "0",
-            "20.00",
-            "0.00",
-            "0",
-            "0.00",
-            "0.00",
-            "0",
-            "20.00",
-            "0.00",
-            "",
-            "5.96",
-            "1.19",
-            "7.15",
-        ],
-    ]
-    for row in data:
-        sheet.append(row)
+    sheet.insert_rows(0, 13)
+    sheet.insert_cols(0, 9)
+
+    sheet["A6"] = "SSIL Billing Backing Data - Wessex"
+    sheet["A7"] = "Date: 03/05/2024 09:16:58"
+
+    sheet["G10"] = "Unmetered"
+    sheet["J10"] = "Code 2"
+    sheet["M10"] = "Code 3"
+    sheet["P10"] = "Code 5"
+    sheet["S10"] = "Code 10"
+    sheet["V10"] = "GSM"
+    sheet["Y10"] = "SavenergyOnline"
+    sheet["AB10"] = "Meter Proving Tests"
+    sheet["AE10"] = "Hand Held Visits (Ad hoc)"
+    sheet["AH10"] = "Hand Held Visits (Regular)"
+    sheet["AK10"] = "Annual Site Visits"
+
+    sheet["A11"] = "Sage"
+    sheet["B11"] = "MPAN"
+    sheet["C11"] = "Site"
+    sheet["D11"] = "Bill From"
+    sheet["E11"] = "Bill To"
+    sheet["F11"] = "Contract Reference"
+    sheet["G11"] = "Unmetered Quant"
+    sheet["H11"] = "Unmetered Rate"
+    sheet["I11"] = "Quarterly Unmetered Charge"
+    sheet["J11"] = "No. COP 2 Meters"
+    sheet["K11"] = "Annual COP 2 DC/DA Rate"
+    sheet["L11"] = "Quarterly COP 2 Charge"
+    sheet["M11"] = "No. COP 3 Meters"
+    sheet["N11"] = "Annual COP 3 DC/DA Rate"
+    sheet["O11"] = "Quarterly COP 3 Charge"
+    sheet["P11"] = "No. COP 5 Meters"
+    sheet["Q11"] = "Annual COP 5 DC/DA Rate"
+    sheet["R11"] = "Quarterly COP 5 Charge"
+    sheet["S11"] = "No. COP 10 Meters"
+    sheet["T11"] = "Annual COP 10 DC/DA Rate"
+    sheet["U11"] = "Quarterly COP 10 Charge"
+    sheet["V11"] = "No. GSM Meters"
+    sheet["W11"] = "GSM Annual Rate"
+    sheet["X11"] = "Quarterly GSM Charge"
+    sheet["Y11"] = "No. Meters"
+    sheet["Z11"] = "Annual SEO Rate"
+    sheet["AA11"] = "Quarterly SEO Charge"
+    sheet["AB11"] = "No. Meter Proving Test"
+    sheet["AC11"] = "Meter Proving Test Rate"
+    sheet["AD11"] = "Meter Proving Test Charge"
+    sheet["AE11"] = "No. Hand Held Visits (Adhoc)"
+    sheet["AF11"] = "Hand Held Visit (Adhoc) Rate"
+    sheet["AG11"] = "Hand Held Visit (Adhoc) Charge"
+    sheet["AH11"] = "No. Hand Held Visits (Regular)"
+    sheet["AI11"] = "Hand Held Visit (Regular) Rate"
+    sheet["AJ11"] = "Hand Held Visit (Regular) Charge"
+    sheet["AK11"] = "No. Annual Site Visits"
+    sheet["AL11"] = "Annual Site Visit Rate"
+    sheet["AM11"] = "Annual Site Visit Charge"
+    sheet["AN11"] = "Hand Held Visit Dates"
+    sheet["AO11"] = "Grand Total"
+    sheet["AP11"] = "VAT @ 20% "
+    sheet["AQ11"] = "Grand Total"
+
+    sheet["A12"] = "W006"
+    sheet["B12"] = "2200013784589"
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
+    sheet["D12"] = Datetime(2024, 4, 1)
+    sheet["E12"] = Datetime(2024, 6, 30)
+    sheet["F12"] = "GF002"
+    sheet["G12"] = "0"
+    sheet["H12"] = "0.00"
+    sheet["I12"] = "0.00"
+    sheet["J12"] = "0"
+    sheet["K12"] = "0.00"
+    sheet["L12"] = "0.00"
+    sheet["M12"] = "0"
+    sheet["N12"] = "99.50"
+    sheet["O12"] = "0.00"
+    sheet["P12"] = "1"
+    sheet["Q12"] = "114.43"
+    sheet["R12"] = "28.61"
+    sheet["S12"] = "0"
+    sheet["T12"] = "0.00"
+    sheet["U12"] = "0.00"
+    sheet["V12"] = "0"
+    sheet["W12"] = "0.00"
+    sheet["X12"] = "0.00"
+    sheet["Y12"] = "1"
+    sheet["Z12"] = "0.00"
+    sheet["AA12"] = "0.00"
+    sheet["AB12"] = "0"
+    sheet["AC12"] = "25.00"
+    sheet["AD12"] = "0.00"
+    sheet["AE12"] = "0"
+    sheet["AF12"] = "20.00"
+    sheet["AG12"] = "0.00"
+    sheet["AH12"] = "0"
+    sheet["AI12"] = "0.00"
+    sheet["AJ12"] = "0.00"
+    sheet["AK12"] = "0"
+    sheet["AL12"] = "20.00"
+    sheet["AM12"] = "0.00"
+    sheet["AN12"] = ""
+    sheet["AO12"] = "28.61"
+    sheet["AP12"] = "5.72"
+    sheet["AQ12"] = "34.33"
+
+    sheet["A13"] = "W006"
+    sheet["B13"] = "1470001573345"
+    sheet["C13"] = (
+        "WICKWAR SEWAGE WORKS, OFF STATION ROAD, WICKWAR, WOTTON-UNDER-EDGE, "
+        "GLOUCESTERSHIRE"
+    )
+    sheet["D13"] = Datetime(2024, 6, 12)
+    sheet["E13"] = Datetime(2024, 6, 30)
+    sheet["F13"] = "GF002"
+    sheet["G13"] = "0"
+    sheet["H13"] = "0.00"
+    sheet["I13"] = "0.00"
+    sheet["J13"] = "0"
+    sheet["K13"] = "0.00"
+    sheet["L13"] = "0.00"
+    sheet["M13"] = "0"
+    sheet["N13"] = "99.50"
+    sheet["O13"] = "0.00"
+    sheet["P13"] = "1"
+    sheet["Q13"] = "114.43"
+    sheet["R13"] = "5.96"
+    sheet["S13"] = "0"
+    sheet["T13"] = "0.00"
+    sheet["U13"] = "0.00"
+    sheet["V13"] = "0"
+    sheet["W13"] = "0.00"
+    sheet["X13"] = "0.00"
+    sheet["Y13"] = "0.6333"
+    sheet["Z13"] = "0.00"
+    sheet["AA13"] = "0.00"
+    sheet["AB13"] = "0"
+    sheet["AC13"] = "25.00"
+    sheet["AD13"] = "0.00"
+    sheet["AE13"] = "0"
+    sheet["AF13"] = "20.00"
+    sheet["AG13"] = "0.00"
+    sheet["AH13"] = "0"
+    sheet["AI13"] = "0.00"
+    sheet["AJ13"] = "0.00"
+    sheet["AK13"] = "0"
+    sheet["AL13"] = "20.00"
+    sheet["AM13"] = "0.00"
+    sheet["AN13"] = ""
+    sheet["AO13"] = "5.96"
+    sheet["AP13"] = "1.19"
+    sheet["AQ13"] = "7.15"
+
     wb.save(f)
     f.seek(0)
     p = Parser(f)
-    p.make_raw_bills()
+    raw_bills = p.make_raw_bills()
+    assert raw_bills == [
+        {
+            "account": "22 0001 3784 589",
+            "bill_type_code": "N",
+            "breakdown": {
+                "raw_lines": [],
+                "settlement-status": [
+                    "settlement",
+                ],
+            },
+            "elements": [
+                {
+                    "breakdown": {
+                        "cop": {
+                            "5",
+                        },
+                        "meters": 1,
+                        "rate": {
+                            Decimal("114.43"),
+                        },
+                    },
+                    "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+                    "name": "mpan",
+                    "net": Decimal("28.61"),
+                    "start_date": utc_datetime(2024, 4, 1, 0, 0),
+                },
+            ],
+            "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+            "gross": Decimal("0.00"),
+            "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
+            "kwh": Decimal("0"),
+            "mpan_core": "22 0001 3784 589",
+            "net": Decimal("0.00"),
+            "reads": [],
+            "reference": "20240401_20240630_20240503_22 0001 3784 589",
+            "start_date": utc_datetime(2024, 4, 1, 0, 0),
+            "vat": Decimal("0.00"),
+        },
+        {
+            "account": "14 7000 1573 345",
+            "bill_type_code": "N",
+            "breakdown": {
+                "raw_lines": [],
+                "settlement-status": [
+                    "settlement",
+                ],
+            },
+            "elements": [
+                {
+                    "breakdown": {
+                        "cop": {
+                            "5",
+                        },
+                        "meters": 1,
+                        "rate": {
+                            Decimal("114.43"),
+                        },
+                    },
+                    "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+                    "name": "mpan",
+                    "net": Decimal("5.96"),
+                    "start_date": utc_datetime(2024, 6, 12, 0, 0),
+                },
+            ],
+            "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+            "gross": Decimal("0.00"),
+            "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
+            "kwh": Decimal("0"),
+            "mpan_core": "14 7000 1573 345",
+            "net": Decimal("0.00"),
+            "reads": [],
+            "reference": "20240612_20240630_20240503_14 7000 1573 345",
+            "start_date": utc_datetime(2024, 6, 12, 0, 0),
+            "vat": Decimal("0.00"),
+        },
+    ]
