@@ -17,13 +17,36 @@ def test(mocker, sess):
     mocker.patch(
         "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
     )
-    with open(
-        "test/e/bill_parsers/test_bill_parser_nonsettlement_dc_stark_xlsx/"
-        "bills.nonsettlement.dc.stark.xlsx",
-        mode="rb",
-    ) as f:
-        parser = Parser(f)
-        parser.make_raw_bills()
+    f = BytesIO()
+    wb = Workbook()
+    sheet = wb.worksheets[0]
+    sheet.insert_rows(0, 2)
+    sheet.insert_cols(0, 9)
+
+    sheet["A1"] = "NAME"
+    sheet["B1"] = "NMR"
+    sheet["C1"] = "METER TYPE"
+    sheet["D1"] = "IDENTIFIER"
+    sheet["E1"] = "METER"
+    sheet["F1"] = "MPAN REF"
+    sheet["G1"] = "START"
+    sheet["H1"] = "END"
+    sheet["I1"] = "CHECK"
+
+    sheet["A2"] = "Treglisson"
+    sheet["B2"] = "Q997"
+    sheet["C2"] = "VIS"
+    sheet["D2"] = 101
+    sheet["E2"] = "88jiuf ff"
+    sheet["F2"] = 1472066139971
+    sheet["G2"] = Datetime(2018, 6, 1)
+    sheet["H2"] = Datetime(2018, 6, 30)
+    sheet["I2"] = "Billed"
+
+    wb.save(f)
+    f.seek(0)
+    parser = Parser(f)
+    parser.make_raw_bills()
 
 
 def test_old(mocker, sess):
@@ -35,13 +58,41 @@ def test_old(mocker, sess):
     mocker.patch(
         "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
     )
-    with open(
-        "test/e/bill_parsers/test_bill_parser_nonsettlement_dc_stark_xlsx/"
-        "bills_old.nonsettlement.dc.stark.xlsx",
-        mode="rb",
-    ) as f:
-        parser = Parser(f)
-        parser.make_raw_bills()
+    f = BytesIO()
+    wb = Workbook()
+    sheet = wb.worksheets[0]
+    sheet.insert_rows(0, 2)
+    sheet.insert_cols(0, 9)
+
+    sheet["A1"] = "MPAN"
+    sheet["B1"] = "WESSEX WATER SITE NAME"
+    sheet["C1"] = "STARK IDENTIFIER"
+    sheet["D1"] = "NMR"
+    sheet["E1"] = "METER TYPE"
+    sheet["F1"] = "IDENTIFIER"
+    sheet["G1"] = "METER"
+    sheet["H1"] = "MPAN REF"
+    sheet["I1"] = "START"
+    sheet["J1"] = "END"
+    sheet["K1"] = "CHECK"
+
+    sheet["A2"] = 1472066139971
+    sheet["B2"] = ""
+    sheet["C2"] = ""
+    sheet["D2"] = "Q997"
+    sheet["E2"] = "VIS"
+    sheet["F2"] = 101
+    sheet["G2"] = "88jiuf ff"
+    sheet["H2"] = 1472066139971
+    sheet["I2"] = Datetime(2018, 7, 1)
+    sheet["J2"] = Datetime(2018, 7, 1)
+    sheet["K2"] = "Billed"
+
+    wb.save(f)
+    f.seek(0)
+
+    parser = Parser(f)
+    parser.make_raw_bills()
 
 
 def test_one_bill(mocker, sess):
@@ -110,9 +161,6 @@ def test_one_bill(mocker, sess):
                 "cop": ["5"],
                 "settlement-status": ["non_settlement"],
                 "msn": ["7864739737"],
-                "meter-rate": [Decimal("45")],
-                "meter-gbp": Decimal("3.75"),
-                "months": 1,
             },
             "account": "20 8875 7371 777",
             "issue_date": utc_datetime(2022, 2, 1),
@@ -120,6 +168,15 @@ def test_one_bill(mocker, sess):
             "finish_date": utc_datetime(2022, 2, 28, 23, 30),
             "mpan_core": "20 8875 7371 777",
             "reference": "20220201_20220228_20220201_20 8875 7371 777",
+            "elements": [
+                {
+                    "name": "meter",
+                    "start_date": utc_datetime(2022, 2, 1),
+                    "finish_date": utc_datetime(2022, 2, 28, 23, 30),
+                    "net": Decimal("3.75"),
+                    "breakdown": {"rate": {Decimal("45")}, "months": 1},
+                }
+            ],
         }
     ]
 
