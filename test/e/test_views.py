@@ -2212,8 +2212,8 @@ def test_mop_batches_get(sess, client):
     match(response, 200)
 
 
-def test_mop_batch_post_import(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+def test_mop_batch_edit_post_import(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
     source = Source.get_by_code(sess, "grid")
@@ -2223,34 +2223,27 @@ def test_mop_batch_post_import(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -2261,22 +2254,15 @@ def test_mop_batch_post_import(sess, client):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
@@ -2317,7 +2303,7 @@ def test_mop_batch_post_import(sess, client):
     sess.commit()
 
     data = {"import_bills": "Import Bills"}
-    response = client.post(f"/e/mop_batches/{batch.id}", data=data)
+    response = client.post(f"/e/mop_batches/{batch.id}/edit", data=data)
     match(response, 303, r"/mop_bill_imports/0")
 
     response = client.get("/e/mop_bill_imports/0")
@@ -2328,7 +2314,7 @@ def test_mop_batch_post_import(sess, client):
     )
 
 
-def test_mop_batch_post_delete_import(sess, client):
+def test_mop_batch_edit_post_delete_import(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
@@ -2419,7 +2405,7 @@ def test_mop_batch_post_delete_import(sess, client):
     sess.commit()
 
     data = {"delete_import_bills": "Import Bills"}
-    response = client.post(f"/e/mop_batches/{batch.id}", data=data)
+    response = client.post(f"/e/mop_batches/{batch.id}/edit", data=data)
     match(response, 303, r"/mop_bill_imports/0")
 
     response = client.get("/e/mop_bill_imports/0")
