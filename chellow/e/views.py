@@ -2722,19 +2722,35 @@ def mop_batch_edit_get(batch_id):
     return render_template("mop_batch_edit.html", batch=batch)
 
 
+@e.route("/mop_batches/<int:batch_id>/edit", methods=["DELETE"])
+def mop_batch_edit_delete(batch_id):
+    try:
+        batch = Batch.get_by_id(g.sess, batch_id)
+        contract = batch.contract
+        batch.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/mop_contracts/{contract.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template("mop_batch_edit.html", batch=batch)
+
+
 @e.route("/mop_batches/<int:batch_id>/edit", methods=["POST"])
 def mop_batch_edit_post(batch_id):
     try:
         batch = Batch.get_by_id(g.sess, batch_id)
-        if "delete" in request.values:
-            contract = batch.contract
-            batch.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect(f"/mop_contracts/{contract.id}", 303)
-        elif "delete_bills" in request.values:
+        if "delete_bills" in request.values:
             g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
             g.sess.commit()
-            return chellow_redirect(f"/mop_batches/{batch.id}", 303)
+            return hx_redirect(f"/mop_batches/{batch.id}", 303)
+        elif "import_bills" in request.values:
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
+            return hx_redirect(f"/mop_bill_imports/{import_id}", 303)
+        elif "delete_import_bills" in request.values:
+            g.sess.execute(delete(Bill).where(Bill.batch == batch))
+            g.sess.commit()
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
+            return hx_redirect(f"/mop_bill_imports/{import_id}", 303)
         else:
             reference = req_str("reference")
             description = req_str("description")
@@ -2765,39 +2781,6 @@ def mop_batch_get(batch_id):
             batch_reports.append(Report.get_by_id(g.sess, report_id))
         fields["batch_reports"] = batch_reports
     return render_template("mop_batch.html", **fields)
-
-
-@e.route("/mop_batches/<int:batch_id>", methods=["POST"])
-def mop_batch_post(batch_id):
-    try:
-        batch = Batch.get_by_id(g.sess, batch_id)
-        if "import_bills" in request.values:
-            import_id = chellow.e.bill_importer.start_bill_import(batch)
-            return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
-        elif "delete_bills" in request.values:
-            g.sess.query(Bill).filter(Bill.batch_id == batch.id).delete(False)
-            g.sess.commit()
-            return chellow_redirect(f"/mop_batches/{batch.id}", 303)
-        elif "delete_import_bills" in request.values:
-            g.sess.execute(delete(Bill).where(Bill.batch == batch))
-            g.sess.commit()
-            import_id = chellow.e.bill_importer.start_bill_import(batch)
-            return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
-    except BadRequest as e:
-        flash(e.description)
-        importer_ids = sorted(
-            chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
-        )
-        parser_names = chellow.e.bill_importer.find_parser_names()
-        return make_response(
-            render_template(
-                "mop_batch.html",
-                batch=batch,
-                importer_ids=importer_ids,
-                parser_names=parser_names,
-            ),
-            400,
-        )
 
 
 @e.route("/mop_batches/<int:batch_id>/csv")
