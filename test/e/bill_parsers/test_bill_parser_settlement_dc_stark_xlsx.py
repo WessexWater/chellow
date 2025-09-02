@@ -13,7 +13,7 @@ def test(sess):
     f = BytesIO()
     wb = Workbook()
     sheet = wb.worksheets[0]
-    sheet.insert_rows(0, 13)
+    sheet.insert_rows(0, 23)  # Have blank lines at the end
     sheet.insert_cols(0, 9)
 
     sheet["A6"] = "SSIL Billing Backing Data - Wessex"
@@ -77,9 +77,9 @@ def test(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"
@@ -167,6 +167,8 @@ def test(sess):
     sheet["AO13"] = "5.96"
     sheet["AP13"] = "1.19"
     sheet["AQ13"] = "7.15"
+
+    sheet["A14"] = ""  # Test copes with blank lines at the end
 
     wb.save(f)
     f.seek(0)

@@ -182,7 +182,7 @@ class Parser:
                 for row in range(12, len(self.sheet["A"]) + 1):
                     val = get_cell(self.sheet, "A", row).value
                     if val is None or val == "":
-                        return
+                        continue
 
                     self._set_last_line(row, val)
                     bill = _process_row(sess, self.sheet, row, issue_date)
