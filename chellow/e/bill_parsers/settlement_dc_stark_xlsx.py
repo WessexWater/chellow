@@ -57,14 +57,14 @@ def _process_row(sess, sheet, row, issue_date):
 
     elements = []
 
-    for (col_meters, col_rate, col_net), cop in (
+    for (col_mpans, col_rate, col_net), cop in (
         ("GHI", "unmetered"),
         ("JKL", "2"),
         ("MNO", "3"),
         ("PQR", "5"),
         ("STU", "10"),
     ):
-        meters = get_int(sheet, col_meters, row)
+        mpans = get_int(sheet, col_mpans, row)
         rate = get_dec(sheet, col_rate, row)
         net = get_dec(sheet, col_net, row)
         if net != 0:
@@ -76,7 +76,7 @@ def _process_row(sess, sheet, row, issue_date):
                     "net": net,
                     "breakdown": {
                         "rate": {rate},
-                        "meters": meters,
+                        "mpans": mpans,
                         "cop": {cop},
                     },
                 }
