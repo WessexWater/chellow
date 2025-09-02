@@ -755,9 +755,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2781,7 +2781,7 @@ def mop_batch_post(batch_id):
         elif "delete_import_bills" in request.values:
             g.sess.execute(delete(Bill).where(Bill.batch == batch))
             g.sess.commit()
-            import_id = chellow.bill_importer.start_bill_import(batch)
+            import_id = chellow.e.bill_importer.start_bill_import(batch)
             return chellow_redirect(f"/mop_bill_imports/{import_id}", 303)
     except BadRequest as e:
         flash(e.description)
@@ -2902,9 +2902,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5350,9 +5350,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
