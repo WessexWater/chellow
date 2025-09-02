@@ -77,9 +77,9 @@ def test(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"
@@ -200,7 +200,7 @@ def test(sess):
                 },
             ],
             "finish_date": utc_datetime(2024, 6, 30, 23, 30),
-            "gross": Decimal("0.00"),
+            "gross": Decimal("34.33"),
             "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
             "kwh": Decimal("0"),
             "mpan_core": "22 0001 3784 589",
@@ -208,7 +208,7 @@ def test(sess):
             "reads": [],
             "reference": "20240401_20240630_20240503_22 0001 3784 589",
             "start_date": utc_datetime(2024, 4, 1, 0, 0),
-            "vat": Decimal("0.00"),
+            "vat": Decimal("5.72"),
         },
         {
             "account": "14 7000 1573 345",
@@ -237,7 +237,7 @@ def test(sess):
                 },
             ],
             "finish_date": utc_datetime(2024, 6, 30, 23, 30),
-            "gross": Decimal("0.00"),
+            "gross": Decimal("7.15"),
             "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
             "kwh": Decimal("0"),
             "mpan_core": "14 7000 1573 345",
@@ -245,6 +245,6 @@ def test(sess):
             "reads": [],
             "reference": "20240612_20240630_20240503_14 7000 1573 345",
             "start_date": utc_datetime(2024, 6, 12, 0, 0),
-            "vat": Decimal("0.00"),
+            "vat": Decimal("1.19"),
         },
     ]
