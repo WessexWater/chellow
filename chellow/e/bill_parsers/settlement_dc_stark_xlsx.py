@@ -55,10 +55,6 @@ def _process_row(sess, sheet, row, issue_date):
         to_ct(get_start_date(sheet, "E", row)) + relativedelta(hours=23, minutes=30)
     )
 
-    net = Decimal("0.00") + round(get_dec(sheet, "AO", row), 2)
-    vat = Decimal("0.00") + round(get_dec(sheet, "AP", row), 2)
-    gross = Decimal("0.00") + round(get_dec(sheet, "AQ", row), 2)
-
     elements = []
 
     for (col_meters, col_rate, col_net), cop in (
@@ -129,9 +125,9 @@ def _process_row(sess, sheet, row, issue_date):
     return {
         "bill_type_code": "N",
         "kwh": Decimal(0),
-        "vat": vat,
-        "net": net,
-        "gross": gross,
+        "net": Decimal("0.00") + round(get_dec(sheet, "AO", row), 2),
+        "vat": Decimal("0.00") + round(get_dec(sheet, "AP", row), 2),
+        "gross": Decimal("0.00") + round(get_dec(sheet, "AQ", row), 2),
         "reads": [],
         "breakdown": breakdown,
         "account": mpan_core,
