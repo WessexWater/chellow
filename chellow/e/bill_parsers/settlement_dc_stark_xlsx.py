@@ -56,7 +56,7 @@ def _process_row(sess, sheet, row, issue_date):
     finish_date = to_utc(finish_date_ct)
 
     elements = []
-
+    days = (finish_date_ct - start_date_ct).days + 1
     for (col_mpans, col_rate, col_net), cop in (
         ("GHI", "unmetered"),
         ("JKL", "2"),
@@ -76,7 +76,8 @@ def _process_row(sess, sheet, row, issue_date):
                     "net": net,
                     "breakdown": {
                         "rate": {rate},
-                        "mpans": mpans,
+                        "days": days,
+                        "mpan-days": mpans * days,
                         "cop": {cop},
                     },
                 }

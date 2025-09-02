@@ -157,7 +157,8 @@ def test_process_row(sess):
                     "cop": {
                         "5",
                     },
-                    "mpans": 1,
+                    "days": 91,
+                    "mpan-days": 91,
                     "rate": {
                         Decimal("114.43"),
                     },
@@ -250,9 +251,9 @@ def test_make_raw_bills(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"
@@ -363,7 +364,8 @@ def test_make_raw_bills(sess):
                         "cop": {
                             "5",
                         },
-                        "mpans": 1,
+                        "days": 91,
+                        "mpan-days": 91,
                         "rate": {
                             Decimal("114.43"),
                         },
@@ -400,7 +402,8 @@ def test_make_raw_bills(sess):
                         "cop": {
                             "5",
                         },
-                        "mpans": 1,
+                        "days": 19,
+                        "mpan-days": 19,
                         "rate": {
                             Decimal("114.43"),
                         },
