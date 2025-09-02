@@ -16,7 +16,7 @@ def get_ct_date(sheet, col, row):
     val = cell.value
     if not isinstance(val, Datetime):
         raise BadRequest(f"Problem reading {val} as a timestamp at {cell.coordinate}.")
-    return val
+    return to_ct(val)
 
 
 def get_start_date(sheet, col, row):
@@ -50,10 +50,10 @@ def get_int(sheet, col, row):
 
 def _process_row(sess, sheet, row, issue_date):
     mpan_core = parse_mpan_core(str(get_int(sheet, "B", row)))
-    start_date = to_utc(to_ct(get_start_date(sheet, "D", row)))
-    finish_date = to_utc(
-        to_ct(get_start_date(sheet, "E", row)) + relativedelta(hours=23, minutes=30)
-    )
+    start_date_ct = get_ct_date(sheet, "D", row)
+    start_date = to_utc(get_ct_date(sheet, "D", row))
+    finish_date_ct = get_ct_date(sheet, "E", row) + relativedelta(hours=23, minutes=30)
+    finish_date = to_utc(finish_date_ct)
 
     elements = []
 
@@ -137,9 +137,9 @@ def _process_row(sess, sheet, row, issue_date):
         "mpan_core": mpan_core,
         "reference": "_".join(
             (
-                start_date.strftime("%Y%m%d"),
-                finish_date.strftime("%Y%m%d"),
-                issue_date.strftime("%Y%m%d"),
+                start_date_ct.strftime("%Y%m%d"),
+                finish_date_ct.strftime("%Y%m%d"),
+                to_ct(issue_date).strftime("%Y%m%d"),
                 mpan_core,
             )
         ),

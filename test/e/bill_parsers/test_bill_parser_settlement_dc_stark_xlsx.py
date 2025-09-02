@@ -4,8 +4,26 @@ from io import BytesIO
 
 from openpyxl import Workbook
 
-from chellow.e.bill_parsers.settlement_dc_stark_xlsx import Parser, _process_row
-from chellow.utils import ct_datetime, to_utc, utc_datetime
+from chellow.e.bill_parsers.settlement_dc_stark_xlsx import (
+    Parser,
+    _process_row,
+    get_ct_date,
+)
+from chellow.utils import ct_datetime, to_ct, to_utc
+
+
+def test_get_ct_date(sess):
+    dt_naive = Datetime(2024, 6, 30)
+
+    wb = Workbook()
+    sheet = wb.worksheets[0]
+    sheet.insert_rows(0, 23)  # Have blank lines at the end
+    sheet.insert_cols(0, 9)
+
+    sheet["E12"] = dt_naive
+    dt = get_ct_date(sheet, "E", 12)
+
+    assert dt == to_ct(dt_naive)
 
 
 def test_process_row(sess):
@@ -144,21 +162,21 @@ def test_process_row(sess):
                         Decimal("114.43"),
                     },
                 },
-                "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+                "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
                 "name": "mpan",
                 "net": Decimal("28.61"),
-                "start_date": utc_datetime(2024, 4, 1, 0, 0),
+                "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
             },
         ],
-        "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+        "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
         "gross": Decimal("34.33"),
         "issue_date": issue_date,
         "kwh": Decimal("0"),
         "mpan_core": "22 0001 3784 589",
         "net": Decimal("28.61"),
         "reads": [],
-        "reference": "20240401_20240630_20250601_22 0001 3784 589",
-        "start_date": utc_datetime(2024, 4, 1, 0, 0),
+        "reference": "20240401_20240630_20250602_22 0001 3784 589",
+        "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
         "vat": Decimal("5.72"),
     }
 
@@ -232,9 +250,9 @@ def test_make_raw_bills(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"
@@ -350,13 +368,13 @@ def test_make_raw_bills(sess):
                             Decimal("114.43"),
                         },
                     },
-                    "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+                    "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
                     "name": "mpan",
                     "net": Decimal("28.61"),
-                    "start_date": utc_datetime(2024, 4, 1, 0, 0),
+                    "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
                 },
             ],
-            "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+            "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
             "gross": Decimal("34.33"),
             "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
             "kwh": Decimal("0"),
@@ -364,7 +382,7 @@ def test_make_raw_bills(sess):
             "net": Decimal("28.61"),
             "reads": [],
             "reference": "20240401_20240630_20240503_22 0001 3784 589",
-            "start_date": utc_datetime(2024, 4, 1, 0, 0),
+            "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
             "vat": Decimal("5.72"),
         },
         {
@@ -387,13 +405,13 @@ def test_make_raw_bills(sess):
                             Decimal("114.43"),
                         },
                     },
-                    "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+                    "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
                     "name": "mpan",
                     "net": Decimal("5.96"),
-                    "start_date": utc_datetime(2024, 6, 12, 0, 0),
+                    "start_date": to_utc(ct_datetime(2024, 6, 12, 0, 0)),
                 },
             ],
-            "finish_date": utc_datetime(2024, 6, 30, 23, 30),
+            "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
             "gross": Decimal("7.15"),
             "issue_date": to_utc(ct_datetime(2024, 5, 3, 9, 16)),
             "kwh": Decimal("0"),
@@ -401,7 +419,7 @@ def test_make_raw_bills(sess):
             "net": Decimal("5.96"),
             "reads": [],
             "reference": "20240612_20240630_20240503_14 7000 1573 345",
-            "start_date": utc_datetime(2024, 6, 12, 0, 0),
+            "start_date": to_utc(ct_datetime(2024, 6, 12, 0, 0)),
             "vat": Decimal("1.19"),
         },
     ]

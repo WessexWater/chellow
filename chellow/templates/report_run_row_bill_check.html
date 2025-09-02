@@ -242,7 +242,7 @@
 								<td><a href="/e/{{contract_type}}_bills/{{el.bill.id}}">View</a></td>
 								<td>{{el.start_date}}</td>
 								<td>{{el.finish_date}}</td>
-								<td>{{el.net}}</td>
+								<td>{{"{:0,.2f}".format(el.net)}}</td>
 								<td>{{el.breakdown}}</td>
 							</tr>
 						{% endfor %}
