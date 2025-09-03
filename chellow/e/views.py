@@ -755,9 +755,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2885,9 +2885,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2937,73 +2937,10 @@ def mop_batch_file_edit_post(file_id):
 @e.route("/mop_bills/<int:bill_id>")
 def mop_bill_get(bill_id):
     bill = Bill.get_by_id(g.sess, bill_id)
-    register_reads = (
-        g.sess.query(RegisterRead)
-        .filter(RegisterRead.bill == bill)
-        .order_by(RegisterRead.present_date.desc())
-    )
-    fields = {"bill": bill, "register_reads": register_reads}
-    try:
-        breakdown_dict = loads(bill.breakdown)
-
-        raw_lines = []
-        for key in ("raw_lines", "raw-lines"):
-            try:
-                raw_lines += breakdown_dict[key]
-                del breakdown_dict[key]
-            except KeyError:
-                pass
-
-        rows = set()
-        columns = set()
-        grid = defaultdict(dict)
-
-        for k, v in tuple(breakdown_dict.items()):
-            if k.endswith("-gbp"):
-                columns.add("gbp")
-                row_name = k[:-4]
-                rows.add(row_name)
-                grid[row_name]["gbp"] = v
-                del breakdown_dict[k]
-
-        for k, v in tuple(breakdown_dict.items()):
-            for row_name in sorted(list(rows), key=len, reverse=True):
-                if k.startswith(row_name + "-"):
-                    col_name = k[len(row_name) + 1 :]
-                    columns.add(col_name)
-                    grid[row_name][col_name] = csv_make_val(v)
-                    del breakdown_dict[k]
-                    break
-
-        for k, v in breakdown_dict.items():
-            pair = k.split("-")
-            row_name = "-".join(pair[:-1])
-            column_name = pair[-1]
-            rows.add(row_name)
-            columns.add(column_name)
-            grid[row_name][column_name] = csv_make_val(v)
-
-        column_list = sorted(list(columns))
-        for rate_name in [col for col in column_list if col.endswith("rate")]:
-            column_list.remove(rate_name)
-            column_list.append(rate_name)
-
-        if "gbp" in column_list:
-            column_list.remove("gbp")
-            column_list.append("gbp")
-
-        row_list = sorted(list(rows))
-        fields.update(
-            {
-                "raw_lines": raw_lines,
-                "row_list": row_list,
-                "column_list": column_list,
-                "grid": grid,
-            }
-        )
-    except SyntaxError:
-        pass
-    return render_template("mop_bill.html", **fields)
+    elements = g.sess.scalars(
+        select(Element).where(Element.bill == bill).order_by(Element.start_date.desc())
+    ).all()
+    return render_template("mop_bill.html", bill=bill, elements=elements)
 
 
 @e.route("/mop_bills/<int:bill_id>/edit")
@@ -5333,9 +5270,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
