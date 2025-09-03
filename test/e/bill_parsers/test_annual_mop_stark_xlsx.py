@@ -84,6 +84,7 @@ def test_one_bill(sess):
                         "comm": {"CS"},
                         "settlement-status": {"settlement"},
                         "rate": {Decimal("5.00")},
+                        "days": 31,
                     },
                 }
             ],
