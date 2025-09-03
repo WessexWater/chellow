@@ -614,10 +614,12 @@ def _process_period(
             if isinstance(actual_part, set) and len(actual_part) == 1:
                 actual_part = next(iter(actual_part))
 
-            if isinstance(virtual_part, Number) and isinstance(actual_part, Number):
+            if virtual_part is None or actual_part is None:
+                diff = None
+            elif isinstance(virtual_part, Number) and isinstance(actual_part, Number):
                 diff = float(actual_part) - float(virtual_part)
             else:
-                diff = None
+                diff = "✔" if virtual_part == actual_part else "❌"
 
             part["difference"] = diff
 
