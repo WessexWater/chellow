@@ -125,7 +125,7 @@ class Parser:
                                 "start_date": start_date,
                                 "finish_date": finish_date,
                                 "net": net,
-                                "breakdown": {"activity-name": {activity_name}},
+                                "breakdown": {"name": {activity_name}},
                             }
                         ],
                     }
