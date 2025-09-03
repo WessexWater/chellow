@@ -26,14 +26,6 @@ def get_ct_date(row, idx):
     return to_ct(dt)
 
 
-def get_start_date(row, idx):
-    return to_utc(get_ct_date(row, idx))
-
-
-def get_finish_date(row, idx):
-    return to_utc(get_ct_date(row, idx) + relativedelta(hours=23, minutes=30))
-
-
 def get_cell(row, idx):
     try:
         return row[idx]
@@ -57,6 +49,70 @@ def get_dec(row, idx):
 
 def get_int(row, idx):
     return int(get_cell(row, idx).value)
+
+
+def _process_row(issue_date, row):
+
+    mpan_core = parse_mpan_core(str(get_int(row, 1)))
+    comm = get_str(row, 2)
+
+    settled_str = get_str(row, 3)
+    if settled_str == "Settled":
+        settlement_status = "settlement"
+    else:
+        settlement_status = "non_settlement"
+
+    start_date_ct = get_ct_date(row, 5)
+    finish_date_ct = get_ct_date(row, 6)
+    days = (finish_date_ct - start_date_ct).days + 1
+
+    start_date = to_utc(start_date_ct)
+    finish_date = to_utc(finish_date_ct + relativedelta(hours=23, minutes=30))
+
+    meter_rate = get_dec(row, 7)
+    net = round(get_dec(row, 8), 2)
+    vat = round(get_dec(row, 9), 2)
+    gross = round(get_dec(row, 10), 2)
+
+    breakdown = {
+        "raw-lines": [],
+    }
+    return {
+        "bill_type_code": "N",
+        "kwh": Decimal(0),
+        "net": net,
+        "vat": vat,
+        "gross": gross,
+        "reads": [],
+        "breakdown": breakdown,
+        "account": mpan_core,
+        "issue_date": issue_date,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "mpan_core": mpan_core,
+        "reference": "_".join(
+            (
+                start_date.strftime("%Y%m%d"),
+                finish_date.strftime("%Y%m%d"),
+                issue_date.strftime("%Y%m%d"),
+                mpan_core,
+            )
+        ),
+        "elements": [
+            {
+                "name": "meter",
+                "start_date": start_date,
+                "finish_date": finish_date,
+                "breakdown": {
+                    "rate": {meter_rate},
+                    "comm": {comm},
+                    "settlement-status": {settlement_status},
+                    "days": days,
+                },
+                "net": net,
+            }
+        ],
+    }
 
 
 class Parser:
@@ -83,70 +139,15 @@ class Parser:
         try:
             bills = []
             row = next(self.sheet.iter_rows(min_row=6, max_row=6, max_col=3))
-            issue_date = get_start_date(row, 2)
+            issue_date = to_utc(get_ct_date(row, 2))
             for row in self.sheet.iter_rows(min_row=12, max_col=11):
                 val = get_cell(row, 1).value
                 if val is None or val == "":
                     break
 
                 self._set_last_line(row[0].row, val)
-                mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                comm = get_str(row, 2)
-
-                settled_str = get_str(row, 3)
-                if settled_str == "Settled":
-                    settlement_status = "settlement"
-                else:
-                    settlement_status = "non_settlement"
-
-                start_date = get_start_date(row, 5)
-                finish_date = get_finish_date(row, 6)
-
-                meter_rate = get_dec(row, 7)
-                net = round(get_dec(row, 8), 2)
-                vat = round(get_dec(row, 9), 2)
-                gross = round(get_dec(row, 10), 2)
-
-                breakdown = {
-                    "raw-lines": [],
-                }
-                bills.append(
-                    {
-                        "bill_type_code": "N",
-                        "kwh": Decimal(0),
-                        "net": net,
-                        "vat": vat,
-                        "gross": gross,
-                        "reads": [],
-                        "breakdown": breakdown,
-                        "account": mpan_core,
-                        "issue_date": issue_date,
-                        "start_date": start_date,
-                        "finish_date": finish_date,
-                        "mpan_core": mpan_core,
-                        "reference": "_".join(
-                            (
-                                start_date.strftime("%Y%m%d"),
-                                finish_date.strftime("%Y%m%d"),
-                                issue_date.strftime("%Y%m%d"),
-                                mpan_core,
-                            )
-                        ),
-                        "elements": [
-                            {
-                                "name": "meter",
-                                "start_date": start_date,
-                                "finish_date": finish_date,
-                                "breakdown": {
-                                    "rate": {meter_rate},
-                                    "comm": {comm},
-                                    "settlement-status": {settlement_status},
-                                },
-                                "net": net,
-                            }
-                        ],
-                    }
-                )
+                bill = _process_row(issue_date, row)
+                bills.append(bill)
         except BadRequest as e:
             raise BadRequest(f"Row number {row[0].row}: {e.description}")
 
