@@ -755,9 +755,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2885,9 +2885,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5270,9 +5270,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers[
-        "Content-Disposition"
-    ] = f'attachment; filename="{batch_file.filename}"'
+    output.headers["Content-Disposition"] = (
+        f'attachment; filename="{batch_file.filename}"'
+    )
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
