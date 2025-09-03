@@ -124,9 +124,8 @@ class Parser:
         try:
             bills = []
             issue_date = to_utc(get_ct_date(self.sheet, "C", 6))
-
             for row in range(12, len(self.sheet["A"]) + 1):
-                val = self.get_cell("B", row).value
+                val = get_cell(self.sheet, "B", row).value
                 if val is None or val == "":
                     break
                 self._set_last_line(row, val)
