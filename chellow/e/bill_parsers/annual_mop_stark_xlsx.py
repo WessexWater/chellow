@@ -8,21 +8,22 @@ from openpyxl import load_workbook
 from werkzeug.exceptions import BadRequest
 
 
-from chellow.utils import parse_mpan_core, to_utc
+from chellow.utils import parse_mpan_core, to_ct, to_utc
 
 
 def get_ct_date(row, idx):
     cell = get_cell(row, idx)
     val = cell.value
     if isinstance(val, Datetime):
-        return val
+        dt = val
     elif isinstance(val, str):
-        return Datetime.strptime(val, "dd/mm/yyyy")
+        dt = Datetime.strptime(val, "dd/mm/yyyy")
     else:
         raise BadRequest(
             f"The value {val} at {cell.coordinate} is of type {type(val)}, but "
             f"expected a timestamp or string."
         )
+    return to_ct(dt)
 
 
 def get_start_date(row, idx):
@@ -90,7 +91,7 @@ class Parser:
 
                 self._set_last_line(row[0].row, val)
                 mpan_core = parse_mpan_core(str(get_int(row, 1)))
-                comms = get_str(row, 2)
+                comm = get_str(row, 2)
 
                 settled_str = get_str(row, 3)
                 if settled_str == "Settled":
@@ -138,7 +139,7 @@ class Parser:
                                 "finish_date": finish_date,
                                 "breakdown": {
                                     "rate": {meter_rate},
-                                    "comms": {comms},
+                                    "comm": {comm},
                                     "settlement-status": {settlement_status},
                                 },
                                 "net": net,

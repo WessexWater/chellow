@@ -81,7 +81,7 @@ def test_one_bill(sess):
                     "finish_date": utc_datetime(2022, 1, 31, 23, 30),
                     "net": Decimal("0.12"),
                     "breakdown": {
-                        "comms": {"CS"},
+                        "comm": {"CS"},
                         "settlement-status": {"settlement"},
                         "rate": {Decimal("5.00")},
                     },

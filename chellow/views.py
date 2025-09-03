@@ -1390,7 +1390,7 @@ def report_run_get(run_id):
                 for n in element_names
             ]
             sum_diffs = g.sess.execute(
-                select(*diff_selects).filter(ReportRunRow.report_run == run)
+                select(*diff_selects).where(ReportRunRow.report_run == run)
             ).one()
 
             for elem, sum_diff in zip(element_names, sum_diffs):
