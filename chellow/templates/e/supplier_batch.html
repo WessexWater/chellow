@@ -7,13 +7,9 @@
 
 {% block nav %}
  	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="/e/supplier_contracts/{{batch.contract.id}}"
-		>{{batch.contract.name}}</a> &raquo; 
-	<a
-	 		href="/e/supplier_batches?supplier_contract_id={{batch.contract.id}}"
-			>Batches</a> &raquo; 
-	{{batch.reference}}
-	[<a href="/e/supplier_batches/{{batch.id}}/edit">edit</a>]
+	<a href="/e/supplier_contracts/{{batch.contract.id}}" >{{batch.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{batch.contract.id}}/batches" >Batches</a> &raquo; 
+	{{batch.reference}} [<a href="/e/supplier_batches/{{batch.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}

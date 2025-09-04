@@ -4,12 +4,10 @@ from decimal import Decimal
 from werkzeug.exceptions import BadRequest
 
 from chellow.edi_lib import (
-    ct_datetime,
     parse_edi,
     to_date,
     to_decimal,
     to_finish_date,
-    to_utc,
 )
 from chellow.utils import HH, parse_mpan_core
 
@@ -381,21 +379,6 @@ CODE_FUNCS = {
 }
 
 
-def _customer_mods(headers, bill):
-    if headers["customer_number"] == "WESSEXWAT":
-        if (
-            headers["element_code"] == "307660"
-            and "ro-gbp" in bill["breakdown"]
-            and bill["issue_date"] == to_utc(ct_datetime(2023, 4, 14))
-            and bill["start_date"] == to_utc(ct_datetime(2023, 3, 1))
-            and bill["finish_date"] == to_utc(ct_datetime(2023, 3, 31, 23, 30))
-        ):
-            bill["start_date"] = to_utc(ct_datetime(2021, 4, 1))
-            bill["finish_date"] = to_utc(ct_datetime(2022, 3, 31, 23, 30))
-
-    return bill
-
-
 class Parser:
     def __init__(self, f):
         self.edi_str = str(f.read(), "utf-8", errors="ignore")
@@ -431,7 +414,6 @@ class Parser:
 
             if bill is not None:
                 bill["breakdown"]["raw-lines"] = lines
-                bills.append(_customer_mods(headers, bill))
             if seg_name == "MTR":
                 lines = []
 
