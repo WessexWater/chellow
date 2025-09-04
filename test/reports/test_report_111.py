@@ -367,6 +367,7 @@ def virtual_bill(ds):
             "site_name": "Water Works",
             "supply_id": 1,
             "virtual_net_gbp": 0.0,
+            "problem": "",
         },
     ]
 
