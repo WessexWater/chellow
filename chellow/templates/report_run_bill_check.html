@@ -18,7 +18,6 @@
 				<th>Title</th>
 				<th>State</th>
 				<th>Number Of Rows</th>
-				<th>Sum Of Difference GBP</th>
 				<th>Delete</th>
 				<th>Download Spreadsheet</th>
 			</tr>
@@ -56,7 +55,6 @@
 				<th rowspan="3">Period Start</th>
 				<th rowspan="3">Period Finish</th>
 				<th colspan="{{elements|length + 1}}">Difference GBP</th>
-				<th rowspan="3">Note</th>
 			</tr>
 			<tr>
 				<th>
@@ -141,9 +139,6 @@
 							{% endif %}
 						</td>
 					{% endfor %}
-					<td>
-						{{ properties.get('note', '') }}
-					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

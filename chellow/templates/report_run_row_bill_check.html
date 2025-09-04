@@ -36,6 +36,7 @@
 				<th>Actual Net GBP</th>
 				<th>Virtual Net GBP</th>
 				<th>Difference Net GBP</th>
+				<th>Problem</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -66,6 +67,7 @@
 				<td>{{"{:0,.2f}".format(data['actual_net_gbp'])}}</td>
 				<td>{{"{:0,.2f}".format(data['virtual_net_gbp'])}}</td>
 				<td>{{"{:0,.2f}".format(data['difference_net_gbp'])}}</td>
+				<td>{{data['problem'}}</td>
 			</tr>
 		</tbody>
 	</table>
