@@ -6477,6 +6477,7 @@ class ReportRun(Base, PersistentClass):
             vals["data"] = data
         row = ReportRunRow(self, tab, vals)
         sess.add(row)
+        return row
 
     def delete(self, sess):
         sess.delete(self)
