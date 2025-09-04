@@ -414,6 +414,7 @@ class Parser:
 
             if bill is not None:
                 bill["breakdown"]["raw-lines"] = lines
+                bills.append(bill)
             if seg_name == "MTR":
                 lines = []
 
