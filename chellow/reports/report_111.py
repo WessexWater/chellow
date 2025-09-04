@@ -560,22 +560,25 @@ def _process_period(
                 virtual_net_gbp += v
 
         for k, v in vb.items():
-            for vel_name in sorted(vels.keys(), key=len, reverse=True):
-                pref = f"{vel_name}-"
-                if k.startswith(pref):
-                    vel = vels[vel_name]["parts"]
-                    vel_k = k[len(pref) :]
-                    try:
-                        if isinstance(vel[vel_k], set):
-                            vel[vel_k].update(v)
-                        else:
-                            vel[vel_k] += v
-                    except KeyError:
-                        vel[vel_k] = v
-                    except TypeError as detail:
-                        raise BadRequest(f"For key {vel_k} and value {v}. {detail}")
+            if k == "problem":
+                virtual_bill["problem"] += v
+            else:
+                for vel_name in sorted(vels.keys(), key=len, reverse=True):
+                    pref = f"{vel_name}-"
+                    if k.startswith(pref):
+                        vel = vels[vel_name]["parts"]
+                        vel_k = k[len(pref) :]
+                        try:
+                            if isinstance(vel[vel_k], set):
+                                vel[vel_k].update(v)
+                            else:
+                                vel[vel_k] += v
+                        except KeyError:
+                            vel[vel_k] = v
+                        except TypeError as detail:
+                            raise BadRequest(f"For key {vel_k} and value {v}. {detail}")
 
-                    break
+                        break
     val_elems = {}
     for typ, els in (("virtual", vels), ("actual", actual_elems)):
         for el_k, el in els.items():

@@ -170,6 +170,7 @@ def virtual_bill(ds):
             v for k, v in bill_hh.items() if k.endswith('gbp'))
         bill_hh['vat-gbp'] = 0
         bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        bill_hh['problem'] = 'hello'
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -189,14 +190,7 @@ def virtual_bill(ds):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(
-        sess,
-        "845",
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
-    )
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -207,20 +201,13 @@ def virtual_bill(ds):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
@@ -367,7 +354,7 @@ def virtual_bill(ds):
             "site_name": "Water Works",
             "supply_id": 1,
             "virtual_net_gbp": 0.0,
-            "problem": "",
+            "problem": "hello",
         },
     ]
 
