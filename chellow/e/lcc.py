@@ -46,7 +46,7 @@ def run_import(sess, log, set_progress):
     s = requests.Session()
     s.verify = False
 
-    for mod_name in ("chellow.e.cfd",):
+    for mod_name in ("chellow.e.cfd", "chellow.e.rab"):
         mod = import_module(mod_name)
         mod.lcc_import(sess, log, set_progress, s)
 
