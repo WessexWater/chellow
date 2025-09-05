@@ -28,7 +28,7 @@ def parse_date(row, idx, is_finish=False):
         else:
             dt = to_utc(ct_datetime_parse(date_str, "%Y-%m-%d %H:%M"))
         return validate_hh_start(dt)
-    except ValueError as e:
+    except BaseException as e:
         raise BadRequest(
             f"Can't parse the date at column {idx}. The required spreadsheet format is "
             f"'YYYY-MM-DD HH:MM'. {e}"
