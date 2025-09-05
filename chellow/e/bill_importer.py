@@ -77,7 +77,7 @@ class BillImport(threading.Thread):
         try:
             batch_ids = []
             with Session() as sess:
-                batch_q = select(Batch).order_by(Batch.reference.desc())
+                batch_q = select(Batch).order_by(Batch.reference)
                 if self.batch_id is not None:
                     batch = Batch.get_by_id(sess, self.batch_id)
                     batch_q = batch_q.where(Batch.id == self.batch_id)
