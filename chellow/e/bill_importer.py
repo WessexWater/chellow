@@ -21,7 +21,7 @@ from chellow.models import (
     Supply,
     Tpr,
 )
-from chellow.utils import keydefaultdict, to_ct, utc_datetime_now
+from chellow.utils import ct_datetime_now, keydefaultdict
 
 
 import_id = 0
@@ -57,7 +57,7 @@ class BillImport(threading.Thread):
     def _log(self, msg):
         with import_lock:
             self.log.appendleft(
-                f"{to_ct(utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S'))} - {msg}"
+                f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {msg}"
             )
 
     def status(self):
