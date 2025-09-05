@@ -21,7 +21,7 @@ from chellow.models import (
     Supply,
     Tpr,
 )
-from chellow.utils import keydefaultdict, utc_datetime_now
+from chellow.utils import keydefaultdict, to_ct, utc_datetime_now
 
 
 import_id = 0
@@ -57,7 +57,7 @@ class BillImport(threading.Thread):
     def _log(self, msg):
         with import_lock:
             self.log.appendleft(
-                f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {msg}"
+                f"{to_ct(utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S'))} - {msg}"
             )
 
     def status(self):
@@ -75,9 +75,9 @@ class BillImport(threading.Thread):
 
     def run(self):
         try:
-            batch_ids = set()
+            batch_ids = []
             with Session() as sess:
-                batch_q = select(Batch)
+                batch_q = select(Batch).order_by(Batch.reference.desc())
                 if self.batch_id is not None:
                     batch = Batch.get_by_id(sess, self.batch_id)
                     batch_q = batch_q.where(Batch.id == self.batch_id)
@@ -85,12 +85,15 @@ class BillImport(threading.Thread):
                     contract = Contract.get_by_id(sess, self.contract_id)
                     batch_q = batch_q.where(Batch.contract == contract)
                 for batch in sess.scalars(batch_q):
-                    batch_ids.add(batch.id)
+                    batch_ids.append(batch.id)
+
             for batch_id in batch_ids:
                 with Session() as sess:
+                    batch = Batch.get_by_id(sess, batch_id)
+                    self._log(f"Importing bills from batch {batch.reference}.")
                     bf_q = (
                         select(BatchFile)
-                        .where(BatchFile.batch_id == batch_id)
+                        .where(BatchFile.batch == batch)
                         .order_by(BatchFile.upload_timestamp)
                     )
                     bill_types = keydefaultdict(lambda k: BillType.get_by_code(sess, k))
