@@ -69,10 +69,10 @@ def _process_row(vals):
     start_date = parse_date(vals, 5)
     finish_date = parse_date(vals, 6, True)
 
-    kwh = to_decimal(7, "kwh")
-    net = to_decimal(8, "net", True)
-    vat = to_decimal(9, "vat", True)
-    gross = to_decimal(10, "gross", True)
+    kwh = to_decimal(vals, 7, "kwh")
+    net = to_decimal(vals, 8, "net", True)
+    vat = to_decimal(vals, 9, "vat", True)
+    gross = to_decimal(vals, 10, "gross", True)
 
     if len(vals) > 11:
         breakdown_str = vals[11].strip()
@@ -101,7 +101,7 @@ def _process_row(vals):
                 {
                     "msn": vals[i + 1],
                     "mpan": vals[i + 2],
-                    "coefficient": to_decimal(i + 3, "coefficient"),
+                    "coefficient": to_decimal(vals, i + 3, "coefficient"),
                     "units": vals[i + 4],
                     "tpr_code": tpr_code,
                     "prev_date": parse_date(vals, i + 6),
