@@ -310,8 +310,11 @@ def _parse_row(bills, row, row_index, datemode, title_row):
             )
 
         if usage is not None:
-            units = usage_units.lower()
-            ebd["kwh" if units == "" else units] = usage
+            if isinstance(usage_units, str) and usage_units != "":
+                units = usage_units.lower()
+            else:
+                units = "kwh"
+            ebd[units] = usage
         if price is not None:
             ebd["rate"] = price
         bill["elements"].append(
