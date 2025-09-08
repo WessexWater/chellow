@@ -7,13 +7,10 @@
 
 {% block nav %}
 	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
-	<a href="/e/supplier_contracts/{{bill.batch.contract.id}}"
-		>{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="/e/supplier_batches?supplier_contract_id={{bill.batch.contract.id}}"
-		>Batches</a> &raquo; 
+	<a href="/e/supplier_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{bill.batch.contract.id}}/batches">Batches</a> &raquo; 
 	<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; 
-	Bill {{bill.id}}
-	[<a href="/e/supplier_bills/{{bill.id}}/edit">edit</a>]
+	Bill {{bill.id}} [<a href="/e/supplier_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
@@ -117,6 +114,32 @@
 						href="/e/read_types/{{read.present_type.id}}"
 						>{{read.present_type.code}}</a>
 					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
+		<legend>Elements [<a href="/e/supplier_bills/{{bill.id}}/add_element">add</a>]</legend>	
+		<thead>
+			<tr>
+				<th>Edit</th>
+				<th>Name</th>
+    		<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net GBP</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for element in elements %}
+				<tr>
+					<td>[<a href="/e/supplier_elements/{{element.id}}/edit">edit</a>]</td>
+					<td>{{element.name}}</td>
+					<td>{{element.start_date|hh_format}}</td>
+					<td>{{element.finish_date|hh_format}}</td>
+					<td style="text-align: right">{{element.net}}</td>
+					<td>{{element.breakdown}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

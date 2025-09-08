@@ -990,10 +990,39 @@ def test_rate_server_get(sess, client):
     match(response, 200)
 
 
+def test_report_run_get_bill_check(sess, client):
+    report_run = ReportRun.insert(sess, "bill_check", None, "_b_88", {})
+    sess.commit()
+    query_string = {"element": "net"}
+    response = client.get(f"/report_runs/{report_run.id}", query_string=query_string)
+    match(response, 200)
+
+
 def test_report_run_spreadsheet_get(sess, client):
     report_run = ReportRun.insert(sess, "bill_check", None, "_b_88", {})
     report_run.insert_row(sess, "", ["clump"], {}, {})
     sess.commit()
 
     response = client.get(f"/report_runs/{report_run.id}/spreadsheet")
+    match(response, 200)
+
+
+def test_report_run_row_get_bill_check(sess, client):
+    report_run = ReportRun.insert(sess, "bill_check", None, "_b_88", {})
+    report_run_row = report_run.insert_row(
+        sess,
+        "",
+        ["clump"],
+        {},
+        {},
+        data={
+            "actual_net_gbp": 10,
+            "virtual_net_gbp": 20.32,
+            "difference_net_gbp": 23.6,
+            "elements": {},
+        },
+    )
+    sess.commit()
+
+    response = client.get(f"/report_run_rows/{report_run_row.id}")
     match(response, 200)

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Batches
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}/batches">Batches</a> &raquo;
+	Edit
+{% endblock %}
+
+{% block content %}
+	<form hx-post="/e/dc_contracts/{{contract.id}}/batches/edit"
+			hx-confirm="Are you sure you want to delete all the bills then re-import bills from the files for all batches in the contract that have batch files?"
+	>
+		<fieldset>
+			<legend>
+				For All Batches With At Least One Batch File, Delete All The Bills And Then Re-import Rrom The
+				Files
+			</legend>
+			<button name="delete_import_bills">Re-Import Bills</button>
+		</fieldset>
+	</form>
+{% endblock %}

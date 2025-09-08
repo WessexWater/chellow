@@ -14,134 +14,105 @@ from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
 
 ELEM_MAP = {
-    None: None,
-    "Charge - Recurring": {
-        None: ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days")
+    None: {
+        None: None,
+        "OOC MOP": {None: "meter-rental"},
     },
+    "Charge - Recurring": {None: "duos-fixed"},
     "Meter - Standard": {
-        "Energy Bill Relief Scheme": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
-        "Energy Bill Relief Scheme Discount": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
-        "Energy Bill Discount Scheme": {None: ["ebrs-gbp", "ebrs-msp-kwh"]},
+        "Energy Bill Relief Scheme": {None: "ebrs"},
+        "Energy Bill Relief Scheme Discount": {None: "ebrs"},
+        "Energy Bill Discount Scheme": {None: "ebrs"},
     },
-    "Meter - UK Electricity - AAHEDC Pass-Thru": {
-        None: ["aahedc-gbp", "aahedc-rate", "aahedc-gsp-kwh"]
-    },
-    "Meter - UK Electricity - BSUoS Pass-Thru": {
-        None: ["bsuos-gbp", "bsuos-rate", "bsuos-nbp-kwh"]
-    },
+    "Meter - UK Electricity - AAHEDC Pass-Thru": {None: "aahedc"},
+    "Meter - UK Electricity - BSUoS Pass-Thru": {None: "bsuos"},
     "Meter - UK Electricity - Capacity Market Pass-Thru": {
-        None: ["capacity-gbp", "capacity-rate", "capacity-kwh"],
-        "Reverse Capacity Market Estimate": {None: ["capacity-gbp"]},
+        None: "capacity",
+        "Reverse Capacity Market Estimate": {None: "capacity"},
     },
-    "Meter - UK Electricity - CfD FiT Pass-Thru": {
-        None: ["cfd-fit-gbp", "cfd-fit-rate", "cfd-fit-nbp-kwh"]
-    },
+    "Meter - UK Electricity - CfD FiT Pass-Thru": {None: "cfd-fit"},
     "Meter - UK Electricity - CCL": {
-        None: ["ccl-gbp", "ccl-rate", "ccl-kwh"],
-        "CCL": {None: ["ccl-gbp", "ccl-rate", "ccl-kwh"]},
-        "Levy Exempt Energy": {None: ["lec-gbp", "lec-rate", "lec-kwh"]},
+        None: "ccl",
+        "CCL": {None: "ccl"},
+        "Levy Exempt Energy": {None: "lec"},
     },
     "Meter - UK Electricity - DUoS": {
         None: None,
         "DUoS Unit Rate 3": {
-            None: ("duos-green-gbp", "duos-green-rate", "duos-green-kwh")
+            None: "duos-green",
         },
         "DUoS Unit Charge 3": {
-            None: ("duos-green-gbp", "duos-green-rate", "duos-green-kwh")
+            None: "duos-green",
         },
         "DUoS Unit Charge 2": {
-            None: ("duos-amber-gbp", "duos-amber-rate", "duos-amber-kwh")
+            None: "duos-amber",
         },
         "DUoS Unit Rate 2": {
-            None: ("duos-amber-gbp", "duos-amber-rate", "duos-amber-kwh")
+            None: "duos-amber",
         },
-        "DUoS Unit Charge 1": {None: ("duos-red-gbp", "duos-red-kwh", "duos-red-rate")},
-        "DUoS Unit Rate 1": {None: ("duos-red-gbp", "duos-red-kwh", "duos-red-rate")},
-        "DUoS Standing Charge": {
-            None: ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days")
-        },
-        "DUoS Fixed": {None: ("duos-fixed-gbp", "duos-fixed-rate", "duos-fixed-days")},
+        "DUoS Unit Charge 1": {None: "duos-red"},
+        "DUoS Unit Rate 1": {None: "duos-red"},
+        "DUoS Standing Charge": {None: "duos-fixed"},
+        "DUoS Fixed": {None: "duos-fixed"},
         "DUoS Reactive": {
-            None: ("duos-reactive-gbp", "duos-reactive-rate", "duos-reactive-kvarh")
+            None: "duos-reactive",
         },
     },
     "Meter - UK Electricity - FiT Pass-Thru": {
-        None: ("fit-gbp", "fit-rate", "fit-msp-kwh")
+        None: "fit",
     },
     "Pass Thru - UK Electricity Cost Component": {
-        None: ("meter-rental-gbp", "meter-rental-rate", "meter-rental-days")
+        None: "meter-rental",
     },
-    "Meter - UK Electricity - RO Pass-Thru": {
-        None: ("ro-gbp", "ro-rate", "ro-msp-kwh")
-    },
+    "Meter - UK Electricity - RO Pass-Thru": {None: "ro"},
     "Meter - UK Electricity - TUoS": {
-        None: ("triad-gbp", "triad-rate", "triad-gsp-kw"),
+        None: "triad",
         "TNUoS Fixed": {
-            None: ("tnuos-gbp", "tnuos-rate", "tnuos-days"),
+            None: "tnuos",
         },
     },
     "Meter - UK Electricity - Standard": {
         None: None,
         "Unit Rate": {
             "Summer Weekday": {
-                None: (
-                    "summer-weekday-gbp",
-                    "summer-weekday-rate",
-                    "summer-weekday-gsp-kwh",
-                )
+                None: "summer-weekday",
             },
-            "Peak": {None: ("peak-gbp", "peak-rate", "peak-gsp-kwh")},
+            "Peak": {None: "peak"},
             "Peak Shoulder": {
-                None: (
-                    "peak-shoulder-gbp",
-                    "peak-shoulder-gsp-kwh",
-                    "peak-shoulder-rate",
-                )
+                None: "peak-shoulder",
             },
             "Summer Night": {
-                None: ("summer-night-gbp", "summer-night-rate", "summer-night-gsp-kwh")
+                None: "summer-night",
             },
             "Summer Weekend & Bank Holiday": {
-                None: (
-                    "summer-weekend-gbp",
-                    "summer-weekend-rate",
-                    "summer-weekend-gsp-kwh",
-                )
+                None: "summer-weekend",
             },
-            "Night": {None: ("night-gbp", "night-rate", "night-gsp-kwh")},
+            "Night": {None: "night"},
             "Winter Weekday": {
-                None: (
-                    "winter-weekday-gbp",
-                    "winter-weekday-rate",
-                    "winter-weekday-gsp-kwh",
-                )
+                None: "winter-weekday",
             },
             "Winter Weekend & Bank Holiday": {
-                None: (
-                    "winter-weekend-gbp",
-                    "winter-weekend-rate",
-                    "winter-weekend-gsp-kwh",
-                )
+                None: "winter-weekend",
             },
             "Winter Night": {
-                None: ("winter-night-gbp", "winter-night-rate", "winter-night-gsp-kwh")
+                None: "winter-night",
             },
-            "Day": {None: ("day-gbp", "day-rate", "day-gsp-kwh")},
-            "Single": {None: ("day-gbp", "day-rate", "day-gsp-kwh")},
-            "Off Peak / Weekends": {None: ("day-gbp", "day-rate", "day-gsp-kwh")},
+            "Day": {None: "day"},
+            "Single": {None: "day"},
+            "Off Peak / Weekends": {None: "day"},
         },
         "Reverse BSUoS in Unit Rate": {
-            None: ("bsuos-reverse-gbp", "bsuos-reverse-rate", "bsuos-reverse-nbp-kwh")
+            None: "bsuos-reverse",
         },
     },
-    "Meter - UK Gas - CCL": {None: ("ccl-gbp", "ccl-rate", "ccl-kwh")},
+    "Meter - UK Gas - CCL": {None: "ccl"},
 }
 
 
-def _find_names(tree, path):
+def _find_name(tree, path):
     if len(path) > 0:
         try:
-            return _find_names(tree[path[0]], path[1:])
+            return _find_name(tree[path[0]], path[1:])
         except KeyError:
             pass
 
@@ -219,23 +190,23 @@ def get_dec(row, name):
         return None
 
 
-def _bd_add(bd, el_name, val):
-    if el_name.split("-")[-1] in ("rate", "kva"):
-        if el_name not in bd:
-            bd[el_name] = set()
-        bd[el_name].add(val)
+def _get_vat_values(bd, percentage):
+    if "vat" in bd:
+        vat_breakdown = bd["vat"]
     else:
-        if el_name not in bd:
-            bd[el_name] = 0
-        try:
-            bd[el_name] += val
-        except TypeError as e:
-            raise BadRequest(
-                f"Problem with element name {el_name} and value '{val}': {e}"
-            )
+        vat_breakdown = bd["vat"] = {}
+
+    try:
+        vat_values = vat_breakdown[percentage]
+    except KeyError:
+        vat_values = vat_breakdown[percentage] = {
+            "vat": Decimal("0.00"),
+            "net": Decimal("0.00"),
+        }
+    return vat_values
 
 
-def _parse_row(row, row_index, datemode, title_row):
+def _parse_row(bills, row, row_index, datemode, title_row):
     val = get_value(row, "Meter Point")
     try:
         mpan_core = parse_mpan_core(str(int(val)))
@@ -244,6 +215,11 @@ def _parse_row(row, row_index, datemode, title_row):
             f"Can't parse the MPAN core in column 'Meter Point' with value '{val}' : "
             f"{e}"
         )
+
+    try:
+        mc = bills[mpan_core]
+    except KeyError:
+        mc = bills[mpan_core] = {}
 
     bill_period = get_value(row, "Bill Period")
     if "-" in bill_period:
@@ -254,6 +230,26 @@ def _parse_row(row, row_index, datemode, title_row):
         period_finish = to_utc(to_ct(period_finish_naive + relativedelta(days=1) - HH))
     else:
         period_start, period_finish = None, None
+
+    issue_date = get_date(row, "Bill Date", datemode)
+
+    try:
+        bill = mc[bill_period]
+    except KeyError:
+        bill = mc[bill_period] = {
+            "bill_type_code": "N",
+            "kwh": Decimal(0),
+            "vat": Decimal("0.00"),
+            "net": Decimal("0.00"),
+            "reads": [],
+            "breakdown": {"raw_lines": [str(title_row)]},
+            "account": mpan_core,
+            "issue_date": issue_date,
+            "start_date": period_start,
+            "finish_date": period_finish,
+            "mpan_core": mpan_core,
+            "elements": [],
+        }
 
     from_date = get_date(row, "From Date", datemode)
     if from_date is None:
@@ -272,25 +268,11 @@ def _parse_row(row, row_index, datemode, title_row):
     else:
         to_date = to_utc(to_ct(to_date_naive + relativedelta(days=1) - HH))
 
-    issue_date = get_date(row, "Bill Date", datemode)
     bill_number = get_value(row, "Bill Number")
-    bill = {
-        "bill_type_code": "N",
-        "kwh": Decimal(0),
-        "vat": Decimal("0.00"),
-        "net": Decimal("0.00"),
-        "reads": [],
-        "breakdown": {"raw_lines": [str(title_row)]},
-        "account": mpan_core,
-        "issue_date": issue_date,
-        "start_date": from_date,
-        "finish_date": to_date,
-        "mpan_core": mpan_core,
-    }
     bd = bill["breakdown"]
 
     usage = get_dec(row, "Usage")
-    # usage_units = get_value(row, 'Usage Unit')
+    usage_units = get_value(row, "Usage Unit")
     price = get_dec(row, "Price")
     amount = get_dec(row, "Amount")
     product_item_name = get_value(row, "Product Item Name")
@@ -299,92 +281,96 @@ def _parse_row(row, row_index, datemode, title_row):
         bill["kwh"] += round(usage, 2)
     description = get_value(row, "Description")
     product_class = get_value(row, "Product Item Class")
+
     if description in ("Standard VAT@20%", "Reduced VAT@5%"):
-        bill["vat"] += round(amount, 2)
+        vat_gbp = round(amount, 2)
+        bill["vat"] += vat_gbp
         if description.endswith("20%"):
             vat_percentage = Decimal("20")
         else:
             vat_percentage = Decimal("5")
         bd["vat_percentage"] = vat_percentage
+
+        if "vat-rate" in bd:
+            vat_rate = bd["vat-rate"]
+        else:
+            vat_rate = bd["vat-rate"] = set()
+
+        vat_rate.add(vat_percentage / Decimal("100"))
+
+        vat_values = _get_vat_values(bd, vat_percentage)
+        vat_values["vat"] += vat_gbp
     else:
-        bill["net"] += round(amount, 2)
+        net = round(amount, 2)
+        bill["net"] += net
+
+        sales_tax_rate = get_value(row, "Sales Tax Rate")
+        if sales_tax_rate == "Commercial UK Energy VAT":
+            vat_values = _get_vat_values(bd, 20)
+            vat_values["net"] += net
 
         path = [product_class, description, rate_name]
-        names = _find_names(ELEM_MAP, path)
-
+        elname = _find_name(ELEM_MAP, path)
+        ebd = {}
         duos_avail_prefix = "DUoS Availability ("
         duos_excess_avail_prefix = "DUoS Excess Availability ("
 
-        if description.startswith("DUoS Availability Adjustment "):
-            _bd_add(bd, "duos-availability-gbp", amount)
-        elif description.startswith("DUoS Availability"):
-            if description.startswith(duos_avail_prefix):
-                _bd_add(
-                    bd,
-                    "duos-availability-kva",
-                    int(description[len(duos_avail_prefix) : -5]),
-                )
-            _bd_add(bd, "duos-availability-days", usage)
-            _bd_add(bd, "duos-availability-rate", price)
-            _bd_add(bd, "duos-availability-gbp", amount)
-        elif description.startswith("DUoS Excess Availability"):
-            if description.startswith(duos_excess_avail_prefix):
-                kva = int(description[len(duos_excess_avail_prefix) : -5])
-                _bd_add(bd, "duos-excess-availability-kva", kva)
-            _bd_add(bd, "duos-excess-availability-days", usage)
-            _bd_add(bd, "duos-excess-availability-rate", price)
-            _bd_add(bd, "duos-excess-availability-gbp", amount)
-        elif description.startswith("BSUoS Black Start "):
-            _bd_add(bd, "black-start-gbp", amount)
-        elif description.startswith("BSUoS Reconciliation - "):
-            if usage is not None:
-                _bd_add(bd, "bsuos-nbp-kwh", usage)
-            if price is not None:
-                _bd_add(bd, "bsuos-rate", price)
-            _bd_add(bd, "bsuos-gbp", amount)
-        elif description.startswith("FiT Rec - "):
-            _bd_add(bd, "fit-gbp", amount)
-        elif description.startswith("FiT Reconciliation "):
-            _bd_add(bd, "fit-gbp", amount)
-        elif description.startswith("CfD FiT Rec - ") or description.startswith(
-            "CfD FiT Reconciliation"
+        for prefix, name in (
+            ("DUoS Availability Adjustment ", "duos-availability"),
+            ("DUoS Availability", "duos-availability"),
+            ("DUoS Excess Availability", "duos-excess-availability"),
+            ("BSUoS Black Start ", "black-start"),
+            ("BSUoS Reconciliation - ", "bsuos"),
+            ("FiT Rec - ", "fit"),
+            ("FiT Reconciliation ", "fit"),
+            ("CfD FiT Rec - ", "cfd-fit"),
+            ("CfD FiT Reconciliation", "cfd-fit"),
+            ("Flex", "reconciliation"),
+            ("Legacy TNUoS Reversal ", "triad"),
+            ("Hand Held Read -", "meter-rental"),
+            ("RO Mutualisation ", "ro"),
+            ("OOC MOP - ", "meter-rental"),
+            ("KVa Adjustment ", "duos-availability"),
         ):
-            _bd_add(bd, "cfd-fit-gbp", amount)
-        elif description.startswith("Flex"):
-            _bd_add(bd, "reconciliation-gbp", amount)
-        elif description.startswith("Legacy TNUoS Reversal "):
-            _bd_add(bd, "triad-gbp", amount)
-        elif description.startswith("Hand Held Read -"):
-            _bd_add(bd, "meter-rental-gbp", amount)
-        elif description.startswith("RO Mutualisation "):
-            _bd_add(bd, "ro-gbp", amount)
-        elif description.startswith("OOC MOP - "):
-            _bd_add(bd, "meter-rental-gbp", amount)
-        elif description.startswith("KVa Adjustment "):
-            _bd_add(bd, "duos-availability-gbp", amount)
-        elif names is not None:
-            for elem_k, elem_v in zip(names, (amount, price, usage)):
-                if elem_k is not None:
-                    _bd_add(bd, elem_k, elem_v)
-        else:
+            if description.startswith(prefix):
+                elname = name
+                if description.startswith(duos_excess_avail_prefix):
+                    ebd["kva"] = int(description[len(duos_excess_avail_prefix) : -5])
+                elif description.startswith(duos_avail_prefix):
+                    ebd["kva"] = int(description[len(duos_avail_prefix) : -5])
+                break
+
+        if elname is None:
             raise BadRequest(
                 f"For the path {path} the parser can't work out the element."
             )
 
+        if usage is not None:
+            if isinstance(usage_units, str) and usage_units != "":
+                units = usage_units.lower()
+            else:
+                units = "kwh"
+            ebd[units] = usage
+        if price is not None:
+            ebd["rate"] = price
+        bill["elements"].append(
+            {
+                "start_date": from_date,
+                "finish_date": to_date,
+                "name": elname,
+                "net": net,
+                "breakdown": ebd,
+            }
+        )
+
     reference = str(bill_number) + "_" + str(row_index + 1)
-    for k, v in tuple(bd.items()):
-        if isinstance(v, set):
-            bd[k] = list(v)
-        elif k.endswith("-gbp"):
-            reference += "_" + k[:-4]
 
     bill["reference"] = reference
     bill["gross"] = bill["net"] + bill["vat"]
-    return bill
 
 
 def _make_raw_bills(sheet, datemode):
-    bills = []
+    bills = {}
     title_row = sheet.row(0)
     for row_index in range(1, sheet.nrows):
         row = sheet.row(row_index)
@@ -392,11 +378,11 @@ def _make_raw_bills(sheet, datemode):
             val = row[21].value
             if val not in (None, ""):
                 try:
-                    bills.append(_parse_row(row, row_index, datemode, title_row))
+                    _parse_row(bills, row, row_index, datemode, title_row)
                 except BadRequest as e:
                     raise BadRequest(f"On row {row_index + 1}: {e.description}")
 
-    return bills
+    return [b for mc in bills.values() for b in mc.values()]
 
 
 class Parser:

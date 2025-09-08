@@ -967,7 +967,7 @@ class SupplySource(DataSource):
 
         self.is_displaced = False
         self.bill = bill
-        if self.bill is not None:
+        if self.bill is not None and hasattr(self.bill, "start_date"):
             self.bill_start = bill.start_date
             self.bill_finish = bill.finish_date
             self.is_last_bill_gen = (

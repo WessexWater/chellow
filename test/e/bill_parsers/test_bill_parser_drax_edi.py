@@ -33,6 +33,7 @@ def test_process_BCD(mocker):
         "issue_date": to_utc(ct_datetime(2020, 4, 16)),
         "start_date": to_utc(ct_datetime(2020, 3, 1)),
         "reference": reference,
+        "elements": [],
     }
     assert headers == expected_headers
 
@@ -56,6 +57,7 @@ def test_process_BTL(mocker):
         "gross": Decimal("986733.22"),
         "breakdown": {"raw-lines": []},
         "reads": [],
+        "elements": [],
         "lines": [],
     }
     bill = _process_BTL(elements, headers)
@@ -73,6 +75,7 @@ def test_process_BTL(mocker):
         "reference": "974y4uot",
         "start_date": start_date,
         "vat": Decimal("76.59"),
+        "elements": [],
     }
     assert bill == expected_bill
 
@@ -93,6 +96,7 @@ def test_process_BTL_decimal_places(mocker):
         "kwh": Decimal("44.5"),
         "breakdown": {"raw-lines": []},
         "reads": [],
+        "elements": [],
         "lines": [],
     }
     bill = _process_BTL(elements, headers)
@@ -113,6 +117,7 @@ def test_process_BTL_decimal_places(mocker):
         "reference": "974y4uot",
         "start_date": start_date,
         "vat": expected_vat,
+        "elements": [],
     }
     assert bill == expected_bill
     for actual_val, expected_val in (
@@ -139,16 +144,25 @@ def test_process_CCD3():
         "kwh": Decimal("0"),
         "breakdown": defaultdict(int, {}),
         "lines": lines,
+        "elements": [],
     }
 
     _process_CCD3(elements, headers)
 
     expected_headers = {
         "kwh": Decimal("0"),
-        "breakdown": {
-            "nrg-msp-gbp": Decimal("0.00"),
-            "nrg-rate": {Decimal("0.0001")},
-        },
+        "breakdown": {},
+        "elements": [
+            {
+                "name": "nrg-msp",
+                "net": Decimal("0.00"),
+                "breakdown": {
+                    "rate": {Decimal("0.0001")},
+                },
+                "start_date": to_utc(ct_datetime(2025, 4, 1)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+            }
+        ],
         "lines": lines,
     }
     assert headers == expected_headers
@@ -168,27 +182,50 @@ def test_process_CCD3_multiple_elements(mocker):
 
     lines = []
     headers = {
-        "kwh": Decimal("0"),
-        "breakdown": defaultdict(
-            int,
+        "kwh": Decimal("1000"),
+        "elements": [
             {
-                "nrg-msp-gbp": Decimal("1000.00"),
-                "nrg-rate": {Decimal("758.33")},
-                "nrg-msp-kwh": Decimal("10000"),
+                "name": "nrg-msp",
+                "net": Decimal("1000.00"),
+                "start_date": to_utc(ct_datetime(2025, 4, 1)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+                "breakdown": {
+                    "rate": {Decimal("758.33")},
+                    "kwh": Decimal("10000"),
+                },
             },
-        ),
+        ],
+        "breakdown": defaultdict(int, {}),
         "lines": lines,
     }
 
     _process_CCD3(elements, headers)
 
     expected_headers = {
-        "kwh": Decimal("8.739"),
-        "breakdown": {
-            "nrg-msp-gbp": Decimal("1758.49"),
-            "nrg-rate": {Decimal("0.0001"), Decimal("758.33")},
-            "nrg-msp-kwh": Decimal("10008.739"),
-        },
+        "breakdown": defaultdict(int, {}),
+        "kwh": Decimal("1008.739"),
+        "elements": [
+            {
+                "name": "nrg-msp",
+                "net": Decimal("1000.00"),
+                "start_date": to_utc(ct_datetime(2025, 4, 1)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+                "breakdown": {
+                    "rate": {Decimal("758.33")},
+                    "kwh": Decimal("10000"),
+                },
+            },
+            {
+                "name": "nrg-msp",
+                "net": Decimal("758.49"),
+                "start_date": to_utc(ct_datetime(2025, 4, 1)),
+                "finish_date": to_utc(ct_datetime(2025, 4, 30, 23, 30)),
+                "breakdown": {
+                    "rate": {Decimal("0.0001")},
+                    "kwh": Decimal("8.739"),
+                },
+            },
+        ],
         "lines": lines,
     }
     assert headers == expected_headers

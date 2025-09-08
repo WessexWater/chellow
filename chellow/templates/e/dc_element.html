@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{element.bill.batch.contract.name}} &raquo;
+ 	Batches &raquo; {{element.bill.batch.reference}} &raquo; {{element.bill.reference}} &raquo;
+	{{element.bill.reference}} &raquo; {{element.name}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{element.bill.batch.contract.id}}">{{element.bill.batch.contract.name}}</a>
+ 	&raquo; 
+	<a href="/e/dc_contracts/{{element.bill.batch.contract.id}}/batches">Batches</a> &raquo; 
+	<a href="/e/dc_batches/{{element.bill.batch.id}}">{{element.bill.batch.reference}}</a> &raquo; 
+  <a href="/e/dc_bills/{{element.bill.id}}">{{element.bill.reference}}</a> &raquo;
+  {{element.name}}</a> &raquo; [<a href="/e/dc_elements/{{element.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	<table>
+		<caption>Element</caption>	
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net GBP</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{element.name}}</td>
+				<td>{{element.start_date|hh_format }}</td>
+				<td>{{element.finish_date|hh_format }}</td>
+				<td>{{element.net}}</td>
+				<td><pre>{{element.breakdown}}</pre></td>
+			</tr>
+		</tbody>
+	</table>
+{% endblock %}

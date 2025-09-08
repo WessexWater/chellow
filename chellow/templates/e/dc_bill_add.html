@@ -8,7 +8,7 @@
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
 	<a href="/e/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo;
-	<a href="/e/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/e/dc_contracts/{{batch.contract.id}}/batches">Batches</a> &raquo;
 	<a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a>
  	&raquo; Add Bill
 {% endblock %}
@@ -35,9 +35,9 @@
 			</fieldset>
 											
 			<label>kWh</label> {{input_text('kwh', '0')}}
-			<label>Net</label> {{input_text('net', '0')}}
-			<label>VAT</label> {{input_text('vat', '0')}}
-			<label>Gross</label> {{input_text('gross', '0')}}
+			<label>Net</label> {{input_text('net', '0.00')}}
+			<label>VAT</label> {{input_text('vat', '0.00')}}
+			<label>Gross</label> {{input_text('gross', '0.00')}}
 			<label>Account</label> {{input_text('account', '0')}}
 			<label>Type</label> 
 			<select name="bill_type_id">

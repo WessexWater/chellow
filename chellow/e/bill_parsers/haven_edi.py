@@ -1,13 +1,12 @@
 from collections import namedtuple
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
-from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import EdiParser, SEGMENTS
+from chellow.edi_lib import parse_edi, to_date, to_gbp
 from chellow.models import Session, Ssc, Supply
 from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
@@ -99,11 +98,11 @@ SSC_MAP = {
 # None denotes a TPR-based charge
 
 TMOD_MAP = {
-    "700285": ("standing-gbp", "standing-rate", "standing-days"),
-    "422733": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
-    "066540": ("ccl-gbp", "ccl-rate", "ccl-kwh"),
+    "700285": ("standing", "rate", "days"),
+    "422733": ("ccl", "rate", "kwh"),
+    "066540": ("ccl", "rate", "kwh"),
     "453043": None,
-    "493988": ("reconciliation-gbp", None, None),
+    "493988": ("reconciliation", None, None),
     "068476": None,
     "265091": None,
     "517180": None,
@@ -112,6 +111,16 @@ TMOD_MAP = {
 
 
 BillElement = namedtuple("BillElement", ["gbp", "rate", "cons", "titles", "desc"])
+
+
+def _process_BCD(elements, headers):
+    headers["issue_date"] = to_date(elements["IVDT"][0])
+    headers["reference"] = elements["INVN"][0]
+    headers["bill_type_code"] = elements["BTCD"][0]
+
+    sumo = elements["SUMO"]
+    headers["start_date"] = to_date(sumo[0])
+    headers["finish_date"] = to_date(sumo[1]) + relativedelta(days=1) - HH
 
 
 def _to_date(component):
@@ -137,108 +146,102 @@ def _to_decimal(components, divisor=None):
     return result
 
 
-def _find_elements(code, elements):
-    segment_name = code + elements[1][0] if code == "CCD" else code
-    elem_codes = [m["code"] for m in SEGMENTS[segment_name]["elements"]]
-    return dict(zip(elem_codes, elements))
-
-
-class Parser:
-    def __init__(self, f):
-        self.parser = EdiParser(StringIO(str(f.read(), "utf-8", errors="ignore")))
-        self.line_number = None
-
-    def make_raw_bills(self):
-        raw_bills = []
-        with Session() as sess:
-            headers = {"sess": sess, "errors": []}
-            for self.line_number, code in enumerate(self.parser):
-                elements = _find_elements(code, self.parser.elements)
-                line = self.parser.line
-                bill = _process_segment(code, elements, line, headers, self.line_number)
-                if bill is not None:
-                    raw_bills.append(bill)
-
-        return raw_bills
-
-
-def _process_segment(code, elements, line, headers, line_number):
-    try:
-        if "breakdown" in headers:
-            headers["breakdown"]["raw-lines"].append(line)
-
-        if code == "BCD":
-            headers["issue_date"] = _to_date(elements["IVDT"][0])
-            headers["reference"] = elements["INVN"][0]
-            headers["bill_type_code"] = elements["BTCD"][0]
-
-            sumo = elements["SUMO"]
-            headers["start_date"] = _to_date(sumo[0])
-            headers["finish_date"] = _to_date(sumo[1]) + relativedelta(days=1) - HH
-
-        elif code == "BTL":
-            _process_BTL(elements, headers)
-
-        elif code == "MHD":
-            _process_MHD(elements, headers)
-
-        elif code == "CCD":
-            _process_CCD(elements, headers)
-
-        elif code == "CLO":
-            _process_CLO(elements, headers)
-
-        elif code == "MTR":
-            _process_MTR(elements, headers)
-
-        elif code == "MAN":
-            _process_MAN(elements, headers)
-
-    except BadRequest as e:
-        headers["errors"].append(
-            f"Can't parse the line number {line_number} {line}: {e.description}"
-        )
-
-    if code == "MTR":
-        bill = {}
-
-        if "message_type" in headers and headers["message_type"] == "UTLBIL":
-            for k in (
-                "kwh",
-                "reference",
-                "mpan_core",
-                "issue_date",
-                "account",
-                "start_date",
-                "finish_date",
-                "net",
-                "vat",
-                "gross",
-                "breakdown",
-                "bill_type_code",
-                "reads",
-            ):
-                if k in headers:
-                    bill[k] = headers[k]
-                else:
-                    headers["errors"].append(
-                        f"The key {k} is missing from the headers at line number "
-                        f"{line_number}."
-                    )
-
-            if len(headers["errors"]) > 0:
-                bill["error"] = " ".join(headers["errors"])
-            return bill
-
-        elif len(headers["errors"]) > 0:
-            bill["error"] = " ".join(headers["errors"])
-            return bill
+def _process_NOOP(elements, headers):
+    pass
 
 
 def _process_BTL(elements, headers):
-    headers["net"] = Decimal("0.00") + _to_decimal(elements["UVLT"], "100")
-    headers["vat"] = Decimal("0.00") + _to_decimal(elements["UTVA"], "100")
-    headers["gross"] = Decimal("0.00") + _to_decimal(elements["TBTL"], "100")
+    sess = headers["sess"]
+    try:
+        mpan_core = headers["mpan_core"]
+    except KeyError:
+        raise BadRequest("The mpan_core can't be found for this bill.")
+
+    start_date = headers["start_date"]
+    reads = headers["reads"]
+    supply = Supply.get_by_mpan_core(sess, mpan_core)
+    era = supply.find_era_at(sess, start_date)
+    if era is None:
+        era = supply.find_last_era(sess)
+
+    if era is None:
+        imp_mpan_core = ""
+        ssc = Ssc.get_by_code(sess, "0393")
+    else:
+        imp_mpan_core = era.imp_mpan_core
+        ssc = Ssc.get_by_code(sess, "0393", start_date) if era.ssc is None else era.ssc
+
+    try:
+        ssc_lookup = imp_mpan_core
+        tpr_map = SSC_MAP[ssc_lookup]
+    except KeyError:
+        ssc_lookup = ssc.code
+        try:
+            tpr_map = SSC_MAP[ssc_lookup]
+        except KeyError:
+            raise BadRequest(f"The SSC {ssc_lookup} isn't in the SSC_MAP.")
+
+    for read in reads:
+        desc = read["tpr_code"]
+        try:
+            read["tpr_code"] = tpr_map[desc]
+        except KeyError:
+            raise BadRequest(
+                f"The description {desc} isn't in the SSC_MAP for the SSC {ssc_lookup}."
+            )
+
+    elems = []
+    for el in headers["bill_elements"]:
+        if el.titles is None:
+            try:
+                tpr = tpr_map[el.desc]
+            except KeyError:
+                raise BadRequest(
+                    f"The billing element description {el.desc} isn't in the "
+                    f"SSC_MAP for the SSC {ssc_lookup}."
+                )
+
+            elname, elrate, elcons = f"{tpr}", "rate", "kwh"
+        else:
+            elname, elrate, elcons = el.titles
+
+        bd = {}
+        if elrate is not None and el.rate is not None:
+            bd[elrate] = {el.rate}
+        if elcons is not None and el.cons is not None:
+            bd[elcons] = el.cons
+
+        if el.gbp is not None:
+            elems.append(
+                {
+                    "name": elname,
+                    "net": el.gbp,
+                    "breakdown": bd,
+                    "start_date": headers["start_date"],
+                    "finish_date": headers["finish_date"],
+                }
+            )
+
+    bill = {
+        "net": to_gbp(elements["UVLT"]),
+        "vat": to_gbp(elements["UTVA"]),
+        "gross": to_gbp(elements["TBTL"]),
+        "elements": elems,
+        "mpan_core": headers["mpan_core"],
+        "reads": headers["reads"],
+        "start_date": headers["start_date"],
+        "finish_date": headers["finish_date"],
+        "issue_date": headers["issue_date"],
+        "breakdown": headers["breakdown"],
+        "reference": headers["reference"],
+        "kwh": headers["kwh"],
+        "bill_type_code": headers["bill_type_code"],
+        "account": headers["account"],
+    }
+
+    if len(headers["errors"]) > 0:
+        bill["error"] = " ".join(headers["errors"])
+    return bill
 
 
 def _process_CLO(elements, headers):
@@ -260,111 +263,7 @@ def _process_MAN(elements, headers):
 
 
 def _process_MTR(elements, headers):
-    if headers["message_type"] != "UTLBIL":
-        return
-
-    sess = headers["sess"]
-    try:
-        mpan_core = headers["mpan_core"]
-    except KeyError:
-        raise BadRequest("The mpan_core can't be found for this bill.")
-
-    start_date = headers["start_date"]
-    reads = headers["reads"]
-    supply = Supply.get_by_mpan_core(sess, mpan_core)
-    era = supply.find_era_at(sess, start_date)
-    bill_elements = []
-    if era is None:
-        era = supply.find_last_era(sess)
-
-    if era is None:
-        imp_mpan_core = ""
-        ssc = Ssc.get_by_code(sess, "0393")
-    else:
-        imp_mpan_core = era.imp_mpan_core
-        ssc = Ssc.get_by_code(sess, "0393") if era.ssc is None else era.ssc
-
-    try:
-        ssc_lookup = imp_mpan_core
-        tpr_map = SSC_MAP[ssc_lookup]
-    except KeyError:
-        ssc_lookup = ssc.code
-        try:
-            tpr_map = SSC_MAP[ssc_lookup]
-        except KeyError:
-            raise BadRequest(f"The SSC {ssc_lookup} isn't in the SSC_MAP.")
-
-    for read in reads:
-        desc = read["tpr_code"]
-        try:
-            read["tpr_code"] = tpr_map[desc]
-        except KeyError:
-            raise BadRequest(
-                f"The description {desc} isn't in the SSC_MAP for the SSC {ssc_lookup}."
-            )
-
-    for el in headers["bill_elements"]:
-        if el.desc == "Energy Charges":
-            # If it's an unmetered supply there is only one charge
-            # line in the EDI, no mater how many TPRs there are.
-            # Therefore we split the charge evenly between the
-            # TPRs.
-            mrs = ssc.measurement_requirements
-            num_mrs = len(mrs)
-            gbp = el.gbp / num_mrs
-            cons = el.cons / num_mrs
-            for mr in mrs:
-                tpr_code = mr.tpr.code
-                titles = f"{tpr_code}-gbp", f"{tpr_code}-rate", f"{tpr_code}-kwh"
-                bill_elements.append(
-                    BillElement(
-                        gbp=gbp, rate=el.rate, cons=cons, titles=titles, desc=None
-                    )
-                )
-        else:
-            if el.titles is None:
-                try:
-                    tpr = tpr_map[el.desc]
-                except KeyError:
-                    raise BadRequest(
-                        f"The billing element description {el.desc} isn't in the "
-                        f"SSC_MAP for the SSC {ssc_lookup}."
-                    )
-
-                titles = f"{tpr}-gbp", f"{tpr}-rate", f"{tpr}-kwh"
-            else:
-                titles = el.titles
-
-            bill_elements.append(
-                BillElement(
-                    gbp=el.gbp, titles=titles, rate=el.rate, cons=el.cons, desc=None
-                )
-            )
-
-    breakdown = headers["breakdown"]
-    for bill_el in bill_elements:
-        eln_gbp, eln_rate, eln_cons = bill_el.titles
-
-        try:
-            breakdown[eln_gbp] += bill_el.gbp
-        except KeyError:
-            breakdown[eln_gbp] = bill_el.gbp
-
-        rate = bill_el.rate
-        if eln_rate is not None and rate is not None:
-            try:
-                rates = breakdown[eln_rate]
-            except KeyError:
-                rates = breakdown[eln_rate] = set()
-
-            rates.add(rate)
-
-        cons = bill_el.cons
-        if eln_cons is not None and cons is not None:
-            try:
-                breakdown[eln_cons] += cons
-            except KeyError:
-                breakdown[eln_cons] = cons
+    pass
 
 
 def _process_MHD(elements, headers):
@@ -381,59 +280,46 @@ def _process_MHD(elements, headers):
     headers["message_type"] = message_type
 
 
-def _process_CCD(elements, headers):
-    ccde = elements["CCDE"]
-    consumption_charge_indicator = ccde[0]
+def _process_CCD4(elements, headers):
+    tmod_1 = elements["TMOD"][0]
+    try:
+        eln_gbp, eln_rate, eln_cons = TMOD_MAP[tmod_1]
+    except KeyError:
+        raise BadRequest(
+            f"Can't find the Tariff Modifer Code 1 {tmod_1} in the TMOD_MAP."
+        )
 
-    if consumption_charge_indicator == "1":
-        _process_CCD1(elements, headers)
+    """
+    m = elements['MLOC'][0]
+    mpan_core = ' '.join((m[:2], m[2:6], m[6:10], m[10:]))
+    """
+    breakdown = headers["breakdown"]
 
-    elif consumption_charge_indicator == "2":
-        _process_CCD2(elements, headers)
+    cons = elements["CONS"]
+    if eln_cons is not None and len(cons[0]) > 0:
+        el_cons = _to_decimal(cons, "1000")
+        breakdown[eln_cons] = el_cons
 
-    elif consumption_charge_indicator == "3":
-        _process_CCD3(elements, headers)
-
-    elif consumption_charge_indicator == "4":
-        tmod_1 = elements["TMOD"][0]
+    if eln_rate is not None:
+        rate = _to_decimal(elements["BPRI"], "100000")
         try:
-            eln_gbp, eln_rate, eln_cons = TMOD_MAP[tmod_1]
+            rates = breakdown[eln_rate]
         except KeyError:
-            raise BadRequest(
-                f"Can't find the Tariff Modifer Code 1 {tmod_1} in the TMOD_MAP."
-            )
+            rates = breakdown[eln_rate] = set()
 
-        """
-        m = elements['MLOC'][0]
-        mpan_core = ' '.join((m[:2], m[2:6], m[6:10], m[10:]))
-        """
-        breakdown = headers["breakdown"]
+        rates.append(rate)
 
-        cons = elements["CONS"]
-        if eln_cons is not None and len(cons[0]) > 0:
-            el_cons = _to_decimal(cons, "1000")
-            breakdown[eln_cons] = el_cons
+    """
+    start_date = _to_date(elements['CSDT'][0])
+    finish_date = _to_date(elements['CEDT'][0]) - HH
+    """
 
-        if eln_rate is not None:
-            rate = _to_decimal(elements["BPRI"], "100000")
-            try:
-                rates = breakdown[eln_rate]
-            except KeyError:
-                rates = breakdown[eln_rate] = set()
+    if "CTOT" in elements:
+        net = Decimal("0.00") + _to_decimal(elements["CTOT"], "100")
+    else:
+        net = Decimal("0.00")
 
-            rates.append(rate)
-
-        """
-        start_date = _to_date(elements['CSDT'][0])
-        finish_date = _to_date(elements['CEDT'][0]) - HH
-        """
-
-        if "CTOT" in elements:
-            net = Decimal("0.00") + _to_decimal(elements["CTOT"], "100")
-        else:
-            net = Decimal("0.00")
-
-        breakdown[eln_gbp] = net
+    breakdown[eln_gbp] = net
 
 
 def _process_CCD1(elements, headers):
@@ -567,3 +453,78 @@ def _process_CCD3(elements, headers):
     headers["bill_elements"].append(
         BillElement(gbp=gbp, rate=rate, cons=consumption, titles=titles, desc=desc)
     )
+
+
+def _process_VAT(elements, header):
+    pass
+
+
+CODE_FUNCS = {
+    "BCD": _process_BCD,
+    "BTL": _process_BTL,
+    "CCD1": _process_CCD1,
+    "CCD2": _process_CCD2,
+    "CCD3": _process_CCD3,
+    "CCD4": _process_CCD4,
+    "CDA": _process_NOOP,
+    "CDT": _process_NOOP,
+    "CLO": _process_CLO,
+    "DNA": _process_NOOP,
+    "END": _process_NOOP,
+    "FIL": _process_NOOP,
+    "MAN": _process_MAN,
+    "MHD": _process_MHD,
+    "MTR": _process_MTR,
+    "REF": _process_NOOP,
+    "SDT": _process_NOOP,
+    "STX": _process_NOOP,
+    "TYP": _process_NOOP,
+    "TTL": _process_NOOP,
+    "VAT": _process_VAT,
+    "VTS": _process_NOOP,
+}
+
+
+def _process_segment(headers, line_number, line, seg_name, elements):
+    try:
+        func = CODE_FUNCS[seg_name]
+    except KeyError:
+        raise BadRequest(f"Code {seg_name} not recognized.")
+
+    try:
+        bill = func(elements, headers)
+    except BadRequest as e:
+        raise BadRequest(
+            f"{e.description} on line {line_number} line {line} "
+            f"seg_name {seg_name} elements {elements}"
+        )
+    except BaseException as e:
+        raise BadRequest(
+            f"Problem on line {line_number} line {line} "
+            f"seg_name {seg_name} elements {elements}"
+        ) from e
+
+    if "breakdown" in headers:
+        headers["breakdown"]["raw-lines"].append(line)
+
+    return bill
+
+
+class Parser:
+    def __init__(self, f):
+        self.edi_str = str(f.read(), "utf-8", errors="ignore")
+        self.line_number = None
+
+    def make_raw_bills(self):
+        bills = []
+        bill = None
+        with Session() as sess:
+            headers = {"sess": sess}
+            for self.line_number, line, seg_name, elements in parse_edi(self.edi_str):
+                bill = _process_segment(
+                    headers, self.line_number, line, seg_name, elements
+                )
+                if bill is not None:
+                    bills.append(bill)
+
+        return bills

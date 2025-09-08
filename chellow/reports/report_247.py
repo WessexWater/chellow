@@ -21,6 +21,7 @@ from chellow.e.scenario import make_calcs, make_site_deltas, scenario_fill_cache
 from chellow.models import (
     Bill,
     Contract,
+    Element,
     Era,
     MeasurementRequirement,
     RSession,
@@ -73,8 +74,17 @@ def make_bill_row(titles, bill):
     return [bill.get(t) for t in titles]
 
 
-def _add_bills(month_data, era, bills, chunk_start, chunk_finish):
-    for bill in bills:
+def _add_bills(sess, era, chunk_start, chunk_finish):
+    bill_data = defaultdict(int)
+    num = 0
+    for bill in sess.scalars(
+        select(Bill).where(
+            Bill.supply == era.supply,
+            Bill.start_date <= chunk_finish,
+            Bill.finish_date >= chunk_start,
+        )
+    ):
+        num += 1
         contract = bill.batch.contract
         bill_role_code = contract.market_role.code
         bill_start = bill.start_date
@@ -85,7 +95,6 @@ def _add_bills(month_data, era, bills, chunk_start, chunk_finish):
         ).total_seconds() + (30 * 60)
         proportion = overlap_duration / bill_duration
         bill_prop_kwh = proportion * float(bill.kwh)
-        bill_prop_net_gbp = proportion * float(bill.net)
         bill_prop_vat_gbp = proportion * float(bill.vat)
         bill_prop_gross_gbp = proportion * float(bill.gross)
         if bill_role_code == "X":
@@ -100,13 +109,74 @@ def _add_bills(month_data, era, bills, chunk_start, chunk_finish):
         else:
             raise BadRequest("Role code not recognized.")
 
-        month_data[f"billed-{polarity}-kwh"] += bill_prop_kwh
-        month_data[f"billed-{polarity}-net-gbp"] += bill_prop_net_gbp
-        month_data[f"billed-{polarity}-vat-gbp"] += bill_prop_vat_gbp
-        month_data[f"billed-{polarity}-gross-gbp"] += bill_prop_gross_gbp
-        month_data[f"billed-{role_name}-{polarity}-net-gbp"] += bill_prop_net_gbp
-        month_data[f"billed-{role_name}-{polarity}-vat-gbp"] += bill_prop_vat_gbp
-        month_data[f"billed-{role_name}-{polarity}-gross-gbp"] += bill_prop_gross_gbp
+        bill_data[f"billed-{polarity}-kwh"] += bill_prop_kwh
+        bill_data[f"billed-{polarity}-vat-gbp"] += bill_prop_vat_gbp
+        bill_data[f"billed-{polarity}-gross-gbp"] += bill_prop_gross_gbp
+        bill_data[f"billed-{role_name}-{polarity}-vat-gbp"] += bill_prop_vat_gbp
+        bill_data[f"billed-{role_name}-{polarity}-gross-gbp"] += bill_prop_gross_gbp
+
+    for element in sess.scalars(
+        select(Element)
+        .join(Bill)
+        .where(
+            Bill.supply == era.supply,
+            Element.start_date <= chunk_finish,
+            Element.finish_date >= chunk_start,
+        )
+    ):
+        num += 1
+        contract = element.bill.batch.contract
+        bill_role_code = contract.market_role.code
+        element_start = element.start_date
+        element_finish = element.finish_date
+        element_duration = (element_finish - element_start).total_seconds() + (30 * 60)
+        overlap_duration = (
+            min(element_finish, chunk_finish) - max(element_start, chunk_start)
+        ).total_seconds() + (30 * 60)
+        proportion = overlap_duration / element_duration
+        element_prop_net_gbp = proportion * float(element.net)
+        if bill_role_code == "X":
+            role_name = "supplier"
+            polarity = "export" if contract == era.exp_supplier_contract else "import"
+        elif bill_role_code == "C":
+            role_name = "dc"
+            polarity = "import"
+        elif bill_role_code == "M":
+            role_name = "mop"
+            polarity = "import"
+        else:
+            raise BadRequest("Role code not recognized.")
+
+        bill_data[f"billed-{polarity}-net-gbp"] += element_prop_net_gbp
+        bill_data[f"billed-{role_name}-{polarity}-net-gbp"] += element_prop_net_gbp
+    return num, bill_data
+
+
+def _create_month_data():
+    month_data = {}
+    for sname in (
+        "import-gen",
+        "export-gen",
+        "import-3rd-party",
+        "export-3rd-party",
+        "used",
+        "displaced",
+        "used-3rd-party",
+        "billed-export",
+    ):
+        for xname in ("kwh", "net-gbp"):
+            month_data[f"{sname}-{xname}"] = 0
+    for polarity in ("import", "export"):
+        month_data[f"billed-{polarity}-kwh"] = 0
+        month_data[f"{polarity}-grid-kwh"] = 0
+        for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
+            month_data[f"{polarity}-grid-{suf}"] = 0
+            month_data[f"billed-{polarity}-{suf}"] = 0
+            month_data[f"billed-supplier-{polarity}-{suf}"] = 0
+            month_data[f"billed-dc-{polarity}-{suf}"] = 0
+            month_data[f"billed-mop-{polarity}-{suf}"] = 0
+            month_data[f"billed-export-{suf}"] = 0
+    return month_data
 
 
 def _process_site(
@@ -153,30 +223,7 @@ def _process_site(
         sorted(calcs, key=str)
     ):
         if imp_mpan_core == "displaced":
-            month_data = {}
-            for sname in (
-                "import-gen",
-                "export-gen",
-                "import-3rd-party",
-                "export-3rd-party",
-                "msp",
-                "used",
-                "used-3rd-party",
-                "billed-export",
-            ):
-                for xname in ("kwh", "net-gbp"):
-                    month_data[f"{sname}-{xname}"] = 0
-            month_data["billed-import-kwh"] = 0
-            month_data["import-grid-kwh"] = 0
-            month_data["export-grid-kwh"] = 0
-            for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
-                month_data[f"import-grid-{suf}"] = 0
-                month_data[f"export-grid-{suf}"] = 0
-                month_data[f"billed-import-{suf}"] = 0
-                month_data[f"billed-supplier-import-{suf}"] = None
-                month_data[f"billed-dc-import-{suf}"] = None
-                month_data[f"billed-mop-import-{suf}"] = None
-                month_data[f"billed-export-{suf}"] = 0
+            month_data = _create_month_data()
 
             month_data["used-kwh"] = month_data["displaced-kwh"] = sum(
                 hh["msp-kwh"] for hh in imp_ss.hh_data
@@ -240,28 +287,7 @@ def _process_site(
                 supply = imp_ss.supply
 
             site_sources.add(source_code)
-            month_data = {}
-            for name in (
-                "import-gen",
-                "export-gen",
-                "import-3rd-party",
-                "export-3rd-party",
-                "displaced",
-                "used",
-                "used-3rd-party",
-                "billed-export",
-            ):
-                for sname in ("kwh", "net-gbp"):
-                    month_data[f"{name}-{sname}"] = 0
-            for polarity in ("import", "export"):
-                month_data[f"billed-{polarity}-kwh"] = 0
-                month_data[f"{polarity}-grid-kwh"] = 0
-                for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
-                    month_data[f"{polarity}-grid-{suf}"] = 0
-                    month_data[f"billed-{polarity}-{suf}"] = 0
-                    month_data[f"billed-supplier-{polarity}-{suf}"] = 0
-                    month_data[f"billed-dc-{polarity}-{suf}"] = 0
-                    month_data[f"billed-mop-{polarity}-{suf}"] = 0
+            month_data = _create_month_data()
 
             if imp_ss is not None:
                 imp_supplier_contract = imp_ss.supplier_contract
@@ -377,14 +403,10 @@ def _process_site(
             era_associates = {
                 s.site.code for s in sss.era.site_eras if not s.is_physical
             }
-            bills = sess.scalars(
-                select(Bill).where(
-                    Bill.supply == supply,
-                    Bill.start_date <= sss.finish_date,
-                    Bill.finish_date >= sss.start_date,
-                )
-            ).all()
-            _add_bills(month_data, sss.era, bills, sss.start_date, sss.finish_date)
+            num_bills, bill_dict = _add_bills(
+                sess, sss.era, sss.start_date, sss.finish_date
+            )
+            month_data.update(bill_dict)
 
             if imp_ss is None:
                 imp_supplier_contract_name = imp_voltage_level_code = None
@@ -488,43 +510,12 @@ def _process_site(
             if site_era is not None:
                 chunk_start = max(start_date, last_era.finish_date + HH)
                 chunk_finish = finish_date
-                bills = (
-                    sess.execute(
-                        select(Bill).where(
-                            Bill.supply == supply,
-                            Bill.start_date <= chunk_finish,
-                            Bill.finish_date >= chunk_start,
-                        )
-                    )
-                    .scalars()
-                    .all()
+                num_bills, bill_dict = _add_bills(
+                    sess, last_era, chunk_start, chunk_finish
                 )
-                if len(bills) > 0:
-                    month_data = {}
-                    for name in (
-                        "import-gen",
-                        "export-gen",
-                        "import-3rd-party",
-                        "export-3rd-party",
-                        "displaced",
-                        "used",
-                        "used-3rd-party",
-                        "billed-export",
-                    ):
-                        for sname in ("kwh", "net-gbp"):
-                            month_data[f"{name}-{sname}"] = 0
-                    month_data["billed-import-kwh"] = 0
-                    month_data["import-grid-kwh"] = 0
-                    month_data["export-grid-kwh"] = 0
-                    for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
-                        month_data[f"import-grid-{suf}"] = 0
-                        month_data[f"export-grid-{suf}"] = 0
-                        month_data[f"billed-import-{suf}"] = 0
-                        month_data[f"billed-supplier-import-{suf}"] = 0
-                        month_data[f"billed-dc-import-{suf}"] = 0
-                        month_data[f"billed-mop-import-{suf}"] = 0
-
-                    _add_bills(month_data, last_era, bills, chunk_start, chunk_finish)
+                if num_bills > 0:
+                    month_data = _create_month_data()
+                    month_data.update(bill_dict)
 
                     imp_supplier_contract = last_era.imp_supplier_contract
                     imp_llfc = last_era.imp_llfc
@@ -607,44 +598,12 @@ def _process_site(
             if site_era is not None:
                 chunk_start = start_date
                 chunk_finish = hh_min(finish_date, first_era.start_date - HH)
-                bills = (
-                    sess.execute(
-                        select(Bill).where(
-                            Bill.supply == supply,
-                            Bill.start_date <= chunk_finish,
-                            Bill.finish_date >= chunk_start,
-                        )
-                    )
-                    .scalars()
-                    .all()
+                num_bills, bill_dict = _add_bills(
+                    sess, first_era, chunk_start, chunk_finish
                 )
-                if len(bills) > 0:
-                    month_data = {}
-                    for name in (
-                        "import-gen",
-                        "export-gen",
-                        "import-3rd-party",
-                        "export-3rd-party",
-                        "displaced",
-                        "used",
-                        "used-3rd-party",
-                    ):
-                        for sname in ("kwh", "net-gbp"):
-                            month_data[f"{name}-{sname}"] = 0
-                    month_data["billed-import-kwh"] = 0
-                    month_data["billed-export-kwh"] = 0
-                    month_data["import-grid-kwh"] = 0
-                    month_data["export-grid-kwh"] = 0
-                    for suf in ("net-gbp", "vat-gbp", "gross-gbp"):
-                        month_data[f"billed-import-{suf}"] = 0
-                        month_data[f"billed-export-{suf}"] = 0
-                        month_data[f"import-grid-{suf}"] = 0
-                        month_data[f"export-grid-{suf}"] = 0
-                        month_data[f"billed-supplier-import-{suf}"] = 0
-                        month_data[f"billed-supplier-export-{suf}"] = 0
-                        month_data[f"billed-dc-import-{suf}"] = 0
-                        month_data[f"billed-mop-import-{suf}"] = 0
-                    _add_bills(month_data, first_era, bills, chunk_start, chunk_finish)
+                if num_bills > 0:
+                    month_data = _create_month_data()
+                    month_data.update(bill_dict)
 
                     imp_supplier_contract = first_era.imp_supplier_contract
                     imp_llfc = last_era.imp_llfc

@@ -705,6 +705,72 @@ class BatchFile(Base, PersistentClass):
         sess.flush()
 
 
+class Element(Base, PersistentClass):
+    __tablename__ = "element"
+    id = Column(Integer, primary_key=True)
+    bill_id = Column(
+        Integer, ForeignKey("bill.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name = Column(String, nullable=False, index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    net = Column(Numeric, nullable=False)
+    breakdown = Column(String, nullable=False)
+
+    def __init__(
+        self,
+        bill,
+        name,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+        self.bill = bill
+        self.update(name, start_date, finish_date, net, breakdown)
+
+    @property
+    def bd(self):
+        if not hasattr(self, "_bd"):
+            self._bd = loads(self.breakdown)
+        return self._bd
+
+    def update(
+        self,
+        name,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+
+        self.name = name
+        if start_date > finish_date:
+            raise BadRequest(
+                f"The element start date {hh_format(start_date)} can't be after the "
+                f"finish date {hh_format(finish_date)}."
+            )
+
+        self.start_date = start_date
+        self.finish_date = finish_date
+
+        if net.as_tuple().exponent != -2:
+            raise BadRequest(
+                f"The 'net' field of an element must be written to at exactly two "
+                f"decimal places. It's actually {net}"
+            )
+        self.net = net
+
+        if isinstance(breakdown, Mapping):
+            self.breakdown = dumps(breakdown)
+        else:
+            raise BadRequest("The 'breakdown' parameter must be a mapping type.")
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
 class Bill(Base, PersistentClass):
     __tablename__ = "bill"
     id = Column(Integer, primary_key=True)
@@ -724,6 +790,12 @@ class Bill(Base, PersistentClass):
     kwh = Column(Numeric, nullable=False)
     reads = relationship(
         "RegisterRead",
+        backref="bill",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    elements = relationship(
+        "Element",
         backref="bill",
         cascade="all, delete-orphan",
         passive_deletes=True,
@@ -863,6 +935,20 @@ class Bill(Base, PersistentClass):
             else:
                 raise
         return read
+
+    def insert_element(
+        self,
+        sess,
+        name,
+        start_date,
+        finish_date,
+        net,
+        breakdown,
+    ):
+        element = Element(self, name, start_date, finish_date, net, breakdown)
+        sess.add(element)
+        sess.flush()
+        return element
 
     def delete(self, sess):
         sess.delete(self)
@@ -6391,10 +6477,13 @@ class ReportRun(Base, PersistentClass):
         self.data = _jsonize(data)
         attributes.flag_modified(self, "data")
 
-    def insert_row(self, sess, tab, titles, values, properties):
+    def insert_row(self, sess, tab, titles, values, properties, data=None):
         vals = {"titles": titles, "values": values, "properties": properties}
+        if data is not None:
+            vals["data"] = data
         row = ReportRunRow(self, tab, vals)
         sess.add(row)
+        return row
 
     def delete(self, sess):
         sess.delete(self)
@@ -6430,10 +6519,10 @@ class ReportRun(Base, PersistentClass):
             wsess.commit()
 
     @staticmethod
-    def w_insert_row(report_run_id, tab, titles, values, properties):
+    def w_insert_row(report_run_id, tab, titles, values, properties, data=None):
         with Session() as wsess:
             report_run = ReportRun.get_by_id(wsess, report_run_id)
-            report_run.insert_row(wsess, tab, titles, values, properties)
+            report_run.insert_row(wsess, tab, titles, values, properties, data=data)
             wsess.commit()
 
 

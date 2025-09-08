@@ -7,12 +7,13 @@
 {% block nav %}
 	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
 	<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
-	Batches [<a href="/e/supplier_contracts/{{contract.id}}/add_batch">add</a>]
+	Batches [<a href="/e/supplier_contracts/{{contract.id}}/batches/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
 	<table class="sticky">
-		<caption>Batches</caption>	
+		<caption>Batches [<a href="/e/supplier_contracts/{{contract.id}}/batches/add">add</a>]
+		</caption>	
 		<thead>
 			<tr>
 				<th>Reference</th>
@@ -29,8 +30,7 @@
 				{% set batch = row[0] %}
 				<tr>
 					<td>
-						<a href="/e/supplier_batches/{{batch.id}}?bill_limit=1000"
-							>{{batch.reference}}</a>
+						<a href="/e/supplier_batches/{{batch.id}}">{{batch.reference}}</a>
 					</td>
 					<td>{{batch.description}}</td>
 					<td>{{ "{:,}".format(row[1]) }}</td>

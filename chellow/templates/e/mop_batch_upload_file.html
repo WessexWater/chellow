@@ -7,9 +7,8 @@
 
 {% block nav %}
 	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
-	<a href="/e/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
- 	&raquo; 
-	<a href="/e/mop_batches?mop_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/e/mop_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/e/mop_contracts/{{batch.contract.id}}/batches">Batches</a> &raquo;
 	<a href="/e/mop_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
  	Upload Bill File
 {% endblock %}
@@ -31,8 +30,6 @@
 		</fieldset>
 	</form>
 
-	<br>
-
 	<table>
 		<caption>The '.csv' Format</caption>
 		<tbody>
@@ -49,6 +46,75 @@
 				<td>VAT</td>
 				<td>Gross</td>
 				<td>Breakdown</td>
+				<td>element</td>
+				<td>Name</td>
+				<td>Start Date (YYY-mm-dd HH:MM)</td>
+				<td>Finish Date (YYY-mm-dd HH:MM)</td>
+				<td>Net</td>
+				<td>Breakdown</td>
+			</tr>
+		</tbody>
+	</table>
+		
+	<p>
+		The columns after 'element' can be repeated for each element, or can be left out
+	 	entirely if the bill doesn't have any elements associated with it. Here's an example:
+	</p>
+
+	<table>
+		<caption>Example CSV File</caption>
+		<tbody>
+			<tr>
+				<td>N</td>
+				<td>JJih988</td>
+				<td>22 7338 1192 184</td>
+				<td>jhl449</td>
+				<td>2025-07-13 03:26</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>288</td>
+				<td>13.76</td>
+				<td>1.56</td>
+				<td>15.82</td>
+				<td>{}</td>
+				<td>element</td>
+				<td>nrg</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>5.88</td>
+				<td>{"kwh": 55, 'rate': 0.05}</td>
+				<td>element</td>
+				<td>ccl</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>0.92</td>
+				<td>{"kwh": 55, 'rate': 0.075}</td>
+			</tr>
+			<tr>
+				<td>N</td>
+				<td>jhgjfj8i</td>
+				<td>22 9981 4881 118</td>
+				<td>khghl</td>
+				<td>2025-07-13 03:26</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>8892</td>
+				<td>885.71</td>
+				<td>32.87</td>
+				<td>15.82</td>
+				<td>{}</td>
+				<td>element</td>
+				<td>day</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>881.77</td>
+				<td>{"kwh": 81, 'rate': 0.12}</td>
+				<td>element</td>
+				<td>aahedc</td>
+				<td>2025-06-01 00:00</td>
+				<td>2025-06-30 23:30</td>
+				<td>88</td>
+				<td>{"kwh": 7754, 'rate': 0.0511}</td>
 			</tr>
 		</tbody>
 	</table>

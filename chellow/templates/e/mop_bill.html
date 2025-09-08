@@ -7,20 +7,16 @@
 
 {% block nav %}
 	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
-	<a
-			href="/e/mop_contracts/{{bill.batch.contract.id}}"
-			>{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="/e/mop_batches?mop_contract_id={{bill.batch.contract.id}}">Batches</a>
-	&raquo; 
-	<a href="/e/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
-	&raquo; {{bill.reference}}
+	<a href="/e/mop_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/mop_contracts/{{bill.batch.contract.id}}/batches">Batches</a> &raquo; 
+	<a href="/e/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; {{bill.reference}}
 	[<a href="/e/mop_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
 	<table>
+		<caption>Bill</caption>	
 		<thead>
-			<caption>Bill</caption>	
 			<tr>
 				<th>Supply</th>
 				<th>Reference</th>
@@ -57,6 +53,33 @@
 			</tr>
 		</tbody>
 	</table>
+
+	<table>
+		<caption>Elements [<a href="/e/mop_bills/{{bill.id}}/add_element">add</a>]</caption>	
+		<thead>
+			<tr>
+				<th>Edit</th>
+				<th>Name</th>
+    		<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net GBP</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for element in elements %}
+				<tr>
+					<td>[<a href="/e/mop_elements/{{element.id}}/edit">edit</a>]</td>
+					<td>{{element.name}}</td>
+					<td>{{element.start_date|hh_format}}</td>
+					<td>{{element.finish_date|hh_format}}</td>
+					<td style="text-align: right">{{element.net}}</td>
+					<td>{{element.breakdown}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 
 	<h2>Breakdown</h2>	
 

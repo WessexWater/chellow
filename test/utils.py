@@ -3,7 +3,7 @@ from time import sleep
 
 
 def match(response, status_code, *patterns):
-    response_str = response.get_data(as_text=True)
+    response_str = str(response.headers) + "\n" + response.get_data(as_text=True)
 
     assert response.status_code == status_code, response_str
 

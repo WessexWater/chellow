@@ -3,9 +3,9 @@ from decimal import Decimal
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import parse_edi, to_ct_date, to_date, to_decimal, to_finish_date
-from chellow.models import Era, Session
-from chellow.utils import HH, ct_datetime, parse_mpan_core
+from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
+from chellow.models import Session
+from chellow.utils import parse_mpan_core
 
 
 read_type_map = {
@@ -35,14 +35,39 @@ def _process_BCD(elements, headers):
 
     sumo = elements["SUMO"]
     headers["start_date"] = to_date(sumo[0])
-    headers["is_ebatch"] = to_ct_date(sumo[1]) in (
-        ct_datetime(2020, 4, 1),
-        ct_datetime(2020, 3, 16),
-    )
-    if headers["is_ebatch"]:
-        headers["finish_date"] = to_date(sumo[1]) - HH
-    else:
-        headers["finish_date"] = to_finish_date(sumo[1])
+    headers["finish_date"] = to_finish_date(sumo[1])
+
+
+def _process_BTL(elements, headers):
+    uvlt = elements["UVLT"]
+    utva = elements["UTVA"]
+    tbtl = elements["TBTL"]
+
+    dup_reads = set()
+    new_reads = []
+    for r in headers["reads"]:
+        k = tuple(v for n, v in sorted(r.items()))
+        if k in dup_reads:
+            continue
+        dup_reads.add(k)
+        new_reads.append(r)
+
+    return {
+        "bill_type_code": headers["bill_type_code"],
+        "account": headers["account"],
+        "mpan_core": headers["mpan_core"],
+        "reference": headers["reference"],
+        "issue_date": headers["issue_date"],
+        "start_date": headers["start_date"],
+        "finish_date": headers["finish_date"],
+        "kwh": headers["kwh"],
+        "net": Decimal("0.00") + to_decimal(uvlt) / Decimal("100"),
+        "vat": Decimal("0.00") + to_decimal(utva) / Decimal("100"),
+        "gross": Decimal("0.00") + to_decimal(tbtl) / Decimal("100"),
+        "breakdown": headers["breakdown"],
+        "reads": new_reads,
+        "elements": headers["elements"],
+    }
 
 
 def _process_MHD(elements, headers):
@@ -52,6 +77,7 @@ def _process_MHD(elements, headers):
         headers.clear()
         headers["kwh"] = Decimal("0")
         headers["reads"] = []
+        headers["elements"] = []
         headers["breakdown"] = defaultdict(int, {"raw-lines": []})
         headers["bill_elements"] = []
         headers["errors"] = []
@@ -83,7 +109,6 @@ def _process_CCD1(elements, headers):
 
     mpan = mloc[0]
     mpan_core = parse_mpan_core(f"{mpan[:2]}{mpan[2:6]}{mpan[6:10]}{mpan[10:13]}")
-    headers["mpan_core"] = mpan_core
     mpan = f"{mpan[13:15]} {mpan[15:18]} {mpan[18:]} {mpan_core}"
 
     prrd = elements["PRRD"]
@@ -199,7 +224,7 @@ def _decimal(elements, element_name):
 
 
 def _process_CCD3(elements, headers):
-    breakdown = headers["breakdown"]
+    breakdown = {}
 
     tcod = elements["TCOD"]
     tcod0 = tcod[1]
@@ -234,28 +259,45 @@ def _process_CCD3(elements, headers):
 
     if not ignore_kwh and "NUCT" in elements and len(elements["NUCT"][0]) > 0:
         kwh = _decimal(elements, "NUCT") / Decimal("1000")
-        breakdown[f"{prefix}-kwh"] += kwh
+        breakdown["kwh"] = kwh
         if prefix == tmod0:
             headers["kwh"] += kwh
 
     if not ignore_rate and "CPPU" in elements and len(elements["CPPU"][0]) > 0:
-        rate_key = f"{prefix}-rate"
-        if rate_key not in breakdown:
-            breakdown[rate_key] = set()
-        breakdown[rate_key].add(_decimal(elements, "CPPU") / Decimal("100000"))
+        breakdown["rate"] = {_decimal(elements, "CPPU") / Decimal("100000")}
 
+    net = Decimal("0.00")
     if "CTOT" in elements:
-        breakdown[f"{prefix}-gbp"] += _decimal(elements, "CTOT") / Decimal("100")
+        net += _decimal(elements, "CTOT") / Decimal("100")
+
+    headers["elements"].append(
+        {
+            "name": prefix,
+            "start_date": to_date(elements["CSDT"][0]),
+            "finish_date": to_finish_date(elements["CEDT"][0]),
+            "net": net,
+            "breakdown": breakdown,
+        }
+    )
 
 
 def _process_CCD4(elements, headers):
     ndrp = elements["NDRP"]
-    breakdown = headers["breakdown"]
+    breakdown = {}
     if len(ndrp[0]) > 0:
-        breakdown["standing-days"] += to_decimal(ndrp)
+        breakdown["days"] += to_decimal(ndrp)
     ctot = elements["CTOT"]
+    net = Decimal("0.00")
     if len(ctot[0]) > 0:
-        breakdown["standing-gbp"] += to_decimal(ctot) / Decimal("100")
+        net += to_decimal(ctot) / Decimal("100")
+
+    headers["elements"].append(
+        {
+            "name": "standing",
+            "net": net,
+            "breakdown": breakdown,
+        }
+    )
 
 
 def _process_CLO(elements, headers):
@@ -264,54 +306,12 @@ def _process_CLO(elements, headers):
 
 
 def _process_MTR(elements, headers):
-    if headers["message_type"] == "UTLBIL":
-        if headers["mpan_core"] is None:
-            sess = headers["sess"]
-            era = (
-                sess.query(Era)
-                .filter(Era.imp_supplier_account == headers["account"])
-                .first()
-            )
-            if era is not None:
-                headers["mpan_core"] = era.imp_mpan_core
-            sess.close()
-
-        reads = headers["reads"]
-        if headers["is_ebatch"]:
-            for r in headers["reads"]:
-                if r["pres_type_code"] == "C":
-                    r["pres_type_code"] = "E"
-
-        dup_reads = set()
-        new_reads = []
-        for r in reads:
-            k = tuple(v for n, v in sorted(r.items()))
-            if k in dup_reads:
-                continue
-            dup_reads.add(k)
-            new_reads.append(r)
-
-        raw_bill = {
-            "bill_type_code": headers["bill_type_code"],
-            "account": headers["account"],
-            "mpan_core": headers["mpan_core"],
-            "reference": headers["reference"],
-            "issue_date": headers["issue_date"],
-            "start_date": headers["start_date"],
-            "finish_date": headers["finish_date"],
-            "kwh": headers["kwh"],
-            "net": headers["net"],
-            "vat": headers["vat"],
-            "gross": headers["gross"],
-            "breakdown": headers["breakdown"],
-            "reads": new_reads,
-        }
-        return raw_bill
+    pass
 
 
 def _process_MAN(elements, headers):
     madn = elements["MADN"]
-    headers["mpan_core"] = parse_mpan_core("".join((madn[0], madn[1], madn[2])))
+    headers["mpan_core"] = parse_mpan_core("".join(madn[:3]))
 
 
 def _process_VAT(elements, headers):
@@ -354,7 +354,7 @@ def _process_NOOP(elements, headers):
 
 CODE_FUNCS = {
     "BCD": _process_BCD,
-    "BTL": _process_NOOP,
+    "BTL": _process_BTL,
     "CCD1": _process_CCD1,
     "CCD2": _process_CCD2,
     "CCD3": _process_CCD3,

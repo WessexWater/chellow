@@ -22,10 +22,13 @@ def test_no_bills(sess):
     wb = Workbook()
     wb.create_sheet("NHH")
     sheet = wb.worksheets[1]
-    sheet.insert_rows(0, 10)
+    sheet.insert_rows(0, 14)
     sheet.insert_cols(0, 10)
-    sheet["B11"].value = "MPAN"
+
     sheet["C6"].value = Datetime(2022, 3, 1)
+    sheet["B11"].value = "MPAN"
+    sheet["A12"].value = ""
+
     wb.save(f)
     f.seek(0)
     p = Parser(f)

@@ -67,10 +67,6 @@ def test_one_bill(sess):
             "reads": [],
             "breakdown": {
                 "raw-lines": [],
-                "comms": "CS",
-                "settlement-status": ["settlement"],
-                "meter-rate": [Decimal("5.00")],
-                "meter-gbp": Decimal("0.12"),
             },
             "account": "22 2765 1294 270",
             "issue_date": utc_datetime(2022, 3, 1),
@@ -78,6 +74,20 @@ def test_one_bill(sess):
             "finish_date": utc_datetime(2022, 1, 31, 23, 30),
             "mpan_core": "22 2765 1294 270",
             "reference": "20220101_20220131_20220301_22 2765 1294 270",
+            "elements": [
+                {
+                    "name": "meter",
+                    "start_date": utc_datetime(2022, 1, 1),
+                    "finish_date": utc_datetime(2022, 1, 31, 23, 30),
+                    "net": Decimal("0.12"),
+                    "breakdown": {
+                        "comm": {"CS"},
+                        "settlement-status": {"settlement"},
+                        "rate": {Decimal("5.00")},
+                        "days": 31,
+                    },
+                }
+            ],
         }
     ]
 

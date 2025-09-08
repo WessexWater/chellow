@@ -7,11 +7,8 @@
 
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
-	<a
-			href="/e/dc_contracts/{{bill.batch.contract.id}}"
-			>{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="/e/dc_batches?dc_contract_id={{bill.batch.contract.id}}">Batches</a>
- 	&raquo; 
+	<a href="/e/dc_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{bill.batch.contract.id}}/batches">Batches</a> &raquo; 
 	<a href="/e/dc_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo;
 	Bill {{bill.id}} [<a href="/e/dc_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
@@ -56,6 +53,31 @@
 			</tr>
 		</tbody>
 	</table>
+
+	<table>
+		<caption>Elements [<a href="/e/dc_bills/{{bill.id}}/add_element">add]</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for element in bill.elements %}
+				<tr>
+					<td>{{element.name}}</td>
+					<td>{{element.start_date|hh_format}}</td>
+					<td>{{element.finish_date|hh_format}}</td>
+					<td>{{element.net}}</td>
+					<td><pre>{{element.breakdown}}</pre></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 
 	<h2>Breakdown</h2>	
 

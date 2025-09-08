@@ -1368,48 +1368,69 @@ def report_run_get(run_id):
             pass
 
         else:
-            titles = row.data["titles"]
-            diff_titles = [
-                t for t in titles if t.startswith("difference-") and t.endswith("-gbp")
-            ]
-            diff_selects = [
-                func.sum(ReportRunRow.data["values"][t].as_float()) for t in diff_titles
-            ]
-            sum_diffs = (
-                g.sess.query(*diff_selects).filter(ReportRunRow.report_run == run).one()
+            summary["sum_difference"] = g.sess.scalar(
+                select(
+                    func.sum(ReportRunRow.data["data"]["difference_net_gbp"].as_float())
+                ).where(ReportRunRow.report_run == run)
             )
+            element_names = g.sess.scalars(
+                select(func.jsonb_object_keys(ReportRunRow.data["data"]["elements"]))
+                .where(ReportRunRow.report_run == run)
+                .distinct()
+            ).all()
+            diff_selects = [
+                func.sum(
+                    func.coalesce(
+                        ReportRunRow.data["data"]["elements"][n]["parts"]["gbp"][
+                            "difference"
+                        ].as_float(),
+                        0,
+                    )
+                )
+                for n in element_names
+            ]
+            sum_diffs = g.sess.execute(
+                select(*diff_selects).where(ReportRunRow.report_run == run)
+            ).one()
 
-            for t, sum_diff in zip(diff_titles, sum_diffs):
-                elem = t[11:-4]
-                if elem == "net":
-                    summary["sum_difference"] = sum_diff
-                else:
-                    elements.append((elem, sum_diff))
+            for elem, sum_diff in zip(element_names, sum_diffs):
+                elements.append((elem, sum_diff))
 
-            elements.sort(key=lambda x: abs(x[1]), reverse=True)
-            elements.insert(0, ("net", summary["sum_difference"]))
+            elements.sort(key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True)
 
         if "element" in request.values:
             element = req_str("element")
         else:
-            element = "net"
+            element = "problem"
 
         hide_checked = req_bool("hide_checked")
 
-        order_by = f"difference-{element}-gbp"
-        q = g.sess.query(ReportRunRow).filter(ReportRunRow.report_run == run)
+        ROW_LIMIT = 200
+        q = select(ReportRunRow).where(ReportRunRow.report_run == run).limit(ROW_LIMIT)
         if hide_checked:
-            q = q.filter(
+            q = q.where(
                 ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
             )
-        ROW_LIMIT = 200
-        rows = (
-            q.order_by(
-                func.abs(ReportRunRow.data["values"][order_by].as_float()).desc()
+        if element == "problem":
+            order_by = (
+                ReportRunRow.data["data"]["problem"].as_string(),
+                func.abs(
+                    func.coalesce(
+                        ReportRunRow.data["data"]["difference_net_gbp"].as_float(), 0
+                    )
+                ).desc(),
             )
-            .limit(ROW_LIMIT)
-            .all()
-        )
+        else:
+            if element == "net":
+                ob = ReportRunRow.data["data"]["difference_net_gbp"]
+            else:
+                ob = ReportRunRow.data["data"]["elements"][element]["parts"]["gbp"][
+                    "difference"
+                ]
+            order_by = (func.abs(func.coalesce(ob.as_float(), 0)).desc(),)
+        q = q.order_by(*order_by)
+
+        rows = g.sess.scalars(q).all()
         return render_template(
             "report_run_bill_check.html",
             run=run,
@@ -1654,44 +1675,13 @@ def report_run_row_get(row_id):
     tables = []
 
     if row.report_run.name == "bill_check":
-        values = row.data["values"]
-        elements = {}
-        for t in values.keys():
-
-            if (
-                t.startswith("covered-")
-                or t.startswith("virtual-")
-                or t.startswith("difference-")
-            ) and t.endswith("-gbp"):
-                toks = t.split("-")
-                name = "-".join(toks[1:-1])
-                if name in ("vat", "gross", "net", "tpr"):
-                    continue
-                try:
-                    table = elements[name]
-                except KeyError:
-                    table = elements[name] = {"order": 0, "name": name, "parts": set()}
-                    tables.append(table)
-
-                if t.startswith("difference-"):
-                    table["order"] = abs(values[t])
-
-        for t in values.keys():
-
-            toks = t.split("-")
-            if toks[0] in ("covered", "virtual", "difference"):
-                tail = "-".join(toks[1:])
-                for element in sorted(elements.keys(), key=len, reverse=True):
-
-                    table = elements[element]
-                    elstr = f"{element}-"
-                    if tail.startswith(elstr):
-                        part = tail[len(elstr) :]
-                        if part != "gbp":
-                            table["parts"].add(part)
-                        break
-
-        tables.sort(key=lambda t: t["order"], reverse=True)
+        elements = row.data["data"]["elements"]
+        for el_name, _ in sorted(
+            list(elements.items()),
+            key=lambda x: abs(x[1]["parts"]["gbp"]["difference"]),
+            reverse=True,
+        ):
+            tables.append(el_name)
         return render_template(
             "report_run_row_bill_check.html", row=row, raw_data=raw_data, tables=tables
         )

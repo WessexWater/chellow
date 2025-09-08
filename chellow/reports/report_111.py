@@ -14,11 +14,10 @@ from flask import g, redirect, request
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload, subqueryload
-from sqlalchemy.sql.expression import null, true
+from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
 
-from zish import ZishLocationException, loads
 
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func
@@ -26,14 +25,13 @@ from chellow.models import (
     Batch,
     Bill,
     Contract,
+    Element,
     Era,
     Llfc,
     MtcParticipant,
     RSession,
     RegisterRead,
     ReportRun,
-    Site,
-    SiteEra,
     Supply,
     User,
 )
@@ -52,41 +50,49 @@ from chellow.utils import (
 )
 
 
-def add_gap(caches, gaps, elem, start_date, finish_date, is_virtual, gbp):
+def _add_gap_hh(gaps, hh_start, gap_type):
     try:
-        elgap = gaps[elem]
+        hh = gaps[hh_start]
+        match (hh, gap_type):
+            case ("middle", _):
+                pass
+            case (_, "middle"):
+                gaps[hh_start] = "middle"
+            case ("start", "start"):
+                pass
+            case ("start", "finish"):
+                gaps[hh_start] = "start_finish"
+            case ("finish", "finish"):
+                pass
+            case ("finish", "start"):
+                gaps[hh_start] = "start_finish"
+            case ("start_finish", "finish"):
+                pass
+            case ("start_finish", "start"):
+                pass
+            case _:
+                raise BadRequest(f"Gap combination ({hh}, {gap_type}) not recognized.")
+
     except KeyError:
-        elgap = gaps[elem] = {}
+        hh = gaps[hh_start] = gap_type
 
+
+def _add_gap(caches, gaps, start_date, finish_date):
     hhs = hh_range(caches, start_date, finish_date)
-    hhgbp = 0 if gbp is None else gbp / len(hhs)
-
-    for hh_start in hhs:
-        try:
-            hhgap = elgap[hh_start]
-        except KeyError:
-            hhgap = elgap[hh_start] = {
-                "has_covered": False,
-                "has_virtual": False,
-                "gbp": 0,
-            }
-
-        if is_virtual:
-            hhgap["has_virtual"] = True
-            hhgap["gbp"] = hhgbp
-        else:
-            hhgap["has_covered"] = True
+    _add_gap_hh(gaps, hhs[0], "start")
+    _add_gap_hh(gaps, hhs[-1] + HH, "finish")
+    for hh_start in hhs[1:]:
+        _add_gap_hh(gaps, hh_start, "middle")
 
 
-def find_elements(bill):
-    try:
-        keys = [k for k in loads(bill.breakdown).keys() if k.endswith("-gbp")]
-        return set(k[:-4] for k in keys)
-    except ZishLocationException as e:
-        raise BadRequest(
-            f"Can't parse the breakdown for bill id {bill.id} attached to batch id "
-            f"{bill.batch.id}: {e}"
-        )
+def find_gaps(gaps):
+    if len(gaps) > 0:
+        gap_start = None
+        for ghh, gtype in sorted(gaps.items()):
+            if "finish" in gtype:
+                yield gap_start, ghh - HH
+            if "start" in gtype:
+                gap_start = ghh
 
 
 def content(
@@ -112,8 +118,8 @@ def content(
             )
             writer = csv.writer(tmp_file, lineterminator="\n")
 
-            bills = (
-                sess.query(Bill)
+            bills_q = (
+                select(Bill)
                 .order_by(Bill.supply_id, Bill.reference)
                 .options(
                     joinedload(Bill.supply),
@@ -125,30 +131,30 @@ def content(
 
             if len(mpan_cores) > 0:
                 mpan_cores = list(map(parse_mpan_core, mpan_cores))
-                supply_ids = [
-                    i[0]
-                    for i in sess.query(Era.supply_id)
-                    .filter(
+                supply_ids = sess.scalars(
+                    select(Era.supply_id)
+                    .where(
                         or_(
                             Era.imp_mpan_core.in_(mpan_cores),
                             Era.exp_mpan_core.in_(mpan_cores),
                         )
                     )
                     .distinct()
-                ]
-                bills = bills.join(Supply).filter(Supply.id.in_(supply_ids))
+                ).all()
+
+                bills_q = bills_q.join(Supply).where(Supply.id.in_(supply_ids))
 
             if batch_id is not None:
                 batch = Batch.get_by_id(sess, batch_id)
-                bills = bills.filter(Bill.batch == batch)
+                bills_q = bills_q.where(Bill.batch == batch)
                 contract = batch.contract
             elif bill_id is not None:
                 bill = Bill.get_by_id(sess, bill_id)
-                bills = bills.filter(Bill.id == bill.id)
+                bills_q = bills_q.where(Bill.id == bill.id)
                 contract = bill.batch.contract
             elif contract_id is not None:
                 contract = Contract.get_by_id(sess, contract_id)
-                bills = bills.join(Batch).filter(
+                bills_q = bills_q.join(Batch).where(
                     Batch.contract == contract,
                     Bill.start_date <= finish_date,
                     Bill.finish_date >= start_date,
@@ -171,51 +177,53 @@ def content(
                 )
             virtual_bill_titles = virtual_bill_titles_func()
 
-            titles = [
-                "batch",
-                "bill-reference",
-                "bill-type",
-                "bill-kwh",
-                "bill-net-gbp",
-                "bill-vat-gbp",
-                "bill-gross-gbp",
-                "bill-start-date",
-                "bill-finish-date",
-                "imp-mpan-core",
-                "exp-mpan-core",
-                "site-code",
-                "site-name",
-                "covered-from",
-                "covered-to",
-                "covered-bills",
-                "metered-kwh",
+            titles = []
+            header_titles = [
+                "imp_mpan_core",
+                "exp_mpan_core",
+                "site_code",
+                "site_name",
+                "period_start",
+                "period_finish",
+                "actual_net_gbp",
+                "virtual_net_gbp",
+                "difference_net_gbp",
             ]
+            titles.extend(header_titles)
             for t in virtual_bill_titles:
-                titles.append("covered-" + t)
-                titles.append("virtual-" + t)
-                if t.endswith("-gbp"):
-                    titles.append("difference-" + t)
+                if t not in ("net-gbp", "vat-gbp", "gross-gbp"):
+                    titles.append("actual-" + t)
+                    titles.append("virtual-" + t)
+                    if t.endswith("-gbp"):
+                        titles.append("difference-" + t)
 
             writer.writerow(titles)
 
             bill_map = defaultdict(set, {})
-            for bill in bills:
+            for bill in sess.scalars(bills_q):
                 bill_map[bill.supply.id].add(bill.id)
 
             for supply_id, bill_ids in bill_map.items():
-                _process_supply(
-                    sess,
-                    caches,
-                    supply_id,
-                    bill_ids,
-                    forecast_date,
-                    contract,
-                    vbf,
-                    virtual_bill_titles,
-                    writer,
-                    titles,
-                    report_run_id,
-                )
+                for data in _process_supply(
+                    sess, caches, supply_id, bill_ids, forecast_date, contract, vbf
+                ):
+                    vals = {}
+                    for title in header_titles:
+                        vals[title] = data[title]
+                    for el_name, el in data["elements"].items():
+                        for part_name, part in el["parts"].items():
+                            for typ, value in part.items():
+                                vals[f"{typ}-{el_name}-{part_name}"] = value
+
+                    writer.writerow(csv_make_val(vals.get(title)) for title in titles)
+                    ReportRun.w_insert_row(
+                        report_run_id,
+                        "",
+                        titles,
+                        vals,
+                        {"is_checked": False},
+                        data=data,
+                    )
         ReportRun.w_update(report_run_id, "finished")
 
     except BadRequest as e:
@@ -301,584 +309,438 @@ def do_post(sess):
     return redirect(f"/report_runs/{report_run.id}", 303)
 
 
-def _process_supply(
+def _get_bill_status(sess, bill_statuses, bill):
+    try:
+        bill_status = bill_statuses[bill.id]
+    except KeyError:
+        covered_bills = dict(
+            (b.id, b)
+            for b in sess.scalars(
+                select(Bill)
+                .join(Batch)
+                .join(Contract)
+                .where(
+                    Bill.supply == bill.supply,
+                    Bill.start_date <= bill.finish_date,
+                    Bill.finish_date >= bill.start_date,
+                    Contract.market_role == bill.batch.contract.market_role,
+                )
+                .order_by(Bill.start_date, Bill.issue_date)
+            )
+        )
+        while True:
+            to_del = None
+            for a, b in combinations(covered_bills.values(), 2):
+                if all(
+                    (
+                        a.start_date == b.start_date,
+                        a.finish_date == b.finish_date,
+                        a.net == -1 * b.net,
+                        a.vat == -1 * b.vat,
+                        a.gross == -1 * b.gross,
+                    )
+                ):
+                    to_del = (a.id, b.id)
+                    break
+            if to_del is None:
+                break
+            else:
+                for k in to_del:
+                    del covered_bills[k]
+                    bill_statuses[k] = None
+
+        for k, v in covered_bills.items():
+            bill_statuses[k] = v
+
+        bill_status = bill_statuses[bill.id]
+
+    return bill_status
+
+
+def _process_period(
     sess,
     caches,
-    supply_id,
-    bill_ids,
-    forecast_date,
+    supply,
     contract,
+    bill_statuses,
+    forecast_date,
     vbf,
-    virtual_bill_titles,
-    writer,
-    titles,
-    report_run_id,
+    period_start,
+    period_finish,
 ):
-    gaps = {}
-    data_sources = {}
+    actual_elems = {}
+    vels = {}
+    val_elems = {}
+    virtual_bill = {"problem": "", "elements": vels}
     market_role_code = contract.market_role.code
 
+    vals = {
+        "supply_id": supply.id,
+        "period_start": period_start,
+        "period_finish": period_finish,
+        "contract_id": contract.id,
+        "contract_name": contract.name,
+        "market_role_code": contract.market_role.code,
+        "elements": val_elems,
+        "virtual_net_gbp": 0,
+        "actual_net_gbp": 0,
+        "actual_bills": [],
+        "problem": "",
+    }
+
+    for bill in sess.scalars(
+        select(Bill)
+        .join(Batch)
+        .where(
+            Bill.supply == supply,
+            Bill.start_date <= period_finish,
+            Bill.finish_date >= period_start,
+            Batch.contract == contract,
+        )
+    ):
+        if _get_bill_status(sess, bill_statuses, bill) is not None:
+            actual_bill = {
+                "id": bill.id,
+                "start_date": bill.start_date,
+                "finish_date": bill.finish_date,
+                "problem": "",
+                "net": bill.net,
+                "vat": bill.vat,
+                "gross": bill.gross,
+                "kwh": bill.kwh,
+                "breakdown": bill.breakdown,
+                "batch_id": bill.batch_id,
+                "batch_reference": bill.batch.reference,
+            }
+
+            read_dict = {}
+            for read in bill.reads:
+                gen_start = read.present_date.replace(hour=0).replace(minute=0)
+                gen_finish = gen_start + relativedelta(days=1) - HH
+                msn_match = False
+                read_msn = read.msn
+                for read_era in supply.find_eras(sess, gen_start, gen_finish):
+                    if read_msn == read_era.msn:
+                        msn_match = True
+                        break
+
+                if not msn_match:
+                    virtual_bill["problem"] += (
+                        f"The MSN {read_msn} of the register read {read.id} "
+                        f"doesn't match the MSN of the era."
+                    )
+
+                for dt, typ in [
+                    (read.present_date, read.present_type),
+                    (read.previous_date, read.previous_type),
+                ]:
+                    key = f"{dt}-{read.msn}"
+                    try:
+                        if typ != read_dict[key]:
+                            virtual_bill[
+                                "problem"
+                            ] += f" Reads taken on {dt} have differing read types."
+                    except KeyError:
+                        read_dict[key] = typ
+
+            element_net = sum(el.net for el in bill.elements)
+            vals["actual_bills"].append(actual_bill)
+            if element_net != bill.net:
+                actual_bill["problem"] += (
+                    f"The Net GBP total of the elements is {element_net} doesn't "
+                    f"match the bill Net GBP value of {bill.net}. "
+                )
+            if bill.gross != bill.vat + bill.net:
+                actual_bill["problem"] += (
+                    f"The Gross GBP ({bill.gross}) of the bill isn't equal to "
+                    f"the Net GBP ({bill.net}) + VAT GBP ({bill.vat}) of the bill."
+                )
+
+            if len(actual_bill["problem"]) > 0:
+                vals["problem"] += "Bills have problems. "
+
+    for element in sess.scalars(
+        select(Element)
+        .join(Bill)
+        .join(Batch)
+        .where(
+            Bill.supply == supply,
+            Element.start_date <= period_finish,
+            Element.finish_date >= period_start,
+            Batch.contract == contract,
+        )
+    ):
+        if _get_bill_status(sess, bill_statuses, element.bill) is None:
+            continue
+
+        try:
+            actual_elem = actual_elems[element.name]
+        except KeyError:
+            actual_elem = actual_elems[element.name] = {
+                "parts": {"gbp": Decimal("0.00")},
+                "elements": [],
+            }
+        parts = actual_elem["parts"]
+        actual_elem["elements"].append(
+            {
+                "id": element.id,
+                "start_date": element.start_date,
+                "finish_date": element.finish_date,
+                "net": element.net,
+                "breakdown": element.breakdown,
+                "bill": {
+                    "id": element.bill.id,
+                    "batch": {
+                        "id": element.bill.batch.id,
+                        "reference": element.bill.batch.reference,
+                    },
+                },
+            }
+        )
+
+        parts["gbp"] += element.net
+        vals["actual_net_gbp"] += float(element.net)
+
+        for k, v in element.bd.items():
+            if isinstance(v, Decimal):
+                v = float(v)
+
+            if isinstance(v, list):
+                v = set(v)
+
+            try:
+                if isinstance(v, set):
+                    parts[k].update(v)
+                else:
+                    parts[k] += v
+            except KeyError:
+                parts[k] = v
+            except TypeError as detail:
+                raise BadRequest(
+                    f"For key {k} in {element.bd} the value {v} can't be added to "
+                    f"the existing value {parts[k]}. {detail}"
+                )
+
+    first_era = None
+    for era in sess.scalars(
+        select(Era)
+        .where(
+            Era.supply == supply,
+            Era.start_date <= period_finish,
+            or_(Era.finish_date == null(), Era.finish_date >= period_start),
+        )
+        .order_by(Era.start_date)
+        .distinct()
+        .options(
+            joinedload(Era.channels),
+            joinedload(Era.cop),
+            joinedload(Era.dc_contract),
+            joinedload(Era.exp_llfc),
+            joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.exp_supplier_contract),
+            joinedload(Era.imp_llfc),
+            joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
+            joinedload(Era.imp_supplier_contract),
+            joinedload(Era.mop_contract),
+            joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
+            joinedload(Era.pc),
+            joinedload(Era.supply).joinedload(Supply.dno),
+            joinedload(Era.supply).joinedload(Supply.gsp_group),
+            joinedload(Era.supply).joinedload(Supply.source),
+        )
+    ).unique():
+        first_era = era
+        chunk_start = hh_max(period_start, era.start_date)
+        chunk_finish = hh_min(period_finish, era.finish_date)
+
+        if contract not in (
+            era.mop_contract,
+            era.dc_contract,
+            era.imp_supplier_contract,
+            era.exp_supplier_contract,
+        ):
+            virtual_bill["problem"] += (
+                f"From {hh_format(chunk_start)} to {hh_format(chunk_finish)} "
+                f"the contract of the era doesn't match the contract of the bill."
+            )
+            continue
+
+        if contract.market_role.code == "X":
+            polarity = contract != era.exp_supplier_contract
+        else:
+            polarity = era.imp_supplier_contract is not None
+
+        data_source = SupplySource(
+            sess,
+            chunk_start,
+            chunk_finish,
+            forecast_date,
+            era,
+            polarity,
+            caches,
+            bill=True,
+        )
+        vbf(data_source)
+
+        match market_role_code:
+            case "X":
+                vb = data_source.supplier_bill
+            case "C":
+                vb = data_source.dc_bill
+            case "M":
+                vb = data_source.mop_bill
+            case _:
+                raise BadRequest(f"Odd market role {market_role_code}")
+
+        for k, v in vb.items():
+            if k.endswith("-gbp") and k not in ("net-gbp", "vat-gbp", "gross-gbp"):
+                vel_name = k[:-4]
+                try:
+                    vel = vels[vel_name]
+                except KeyError:
+                    vel = vels[vel_name] = {"parts": {}, "elements": []}
+
+                vals["virtual_net_gbp"] += v
+
+        for k, v in vb.items():
+            if k == "problem":
+                virtual_bill["problem"] += v
+            else:
+                for vel_name in sorted(vels.keys(), key=len, reverse=True):
+                    pref = f"{vel_name}-"
+                    if k.startswith(pref):
+                        vel = vels[vel_name]["parts"]
+                        vel_k = k[len(pref) :]
+                        try:
+                            if isinstance(vel[vel_k], set):
+                                vel[vel_k].update(v)
+                            else:
+                                vel[vel_k] += v
+                        except KeyError:
+                            vel[vel_k] = v
+                        except TypeError as detail:
+                            raise BadRequest(f"For key {vel_k} and value {v}. {detail}")
+
+                        break
+    for typ, els in (("virtual", vels), ("actual", actual_elems)):
+        for el_k, el in els.items():
+            try:
+                val_elem = val_elems[el_k]
+            except KeyError:
+                val_elem = val_elems[el_k] = {}
+
+            for k, v in el["parts"].items():
+                try:
+                    val_parts = val_elem["parts"]
+                except KeyError:
+                    val_parts = val_elem["parts"] = {}
+
+                try:
+                    val_part = val_parts[k]
+                except KeyError:
+                    val_part = val_parts[k] = {}
+
+                val_part[typ] = v
+
+            for el in el["elements"]:
+                try:
+                    elements = val_elem[f"{typ}_elements"]
+                except KeyError:
+                    elements = val_elem[f"{typ}_elements"] = []
+
+                elements.append(el)
+
+    for elname, val_elem in val_elems.items():
+        for part_name, part in val_elem["parts"].items():
+            virtual_part = part.get("virtual", 0)
+            actual_part = part.get("actual", 0)
+            if isinstance(virtual_part, set) and len(virtual_part) == 1:
+                virtual_part = next(iter(virtual_part))
+            if isinstance(actual_part, set) and len(actual_part) == 1:
+                actual_part = next(iter(actual_part))
+
+            if virtual_part is None or actual_part is None:
+                diff = None
+            elif isinstance(virtual_part, Number) and isinstance(actual_part, Number):
+                diff = float(actual_part) - float(virtual_part)
+            else:
+                diff = "✔" if virtual_part == actual_part else "❌"
+
+            part["difference"] = diff
+
+    if first_era is None:
+        site = None
+    else:
+        site = first_era.get_physical_site(sess)
+
+    vals["site_id"] = None if site is None else site.id
+    vals["site_code"] = None if site is None else site.code
+    vals["site_name"] = None if site is None else site.name
+    vals["imp_mpan_core"] = None if first_era is None else era.imp_mpan_core
+    vals["exp_mpan_core"] = None if first_era is None else era.exp_mpan_core
+    vals["difference_net_gbp"] = vals["actual_net_gbp"] - vals["virtual_net_gbp"]
+    vals["problem"] += virtual_bill["problem"]
+
+    return vals
+
+
+def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, vbf):
+    gaps = {}
+    bill_statuses = {}
+    supply = Supply.get_by_id(sess, supply_id)
+    market_role_code = contract.market_role.code  # noqa: F841
+
+    # Find seed gaps
     while len(bill_ids) > 0:
         bill_id = list(sorted(bill_ids))[0]
         bill_ids.remove(bill_id)
-        bill = sess.scalar(
-            select(Bill)
-            .where(Bill.id == bill_id)
-            .options(
-                joinedload(Bill.batch),
-                joinedload(Bill.bill_type),
-                joinedload(Bill.reads),
-                joinedload(Bill.supply),
-                joinedload(Bill.reads).joinedload(RegisterRead.present_type),
-                joinedload(Bill.reads).joinedload(RegisterRead.previous_type),
-            )
-        )
-        virtual_bill = {"problem": ""}
-        supply = bill.supply
-
-        read_dict = {}
-        for read in bill.reads:
-            gen_start = read.present_date.replace(hour=0).replace(minute=0)
-            gen_finish = gen_start + relativedelta(days=1) - HH
-            msn_match = False
-            read_msn = read.msn
-            for read_era in supply.find_eras(sess, gen_start, gen_finish):
-                if read_msn == read_era.msn:
-                    msn_match = True
-                    break
-
-            if not msn_match:
-                virtual_bill["problem"] += (
-                    f"The MSN {read_msn} of the register read {read.id} doesn't match "
-                    f"the MSN of the era."
+        bill = Bill.get_by_id(sess, bill_id)
+        if _get_bill_status(sess, bill_statuses, bill) is not None:
+            _add_gap(caches, gaps, bill.start_date, bill.finish_date)
+            for element in sess.scalars(
+                select(Element)
+                .join(Bill)
+                .join(Batch)
+                .where(
+                    Batch.contract == contract,
+                    Bill.supply == supply,
+                    Bill.start_date <= bill.finish_date,
+                    Bill.finish_date >= bill.start_date,
                 )
+            ):
+                _add_gap(caches, gaps, element.start_date, element.finish_date)
 
-            for dt, typ in [
-                (read.present_date, read.present_type),
-                (read.previous_date, read.previous_type),
-            ]:
-                key = str(dt) + "-" + read.msn
-                try:
-                    if typ != read_dict[key]:
-                        virtual_bill[
-                            "problem"
-                        ] += f" Reads taken on {dt} have differing read types."
-                except KeyError:
-                    read_dict[key] = typ
-
-        bill_start = bill.start_date
-        bill_finish = bill.finish_date
-
-        covered_start = bill_start
-        covered_finish = bill_start
-        covered_bdown = {
-            "sum-msp-kwh": 0,
-            "net-gbp": 0,
-            "vat-gbp": 0,
-            "gross-gbp": 0,
-            "problem": "",
-        }
-
-        vb_elems = set()
-        enlarged = True
-
-        while enlarged:
-            enlarged = False
-            covered_elems = find_elements(bill)
-            covered_bills = dict(
-                (b.id, b)
-                for b in sess.scalars(
-                    select(Bill)
-                    .join(Batch)
-                    .where(
-                        Bill.supply == supply,
-                        Bill.start_date <= covered_finish,
-                        Bill.finish_date >= covered_start,
-                        Batch.contract == contract,
-                    )
-                    .order_by(Bill.start_date, Bill.issue_date)
+    # Find enlarged gaps
+    enlarged = True
+    while enlarged:
+        enlarged = False
+        for gap_start, gap_finish in find_gaps(gaps):
+            for element in sess.scalars(
+                select(Element)
+                .join(Bill)
+                .join(Batch)
+                .where(
+                    Bill.supply == supply,
+                    Bill.start_date <= gap_finish,
+                    Bill.finish_date >= gap_start,
+                    Batch.contract == contract,
                 )
-            )
-            while True:
-                to_del = None
-                for a, b in combinations(covered_bills.values(), 2):
-                    if all(
-                        (
-                            a.start_date == b.start_date,
-                            a.finish_date == b.finish_date,
-                            a.net == -1 * b.net,
-                            a.vat == -1 * b.vat,
-                            a.gross == -1 * b.gross,
-                        )
-                    ):
-                        to_del = (a.id, b.id)
-                        break
-                if to_del is None:
-                    break
-                else:
-                    for k in to_del:
-                        del covered_bills[k]
-                        bill_ids.discard(k)
-
-            for k, covered_bill in tuple(covered_bills.items()):
-                elems = find_elements(covered_bill)
-                if elems.isdisjoint(covered_elems):
-                    if k != bill.id:
-                        del covered_bills[k]
-                        continue
-                else:
-                    covered_elems.update(elems)
-
-                if covered_bill.start_date < covered_start:
-                    covered_start = covered_bill.start_date
+            ):
+                if _add_gap(caches, gaps, element.start_date, element.finish_date):
                     enlarged = True
-                    break
 
-                if covered_bill.finish_date > covered_finish:
-                    covered_finish = covered_bill.finish_date
-                    enlarged = True
-                    break
-
-        if len(covered_bills) == 0:
-            continue
-
-        primary_covered_bill = None
-        for covered_bill in covered_bills.values():
-            bill_ids.discard(covered_bill.id)
-            covered_bdown["sum-msp-kwh"] += float(covered_bill.kwh)
-            for elem, val in (
-                ("net", covered_bill.net),
-                ("vat", covered_bill.vat),
-                ("gross", covered_bill.gross),
-            ):
-                covered_bdown[f"{elem}-gbp"] += float(val)
-                covered_elems.add(elem)
-                add_gap(
-                    caches,
-                    gaps,
-                    elem,
-                    covered_bill.start_date,
-                    covered_bill.finish_date,
-                    False,
-                    val,
-                )
-            for k, v in loads(covered_bill.breakdown).items():
-                if k in ("raw_lines", "raw-lines", "vat"):
-                    continue
-
-                if isinstance(v, list):
-                    try:
-                        covered_bdown[k].update(set(v))
-                    except KeyError:
-                        covered_bdown[k] = set(v)
-                    except AttributeError as e:
-                        raise BadRequest(
-                            f"For key {k} in {[b.id for b in covered_bills.values()]} "
-                            f"the value {v} can't be added to the existing value "
-                            f"{covered_bdown[k]}. {e}"
-                        )
-                else:
-                    if isinstance(v, Decimal):
-                        v = float(v)
-                    try:
-                        covered_bdown[k] += v
-                    except KeyError:
-                        covered_bdown[k] = v
-                    except TypeError as detail:
-                        raise BadRequest(
-                            f"For key {k} in {[b.id for b in covered_bills.values()]} "
-                            f"the value {v} can't be added to the existing value "
-                            f"{covered_bdown[k]}. {detail}"
-                        )
-
-                    if k.endswith("-gbp"):
-                        elem = k[:-4]
-                        covered_elems.add(elem)
-                        add_gap(
-                            caches,
-                            gaps,
-                            elem,
-                            covered_bill.start_date,
-                            covered_bill.finish_date,
-                            False,
-                            v,
-                        )
-
-            if primary_covered_bill is None or (
-                (covered_bill.finish_date - covered_bill.start_date)
-                > (primary_covered_bill.finish_date - primary_covered_bill.start_date)
-            ):
-                primary_covered_bill = covered_bill
-
-        metered_kwh = 0
-        for era in (
-            sess.query(Era)
-            .filter(
-                Era.supply == supply,
-                Era.start_date <= covered_finish,
-                or_(Era.finish_date == null(), Era.finish_date >= covered_start),
-            )
-            .distinct()
-            .options(
-                joinedload(Era.channels),
-                joinedload(Era.cop),
-                joinedload(Era.dc_contract),
-                joinedload(Era.exp_llfc),
-                joinedload(Era.exp_llfc).joinedload(Llfc.voltage_level),
-                joinedload(Era.exp_supplier_contract),
-                joinedload(Era.imp_llfc),
-                joinedload(Era.imp_llfc).joinedload(Llfc.voltage_level),
-                joinedload(Era.imp_supplier_contract),
-                joinedload(Era.mop_contract),
-                joinedload(Era.mtc_participant).joinedload(MtcParticipant.meter_type),
-                joinedload(Era.pc),
-                joinedload(Era.supply).joinedload(Supply.dno),
-                joinedload(Era.supply).joinedload(Supply.gsp_group),
-                joinedload(Era.supply).joinedload(Supply.source),
-            )
-        ):
-            chunk_start = hh_max(covered_start, era.start_date)
-            chunk_finish = hh_min(covered_finish, era.finish_date)
-
-            if contract not in (
-                era.mop_contract,
-                era.dc_contract,
-                era.imp_supplier_contract,
-                era.exp_supplier_contract,
-            ):
-                virtual_bill["problem"] += (
-                    f"From {hh_format(chunk_start)} to {hh_format(chunk_finish)} "
-                    f"the contract of the era doesn't match the contract of the bill."
-                )
-                continue
-
-            if contract.market_role.code == "X":
-                polarity = contract != era.exp_supplier_contract
-            else:
-                polarity = era.imp_supplier_contract is not None
-
-            try:
-                ds_key = (
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    era.id,
-                    polarity,
-                    primary_covered_bill.id,
-                )
-                data_source = data_sources[ds_key]
-            except KeyError:
-                data_source = data_sources[ds_key] = SupplySource(
-                    sess,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    era,
-                    polarity,
-                    caches,
-                    primary_covered_bill,
-                )
-                vbf(data_source)
-
-            if data_source.measurement_type == "hh":
-                metered_kwh += sum(h["msp-kwh"] for h in data_source.hh_data)
-            else:
-                ds = SupplySource(
-                    sess,
-                    chunk_start,
-                    chunk_finish,
-                    forecast_date,
-                    era,
-                    polarity,
-                    caches,
-                )
-                metered_kwh += sum(h["msp-kwh"] for h in ds.hh_data)
-
-            if market_role_code == "X":
-                vb = data_source.supplier_bill
-                vb_hhs = data_source.supplier_bill_hhs
-            elif market_role_code == "C":
-                vb = data_source.dc_bill
-                vb_hhs = data_source.dc_bill_hhs
-            elif market_role_code == "M":
-                vb = data_source.mop_bill
-                vb_hhs = data_source.mop_bill_hhs
-            else:
-                raise BadRequest("Odd market role.")
-
-            for k, v in vb.items():
-                try:
-                    if isinstance(v, set):
-                        virtual_bill[k].update(v)
-                    else:
-                        virtual_bill[k] += v
-                except KeyError:
-                    virtual_bill[k] = v
-                except TypeError as detail:
-                    raise BadRequest(f"For key {k} and value {v}. {detail}")
-
-            for dt, bl in vb_hhs.items():
-                for k, v in bl.items():
-                    if k.endswith("-gbp") and v != 0:
-                        add_gap(caches, gaps, k[:-4], dt, dt, True, v)
-
-            for k in virtual_bill.keys():
-                if k.endswith("-gbp"):
-                    vb_elems.add(k[:-4])
-
-        long_map = {}
-        vb_keys = set(virtual_bill.keys())
-        for elem in sorted(vb_elems, key=len, reverse=True):
-            els = long_map[elem] = set()
-            for k in tuple(vb_keys):
-                if k.startswith(elem + "-"):
-                    els.add(k)
-                    vb_keys.remove(k)
-
-        for elem in vb_elems.difference(covered_elems):
-            for k in long_map[elem]:
-                del virtual_bill[k]
-
-        for elem in covered_elems.difference(vb_elems):
-            covered_bdown["problem"] += (
-                f"The element {elem} is in the covered bills, but not in the "
-                f"virtual bill. "
-            )
-
-        virtual_bill.pop("net-gbp", None)
-        virtual_bill.pop("gross-gbp", None)
-        virtual_bill["net-gbp"] = sum(
-            v for k, v in virtual_bill.items() if k.endswith("-gbp") and k != "vat-gbp"
+    for period_start, period_finish in find_gaps(gaps):
+        yield _process_period(
+            sess,
+            caches,
+            supply,
+            contract,
+            bill_statuses,
+            forecast_date,
+            vbf,
+            period_start,
+            period_finish,
         )
-        virtual_bill["gross-gbp"] = virtual_bill["net-gbp"] + virtual_bill.get(
-            "vat-gbp", 0
-        )
-
-        era = supply.find_era_at(sess, bill_finish)
-        if era is None:
-            imp_mpan_core = exp_mpan_core = None
-            site_code = site_name = None
-            virtual_bill["problem"] += "This bill finishes before or after the supply. "
-        else:
-            imp_mpan_core = era.imp_mpan_core
-            exp_mpan_core = era.exp_mpan_core
-
-            site = (
-                sess.query(Site)
-                .join(SiteEra)
-                .filter(SiteEra.is_physical == true(), SiteEra.era == era)
-                .one()
-            )
-            site_code = site.code
-            site_name = site.name
-
-        # Find bill to use for header data
-        if bill.id not in covered_bills:
-            for cbill in covered_bills.values():
-                if bill.batch == cbill.batch:
-                    bill = cbill
-
-        values = {
-            "batch": bill.batch.reference,
-            "bill-reference": bill.reference,
-            "bill-type": bill.bill_type.code,
-            "bill-kwh": bill.kwh,
-            "bill-net-gbp": bill.net,
-            "bill-vat-gbp": bill.vat,
-            "bill-gross-gbp": bill.gross,
-            "bill-start-date": bill_start,
-            "bill-finish-date": bill_finish,
-            "imp-mpan-core": imp_mpan_core,
-            "exp-mpan-core": exp_mpan_core,
-            "site-code": site_code,
-            "site-name": site_name,
-            "covered-from": covered_start,
-            "covered-to": covered_finish,
-            "covered-bills": sorted(covered_bills.keys()),
-            "metered-kwh": metered_kwh,
-        }
-        for title in virtual_bill_titles:
-            try:
-                cov_val = covered_bdown[title]
-                del covered_bdown[title]
-            except KeyError:
-                cov_val = None
-
-            values[f"covered-{title}"] = cov_val
-
-            try:
-                virt_val = virtual_bill[title]
-                del virtual_bill[title]
-            except KeyError:
-                virt_val = None
-
-            values[f"virtual-{title}"] = virt_val
-
-            if title.endswith("-gbp"):
-                if isinstance(virt_val, (int, float, Decimal)):
-                    if isinstance(cov_val, (int, float, Decimal)):
-                        diff_val = float(cov_val) - float(virt_val)
-                    else:
-                        diff_val = 0 - float(virt_val)
-                else:
-                    diff_val = 0
-
-                values[f"difference-{title}"] = diff_val
-
-        report_run_titles = list(titles)
-        for title in sorted(virtual_bill.keys()):
-            virt_val = virtual_bill[title]
-            virt_title = f"virtual-{title}"
-            values[virt_title] = virt_val
-            report_run_titles.append(virt_title)
-            if title in covered_bdown:
-                cov_title = f"covered-{title}"
-                cov_val = covered_bdown[title]
-                values[cov_title] = cov_val
-                report_run_titles.append(cov_title)
-                if title.endswith("-gbp"):
-                    if isinstance(virt_val, (int, float, Decimal)):
-                        if isinstance(cov_val, (int, float, Decimal)):
-                            diff_val = float(cov_val) - float(virt_val)
-                        else:
-                            diff_val = 0 - float(virt_val)
-                    else:
-                        diff_val = 0
-
-                    values[f"difference-{title}"] = diff_val
-
-                    t = "difference-tpr-gbp"
-                    try:
-                        values[t] += diff_val
-                    except KeyError:
-                        values[t] = diff_val
-                        report_run_titles.append(t)
-
-        csv_row = []
-        for t in titles:
-            v = values[t]
-            if t == "covered-bills":
-                val = " | ".join(str(b) for b in v)
-            else:
-                val = csv_make_val(v)
-
-            csv_row.append(val)
-
-        for t in report_run_titles:
-            if t not in titles:
-                csv_row.append(t)
-                csv_row.append(csv_make_val(values[t]))
-
-        writer.writerow(csv_row)
-
-        values["bill_id"] = bill.id
-        values["batch_id"] = bill.batch.id
-        values["supply_id"] = supply.id
-        values["site_id"] = None if site_code is None else site.id
-        for key in tuple(values.keys()):
-            for element in sorted(long_map.keys(), key=len, reverse=True):
-                if not key.endswith("-gbp"):
-                    covered_prefix = f"covered-{element}-"
-                    virtual_prefix = f"virtual-{element}-"
-                    if key.startswith(covered_prefix):
-                        part_name = key[len(covered_prefix) :]
-                    elif key.startswith(virtual_prefix):
-                        part_name = key[len(virtual_prefix) :]
-                    else:
-                        continue
-                    virtual_part = values.get(f"virtual-{element}-{part_name}", {0})
-                    covered_part = values.get(f"covered-{element}-{part_name}", {0})
-                    if isinstance(virtual_part, set) and len(virtual_part) == 1:
-                        virtual_part = next(iter(virtual_part))
-                    if isinstance(covered_part, set) and len(covered_part) == 1:
-                        covered_part = next(iter(covered_part))
-
-                    if isinstance(virtual_part, Number) and isinstance(
-                        covered_part, Number
-                    ):
-                        diff = float(covered_part) - float(virtual_part)
-                    else:
-                        diff = None
-
-                    values[f"difference-{element}-{part_name}"] = diff
-                    break
-        ReportRun.w_insert_row(
-            report_run_id, "", report_run_titles, values, {"is_checked": False}
-        )
-
-        for bill in sess.query(Bill).filter(
-            Bill.supply == supply,
-            Bill.start_date <= covered_finish,
-            Bill.finish_date >= covered_start,
-        ):
-            for k, v in loads(bill.breakdown).items():
-                if k.endswith("-gbp"):
-                    add_gap(
-                        caches,
-                        gaps,
-                        k[:-4],
-                        bill.start_date,
-                        bill.finish_date,
-                        False,
-                        v,
-                    )
 
         # Avoid long-running transactions
         sess.rollback()
-
-    clumps = []
-    for element, elgap in sorted(gaps.items()):
-        for start_date, hhgap in sorted(elgap.items()):
-            if hhgap["has_virtual"] and not hhgap["has_covered"]:
-                if len(clumps) == 0 or not all(
-                    (
-                        clumps[-1]["element"] == element,
-                        clumps[-1]["finish_date"] + HH == start_date,
-                    )
-                ):
-                    clumps.append(
-                        {
-                            "element": element,
-                            "start_date": start_date,
-                            "finish_date": start_date,
-                            "gbp": hhgap["gbp"],
-                        }
-                    )
-                else:
-                    clumps[-1]["finish_date"] = start_date
-
-    for i, clump in enumerate(clumps):
-        vals = {}
-        for title in titles:
-            if title.startswith("difference-") and title.endswith("-gbp"):
-                vals[title] = 0
-            else:
-                vals[title] = None
-
-        vals["covered-problem"] = "_".join(
-            (
-                "missing",
-                clump["element"],
-                "supplyid",
-                str(supply.id),
-                "from",
-                hh_format(clump["start_date"]),
-            )
-        )
-        vals["imp-mpan-core"] = imp_mpan_core
-        vals["exp-mpan-core"] = exp_mpan_core
-        vals["batch"] = "missing_bill"
-        vals["bill-start-date"] = hh_format(clump["start_date"])
-        vals["bill-finish-date"] = hh_format(clump["finish_date"])
-        vals["difference-net-gbp"] = clump["gbp"]
-        writer.writerow(csv_make_val(vals[title]) for title in titles)
-
-        vals["bill_id"] = None
-        vals["batch_id"] = None
-        vals["supply_id"] = supply.id
-        vals["site_id"] = None if site_code is None else site.id
-
-        ReportRun.w_insert_row(report_run_id, "", titles, vals, {"is_checked": False})
-
-    # Avoid long-running transactions
-    sess.rollback()

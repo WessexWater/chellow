@@ -62,17 +62,16 @@
 	<br>
 	<ul>
 		<li>
-			<a href="/e/mop_batches?mop_contract_id={{contract.id}}">Batches</a>
+			<a href="/e/mop_contracts/{{contract.id}}/batches">Batches</a>
 		</li>
 	</ul>
 	<br>
 	<form action="/reports/231">
 		<fieldset>
-			<input
-					type="hidden" name="mop_contract_id" value="{{contract.id}}">
+			<input type="hidden" name="mop_contract_id" value="{{contract.id}}">
 
-			From {{input_date('start', last_month_start)}} to
-			{{input_date('finish', last_month_finish)}}
+			<label>From</label> {{input_date('start', last_month_start)}}
+			<label>To</label> {{input_date('finish', last_month_finish)}}
 			<input type="submit" value="Download"/>
 		</fieldset>
 	</form>

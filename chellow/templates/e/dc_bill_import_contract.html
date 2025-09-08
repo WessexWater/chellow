@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{contract.name}} &raquo; Batches &raquo; {{importer_id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}/batches">Batches</a> &raquo; 
+ 	{{importer_id}}
+{% endblock %}
+
+{% block content %}
+	<h2>Bill Import</h2>	
+
+	{% if is_alive %}
+		<p>Still running. Refresh the page to see latest progress.</p>
+	{% endif %}
+
+	{% if status %}
+		<p>{{status}}</p>
+	{% endif %}
+
+	<ul>
+		{% for msg in log %}
+			<li>{{msg}}</li>
+		{% endfor %}
+	</ul>
+	
+	{% if failed_bills|length > 0 %}
+		<table class="sticky">
+			<caption>Failed Bills</caption>
+			<thead>
+				<tr>
+					<th>Error</th>
+					<th>MPAN Core</th>
+					<th>Account</th>
+					<th>Reference</th>
+					<th>Bill Type Code</th>
+					<th>Issue Date</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>kWh</th>
+					<th>Net</th>
+					<th>VAT</th>
+					<th>Gross</th>
+					<th>Breakdown</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for bill in failed_bills %}
+					<tr>
+						<td>{{bill.error}}</td>
+						<td>
+							<a href="/supplies?search_pattern={{bill.mpan_core}}"
+								>{{bill.mpan_core}}</a>
+						</td>
+						<td>{{bill.account}}</td>
+						<td>{{bill.reference}}</td>
+						<td>{{bill.bill_type_code}}</td>
+						<td>
+							{% if 'issue_date' in bill %}
+								{{bill.issue_date|hh_format}}
+							{% endif %}
+						</td>
+						<td>
+							{% if 'start_date' in bill %}
+								{{bill.start_date|hh_format}}
+							{% endif %}
+						</td>
+						<td>
+							{% if 'finish_date' in bill %}
+								{{bill.finish_date|hh_format}}</td>
+							{% endif %}
+						<td>{{bill.kwh}}</td>
+						<td>{{bill.net}}</td>
+						<td>{{bill.vat}}</td>
+						<td>{{bill.gross}}</td>
+						<td>
+							{% if 'breakdown' in bill %}
+								<pre>{{bill.breakdown|dumps}}</pre>
+							{% endif %}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	{% if successful_bills|length > 0 %}
+		<table class="sticky">
+			<caption>Successful Bills</caption>
+			<thead>
+				<tr>
+					<th>Reference</th>
+					<th>Account</th>
+					<th>Bill Type</th>
+					<th>MPAN Core</th>
+					<th>Issue Date</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>kWh</th>
+					<th>Net</th>
+					<th>VAT</th>
+					<th>Gross</th>
+					<th>Breakdown</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for bill in successful_bills %}
+					<tr>
+						<td>{{bill.reference}}</td>
+						<td>{{bill.account}}</td>
+						<td>{{bill.bill_type_code}}</td>
+						<td>{{bill.mpan_core}}</td>
+						<td>{{bill.issue_date|hh_format}}</td>
+						<td>{{bill.start_date|hh_format}}</td>
+						<td>{{bill.finish_date|hh_format}}</td>
+						<td>{{bill.kwh}}</td>
+						<td>{{bill.net}}</td>
+						<td>{{bill.vat}}</td>
+						<td>{{bill.gross}}</td>
+						<td><pre>{{bill.breakdown|dumps}}</pre></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+{% endblock %}

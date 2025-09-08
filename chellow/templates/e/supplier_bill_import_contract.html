@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{contract.name}} &raquo;
+	Batches &raquo; {{importer_id}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{contract.id}}/batches">Batches</a> &raquo; 
+ 	{{importer_id}}
+{% endblock %}
+
+{% block content %}
+	<h2>Bill Import</h2>	
+
+	{% if is_alive %}
+		<p>Still running. Refresh the page to see latest progress.</p>
+	{% endif %}
+
+	{% if status %}
+		<p>{{status}}</p>
+	{% endif %}
+
+	<ul>
+		{% for msg in log %}
+			<li>{{msg}}</li>
+		{% endfor %}
+	</ul>
+	
+	{% if failed_bills|length > 0 %}
+		<table class="sticky">
+			<caption>Failed Bills</caption>
+			<thead>
+				<tr>
+					<th>Error</th>
+					<th>MPAN Core</th>
+					<th>Account</th>
+					<th>Reference</th>
+					<th>Bill Type Code</th>
+					<th>Issue Date</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>kWh</th>
+					<th>Net</th>
+					<th>VAT</th>
+					<th>Gross</th>
+					<th>Breakdown</th>
+					{% for i in range(failed_max_registers) %}
+						<th>R{{loop.index}} MPAN</th>
+						<th>R{{loop.index}} Meter Serial Number</th>
+						<th>R{{loop.index}} Coefficient</th>
+						<th>R{{loop.index}} Units</th>
+						<th>R{{loop.index}} TPR</th>
+						<th>R{{loop.index}} Previous Read Date</th>
+						<th>R{{loop.index}} Previous Read Value</th>
+						<th>R{{loop.index}} Previous Read Type</th>
+						<th>R{{loop.index}} Present Read Date</th>
+						<th>R{{loop.index}} Present Read Value</th>
+						<th>R{{loop.index}} Present Read Type</th>
+					{% endfor %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for bill in failed_bills %}
+					<tr>
+						<td>{{bill.error}}</td>
+						<td>
+							<a href="/supplies?search_pattern={{bill.mpan_core}}"
+								>{{bill.mpan_core}}</a>
+						</td>
+						<td>{{bill.account}}</td>
+						<td>{{bill.reference}}</td>
+						<td>{{bill.bill_type_code}}</td>
+						<td>
+							{% if 'issue_date' in bill %}
+								{{bill.issue_date|hh_format}}
+							{% endif %}
+						</td>
+						<td>
+							{% if 'start_date' in bill %}
+								{{bill.start_date|hh_format}}
+							{% endif %}
+						</td>
+						<td>
+							{% if 'finish_date' in bill %}
+								{{bill.finish_date|hh_format}}</td>
+							{% endif %}
+						<td>{{bill.kwh}}</td>
+						<td>{{bill.net}}</td>
+						<td>{{bill.vat}}</td>
+						<td>{{bill.gross}}</td>
+						<td>
+							{% if 'breakdown' in bill %}
+								<pre>{{bill.breakdown|dumps}}</pre>
+							{% endif %}
+						</td>
+						{% for read in bill.reads %}
+							<td>{{read.mpan}}</td>
+							<td>{{read.msn}}</td>
+							<td>{{read.coefficient}}</td>
+							<td>{{read.units}}</td>
+							<td>{{read.tpr_code}}</td>
+							<td>{{read.prev_date|hh_format}}</td>
+							<td>{{read.prev_value}}</td>
+							<td>{{read.prev_type_code}}</td>
+							<td>{{read.pres_date|hh_format}}</td>
+							<td>{{read.pres_value}}</td>
+							<td>{{read.pres_type_code}}</td>
+						{% endfor %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+{% endblock %}

@@ -6,6 +6,7 @@ from chellow.e.bill_parsers.engie_edi import (
     CODE_FUNCS,
     Parser,
     _process_BCD,
+    _process_BTL,
     _process_CCD1,
     _process_CCD2,
     _process_CCD3,
@@ -19,7 +20,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 def test_CODE_FUNCS():
     assert CODE_FUNCS["BCD"] == _process_BCD
-    assert CODE_FUNCS["BTL"] == _process_NOOP
+    assert CODE_FUNCS["BTL"] == _process_BTL
     assert CODE_FUNCS["END"] == _process_END
     assert CODE_FUNCS["TTL"] == _process_NOOP
     assert CODE_FUNCS["VTS"] == _process_NOOP
@@ -51,7 +52,7 @@ def test_process_CCD1(mocker):
         "VATP": ["77"],
         "MSAD": ["fk", "fdk"],
     }
-    headers = {}
+    headers = {"reads": []}
     _process_CCD1(elements, headers)
     expected_headers = {
         "reads": [
@@ -70,6 +71,49 @@ def test_process_CCD1(mocker):
             }
         ]
     }
+    assert headers == expected_headers
+
+
+def test_process_CCD2_ro(mocker):
+    elements = {
+        "CCDE": ["2", "ADD"],
+        "TCOD": ["307660", "RO"],
+        "TMOD": [],
+        "MTNR": [],
+        "MLOC": ["22767395756734"],
+        "PRDT": [],
+        "PVDT": [],
+        "NDRP": [],
+        "PRRD": [],
+        "CONS": ["877457492", "KWH"],
+        "CONB": [],
+        "ADJF": ["UG"],
+        "CONA": [],
+        "BPRI": ["974"],
+        "NUCT": ["877457492", "KWH"],
+        "CSDT": ["191001"],
+        "CEDT": ["191101"],
+        "CPPU": ["748"],
+        "CTOT": ["76981"],
+    }
+    headers = {"elements": [], "kwh": Decimal("0")}
+    _process_CCD2(elements, headers)
+    expected_headers = {
+        "elements": [
+            {
+                "name": "ro",
+                "net": Decimal("769.81"),
+                "breakdown": {
+                    "kwh": Decimal("877457.492"),
+                    "rate": {Decimal("0.00974")},
+                },
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+            },
+        ],
+        "kwh": Decimal("877457.492"),
+    }
+
     assert headers == expected_headers
 
 
@@ -95,46 +139,26 @@ def test_process_CCD2_duos_availability(mocker):
         "CPPU": ["748"],
         "CTOT": ["76981"],
     }
-    reference = "kdhgsf"
-    issue_date = utc_datetime(2019, 4, 1)
-    headers = {"reference": reference, "issue_date": issue_date, "bill_type_code": "N"}
-    bill = _process_CCD2(elements, headers)
-    expected_headers = {
-        "bill_type_code": "N",
-        "element_code": "219182",
-        "reference": reference,
-        "issue_date": issue_date,
-        "mpan_core": "22 7673 9575 6734",
-        "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
-        "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+    headers = {
+        "elements": [],
     }
-    expected_bill = {
-        "bill_type_code": "N",
-        "reference": "kdhgsf_duos-availability",
-        "issue_date": issue_date,
-        "mpan_core": "22 7673 9575 6734",
-        "account": "22 7673 9575 6734",
-        "start_date": utc_datetime(2019, 9, 30, 23, 0),
-        "finish_date": utc_datetime(2019, 10, 31, 23, 30),
-        "kwh": Decimal("0"),
-        "net": Decimal("769.81"),
-        "vat": Decimal("0.00"),
-        "gross": Decimal("769.81"),
-        "breakdown": {
-            "duos-availability-kva": [Decimal("877457.492")],
-            "duos-availability-rate": [Decimal("0.00974")],
-            "duos-availability-gbp": Decimal("769.81"),
-        },
-        "reads": [],
+    _process_CCD2(elements, headers)
+    expected_headers = {
+        "elements": [
+            {
+                "name": "duos-availability",
+                "net": Decimal("769.81"),
+                "breakdown": {
+                    "kva": {Decimal("877457.492")},
+                    "rate": {Decimal("0.00974")},
+                },
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+            },
+        ],
     }
 
     assert headers == expected_headers
-    assert bill == expected_bill
-    assert isinstance(bill["kwh"], Decimal)
-    assert isinstance(bill["net"], Decimal)
-    assert isinstance(bill["vat"], Decimal)
-    assert isinstance(bill["gross"], Decimal)
-    assert str(bill["net"]) == str(expected_bill["net"])
 
 
 def test_process_CCD3(mocker):
@@ -160,18 +184,23 @@ def test_process_CCD3(mocker):
         "CTOT": ["76981"],
     }
 
-    issue_date = utc_datetime(2019, 9, 3)
-    reference = "hgtuer8"
-    headers = {"issue_date": issue_date, "reference": reference, "bill_type_code": "N"}
+    headers = {"elements": []}
     _process_CCD3(elements, headers)
     expected_headers = {
-        "element_code": "584867",
-        "mpan_core": "22 7673 9575 6734",
-        "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
-        "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
-        "issue_date": issue_date,
-        "reference": reference,
-        "bill_type_code": "N",
+        "elements": [
+            {
+                "name": "aahedc",
+                "net": Decimal("769.81"),
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+                "breakdown": {
+                    "kwh": Decimal("877457.492"),
+                    "rate": {
+                        Decimal("0.00974"),
+                    },
+                },
+            }
+        ],
     }
     assert headers == expected_headers
 
@@ -198,18 +227,18 @@ def test_process_CCD3_ro(mocker):
         "CPPU": ["748"],
         "CTOT": ["76981"],
     }
-    issue_date = utc_datetime(2019, 9, 3)
-    reference = "hgtuer8"
-    headers = {"issue_date": issue_date, "reference": reference, "bill_type_code": "N"}
+    headers = {"elements": []}
     _process_CCD3(elements, headers)
     expected_headers = {
-        "element_code": "425779",
-        "mpan_core": "22 7673 9575 6734",
-        "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
-        "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
-        "issue_date": issue_date,
-        "reference": reference,
-        "bill_type_code": "N",
+        "elements": [
+            {
+                "name": "ro",
+                "net": Decimal("769.81"),
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+                "breakdown": {"rate": {Decimal("0.00974")}},
+            }
+        ],
     }
     assert headers == expected_headers
 
@@ -236,12 +265,26 @@ def test_process_CCD2_no_CTOT(mocker):
         "CPPU": ["748"],
     }
     headers = {
-        "reference": "shkfsd",
-        "bill_type_code": "N",
-        "issue_date": utc_datetime(2019, 9, 3),
+        "elements": [],
     }
-    bill = _process_CCD2(elements, headers)
-    assert str(bill["net"]) == "0.00"
+    _process_CCD2(elements, headers)
+
+    assert headers == {
+        "elements": [
+            {
+                "net": Decimal("0.00"),
+                "breakdown": {
+                    "kwh": Decimal("877457.492"),
+                    "rate": {
+                        Decimal("0.00974"),
+                    },
+                },
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+                "name": "aahedc",
+                "start_date": to_utc(ct_datetime(2019, 10, 1, 0, 0)),
+            }
+        ]
+    }
 
 
 def test_process_CCD2_blank_CONS(mocker):
@@ -266,11 +309,25 @@ def test_process_CCD2_blank_CONS(mocker):
         "CPPU": ["748"],
     }
     headers = {
-        "reference": "hgdertk",
-        "bill_type_code": "N",
-        "issue_date": utc_datetime(2019, 9, 3),
+        "elements": [],
     }
     _process_CCD2(elements, headers)
+
+    assert headers == {
+        "elements": [
+            {
+                "breakdown": {
+                    "rate": {
+                        Decimal("0.00974"),
+                    },
+                },
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+                "name": "aahedc",
+                "net": Decimal("0.00"),
+                "start_date": to_utc(ct_datetime(2019, 10, 1, 0, 0)),
+            },
+        ]
+    }
 
 
 def test_process_segment_CCD2_blank_ro(mocker):
@@ -295,45 +352,25 @@ def test_process_segment_CCD2_blank_ro(mocker):
         "CPPU": ["748"],
         "CTOT": ["76981"],
     }
-    reference = "kdhgsf"
-    issue_date = utc_datetime(2019, 4, 1)
-    headers = {"reference": reference, "issue_date": issue_date, "bill_type_code": "N"}
-    bill = _process_CCD2(elements, headers)
+    headers = {"elements": []}
+    _process_CCD2(elements, headers)
     expected_headers = {
-        "element_code": "378246",
-        "bill_type_code": "N",
-        "reference": reference,
-        "issue_date": issue_date,
-        "mpan_core": "22 7673 9575 6734",
-        "bill_start_date": to_utc(ct_datetime(2019, 10, 1)),
-        "bill_finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
-    }
-    expected_bill = {
-        "bill_type_code": "N",
-        "reference": "kdhgsf_ro",
-        "issue_date": issue_date,
-        "mpan_core": "22 7673 9575 6734",
-        "account": "22 7673 9575 6734",
-        "start_date": utc_datetime(2019, 9, 30, 23, 0),
-        "finish_date": utc_datetime(2019, 10, 31, 23, 30),
-        "kwh": Decimal("0.00"),
-        "net": Decimal("769.81"),
-        "vat": Decimal("0.00"),
-        "gross": Decimal("769.81"),
-        "breakdown": {
-            "ro-rate": [Decimal("0.00974")],
-            "ro-gbp": Decimal("769.81"),
-        },
-        "reads": [],
+        "elements": [
+            {
+                "name": "ro",
+                "net": Decimal("769.81"),
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+                "breakdown": {
+                    "rate": {Decimal("0.00974")},
+                },
+            },
+        ],
     }
 
     assert headers == expected_headers
-    assert bill == expected_bill
-    assert isinstance(bill["kwh"], Decimal)
-    assert isinstance(bill["net"], Decimal)
-    assert isinstance(bill["vat"], Decimal)
-    assert isinstance(bill["gross"], Decimal)
-    assert str(bill["net"]) == str(expected_bill["net"])
+    element = headers["elements"][0]
+    assert isinstance(element["net"], Decimal)
 
 
 def test_process_MHD(mocker):
@@ -348,14 +385,20 @@ def test_process_MHD(mocker):
 def test_process_VAT(mocker):
     elements = {"UVTT": ["0"], "VATP": ["20"], "UVLA": ["4"]}
     headers = {
-        "mpan_core": "22 7673 9575 6734",
-        "reference": "xx2",
-        "issue_date": to_utc(ct_datetime(2020, 3, 1)),
-        "bill_start_date": to_utc(ct_datetime(2020, 1, 1)),
-        "bill_finish_date": to_utc(ct_datetime(2020, 1, 31)),
-        "bill_type_code": "N",
+        "breakdown": {},
     }
     _process_VAT(elements, headers)
+
+    assert headers == {
+        "breakdown": {
+            "vat": {
+                Decimal("0.02"): {
+                    "net": Decimal("0.04"),
+                    "vat": Decimal("0.00"),
+                },
+            },
+        }
+    }
 
 
 def test_make_raw_bills(mocker):
@@ -375,10 +418,11 @@ def test_make_raw_bills_bill(mocker):
         "FIL=49+1+230427'",
         "MTR=6'",
         "MHD=2+UTLBIL:3'",
+        "CLO=::756697345++Volcano:Island:::BA6 99J'",
         "BCD=230414+230414+2-03185844++M+N++230301:230401'",
         "CCD=1+2::ADD+579387:Capacity Market (Estimate)+++2287572747106+++++7883:KWH++"
         "CF++009521+7883:KWH+230301+230401+009521+8773'",
-        "MAN=1+1+22:8757274710:6:00:845:N11+E12D88751'",
+        "MAN=1+1+22:8757274710:9:00:845:N11+E12D88751'",
         "VAT=1+++S+20000+7332+98677+38196'",
         "BTL=000+97732+967712++76882'",
         "MTR=43'",
@@ -390,40 +434,16 @@ def test_make_raw_bills_bill(mocker):
     expected = [
         {
             "bill_type_code": "N",
-            "reference": "2-03185844_capacity",
+            "reference": "2-03185844",
             "issue_date": utc_datetime(2023, 4, 13, 23, 0),
-            "mpan_core": "22 8757 2747 106",
-            "account": "22 8757 2747 106",
+            "mpan_core": "22 8757 2747 109",
+            "account": "756697345",
             "start_date": utc_datetime(2023, 3, 1, 0, 0),
             "finish_date": utc_datetime(2023, 3, 31, 22, 30),
             "kwh": Decimal("0"),
-            "net": Decimal("87.73"),
-            "vat": Decimal("0.00"),
-            "gross": Decimal("87.73"),
-            "breakdown": {
-                "capacity-kwh": Decimal("7.883"),
-                "capacity-rate": [Decimal("0.09521")],
-                "capacity-gbp": Decimal("87.73"),
-                "raw-lines": [
-                    "CCD=1+2::ADD+579387:Capacity Market (Estimate)+++"
-                    "2287572747106+++++7883:KWH++CF++009521+7883:KWH+230301+"
-                    "230401+009521+8773'",
-                ],
-            },
-            "reads": [],
-        },
-        {
-            "bill_type_code": "N",
-            "account": "22 8757 2747 106",
-            "mpan_core": "22 8757 2747 106",
-            "reference": "2-03185844_vat",
-            "issue_date": utc_datetime(2023, 4, 13, 23, 0),
-            "start_date": utc_datetime(2023, 3, 1, 0, 0),
-            "finish_date": utc_datetime(2023, 3, 31, 22, 30),
-            "kwh": Decimal("0.00"),
-            "net": Decimal("0.00"),
-            "vat": Decimal("986.77"),
-            "gross": Decimal("986.77"),
+            "net": Decimal("977.32"),
+            "vat": Decimal("9677.12"),
+            "gross": Decimal("768.82"),
             "breakdown": {
                 "vat": {
                     Decimal("20"): {
@@ -432,9 +452,30 @@ def test_make_raw_bills_bill(mocker):
                     }
                 },
                 "raw-lines": [
+                    "MHD=2+UTLBIL:3'",
+                    "CLO=::756697345++Volcano:Island:::BA6 99J'",
+                    "BCD=230414+230414+2-03185844++M+N++230301:230401'",
+                    "CCD=1+2::ADD+579387:Capacity Market (Estimate)+++"
+                    "2287572747106+++++7883:KWH++"
+                    "CF++009521+7883:KWH+230301+230401+009521+8773'",
+                    "MAN=1+1+22:8757274710:9:00:845:N11+E12D88751'",
                     "VAT=1+++S+20000+7332+98677+38196'",
+                    "BTL=000+97732+967712++76882'",
+                    "MTR=43'",
                 ],
             },
+            "elements": [
+                {
+                    "name": "capacity",
+                    "net": Decimal("87.73"),
+                    "breakdown": {
+                        "kwh": Decimal("7.883"),
+                        "rate": {Decimal("0.09521")},
+                    },
+                    "start_date": to_utc(ct_datetime(2023, 3, 1, 0, 0)),
+                    "finish_date": to_utc(ct_datetime(2023, 3, 31, 23, 30)),
+                }
+            ],
             "reads": [],
         },
     ]

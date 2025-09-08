@@ -1,13 +1,9 @@
 from decimal import Decimal
 
-import pytest
-
-from werkzeug.exceptions import BadRequest
-
 import xlrd.sheet
 
-from chellow.e.bill_parsers.engie_xls import _bd_add, _make_raw_bills, _parse_row
-from chellow.utils import utc_datetime
+from chellow.e.bill_parsers.engie_xls import _make_raw_bills, _parse_row
+from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_parse_row(mocker):
@@ -52,17 +48,120 @@ def test_parse_row(mocker):
     datemode = 0
     title_row = ["To Date"]
 
-    bill = _parse_row(row, row_index, datemode, title_row)
-    assert bill["finish_date"] == utc_datetime(2019, 3, 31, 22, 30)
+    bills = {}
+
+    _parse_row(bills, row, row_index, datemode, title_row)
+    assert bills == {
+        "22 9999 9999 929": {
+            "2019-03-01 - 2019-03-31": {
+                "account": "22 9999 9999 929",
+                "bill_type_code": "N",
+                "breakdown": {
+                    "raw_lines": [
+                        "['To Date']",
+                    ],
+                },
+                "elements": [
+                    {
+                        "breakdown": {},
+                        "finish_date": to_utc(ct_datetime(2019, 3, 31, 23, 30)),
+                        "name": "meter-rental",
+                        "net": Decimal("785.00"),
+                        "start_date": to_utc(ct_datetime(2019, 3, 31)),
+                    },
+                ],
+                "finish_date": to_utc(ct_datetime(2019, 3, 31, 23, 30)),
+                "gross": Decimal("785.00"),
+                "issue_date": to_utc(ct_datetime(2019, 3, 31, 0, 0)),
+                "kwh": Decimal("0"),
+                "mpan_core": "22 9999 9999 929",
+                "net": Decimal("785.00"),
+                "reads": [],
+                "reference": "672770_3",
+                "start_date": to_utc(ct_datetime(2019, 3, 1)),
+                "vat": Decimal("0.00"),
+            },
+        },
+    }
 
 
-def test_bd_add():
-    el_name = "duos_red"
-    bd = {el_name: 0}
-    val = None
+def test_parse_row_usage_units_zero(mocker):
+    row = []
+    for val in [
+        "Power Comany Ltd.",
+        "Bill Paja",
+        "556",
+        "BILL PAJA",
+        "883",
+        "1 True Way",
+        "672770",
+        43555.00,
+        43555.00,
+        "",
+        "2019-03-01 - 2019-03-31",
+        "",
+        "",
+        "",
+        "Draft",
+        "",
+        "Product",
+        "Hand Held Read -",
+        43555.00,
+        43555.00,
+        "",
+        "2299999999929",
+        "877",
+        0.0,
+        "",
+        "785",
+        "GBP",
+        "INV",
+        "",
+        "",
+    ]:
+        cell = mocker.Mock(spec=xlrd.sheet.Cell)
+        cell.value = val
+        row.append(cell)
 
-    with pytest.raises(BadRequest):
-        _bd_add(bd, el_name, val)
+    row_index = 2
+    datemode = 0
+    title_row = ["To Date"]
+
+    bills = {}
+
+    _parse_row(bills, row, row_index, datemode, title_row)
+    assert bills == {
+        "22 9999 9999 929": {
+            "2019-03-01 - 2019-03-31": {
+                "account": "22 9999 9999 929",
+                "bill_type_code": "N",
+                "breakdown": {
+                    "raw_lines": [
+                        "['To Date']",
+                    ],
+                },
+                "elements": [
+                    {
+                        "breakdown": {"kwh": Decimal("877")},
+                        "finish_date": to_utc(ct_datetime(2019, 3, 31, 23, 30)),
+                        "name": "meter-rental",
+                        "net": Decimal("785.00"),
+                        "start_date": to_utc(ct_datetime(2019, 3, 31)),
+                    },
+                ],
+                "finish_date": to_utc(ct_datetime(2019, 3, 31, 23, 30)),
+                "gross": Decimal("785.00"),
+                "issue_date": to_utc(ct_datetime(2019, 3, 31, 0, 0)),
+                "kwh": Decimal("0"),
+                "mpan_core": "22 9999 9999 929",
+                "net": Decimal("785.00"),
+                "reads": [],
+                "reference": "672770_3",
+                "start_date": to_utc(ct_datetime(2019, 3, 1)),
+                "vat": Decimal("0.00"),
+            },
+        },
+    }
 
 
 def test_bill_parser_engie_xls_billed_kwh(mocker):
@@ -108,8 +207,50 @@ def test_bill_parser_engie_xls_billed_kwh(mocker):
         row.append(v)
 
     datemode = mocker.Mock()
-    bill = _parse_row(row, 1, datemode, [])
-    assert bill["kwh"] == Decimal("27997.33")
+    bills = {}
+    _parse_row(bills, row, 1, datemode, [])
+    # assert bill["kwh"] == Decimal("27997.33")
+    assert bills == {
+        "22 9813 2107 763": {
+            "2016-08-01 - 2016-08-31": {
+                "account": "22 9813 2107 763",
+                "bill_type_code": "N",
+                "breakdown": {
+                    "raw_lines": [
+                        "[]",
+                    ],
+                    "vat": {
+                        20: {
+                            "net": Decimal("9224.00"),
+                            "vat": Decimal("0.00"),
+                        },
+                    },
+                },
+                "elements": [
+                    {
+                        "breakdown": {
+                            "kwh": Decimal("27997.33"),
+                            "rate": Decimal("0.0971123676"),
+                        },
+                        "finish_date": to_utc(ct_datetime(2016, 8, 31, 23, 30)),
+                        "name": "meter-rental",
+                        "net": Decimal("9224.00"),
+                        "start_date": to_utc(ct_datetime(2016, 8, 1)),
+                    },
+                ],
+                "finish_date": to_utc(ct_datetime(2016, 8, 31, 23, 30)),
+                "gross": Decimal("9224.00"),
+                "issue_date": None,
+                "kwh": Decimal("27997.33"),
+                "mpan_core": "22 9813 2107 763",
+                "net": Decimal("9224.00"),
+                "reads": [],
+                "reference": "99708221_2",
+                "start_date": to_utc(ct_datetime(2016, 8, 1)),
+                "vat": Decimal("0.00"),
+            },
+        },
+    }
 
 
 def test_make_raw_bills_vat(mocker):
@@ -166,6 +307,15 @@ def test_make_raw_bills_vat(mocker):
             "breakdown": {
                 "raw_lines": [str(row)],
                 "vat_percentage": Decimal("20"),
+                "vat": {
+                    Decimal("20"): {
+                        "net": Decimal("0.00"),
+                        "vat": Decimal("9224.00"),
+                    },
+                },
+                "vat-rate": {
+                    Decimal("0.2"),
+                },
             },
             "account": "22 9813 2107 763",
             "issue_date": None,
@@ -174,6 +324,7 @@ def test_make_raw_bills_vat(mocker):
             "mpan_core": "22 9813 2107 763",
             "reference": "99708221_2",
             "gross": Decimal("9224.00"),
+            "elements": [],
         }
     ]
     assert bills == expected_bills
