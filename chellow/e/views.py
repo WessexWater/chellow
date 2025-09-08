@@ -892,8 +892,7 @@ def dc_bill_add_post(batch_id):
 @e.route("/dc_bill_imports/<int:import_id>")
 def dc_bill_import_get(import_id):
     importer = chellow.e.bill_importer.get_bill_import(import_id)
-    batch = Batch.get_by_id(g.sess, importer.batch_id)
-    fields = {"batch": batch}
+    fields = {}
     if importer is not None:
         imp_fields = importer.make_fields()
         if "successful_bills" in imp_fields and len(imp_fields["successful_bills"]) > 0:
@@ -902,7 +901,19 @@ def dc_bill_import_get(import_id):
             )
         fields.update(imp_fields)
         fields["status"] = importer.status()
-    return render_template("dc_bill_import.html", **fields)
+    if importer.batch_id is not None:
+        batch = Batch.get_by_id(g.sess, importer.batch_id)
+        return render_template(
+            "dc_bill_import.html", batch=batch, importer=importer, **fields
+        )
+    elif importer.contract_id is not None:
+        contract = Contract.get_supplier_by_id(g.sess, importer.contract_id)
+        return render_template(
+            "dc_bill_import_contract.html",
+            contract=contract,
+            importer=importer,
+            **fields,
+        )
 
 
 @e.route("/dc_bills/<int:bill_id>")
@@ -3029,8 +3040,7 @@ def mop_bill_edit_post(bill_id):
 @e.route("/mop_bill_imports/<int:import_id>")
 def mop_bill_import_get(import_id):
     importer = chellow.e.bill_importer.get_bill_import(import_id)
-    batch = Batch.get_by_id(g.sess, importer.batch_id)
-    fields = {"batch": batch}
+    fields = {}
     if importer is not None:
         imp_fields = importer.make_fields()
         if "successful_bills" in imp_fields and len(imp_fields["successful_bills"]) > 0:
@@ -3039,7 +3049,19 @@ def mop_bill_import_get(import_id):
             )
         fields.update(imp_fields)
         fields["status"] = importer.status()
-    return render_template("mop_bill_import.html", **fields)
+    if importer.batch_id is not None:
+        batch = Batch.get_by_id(g.sess, importer.batch_id)
+        return render_template(
+            "mop_bill_import.html", batch=batch, importer=importer, **fields
+        )
+    elif importer.contract_id is not None:
+        contract = Contract.get_supplier_by_id(g.sess, importer.contract_id)
+        return render_template(
+            "mop_bill_import_contract.html",
+            contract=contract,
+            importer=importer,
+            **fields,
+        )
 
 
 @e.route("/mop_batches/<int:batch_id>/add_bill")
