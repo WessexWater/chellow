@@ -7,13 +7,9 @@
 
 {% block nav %}
 	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
-	<a
-			href="/e/mop_contracts/{{bill.batch.contract.id}}"
-			>{{bill.batch.contract.name}}</a> &raquo; 
-	<a href="/e/mop_batches?mop_contract_id={{bill.batch.contract.id}}">Batches</a>
-	&raquo; 
-	<a href="/e/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
-	&raquo; {{bill.reference}}
+	<a href="/e/mop_contracts/{{bill.batch.contract.id}}">{{bill.batch.contract.name}}</a> &raquo; 
+	<a href="/e/mop_contracts/{{bill.batch.contract.id}}/batches">Batches</a> &raquo; 
+	<a href="/e/mop_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a> &raquo; {{bill.reference}}
 	[<a href="/e/mop_bills/{{bill.id}}/edit">edit</a>]
 {% endblock %}
 
