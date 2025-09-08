@@ -13,9 +13,13 @@
 
 {% block content %}
 	<form hx-post="/e/mop_contracts/{{contract.id}}/batches/edit"
-			hx-confirm="Are you sure you want to delete all the bills in all of the batches and then re-import bills from the files?"
+			hx-confirm="Are you sure you want to delete all the bills then re-import bills from the files for all batches in the contract that have batch files?"
 	>
 		<fieldset>
+			<legend>
+				For All Batches With At Least One Batch File, Delete All The Bills And Then Re-import Rrom The
+				Files
+			</legend>
 			<button name="delete_import_bills">Re-Import Bills</button>
 		</fieldset>
 	</form>

@@ -510,6 +510,24 @@ def dc_batches_get(contract_id):
     return render_template("dc_batches.html", contract=contract, batches=batches)
 
 
+@e.route("/dc_contracts/<int:contract_id>/batches/edit", methods=["POST"])
+def dc_batches_edit_post(contract_id):
+    try:
+        contract = Contract.get_supplier_by_id(g.sess, contract_id)
+        for batch in g.sess.scalars(select(Batch).where(Batch.contract == contract)):
+            if len(batch.files) > 0:
+                g.sess.execute(delete(Bill).where(Bill.batch == batch))
+                g.sess.commit()
+        import_id = chellow.e.bill_importer.start_bill_import_contract(contract)
+        return hx_redirect(f"/dc_bill_imports/{import_id}")
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("dc_batches_edit.html", contract=contract),
+            400,
+        )
+
+
 @e.route("/dc_batches/<int:batch_id>")
 def dc_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
@@ -755,9 +773,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2663,8 +2681,9 @@ def mop_batches_edit_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         for batch in g.sess.scalars(select(Batch).where(Batch.contract == contract)):
-            g.sess.execute(delete(Bill).where(Bill.batch == batch))
-            g.sess.commit()
+            if len(batch.files) > 0:
+                g.sess.execute(delete(Bill).where(Bill.batch == batch))
+                g.sess.commit()
         import_id = chellow.e.bill_importer.start_bill_import_contract(contract)
         return hx_redirect(f"/mop_bill_imports/{import_id}")
     except BadRequest as e:
@@ -2885,9 +2904,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2950,43 +2969,51 @@ def mop_bill_edit_get(bill_id):
     return render_template("mop_bill_edit.html", bill=bill, bill_types=bill_types)
 
 
+@e.route("/mop_bills/<int:bill_id>/edit", methods=["DELETE"])
+def mop_bill_edit_delete(bill_id):
+    try:
+        bill = Bill.get_by_id(g.sess, bill_id)
+        bill.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/mop_batches/{bill.batch.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        bill_types = g.sess.query(BillType).order_by(BillType.code).all()
+        return render_template("mop_bill_edit.html", bill=bill, bill_types=bill_types)
+
+
 @e.route("/mop_bills/<int:bill_id>/edit", methods=["POST"])
 def mop_bill_edit_post(bill_id):
     try:
         bill = Bill.get_by_id(g.sess, bill_id)
-        if "delete" in request.values:
-            bill.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect(f"/mop_batches/{bill.batch.id}", 303)
-        else:
-            account = req_str("account")
-            reference = req_str("reference")
-            issue_date = req_date("issue")
-            start_date = req_date("start")
-            finish_date = req_date("finish")
-            kwh = req_decimal("kwh")
-            net = req_decimal("net")
-            vat = req_decimal("vat")
-            gross = req_decimal("gross")
-            type_id = req_int("bill_type_id")
-            breakdown = req_zish("breakdown")
-            bill_type = BillType.get_by_id(g.sess, type_id)
+        account = req_str("account")
+        reference = req_str("reference")
+        issue_date = req_date("issue")
+        start_date = req_date("start")
+        finish_date = req_date("finish")
+        kwh = req_decimal("kwh")
+        net = req_decimal("net")
+        vat = req_decimal("vat")
+        gross = req_decimal("gross")
+        type_id = req_int("bill_type_id")
+        breakdown = req_zish("breakdown")
+        bill_type = BillType.get_by_id(g.sess, type_id)
 
-            bill.update(
-                account,
-                reference,
-                issue_date,
-                start_date,
-                finish_date,
-                kwh,
-                net,
-                vat,
-                gross,
-                bill_type,
-                breakdown,
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/mop_bills/{bill.id}", 303)
+        bill.update(
+            account,
+            reference,
+            issue_date,
+            start_date,
+            finish_date,
+            kwh,
+            net,
+            vat,
+            gross,
+            bill_type,
+            breakdown,
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/mop_bills/{bill.id}", 303)
     except BadRequest as e:
         flash(e.description)
         bill_types = g.sess.query(BillType).order_by(BillType.code).all()
@@ -5042,8 +5069,9 @@ def supplier_batches_edit_post(contract_id):
     try:
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
         for batch in g.sess.scalars(select(Batch).where(Batch.contract == contract)):
-            g.sess.execute(delete(Bill).where(Bill.batch == batch))
-            g.sess.commit()
+            if len(batch.files) > 0:
+                g.sess.execute(delete(Bill).where(Bill.batch == batch))
+                g.sess.commit()
         import_id = chellow.e.bill_importer.start_bill_import_contract(contract)
         return hx_redirect(f"/supplier_bill_imports/{import_id}")
     except BadRequest as e:
@@ -5270,9 +5298,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5622,44 +5650,63 @@ def supplier_contract_edit_get(contract_id):
     )
 
 
-@e.route("/supplier_contracts/<int:contract_id>/edit", methods=["POST"])
-def supplier_contract_edit_post(contract_id):
+@e.route("/supplier_contracts/<int:contract_id>/edit", methods=["DELETE"])
+def supplier_contract_edit_delete(contract_id):
     try:
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
-        if "delete" in request.form:
-            contract.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect("/supplier_contracts", 303)
-        else:
-            party_id = req_int("party_id")
-            party = Party.get_by_id(g.sess, party_id)
-            name = req_str("name")
-            charge_script = req_str("charge_script")
-            properties = req_zish("properties")
-            contract.update(name, party, charge_script, properties)
-            g.sess.commit()
-            return chellow_redirect(f"/supplier_contracts/{contract.id}", 303)
+        contract.delete(g.sess)
+        g.sess.commit()
+        return chellow_redirect("/supplier_contracts", 303)
     except BadRequest as e:
         g.sess.rollback()
         description = e.description
         flash(description)
-        if description.startswith("There isn't a contract"):
-            raise
-        else:
-            parties = (
-                g.sess.query(Party)
-                .join(MarketRole)
-                .join(Participant)
-                .filter(MarketRole.code == "X")
-                .order_by(Participant.code)
-                .all()
-            )
-            return make_response(
-                render_template(
-                    "supplier_contract_edit.html", contract=contract, parties=parties
-                ),
-                400,
-            )
+        parties = (
+            g.sess.query(Party)
+            .join(MarketRole)
+            .join(Participant)
+            .filter(MarketRole.code == "X")
+            .order_by(Participant.code)
+            .all()
+        )
+        return make_response(
+            render_template(
+                "supplier_contract_edit.html", contract=contract, parties=parties
+            ),
+            400,
+        )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/edit", methods=["POST"])
+def supplier_contract_edit_post(contract_id):
+    try:
+        contract = Contract.get_supplier_by_id(g.sess, contract_id)
+        party_id = req_int("party_id")
+        party = Party.get_by_id(g.sess, party_id)
+        name = req_str("name")
+        charge_script = req_str("charge_script")
+        properties = req_zish("properties")
+        contract.update(name, party, charge_script, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_contracts/{contract.id}", 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        description = e.description
+        flash(description)
+        parties = (
+            g.sess.query(Party)
+            .join(MarketRole)
+            .join(Participant)
+            .filter(MarketRole.code == "X")
+            .order_by(Participant.code)
+            .all()
+        )
+        return make_response(
+            render_template(
+                "supplier_contract_edit.html", contract=contract, parties=parties
+            ),
+            400,
+        )
 
 
 @e.route("/supplier_bills/<int:bill_id>/add_element")
