@@ -75,3 +75,10 @@ deps = [
 ]
 [tool.tox.env_run_base.setenv]
 PGDATABASE = "toxchellow"
+
+[tool.flake8]
+application-names = ["chellow"]
+ignore = ["E203", "W503"]
+max-line-length = 88
+exclude = [".git", "__pycache__", "build", "dist", "venv", ".tox"]
+application-import-names = ["chellow"]
