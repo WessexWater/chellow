@@ -779,9 +779,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -907,7 +907,7 @@ def dc_bill_import_get(import_id):
             "dc_bill_import.html", batch=batch, importer=importer, **fields
         )
     elif importer.contract_id is not None:
-        contract = Contract.get_supplier_by_id(g.sess, importer.contract_id)
+        contract = Contract.get_dc_by_id(g.sess, importer.contract_id)
         return render_template(
             "dc_bill_import_contract.html",
             contract=contract,
@@ -2921,9 +2921,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -3055,7 +3055,7 @@ def mop_bill_import_get(import_id):
             "mop_bill_import.html", batch=batch, importer=importer, **fields
         )
     elif importer.contract_id is not None:
-        contract = Contract.get_supplier_by_id(g.sess, importer.contract_id)
+        contract = Contract.get_mop_by_id(g.sess, importer.contract_id)
         return render_template(
             "mop_bill_import_contract.html",
             contract=contract,
@@ -5326,9 +5326,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
