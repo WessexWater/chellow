@@ -2712,7 +2712,7 @@ def mop_batch_add_get(contract_id):
     )
 
 
-@e.route("/mop_contracts/<int:contract_id>/add_batch", methods=["POST"])
+@e.route("/mop_contracts/<int:contract_id>/batches/add", methods=["POST"])
 def mop_batch_add_post(contract_id):
     try:
         contract = Contract.get_mop_by_id(g.sess, contract_id)
