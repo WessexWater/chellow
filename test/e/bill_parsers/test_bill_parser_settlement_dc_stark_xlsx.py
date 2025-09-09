@@ -234,9 +234,9 @@ def test_process_row_old_format(sess):
     sheet["AC11"] = "Annual Site Visit Rate"
     sheet["AD11"] = "Annual Site Visit Charge"
     sheet["AE11"] = "Hand Held Visit Dates"
-    sheet["AF11"] = "Grand Total"
+    sheet["AF11"] = "Total Ex VAT"
     sheet["AG11"] = "VAT @ 20% "
-    sheet["AH11"] = "Grand Total"
+    sheet["AH11"] = "Total In VAT"
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
@@ -389,9 +389,9 @@ def test_make_raw_bills(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"
