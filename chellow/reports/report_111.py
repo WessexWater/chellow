@@ -131,19 +131,17 @@ def content(
 
             if len(mpan_cores) > 0:
                 mpan_cores = list(map(parse_mpan_core, mpan_cores))
-                supply_ids = [
-                    i[0]
-                    for i in sess.scalars(
-                        select(Era.supply_id)
-                        .where(
-                            or_(
-                                Era.imp_mpan_core.in_(mpan_cores),
-                                Era.exp_mpan_core.in_(mpan_cores),
-                            )
+                supply_ids = sess.scalars(
+                    select(Era.supply_id)
+                    .where(
+                        or_(
+                            Era.imp_mpan_core.in_(mpan_cores),
+                            Era.exp_mpan_core.in_(mpan_cores),
                         )
-                        .distinct()
                     )
-                ]
+                    .distinct()
+                ).all()
+
                 bills_q = bills_q.join(Supply).where(Supply.id.in_(supply_ids))
 
             if batch_id is not None:
