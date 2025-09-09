@@ -184,6 +184,157 @@ def test_process_row(sess):
     }
 
 
+def test_process_row_no_unmetered(sess):
+
+    wb = Workbook()
+    sheet = wb.worksheets[0]
+    sheet.insert_rows(0, 23)  # Have blank lines at the end
+    sheet.insert_cols(0, 9)
+
+    sheet["A6"] = "SSIL Billing Backing Data - Wessex"
+    sheet["A7"] = "Date: 03/05/2024 09:16:58"
+
+    sheet["G10"] = "Unmetered"
+    sheet["J10"] = "Code 2"
+    sheet["M10"] = "Code 3"
+    sheet["P10"] = "Code 5"
+    sheet["S10"] = "Code 10"
+    sheet["V10"] = "GSM"
+    sheet["Y10"] = "SavenergyOnline"
+    sheet["AB10"] = "Meter Proving Tests"
+    sheet["AE10"] = "Hand Held Visits (Ad hoc)"
+    sheet["AH10"] = "Hand Held Visits (Regular)"
+    sheet["AK10"] = "Annual Site Visits"
+
+    sheet["A11"] = "Sage"
+    sheet["B11"] = "MPAN"
+    sheet["C11"] = "Site"
+    sheet["D11"] = "Bill From"
+    sheet["E11"] = "Bill To"
+    sheet["F11"] = "Contract Reference"
+    sheet["G11"] = "No. COP 2 Meters"
+    sheet["H11"] = "Annual COP 2 DC/DA Rate"
+    sheet["I11"] = "Quarterly COP 2 Charge"
+    sheet["J11"] = "No. COP 3 Meters"
+    sheet["K11"] = "Annual COP 3 DC/DA Rate"
+    sheet["L11"] = "Quarterly COP 3 Charge"
+    sheet["M11"] = "No. COP 5 Meters"
+    sheet["N11"] = "Annual COP 5 DC/DA Rate"
+    sheet["O11"] = "Quarterly COP 5 Charge"
+    sheet["P11"] = "No. COP 10 Meters"
+    sheet["Q11"] = "Annual COP 10 DC/DA Rate"
+    sheet["R11"] = "Quarterly COP 10 Charge"
+    sheet["S11"] = "No. GSM Meters"
+    sheet["T11"] = "GSM Annual Rate"
+    sheet["U11"] = "Quarterly GSM Charge"
+    sheet["V11"] = "No. Meters"
+    sheet["W11"] = "Annual SEO Rate"
+    sheet["X11"] = "Quarterly SEO Charge"
+    sheet["Y11"] = "No. Meter Proving Test"
+    sheet["Z11"] = "Meter Proving Test Rate"
+    sheet["AA11"] = "Meter Proving Test Charge"
+    sheet["AB11"] = "No. Hand Held Visits (Adhoc)"
+    sheet["AC11"] = "Hand Held Visit (Adhoc) Rate"
+    sheet["AD11"] = "Hand Held Visit (Adhoc) Charge"
+    sheet["AE11"] = "No. Hand Held Visits (Regular)"
+    sheet["AF11"] = "Hand Held Visit (Regular) Rate"
+    sheet["AG11"] = "Hand Held Visit (Regular) Charge"
+    sheet["AH11"] = "No. Annual Site Visits"
+    sheet["AI11"] = "Annual Site Visit Rate"
+    sheet["AJ11"] = "Annual Site Visit Charge"
+    sheet["AK11"] = "Hand Held Visit Dates"
+    sheet["AL11"] = "Grand Total"
+    sheet["AM11"] = "VAT @ 20% "
+    sheet["AN11"] = "Grand Total"
+
+    sheet["A12"] = "W006"
+    sheet["B12"] = "2200013784589"
+    sheet["C12"] = "NORTH PETHERTON STW, SOMERSET"
+    sheet["D12"] = Datetime(2024, 4, 1)
+    sheet["E12"] = Datetime(2024, 6, 30)
+    sheet["F12"] = "GF002"
+    sheet["G12"] = "0"
+    sheet["H12"] = "0.00"
+    sheet["I12"] = "0.00"
+    sheet["J12"] = "0"
+    sheet["K12"] = "99.50"
+    sheet["L12"] = "0.00"
+    sheet["M12"] = "1"
+    sheet["N12"] = "114.43"
+    sheet["O12"] = "28.61"
+    sheet["P12"] = "0"
+    sheet["Q12"] = "0.00"
+    sheet["R12"] = "0.00"
+    sheet["S12"] = "0"
+    sheet["T12"] = "0.00"
+    sheet["U12"] = "0.00"
+    sheet["V12"] = "1"
+    sheet["W12"] = "0.00"
+    sheet["X12"] = "0.00"
+    sheet["Y12"] = "0"
+    sheet["Z12"] = "25.00"
+    sheet["AA12"] = "0.00"
+    sheet["AB12"] = "0"
+    sheet["AC12"] = "20.00"
+    sheet["AD12"] = "0.00"
+    sheet["AE12"] = "0"
+    sheet["AF12"] = "0.00"
+    sheet["AG12"] = "0.00"
+    sheet["AH12"] = "0"
+    sheet["AI12"] = "20.00"
+    sheet["AJ12"] = "0.00"
+    sheet["AK12"] = ""
+    sheet["AL12"] = "28.61"
+    sheet["AM12"] = "5.72"
+    sheet["AN12"] = "34.33"
+
+    sheet["A13"] = ""  # Test copes with blank lines at the end
+
+    row = 12
+    issue_date = to_utc(ct_datetime(2025, 6, 2))
+    column_lookup = make_column_lookup(sheet)
+    bill = _process_row(sess, sheet, row, issue_date, column_lookup)
+
+    assert bill == {
+        "account": "22 0001 3784 589",
+        "bill_type_code": "N",
+        "breakdown": {
+            "raw_lines": [],
+            "settlement-status": [
+                "settlement",
+            ],
+        },
+        "elements": [
+            {
+                "breakdown": {
+                    "cop": {
+                        "5",
+                    },
+                    "days": 91,
+                    "mpan-days": 91,
+                    "rate": {
+                        Decimal("114.43"),
+                    },
+                },
+                "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
+                "name": "mpan",
+                "net": Decimal("28.61"),
+                "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
+            },
+        ],
+        "finish_date": to_utc(ct_datetime(2024, 6, 30, 23, 30)),
+        "gross": Decimal("34.33"),
+        "issue_date": issue_date,
+        "kwh": Decimal("0"),
+        "mpan_core": "22 0001 3784 589",
+        "net": Decimal("28.61"),
+        "reads": [],
+        "reference": "20240401_20240630_20250602_22 0001 3784 589",
+        "start_date": to_utc(ct_datetime(2024, 4, 1, 0, 0)),
+        "vat": Decimal("5.72"),
+    }
+
+
 def test_make_raw_bills(sess):
 
     f = BytesIO()
@@ -253,9 +404,9 @@ def test_make_raw_bills(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"

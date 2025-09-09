@@ -65,36 +65,35 @@ def _process_row(sess, sheet, row, issue_date, cl):
         ("unmetered", "unmetered quant", "unmetered rate", "quarterly unmetered charge")
     ]
     for cop in ("2", "3", "5", "10"):
-        mpans_title = f"no. cop {cop} meters"
-        if mpans_title in cl:
-            el_titles.append(
-                (
-                    cop,
-                    mpans_title,
-                    f"annual cop {cop} dc/da rate",
-                    f"quarterly cop {cop} charge",
-                )
+        el_titles.append(
+            (
+                cop,
+                f"no. cop {cop} meters",
+                f"annual cop {cop} dc/da rate",
+                f"quarterly cop {cop} charge",
             )
+        )
 
     for cop, mpans_title, rate_title, net_title in el_titles:
-        mpans = get_int(sheet, cl[mpans_title], row)
-        rate = get_dec(sheet, cl[rate_title], row)
-        net = get_dec(sheet, cl[net_title], row)
-        if net != 0:
-            elements.append(
-                {
-                    "name": "mpan",
-                    "start_date": start_date,
-                    "finish_date": finish_date,
-                    "net": net,
-                    "breakdown": {
-                        "rate": {rate},
-                        "days": days,
-                        "mpan-days": mpans * days,
-                        "cop": {cop},
-                    },
-                }
-            )
+        if mpans_title in cl:
+            mpans = get_int(sheet, cl[mpans_title], row)
+            rate = get_dec(sheet, cl[rate_title], row)
+            net = get_dec(sheet, cl[net_title], row)
+            if net != 0:
+                elements.append(
+                    {
+                        "name": "mpan",
+                        "start_date": start_date,
+                        "finish_date": finish_date,
+                        "net": net,
+                        "breakdown": {
+                            "rate": {rate},
+                            "days": days,
+                            "mpan-days": mpans * days,
+                            "cop": {cop},
+                        },
+                    }
+                )
 
     ad_hoc_visits = get_dec(sheet, cl["no. hand held visits (adhoc)"], row)
     ad_hoc_rate = get_dec(sheet, cl["hand held visit (adhoc) rate"], row)
