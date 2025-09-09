@@ -8,6 +8,7 @@ from chellow.e.bill_parsers.settlement_dc_stark_xlsx import (
     Parser,
     _process_row,
     get_ct_date,
+    make_column_lookup,
 )
 from chellow.utils import ct_datetime, to_ct, to_utc
 
@@ -140,7 +141,8 @@ def test_process_row(sess):
 
     row = 12
     issue_date = to_utc(ct_datetime(2025, 6, 2))
-    bill = _process_row(sess, sheet, row, issue_date)
+    column_lookup = make_column_lookup(sheet)
+    bill = _process_row(sess, sheet, row, issue_date, column_lookup)
 
     assert bill == {
         "account": "22 0001 3784 589",
@@ -251,9 +253,9 @@ def test_make_raw_bills(sess):
 
     sheet["A12"] = "W006"
     sheet["B12"] = "2200013784589"
-    sheet["C12"] = (
-        "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
-    )
+    sheet[
+        "C12"
+    ] = "NORTH PETHERTON STW, PARKERS FIELD, NORTH PETHERTON, BRIDGWATER, SOMERSET"
     sheet["D12"] = Datetime(2024, 4, 1)
     sheet["E12"] = Datetime(2024, 6, 30)
     sheet["F12"] = "GF002"

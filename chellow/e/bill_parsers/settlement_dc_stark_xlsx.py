@@ -4,6 +4,7 @@ from decimal import Decimal, InvalidOperation
 from dateutil.relativedelta import relativedelta
 
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 
 from werkzeug.exceptions import BadRequest
 
@@ -48,25 +49,37 @@ def get_int(sheet, col, row):
     return int(get_cell(sheet, col, row).value)
 
 
-def _process_row(sess, sheet, row, issue_date):
+def _process_row(sess, sheet, row, issue_date, cl):
     mpan_core = parse_mpan_core(str(get_int(sheet, "B", row)))
-    start_date_ct = get_ct_date(sheet, "D", row)
-    start_date = to_utc(get_ct_date(sheet, "D", row))
-    finish_date_ct = get_ct_date(sheet, "E", row) + relativedelta(hours=23, minutes=30)
+    start_date_ct = get_ct_date(sheet, cl["bill from"], row)
+    start_date = to_utc(start_date_ct)
+    finish_date_ct = get_ct_date(sheet, cl["bill to"], row) + relativedelta(
+        hours=23, minutes=30
+    )
     finish_date = to_utc(finish_date_ct)
 
     elements = []
     days = (finish_date_ct - start_date_ct).days + 1
-    for (col_mpans, col_rate, col_net), cop in (
-        ("GHI", "unmetered"),
-        ("JKL", "2"),
-        ("MNO", "3"),
-        ("PQR", "5"),
-        ("STU", "10"),
-    ):
-        mpans = get_int(sheet, col_mpans, row)
-        rate = get_dec(sheet, col_rate, row)
-        net = get_dec(sheet, col_net, row)
+
+    el_titles = [
+        ("unmetered", "unmetered quant", "unmetered rate", "quarterly unmetered charge")
+    ]
+    for cop in ("2", "3", "5", "10"):
+        mpans_title = f"no. cop {cop} meters"
+        if mpans_title in cl:
+            el_titles.append(
+                (
+                    cop,
+                    mpans_title,
+                    f"annual cop {cop} dc/da rate",
+                    f"quarterly cop {cop} charge",
+                )
+            )
+
+    for cop, mpans_title, rate_title, net_title in el_titles:
+        mpans = get_int(sheet, cl[mpans_title], row)
+        rate = get_dec(sheet, cl[rate_title], row)
+        net = get_dec(sheet, cl[net_title], row)
         if net != 0:
             elements.append(
                 {
@@ -83,9 +96,9 @@ def _process_row(sess, sheet, row, issue_date):
                 }
             )
 
-    ad_hoc_visits = get_dec(sheet, "AE", row)
-    ad_hoc_rate = get_dec(sheet, "AF", row)
-    ad_hoc_gbp = get_dec(sheet, "AG", row)
+    ad_hoc_visits = get_dec(sheet, cl["no. hand held visits (adhoc)"], row)
+    ad_hoc_rate = get_dec(sheet, cl["hand held visit (adhoc) rate"], row)
+    ad_hoc_gbp = get_dec(sheet, cl["hand held visit (adhoc) charge"], row)
     if ad_hoc_gbp != 0:
         elements.append(
             {
@@ -101,9 +114,9 @@ def _process_row(sess, sheet, row, issue_date):
             }
         )
 
-    annual_visits_count = get_int(sheet, "AK", row)
-    annual_visits_rate = get_dec(sheet, "AL", row)
-    annual_visits_gbp = get_dec(sheet, "AM", row)
+    annual_visits_count = get_int(sheet, cl["no. annual site visits"], row)
+    annual_visits_rate = get_dec(sheet, cl["annual site visit rate"], row)
+    annual_visits_gbp = get_dec(sheet, cl["annual site visit charge"], row)
     if annual_visits_gbp != 0:
         elements.append(
             {
@@ -126,9 +139,9 @@ def _process_row(sess, sheet, row, issue_date):
     return {
         "bill_type_code": "N",
         "kwh": Decimal(0),
-        "net": Decimal("0.00") + round(get_dec(sheet, "AO", row), 2),
-        "vat": Decimal("0.00") + round(get_dec(sheet, "AP", row), 2),
-        "gross": Decimal("0.00") + round(get_dec(sheet, "AQ", row), 2),
+        "net": Decimal("0.00") + round(get_dec(sheet, cl["grand total"], row), 2),
+        "vat": Decimal("0.00") + round(get_dec(sheet, cl["vat @ 20%"], row), 2),
+        "gross": Decimal("0.00") + round(get_dec(sheet, cl["grand total 2"], row), 2),
         "reads": [],
         "breakdown": breakdown,
         "account": mpan_core,
@@ -146,6 +159,16 @@ def _process_row(sess, sheet, row, issue_date):
         ),
         "elements": elements,
     }
+
+
+def make_column_lookup(sheet):
+    column_lookup = {}
+    for cell in sheet[11]:
+        title = str(cell.value).strip().lower()
+        if title in column_lookup:
+            title += " 2"
+        column_lookup[title] = get_column_letter(cell.column)
+    return column_lookup
 
 
 class Parser:
@@ -176,13 +199,17 @@ class Parser:
                 issue_date = to_utc(
                     to_ct(Datetime.strptime(issue_date_str[6:-3], "%d/%m/%Y %H:%M"))
                 )
+                column_lookup = make_column_lookup(self.sheet)
+
                 for row in range(12, len(self.sheet["A"]) + 1):
                     val = get_cell(self.sheet, "A", row).value
                     if val is None or val == "":
                         continue
 
                     self._set_last_line(row, val)
-                    bill = _process_row(sess, self.sheet, row, issue_date)
+                    bill = _process_row(
+                        sess, self.sheet, row, issue_date, column_lookup
+                    )
                     bills.append(bill)
                     sess.rollback()
 
