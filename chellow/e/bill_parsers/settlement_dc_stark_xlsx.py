@@ -11,6 +11,31 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Session
 from chellow.utils import parse_mpan_core, to_ct, to_utc
 
+COPS = ("2", "3", "5", "10")
+
+COLUMN_MAP = {
+    "quarterly unmetered charge": "unmetered charge",
+    "no. cop 5/10 meters": "no. cop 5 meters",
+    "annual cop 5/10 dc/da rate": "annual cop 5 dc/da rate",
+    "cop 5/10 charge": "cop 5 charge",
+}
+for cop in COPS:
+    COLUMN_MAP[f"quarterly cop {cop} charge"] = f"cop {cop} charge"
+
+
+def make_column_lookup(sheet):
+    column_lookup = {}
+    for cell in sheet[11]:
+        title = str(cell.value).strip().lower()
+        try:
+            title = COLUMN_MAP[title]
+        except KeyError:
+            pass
+        if title in column_lookup:
+            title += " 2"
+        column_lookup[title] = get_column_letter(cell.column)
+    return column_lookup
+
 
 def get_ct_date(sheet, col, row):
     cell = get_cell(sheet, col, row)
@@ -61,16 +86,14 @@ def _process_row(sess, sheet, row, issue_date, cl):
     elements = []
     days = (finish_date_ct - start_date_ct).days + 1
 
-    el_titles = [
-        ("unmetered", "unmetered quant", "unmetered rate", "quarterly unmetered charge")
-    ]
+    el_titles = [("unmetered", "unmetered quant", "unmetered rate", "unmetered charge")]
     for cop in ("2", "3", "5", "10"):
         el_titles.append(
             (
                 cop,
                 f"no. cop {cop} meters",
                 f"annual cop {cop} dc/da rate",
-                f"quarterly cop {cop} charge",
+                f"cop {cop} charge",
             )
         )
 
@@ -158,16 +181,6 @@ def _process_row(sess, sheet, row, issue_date, cl):
         ),
         "elements": elements,
     }
-
-
-def make_column_lookup(sheet):
-    column_lookup = {}
-    for cell in sheet[11]:
-        title = str(cell.value).strip().lower()
-        if title in column_lookup:
-            title += " 2"
-        column_lookup[title] = get_column_letter(cell.column)
-    return column_lookup
 
 
 class Parser:
