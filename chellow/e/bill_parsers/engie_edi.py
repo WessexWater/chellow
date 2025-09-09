@@ -213,6 +213,8 @@ def _process_CCD2(elements, headers):
             breakdown[eln_cons] = {el_cons}
         else:
             breakdown[eln_cons] = el_cons
+            if eln_name == "ro":
+                headers["kwh"] += el_cons
 
     if eln_rate is not None:
         rate = to_decimal(elements["BPRI"]) / Decimal("100000")

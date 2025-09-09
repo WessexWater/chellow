@@ -74,6 +74,49 @@ def test_process_CCD1(mocker):
     assert headers == expected_headers
 
 
+def test_process_CCD2_ro(mocker):
+    elements = {
+        "CCDE": ["2", "ADD"],
+        "TCOD": ["307660", "RO"],
+        "TMOD": [],
+        "MTNR": [],
+        "MLOC": ["22767395756734"],
+        "PRDT": [],
+        "PVDT": [],
+        "NDRP": [],
+        "PRRD": [],
+        "CONS": ["877457492", "KWH"],
+        "CONB": [],
+        "ADJF": ["UG"],
+        "CONA": [],
+        "BPRI": ["974"],
+        "NUCT": ["877457492", "KWH"],
+        "CSDT": ["191001"],
+        "CEDT": ["191101"],
+        "CPPU": ["748"],
+        "CTOT": ["76981"],
+    }
+    headers = {"elements": [], "kwh": Decimal("0")}
+    _process_CCD2(elements, headers)
+    expected_headers = {
+        "elements": [
+            {
+                "name": "ro",
+                "net": Decimal("769.81"),
+                "breakdown": {
+                    "kwh": Decimal("877457.492"),
+                    "rate": {Decimal("0.00974")},
+                },
+                "start_date": to_utc(ct_datetime(2019, 10, 1)),
+                "finish_date": to_utc(ct_datetime(2019, 10, 31, 23, 30)),
+            },
+        ],
+        "kwh": Decimal("877457.492"),
+    }
+
+    assert headers == expected_headers
+
+
 def test_process_CCD2_duos_availability(mocker):
     elements = {
         "CCDE": ["2", "ADD"],
