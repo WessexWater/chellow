@@ -14,7 +14,10 @@ from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
 
 ELEM_MAP = {
-    None: None,
+    None: {
+        None: None,
+        "OOC MOP": {None: "meter-rental"},
+    },
     "Charge - Recurring": {None: "duos-fixed"},
     "Meter - Standard": {
         "Energy Bill Relief Scheme": {None: "ebrs"},
