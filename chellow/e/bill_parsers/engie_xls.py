@@ -187,6 +187,22 @@ def get_dec(row, name):
         return None
 
 
+def _get_vat_values(bd, percentage):
+    if "vat" in bd:
+        vat_breakdown = bd["vat"]
+    else:
+        vat_breakdown = bd["vat"] = {}
+
+    try:
+        vat_values = vat_breakdown[percentage]
+    except KeyError:
+        vat_values = vat_breakdown[percentage] = {
+            "vat": Decimal("0.00"),
+            "net": Decimal("0.00"),
+        }
+    return vat_values
+
+
 def _parse_row(bills, row, row_index, datemode, title_row):
     val = get_value(row, "Meter Point")
     try:
@@ -262,16 +278,33 @@ def _parse_row(bills, row, row_index, datemode, title_row):
         bill["kwh"] += round(usage, 2)
     description = get_value(row, "Description")
     product_class = get_value(row, "Product Item Class")
+
     if description in ("Standard VAT@20%", "Reduced VAT@5%"):
-        bill["vat"] += round(amount, 2)
+        vat_gbp = round(amount, 2)
+        bill["vat"] += vat_gbp
         if description.endswith("20%"):
             vat_percentage = Decimal("20")
         else:
             vat_percentage = Decimal("5")
         bd["vat_percentage"] = vat_percentage
+
+        if "vat-rate" in bd:
+            vat_rate = bd["vat-rate"]
+        else:
+            vat_rate = bd["vat-rate"] = set()
+
+        vat_rate.add(vat_percentage / Decimal("100"))
+
+        vat_values = _get_vat_values(bd, vat_percentage)
+        vat_values["vat"] += vat_gbp
     else:
         net = round(amount, 2)
         bill["net"] += net
+
+        sales_tax_rate = get_value(row, "Sales Tax Rate")
+        if sales_tax_rate == "Commercial UK Energy VAT":
+            vat_values = _get_vat_values(bd, 20)
+            vat_values["net"] += net
 
         path = [product_class, description, rate_name]
         elname = _find_name(ELEM_MAP, path)
