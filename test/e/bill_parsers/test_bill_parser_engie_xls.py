@@ -219,6 +219,12 @@ def test_bill_parser_engie_xls_billed_kwh(mocker):
                     "raw_lines": [
                         "[]",
                     ],
+                    "vat": {
+                        20: {
+                            "net": Decimal("9224.00"),
+                            "vat": Decimal("0.00"),
+                        },
+                    },
                 },
                 "elements": [
                     {
@@ -301,6 +307,15 @@ def test_make_raw_bills_vat(mocker):
             "breakdown": {
                 "raw_lines": [str(row)],
                 "vat_percentage": Decimal("20"),
+                "vat": {
+                    Decimal("20"): {
+                        "net": Decimal("0.00"),
+                        "vat": Decimal("9224.00"),
+                    },
+                },
+                "vat-rate": [
+                    Decimal("0.2"),
+                ],
             },
             "account": "22 9813 2107 763",
             "issue_date": None,
