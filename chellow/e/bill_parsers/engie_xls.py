@@ -361,11 +361,6 @@ def _parse_row(bills, row, row_index, datemode, title_row):
         )
 
     reference = str(bill_number) + "_" + str(row_index + 1)
-    for k, v in tuple(bd.items()):
-        if isinstance(v, set):
-            bd[k] = list(v)
-        elif k.endswith("-gbp"):
-            reference += "_" + k[:-4]
 
     bill["reference"] = reference
     bill["gross"] = bill["net"] + bill["vat"]
