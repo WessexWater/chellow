@@ -313,9 +313,9 @@ def test_make_raw_bills_vat(mocker):
                         "vat": Decimal("9224.00"),
                     },
                 },
-                "vat-rate": [
+                "vat-rate": {
                     Decimal("0.2"),
-                ],
+                },
             },
             "account": "22 9813 2107 763",
             "issue_date": None,
