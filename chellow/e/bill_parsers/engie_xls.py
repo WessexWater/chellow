@@ -337,7 +337,7 @@ def _parse_row(bills, row, row_index, datemode, title_row):
                     ebd["kva"] = int(description[len(duos_avail_prefix) : -5])
                 break
 
-        if name is None:
+        if elname is None:
             raise BadRequest(
                 f"For the path {path} the parser can't work out the element."
             )
