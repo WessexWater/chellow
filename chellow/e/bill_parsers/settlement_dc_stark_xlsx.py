@@ -22,6 +22,7 @@ COLUMN_MAP = {
     "total in vat": "grand total 2",
     "total inc vat": "grand total 2",
     "vat @ 20 %": "vat @ 20%",
+    "vat @20%": "vat @ 20%",
 }
 for cop in COPS:
     COLUMN_MAP[f"quarterly cop {cop} charge"] = f"cop {cop} charge"
