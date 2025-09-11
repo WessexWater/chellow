@@ -18,6 +18,7 @@ COLUMN_MAP = {
     "no. cop 5/10 meters": "no. cop 5 meters",
     "annual cop 5/10 dc/da rate": "annual cop 5 dc/da rate",
     "cop 5/10 charge": "cop 5 charge",
+    "total": "grand total",
     "total ex vat": "grand total",
     "total in vat": "grand total 2",
     "total inc vat": "grand total 2",
