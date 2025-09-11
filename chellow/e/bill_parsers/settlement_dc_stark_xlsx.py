@@ -20,6 +20,7 @@ COLUMN_MAP = {
     "cop 5/10 charge": "cop 5 charge",
     "total ex vat": "grand total",
     "total in vat": "grand total 2",
+    "total inc vat": "grand total 2",
     "vat @ 20 %": "vat @ 20%",
 }
 for cop in COPS:
