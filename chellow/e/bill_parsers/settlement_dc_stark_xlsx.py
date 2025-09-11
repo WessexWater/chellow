@@ -168,13 +168,19 @@ def _process_row(sess, sheet, row, issue_date, cl):
         "raw_lines": [],
         "settlement-status": ["settlement"],
     }
+    vat = Decimal("0.00")
+    if "vat @ 20%" in cl:
+        vat += round(get_dec(sheet, cl["vat @ 20%"], row), 2)
+    gross = Decimal("0.00")
+    if "grand total 2" in cl:
+        gross += round(get_dec(sheet, cl["grand total 2"], row), 2)
 
     return {
         "bill_type_code": "N",
         "kwh": Decimal(0),
         "net": Decimal("0.00") + round(get_dec(sheet, cl["grand total"], row), 2),
-        "vat": Decimal("0.00") + round(get_dec(sheet, cl["vat @ 20%"], row), 2),
-        "gross": Decimal("0.00") + round(get_dec(sheet, cl["grand total 2"], row), 2),
+        "vat": vat,
+        "gross": gross,
         "reads": [],
         "breakdown": breakdown,
         "account": mpan_core,
