@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from openpyxl import load_workbook
+from openpyxl.utils.datetime import from_excel
 
 from werkzeug.exceptions import BadRequest
 
@@ -10,7 +11,11 @@ from chellow.utils import ct_datetime, parse_mpan_core, to_utc
 
 
 def get_ct_date(title_row, row, name):
-    return get_value(title_row, row, name)
+    val = get_value(title_row, row, name)
+    if isinstance(val, int):
+        return from_excel(val)
+    else:
+        return val
 
 
 def get_start_date(title_row, row, name):
@@ -56,6 +61,72 @@ def get_int(title_row, row, name):
     return int(get_value(title_row, row, name))
 
 
+def _process_row(caches, sess, title_row, row):
+    msn = str(get_value(title_row, row, "meter")).strip()
+    mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
+    start_date_ct = get_ct_date(title_row, row, "start")
+    start_date = to_utc(start_date_ct)
+    issue_date = start_date
+    finish_date_ct = get_ct_date(title_row, row, "end")
+    finish_date = to_utc(
+        ct_datetime(
+            finish_date_ct.year, finish_date_ct.month, finish_date_ct.day, 23, 30
+        )
+    )
+    rates = hh_rate(sess, caches, 0, start_date)
+    meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"]["*"][
+        "gbp_per_meter"
+    ]
+    months = (finish_date_ct.year - start_date_ct.year) * 12 + (
+        finish_date_ct.month - start_date_ct.month + 1
+    )
+    net = round(Decimal(float(meter_rate) / 12 * months), 2)
+    vat = round(net * Decimal("0.2"), 2)
+    elements = [
+        {
+            "name": "meter",
+            "start_date": start_date,
+            "finish_date": finish_date,
+            "net": net,
+            "breakdown": {
+                "rate": {meter_rate},
+                "months": months,
+            },
+        }
+    ]
+
+    breakdown = {
+        "raw_lines": [],
+        "cop": ["5"],
+        "settlement-status": ["non_settlement"],
+        "msn": [msn],
+    }
+
+    return {
+        "bill_type_code": "N",
+        "kwh": Decimal(0),
+        "vat": vat,
+        "net": net,
+        "gross": net + vat,
+        "reads": [],
+        "breakdown": breakdown,
+        "account": mpan_core,
+        "issue_date": issue_date,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "mpan_core": mpan_core,
+        "reference": "_".join(
+            (
+                start_date.strftime("%Y%m%d"),
+                finish_date.strftime("%Y%m%d"),
+                issue_date.strftime("%Y%m%d"),
+                mpan_core,
+            )
+        ),
+        "elements": elements,
+    }
+
+
 class Parser:
     def __init__(self, f):
         self.book = load_workbook(f)
@@ -88,83 +159,12 @@ class Parser:
                     val = get_value(title_row, row, "mpan ref")
                     if val is None or val == "":
                         break
-
-                    self._set_last_line(row_index, val)
-                    msn = str(get_value(title_row, row, "meter")).strip()
-                    mpan_core = parse_mpan_core(
-                        str(get_int(title_row, row, "mpan ref"))
-                    )
-                    start_date_ct = get_ct_date(title_row, row, "start")
-                    start_date = to_utc(start_date_ct)
-                    issue_date = start_date
-                    finish_date_ct = get_ct_date(title_row, row, "end")
-                    finish_date = to_utc(
-                        ct_datetime(
-                            finish_date_ct.year,
-                            finish_date_ct.month,
-                            finish_date_ct.day,
-                            23,
-                            30,
-                        )
-                    )
-                    check = get_str(title_row, row, "check")
-                    if check != "Billed":
+                    if get_str(title_row, row, "check") != "Billed":
                         continue
 
-                    rates = hh_rate(sess, caches, 0, start_date)
-                    meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"][
-                        "*"
-                    ]["gbp_per_meter"]
-                    months = (finish_date_ct.year - start_date_ct.year) * 12 + (
-                        finish_date_ct.month - start_date_ct.month + 1
-                    )
-                    net = round(Decimal(float(meter_rate) / 12 * months), 2)
-                    vat = round(net * Decimal("0.2"), 2)
-                    elements = [
-                        {
-                            "name": "meter",
-                            "start_date": start_date,
-                            "finish_date": finish_date,
-                            "net": net,
-                            "breakdown": {
-                                "rate": {meter_rate},
-                                "months": months,
-                            },
-                        }
-                    ]
-
-                    breakdown = {
-                        "raw_lines": [],
-                        "cop": ["5"],
-                        "settlement-status": ["non_settlement"],
-                        "msn": [msn],
-                    }
-
-                    bills.append(
-                        {
-                            "bill_type_code": "N",
-                            "kwh": Decimal(0),
-                            "vat": vat,
-                            "net": net,
-                            "gross": net + vat,
-                            "reads": [],
-                            "breakdown": breakdown,
-                            "account": mpan_core,
-                            "issue_date": issue_date,
-                            "start_date": start_date,
-                            "finish_date": finish_date,
-                            "mpan_core": mpan_core,
-                            "reference": "_".join(
-                                (
-                                    start_date.strftime("%Y%m%d"),
-                                    finish_date.strftime("%Y%m%d"),
-                                    issue_date.strftime("%Y%m%d"),
-                                    mpan_core,
-                                )
-                            ),
-                            "elements": elements,
-                        }
-                    )
+                    self._set_last_line(row_index, val)
+                    bill = _process_row(caches, sess, title_row, row)
+                    bills.append(bill)
                     sess.rollback()
         except BadRequest as e:
             raise BadRequest(f"Row number: {row_index} {e.description}")
