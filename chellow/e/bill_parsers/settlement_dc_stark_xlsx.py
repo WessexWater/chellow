@@ -69,10 +69,13 @@ def get_str(sheet, col, row):
 
 def get_dec(sheet, col, row):
     cell = get_cell(sheet, col, row)
-    try:
-        return Decimal(str(cell.value))
-    except InvalidOperation as e:
-        raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
+    if cell.value is None:
+        return None
+    else:
+        try:
+            return Decimal(str(cell.value))
+        except InvalidOperation as e:
+            raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
 
 
 def get_int(sheet, col, row):
@@ -107,7 +110,7 @@ def _process_row(sess, sheet, row, issue_date, cl):
             mpans = get_int(sheet, cl[mpans_title], row)
             rate = get_dec(sheet, cl[rate_title], row)
             net = get_dec(sheet, cl[net_title], row)
-            if net != 0:
+            if net not in (None, 0):
                 elements.append(
                     {
                         "name": "mpan",
