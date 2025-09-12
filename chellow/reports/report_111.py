@@ -391,6 +391,7 @@ def _process_period(
         "virtual_net_gbp": Decimal("0.00"),
         "actual_net_gbp": Decimal("0.00"),
         "actual_bills": [],
+        "problem": "",
     }
 
     for bill in sess.scalars(
