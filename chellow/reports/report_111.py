@@ -188,12 +188,6 @@ def content(
                 "actual_net_gbp",
                 "virtual_net_gbp",
                 "difference_net_gbp",
-                "actual_vat_gbp",
-                "virtual_vat_gbp",
-                "difference_vat_gbp",
-                "actual_gross_gbp",
-                "virtual_gross_gbp",
-                "difference_gross_gbp",
             ]
             titles.extend(header_titles)
             for t in virtual_bill_titles:
@@ -388,8 +382,8 @@ def _process_period(
         "contract_name": contract.name,
         "market_role_code": contract.market_role.code,
         "elements": val_elems,
-        "virtual_net_gbp": Decimal("0.00"),
-        "actual_net_gbp": Decimal("0.00"),
+        "virtual_net_gbp": 0,
+        "actual_net_gbp": 0,
         "actual_bills": [],
         "problem": "",
     }
@@ -461,7 +455,7 @@ def _process_period(
                 )
 
             if len(actual_bill["problem"]) > 0:
-                vals["problem"] += "Bills have problems."
+                vals["problem"] += "Bills have problems. "
 
     for element in sess.scalars(
         select(Element)

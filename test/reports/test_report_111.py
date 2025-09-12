@@ -171,7 +171,7 @@ def virtual_bill(ds):
             v for k, v in bill_hh.items() if k.endswith('gbp'))
         bill_hh['vat-gbp'] = 0
         bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
-        bill_hh['problem'] = 'hello'
+        bill_hh['problem'] = 'hello '
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -297,6 +297,21 @@ def virtual_bill(ds):
     )
     expected = [
         {
+            "actual_bills": [
+                {
+                    "batch_id": 1,
+                    "batch_reference": "a b",
+                    "breakdown": "{}",
+                    "gross": Decimal("10.00"),
+                    "id": 1,
+                    "kwh": Decimal("10.00"),
+                    "net": Decimal("10.00"),
+                    "problem": "The Gross GBP (10.00) of the bill isn't equal "
+                    "to the Net GBP "
+                    "(10.00) + VAT GBP (10.00) of the bill.",
+                    "vat": Decimal("10.00"),
+                },
+            ],
             "actual_net_gbp": 10.0,
             "difference_net_gbp": 10.0,
             "contract_id": 4,
@@ -355,7 +370,7 @@ def virtual_bill(ds):
             "site_name": "Water Works",
             "supply_id": 1,
             "virtual_net_gbp": 0.0,
-            "problem": "hello",
+            "problem": "Bills have problems. hello ",
         },
     ]
 
@@ -805,7 +820,7 @@ def virtual_bill(ds):
             "2009-07-10 01:00",
             "2009-07-10 01:00",
             "0",
-            "0.0",
-            "0.0",
+            "0",
+            "0",
         ],
     ]
