@@ -42,7 +42,7 @@
 		</tbody>
 	</table>
 
-	<table class="etheling etheling_sticky">
+	<table class="sticky">
 		<caption>Periods - Ordered By Difference In {{element}}</caption>
 		<thead>
 			<tr>
@@ -69,6 +69,14 @@
 				{% endfor %}
 			</tr>
 			<tr>
+				<th style="white-space: nowrap">
+					{% if element == 'problem' %}
+						&uparrow;
+					{% else %}
+						<a href="/report_runs/{{run.id}}?element=problem">&uparrow;</a>
+					{% endif %}
+					Problem	
+				</th>
 				<th style="white-space: nowrap">
 					{% if element == 'net' %}
 						&uparrow;
@@ -128,6 +136,9 @@
 					</td>
 					<td style="white-space: nowrap">
 					 {{data['period_finish']}}
+					</td>
+					<td style="text-align: right;">
+					  {{data['problem']}}
 					</td>
 					<td style="text-align: right;">
 					  {{"{:0,.2f}".format(data['difference_net_gbp'])}}

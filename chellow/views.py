@@ -1401,7 +1401,7 @@ def report_run_get(run_id):
         if "element" in request.values:
             element = req_str("element")
         else:
-            element = "net"
+            element = "problem"
 
         hide_checked = req_bool("hide_checked")
 
@@ -1411,13 +1411,24 @@ def report_run_get(run_id):
             q = q.where(
                 ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
             )
-        if element == "net":
-            order_by = ReportRunRow.data["data"]["difference_net_gbp"]
+        if element == "problem":
+            order_by = (
+                ReportRunRow.data["data"]["problem"].as_string(),
+                func.abs(
+                    func.coalesce(
+                        ReportRunRow.data["data"]["difference_net_gbp"].as_float(), 0
+                    )
+                ).desc(),
+            )
         else:
-            order_by = ReportRunRow.data["data"]["elements"][element]["parts"]["gbp"][
-                "difference"
-            ]
-        q = q.order_by(func.abs(func.coalesce(order_by.as_float(), 0)).desc())
+            if element == "net":
+                ob = ReportRunRow.data["data"]["difference_net_gbp"]
+            else:
+                ob = ReportRunRow.data["data"]["elements"][element]["parts"]["gbp"][
+                    "difference"
+                ]
+            order_by = (func.abs(func.coalesce(order_by.as_float(), 0)).desc(),)
+        q = q.order_by(*order_by)
 
         rows = g.sess.scalars(q).all()
         return render_template(

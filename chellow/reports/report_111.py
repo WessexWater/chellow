@@ -188,6 +188,12 @@ def content(
                 "actual_net_gbp",
                 "virtual_net_gbp",
                 "difference_net_gbp",
+                "actual_vat_gbp",
+                "virtual_vat_gbp",
+                "difference_vat_gbp",
+                "actual_gross_gbp",
+                "virtual_gross_gbp",
+                "difference_gross_gbp",
             ]
             titles.extend(header_titles)
             for t in virtual_bill_titles:
@@ -370,8 +376,22 @@ def _process_period(
 ):
     actual_elems = {}
     vels = {}
+    val_elems = {}
     virtual_bill = {"problem": "", "elements": vels}
     market_role_code = contract.market_role.code
+
+    vals = {
+        "supply_id": supply.id,
+        "period_start": period_start,
+        "period_finish": period_finish,
+        "contract_id": contract.id,
+        "contract_name": contract.name,
+        "market_role_code": contract.market_role.code,
+        "elements": val_elems,
+        "virtual_net_gbp": Decimal("0.00"),
+        "actual_net_gbp": Decimal("0.00"),
+        "actual_bills": [],
+    }
 
     for bill in sess.scalars(
         select(Bill)
@@ -384,6 +404,17 @@ def _process_period(
         )
     ):
         if _get_bill_status(sess, bill_statuses, bill) is not None:
+            actual_bill = {
+                "id": bill.id,
+                "problem": "",
+                "net": bill.net,
+                "vat": bill.vat,
+                "gross": bill.gross,
+                "kwh": bill.kwh,
+                "breakdown": bill.breakdown,
+                "batch_id": bill.batch_id,
+                "batch_reference": bill.batch.reference,
+            }
 
             read_dict = {}
             for read in bill.reads:
@@ -415,7 +446,22 @@ def _process_period(
                     except KeyError:
                         read_dict[key] = typ
 
-    actual_net_gbp = 0
+            element_net = sum(el.net for el in bill.elements)
+            vals["actual_bills"].append(actual_bill)
+            if element_net != bill.net:
+                actual_bill["problem"] += (
+                    f"The Net GBP total of the elements is {element_net} doesn't "
+                    f"match the bill Net GBP value of {bill.net}. "
+                )
+            if bill.gross != bill.vat + bill.net:
+                actual_bill["problem"] += (
+                    f"The Gross GBP ({bill.gross}) of the bill isn't equal to "
+                    f"the Net GBP ({bill.net}) + VAT GBP ({bill.vat}) of the bill."
+                )
+
+            if len(actual_bill["problem"]) > 0:
+                vals["problem"] += "Bills have problems."
+
     for element in sess.scalars(
         select(Element)
         .join(Bill)
@@ -427,6 +473,9 @@ def _process_period(
             Batch.contract == contract,
         )
     ):
+        if _get_bill_status(sess, bill_statuses, element.bill) is None:
+            continue
+
         try:
             actual_elem = actual_elems[element.name]
         except KeyError:
@@ -453,7 +502,7 @@ def _process_period(
         )
 
         parts["gbp"] += element.net
-        actual_net_gbp += float(element.net)
+        vals["actual_net_gbp"] += float(element.net)
 
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
@@ -577,7 +626,6 @@ def _process_period(
                             raise BadRequest(f"For key {vel_k} and value {v}. {detail}")
 
                         break
-    val_elems = {}
     for typ, els in (("virtual", vels), ("actual", actual_elems)):
         for el_k, el in els.items():
             try:
@@ -629,25 +677,15 @@ def _process_period(
     else:
         site = first_era.get_physical_site(sess)
 
-    return {
-        "supply_id": supply.id,
-        "period_start": period_start,
-        "period_finish": period_finish,
-        "elements": val_elems,
-        "site_id": None if site is None else site.id,
-        "site_code": None if site is None else site.code,
-        "site_name": None if site is None else site.name,
-        "imp_mpan_core": None if first_era is None else era.imp_mpan_core,
-        "exp_mpan_core": None if first_era is None else era.exp_mpan_core,
-        "contract_id": contract.id,
-        "contract_name": contract.name,
-        "elements": val_elems,
-        "virtual_net_gbp": virtual_net_gbp,
-        "actual_net_gbp": actual_net_gbp,
-        "difference_net_gbp": actual_net_gbp - virtual_net_gbp,
-        "market_role_code": contract.market_role.code,
-        "problem": virtual_bill["problem"],
-    }
+    vals["site_id"] = None if site is None else site.id
+    vals["site_code"] = None if site is None else site.code
+    vals["site_name"] = None if site is None else site.name
+    vals["imp_mpan_core"] = None if first_era is None else era.imp_mpan_core
+    vals["exp_mpan_core"] = None if first_era is None else era.exp_mpan_core
+    vals["difference_net_gbp"] = vals["actual_net_gbp"] - vals["virtual_net_gbp"]
+    vals["problem"] += virtual_bill["problem"]
+
+    return vals
 
 
 def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, vbf):

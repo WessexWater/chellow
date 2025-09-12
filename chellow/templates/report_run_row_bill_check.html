@@ -23,7 +23,7 @@
 	{% endif %}
 
 	<table>
-		<caption>Bill Check</caption>	
+		<caption>Bill Check</caption>
 		<thead>
 			<tr>
 				<th>Contract</th>
@@ -37,6 +37,7 @@
 				<th>Virtual Net GBP</th>
 				<th>Difference Net GBP</th>
 				<th>Problem</th>
+				{% for 
 			</tr>
 		</thead>
 		<tbody>
@@ -72,6 +73,47 @@
 		</tbody>
 	</table>
 
+	<table>
+		<caption>Actual Bills</caption>	
+		<thead>
+			<tr>
+				<th>Batch</th>
+				<th>View</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Net GBP</th>
+				<th>Vat GBP</th>
+				<th>Gross GBP</th>
+				<th>Problem</th>
+				<th>Breakdown</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for bill in data.actual_bills %}
+				<tr>
+					<td>
+						{% if data.contract_id is not none %}
+							<a href="/e/{{contract_type}}_batches/{{bill.batch_id}}">{{bill.batch_reference}}</a>
+						{% endif %}
+					</td>
+					<td>
+						{% if data.contract_id is not none %}
+							<a href="/e/{{contract_type}}_bills/{{bill.id}}">{{view}}</a>
+						{% endif %}
+					</td>
+					<td>{{bill.start_date}}</td>
+					<td>{{bill.finish_date}}</td>
+					<td>{{bill.net}}</td>
+					<td>{{bill.vat}}</td>
+					<td>{{bill.gross}}</td>
+					<td>
+						<strong style="color: red">{{bill.problem}}</strong>
+					</td>
+					<td>{{bill.breakdown}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
   
 	<section class="elements">
 		<!--
