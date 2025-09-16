@@ -129,23 +129,24 @@ def _process_row(sess, sheet, row, issue_date, cl):
                     }
                 )
 
-    ad_hoc_visits = get_dec(sheet, cl["no. hand held visits (adhoc)"], row)
-    ad_hoc_rate = get_dec(sheet, cl["hand held visit (adhoc) rate"], row)
-    ad_hoc_gbp = get_dec(sheet, cl["hand held visit (adhoc) charge"], row)
-    if ad_hoc_gbp != 0:
-        elements.append(
-            {
-                "name": "ad-hoc",
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "net": ad_hoc_gbp,
-                "breakdown": {
-                    "rate": {ad_hoc_rate},
-                    "activity-name": {"ad_hoc_visit"},
-                    "visits": ad_hoc_visits,
-                },
-            }
-        )
+    for typ in ("adhoc", "regular"):
+        hand_held_visits = get_dec(sheet, cl[f"no. hand held visits ({typ})"], row)
+        hand_held_rate = get_dec(sheet, cl[f"hand held visit ({typ}) rate"], row)
+        hand_held_gbp = get_dec(sheet, cl[f"hand held visit ({typ}) charge"], row)
+        if hand_held_gbp != 0:
+            elements.append(
+                {
+                    "name": "activity",
+                    "start_date": start_date,
+                    "finish_date": finish_date,
+                    "net": hand_held_gbp,
+                    "breakdown": {
+                        "rate": {hand_held_rate},
+                        "activity-name": {"hand_held_visit"},
+                        "visits": hand_held_visits,
+                    },
+                }
+            )
 
     annual_visits_count = get_int(sheet, cl["no. annual site visits"], row)
     annual_visits_rate = get_dec(sheet, cl["annual site visit rate"], row)
@@ -153,13 +154,14 @@ def _process_row(sess, sheet, row, issue_date, cl):
     if annual_visits_gbp != 0:
         elements.append(
             {
-                "name": "annual_visits",
+                "name": "activitiy",
                 "start_date": start_date,
                 "finish_date": finish_date,
                 "net": annual_visits_gbp,
                 "breakdown": {
                     "rate": {annual_visits_rate},
                     "count": annual_visits_count,
+                    "activity-name": {"annual_site_visit"},
                 },
             }
         )
