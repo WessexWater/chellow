@@ -135,6 +135,17 @@ def _process_row(vals):
         else:
             raise BadRequest("Record type {type} not recognized.")
 
+    if len(elements) == 0:
+        elements.append(
+            {
+                "name": "net",
+                "start_date": start_date,
+                "finish_date": finish_date,
+                "net": net,
+                "breakdown": {},
+            }
+        )
+
     return {
         "bill_type_code": bill_type_code,
         "account": account,

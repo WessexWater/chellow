@@ -1492,25 +1492,35 @@ def dc_rate_script_edit_get(dc_rate_script_id):
     )
 
 
+@e.route("/dc_rate_scripts/<int:dc_rate_script_id>/edit", methods=["DELETE"])
+def dc_rate_script_edit_delete(dc_rate_script_id):
+    try:
+        dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
+        dc_contract = dc_rate_script.contract
+        dc_contract.delete_rate_script(g.sess, dc_rate_script)
+        g.sess.commit()
+        return hx_redirect(f"/dc_contracts/{dc_contract.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return render_template(
+            "dc_rate_script_edit.html", dc_rate_script=dc_rate_script
+        )
+
+
 @e.route("/dc_rate_scripts/<int:dc_rate_script_id>/edit", methods=["POST"])
 def dc_rate_script_edit_post(dc_rate_script_id):
     try:
         dc_rate_script = RateScript.get_dc_by_id(g.sess, dc_rate_script_id)
         dc_contract = dc_rate_script.contract
-        if "delete" in request.form:
-            dc_contract.delete_rate_script(g.sess, dc_rate_script)
-            g.sess.commit()
-            return chellow_redirect(f"/dc_contracts/{dc_contract.id}", 303)
-        else:
-            script = req_zish("script")
-            start_date = req_date("start")
-            has_finished = req_bool("has_finished")
-            finish_date = req_date("finish") if has_finished else None
-            dc_contract.update_rate_script(
-                g.sess, dc_rate_script, start_date, finish_date, script
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/dc_rate_scripts/{dc_rate_script.id}", 303)
+        script = req_zish("script")
+        start_date = req_date("start")
+        has_finished = req_bool("has_finished")
+        finish_date = req_date("finish") if has_finished else None
+        dc_contract.update_rate_script(
+            g.sess, dc_rate_script, start_date, finish_date, script
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/dc_rate_scripts/{dc_rate_script.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return render_template(
