@@ -54,6 +54,14 @@
 				<th rowspan="3">Site</th>
 				<th rowspan="3">Period Start</th>
 				<th rowspan="3">Period Finish</th>
+				<th rowspan="3" style="white-space: nowrap">
+					{% if element == 'problem' %}
+						&uparrow;
+					{% else %}
+						<a href="/report_runs/{{run.id}}?element=problem">&uparrow;</a>
+					{% endif %}
+					Problem	
+				</th>
 				<th colspan="{{elements|length + 1}}">Difference GBP</th>
 			</tr>
 			<tr>
@@ -69,14 +77,6 @@
 				{% endfor %}
 			</tr>
 			<tr>
-				<th style="white-space: nowrap">
-					{% if element == 'problem' %}
-						&uparrow;
-					{% else %}
-						<a href="/report_runs/{{run.id}}?element=problem">&uparrow;</a>
-					{% endif %}
-					Problem	
-				</th>
 				<th style="white-space: nowrap">
 					{% if element == 'net' %}
 						&uparrow;
