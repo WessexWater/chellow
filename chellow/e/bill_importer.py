@@ -110,6 +110,13 @@ class BillImport(threading.Thread):
                             self.parser.make_raw_bills()
                         ):
                             batch = bf.batch
+                            sum_elem = sum(el.net for el in raw_bill["elements"])
+                            raw_bill_net = raw_bill["net"]
+                            if sum_elem != raw_bill_net:
+                                raw_bill["error"] = (
+                                    f"The sum of the elements' net {sum_elem} doesn't "
+                                    f"equal the bill net {raw_bill_net}."
+                                )
                             if "error" in raw_bill:
                                 self.failed_bills.append(raw_bill)
                             else:
@@ -125,7 +132,7 @@ class BillImport(threading.Thread):
                                             raw_bill["start_date"],
                                             raw_bill["finish_date"],
                                             raw_bill["kwh"],
-                                            raw_bill["net"],
+                                            raw_bill_net,
                                             raw_bill["vat"],
                                             raw_bill["gross"],
                                             bill_types[raw_bill["bill_type_code"]],
