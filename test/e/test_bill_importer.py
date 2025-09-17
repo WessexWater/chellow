@@ -1,4 +1,5 @@
 import csv
+from collections import deque
 from io import BytesIO, TextIOWrapper
 
 from flask import g, render_template
@@ -243,7 +244,7 @@ def test_BillImport_run(sess):
         "nrg",
         "2025-03-01 00:00",
         "2025-03-31 23:30",
-        "76.25",
+        "81.53",
         '{"nrg-kwh": 981}',
     ]
 
@@ -255,9 +256,18 @@ def test_BillImport_run(sess):
 
         batch.insert_file(sess, "file 1", f.read(), "csv")
     sess.commit()
-    importer = BillImport(batch)
+    importer = BillImport(batch, now=to_utc(ct_datetime(2025, 1, 1)))
     importer.run()
     sess.rollback()
+    assert importer.failed_bills == []
+    assert importer.log == deque(
+        [
+            "2025-01-01 00:00:00 - All the bills have been successfully loaded and "
+            "attached to the batch.",
+            "2025-01-01 00:00:00 - Starting to parse the file file 1 with 'csv'.",
+            "2025-01-01 00:00:00 - Importing bills from batch b1.",
+        ]
+    )
     bill = sess.scalars(select(Bill)).one()
     assert len(bill.elements) == 1
 

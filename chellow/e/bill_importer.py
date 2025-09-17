@@ -34,7 +34,7 @@ def find_parser_names():
 
 
 class BillImport(threading.Thread):
-    def __init__(self, batch_contract):
+    def __init__(self, batch_contract, now=None):
         threading.Thread.__init__(self)
         global import_id
         self.import_id = import_id
@@ -53,12 +53,12 @@ class BillImport(threading.Thread):
         self.log = collections.deque()
         self.bill_num = None
         self.parser = None
+        self.now = now
 
     def _log(self, msg):
         with import_lock:
-            self.log.appendleft(
-                f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {msg}"
-            )
+            ts = ct_datetime_now() if self.now is None else self.now
+            self.log.appendleft(f"{ts.strftime('%Y-%m-%d %H:%M:%S')} - {msg}")
 
     def status(self):
         if self.is_alive():
@@ -110,7 +110,7 @@ class BillImport(threading.Thread):
                             self.parser.make_raw_bills()
                         ):
                             batch = bf.batch
-                            sum_elem = sum(el.net for el in raw_bill["elements"])
+                            sum_elem = sum(el["net"] for el in raw_bill["elements"])
                             raw_bill_net = raw_bill["net"]
                             if sum_elem != raw_bill_net:
                                 raw_bill["error"] = (
