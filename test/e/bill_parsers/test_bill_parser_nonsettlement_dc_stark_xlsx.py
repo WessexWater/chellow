@@ -159,7 +159,6 @@ def test_one_bill(mocker, sess):
             "breakdown": {
                 "raw_lines": [],
                 "cop": ["5"],
-                "settlement-status": ["non_settlement"],
                 "msn": ["7864739737"],
             },
             "account": "20 8875 7371 777",
@@ -174,7 +173,12 @@ def test_one_bill(mocker, sess):
                     "start_date": utc_datetime(2022, 2, 1),
                     "finish_date": utc_datetime(2022, 2, 28, 23, 30),
                     "net": Decimal("3.75"),
-                    "breakdown": {"rate": {Decimal("45")}, "months": 1},
+                    "breakdown": {
+                        "rate": {Decimal("45")},
+                        "months": 1,
+                        "settlement-status": {"non_settlement"},
+                        "comm": {"IP"},
+                    },
                 }
             ],
         }

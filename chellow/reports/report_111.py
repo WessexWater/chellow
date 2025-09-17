@@ -401,6 +401,8 @@ def _process_period(
         if _get_bill_status(sess, bill_statuses, bill) is not None:
             actual_bill = {
                 "id": bill.id,
+                "start_date": bill.start_date,
+                "finish_date": bill.finish_date,
                 "problem": "",
                 "net": bill.net,
                 "vat": bill.vat,
@@ -520,7 +522,6 @@ def _process_period(
                 )
 
     first_era = None
-    virtual_net_gbp = 0
     for era in sess.scalars(
         select(Era)
         .where(
@@ -599,7 +600,7 @@ def _process_period(
                 except KeyError:
                     vel = vels[vel_name] = {"parts": {}, "elements": []}
 
-                virtual_net_gbp += v
+                vals["virtual_net_gbp"] += v
 
         for k, v in vb.items():
             if k == "problem":

@@ -91,16 +91,13 @@ def _process_row(caches, sess, title_row, row):
             "breakdown": {
                 "rate": {meter_rate},
                 "months": months,
+                "settlement-status": {"non_settlement"},
+                "comm": {"IP"},
             },
         }
     ]
 
-    breakdown = {
-        "raw_lines": [],
-        "cop": ["5"],
-        "settlement-status": ["non_settlement"],
-        "msn": [msn],
-    }
+    breakdown = {"raw_lines": [], "cop": ["5"], "msn": [msn]}
 
     return {
         "bill_type_code": "N",

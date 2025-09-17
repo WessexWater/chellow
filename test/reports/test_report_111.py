@@ -166,7 +166,7 @@ def virtual_bill(ds):
         bill_hh['nrg-kwh'] = hh['msp-kwh']
         bill_hh['nrg-rate'] = {rate}
         bill_hh['off-rate'] = {0.1}
-        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate
+        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate + 1
         bill_hh['net-gbp'] = sum(
             v for k, v in bill_hh.items() if k.endswith('gbp'))
         bill_hh['vat-gbp'] = 0
@@ -310,10 +310,12 @@ def virtual_bill(ds):
                     "to the Net GBP "
                     "(10.00) + VAT GBP (10.00) of the bill.",
                     "vat": Decimal("10.00"),
+                    "start_date": utc_datetime(2009, 7, 10, 0, 0),
+                    "finish_date": utc_datetime(2009, 7, 10, 0, 0),
                 },
             ],
             "actual_net_gbp": 10.0,
-            "difference_net_gbp": 10.0,
+            "difference_net_gbp": 9.0,
             "contract_id": 4,
             "contract_name": "Fusion Supplier 2000",
             "market_role_code": "X",
@@ -322,8 +324,8 @@ def virtual_bill(ds):
                     "parts": {
                         "gbp": {
                             "actual": Decimal("10.00"),
-                            "difference": 10.0,
-                            "virtual": 0.0,
+                            "difference": 9.0,
+                            "virtual": 1.0,
                         },
                         "kwh": {
                             "difference": 0.0,
@@ -369,7 +371,7 @@ def virtual_bill(ds):
             "site_code": "CI017",
             "site_name": "Water Works",
             "supply_id": 1,
-            "virtual_net_gbp": 0.0,
+            "virtual_net_gbp": 1.0,
             "problem": "Bills have problems. hello ",
         },
     ]
@@ -820,7 +822,7 @@ def virtual_bill(ds):
             "2009-07-10 01:00",
             "2009-07-10 01:00",
             "0",
-            "0",
-            "0",
+            "0.0",
+            "0.0",
         ],
     ]
