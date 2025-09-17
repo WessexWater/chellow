@@ -130,23 +130,25 @@ def _process_row(sess, sheet, row, issue_date, cl):
                 )
 
     for typ in ("adhoc", "regular"):
-        hand_held_visits = get_dec(sheet, cl[f"no. hand held visits ({typ})"], row)
-        hand_held_rate = get_dec(sheet, cl[f"hand held visit ({typ}) rate"], row)
-        hand_held_gbp = get_dec(sheet, cl[f"hand held visit ({typ}) charge"], row)
-        if hand_held_gbp != 0:
-            elements.append(
-                {
-                    "name": "activity",
-                    "start_date": start_date,
-                    "finish_date": finish_date,
-                    "net": hand_held_gbp,
-                    "breakdown": {
-                        "rate": {hand_held_rate},
-                        "activity-name": {"hand_held_visit"},
-                        "visits": hand_held_visits,
-                    },
-                }
-            )
+        hand_visits_title = f"no. hand held visits ({typ})"
+        if hand_visits_title in cl:
+            hand_visits = get_dec(sheet, cl[hand_visits_title], row)
+            hand_rate = get_dec(sheet, cl[f"hand held visit ({typ}) rate"], row)
+            hand_gbp = get_dec(sheet, cl[f"hand held visit ({typ}) charge"], row)
+            if hand_gbp != 0:
+                elements.append(
+                    {
+                        "name": "activity",
+                        "start_date": start_date,
+                        "finish_date": finish_date,
+                        "net": hand_gbp,
+                        "breakdown": {
+                            "rate": {hand_rate},
+                            "activity-name": {"hand_held_visit"},
+                            "visits": hand_visits,
+                        },
+                    }
+                )
 
     annual_visits_count = get_int(sheet, cl["no. annual site visits"], row)
     annual_visits_rate = get_dec(sheet, cl["annual site visit rate"], row)
