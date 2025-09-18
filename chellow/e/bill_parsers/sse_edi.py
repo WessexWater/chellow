@@ -196,6 +196,45 @@ def _process_BCD(elements, headers):
         headers["finish_date"] = to_finish_date(sumo[1])
 
 
+def _process_BTL(elements, headers):
+    uvlt = elements["UVLT"]
+    utva = elements["UTVA"]
+    tbtl = elements["TBTL"]
+
+    if headers["mpan_core"] is None:
+        sess = headers["sess"]
+        era = (
+            sess.query(Era)
+            .filter(Era.imp_supplier_account == headers["account"])
+            .first()
+        )
+        if era is not None:
+            headers["mpan_core"] = era.imp_mpan_core
+        sess.close()
+
+    if headers["is_ebatch"]:
+        for r in headers["reads"]:
+            if r["pres_type_code"] == "C":
+                r["pres_type_code"] = "E"
+
+    return {
+        "bill_type_code": headers["bill_type_code"],
+        "account": headers["account"],
+        "mpan_core": headers["mpan_core"],
+        "reference": headers["reference"],
+        "issue_date": headers["issue_date"],
+        "start_date": headers["start_date"],
+        "finish_date": headers["finish_date"],
+        "kwh": headers["kwh"],
+        "net": to_decimal(uvlt) / Decimal("100"),
+        "vat": to_decimal(utva) / Decimal("100"),
+        "gross": to_decimal(tbtl) / Decimal("100"),
+        "breakdown": headers["breakdown"],
+        "reads": headers["reads"],
+        "elements": headers["elements"],
+    }
+
+
 def _process_MHD(elements, headers):
     message_type = elements["TYPE"][0]
     sess = headers["sess"]
@@ -204,7 +243,7 @@ def _process_MHD(elements, headers):
         headers["kwh"] = Decimal("0")
         headers["reads"] = []
         headers["breakdown"] = defaultdict(int, {"raw-lines": []})
-        headers["bill_elements"] = []
+        headers["elements"] = []
         headers["errors"] = []
         headers["sess"] = sess
         headers["mpan_core"] = None
@@ -215,9 +254,6 @@ def _process_MHD(elements, headers):
         headers["issue_date"] = None
         headers["start_date"] = None
         headers["finish_date"] = None
-        headers["net"] = Decimal("0.00")
-        headers["vat"] = Decimal("0.00")
-        headers["gross"] = Decimal("0.00")
     headers["message_type"] = message_type
 
 
@@ -400,12 +436,9 @@ def _process_CCD3(elements, headers):
     tmod = elements["TMOD"]
     tmod0 = tmod[0]
     if tmod0 == "CCL":
-        prefix = kwh_prefix = "ccl-"
-    elif tmod0 in ["CQFITC", "CMFITC"]:
-        prefix = "fit-"
-        kwh_prefix = "fit-msp-"
-    elif tmod0 == "FITARR":
-        prefix = kwh_prefix = "fit-reconciliation-"
+        el_name = "ccl"
+    elif tmod0 in ("CQFITC", "CMFITC", "FITARR"):
+        el_name = "fit"
     else:
         tpr_code = tmod0
         if tpr_code not in tmod_map:
@@ -413,30 +446,47 @@ def _process_CCD3(elements, headers):
                 f"The TPR code {tpr_code} can't be found in the TPR "
                 f"list for mpan {headers['mpan']}."
             )
-        prefix = kwh_prefix = tmod_map[tpr_code] + "-"
+        el_name = tmod_map[tpr_code]
 
     nuct = elements["NUCT"]
-    breakdown = headers["breakdown"]
-    breakdown[kwh_prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
     cppu = elements["CPPU"]
-
-    rate_key = prefix + "rate"
-    if rate_key not in breakdown:
-        breakdown[rate_key] = set()
-    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
-
     ctot = elements["CTOT"]
-    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
+    csdt = elements["CSDT"]
+    start_date = to_date(csdt[0])
+    cedt = elements["CEDT"]
+    finish_date = to_finish_date(cedt[0])
+    headers["elements"].append(
+        {
+            "name": el_name,
+            "net": to_decimal(ctot) / Decimal("100"),
+            "start_date": start_date,
+            "finish_date": finish_date,
+            "breakdown": {
+                "kwh": to_decimal(nuct) / Decimal("1000"),
+                "rate": {to_decimal(cppu) / Decimal("100000")},
+            },
+        }
+    )
 
 
 def _process_CCD4(elements, headers):
     ndrp = elements["NDRP"]
-    breakdown = headers["breakdown"]
-    if len(ndrp[0]) > 0:
-        breakdown["standing-days"] += to_decimal(ndrp)
     ctot = elements["CTOT"]
+    csdt = elements["CSDT"]
+    cedt = elements["CEDT"]
+
     if len(ctot[0]) > 0:
-        breakdown["standing-gbp"] += to_decimal(ctot) / Decimal("100")
+        breakdown = {}
+        el = {
+            "name": "standing",
+            "net": to_decimal(ctot) / Decimal("100"),
+            "start_date": to_date(csdt[0]),
+            "finish_date": to_finish_date(cedt[0]),
+            "breakdown": breakdown,
+        }
+        if len(ndrp[0]) > 0:
+            breakdown["days"] = to_decimal(ndrp)
+        headers["elements"].append(el)
 
 
 def _process_MTR(elements, headers):
@@ -482,11 +532,11 @@ def _process_MAN(elements, headers):
 
 def _process_VAT(elements, headers):
     uvla = elements["UVLA"]
-    headers["net"] += to_decimal(uvla) / Decimal("100")
+    to_decimal(uvla) / Decimal("100")
     uvtt = elements["UVTT"]
-    headers["vat"] += to_decimal(uvtt) / Decimal("100")
+    to_decimal(uvtt) / Decimal("100")
     ucsi = elements["UCSI"]
-    headers["gross"] += to_decimal(ucsi) / Decimal("100")
+    to_decimal(ucsi) / Decimal("100")
 
 
 def _process_NOOP(elements, headers):
@@ -495,7 +545,7 @@ def _process_NOOP(elements, headers):
 
 CODE_FUNCS = {
     "BCD": _process_BCD,
-    "BTL": _process_NOOP,
+    "BTL": _process_BTL,
     "CCD1": _process_CCD1,
     "CCD2": _process_CCD2,
     "CCD3": _process_CCD3,
