@@ -490,39 +490,7 @@ def _process_CCD4(elements, headers):
 
 
 def _process_MTR(elements, headers):
-    if headers["message_type"] == "UTLBIL":
-        if headers["mpan_core"] is None:
-            sess = headers["sess"]
-            era = (
-                sess.query(Era)
-                .filter(Era.imp_supplier_account == headers["account"])
-                .first()
-            )
-            if era is not None:
-                headers["mpan_core"] = era.imp_mpan_core
-            sess.close()
-
-        if headers["is_ebatch"]:
-            for r in headers["reads"]:
-                if r["pres_type_code"] == "C":
-                    r["pres_type_code"] = "E"
-
-        raw_bill = {
-            "bill_type_code": headers["bill_type_code"],
-            "account": headers["account"],
-            "mpan_core": headers["mpan_core"],
-            "reference": headers["reference"],
-            "issue_date": headers["issue_date"],
-            "start_date": headers["start_date"],
-            "finish_date": headers["finish_date"],
-            "kwh": headers["kwh"],
-            "net": headers["net"],
-            "vat": headers["vat"],
-            "gross": headers["gross"],
-            "breakdown": headers["breakdown"],
-            "reads": headers["reads"],
-        }
-        return raw_bill
+    pass
 
 
 def _process_MAN(elements, headers):

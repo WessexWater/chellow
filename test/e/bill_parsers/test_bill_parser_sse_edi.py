@@ -2,13 +2,19 @@ from collections import defaultdict
 from decimal import Decimal
 from io import BytesIO
 
-from chellow.e.bill_parsers.sse_edi import Parser, _process_CCD2, _process_MTR
+from chellow.e.bill_parsers.sse_edi import (
+    Parser,
+    _process_BTL,
+    _process_CCD2,
+    _process_MTR,
+)
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_missing_mpan_core(mocker, sess):
     file_lines = [
         "MHD=2+UTLBIL:3'",
+        "BTL=+18511+8480++80612'",
         "MTR=6'",
     ]
     f = BytesIO(b"\n".join(n.encode("utf8") for n in file_lines))
@@ -23,10 +29,20 @@ def test_missing_mpan_core(mocker, sess):
         "start_date": None,
         "finish_date": None,
         "kwh": Decimal("0"),
-        "net": Decimal("0.00"),
-        "vat": Decimal("0.00"),
-        "gross": Decimal("0.00"),
-        "breakdown": {"raw-lines": ["MHD=2+UTLBIL:3'", "MTR=6'"]},
+        "net": Decimal("185.11"),
+        "vat": Decimal("84.80"),
+        "gross": Decimal("806.12"),
+        "breakdown": defaultdict(
+            int,
+            {
+                "raw-lines": [
+                    "MHD=2+UTLBIL:3'",
+                    "BTL=+18511+8480++80612'",
+                    "MTR=6'",
+                ]
+            },
+        ),
+        "elements": [],
         "reads": [],
     }
     assert bills == [expected_bill]
@@ -83,7 +99,7 @@ def test_process_CCD2(mocker, sess):
     assert headers == expected_headers
 
 
-def test_process_MTR_ebatch(mocker, sess):
+def test_process_BTL(mocker, sess):
     issue_date = to_utc(ct_datetime(2020, 10, 1))
     start_date = to_utc(ct_datetime(2020, 9, 1))
     finish_date = to_utc(ct_datetime(2020, 9, 30, 23, 30))
@@ -91,10 +107,10 @@ def test_process_MTR_ebatch(mocker, sess):
     mpan_core = "22 8477 9118 129"
     account = "AC2"
     reference = "h98ge4kl"
-    kwh = Decimal(23)
-    net = Decimal("45.02")
-    vat = Decimal("5.27")
-    gross = Decimal("27.64")
+    kwh = Decimal("23")
+    net = "45.02"
+    vat = "5.27"
+    gross = "27.64"
     breakdown = {"raw-lines": []}
 
     headers = {
@@ -108,14 +124,12 @@ def test_process_MTR_ebatch(mocker, sess):
         "issue_date": issue_date,
         "start_date": start_date,
         "finish_date": finish_date,
-        "kwh": kwh,
-        "net": net,
-        "vat": vat,
-        "gross": gross,
         "breakdown": breakdown,
+        "kwh": kwh,
+        "elements": [],
     }
-    elements = {}
-    bill = _process_MTR(elements, headers)
+    elements = {"UVLT": ["4502"], "UTVA": ["527"], "TBTL": ["2764"]}
+    bill = _process_BTL(elements, headers)
     expected_bill = {
         "bill_type_code": bill_type_code,
         "account": account,
@@ -125,10 +139,18 @@ def test_process_MTR_ebatch(mocker, sess):
         "start_date": start_date,
         "finish_date": finish_date,
         "kwh": kwh,
-        "net": net,
-        "vat": vat,
-        "gross": gross,
+        "net": Decimal(net),
+        "vat": Decimal(vat),
+        "gross": Decimal(gross),
         "breakdown": breakdown,
         "reads": [{"pres_type_code": "E"}],
+        "elements": [],
     }
     assert bill == expected_bill
+
+
+def test_process_MTR(mocker, sess):
+    headers = {}
+    elements = {}
+    bill = _process_MTR(elements, headers)
+    assert bill is None
