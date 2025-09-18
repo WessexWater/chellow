@@ -82,7 +82,7 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
     kwh = 0
     net_gbp = Decimal("0.00")
     vat_gbp = Decimal("0.00")
-    for title in titles[2:]:
+    for title in titles[3:]:
         val = get_dec(row, titles, title)
         if val is not None:
             element_code, typ, units = title.split()
@@ -166,5 +166,5 @@ class Parser:
                     _parse_row(issue_date, row, row_index, datemode, title_row)
                 )
             except BadRequest as e:
-                raise BadRequest("On row " + str(row_index) + ": " + str(e.description))
+                raise BadRequest(f"On row {row_index}: {e.description}")
         return bills
