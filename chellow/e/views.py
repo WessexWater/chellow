@@ -779,9 +779,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -795,25 +795,42 @@ def dc_batch_file_edit_get(file_id):
     )
 
 
+@e.route("/dc_batch_files/<int:file_id>/edit", methods=["DELETE"])
+def dc_batch_file_edit_delete(file_id):
+    batch_file = None
+    try:
+        batch_file = BatchFile.get_by_id(g.sess, file_id)
+
+        batch_id = batch_file.batch.id
+        batch_file.delete(g.sess)
+        g.sess.commit()
+        flash("Deletion successful")
+        return chellow_redirect(f"/dc_batches/{batch_id}", 303)
+
+    except BadRequest as e:
+        flash(e.description)
+        parser_names = chellow.bill_importer.find_parser_names()
+        return make_response(
+            render_template(
+                "dc_batch_file_edit.html",
+                batch_file=batch_file,
+                parser_names=parser_names,
+            ),
+            400,
+        )
+
+
 @e.route("/dc_batch_files/<int:file_id>/edit", methods=["POST"])
 def dc_batch_file_edit_post(file_id):
     batch_file = None
     try:
         batch_file = BatchFile.get_by_id(g.sess, file_id)
 
-        if "delete" in request.values:
-            batch_id = batch_file.batch.id
-            batch_file.delete(g.sess)
-            g.sess.commit()
-            flash("Deletion successful")
-            return chellow_redirect(f"/dc_batches/{batch_id}", 303)
-
-        else:
-            parser_name = req_str("parser_name")
-            batch_file.update(parser_name)
-            g.sess.commit()
-            flash("Update successful")
-            return chellow_redirect(f"/dc_batch_files/{batch_file.id}", 303)
+        parser_name = req_str("parser_name")
+        batch_file.update(parser_name)
+        g.sess.commit()
+        flash("Update successful")
+        return chellow_redirect(f"/dc_batch_files/{batch_file.id}", 303)
 
     except BadRequest as e:
         flash(e.description)
@@ -2931,9 +2948,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5336,9 +5353,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
