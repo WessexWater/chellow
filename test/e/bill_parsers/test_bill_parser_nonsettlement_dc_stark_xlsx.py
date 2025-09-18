@@ -4,8 +4,88 @@ from io import BytesIO
 
 from openpyxl import Workbook
 
-from chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx import Parser
-from chellow.utils import utc_datetime
+from chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx import Parser, _process_row
+from chellow.utils import ct_datetime, to_utc, utc_datetime
+
+
+def test_process_row(mocker, sess):
+    rates = {
+        "annual_rates": {
+            "non_settlement": {"*": {"IP": {"*": {"gbp_per_meter": Decimal("12")}}}}
+        }
+    }
+    mocker.patch(
+        "chellow.e.bill_parsers.nonsettlement_dc_stark_xlsx.hh_rate", return_value=rates
+    )
+    caches = {}
+    wb = Workbook()
+    sheet = wb.worksheets[0]
+    sheet.insert_rows(0, 2)
+    sheet.insert_cols(0, 9)
+
+    sheet["A1"] = "NAME"
+    sheet["B1"] = "NMR"
+    sheet["C1"] = "METER TYPE"
+    sheet["D1"] = "IDENTIFIER"
+    sheet["E1"] = "METER"
+    sheet["F1"] = "MPAN REF"
+    sheet["G1"] = "START"
+    sheet["H1"] = "END"
+    sheet["I1"] = "CHECK"
+
+    sheet["A2"] = "Treglisson"
+    sheet["B2"] = "Q997"
+    sheet["C2"] = "VIS"
+    sheet["D2"] = 101
+    sheet["E2"] = "88jiuf ff"
+    sheet["F2"] = 1472066139971
+    sheet["G2"] = Datetime(2018, 6, 1)
+    sheet["H2"] = Datetime(2018, 6, 30)
+    sheet["I2"] = "Billed"
+    bill = _process_row(caches, sess, sheet[1], sheet[2])
+    assert bill == {
+        "account": "14 7206 6139 971",
+        "bill_type_code": "N",
+        "breakdown": {
+            "cop": [
+                "5",
+            ],
+            "msn": [
+                "88jiuf ff",
+            ],
+            "raw_lines": [],
+        },
+        "elements": [
+            {
+                "breakdown": {
+                    "comm": {
+                        "IP",
+                    },
+                    "months": 1,
+                    "rate": {
+                        Decimal("12"),
+                    },
+                    "settlement-status": {
+                        "non_settlement",
+                    },
+                },
+                "finish_date": to_utc(ct_datetime(2018, 6, 30, 23, 30)),
+                "name": "meter",
+                "net": Decimal("1.00"),
+                "start_date": to_utc(ct_datetime(2018, 6, 1, 0, 0)),
+            },
+        ],
+        "finish_date": to_utc(ct_datetime(2018, 6, 30, 23, 30)),
+        "gross": Decimal("1.20"),
+        "issue_date": to_utc(ct_datetime(2018, 6, 1)),
+        "kwh": Decimal("0"),
+        "mpan_core": "14 7206 6139 971",
+        "net": Decimal("1.00"),
+        "reads": [],
+        "reference": "20180601_20180630_20180601_14 7206 6139 971",
+        "start_date": to_utc(ct_datetime(2018, 6, 1)),
+        "vat": Decimal("0.20"),
+    }
 
 
 def test(mocker, sess):

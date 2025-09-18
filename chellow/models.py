@@ -754,9 +754,9 @@ class Element(Base, PersistentClass):
         self.start_date = start_date
         self.finish_date = finish_date
 
-        if net.as_tuple().exponent > -2:
+        if net.as_tuple().exponent != -2:
             raise BadRequest(
-                f"The 'net' field of a bill must be written to at least two "
+                f"The 'net' field of an element must be written to at exactly two "
                 f"decimal places. It's actually {net}"
             )
         self.net = net

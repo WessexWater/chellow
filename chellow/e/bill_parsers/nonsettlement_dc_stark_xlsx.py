@@ -7,15 +7,16 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.e.computer import hh_rate
 from chellow.models import Session
-from chellow.utils import ct_datetime, parse_mpan_core, to_utc
+from chellow.utils import ct_datetime, parse_mpan_core, to_ct, to_utc
 
 
 def get_ct_date(title_row, row, name):
-    val = get_value(title_row, row, name)
-    if isinstance(val, int):
-        return from_excel(val)
+    val_raw = get_value(title_row, row, name)
+    if isinstance(val_raw, int):
+        val = from_excel(val_raw)
     else:
-        return val
+        val = val_raw
+    return to_ct(val)
 
 
 def get_start_date(title_row, row, name):
@@ -114,9 +115,9 @@ def _process_row(caches, sess, title_row, row):
         "mpan_core": mpan_core,
         "reference": "_".join(
             (
-                start_date.strftime("%Y%m%d"),
-                finish_date.strftime("%Y%m%d"),
-                issue_date.strftime("%Y%m%d"),
+                start_date_ct.strftime("%Y%m%d"),
+                finish_date_ct.strftime("%Y%m%d"),
+                start_date_ct.strftime("%Y%m%d"),
                 mpan_core,
             )
         ),

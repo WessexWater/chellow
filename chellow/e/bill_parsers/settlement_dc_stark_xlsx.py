@@ -81,6 +81,10 @@ def get_dec(sheet, col, row):
             raise BadRequest(f"Problem parsing the number at {cell.coordinate}. {e}")
 
 
+def get_gbp(sheet, col, row):
+    return Decimal("0.00") + round(get_dec(sheet, col, row), 2)
+
+
 def get_int(sheet, col, row):
     return int(get_cell(sheet, col, row).value)
 
@@ -112,7 +116,7 @@ def _process_row(sess, sheet, row, issue_date, cl):
         if mpans_title in cl:
             mpans = get_int(sheet, cl[mpans_title], row)
             rate = get_dec(sheet, cl[rate_title], row)
-            net = get_dec(sheet, cl[net_title], row)
+            net = get_gbp(sheet, cl[net_title], row)
             if net not in (None, 0):
                 elements.append(
                     {
@@ -134,7 +138,7 @@ def _process_row(sess, sheet, row, issue_date, cl):
         if hand_visits_title in cl:
             hand_visits = get_dec(sheet, cl[hand_visits_title], row)
             hand_rate = get_dec(sheet, cl[f"hand held visit ({typ}) rate"], row)
-            hand_gbp = get_dec(sheet, cl[f"hand held visit ({typ}) charge"], row)
+            hand_gbp = get_gbp(sheet, cl[f"hand held visit ({typ}) charge"], row)
             if hand_gbp != 0:
                 elements.append(
                     {
@@ -152,7 +156,7 @@ def _process_row(sess, sheet, row, issue_date, cl):
 
     annual_visits_count = get_int(sheet, cl["no. annual site visits"], row)
     annual_visits_rate = get_dec(sheet, cl["annual site visit rate"], row)
-    annual_visits_gbp = get_dec(sheet, cl["annual site visit charge"], row)
+    annual_visits_gbp = get_gbp(sheet, cl["annual site visit charge"], row)
     if annual_visits_gbp != 0:
         elements.append(
             {
@@ -174,15 +178,15 @@ def _process_row(sess, sheet, row, issue_date, cl):
     }
     vat = Decimal("0.00")
     if "vat @ 20%" in cl:
-        vat += round(get_dec(sheet, cl["vat @ 20%"], row), 2)
+        vat += get_gbp(sheet, cl["vat @ 20%"], row)
     gross = Decimal("0.00")
     if "grand total 2" in cl:
-        gross += round(get_dec(sheet, cl["grand total 2"], row), 2)
+        gross += get_gbp(sheet, cl["grand total 2"], row)
 
     return {
         "bill_type_code": "N",
         "kwh": Decimal(0),
-        "net": Decimal("0.00") + round(get_dec(sheet, cl["grand total"], row), 2),
+        "net": get_gbp(sheet, cl["grand total"], row),
         "vat": vat,
         "gross": gross,
         "reads": [],
