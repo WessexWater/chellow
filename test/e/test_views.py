@@ -3916,7 +3916,6 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
         client,
         "/e/supplier_bill_imports/0",
         "All the bills have been successfully loaded and attached to the batch.",
-        seconds=1,
     )
 
 
