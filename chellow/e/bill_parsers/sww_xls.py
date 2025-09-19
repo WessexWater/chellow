@@ -51,6 +51,7 @@ def get_date_ct(row, title_row, name):
 
 ELEMENT_NAME_LOOKUP = {
     "LVY-CMLOB-ALL": "capmechob",
+    "LVY-CMLOP-ALL": "capmechop",
     "DUOS-STND-SITE": "duos-fixed",
     "DUOS-AVAIL-AV": "duos-availability",
     "DUOS-UNIT-AMBER": "duos-amber",
