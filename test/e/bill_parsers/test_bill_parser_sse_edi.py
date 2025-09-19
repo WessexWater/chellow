@@ -7,6 +7,7 @@ from chellow.e.bill_parsers.sse_edi import (
     _process_BTL,
     _process_CCD2,
     _process_CCD3,
+    _process_CCD4,
     _process_MTR,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
@@ -111,6 +112,38 @@ def test_process_CCD3(mocker, sess):
         "CEDT": ["171123"],
     }
     _process_CCD3(elements, headers)
+    expected_headers = {
+        "reads": [],
+        "elements": [
+            {
+                "breakdown": {
+                    "kwh": Decimal("8760"),
+                    "rate": {
+                        Decimal("0.8638"),
+                    },
+                },
+                "finish_date": to_utc(ct_datetime(2017, 11, 23, 23, 30)),
+                "name": "00001",
+                "net": Decimal("371.50"),
+                "start_date": to_utc(ct_datetime(2015, 10, 22)),
+            }
+        ],
+    }
+    assert headers == expected_headers
+    assert headers["elements"][0]["net"].as_tuple().exponent == -2
+
+
+def test_process_CCD4(mocker, sess):
+    headers = {"reads": [], "elements": []}
+    elements = {
+        "TMOD": ["0001", "CQ1UUP", "", "O"],
+        "NUCT": ["8760000", "1"],
+        "CPPU": ["086380"],
+        "CTOT": ["37150"],
+        "CSDT": ["151022"],
+        "CEDT": ["171123"],
+    }
+    _process_CCD4(elements, headers)
     expected_headers = {
         "reads": [],
         "elements": [
