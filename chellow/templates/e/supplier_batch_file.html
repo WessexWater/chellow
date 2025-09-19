@@ -9,12 +9,10 @@
 	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
 	<a href="/e/supplier_contracts/{{batch_file.batch.contract.id}}"
 		>{{batch_file.batch.contract.name}}</a> &raquo; 
-	<a href="/e/supplier_batches?supplier_contract_id={{batch_file.batch.contract.id}}"
+	<a href="/e/supplier_contracts/{{batch_file.batch.contract.id}}/batches"
 		>Batches</a> &raquo; 
-	<a href="/e/supplier_batches/{{batch_file.batch.id}}"
-		>{{batch_file.batch.reference}}</a> &raquo; 
-	{{batch_file.filename}}
-	[<a href="/e/supplier_batch_files/{{batch_file.id}}/edit">edit</a>]
+	<a href="/e/supplier_batches/{{batch_file.batch.id}}">{{batch_file.batch.reference}}</a> &raquo; 
+	{{batch_file.filename}} [<a href="/e/supplier_batch_files/{{batch_file.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}

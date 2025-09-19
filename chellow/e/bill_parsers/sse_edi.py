@@ -465,7 +465,7 @@ def _process_CCD3(elements, headers):
     headers["elements"].append(
         {
             "name": el_name,
-            "net": to_decimal(ctot) / Decimal("100"),
+            "net": to_gbp(ctot),
             "start_date": start_date,
             "finish_date": finish_date,
             "breakdown": {
