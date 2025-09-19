@@ -85,7 +85,10 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
     for title in titles[3:]:
         val = get_dec(row, titles, title)
         if val is not None:
-            element_code, typ, units = title.split()
+            parts = title.split()
+            if len(parts) != 3:
+                continue
+            element_code, typ, units = parts
             element_name = ELEMENT_NAME_LOOKUP[element_code]
             try:
                 element = elements[element_name]
@@ -108,11 +111,9 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
             elif typ == "RATE":
                 bd["rate"] = val
 
-    bd = {
-        "raw_lines": [str(title_row), str(row)],
-    }
+    bd = {"raw_lines": [str(title_row), str(row)]}
 
-    reference = issue_date.strftime("%Y%m%dT%H%M") + "_" + str(row_index + 1)
+    reference = f"{issue_date.strftime('%Y%m%dT%H%M')}_{row_index + 1}"
 
     return {
         "bill_type_code": "N",
