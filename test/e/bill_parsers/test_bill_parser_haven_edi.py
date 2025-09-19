@@ -1,6 +1,10 @@
 from decimal import Decimal
 from io import BytesIO
 
+from re import escape
+
+import pytest
+
 from werkzeug.exceptions import BadRequest
 
 from chellow.e.bill_parsers.haven_edi import (
@@ -13,7 +17,6 @@ from chellow.e.bill_parsers.haven_edi import (
     _process_MAN,
     _process_MHD,
     _process_MTR,
-    _process_segment,
 )
 from chellow.utils import utc_datetime
 
@@ -24,9 +27,10 @@ def test_process_BTL_zeroes(mocker):
         "UTVA": ["0"],
         "TBTL": ["0"],
     }
-    headers = {}
+    headers = {"errors": []}
     _process_BTL(elements, headers)
     expected_headers = {
+        "errors": [],
         "net": Decimal("0.00"),
         "vat": Decimal("0.00"),
         "gross": Decimal("0.00"),
@@ -41,9 +45,10 @@ def test_process_BTL_non_zeroes(mocker):
         "UTVA": ["12"],
         "TBTL": ["10"],
     }
-    headers = {}
+    headers = {"errors": []}
     _process_BTL(elements, headers)
     expected_headers = {
+        "errors": [],
         "net": Decimal("0.11"),
         "vat": Decimal("0.12"),
         "gross": Decimal("0.10"),
@@ -371,7 +376,7 @@ def test_process_MHD(mocker):
         "message_type": message_type,
         "reads": [],
         "errors": [],
-        "bill_elements": [],
+        "elements": [],
         "breakdown": {"raw-lines": []},
         "sess": sess,
         "kwh": Decimal("0"),
@@ -469,72 +474,29 @@ def test_process_CLO(mocker):
     assert headers == expected_headers
 
 
-def test_process_segment_error(mocker):
-    mocker.patch(
-        "chellow.e.bill_parsers.haven_edi._process_MTR", side_effect=BadRequest()
-    )
+def test_make_raw_bills(sess):
+    file_lines = [
+        "MHD=2+UTLBIL:3'",
+        "MTR=6'",
+    ]
+    f = BytesIO(b"\n".join(n.encode("utf8") for n in file_lines))
 
-    code = "MTR"
-    elements = []
-    line = ""
-    account = "a1"
-    bill_type_code = "N"
-    breakdown = {"raw-lines": []}
-    finish_date = utc_datetime(2020, 3, 31, 23, 30)
-    gross = 1
-    kwh = 1
-    issue_date = utc_datetime(2020, 4, 30, 23, 30)
-    net = 1
-    reads = []
-    reference = "20848747847"
-    start_date = utc_datetime(2020, 3, 1)
-    vat = 1
-    headers = {
-        "message_type": "UTLBIL",
-        "errors": [],
-        "type_code": "N",
-        "reads": reads,
-        "bill_type_code": "N",
-        "breakdown": breakdown,
-        "gross": gross,
-        "vat": vat,
-        "net": net,
-        "kwh": kwh,
-        "issue_date": issue_date,
-        "finish_date": finish_date,
-        "start_date": start_date,
-        "account": account,
-        "reference": reference,
-    }
-    line_number = 13
-
-    bill = _process_segment(code, elements, line, headers, line_number)
-
-    expected_bill = {
-        "bill_type_code": bill_type_code,
-        "account": account,
-        "error": "Can't parse the line number 13 : The browser (or proxy) sent a "
-        "request that this server could not understand. The key mpan_core is missing "
-        "from the headers at line number 13.",
-        "breakdown": breakdown,
-        "finish_date": finish_date,
-        "issue_date": issue_date,
-        "gross": gross,
-        "kwh": kwh,
-        "net": net,
-        "reads": reads,
-        "reference": reference,
-        "start_date": start_date,
-        "vat": vat,
-    }
-
-    assert bill == expected_bill
+    parser = Parser(f)
+    with pytest.raises(
+        BadRequest,
+        match=escape(
+            "400 Bad Request: The mpan_core can't be found for this bill. on line "
+            "2 line MTR=6' seg_name MTR elements {'NOSG': ['6']}"
+        ),
+    ):
+        parser.make_raw_bills()
 
 
 def test_Parser(mocker, sess):
     file_lines = [
-        "MHD=2+UTLBIL:3'",
-        "MTR=6'",
+        "STX=ANA:1+3832776:Fusion PLC+771:Fusion PLC+130214:090426+8472+"
+        "PASSWORD+UTLHDR'",
+        "END=251'",
     ]
     f = BytesIO(b"\n".join(n.encode("utf8") for n in file_lines))
     parser = Parser(f)
