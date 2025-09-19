@@ -136,6 +136,7 @@ def test_process_CCD3(mocker, sess):
 def test_process_CCD4(mocker, sess):
     headers = {"reads": [], "elements": []}
     elements = {
+        "NDRP": ["241"],
         "TMOD": ["0001", "CQ1UUP", "", "O"],
         "NUCT": ["8760000", "1"],
         "CPPU": ["086380"],
@@ -149,13 +150,10 @@ def test_process_CCD4(mocker, sess):
         "elements": [
             {
                 "breakdown": {
-                    "kwh": Decimal("8760"),
-                    "rate": {
-                        Decimal("0.8638"),
-                    },
+                    "days": Decimal("241"),
                 },
                 "finish_date": to_utc(ct_datetime(2017, 11, 23, 23, 30)),
-                "name": "00001",
+                "name": "standing",
                 "net": Decimal("371.50"),
                 "start_date": to_utc(ct_datetime(2015, 10, 22)),
             }

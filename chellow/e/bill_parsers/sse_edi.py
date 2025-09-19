@@ -486,7 +486,7 @@ def _process_CCD4(elements, headers):
         breakdown = {}
         el = {
             "name": "standing",
-            "net": to_decimal(ctot) / Decimal("100"),
+            "net": to_gbp(ctot),
             "start_date": to_date(csdt[0]),
             "finish_date": to_finish_date(cedt[0]),
             "breakdown": breakdown,
