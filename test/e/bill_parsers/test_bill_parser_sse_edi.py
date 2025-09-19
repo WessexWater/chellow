@@ -108,9 +108,9 @@ def test_process_BTL(mocker, sess):
     account = "AC2"
     reference = "h98ge4kl"
     kwh = Decimal("23")
-    net = "45.02"
-    vat = "5.27"
-    gross = "27.64"
+    net = "45.00"
+    vat = "5.20"
+    gross = "27.60"
     breakdown = {"raw-lines": []}
 
     headers = {
@@ -128,7 +128,7 @@ def test_process_BTL(mocker, sess):
         "kwh": kwh,
         "elements": [],
     }
-    elements = {"UVLT": ["4502"], "UTVA": ["527"], "TBTL": ["2764"]}
+    elements = {"UVLT": ["4500"], "UTVA": ["520"], "TBTL": ["2760"]}
     bill = _process_BTL(elements, headers)
     expected_bill = {
         "bill_type_code": bill_type_code,
@@ -147,6 +147,9 @@ def test_process_BTL(mocker, sess):
         "elements": [],
     }
     assert bill == expected_bill
+    assert bill["net"].as_tuple().exponent == -2
+    assert bill["vat"].as_tuple().exponent == -2
+    assert bill["gross"].as_tuple().exponent == -2
 
 
 def test_process_MTR(mocker, sess):

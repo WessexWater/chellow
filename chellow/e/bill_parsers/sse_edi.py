@@ -3,7 +3,14 @@ from decimal import Decimal
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.edi_lib import parse_edi, to_ct_date, to_date, to_decimal, to_finish_date
+from chellow.edi_lib import (
+    parse_edi,
+    to_ct_date,
+    to_date,
+    to_decimal,
+    to_finish_date,
+    to_gbp,
+)
 from chellow.models import Era, Session
 from chellow.utils import HH, ct_datetime, parse_mpan_core, to_utc
 
@@ -226,9 +233,9 @@ def _process_BTL(elements, headers):
         "start_date": headers["start_date"],
         "finish_date": headers["finish_date"],
         "kwh": headers["kwh"],
-        "net": to_decimal(uvlt) / Decimal("100"),
-        "vat": to_decimal(utva) / Decimal("100"),
-        "gross": to_decimal(tbtl) / Decimal("100"),
+        "net": to_gbp(uvlt),
+        "vat": to_gbp(utva),
+        "gross": to_gbp(tbtl),
         "breakdown": headers["breakdown"],
         "reads": headers["reads"],
         "elements": headers["elements"],

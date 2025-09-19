@@ -6,33 +6,6 @@ from werkzeug.exceptions import BadRequest
 from chellow.utils import ct_datetime, to_ct, to_utc
 
 
-def line_iter(f):
-    line = []
-    while c := f.read(1) != "":
-        if c == "'":
-            yield "".join(line)
-            line.clear()
-        else:
-            line.append(c)
-
-
-class EdiParser:
-    def __init__(self, f):
-
-        self.line_iterator = line_iter(f)
-        self.line_number = 0
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        self.line = next(self.line_iterator).strip()
-        self.line_number += 1
-
-        self.elements = [element.split(":") for element in self.line[4].split("+")]
-        return self.line[:3]
-
-
 def parse_edi(edi_str):
     for line_number, raw_line in enumerate(edi_str.split("'"), start=1):
         line = raw_line.strip()
@@ -66,6 +39,10 @@ def to_decimal(components):
     if len(components) > 1 and components[-1] == "R":
         result *= Decimal("-1")
     return result
+
+
+def to_gbp(components):
+    return Decimal("0.00") + round(to_decimal(components) / Decimal("100"), 2)
 
 
 def to_ct_date(component):
