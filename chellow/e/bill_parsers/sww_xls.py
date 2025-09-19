@@ -95,6 +95,7 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
                 element = elements[element_name]
             except KeyError:
                 element = elements[element_name] = {
+                    "name": element_name,
                     "breakdown": {},
                     "net": Decimal("0.00"),
                     "start_date": start_date,
@@ -103,8 +104,8 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
 
             bd = element["breakdown"]
             if typ == "COST":
-                element["net"] += val
-                net_gbp += val
+                element["net"] += round(val, 2)
+                net_gbp += round(val, 2)
             elif typ == "USE":
                 bd[units.lower()] = val
                 if element_name == "aahedc":
@@ -130,7 +131,7 @@ def _parse_row(issue_date, row, row_index, datemode, title_row):
         "finish_date": finish_date,
         "mpan_core": "22 0003 0354 632",
         "reference": reference,
-        "elements": elements,
+        "elements": list(elements.values()),
     }
 
 
