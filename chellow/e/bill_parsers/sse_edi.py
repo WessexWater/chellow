@@ -366,6 +366,11 @@ def _process_CCD2(elements, headers):
 
     adjf = elements["ADJF"]
     cona = elements["CONA"]
+    nuct = elements["NUCT"]
+    csdt = elements["CSDT"]
+    cedt = elements["CEDT"]
+    ctot = elements["CTOT"]
+    cppu = elements["CPPU"]
 
     coefficient = Decimal(adjf[1]) / Decimal(100000)
     pres_reading_value = Decimal(prrd[0])
@@ -381,26 +386,28 @@ def _process_CCD2(elements, headers):
     if tpr == "kW":
         units = "kW"
         tpr = None
-        prefix = "md-"
+        el_name = "md"
     elif tpr == "kVA":
         units = "kVA"
         tpr = None
-        prefix = "md-"
+        el_name = "md"
     else:
         units = "kWh"
         headers["kwh"] += to_decimal(cona) / Decimal("1000")
-        prefix = tpr + "-"
+        el_name = tpr
 
-    nuct = elements["NUCT"]
-    breakdown = headers["breakdown"]
-    breakdown[prefix + "kwh"] += to_decimal(nuct) / Decimal("1000")
-    cppu = elements["CPPU"]
-    rate_key = prefix + "rate"
-    if rate_key not in breakdown:
-        breakdown[rate_key] = set()
-    breakdown[rate_key].add(to_decimal(cppu) / Decimal("100000"))
-    ctot = elements["CTOT"]
-    breakdown[prefix + "gbp"] += to_decimal(ctot) / Decimal("100")
+    headers["elements"].append(
+        {
+            "name": el_name,
+            "breakdown": {
+                cona[1].lower(): to_decimal(nuct) / Decimal("1000"),
+                "rate": {to_decimal(cppu) / Decimal("100000")},
+            },
+            "start_date": to_date(csdt[0]),
+            "finish_date": to_finish_date(cedt[0]),
+            "net": to_gbp(ctot),
+        }
+    )
 
     if mpan_core in WRONG_TPRS and pres_read_date == to_utc(
         ct_datetime(2020, 4, 1, 23, 30)

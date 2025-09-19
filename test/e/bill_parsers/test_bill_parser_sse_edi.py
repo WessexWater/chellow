@@ -60,7 +60,12 @@ def test_parser_REF(mocker, sess):
 
 
 def test_process_CCD2(mocker, sess):
-    headers = {"reads": [], "breakdown": defaultdict(int), "kwh": Decimal(0)}
+    headers = {
+        "reads": [],
+        "breakdown": defaultdict(int),
+        "kwh": Decimal(0),
+        "elements": [],
+    }
     elements = {
         "TMOD": ["0001"],
         "MTNR": ["x"],
@@ -69,8 +74,10 @@ def test_process_CCD2(mocker, sess):
         "PVDT": ["200901"],
         "PRRD": ["10", "00", "0", "00"],
         "ADJF": ["", "0"],
-        "CONA": ["0"],
+        "CONA": ["0", "KWH"],
         "NUCT": ["0"],
+        "CSDT": ["200701"],
+        "CEDT": ["200901"],
         "CPPU": ["0"],
         "CTOT": ["0"],
     }
@@ -91,12 +98,20 @@ def test_process_CCD2(mocker, sess):
                 "pres_type_code": "N",
             }
         ],
-        "breakdown": {
-            "00001-kwh": Decimal("0"),
-            "00001-rate": {Decimal("0")},
-            "00001-gbp": Decimal("0"),
-        },
+        "elements": [
+            {
+                "name": "00001",
+                "net": Decimal("0"),
+                "start_date": to_utc(ct_datetime(2020, 7, 1)),
+                "finish_date": to_utc(ct_datetime(2020, 9, 1, 23, 30)),
+                "breakdown": {
+                    "kwh": Decimal("0"),
+                    "rate": {Decimal("0")},
+                },
+            }
+        ],
         "kwh": Decimal("0"),
+        "breakdown": {},
     }
     assert headers == expected_headers
 
