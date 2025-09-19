@@ -133,71 +133,9 @@ def test_parse_row(mocker):
         "account": "2007",
         "bill_type_code": "N",
         "breakdown": {},
-        "elements": {
-            "aahedc": {
-                "breakdown": {
-                    "kwh": Decimal("672"),
-                    "rate": Decimal("4.62"),
-                },
-                "net": Decimal("8483.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "admin": {
-                "breakdown": {
-                    "mo": Decimal("43895"),
-                    "rate": Decimal("48"),
-                },
-                "net": Decimal("498.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "bsuos": {
-                "breakdown": {
-                    "kwh": Decimal("6843"),
-                    "rate": Decimal("6.328"),
-                },
-                "net": Decimal("6984.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "ccl": {
-                "breakdown": {
-                    "kwh": Decimal("7034"),
-                    "rate": Decimal("6734"),
-                },
-                "net": Decimal("574.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "cfdob": {
-                "breakdown": {
-                    "kwh": Decimal("956"),
-                    "rate": Decimal("678"),
-                },
-                "net": Decimal("4567.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "cfdop": {
-                "breakdown": {
-                    "kwh": Decimal("485"),
-                    "rate": Decimal("57"),
-                },
-                "net": Decimal("76.00"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "duos-amber": {
-                "breakdown": {
-                    "kwh": Decimal("877"),
-                    "rate": Decimal("8.001"),
-                },
-                "net": Decimal("82.98"),
-                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
-            },
-            "duos-availability": {
+        "elements": [
+            {
+                "name": "duos-availability",
                 "breakdown": {
                     "kvaday": Decimal("54"),
                     "rate": Decimal("7.8"),
@@ -206,7 +144,8 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "duos-fixed": {
+            {
+                "name": "duos-fixed",
                 "breakdown": {
                     "day": Decimal("5998"),
                     "rate": Decimal("6.22"),
@@ -215,7 +154,18 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "duos-green": {
+            {
+                "name": "duos-amber",
+                "breakdown": {
+                    "kwh": Decimal("877"),
+                    "rate": Decimal("8.001"),
+                },
+                "net": Decimal("82.98"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "duos-green",
                 "breakdown": {
                     "kwh": Decimal("377"),
                     "rate": Decimal("0.3"),
@@ -224,7 +174,8 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "duos-red": {
+            {
+                "name": "duos-red",
                 "breakdown": {
                     "kwh": Decimal("823"),
                     "rate": Decimal("0.782"),
@@ -233,7 +184,58 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "fit": {
+            {
+                "name": "aahedc",
+                "breakdown": {
+                    "kwh": Decimal("672"),
+                    "rate": Decimal("4.62"),
+                },
+                "net": Decimal("8483.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "bsuos",
+                "breakdown": {
+                    "kwh": Decimal("6843"),
+                    "rate": Decimal("6.328"),
+                },
+                "net": Decimal("6984.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "ccl",
+                "breakdown": {
+                    "kwh": Decimal("7034"),
+                    "rate": Decimal("6734"),
+                },
+                "net": Decimal("574.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "cfdob",
+                "breakdown": {
+                    "kwh": Decimal("956"),
+                    "rate": Decimal("678"),
+                },
+                "net": Decimal("4567.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "cfdop",
+                "breakdown": {
+                    "kwh": Decimal("485"),
+                    "rate": Decimal("57"),
+                },
+                "net": Decimal("76.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "fit",
                 "breakdown": {
                     "kwh": Decimal("39647"),
                     "rate": Decimal("6587"),
@@ -242,7 +244,8 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "ro": {
+            {
+                "name": "ro",
                 "breakdown": {
                     "kwh": Decimal("34687"),
                     "rate": Decimal("67"),
@@ -251,7 +254,8 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "summer": {
+            {
+                "name": "summer",
                 "breakdown": {
                     "kwh": Decimal("879654"),
                     "rate": Decimal("654897"),
@@ -260,7 +264,18 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-            "triad": {
+            {
+                "name": "admin",
+                "breakdown": {
+                    "mo": Decimal("43895"),
+                    "rate": Decimal("48"),
+                },
+                "net": Decimal("498.00"),
+                "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
+                "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
+            },
+            {
+                "name": "triad",
                 "breakdown": {
                     "day": Decimal("3498"),
                     "rate": Decimal("9384"),
@@ -269,7 +284,7 @@ def test_parse_row(mocker):
                 "start_date": to_utc(ct_datetime(2019, 4, 1, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
             },
-        },
+        ],
         "finish_date": to_utc(ct_datetime(2019, 4, 30, 23, 30)),
         "gross": Decimal("82805.98"),
         "issue_date": issue_date,
