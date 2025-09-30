@@ -4,7 +4,7 @@ import threading
 import traceback
 from collections import defaultdict
 from datetime import datetime as Datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from itertools import combinations
 from numbers import Number
 
@@ -17,6 +17,8 @@ from sqlalchemy.orm import joinedload, subqueryload
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
+
+from zish import ZishException
 
 
 from chellow.dloads import open_file
@@ -454,6 +456,40 @@ def _process_period(
                 actual_bill["problem"] += (
                     f"The Gross GBP ({bill.gross}) of the bill isn't equal to "
                     f"the Net GBP ({bill.net}) + VAT GBP ({bill.vat}) of the bill."
+                )
+
+            vat_net = Decimal("0.00")
+            vat_vat = Decimal("0.00")
+
+            try:
+                bd = bill.bd
+
+                if "vat" in bd:
+                    for vat_percentage, vat_vals in bd["vat"].items():
+                        calc_vat = Decimal(
+                            float(vat_percentage) / 100 * float(vat_vals["net"])
+                        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                        if calc_vat != vat_vals["vat"]:
+                            actual_bill["problem"] += (
+                                f"The VAT at {vat_percentage}% on the net amount "
+                                f"{vat_vals['net']} is calculated to be {calc_vat}, "
+                                f"which is different from the value in the bill of "
+                                f"{vat_vals['vat']}"
+                            )
+                        vat_net += vat_vals["net"]
+                        vat_vat += vat_vals["vat"]
+            except ZishException as e:
+                actual_bill["problem"] += f"Problem parsing the breakdown: {e}"
+
+            if vat_net != bill.net:
+                actual_bill["problem"] += (
+                    f"The total 'net' {vat_net} in the VAT breakdown doesn't "
+                    f"match the 'net' {bill.net} of the bill."
+                )
+            if vat_vat != bill.vat:
+                actual_bill["problem"] += (
+                    f"The total VAT {vat_vat} in the VAT breakdown doesn't "
+                    f"match the VAT {bill.vat} of the bill."
                 )
 
             if len(actual_bill["problem"]) > 0:

@@ -1389,14 +1389,17 @@ def report_run_get(run_id):
                 )
                 for n in element_names
             ]
-            sum_diffs = g.sess.execute(
-                select(*diff_selects).where(ReportRunRow.report_run == run)
-            ).one()
+            if len(diff_selects) > 0:
+                sum_diffs = g.sess.execute(
+                    select(*diff_selects).where(ReportRunRow.report_run == run)
+                ).one()
 
-            for elem, sum_diff in zip(element_names, sum_diffs):
-                elements.append((elem, sum_diff))
+                for elem, sum_diff in zip(element_names, sum_diffs):
+                    elements.append((elem, sum_diff))
 
-            elements.sort(key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True)
+                elements.sort(
+                    key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True
+                )
 
         if "element" in request.values:
             element = req_str("element")

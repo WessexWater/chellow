@@ -108,7 +108,12 @@
 					<td>
 						<strong style="color: red">{{bill.problem}}</strong>
 					</td>
-					<td>{{bill.breakdown}}</td>
+					<td>
+						<details>
+							<summary>Breakdown</summary>
+							<pre>{{bill.breakdown}}</pre>
+						</details>
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>
