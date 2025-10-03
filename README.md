@@ -17,7 +17,7 @@ Chellow is a web application for checking UK electricity and gas bills. It's des
 for organizations with high electricity consumption. The software is hosted at
 https://github.com/WessexWater/chellow.
 
-[![Build Status](https://github.com/WessexWater/chellow/workflows/chellow/badge.svg)](https://github.com/WessexWater/chellow/workflows/chellow)
+[![Build Status](https://github.com/WessexWater/chellow/actions/workflows/chellow.yml/badge.svg)](https://github.com/WessexWater/chellow/actions/workflows/chellow.yml)
 
 
 ## Installation
@@ -25,8 +25,7 @@ https://github.com/WessexWater/chellow.
 Chellow is a Python web application that uses the PostgreSQL database. To install
 Chellow, follow these steps:
 
-* Install [PostgreSQL](http://www.postgresql.org/) 12
-  * Set the PostgreSQL time zone to 'UTC'.
+* Install [PostgreSQL](http://www.postgresql.org/) 15
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
 * Set up the following environment variables to configure Chellow:
 

@@ -942,47 +942,70 @@ def general_import_bill(sess, action, vals, args):
             supply,
         )
 
-        for i in range(15, len(vals), 11):
-            msn = add_arg(args, "Meter Serial Number", vals, i)
-            mpan_str = add_arg(args, "MPAN", vals, i + 1)
-            coefficient_str = add_arg(args, "Coefficient", vals, i + 2)
-            coefficient = Decimal(coefficient_str)
-            units = add_arg(args, "Units", vals, i + 3)
-            tpr_code = add_arg(args, "TPR", vals, i + 4)
-            if len(tpr_code) > 0:
-                tpr = Tpr.get_by_code(sess, tpr_code)
-            else:
-                tpr = None
+        i = 15
+        while i < len(vals):
+            typ = add_arg(args, "read or element", vals, i)
+            if typ == "read":
+                msn = add_arg(args, "Meter Serial Number", vals, i + 1)
+                mpan_str = add_arg(args, "MPAN", vals, i + 2)
+                coefficient_str = add_arg(args, "Coefficient", vals, i + 3)
+                coefficient = Decimal(coefficient_str)
+                units = add_arg(args, "Units", vals, i + 4)
+                tpr_code = add_arg(args, "TPR", vals, i + 5)
+                if len(tpr_code) > 0:
+                    tpr = Tpr.get_by_code(sess, tpr_code)
+                else:
+                    tpr = None
 
-            prev_date_str = add_arg(args, "Previous Date", vals, i + 5)
-            prev_date = parse_hh_start(prev_date_str)
-            prev_value_str = add_arg(args, "Previous Value", vals, i + 6)
-            prev_value = Decimal(prev_value_str)
+                prev_date_str = add_arg(args, "Previous Date", vals, i + 6)
+                prev_date = parse_hh_start(prev_date_str)
+                prev_value_str = add_arg(args, "Previous Value", vals, i + 7)
+                prev_value = Decimal(prev_value_str)
 
-            prev_type_str = add_arg(args, "Previous Type", vals, i + 7)
-            prev_type = ReadType.get_by_code(sess, prev_type_str)
+                prev_type_str = add_arg(args, "Previous Type", vals, i + 8)
+                prev_type = ReadType.get_by_code(sess, prev_type_str)
 
-            pres_date_str = add_arg(args, "Present Date", vals, i + 8)
-            pres_date = parse_hh_start(pres_date_str)
-            pres_value_str = add_arg(args, "Present Value", vals, i + 9)
-            pres_value = Decimal(pres_value_str)
+                pres_date_str = add_arg(args, "Present Date", vals, i + 9)
+                pres_date = parse_hh_start(pres_date_str)
+                pres_value_str = add_arg(args, "Present Value", vals, i + 10)
+                pres_value = Decimal(pres_value_str)
 
-            pres_type_str = add_arg(args, "Present Type", vals, i + 10)
-            pres_type = ReadType.get_by_code(sess, pres_type_str)
-            bill.insert_read(
-                sess,
-                tpr,
-                coefficient,
-                units,
-                msn,
-                mpan_str,
-                prev_date,
-                prev_value,
-                prev_type,
-                pres_date,
-                pres_value,
-                pres_type,
-            )
+                pres_type_str = add_arg(args, "Present Type", vals, i + 11)
+                pres_type = ReadType.get_by_code(sess, pres_type_str)
+                bill.insert_read(
+                    sess,
+                    tpr,
+                    coefficient,
+                    units,
+                    msn,
+                    mpan_str,
+                    prev_date,
+                    prev_value,
+                    prev_type,
+                    pres_date,
+                    pres_value,
+                    pres_type,
+                )
+                i += 12
+            elif typ == "element":
+                name = add_arg(args, "Name", vals, i + 1)
+                start_date_str = add_arg(args, "Start Date", vals, i + 2)
+                start_date = parse_hh_start(start_date_str)
+                finish_date_str = add_arg(args, "Finish Date", vals, i + 3)
+                finish_date = parse_hh_start(finish_date_str)
+                net_str = add_arg(args, "Net", vals, i + 4)
+                net = Decimal(net_str)
+                breakdown_str = add_arg(args, "Breakdown", vals, i + 5)
+                breakdown = _parse_breakdown(breakdown_str)
+                bill.insert_element(
+                    sess,
+                    name,
+                    start_date,
+                    finish_date,
+                    net,
+                    breakdown,
+                )
+                i += 6
 
     elif action == "update":
         bill_id_str = add_arg(args, "Bill Id", vals, 0)
