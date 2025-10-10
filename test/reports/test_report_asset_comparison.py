@@ -41,7 +41,7 @@ def test_content(sess):
     content(user_id, file_like, report_run_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_adminexamplecom_asset_comparison.csv"]
+    assert files == ["00000_FINISHED_admin_example_com_asset_comparison.csv"]
 
 
 def test_process_sites(sess):

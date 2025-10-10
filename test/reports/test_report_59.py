@@ -66,11 +66,9 @@ def test_do_post_scenario(mocker, sess, client):
     now = utc_datetime(2020, 1, 1)
     mocker.patch("chellow.reports.report_59.utc_datetime_now", return_value=now)
 
-    compression = False
     data = {
         "scenario_id": scenario.id,
         "site_codes": "",
-        "compression": compression,
     }
 
     sess.commit()
@@ -86,7 +84,7 @@ def test_do_post_scenario(mocker, sess, client):
         scenario_props,
         base_name,
         user.id,
-        compression,
+        False,
         now,
         is_bill_check,
     )
@@ -117,7 +115,6 @@ def test_do_post(mocker, sess, client):
     finish_minute = 30
     data = {
         "site_codes": site_code,
-        "compression": compression,
         "start_year": start_year,
         "start_month": start_month,
         "start_day": start_day,

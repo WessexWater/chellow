@@ -381,7 +381,7 @@ def channel_snags_get():
         total_snags_q = total_snags_q.where(Era.dc_contract == contract)
         snags_q = snags_q.where(Era.dc_contract == contract)
 
-    total_snags = g.sess.execute(total_snags_q)
+    total_snags = g.sess.scalars(total_snags_q).one()
 
     snag_groups = []
     prev_snag = None

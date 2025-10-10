@@ -91,7 +91,7 @@ class DloadFile:
 def open_file(base, user, mode="r", newline=None, is_zip=False):
     global download_id
 
-    base = base.replace("/", "").replace(" ", "")
+    base = "".join(x if (x.isalnum() or x in "_.") else "_" for x in base)
     try:
         lock.acquire()
         if len(list(download_path.iterdir())) == 0:
@@ -108,7 +108,7 @@ def open_file(base, user, mode="r", newline=None, is_zip=False):
             un = user.proxy_username
         else:
             un = user.email_address
-        uname = un.replace("@", "").replace(".", "").replace("\\", "")
+        uname = "".join(x if (x.isalnum() or x in "_") else "_" for x in un)
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))
     running_name, finished_name = tuple(download_path / name for name in names)

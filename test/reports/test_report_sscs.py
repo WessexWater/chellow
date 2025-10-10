@@ -13,4 +13,4 @@ def test_content(sess):
     content(user_id, compression)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_adminexamplecom_sscs.ods"]
+    assert files == ["00000_FINISHED_admin_example_com_sscs.ods"]

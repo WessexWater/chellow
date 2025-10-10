@@ -124,13 +124,23 @@
 	</div>
 {%- endmacro -%}
 
-{%- macro input_checkbox(name, initial) %}
-	<input type="checkbox" name="{{ name }}" value="true"
+{%- macro input_checkbox(name, initial=False, value='true') %}
+	<input type="checkbox" name="{{ name }}" value="{{value}}"
 		{%- if request.values[name] -%}
-				{%- if request.values[name] == 'true' %} checked
+				{%- if request.values[name] == value %} checked
 				{%- endif -%}
 		{%- else -%}
-				{%- if initial == True %} checked{% endif -%}
+				{%- if initial %} checked{% endif -%}
+		{%- endif -%}>
+{%- endmacro -%}
+
+{%- macro input_radio(name, value, initial=False) %}
+	<input type="radio" name="{{ name }}" value="{{value}}"
+		{%- if request.values[name] -%}
+				{%- if request.values[name] == value %} checked
+				{%- endif -%}
+		{%- else -%}
+				{%- if initial %} checked{% endif -%}
 		{%- endif -%}>
 {%- endmacro -%}
 

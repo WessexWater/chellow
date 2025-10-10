@@ -216,4 +216,4 @@ def virtual_bill(ds):
     )
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_adminexamplecom_daily_supplier_virtual_bill.csv"]
+    assert files == ["00000_FINISHED_admin_example_com_daily_supplier_virtual_bill.csv"]

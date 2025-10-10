@@ -29,16 +29,27 @@ def req_str(name):
         raise BadRequest(f"The field {name} is required.")
 
 
-def req_bool(name):
+def req_strs(name):
     try:
-        return request.values[name] == "true"
+        return request.values.getlist(name)
     except KeyError:
-        return False
+        raise BadRequest(f"The field {name} is required.")
+
+
+def req_bool(name):
+    return name in request.values
 
 
 def req_int(name):
     try:
         return int(req_str(name))
+    except ValueError as e:
+        raise BadRequest(f"Problem parsing the field {name} as an integer: {e}")
+
+
+def req_ints(name):
+    try:
+        return [int(v) for v in req_strs(name)]
     except ValueError as e:
         raise BadRequest(f"Problem parsing the field {name} as an integer: {e}")
 

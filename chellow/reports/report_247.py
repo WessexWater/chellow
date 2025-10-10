@@ -1116,10 +1116,7 @@ def do_post(sess):
                 exp_mpan_core if imp_mpan_core is None else imp_mpan_core
             ]
 
-        if "compression" in request.values:
-            compression = req_bool("compression")
-        else:
-            compression = True
+        compression = req_bool("compression")
 
         user = g.user
 

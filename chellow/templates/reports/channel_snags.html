@@ -1,0 +1,91 @@
+{% extends "macros.html" %}
+
+{% block html %}
+	<table class="sticky" id="snags">
+		<caption>
+			Snags (truncated after 200)
+			<a href="/reports/channel_snags?dc_contract_id={{contract.id}}&amp;days_hidden={{days_hidden}}&amp;is_ignored={{is_ignored}}&amp;only_ongoing={{only_ongoing}}&amp;show_settlement={{show_settlement}}&amp;as_csv=true">Download as CSV</a>
+		</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Contract</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+				<th>Site</th>
+				<th>Description</th>
+				<th>Channels</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>
+					<span title="Blank if the snag is ongoing (ie. if the finish date is 'ongoing' or if it finished less than 'Days Hidden' ago).">Days Since Finished</span>
+				</th>
+				<th>Duration</th>
+				<th>Comm</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for snag_group in snag_groups %}
+				<tr>
+					<td>
+						<ul>
+							{% for snag in snag_group.snags %}
+								<li>
+									<a href="/e/channel_snags/{{snag.id}}">view</a>
+									[<a href="/e/channel_snags/{{snag.id}}/edit">edit</a>]
+									{% if snag.is_ignored %} ignored{% endif %}
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
+					<td>
+						<a href="/e/dc_contracts/{{snag_group.contract.id}}">{{snag_group.contract.name}}</a>
+					</td>
+					<td>
+						{% if snag_group.era.imp_mpan_core %}
+							<a href="/e/supplies/{{snag_group.supply.id}}">{{snag_group.era.imp_mpan_core}}</a>
+						{% endif %}
+					</td>
+					<td>
+						{% if snag_group.era.exp_mpan_core %}
+							<a href="/e/supplies/{{snag_group.supply.id}}">{{snag_group.era.exp_mpan_core}}</a>
+						{% endif %}
+					</td>
+					<td>
+						<a href="/sites/{{snag_group.site.id}}">{{snag_group.site.code}} {{snag_group.site.name}}</a>
+					</td>
+					<td>{{snag_group.description}}</td>
+					<td>
+						<ul>
+							{% for snag in snag_group.snags %}
+								<li>
+									{% if snag.channel.imp_related %}
+										Import
+									{% else %}
+										Export
+									{% endif %}
+									{{snag.channel.channel_type}}
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
+					<td>
+						{{snag_group.start_date|hh_format}}
+					</td>
+					<td>
+						{{snag_group.finish_date|hh_format}}
+					</td>
+					<td>
+						{% if snag_group.days_since_finished %}
+							{{snag_group.days_since_finished}}
+						{% endif %}
+					</td>
+					<td>{{snag_group.duration}}</td>
+					<td>
+						<a href="/e/comms/{{snag_group.era.comm.id}}" title="{{snag_group.era.comm.description}}">{{snag_group.era.comm.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

@@ -8,6 +8,15 @@
 	Channel Snags
 {% endblock %}
 
+{% block inside_head %}
+	<style>
+		#snags.htmx-swapping {
+			opacity: 0;
+			transition: opacity 1s ease-out;
+		}
+	</style>
+{% endblock %}
+
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
 	{% if contract %}
@@ -17,113 +26,36 @@
 {% endblock %}
 
 {% block content %}
-
-	<form action="/reports/233">
+	<form hx-get="/reports/channel_snags" hx-params="*" hx-include="this" hx-trigger="load, change"
+			hx-target="#snags" hx-swap="outerHTML swap:1s">
 		<fieldset>
-			<legend>Download CSV</legend>	
+			<legend>Filters</legend>	
 			<input type="hidden" name="dc_contract_id" value="{{contract.id}}">
 			<label>Hide snags &lt; days old</label>
-		 	{{input_text('days_hidden', '0', 3, 3)}}
+			{{input_text('days_hidden', initial='5', size=3, maxlength=3)}}
 			<label>Include ignored snags</label> {{input_checkbox('is_ignored', False)}} 
-			<input type="submit" value="Download">
+
+			<label>Only show ongoing snags</label>
+			{{input_checkbox('only_ongoing', initial=True)}} 
+
+			<fieldset>
+
+				<label>Show settlement only</label>
+				{{input_radio('show_settlement', 'yes', initial=False)}} 
+
+				<label>Show non-settlement only</label>
+				{{input_radio('show_settlement', 'no', initial=False)}} 
+
+				<label>Show both</label>
+				{{input_radio('show_settlement', 'both', initial=True)}} 
+
+			</fieldset>
+
+			<label>Hide snags &lt; days long</label>
+			{{input_text('days_long_hidden', initial='', size=3, maxlength=3)}}
+
 		</fieldset>
 	</form>
 
-	<p>
-		The 'Days Since Snag Finished' column is blank if the snag is ongoing (ie. if the
-	 	finish date is 'ongoing' or if it finished less than 'Days Hidden' ago).
-	</p>
-
-	<form action="/e/channel_snags">
-		<fieldset>
-			<legend>Show Channel Snags</legend>	
-			<input type="hidden" name="dc_contract_id" value="
-				{%- if contract -%}
-					{{contract.id}}
-				{%- endif -%}
-			">
-			<label>Hide snags &lt; days old</label>
-		 	{{input_text('days_hidden', '0', 3, 3)}}
-			<label>Include ignored snags</label> {{input_checkbox('is_ignored', False)}} 
-			<input type="submit" value="Show">
-		</fieldset>
-	</form>
-
-	<p>
-		There are {{total_snags}} snag(s) older than {{request.values.days_hidden}} days
-		{%- if not is_ignored %}
-			that aren't ignored
-		{%- endif -%}.
-	</p>
-
-	<table>
-		<caption>Snags (truncated after 200)</caption>
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Contract</th>
-				<th>Import MPAN Core</th>
-				<th>Export MPAN Core</th>
-				<th>Sites</th>
-				<th>Snag Description</th>
-				<th>Channels</th>
-				<th>Duration</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for snag_group in snag_groups %}
-				<tr>
-					<td>
-						<ul>
-							{% for snag in snag_group.snags %}
-								<li>
-									<a href="/e/channel_snags/{{snag.id}}">view</a>
-									[<a href="/e/channel_snags/{{snag.id}}/edit">edit</a>]
-									{% if snag.is_ignored %} ignored{% endif %}
-								</li>
-							{% endfor %}
-						</ul>
-					</td>
-					<td>{{snag_group.era.dc_contract.name}}</td>
-					<td>
-						{% if snag_group.era.imp_mpan_core %}
-							{{snag_group.era.imp_mpan_core}}
-						{% endif %}
-					</td>
-					<td>
-						{% if snag_group.era.exp_mpan_core %}
-							{{snag_group.era.exp_mpan_core}}
-						{% endif %}
-					</td>
-					<td>
-						<ul>
-							{% for site in snag_group.sites %}
-								<li>{{site.code}} {{site.name}}</li>
-							{% endfor %}
-						</ul>
-					</td>
-					<td>{{snag_group.description}}</td>
-					<td>
-						<ul>
-							{% for snag in snag_group.snags %}
-								<li>
-									{% if snag.channel.imp_related %}
-										Import
-									{% else %}
-										Export
-									{% endif %}
-									{{snag.channel.channel_type}}
-								</li>
-							{% endfor %}
-						</ul>
-					</td>
-					<td>
-						{{snag_group.start_date|hh_format}} to
-						{{snag_group.finish_date|hh_format}}
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-
+	<div id="snags"></div>
 {% endblock %}

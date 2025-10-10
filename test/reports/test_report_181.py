@@ -17,7 +17,7 @@ def test_content(sess):
     content(year, site_id, user_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_adminexamplecom_output.csv"]
+    assert files == ["00000_FINISHED_admin_example_com_output.csv"]
 
 
 def test_write_sites(mocker):

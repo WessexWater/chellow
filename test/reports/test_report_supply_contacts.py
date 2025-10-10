@@ -21,4 +21,4 @@ def test_content(sess):
     content(user_id, report_run.id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_adminexamplecom_supply_contacts.csv"]
+    assert files == ["00000_FINISHED_admin_example_com_supply_contacts.csv"]

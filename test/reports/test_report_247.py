@@ -90,7 +90,6 @@ def test_with_scenario(mocker, sess, client):
     data = {
         "site_id": site.id,
         "scenario_id": scenario.id,
-        "compression": False,
     }
 
     response = client.post("/reports/247", data=data)
@@ -117,7 +116,6 @@ def test_do_post_without_scenario(mocker, sess, client):
     mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
 
     data = {
-        "compression": False,
         "finish_year": 2009,
         "finish_month": 8,
         "months": 1,
@@ -146,7 +144,6 @@ def test_do_post_error(mocker, sess, client):
     mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
 
     data = {
-        "compression": False,
         "finish_year": 2009,
         "finish_month": 8,
         "months": 1,
