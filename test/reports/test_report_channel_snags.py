@@ -58,6 +58,7 @@ def test_do_get_as_csv(mocker, sess, client):
     only_ongoing = True
     as_csv = True
     days_long_hidden = ""
+    now = to_utc(ct_datetime(2025, 10, 31, 0, 0))
     query_string = {
         "days_hidden": days_hidden,
         "show_settlement": show_settlement,
@@ -66,6 +67,11 @@ def test_do_get_as_csv(mocker, sess, client):
         "dc_contract_id": dc_contract_id,
         "as_csv": as_csv,
         "days_long_hidden": days_long_hidden,
+        "now_year": 2025,
+        "now_month": 10,
+        "now_day": 31,
+        "now_hour": 0,
+        "now_minute": 0,
     }
     response = client.get("/reports/channel_snags", query_string=query_string)
     match(response, 303)
@@ -77,6 +83,7 @@ def test_do_get_as_csv(mocker, sess, client):
         user_id,
         only_ongoing,
         show_settlement,
+        now,
     )
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -309,6 +316,7 @@ def test_content(mocker, sess):
     days_since_finished = ""
     show_settlement = "both"
     days_long_hidden = None
+    now = to_utc(ct_datetime(2025, 10, 30, 0, 0))
     content(
         dc_contract_id,
         days_hidden,
@@ -317,6 +325,7 @@ def test_content(mocker, sess):
         days_since_finished,
         show_settlement,
         days_long_hidden,
+        now,
     )
     f.seek(0)
     actual = list(csv.reader(f))
@@ -351,7 +360,7 @@ def test_content(mocker, sess):
             "",
             "False",
             "",
-            "9425",
+            "9434",
         ],
     ]
     match_tables(expected, actual)
@@ -381,6 +390,7 @@ def test_content_not_show_settlement(mocker, sess):
     days_since_finished = ""
     show_settlement = "no"
     days_long_hidden = ""
+    now = to_utc(ct_datetime(2025, 10, 30, 0, 0))
     content(
         dc_contract_id,
         days_hidden,
@@ -389,6 +399,7 @@ def test_content_not_show_settlement(mocker, sess):
         days_since_finished,
         show_settlement,
         days_long_hidden,
+        now,
     )
     f.seek(0)
     actual = list(csv.reader(f))

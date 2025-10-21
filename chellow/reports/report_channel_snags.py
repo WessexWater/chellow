@@ -5,7 +5,7 @@ import traceback
 
 from dateutil.relativedelta import relativedelta
 
-from flask import g, redirect, render_template
+from flask import g, redirect, render_template, request
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import false, select, true
@@ -29,6 +29,7 @@ from chellow.utils import (
     csv_make_val,
     hh_before,
     req_bool,
+    req_date,
     req_int,
     req_int_none,
     req_str,
@@ -160,6 +161,7 @@ def content(
     only_ongoing,
     show_settlement,
     days_long_hidden,
+    now,
 ):
     f = writer = None
     try:
@@ -192,7 +194,6 @@ def content(
             )
             writer.writerow(titles)
 
-            now = utc_datetime_now()
             for snag_group in _make_rows(
                 sess,
                 now,
@@ -246,6 +247,10 @@ def do_get(sess):
     show_settlement = req_str("show_settlement")
     as_csv = req_bool("as_csv")
     days_long_hidden = req_int_none("days_long_hidden")
+    if "now_year" in request.values:
+        now = req_date("now")
+    else:
+        now = utc_datetime_now()
 
     if as_csv:
         args = (
@@ -255,6 +260,7 @@ def do_get(sess):
             g.user.id,
             only_ongoing,
             show_settlement,
+            now,
         )
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)

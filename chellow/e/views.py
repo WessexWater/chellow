@@ -5711,7 +5711,7 @@ def supplier_contract_edit_delete(contract_id):
         contract = Contract.get_supplier_by_id(g.sess, contract_id)
         contract.delete(g.sess)
         g.sess.commit()
-        return chellow_redirect("/supplier_contracts", 303)
+        return hx_redirect("/supplier_contracts", 303)
     except BadRequest as e:
         g.sess.rollback()
         description = e.description
@@ -5882,25 +5882,39 @@ def supplier_rate_script_edit_get(rate_script_id):
     )
 
 
+@e.route("/supplier_rate_scripts/<int:rate_script_id>/edit", methods=["DELETE"])
+def supplier_rate_script_edit_delete(rate_script_id):
+    try:
+        rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
+        contract = rate_script.contract
+        contract.delete_rate_script(g.sess, rate_script)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_contracts/{contract.id}", 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return make_response(
+            render_template(
+                "supplier_rate_script_edit.html", supplier_rate_script=rate_script
+            ),
+            400,
+        )
+
+
 @e.route("/supplier_rate_scripts/<int:rate_script_id>/edit", methods=["POST"])
 def supplier_rate_script_edit_post(rate_script_id):
     try:
         rate_script = RateScript.get_supplier_by_id(g.sess, rate_script_id)
         contract = rate_script.contract
-        if "delete" in request.values:
-            contract.delete_rate_script(g.sess, rate_script)
-            g.sess.commit()
-            return chellow_redirect(f"/supplier_contracts/{contract.id}", 303)
-        else:
-            script = req_zish("script")
-            start_date = req_date("start")
-            has_finished = req_bool("has_finished")
-            finish_date = req_date("finish") if has_finished else None
-            contract.update_rate_script(
-                g.sess, rate_script, start_date, finish_date, script
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/supplier_rate_scripts/{rate_script.id}", 303)
+        script = req_zish("script")
+        start_date = req_date("start")
+        has_finished = req_bool("has_finished")
+        finish_date = req_date("finish") if has_finished else None
+        contract.update_rate_script(
+            g.sess, rate_script, start_date, finish_date, script
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_rate_scripts/{rate_script.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
