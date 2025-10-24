@@ -120,81 +120,6 @@
 	</table>
   
 	<section class="elements">
-		<!--
-		<table>
-			<caption>GBP</caption>
-			<thead>
-				<tr>
-					<th>Part</th>
-					<th>Covered</th>
-					<th>Virtual</th>
-					<th>Difference</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>gross</td>
-					<td>
-						{% if 'covered-gross-gbp' in data and data['covered-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(data['covered-gross-gbp'])}}
-						{% endif %}
-					</td>
-					<td>
-						{% if 'virtual-gross-gbp' in data and data['virtual-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(data['virtual-gross-gbp'])}}
-						{% endif %}
-					</td>
-					<td>
-						{% if 'difference-gross-gbp' in data and data['difference-gross-gbp'] is number %}
-							{{"{:0,.2f}".format(data['difference-gross-gbp'])}}
-						{% endif %}
-					</td>
-				</tr>
-				<tr>
-					<td>net</td>
-					<td>
-						{% if 'covered-net-gbp' in data and data['covered-net-gbp'] is number %}
-							{{"{:0,.2f}".format(data['covered-net-gbp'])}}</td>
-						{% endif %}
-					<td>
-						{% if 'virtual-net-gbp' in data and data['virtual-net-gbp'] is number %}
-							{{"{:0,.2f}".format(data['virtual-net-gbp'])}}</td>
-						{% endif %}
-					<td>
-						{% if 'difference-net-gbp' in data and data['difference-net-gbp'] is number %}
-							{{"{:0,.2f}".format(data['difference-net-gbp'])}}</td>
-						{% endif %}
-				</tr>
-				<tr>
-					<td>vat</td>
-					<td>
-						{% if 'covered-vat-gbp' in data and data['covered-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(data['covered-vat-gbp'])}}</td>
-						{% endif %}
-					<td>
-						{% if 'virtual-vat-gbp' in data and data['virtual-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(data['virtual-vat-gbp'])}}</td>
-						{% endif %}
-					<td>
-						{% if 'difference-vat-gbp' in data and data['difference-vat-gbp'] is number %}
-							{{"{:0,.2f}".format(data['difference-vat-gbp'])}}</td>
-						{% endif %}
-				</tr>
-				<tr>
-					<td>vat-rate</td>
-					<td>
-						{{data['covered-vat-rate']}}</td>
-					<td>{{data['virtual-vat-rate']}}</td>
-					<td>
-						{% if data['difference-vat-rate'] is number %}
-							{{"{:0,.2f}".format(data['difference-vat-rate'])}}
-						{% endif %}
-					</td>
-				</tr>
-			</tbody>
-		</table>
-		-->
-
 		{% for table in tables %}
 			{% set element = data['elements'][table] %}
 			{% set parts = element['parts'] %}
@@ -243,13 +168,25 @@
 											{% endif %}
 											{% if val is none %}
 											{% elif val is number %}
-												{{"{:0,.2f}".format(val)}}
+												{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
+													{{"{:0,.0f}".format(val)}}
+												{% elif part_name.endswith('-kw') %}
+													{{"{:0,.2f}".format(val)}}
+												{% else %}
+													{{val}}
+												{% endif %}
 											{% elif (val is string) or (val is boolean) %}
 												{{val}}
 											{% else %}
 												{% for v in val %}
 													{% if v is number %}
-														{{"{:0,.2f}".format(v)}}
+														{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
+															{{"{:0,.0f}".format(v)}}
+														{% elif part_name.endswith('-kw') %}
+															{{"{:0,.2f}".format(v)}}
+														{% else %}
+															{{v}}
+														{% endif %}
 													{% else %}
 														{{v}}
 													{% endif %}

@@ -1416,7 +1416,7 @@ def report_run_get(run_id):
             )
         if element == "problem":
             order_by = (
-                ReportRunRow.data["data"]["problem"].as_string(),
+                ReportRunRow.data["data"]["problem"].as_string().desc(),
                 func.abs(
                     func.coalesce(
                         ReportRunRow.data["data"]["difference_net_gbp"].as_float(), 0
