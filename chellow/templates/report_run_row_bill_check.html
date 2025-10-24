@@ -133,15 +133,15 @@
 							<th>Actual</th>
 							<th>Virtual</th>
 							<th>Difference</th>
-							<th>Passed</th>
+							<th>Status</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
 							<td>gbp</td>
+							{% set part = parts['gbp'] %}
 							{% for k in ('actual', 'virtual', 'difference') %}
 								<td style="text-align: right;">
-									{% set part = parts['gbp'] %}
 									{% if k in part %}
 										{% set val = part[k] %}
 									{% else %}
@@ -155,6 +155,7 @@
 									{% endif %}
 								</td>
 							{% endfor %}
+							<td>{{part['passed']}}</td>
 						</tr>
 						{% for part_name, part in parts.items()|sort %}
 							{% if part_name != 'gbp' %}
