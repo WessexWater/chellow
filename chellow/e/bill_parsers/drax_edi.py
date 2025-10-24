@@ -106,6 +106,9 @@ ELEMENT_MAP = {
             "091890": ("shape", "rate", "kwh"),
             "122568": ("nrg-msp", "rate", "kwh"),
         },
+        "R10001": {
+            "700285": ("standing", "rate", "days"),
+        },
     },
     "REN": {
         "REN001": {

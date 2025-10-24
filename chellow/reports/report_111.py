@@ -688,8 +688,8 @@ def _process_period(
 
     for elname, val_elem in val_elems.items():
         for part_name, part in val_elem["parts"].items():
-            virtual_part = part.get("virtual", 0)
-            actual_part = part.get("actual", 0)
+            virtual_part = part.get("virtual")
+            actual_part = part.get("actual")
             if isinstance(virtual_part, set) and len(virtual_part) == 1:
                 virtual_part = next(iter(virtual_part))
             if isinstance(actual_part, set) and len(actual_part) == 1:
@@ -697,12 +697,16 @@ def _process_period(
 
             if virtual_part is None or actual_part is None:
                 diff = None
+                passed = "❔"
             elif isinstance(virtual_part, Number) and isinstance(actual_part, Number):
                 diff = float(actual_part) - float(virtual_part)
+                passed = "✅" if diff == 0 else "❌"
             else:
-                diff = "✔" if virtual_part == actual_part else "❌"
+                diff = None
+                passed = "✅" if virtual_part == actual_part else "❌"
 
             part["difference"] = diff
+            part["passed"] = passed
 
     if first_era is None:
         site = None

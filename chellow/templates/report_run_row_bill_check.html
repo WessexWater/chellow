@@ -133,6 +133,7 @@
 							<th>Actual</th>
 							<th>Virtual</th>
 							<th>Difference</th>
+							<th>Passed</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -169,7 +170,7 @@
 											{% if val is none %}
 											{% elif val is number %}
 												{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
-													{{"{:0,.0f}".format(val)}}
+													{{"{:0,.1f}".format(val)}}
 												{% elif part_name.endswith('-kw') %}
 													{{"{:0,.2f}".format(val)}}
 												{% else %}
@@ -181,7 +182,7 @@
 												{% for v in val %}
 													{% if v is number %}
 														{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
-															{{"{:0,.0f}".format(v)}}
+															{{"{:0,.1f}".format(v)}}
 														{% elif part_name.endswith('-kw') %}
 															{{"{:0,.2f}".format(v)}}
 														{% else %}
@@ -197,6 +198,7 @@
 											{% endif %}
 										</td>
 									{% endfor %}
+									<td>{{part['passed']}}</td>
 								</tr>
 							{% endif %}
 						{% endfor %}

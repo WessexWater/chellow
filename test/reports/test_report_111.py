@@ -340,10 +340,12 @@ def virtual_bill(ds):
                         "actual": Decimal("10.00"),
                         "difference": 9.0,
                         "virtual": 1.0,
+                        "passed": "❌",
                     },
                     "kwh": {
-                        "difference": 0.0,
+                        "difference": None,
                         "virtual": 0,
+                        "passed": "❔",
                     },
                     "rate": {
                         "actual": {
@@ -353,6 +355,7 @@ def virtual_bill(ds):
                         "virtual": {
                             0.1,
                         },
+                        "passed": "✅",
                     },
                 },
                 "actual_elements": [
@@ -598,10 +601,12 @@ def virtual_bill(ds):
                             "actual": Decimal("10.00"),
                             "difference": 9.0,
                             "virtual": 1.0,
+                            "passed": "❌",
                         },
                         "kwh": {
-                            "difference": 0.0,
+                            "difference": None,
                             "virtual": 0,
+                            "passed": "❔",
                         },
                         "rate": {
                             "actual": {
@@ -611,6 +616,7 @@ def virtual_bill(ds):
                             "virtual": {
                                 0.1,
                             },
+                            "passed": "✅",
                         },
                     },
                     "actual_elements": [
