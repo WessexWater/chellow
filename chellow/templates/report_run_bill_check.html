@@ -146,9 +146,8 @@
 					{% for elem, diff in elements %}
 						<td style="text-align: right;">	
 							{% if elem in data.elements %}
-								{% set val = data.elements[elem]['parts']['gbp']['difference'] %}
 								{% if val is not none %}
-									{{"{:0,.2f}".format(val)}}
+									{{"{:0,.2f}".format(data.elements[elem]['parts']['gbp']['difference'])}}
 								{% endif %}
 							{% endif %}
 						</td>
