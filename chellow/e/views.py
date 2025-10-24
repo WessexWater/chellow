@@ -1348,6 +1348,7 @@ def dc_contract_hh_imports_post(contract_id):
                     "dc_contract_hh_imports.html",
                     contract=contract,
                     processes=processes,
+                    parser_names=", ".join(chellow.e.hh_importer.extensions),
                 ),
                 400,
             )
