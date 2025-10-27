@@ -10,13 +10,13 @@ from sqlalchemy.orm import joinedload
 
 from chellow.dloads import open_file
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply, User
-from chellow.utils import req_date, req_int, write_row
+from chellow.utils import req_checkbox, req_date, req_int, write_row
 
 
 TYPE_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
 
 
-def content(start_date, finish_date, site_id, user_id):
+def content(start_date, finish_date, site_id, user_id, exclude_virtual):
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
@@ -82,7 +82,9 @@ def content(start_date, finish_date, site_id, user_id):
                 sources_str = ",".join(sorted(list(sources)))
                 generators_str = ",".join(sorted(list(generator_types)))
 
-                for hh in site.hh_data(sess, start_date, finish_date):
+                for hh in site.hh_data(
+                    sess, start_date, finish_date, exclude_virtual=exclude_virtual
+                ):
                     write_row(
                         writer,
                         site.code,
@@ -114,11 +116,12 @@ def content(start_date, finish_date, site_id, user_id):
 def do_get(sess):
     start_date = req_date("start")
     finish_date = req_date("finish")
+    exclude_virtual = req_checkbox("exclude_virtual")
     if "site_id" in request.values:
         site_id = req_int("site_id")
     else:
         site_id = None
 
-    args = start_date, finish_date, site_id, g.user.id
+    args = start_date, finish_date, site_id, g.user.id, exclude_virtual
     threading.Thread(target=content, args=args).start()
     return redirect("/downloads", 303)

@@ -82,12 +82,23 @@
 
 	<ul>
 		<li>
-			<a href="/e/sites/{{site.id}}/energy_management/months?finish_year={{last_month.year}}&finish_month={{last_month.month}}">Site Data By Month</a>
+			<a href="/e/sites/{{site.id}}/energy_management/months?finish_year={{last_month_start_ct.year}}&finish_month={{last_month_start_ct.month}}">Site Data By Month</a>
 		</li>
 		<li>
-			<a href="/e/sites/{{site.id}}/energy_management/hh_data?year={{now.year}}&month={{now.month}}">HH Data</a>
+			<a href="/e/sites/{{site.id}}/energy_management/hh_data?timestamp_year={{now.year}}&timestamp_month={{now.month}}">HH Data</a>
 		</li>
 	</ul>
+
+	<form action="/reports/csv_site_hh_data">
+		<fieldset>
+			<input type="hidden" name="site_id" value="{{site.id}}">
+			<input type="hidden" name="exclude_virtual" value="true">
+			<legend>HH Data CSV: HH Per Row Format</legend>
+			<label>From</label> {{input_date('start', last_month_start)}}
+			<label>To</label> {{input_date('finish', last_month_finish)}}
+			<input type="submit" value="Download">
+		</fieldset>
+	</form>
 
 	<form hx-get="/e/sites/{{site.id}}/energy_management/totals">
 		<fieldset>

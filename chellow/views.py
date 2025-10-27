@@ -115,7 +115,7 @@ from chellow.utils import (
     ct_datetime,
     ct_datetime_now,
     hh_range,
-    req_bool,
+    req_checkbox,
     req_date,
     req_decimal,
     req_file,
@@ -1406,7 +1406,7 @@ def report_run_get(run_id):
         else:
             element = "problem"
 
-        hide_checked = req_bool("hide_checked")
+        hide_checked = req_checkbox("hide_checked")
 
         ROW_LIMIT = 200
         q = select(ReportRunRow).where(ReportRunRow.report_run == run).limit(ROW_LIMIT)
@@ -1627,7 +1627,7 @@ def report_run_delete(run_id):
 @home.route("/report_runs/<int:run_id>", methods=["POST"])
 def report_run_post(run_id):
     run = g.sess.scalar(select(ReportRun).where(ReportRun.id == run_id))
-    keep = req_bool("keep")
+    keep = req_checkbox("keep")
 
     run_data = run.data
     run_data["keep"] = keep
@@ -1749,7 +1749,7 @@ def report_run_row_post(row_id):
     row = g.sess.query(ReportRunRow).filter(ReportRunRow.id == row_id).one()
 
     if row.report_run.name == "bill_check":
-        is_checked = req_bool("is_checked")
+        is_checked = req_checkbox("is_checked")
         note = req_str("note")
 
         properties = row.data.get("properties", {})

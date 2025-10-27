@@ -16,7 +16,8 @@ def test_do_get(client, mocker, sess):
     start_date = to_utc(ct_datetime(2020, 1, 1))
     finish_date = to_utc(ct_datetime(2020, 1, 31, 23, 30))
     site_id = None
-    expected_args = start_date, finish_date, site_id, user.id
+    exclude_virtual = False
+    expected_args = start_date, finish_date, site_id, user.id, exclude_virtual
     query_string = {
         "start_year": "2020",
         "start_month": "01",
@@ -51,7 +52,8 @@ def test_content(mocker, sess):
 
     start_date = to_utc(ct_datetime(2024, 6, 1))
     finish_date = to_utc(ct_datetime(2024, 6, 1))
-    content(start_date, finish_date, site_id, user_id)
+    exclude_virtual = False
+    content(start_date, finish_date, site_id, user_id, exclude_virtual)
     mock_file.seek(0)
     actual = list(csv.reader(mock_file))
     expected = [

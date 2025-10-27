@@ -987,14 +987,7 @@ def test_em_hh_data(sess, client):
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_sources(sess)
@@ -1047,7 +1040,8 @@ def test_em_hh_data(sess, client):
     sess.commit()
 
     response = client.get(
-        f"/e/sites/{site.id}/energy_management/hh_data?year=2020&month=01"
+        f"/e/sites/{site.id}/energy_management/hh_data?"
+        f"timestamp_year=2020&timestamp_month=01"
     )
 
     match(response, 200, "88.7")

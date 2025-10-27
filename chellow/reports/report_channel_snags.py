@@ -28,7 +28,7 @@ from chellow.models import (
 from chellow.utils import (
     csv_make_val,
     hh_before,
-    req_bool,
+    req_checkbox,
     req_date,
     req_int,
     req_int_none,
@@ -242,10 +242,10 @@ LIMIT = 200
 def do_get(sess):
     contract_id = req_int_none("dc_contract_id")
     days_hidden = req_int("days_hidden")
-    is_ignored = req_bool("is_ignored")
-    only_ongoing = req_bool("only_ongoing")
+    is_ignored = req_checkbox("is_ignored")
+    only_ongoing = req_checkbox("only_ongoing")
     show_settlement = req_str("show_settlement")
-    as_csv = req_bool("as_csv")
+    as_csv = req_checkbox("as_csv")
     days_long_hidden = req_int_none("days_long_hidden")
     if "now_year" in request.values:
         now = req_date("now")

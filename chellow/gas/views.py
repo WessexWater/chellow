@@ -51,7 +51,7 @@ from chellow.models import (
 from chellow.utils import (
     HH,
     csv_make_val,
-    req_bool,
+    req_checkbox,
     req_date,
     req_decimal,
     req_file,
@@ -869,7 +869,7 @@ def era_edit_post(g_era_id):
 
         else:
             start_date = req_date("start")
-            is_ended = req_bool("is_ended")
+            is_ended = req_checkbox("is_ended")
             finish_date = req_date("finish") if is_ended else None
             msn = req_str("msn")
             correction_factor = req_decimal("correction_factor")
@@ -1363,7 +1363,7 @@ def industry_rate_script_edit_post(g_rate_script_id):
         else:
             script = req_zish("script")
             start_date = req_date("start")
-            has_finished = req_bool("has_finished")
+            has_finished = req_checkbox("has_finished")
             finish_date = req_date("finish") if has_finished else None
             g_contract.update_g_rate_script(
                 g.sess, g_rate_script, start_date, finish_date, script
@@ -1729,7 +1729,7 @@ def supplier_rate_script_edit_post(g_rate_script_id):
         else:
             script = req_zish("script")
             start_date = req_date("start")
-            has_finished = req_bool("has_finished")
+            has_finished = req_checkbox("has_finished")
             finish_date = req_date("finish") if has_finished else None
             g_contract.update_g_rate_script(
                 g.sess, g_rate_script, start_date, finish_date, script

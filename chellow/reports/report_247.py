@@ -43,7 +43,7 @@ from chellow.utils import (
     hh_min,
     hh_range,
     make_val,
-    req_bool,
+    req_checkbox,
     req_int,
     req_str,
     to_utc,
@@ -1088,7 +1088,7 @@ def do_post(sess):
         scenario_props["scenario_start_month"] = start_date.month
         scenario_props["scenario_duration"] = months
 
-    scenario_props["by_hh"] = req_bool("by_hh")
+    scenario_props["by_hh"] = req_checkbox("by_hh")
 
     try:
         if "site_id" in request.values:
@@ -1116,7 +1116,7 @@ def do_post(sess):
                 exp_mpan_core if imp_mpan_core is None else imp_mpan_core
             ]
 
-        compression = req_bool("compression")
+        compression = req_checkbox("compression")
 
         user = g.user
 

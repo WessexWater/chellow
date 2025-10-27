@@ -104,7 +104,7 @@ from chellow.utils import (
     hh_range,
     parse_hh_start,
     parse_mpan_core,
-    req_bool,
+    req_checkbox,
     req_date,
     req_decimal,
     req_file,
@@ -230,7 +230,7 @@ def channel_add_get(era_id):
 @e.route("/eras/<int:era_id>/add_channel", methods=["POST"])
 def channel_add_post(era_id):
     try:
-        imp_related = req_bool("imp_related")
+        imp_related = req_checkbox("imp_related")
         channel_type = req_str("channel_type")
         era = Era.get_by_id(g.sess, era_id)
         channel = era.insert_channel(g.sess, imp_related, channel_type)
@@ -357,7 +357,7 @@ def channel_snags_get():
     else:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
     days_hidden = req_int("days_hidden")
-    is_ignored = req_bool("is_ignored")
+    is_ignored = req_checkbox("is_ignored")
 
     cutoff_date = utc_datetime_now() - relativedelta(days=days_hidden)
 
@@ -435,7 +435,7 @@ def channel_snag_edit_get(snag_id):
 @e.route("/channel_snags/<int:snag_id>/edit", methods=["POST"])
 def channel_snag_edit_post(snag_id):
     try:
-        ignore = req_bool("ignore")
+        ignore = req_checkbox("ignore")
         snag = Snag.get_by_id(g.sess, snag_id)
         snag.set_is_ignored(ignore)
         g.sess.commit()
@@ -1532,7 +1532,7 @@ def dc_rate_script_edit_post(dc_rate_script_id):
         dc_contract = dc_rate_script.contract
         script = req_zish("script")
         start_date = req_date("start")
-        has_finished = req_bool("has_finished")
+        has_finished = req_checkbox("has_finished")
         finish_date = req_date("finish") if has_finished else None
         dc_contract.update_rate_script(
             g.sess, dc_rate_script, start_date, finish_date, script
@@ -1613,7 +1613,7 @@ def dno_rate_script_edit_post(dno_rate_script_id):
         dno = Party.get_dno_by_code(g.sess, contract.name, rate_script.start_date)
         script = req_zish("script")
         start_date = req_date("start")
-        has_finished = req_bool("has_finished")
+        has_finished = req_checkbox("has_finished")
         finish_date = req_date("finish") if has_finished else None
         contract.update_rate_script(
             g.sess, rate_script, start_date, finish_date, script
@@ -1817,7 +1817,7 @@ def era_edit_form_get(era_id):
         else:
             start_date = era.start_date
 
-        is_ended = req_bool("is_ended")
+        is_ended = req_checkbox("is_ended")
         if is_ended:
             if "finish_year" in request.values:
                 finish_date = req_hh_date("finish")
@@ -2176,7 +2176,7 @@ def era_edit_post(era_id):
             return chellow_redirect(f"/supplies/{era.supply.id}", 303)
         else:
             start_date = req_date("start")
-            is_ended = req_bool("is_ended")
+            is_ended = req_checkbox("is_ended")
             if is_ended:
                 finish_date = req_hh_date("finish")
             else:
@@ -2213,8 +2213,8 @@ def era_edit_post(era_id):
             else:
                 dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
 
-            has_imp_mpan = req_bool("has_imp_mpan")
-            has_exp_mpan = req_bool("has_exp_mpan")
+            has_imp_mpan = req_checkbox("has_imp_mpan")
+            has_exp_mpan = req_checkbox("has_exp_mpan")
 
             if has_imp_mpan:
                 imp_mpan_core_raw = req_str("imp_mpan_core")
@@ -2637,7 +2637,7 @@ def llfc_edit_post(llfc_id):
         llfc = Llfc.get_by_id(g.sess, llfc_id)
         voltage_level_id = req_int("voltage_level_id")
         voltage_level = VoltageLevel.get_by_id(g.sess, voltage_level_id)
-        is_substation = req_bool("is_substation")
+        is_substation = req_checkbox("is_substation")
         llfc.update(
             llfc.description,
             voltage_level,
@@ -3583,7 +3583,7 @@ def mtc_participant_get(mtc_participant_id):
 def mtc_sscs_get():
     participant_id = req_int("participant_id")
     participant = Participant.get_by_id(g.sess, participant_id)
-    only_ongoing = req_bool("only_ongoing")
+    only_ongoing = req_checkbox("only_ongoing")
     q = (
         select(MtcSsc)
         .join(MtcParticipant)
@@ -3641,7 +3641,7 @@ def mtc_ssc_get(mtc_ssc_id):
 def mtc_llfcs_get():
     participant_id = req_int("participant_id")
     participant = Participant.get_by_id(g.sess, participant_id)
-    only_ongoing = req_bool("only_ongoing")
+    only_ongoing = req_checkbox("only_ongoing")
     q = (
         select(MtcLlfc)
         .join(MtcParticipant)
@@ -3699,7 +3699,7 @@ def mtc_llfc_get(mtc_llfc_id):
 def mtc_llfc_ssc_pcs_get():
     dno_id = req_int("dno_id")
     dno = Party.get_dno_by_id(g.sess, dno_id)
-    only_ongoing = req_bool("only_ongoing")
+    only_ongoing = req_checkbox("only_ongoing")
     q = (
         select(MtcLlfcSscPc)
         .join(Pc)
@@ -3786,7 +3786,7 @@ def mtc_llfc_ssc_pc_get(combo_id):
 def mtc_llfc_sscs_get():
     participant_id = req_int("participant_id")
     participant = Participant.get_by_id(g.sess, participant_id)
-    only_ongoing = req_bool("only_ongoing")
+    only_ongoing = req_checkbox("only_ongoing")
     q = (
         select(MtcLlfcSsc)
         .join(Llfc)
@@ -4072,7 +4072,13 @@ def site_energy_management_get(site_id):
     site = Site.get_by_id(g.sess, site_id)
 
     now = utc_datetime_now()
-    last_month = now - relativedelta(months=1)
+    now_ct = to_ct(now)
+    months = list(
+        c_months_u(finish_year=now_ct.year, finish_month=now_ct.month, months=2)
+    )
+    last_month_start, last_month_finish = months[0]
+    last_month_start_ct = to_ct(last_month_start)
+    last_month_finish_ct = to_ct(last_month_finish)
 
     supply_dicts = []
     for era in g.sess.scalars(
@@ -4096,7 +4102,10 @@ def site_energy_management_get(site_id):
         site=site,
         supply_dicts=supply_dicts,
         now=now,
-        last_month=last_month,
+        last_month_start=last_month_start,
+        last_month_finish=last_month_finish,
+        last_month_start_ct=last_month_start_ct,
+        last_month_finish_ct=last_month_finish_ct,
     )
 
 
@@ -4127,7 +4136,7 @@ def site_snag_edit_get(snag_id):
 @e.route("/site_snags/<int:snag_id>/edit", methods=["POST"])
 def site_snag_edit_post(snag_id):
     try:
-        ignore = req_bool("ignore")
+        ignore = req_checkbox("ignore")
         snag = Snag.get_by_id(g.sess, snag_id)
         snag.set_is_ignored(ignore)
         g.sess.commit()
@@ -4182,10 +4191,10 @@ def em_hh_data_get(site_id):
     caches = {}
     site = Site.get_by_id(g.sess, site_id)
 
-    year = req_int("year")
-    month = req_int("month")
+    timestamp = req_date("timestamp", resolution="month")
+    ts_ct = to_ct(timestamp)
     start_date, finish_date = next(
-        c_months_u(start_year=year, start_month=month, months=1)
+        c_months_u(start_year=ts_ct.year, start_month=ts_ct.month, months=1)
     )
 
     supplies = (
@@ -5909,7 +5918,7 @@ def supplier_rate_script_edit_post(rate_script_id):
         contract = rate_script.contract
         script = req_zish("script")
         start_date = req_date("start")
-        has_finished = req_bool("has_finished")
+        has_finished = req_checkbox("has_finished")
         finish_date = req_date("finish") if has_finished else None
         contract.update_rate_script(
             g.sess, rate_script, start_date, finish_date, script
@@ -6202,7 +6211,7 @@ def supply_get(supply_id):
 def supply_months_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
 
-    is_import = req_bool("is_import")
+    is_import = req_checkbox("is_import")
     year = req_int("year")
     years = req_int("years")
 

@@ -37,6 +37,19 @@ def req_strs(name):
 
 
 def req_bool(name):
+    val = req_str(name)
+    if val == "true":
+        return True
+    elif val == "false":
+        return False
+    else:
+        raise BadRequest(
+            f"Problem parsing the field {name} with values {val} as a boolean: "
+            f"expected 'true' or 'false'."
+        )
+
+
+def req_checkbox(name):
     return name in request.values
 
 
