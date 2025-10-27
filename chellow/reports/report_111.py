@@ -689,11 +689,11 @@ def _process_period(
     for elname, val_elem in val_elems.items():
         for part_name, part in val_elem["parts"].items():
             if part_name == "gbp":
-                default = 0
+                virtual_part = round(part.get("virtual", 0), 2)
+                actual_part = part.get("actual", 0)
             else:
-                default = None
-            virtual_part = part.get("virtual", default)
-            actual_part = part.get("actual", default)
+                virtual_part = part.get("virtual")
+                actual_part = part.get("actual")
 
             if isinstance(virtual_part, set) and len(virtual_part) == 1:
                 virtual_part = next(iter(virtual_part))
