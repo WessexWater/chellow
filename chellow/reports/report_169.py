@@ -16,6 +16,7 @@ from chellow.utils import (
     ct_datetime,
     hh_range,
     parse_mpan_core,
+    req_bool,
     req_checkbox,
     req_date,
     req_int,
@@ -249,7 +250,7 @@ def handle_request(mpan_cores=None):
 
     finish_date = to_utc(ct_datetime(finish_year, finish_month, finish_day, 23, 30))
 
-    imp_related = req_checkbox("imp_related")
+    imp_related = req_bool("imp_related")
     channel_type = req_str("channel_type")
     is_zipped = req_checkbox("is_zipped")
     supply_id = req_int("supply_id") if "supply_id" in request.values else None

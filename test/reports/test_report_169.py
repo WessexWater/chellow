@@ -38,7 +38,8 @@ def test_handle_request(mocker, client, rsess):
     user = User.get_by_email_address(rsess, "admin@example.com")
     MockThread = mocker.patch("chellow.reports.report_169.threading.Thread")
 
-    channel_type = "used"
+    channel_type = "ACTIVE"
+    imp_related = "false"
 
     query_string = {
         "start_year": "2020",
@@ -48,6 +49,7 @@ def test_handle_request(mocker, client, rsess):
         "finish_month": "06",
         "finish_day": "01",
         "channel_type": channel_type,
+        "imp_related": imp_related,
     }
     response = client.get("/reports/169", query_string=query_string)
 
