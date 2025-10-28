@@ -104,6 +104,7 @@ from chellow.utils import (
     hh_range,
     parse_hh_start,
     parse_mpan_core,
+    req_bool,
     req_checkbox,
     req_date,
     req_decimal,
@@ -6211,7 +6212,7 @@ def supply_get(supply_id):
 def supply_months_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
 
-    is_import = req_checkbox("is_import")
+    is_import = req_bool("is_import")
     year = req_int("year")
     years = req_int("years")
 
