@@ -1006,6 +1006,11 @@ def general_import_bill(sess, action, vals, args):
                     breakdown,
                 )
                 i += 6
+            else:
+                raise BadRequest(
+                    f"The type must be 'read' or 'element', but found {typ} at "
+                    f"column {i}."
+                )
 
     elif action == "update":
         bill_id_str = add_arg(args, "Bill Id", vals, 0)
