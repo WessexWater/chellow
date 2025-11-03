@@ -1116,11 +1116,11 @@ def do_post(sess):
                 exp_mpan_core if imp_mpan_core is None else imp_mpan_core
             ]
 
-        compression = req_checkbox("compression")
+        uncompressed = req_checkbox("uncompressed")
 
         user = g.user
 
-        args = (scenario_props, base_name, user.id, compression, now)
+        args = (scenario_props, base_name, user.id, not uncompressed, now)
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)
     except BadRequest as e:

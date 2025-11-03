@@ -90,6 +90,7 @@ def test_with_scenario(mocker, sess, client):
     data = {
         "site_id": site.id,
         "scenario_id": scenario.id,
+        "uncompressed": True,
     }
 
     response = client.post("/reports/247", data=data)
@@ -120,6 +121,7 @@ def test_do_post_without_scenario(mocker, sess, client):
         "finish_month": 8,
         "months": 1,
         "site_codes": "",
+        "uncompressed": True,
     }
 
     response = client.post("/reports/247", data=data)
