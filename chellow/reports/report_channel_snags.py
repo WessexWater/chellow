@@ -260,6 +260,7 @@ def do_get(sess):
             g.user.id,
             only_ongoing,
             show_settlement,
+            days_long_hidden,
             now,
         )
         threading.Thread(target=content, args=args).start()
@@ -290,5 +291,5 @@ def do_get(sess):
             is_ignored=is_ignored,
             only_ongoing=only_ongoing,
             show_settlement=show_settlement,
-            days_long_hidden=days_long_hidden,
+            days_long_hidden="" if days_long_hidden is None else days_long_hidden,
         )

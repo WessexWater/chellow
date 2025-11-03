@@ -83,6 +83,7 @@ def test_do_get_as_csv(mocker, sess, client):
         user_id,
         only_ongoing,
         show_settlement,
+        None,
         now,
     )
     mock_Thread.assert_called_with(target=content, args=args)
