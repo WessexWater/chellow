@@ -1,4 +1,8 @@
+import csv
+
 from io import StringIO
+
+from utils import match, match_tables
 
 from chellow.models import (
     Comm,
@@ -31,6 +35,32 @@ from chellow.reports.report_187 import content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_do_post(mocker, sess, client):
+    mock_Thread = mocker.patch("chellow.reports.report_187.threading.Thread")
+    user = User.get_by_email_address(sess, "admin@example.com")
+    user_id = user.id
+    sess.commit()
+    start_date_ct = ct_datetime(2023, 7, 5)
+    finish_date_ct = ct_datetime(2023, 7, 18, 22, 30)
+    data = {
+        "start_year": start_date_ct.year,
+        "start_month": start_date_ct.month,
+        "start_day": start_date_ct.day,
+        "start_hour": start_date_ct.hour,
+        "start_minute": start_date_ct.minute,
+        "finish_year": finish_date_ct.year,
+        "finish_month": finish_date_ct.month,
+        "finish_day": finish_date_ct.day,
+        "finish_hour": finish_date_ct.hour,
+        "finish_minute": finish_date_ct.minute,
+    }
+    response = client.post("/reports/187", data=data)
+    match(response, 303)
+
+    args = to_utc(start_date_ct), to_utc(finish_date_ct), None, None, False, user_id
+    mock_Thread.assert_called_with(target=content, args=args)
+
+
 def test_content_no_data(mocker, sess):
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
@@ -42,33 +72,38 @@ def test_content_no_data(mocker, sess):
     is_zipped = False
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
     sess.commit()
-    content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user.id)
+    content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id)
     expected = [
-        "Site Code",
-        "Imp MPAN Core",
-        "Exp Mpan Core",
-        "HH Start Clock-Time",
-        "Import ACTIVE kWh",
-        "Import ACTIVE Status",
-        "Import ACTIVE Modified",
-        "Import REACTIVE_IMP kVArh",
-        "Import REACTIVE_IMP Status",
-        "Import REACTIVE_IMP Modified",
-        "Import REACTIVE_EXP kVArh",
-        "Import REACTIVE_EXP Status",
-        "Import REACTIVE_EXP Modified",
-        "Export ACTIVE kWh",
-        "Export ACTIVE Status",
-        "Export ACTIVE Modified",
-        "Export REACTIVE_IMP kVArh",
-        "Export REACTIVE_IMP Status",
-        "Export REACTIVE_IMP Modified",
-        "Export REACTIVE_EXP kVArh",
-        "Export REACTIVE_EXP Status",
-        "Export REACTIVE_EXP Modified",
+        [
+            "Site Code",
+            "Imp MPAN Core",
+            "Exp Mpan Core",
+            "HH Start Clock-Time",
+            "Import ACTIVE kWh",
+            "Import ACTIVE Status",
+            "Import ACTIVE Modified",
+            "Import REACTIVE_IMP kVArh",
+            "Import REACTIVE_IMP Status",
+            "Import REACTIVE_IMP Modified",
+            "Import REACTIVE_EXP kVArh",
+            "Import REACTIVE_EXP Status",
+            "Import REACTIVE_EXP Modified",
+            "Export ACTIVE kWh",
+            "Export ACTIVE Status",
+            "Export ACTIVE Modified",
+            "Export REACTIVE_IMP kVArh",
+            "Export REACTIVE_IMP Status",
+            "Export REACTIVE_IMP Modified",
+            "Export REACTIVE_EXP kVArh",
+            "Export REACTIVE_EXP Status",
+            "Export REACTIVE_EXP Modified",
+        ]
     ]
-    assert mock_file.getvalue() == ",".join(f'"{v}"' for v in expected) + "\n"
+    mock_file.seek(0)
+    actual = list(csv.reader(mock_file))
+    match_tables(expected, actual)
 
 
 def test_content(mocker, sess):
@@ -162,6 +197,7 @@ def test_content(mocker, sess):
     )
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user_id = user.id
     sess.commit()
 
     mock_file = StringIO()
@@ -172,7 +208,7 @@ def test_content(mocker, sess):
     supply_id = None
     mpan_cores = None
     is_zipped = False
-    content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user.id)
+    content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id)
     expected = [
         [
             "Site Code",
@@ -200,9 +236,6 @@ def test_content(mocker, sess):
         ],
         ["CI017", "22 7867 6232 781", "", "2023-07-18 22:30"],
     ]
-
-    print(mock_file.getvalue())
-    expected_str = "".join(
-        (",".join(f'"{v}"' for v in line) + "\n") for line in expected
-    )
-    assert mock_file.getvalue() == expected_str
+    mock_file.seek(0)
+    actual = list(csv.reader(mock_file))
+    match_tables(expected, actual)
