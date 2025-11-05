@@ -91,6 +91,7 @@ def run_import(sess, log, set_progress):
         "chellow.e.lafs",
         "chellow.gas.ccl",
         "chellow.gas.dn_rate_parser",
+        "chellow.e.tlms",
     ):
         mod = import_module(mod_name)
         mod.rate_server_import(sess, log, set_progress, s, paths)

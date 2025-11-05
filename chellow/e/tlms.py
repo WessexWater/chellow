@@ -1,6 +1,7 @@
 import csv
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
+from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
@@ -12,6 +13,7 @@ from werkzeug.exceptions import BadRequest
 from zish import dumps, loads
 
 from chellow.models import Contract, RateScript
+from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, hh_range, to_ct, to_utc
 
 
@@ -110,6 +112,11 @@ def _find_complete_date(caches, sess, contract, cache):
 
 
 def elexon_import(sess, log, set_progress, s, scripting_key):
+    import_tlms(sess, log, set_progress, s, scripting_key)
+    # import_etlms(sess, log, set_progress, s)
+
+
+def import_tlms(sess, log, set_progress, s, scripting_key):
     cache = {"rate_scripts": [], "timestamps": {}}
     caches = {}
     log("Starting to check TLMs.")
@@ -285,3 +292,141 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
             f"Found rate at {hh_format(hh_date)} for GSP Group {gsp_group_code} "
             f"and run {run}."
         )
+
+
+"""
+def import_etlms(sess, log, set_progress, s):
+    log(
+        "Starting to check for new ETLMs https://www.elexon.co.uk/bsc/operational/"
+        "transmission-losses/estimated-transmission-loss-adjustments/"
+    )
+
+    contract_name = "etlms"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        log(f"Can't find contract {contract_name} so creating it.")
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+        log(f"Created contract {contract.name}.")
+    url_str = (
+        "https://www.elexon.co.uk/bsc/documents/operations-settlement/"
+        "transmission-losses/estimated-transmission-loss-adjustments-data/"
+    )
+    r = s.get(url_str, timeout=120)
+    if r.status_code != 200:
+        log(r.text)
+        raise BadRequest(
+            f"Problem retrieving URL. Expexted status code 200, but received a "
+            f"{r.status_code}"
+        )
+
+    parser = csv.reader(
+        (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
+    )
+    log(f"Opened {url_str}")
+
+    next(parser, None)
+    for values in parser:
+        log(f"looking at {values}")
+        if len(values) < 4:
+            continue
+
+        start_date_str = values[0]
+        set_progress(start_date_str)
+        start_date = to_utc(to_ct(Datetime.strptime(start_date_str, "%d/%m/%Y")))
+
+        delivering = Decimal(values[2])
+        off_taking = Decimal(values[3])
+
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == start_date,
+            )
+        ).scalar_one_or_none()
+        log(f"Found RS {rs}")
+        if rs is None:
+            log("RS is none")
+            rs = contract.insert_rate_script(sess, start_date, {})
+
+            rs_script = rs.make_script()
+            rs_script["delivering"] = delivering
+            rs_script["off_taking"] = off_taking
+            rs.update(rs_script)
+            sess.commit()
+            log("Commited")
+    log("Finished ETLMs")
+"""
+
+
+def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
+    CONFIG_KEY = "etlm_version"
+    log("Starting to check for a new ETLM version")
+    contract_name = "etlms"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        log(f"Can't find contract {contract_name} so creating it.")
+        contract = Contract.insert_non_core(
+            sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
+        )
+        log(f"Created contract {contract.name}.")
+    etlm_entries = {}
+    for path, url in paths:
+        if len(path) == 4:
+            year_str, utility, rate_type, file_name = path
+
+            if utility == "electricity" and rate_type == "etlms":
+                etlm_entries[f"{year_str}_{file_name}"] = url
+
+    if len(etlm_entries) == 0:
+        raise BadRequest("Can't find any ETLM files on the rate server.")
+
+    version_key, url = sorted(etlm_entries.items())[-1]
+    log(f"Latest version on rate server: {version_key}.")
+
+    config = Contract.get_non_core_by_name(sess, "configuration")
+    state = config.make_state()
+    current_version = state.get(CONFIG_KEY)
+
+    log(f"Latest version in Chellow: {current_version}")
+    if version_key == current_version:
+        return
+
+    log("Starting to import ETLMs")
+
+    csv_file = StringIO(download(s, url).decode("utf8"))
+    csv_reader = iter(csv.reader(csv_file))
+    next(csv_reader)  # Skip titles
+    for values in csv_reader:
+        if len(values) < 4:
+            continue
+
+        start_date_str = values[0]
+        set_progress(start_date_str)
+        start_date = to_utc(to_ct(Datetime.strptime(start_date_str, "%d/%m/%Y")))
+
+        delivering = Decimal(values[2])
+        off_taking = Decimal(values[3])
+
+        rs = sess.execute(
+            select(RateScript).where(
+                RateScript.contract == contract,
+                RateScript.start_date == start_date,
+            )
+        ).scalar_one_or_none()
+        if rs is None:
+            rs = contract.insert_rate_script(sess, start_date, {})
+
+            rs_script = rs.make_script()
+            rs_script["delivering"] = delivering
+            rs_script["off_taking"] = off_taking
+            rs.update(rs_script)
+            sess.commit()
+
+    log("Finished ETLMs")
+    config = Contract.get_non_core_by_name(sess, "configuration")
+    state = config.make_state()
+    state[CONFIG_KEY] = version_key
+    config.update_state(state)
+    sess.commit()
