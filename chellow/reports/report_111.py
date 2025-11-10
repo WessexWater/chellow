@@ -719,11 +719,11 @@ def _process_period(
 
     site = first_era.get_physical_site(sess)
 
-    vals["site_id"] = None if site is None else site.id
-    vals["site_code"] = None if site is None else site.code
-    vals["site_name"] = None if site is None else site.name
-    vals["imp_mpan_core"] = None if first_era is None else era.imp_mpan_core
-    vals["exp_mpan_core"] = None if first_era is None else era.exp_mpan_core
+    vals["site_id"] = site.id
+    vals["site_code"] = site.code
+    vals["site_name"] = site.name
+    vals["imp_mpan_core"] = first_era.imp_mpan_core
+    vals["exp_mpan_core"] = first_era.exp_mpan_core
     vals["difference_net_gbp"] = vals["actual_net_gbp"] - vals["virtual_net_gbp"]
     vals["problem"] += virtual_bill["problem"]
 
