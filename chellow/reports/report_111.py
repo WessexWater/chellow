@@ -714,9 +714,10 @@ def _process_period(
             part["passed"] = passed
 
     if first_era is None:
-        site = None
-    else:
-        site = first_era.get_physical_site(sess)
+        vals["problem"] += "No eras for this period of the supply. "
+        first_era = supply.find_last_era(sess)
+
+    site = first_era.get_physical_site(sess)
 
     vals["site_id"] = None if site is None else site.id
     vals["site_code"] = None if site is None else site.code
