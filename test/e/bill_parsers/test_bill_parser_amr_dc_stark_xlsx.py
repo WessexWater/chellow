@@ -57,6 +57,12 @@ def test_make_bills(mocker, sess):
             "reads": [],
             "breakdown": {
                 "raw_lines": [],
+                "vat": {
+                    20: {
+                        "net": Decimal("5.82"),
+                        "vat": Decimal("1.57"),
+                    },
+                },
             },
             "account": "22 7617 3918 389",
             "issue_date": to_utc(ct_datetime(2025, 10, 30)),

@@ -107,28 +107,28 @@ def _process_row(sess, sheet, row, issue_date, cl):
         "settlement" if settlement_status_str == "Settled" else "non-settlement"
     )
     comm = get_str(sheet, cl["comms"], row)
-    if net not in (None, 0):
-        elements.append(
-            {
-                "name": "mpan",
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "net": net,
-                "breakdown": {
-                    "settlement-status": {settlement_status},
-                    "rate": {rate},
-                    "days": days,
-                    "comm": {comm},
-                },
-            }
-        )
-
-    breakdown = {
-        "raw_lines": [],
-    }
+    elements.append(
+        {
+            "name": "mpan",
+            "start_date": start_date,
+            "finish_date": finish_date,
+            "net": net,
+            "breakdown": {
+                "settlement-status": {settlement_status},
+                "rate": {rate},
+                "days": days,
+                "comm": {comm},
+            },
+        }
+    )
 
     vat = get_gbp(sheet, cl["est. vat"], row)
     gross = get_gbp(sheet, cl["est. total"], row)
+
+    breakdown = {
+        "raw_lines": [],
+        "vat": {20: {"vat": vat, "net": net}},
+    }
 
     return {
         "bill_type_code": "N",
