@@ -67,6 +67,12 @@ def test_one_bill(sess):
             "reads": [],
             "breakdown": {
                 "raw-lines": [],
+                "vat": {
+                    20: {
+                        "net": Decimal("0.12"),
+                        "vat": Decimal("0.76"),
+                    },
+                },
             },
             "account": "22 2765 1294 270",
             "issue_date": utc_datetime(2022, 3, 1),

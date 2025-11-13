@@ -165,6 +165,12 @@ def test_process_row(sess):
             "settlement-status": [
                 "settlement",
             ],
+            "vat": {
+                20: {
+                    "net": Decimal("28.61"),
+                    "vat": Decimal("5.72"),
+                },
+            },
         },
         "elements": [
             {
@@ -322,6 +328,12 @@ def test_process_row_element_sig_figs(sess):
             "settlement-status": [
                 "settlement",
             ],
+            "vat": {
+                20: {
+                    "net": Decimal("28.61"),
+                    "vat": Decimal("5.72"),
+                },
+            },
         },
         "elements": [
             {
@@ -470,6 +482,12 @@ def test_process_row_old_format(sess):
             "settlement-status": [
                 "settlement",
             ],
+            "vat": {
+                20: {
+                    "net": Decimal("28.61"),
+                    "vat": Decimal("5.72"),
+                },
+            },
         },
         "elements": [
             {
@@ -677,6 +695,12 @@ def test_make_raw_bills(sess):
                 "settlement-status": [
                     "settlement",
                 ],
+                "vat": {
+                    20: {
+                        "net": Decimal("28.61"),
+                        "vat": Decimal("5.72"),
+                    },
+                },
             },
             "elements": [
                 {
@@ -715,6 +739,12 @@ def test_make_raw_bills(sess):
                 "settlement-status": [
                     "settlement",
                 ],
+                "vat": {
+                    20: {
+                        "net": Decimal("5.96"),
+                        "vat": Decimal("1.19"),
+                    },
+                },
             },
             "elements": [
                 {

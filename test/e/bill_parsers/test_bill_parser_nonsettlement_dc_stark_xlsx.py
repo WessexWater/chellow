@@ -54,6 +54,12 @@ def test_process_row(mocker, sess):
                 "88jiuf ff",
             ],
             "raw_lines": [],
+            "vat": {
+                20: {
+                    "net": Decimal("1.00"),
+                    "vat": Decimal("0.20"),
+                },
+            },
         },
         "elements": [
             {
@@ -240,6 +246,12 @@ def test_one_bill(mocker, sess):
                 "raw_lines": [],
                 "cop": ["5"],
                 "msn": ["7864739737"],
+                "vat": {
+                    20: {
+                        "net": Decimal("3.75"),
+                        "vat": Decimal("0.75"),
+                    },
+                },
             },
             "account": "20 8875 7371 777",
             "issue_date": utc_datetime(2022, 2, 1),
