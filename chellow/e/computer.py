@@ -587,10 +587,8 @@ class DataSource:
             self.sess, self.caches, contract_name_or_id, date, exact=exact
         )
 
-    def _add_problem(self, problem):
+    def _add_supplier_problem(self, problem):
         self.supplier_bill["problem"] += problem
-        self.mop_bill["problem"] += problem
-        self.dc_bill["problem"] += problem
 
 
 class SiteSource(DataSource):
@@ -1337,7 +1335,7 @@ class SupplySource(DataSource):
                             .order_by(RegisterRead.present_date)
                         ):
                             if tpr_code not in tpr_codes:
-                                self._add_problem(
+                                self._add_supplier_problem(
                                     f"The TPR {tpr_code} from the register read does "
                                     f"not match any of the TPRs "
                                     f"({', '.join(tpr_codes)}) associated with the "
@@ -1346,7 +1344,7 @@ class SupplySource(DataSource):
 
                             advance = present_value - previous_value
                             if advance < 0:
-                                self._add_problem("Clocked?")
+                                self._add_supplier_problem("Clocked?")
                                 digits = int(log10(previous_value)) + 1
                                 advance = 10**digits - previous_value + present_value
 
@@ -1388,7 +1386,7 @@ class SupplySource(DataSource):
                                         if hhd_datum["status"] in ("X", "A"):
                                             hhd_datum["status"] = h["status"]
                             elif kwh > 0:
-                                self._add_problem(
+                                self._add_supplier_problem(
                                     f"For the TPR code {tpr_code} the bill says "
                                     f"that there are {kwh} kWh, but the time of "
                                     f"the TPR doesn't cover the time between the "
