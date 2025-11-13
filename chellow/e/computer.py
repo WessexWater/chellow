@@ -1344,10 +1344,6 @@ class SupplySource(DataSource):
                                     f"MPAN."
                                 )
 
-                            if present_date > bill.finish_date:
-                                self._add_problem(
-                                    "There's a read after the end of the bill!"
-                                )
                             advance = present_value - previous_value
                             if advance < 0:
                                 self._add_problem("Clocked?")
