@@ -98,7 +98,12 @@ def _process_row(caches, sess, title_row, row):
         }
     ]
 
-    breakdown = {"raw_lines": [], "cop": ["5"], "msn": [msn]}
+    breakdown = {
+        "raw_lines": [],
+        "cop": ["5"],
+        "msn": [msn],
+        "vat": {20: {"vat": vat, "net": net}},
+    }
 
     return {
         "bill_type_code": "N",

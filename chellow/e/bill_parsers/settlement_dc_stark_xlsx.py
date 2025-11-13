@@ -176,11 +176,15 @@ def _process_row(sess, sheet, row, issue_date, cl):
             }
         )
 
+    net = get_gbp(sheet, cl["grand total"], row)
+    vat = Decimal("0.00")
+    if "vat @ 20%" in cl:
+        vat += get_gbp(sheet, cl["vat @ 20%"], row)
     breakdown = {
         "raw_lines": [],
         "settlement-status": ["settlement"],
+        "vat": {20: {"vat": vat, "net": net}},
     }
-    net = get_gbp(sheet, cl["grand total"], row)
     sum_el = sum(el["net"] for el in elements)
     if net != sum_el:
         elements.append(
@@ -195,9 +199,6 @@ def _process_row(sess, sheet, row, issue_date, cl):
             }
         )
 
-    vat = Decimal("0.00")
-    if "vat @ 20%" in cl:
-        vat += get_gbp(sheet, cl["vat @ 20%"], row)
     gross = Decimal("0.00")
     if "grand total 2" in cl:
         gross += get_gbp(sheet, cl["grand total 2"], row)

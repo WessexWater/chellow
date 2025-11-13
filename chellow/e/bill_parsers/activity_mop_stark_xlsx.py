@@ -65,6 +65,7 @@ def _process_row(issue_date, sheet, row):
 
     breakdown = {
         "raw-lines": [],
+        "vat": {20: {"vat": vat, "net": net}},
     }
 
     return {

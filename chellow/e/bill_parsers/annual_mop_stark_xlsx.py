@@ -76,6 +76,7 @@ def _process_row(issue_date, row):
 
     breakdown = {
         "raw-lines": [],
+        "vat": {20: {"vat": vat, "net": net}},
     }
     return {
         "bill_type_code": "N",
