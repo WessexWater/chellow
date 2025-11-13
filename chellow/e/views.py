@@ -2184,10 +2184,8 @@ def era_edit_post(era_id):
                 finish_date = None
             mop_contract_id = req_int("mop_contract_id")
             mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
-            mop_account = req_str("mop_account")
             dc_contract_id = req_int("dc_contract_id")
             dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
-            dc_account = req_str("dc_account")
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
@@ -2261,9 +2259,7 @@ def era_edit_post(era_id):
                 start_date,
                 finish_date,
                 mop_contract,
-                mop_account,
                 dc_contract,
-                dc_account,
                 msn,
                 pc,
                 mtc_participant.mtc.code,
@@ -4723,10 +4719,8 @@ def site_add_e_supply_post(site_id):
         gsp_group = GspGroup.get_by_id(g.sess, gsp_group_id)
         mop_contract_id = req_int("mop_contract_id")
         mop_contract = Contract.get_mop_by_id(g.sess, mop_contract_id)
-        mop_account = req_str("mop_account")
         dc_contract_id = req_int("dc_contract_id")
         dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
-        dc_account = req_str("dc_account")
         msn = req_str("msn")
         pc_id = req_int("pc_id")
         pc = Pc.get_by_id(g.sess, pc_id)
@@ -4815,9 +4809,7 @@ def site_add_e_supply_post(site_id):
             None,
             gsp_group,
             mop_contract,
-            mop_account,
             dc_contract,
-            dc_account,
             msn,
             dno,
             pc,

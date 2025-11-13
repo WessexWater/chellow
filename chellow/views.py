@@ -1147,8 +1147,6 @@ def supplies_get():
                     "or replace(lower(e2.exp_mpan_core), ' ', '') "
                     "like lower(:reduced_pattern) "
                     "or lower(e2.exp_supplier_account) like lower(:pattern) "
-                    "or lower(e2.dc_account) like lower(:pattern) "
-                    "or lower(e2.mop_account) like lower(:pattern) "
                     "or lower(e2.msn) like lower(:pattern) "
                     "group by e2.supply_id) as sq "
                     "on e1.supply_id = sq.supply_id "

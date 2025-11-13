@@ -107,9 +107,7 @@ def test_content(mocker, sess, client):
         None,
         gsp_group,
         mop_contract,
-        "773",
         dc_contract,
-        "ghyy3",
         "hgjeyhuw",
         dno,
         pc,
@@ -176,7 +174,7 @@ def test_content(mocker, sess, client):
             "Water Works",
             "22 7867 6232 781",
             "",
-            "ghyy3",
+            "",
         ],
     ]
 
@@ -257,9 +255,7 @@ def test_content_multiple_months(mocker, sess, client):
         None,
         gsp_group,
         mop_contract,
-        "773",
         dc_contract,
-        "ghyy3",
         "hgjeyhuw",
         dno,
         pc,
@@ -326,7 +322,7 @@ def test_content_multiple_months(mocker, sess, client):
             "Water Works",
             "22 7867 6232 781",
             "",
-            "ghyy3",
+            "",
         ],
         [
             "Fusion DC 2000",
@@ -336,7 +332,7 @@ def test_content_multiple_months(mocker, sess, client):
             "Water Works",
             "22 7867 6232 781",
             "",
-            "ghyy3",
+            "",
         ],
     ]
 
@@ -417,9 +413,7 @@ def test_content_bst(mocker, sess, client):
         None,
         gsp_group,
         mop_contract,
-        "773",
         dc_contract,
-        "ghyy3",
         "hgjeyhuw",
         dno,
         pc,
@@ -486,7 +480,7 @@ def test_content_bst(mocker, sess, client):
             "Water Works",
             "22 7867 6232 781",
             "",
-            "ghyy3",
+            "",
         ],
     ]
 

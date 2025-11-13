@@ -1997,9 +1997,7 @@ class Site(Base, PersistentClass):
         finish_date,
         gsp_group,
         mop_contract,
-        mop_account,
         dc_contract,
-        dc_account,
         msn,
         dno,
         pc,
@@ -2041,9 +2039,7 @@ class Site(Base, PersistentClass):
             start_date,
             finish_date,
             mop_contract,
-            mop_account,
             dc_contract,
-            dc_account,
             msn,
             pc,
             old_mtc_code,
@@ -3367,12 +3363,10 @@ class Era(Base, PersistentClass):
     mop_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.mop_contract_id"
     )
-    mop_account = Column(String, nullable=False)
     dc_contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False)
     dc_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.dc_contract_id"
     )
-    dc_account = Column(String)
     msn = Column(String)
     pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False)
     mtc_participant_id = Column(
@@ -3412,9 +3406,7 @@ class Era(Base, PersistentClass):
         start_date,
         finish_date,
         mop_contract,
-        mop_account,
         dc_contract,
-        dc_account,
         msn,
         pc,
         mtc_code,
@@ -3440,9 +3432,7 @@ class Era(Base, PersistentClass):
             start_date,
             finish_date,
             mop_contract,
-            mop_account,
             dc_contract,
-            dc_account,
             msn,
             pc,
             mtc_code,
@@ -3517,9 +3507,7 @@ class Era(Base, PersistentClass):
                 start_date,
                 finish_date,
                 self.mop_contract,
-                self.mop_account,
                 self.dc_contract,
-                self.dc_account,
                 self.msn,
                 self.pc,
                 self.mtc_participant.mtc.code,
@@ -3546,9 +3534,7 @@ class Era(Base, PersistentClass):
         start_date,
         finish_date,
         mop_contract,
-        mop_account,
         dc_contract,
-        dc_account,
         msn,
         pc,
         mtc_code,
@@ -3580,16 +3566,8 @@ class Era(Base, PersistentClass):
         if mop_contract is None:
             raise BadRequest("An supply era must have a MOP contract.")
 
-        mop_account = mop_account.strip()
-        if len(mop_account) == 0:
-            raise BadRequest("There must be a MOP account reference.")
-
         if dc_contract is None:
             raise BadRequest("An era must have a DC contract.")
-
-        dc_account = dc_account.strip()
-        if len(dc_account) == 0:
-            raise BadRequest("An era must have a DC account reference.")
 
         self.msn = msn.strip()
         self.pc = pc
@@ -3621,9 +3599,7 @@ class Era(Base, PersistentClass):
 
         self.start_date = start_date
         self.finish_date = finish_date
-        self.mop_account = mop_account
         self.mop_contract = mop_contract
-        self.dc_account = dc_account
         self.dc_contract = dc_contract
 
         for polarity in ["imp", "exp"]:
@@ -4375,9 +4351,7 @@ class Supply(Base, PersistentClass):
         start_date,
         finish_date,
         mop_contract,
-        mop_account,
         dc_contract,
-        dc_account,
         msn,
         pc,
         mtc_code,
@@ -4523,9 +4497,7 @@ class Supply(Base, PersistentClass):
             start_date,
             finish_date,
             mop_contract,
-            mop_account,
             dc_contract,
-            dc_account,
             msn,
             pc,
             mtc_code,
@@ -4604,9 +4576,7 @@ class Supply(Base, PersistentClass):
             start_date,
             None,
             template_era.mop_contract,
-            template_era.mop_account,
             template_era.dc_contract,
-            template_era.dc_account,
             template_era.msn,
             template_era.pc,
             template_era.mtc_participant.mtc.code,
@@ -4636,9 +4606,7 @@ class Supply(Base, PersistentClass):
         start_date,
         finish_date,
         mop_contract,
-        mop_account,
         dc_contract,
-        dc_account,
         msn,
         pc,
         mtc,
@@ -4701,9 +4669,7 @@ class Supply(Base, PersistentClass):
                 start_date,
                 finish_date,
                 mop_contract,
-                mop_account,
                 dc_contract,
-                dc_account,
                 msn,
                 pc,
                 mtc,
@@ -7634,6 +7600,11 @@ def db_upgrade_50_to_51(sess, root_path):
         sess.execute(delete(Party).where(Party.id == dno_99.id))
 
 
+def db_upgrade_51_to_52(sess, root_path):
+    sess.execute(text("alter table era drop column mop_account;"))
+    sess.execute(text("alter table era drop column dc_account;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7670,6 +7641,7 @@ upgrade_funcs.extend(
         db_upgrade_48_to_49,
         db_upgrade_49_to_50,
         db_upgrade_50_to_51,
+        db_upgrade_51_to_52,
     ]
 )
 

@@ -81,9 +81,7 @@
 				<td>Start date (yyyy-MM-dd hh:mm)</td>
 				<td>Finish Date</td>
 				<td>MOP Contract</td>
-				<td>MOP Account</td>
 				<td>DC Contract</td>
-				<td>DC Account</td>
 				<td>Meter Serial Number</td>
 				<td>DNO Code</td>
 				<td>Profile Class</td>
@@ -125,9 +123,7 @@
 				<td>Start date (yyyy-MM-dd)</td>
 				<td>Site Code</td>
 				<td>MOP Contract</td>
-				<td>MOP Account</td>
 				<td>DC Contract</td>
-				<td>DC Account</td>
 				<td>Meter Serial Number</td>
 				<td>Profile Class</td>
 				<td>MTC</td>
@@ -161,9 +157,7 @@
 				<td>Start date</td>
 				<td>Finish date</td>
 				<td>MOP Contract</td>
-				<td>MOP Account</td>
 				<td>DC Contract</td>
-				<td>DC Account</td>
 				<td>Meter Serial Number</td>
 				<td>Profile Class</td>
 				<td>MTC</td>
@@ -290,8 +284,117 @@
 			</tr>
 			<tr>
 				<td><em>insert<em></td>
-				<td><em>bill</em></td>
-				<td>Role Name (dc, supplier or mop)</td>
+				<td><em>mop_bill</em></td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Mpan Core</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Gross</td>
+				<td>Reference</td>
+				<td>Type</td>
+				<td>Breakdown</td>
+				<td>Kwh</td>
+				<td>'read' or 'element'</td>
+				<td>(Meter Serial Number</td>
+				<td>Mpan</td>
+				<td>Coefficient</td>
+				<td>Units</td>
+				<td>TPR</td>
+				<td>Previous Date</td>
+				<td>Previous Value</td>
+				<td>Previous Type</td>
+				<td>Present Date</td>
+				<td>Present Value</td>
+				<td>Present Type)*</td>
+				<td>'read' or 'element'</td>
+				<td>(Name</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Breakdown)*</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>mop_bill</em></td>
+				<td>Chellow Id</td>
+				<td>Reference</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>kwh</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Type</td>
+				<td>Paid?</td>
+				<td>Breakdown</td>
+			</tr>
+			<tr>
+				<td><em>delete</em></td>
+				<td><em>mop_bill</em></td>
+				<td>Bill Chellow Id</td>
+			</tr>
+			<tr>
+				<td><em>insert<em></td>
+				<td><em>dc_bill</em></td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Mpan Core</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Gross</td>
+				<td>Reference</td>
+				<td>Type</td>
+				<td>Breakdown</td>
+				<td>Kwh</td>
+				<td>'read' or 'element'</td>
+				<td>(Meter Serial Number</td>
+				<td>Mpan</td>
+				<td>Coefficient</td>
+				<td>Units</td>
+				<td>TPR</td>
+				<td>Previous Date</td>
+				<td>Previous Value</td>
+				<td>Previous Type</td>
+				<td>Present Date</td>
+				<td>Present Value</td>
+				<td>Present Type)*</td>
+				<td>'read' or 'element'</td>
+				<td>(Name</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Breakdown)*</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>dc_bill</em></td>
+				<td>Chellow Id</td>
+				<td>Reference</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>kwh</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Type</td>
+				<td>Paid?</td>
+				<td>Breakdown</td>
+			</tr>
+			<tr>
+				<td><em>delete</em></td>
+				<td><em>dc_bill</em></td>
+				<td>Bill Chellow Id</td>
+			</tr>
+			<tr>
+				<td><em>insert<em></td>
+				<td><em>supplier_bill</em></td>
 				<td>Contract Name</td>
 				<td>Batch Reference</td>
 				<td>Mpan Core</td>
@@ -327,7 +430,7 @@
 			</tr>
 			<tr>
 				<td><em>update</em></td>
-				<td><em>bill</em></td>
+				<td><em>supplier_bill</em></td>
 				<td>Chellow Id</td>
 				<td>Account</td>
 				<td>Reference</td>
@@ -343,7 +446,7 @@
 			</tr>
 			<tr>
 				<td><em>delete</em></td>
-				<td><em>bill</em></td>
+				<td><em>supplier_bill</em></td>
 				<td>Bill Chellow Id</td>
 			</tr>
 			<tr>

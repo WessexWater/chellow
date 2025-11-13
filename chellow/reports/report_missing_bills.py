@@ -73,9 +73,9 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
                     chunk_finish = hh_min(era.finish_date, month_finish)
                     missing_set = set(hh_range(caches, chunk_start, chunk_finish))
                     if era.mop_contract == contract:
-                        account = era.mop_account
+                        account = ""
                     elif era.dc_contract == contract:
-                        account = era.dc_account
+                        account = ""
                     elif era.imp_supplier_contract == contract:
                         account = era.imp_supplier_account
                     elif era.imp_supplier_contract == contract:
