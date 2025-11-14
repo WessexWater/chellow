@@ -9,6 +9,7 @@ from chellow.utils import (
     hh_format,
     make_val,
     parse_hh_start,
+    parse_mpan_core,
     to_utc,
     u_months_u,
     utc_datetime,
@@ -61,7 +62,6 @@ def test_c_months_u_start_finish():
             finish_month=finish_month,
         )
     )
-    print(month_list)
     assert month_list == [
         (to_utc(ct_datetime(2009, 3)), to_utc(ct_datetime(2009, 3, 31, 23, 30))),
         (to_utc(ct_datetime(2009, 4)), to_utc(ct_datetime(2009, 4, 30, 23, 30))),
@@ -109,3 +109,8 @@ def test_hh_format_none():
 def test_parse_hh_start():
     actual = parse_hh_start("2019-01-01 00:00Z")
     assert actual == utc_datetime(2019, 1, 1)
+
+
+def test_parse_mpan_core():
+    actual = parse_mpan_core("20\u00a019010100002")
+    assert actual == "20 1901 0100 002"

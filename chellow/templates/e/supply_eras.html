@@ -107,7 +107,7 @@
 						</td>
 						<td>
 							{% if era.imp_mpan_core %}
-								<a title="{{supply.dno.dno_name}}" href="/e/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a> {{era.imp_mpan_core[3:]}}
+								{{era.imp_mpan_core}}
 							{% endif %}
 						<td>
 							{% if era.imp_mpan_core %}
@@ -147,9 +147,9 @@
 								{% endif %}
 						</td>
 						<td>
-								{% if era.exp_mpan_core %}
-								<a title="{{era.supply.dno.dno_code}}" href="/e/dnos/{{era.supply.dno.id}}">{{era.supply.dno.dno_code}}</a> {{era.exp_mpan_core[3:]}}
-								{% endif %}
+							{% if era.exp_mpan_core %}
+								{{era.exp_mpan_core}}
+							{% endif %}
 						</td>
 						<td>
 							{% if era.exp_mpan_core %}

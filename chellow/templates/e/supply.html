@@ -62,6 +62,7 @@
 		<tr>
 			<th>Name</th>
 			<th>Source</th>
+			<th><span title="Distribution Network Operator">DNO</span></th>
 			<th>GSP Group</th>
 			{% if system_properties['supply_links'] %}
 				<th>Links</th>
@@ -77,6 +78,9 @@
 				{% if supply.source.code == 'gen' %}
 				( {{ supply.generator_type.code }} {{ supply.generator_type.name }})
 				{% endif %}
+			</td>
+			<td>
+				<a href="/e/dnos/{{supply.dno.id}}" title="{{supply.dno.name}}">{{ supply.dno.dno_code }}</a>
 			</td>
 			<td>
 				{{ supply.gsp_group.code }} {{ supply.gsp_group.description }}
