@@ -318,9 +318,7 @@ def virtual_bill(ds):
                 "net": Decimal("10.00"),
                 "problem": "The Gross GBP (10.00) of the bill isn't equal "
                 "to the Net GBP "
-                "(10.00) + VAT GBP (10.00) of the bill.The VAT at 20% on the net "
-                "amount 10.00 is calculated to be 2.00, which is different from "
-                "the value in the bill of 10.00",
+                "(10.00) + VAT GBP (10.00) of the bill.",
                 "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
                 "vat": Decimal("10.00"),
@@ -580,10 +578,7 @@ def virtual_bill(ds):
                 "kwh": Decimal("10.00"),
                 "net": Decimal("10.00"),
                 "problem": "The Gross GBP (10.00) of the bill isn't equal "
-                "to the Net GBP "
-                "(10.00) + VAT GBP (10.00) of the bill.The VAT at 20% on the net "
-                "amount 10.00 is calculated to be 2.00, which is different from "
-                "the value in the bill of 10.00",
+                "to the Net GBP (10.00) + VAT GBP (10.00) of the bill.",
                 "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
                 "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
                 "vat": Decimal("10.00"),
