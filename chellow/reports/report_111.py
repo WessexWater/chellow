@@ -4,7 +4,7 @@ import threading
 import traceback
 from collections import defaultdict
 from datetime import datetime as Datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 from itertools import combinations
 from numbers import Number
 
@@ -466,16 +466,6 @@ def _process_period(
 
                 if "vat" in bd:
                     for vat_percentage, vat_vals in bd["vat"].items():
-                        calc_vat = Decimal(
-                            float(vat_percentage) / 100 * float(vat_vals["net"])
-                        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-                        if calc_vat != vat_vals["vat"]:
-                            actual_bill["problem"] += (
-                                f"The VAT at {vat_percentage}% on the net amount "
-                                f"{vat_vals['net']} is calculated to be {calc_vat}, "
-                                f"which is different from the value in the bill of "
-                                f"{vat_vals['vat']}"
-                            )
                         vat_net += vat_vals["net"]
                         vat_vat += vat_vals["vat"]
             except ZishException as e:
