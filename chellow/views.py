@@ -2295,6 +2295,17 @@ def rate_server_get():
         )
         .order_by(GRateScript.start_date.desc())
     ).scalars()
+    ro_rs = g.sess.scalars(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "ro",
+        )
+        .order_by(RateScript.start_date.desc())
+    )
 
     return render_template(
         "rate_server.html",
@@ -2308,6 +2319,7 @@ def rate_server_get():
         triad_dates_rs=triad_dates_rs,
         gas_ccl_rs=gas_ccl_rs,
         ccl_rs=ccl_rs,
+        ro_rs=ro_rs,
     )
 
 
