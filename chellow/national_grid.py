@@ -41,7 +41,12 @@ def run_import(sess, log, set_progress):
     s = requests.Session()
     s.verify = False
 
-    for mod_name in ("chellow.e.tnuos", "chellow.e.bsuos", "chellow.e.triad"):
+    for mod_name in (
+        "chellow.e.aahedc",
+        "chellow.e.tnuos",
+        "chellow.e.bsuos",
+        "chellow.e.triad",
+    ):
         mod = import_module(mod_name)
         mod.national_grid_import(sess, log, set_progress, s)
 
