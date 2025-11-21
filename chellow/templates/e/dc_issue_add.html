@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Issues &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{contract.id}}/issues">Issues</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+
+	<form action="/e/dc_contracts/{{contract.id}}/add_issue" method="post">
+		<fieldset>
+			<legend>Add An Issue</legend>
+				
+			<label>Text</label>
+			{{input_textarea('markdown', '', 40, 80, show_pos=True)}}
+
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
+	<ul>
+		<li><code>*Italic*</code></li>
+		<li><code>**Bold**</code></li>
+		<li><code># Heading 1</code></li>
+		<li><code>## Heading 2</code></li>
+		<li><code>[Link](https://www.example.com)</code></li>
+		<li><code>![Image](https://www.example.com/a.png)</code></li>
+		<li><code>&gt; Blockquote</code></li>
+		<li><pre>
+* List
+* List
+* List</pre></li>
+		<li><pre>
+1. One
+2. Two
+3. Three</pre></li>
+		<li><pre>
+Horizontal rule:
+		
+---</pre></li>
+		<li><code>`Inline code` with backticks</code></li>
+		<li><pre>
+```
+
+# code block
+# code block
+# code block
+
+```</pre><li>
+  </ul>
+{% endblock %}

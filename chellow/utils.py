@@ -11,6 +11,8 @@ from flask import Response, request
 
 from jinja2 import Environment
 
+from markdown_it import MarkdownIt
+
 from pytz import timezone, utc
 
 from werkzeug.exceptions import BadRequest
@@ -121,6 +123,13 @@ def req_file(name):
         return request.files[name]
     except KeyError:
         raise BadRequest(f"The file {name} is required.")
+
+
+def req_markdown(name):
+    md = MarkdownIt()
+    markdown = req_str(name)
+    md.parse(markdown)
+    return markdown
 
 
 def prev_hh(dt):

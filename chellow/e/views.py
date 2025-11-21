@@ -63,6 +63,7 @@ from chellow.models import (
     GeneratorType,
     GspGroup,
     HhDatum,
+    Issue,
     Laf,
     Llfc,
     MarketRole,
@@ -112,6 +113,7 @@ from chellow.utils import (
     req_hh_date,
     req_int,
     req_int_none,
+    req_markdown,
     req_str,
     req_zish,
     to_ct,
@@ -780,9 +782,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -1362,6 +1364,63 @@ def dc_contracts_hh_import_get(contract_id, import_id):
     return render_template(
         "dc_contract_hh_import.html", contract=contract, process=process
     )
+
+
+@e.route("/dc_contracts/<int:contract_id>/issues")
+def dc_issues(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    issues = g.sess.scalars(
+        select(Issue).where(Issue.is_open == true()).order_by(Issue.date_created)
+    )
+    return render_template(
+        "dc_issues.html",
+        contract=contract,
+        issues=issues,
+    )
+
+
+@e.route("/dc_contracts/<int:contract_id>/add_issue")
+def dc_issue_add_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+
+    return render_template("dc_issue_add.html", contract=contract)
+
+
+@e.route("/dc_contracts/<int:contract_id>/add_issue", methods=["POST"])
+def dc_issue_add_post(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    try:
+        markdown = req_markdown("markdown")
+
+        now = utc_datetime_now()
+        issue = contract.insert_issue(g.sess, now, {}, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/dc_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("dc_issue_add.html", contract=contract), 400
+        )
+
+
+@e.route("/dc_issues/<int:issue_id>")
+def dc_issue_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("dc_issue.html", issue=issue)
+
+
+@e.route("/dc_issues/<int:issue_id>/add_entry", methods=["POST"])
+def dc_entry_add_post(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    try:
+        markdown = req_markdown("markdown")
+
+        issue.add_entry(g.sess, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/dc_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("dc_entry_add.html", issue=issue), 400)
 
 
 @e.route("/dc_bills/<int:bill_id>/add_element")
@@ -2946,9 +3005,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5356,9 +5415,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 

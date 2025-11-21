@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Issues
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	Issues [<a href="/e/dc_contracts/{{contract.id}}/add_issue">add</a>]
+{% endblock %}
+
+{% block content %}
+
+	{% for issue in issues %}
+		<section class="issue">
+			<h3>{{issue.id}}</h3>
+			<ul>
+				<li><a href="/e/dc_issues/{{issue.id}}">View</a></li>
+				<li>Date created: {{issue.date_created|hh_format}}</li>
+			</ul>
+			{% for entry in issue.entries %}
+				<section class="issue-entry">
+					<h4>{{entry.timestamp|hh_format}}</h4>
+
+					<p>{{entry.markdown|markdown}}</p>
+				</section>
+			{% endfor %}
+		</section>
+	{% endfor %}
+
+{% endblock %}
