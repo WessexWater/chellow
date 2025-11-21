@@ -1,3 +1,4 @@
+import json
 import time
 import traceback
 from collections import defaultdict
@@ -5,11 +6,14 @@ from collections.abc import Mapping, Set
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
+
 from dateutil.relativedelta import relativedelta
 
 from flask import Response, request
 
 from jinja2 import Environment
+
+from markdown_it import MarkdownIt
 
 from pytz import timezone, utc
 
@@ -88,6 +92,13 @@ def req_zish(name):
         raise BadRequest(f"Problem parsing the field {name} as Zish: {e}")
 
 
+def req_json(name):
+    try:
+        return json.loads(req_str(name))
+    except json.decoder.JSONDecodeError as e:
+        raise BadRequest(f"Problem parsing the field {name} as JSON: {e}")
+
+
 def req_date(prefix, resolution="minute"):
     year = req_int(f"{prefix}_year")
     month = req_int(f"{prefix}_month")
@@ -121,6 +132,13 @@ def req_file(name):
         return request.files[name]
     except KeyError:
         raise BadRequest(f"The file {name} is required.")
+
+
+def req_markdown(name):
+    md = MarkdownIt()
+    markdown = req_str(name)
+    md.parse(markdown)
+    return markdown
 
 
 def prev_hh(dt):

@@ -14,6 +14,8 @@ from itertools import takewhile
 
 from dateutil.relativedelta import relativedelta
 
+from markdown_it import MarkdownIt
+
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -1544,6 +1546,7 @@ class Contract(Base, PersistentClass):
     finish_rate_script = relationship(
         "RateScript", primaryjoin="RateScript.id==Contract.finish_rate_script_id"
     )
+    issues = relationship("Issue", backref="contract")
 
     def __init__(self, name, party, charge_script, properties, state):
         self.market_role = party.market_role
@@ -1796,6 +1799,12 @@ class Contract(Base, PersistentClass):
             else:
                 raise e
         return batch
+
+    def insert_issue(self, sess, date_created, properties):
+        issue = Issue(self, date_created, True, properties)
+        sess.add(issue)
+        sess.flush()
+        return issue
 
     def make_properties(self):
         return loads(self.properties)
@@ -6534,6 +6543,63 @@ class ReportRunRow(Base, PersistentClass):
         self.report_run = report_run
         self.tab = tab
         self.data = _jsonize(data)
+
+
+class Issue(Base, PersistentClass):
+    __tablename__ = "issue"
+    id = Column(Integer, primary_key=True)
+    contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False)
+    date_created = Column(DateTime(timezone=True), nullable=False, index=True)
+    properties = Column(JSONB, nullable=False)
+    is_open = Column(Boolean, nullable=False, index=True)
+    entries = relationship(
+        "IssueEntry",
+        backref="issue",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    def __init__(self, contract, date_created, is_open, properties):
+        self.contract = contract
+        self.update(date_created, is_open, properties)
+
+    def update(self, date_created, is_open, properties):
+        self.date_created = date_created
+        self.is_open = is_open
+        self.update_properties(properties)
+
+    def update_properties(self, properties):
+        self.properties = _jsonize(properties)
+        attributes.flag_modified(self, "properties")
+
+    def add_entry(self, sess, markdown):
+        entry = IssueEntry(self, utc_datetime_now(), markdown)
+        sess.add(entry)
+        return entry
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
+class IssueEntry(Base, PersistentClass):
+    __tablename__ = "issue_entry"
+    id = Column(Integer, primary_key=True)
+    issue_id = Column(
+        Integer, ForeignKey("issue.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    markdown = Column(JSONB, nullable=False)
+
+    def __init__(self, issue, timestamp, markdown):
+        self.issue = issue
+        self.update(timestamp, markdown)
+
+    def update(self, timestamp, markdown):
+        self.timestamp = timestamp
+        md = MarkdownIt()
+        md.parse(markdown)
+        self.markdown = markdown
 
 
 def read_file(pth, fname, attr):

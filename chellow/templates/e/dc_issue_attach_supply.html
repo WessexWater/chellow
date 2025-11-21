@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{issue.contract.name}} &raquo; Issues &raquo; 
+	{{issue.id}} &raquo; Attach Supply
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a> &raquo; 
+	<a href="/e/dc_contract/{{issue.contract.id}}/issues">Issues</a> &raquo; 
+	<a href="/e/dc_issues/{{issue.id}}">{{issue.reference}}</a> &raquo;
+ 	Attach Supply
+{% endblock %}
+
+{% block content %}
+	<form action="/e/dc_issues/{{issue.id}}/attach_supply" method="post">
+		<fieldset>
+			<legend>Attach A Supply</legend>
+
+			<label>MPAN Core</label> {{input_text('mpan_core')}}
+
+			<input type="submit" value="Attach">
+		</fieldset>
+	</form>
+{% endblock %}

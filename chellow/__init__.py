@@ -7,6 +7,9 @@ from pathlib import Path
 
 from flask import Flask, Response, g, make_response, render_template, request
 
+from markdown_it import MarkdownIt
+
+from markupsafe import Markup
 
 from sqlalchemy import select
 
@@ -327,6 +330,11 @@ def create_app(testing=False, instance_path=None):
     @app.template_filter("dumps")
     def dumps_filter(d):
         return dumps(d)
+
+    @app.template_filter("markdown")
+    def markdown_filter(txt):
+        md = MarkdownIt()
+        return Markup(md.render(txt))
 
     return app
 

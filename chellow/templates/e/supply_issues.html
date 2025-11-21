@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplies &raquo; {{supply.name}} &raquo; Issues
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplies">Supplies</a> &raquo; 
+	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
+	Issues
+{% endblock %}
+
+{% block content %}
+	<table class="sticky">
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Contract</th>
+				<th>Issue Id</th>
+				<th>Date Created</th>
+				<th>Open?</th>
+				<th>Subject</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for issue in issues %}
+				<tr>
+					<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
+					<td>
+						{% if issue.contract.market_role.code == 'C' %}
+							<a href="/e/dc_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a>
+						{% endif %}
+					</td>
+					<td>{{issue.id}}</td>
+					<td>{{issue.date_created|hh_format}}</td>
+					<td>{{issue.is_open}}</td>
+					<td>{{issue.properties['subject']}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{ contract.name }} &raquo; Issues
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo;
+	<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	Issues [<a href="/e/dc_contracts/{{contract.id}}/add_issue">add</a>]
+{% endblock %}
+
+{% block content %}
+	<table class="sticky">
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Issue Id</th>
+				<th>Date Created</th>
+				<th>Open?</th>
+				<th>Subject</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for issue in issues %}
+				<tr>
+					<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
+					<td>{{issue.id}}</td>
+					<td>{{issue.date_created|hh_format}}</td>
+					<td>{{issue.is_open}}</td>
+					<td>{{issue.properties['subject']}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}
