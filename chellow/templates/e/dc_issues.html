@@ -17,18 +17,35 @@
 				<th>View</th>
 				<th>Issue Id</th>
 				<th>Date Created</th>
-				<th>Open?</th>
+				<th>Status</th>
 				<th>Subject</th>
+				<th>Supplies</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for issue in issues %}
+			{% for bundle in issue_bundles %}
 				<tr>
-					<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
-					<td>{{issue.id}}</td>
-					<td>{{issue.date_created|hh_format}}</td>
-					<td>{{issue.is_open}}</td>
-					<td>{{issue.properties['subject']}}</td>
+					<td><a href="/e/dc_issues/{{bundle.issue.id}}">View</a></td>
+					<td>{{bundle.issue.id}}</td>
+					<td>{{bundle.issue.date_created|hh_format}}</td>
+					<td>
+						{% if bundle.issue.is_open %}
+							Open
+						{% else %}
+							Closed
+						{% endif %}
+					</td>
+					<td>{{bundle.issue.properties['subject']}}</td>
+					<td>
+						<ul>
+							{% for supply in bundle.supplies %}
+								{% set era = supply.eras[0] %}
+								<li>
+									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

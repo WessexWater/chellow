@@ -784,9 +784,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -1369,15 +1369,25 @@ def dc_contracts_hh_import_get(contract_id, import_id):
 
 
 @e.route("/dc_contracts/<int:contract_id>/issues")
-def dc_issues(contract_id):
+def dc_issues_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
-    issues = g.sess.scalars(
-        select(Issue).where(Issue.is_open == true()).order_by(Issue.date_created)
-    )
+    bundles = []
+    for issue in g.sess.scalars(
+        select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
+    ):
+        bundle = {}
+        bundle["issue"] = issue
+        bundle["supplies"] = g.sess.scalars(
+            select(Supply)
+            .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
+            .order_by(Supply.id)
+        ).all()
+        bundles.append(bundle)
+
     return render_template(
         "dc_issues.html",
         contract=contract,
-        issues=issues,
+        issue_bundles=bundles,
     )
 
 
@@ -3066,9 +3076,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5476,9 +5486,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
