@@ -1908,7 +1908,7 @@ def site_used_graph_get(site_id):
             )
 
             if hh_start.day == 15:
-                month_list.append({"name": hh_start.strftime("%B"), "x": i})
+                month_list.append({"name": hh_start.strftime("%B %Y"), "x": i})
 
     scale_lines = []
     for height in chain(
@@ -1917,16 +1917,8 @@ def site_used_graph_get(site_id):
         scale_lines.append({"height": height, "y": int(x_axis - height * scale_factor)})
 
     title = (
-        "Electricity use at site "
-        + site.code
-        + " "
-        + site.name
-        + " for "
-        + str(months)
-        + " month"
-        + ("s" if months > 1 else "")
-        + " ending "
-        + finish_date.strftime("%B %Y")
+        f"Electricity use at site {site.code} {site.name} for {months} "
+        f"month{'s' if months > 1 else ''} ending {finish_date.strftime('%B %Y')}"
     )
 
     return render_template(
@@ -2472,7 +2464,7 @@ def site_gen_graph_get(site_id):
                 graph["ticks"].append({"x": x})
 
             if day == 15:
-                month_points.append({"x": x, "text": hh_date_ct.strftime("%B")})
+                month_points.append({"x": x, "text": hh_date_ct.strftime("%B %Y")})
 
         is_complete = None
 
