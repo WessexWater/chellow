@@ -107,7 +107,7 @@ def _make_rows(
         if only_ongoing and age_of_snag is not None:
             continue
 
-        if days_long_hidden is not None and duration < days_long_hidden:
+        if days_long_hidden is not None and duration.days < days_long_hidden:
             continue
 
         if (
