@@ -26,9 +26,9 @@
 		</fieldset>
 	</form>
 
-	<form>
-		<fieldset hx-delete="/e/dc_issues/{{issue.id}}/edit"
+	<form hx-delete="/e/dc_issues/{{issue.id}}/edit"
 		 	  hx-confirm="Are you sure you want to delete this issue?">
+		<fieldset>
 			<legend>Delete This Issue</legend>
 			<input type="submit" name="delete" value="Delete">
 		</fieldset>

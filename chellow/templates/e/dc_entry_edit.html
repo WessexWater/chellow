@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; DC Contracts &raquo; {{entry.issue.contract.name}} &raquo; Issues &raquo; 
+ 	{{entry.issue.id}} &raquo; {{entry.timestamp|hh_format}} Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
+	<a href="/e/dc_contracts/{{entry.issue.contract.id}}">{{entry.issue.contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{entry.issue.contract.id}}/issues">Issues</a> &raquo; 
+	<a href="/e/dc_issues/{{entry.issue.id}}">{{entry.issue.id}}</a> &raquo;
+	{{entry.timestamp|hh_format}} Edit
+{% endblock %}
+
+{% block content %}
+
+	<section style="display: flex;">
+		<form action="/e/dc_entries/{{entry.id}}/edit" method="post">
+			<fieldset>
+				<legend>Update Entry</legend>
+				<label>Timestamp</label> {{ input_date('timestamp', entry.timestamp) }}
+				<label>Text</label>
+				{{input_textarea('markdown', entry.markdown, 40, 80, show_pos=True)}}
+				<input type="submit" name="update" value="Update">
+			</fieldset>
+		</form>
+		{% include 'e/markdown_docs.html' %}
+	</section>
+
+	<form hx-delete="/e/dc_entries/{{entry.id}}/edit"
+		 	  hx-confirm="Are you sure you want to delete this entry?">
+		<fieldset>
+			<legend>Delete This Entry</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+
+{% endblock %}

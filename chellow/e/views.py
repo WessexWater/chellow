@@ -65,6 +65,7 @@ from chellow.models import (
     GspGroup,
     HhDatum,
     Issue,
+    IssueEntry,
     Laf,
     Llfc,
     MarketRole,
@@ -1447,6 +1448,19 @@ def dc_issue_edit_post(issue_id):
         return make_response(render_template("dc_issue_edit.html", issue=issue), 400)
 
 
+@e.route("/dc_issues/<int:issue_id>/edit", methods=["DELETE"])
+def dc_issue_edit_delete(issue_id):
+    try:
+        issue = Issue.get_by_id(g.sess, issue_id)
+        contract = issue.contract
+        issue.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/dc_contracts/{contract.id}/issues", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("dc_issue_edit.html", issue=issue), 400)
+
+
 @e.route("/dc_issues/<int:issue_id>/attach_supply")
 def dc_issue_attach_supply_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
@@ -1477,7 +1491,7 @@ def dc_issue_attach_supply_post(issue_id):
 @e.route("/dc_issues/<int:issue_id>/add_entry")
 def dc_entry_add_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
-    return make_response(render_template("dc_entry_add.html", issue=issue), 400)
+    return render_template("dc_entry_add.html", issue=issue)
 
 
 @e.route("/dc_issues/<int:issue_id>/add_entry", methods=["POST"])
@@ -1492,6 +1506,40 @@ def dc_entry_add_post(issue_id):
     except BadRequest as e:
         flash(e.description)
         return make_response(render_template("dc_entry_add.html", issue=issue), 400)
+
+
+@e.route("/dc_entries/<int:entry_id>/edit")
+def dc_entry_edit_get(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    return render_template("dc_entry_edit.html", entry=entry)
+
+
+@e.route("/dc_entries/<int:entry_id>/edit", methods=["POST"])
+def dc_entry_edit_post(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    try:
+        markdown = req_markdown("markdown")
+        timestamp = req_date("timestamp")
+
+        entry.update(g.sess, timestamp, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/dc_issues/{entry.issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("dc_entry_edit.html", entry=entry), 400)
+
+
+@e.route("/dc_entries/<int:entry_id>/edit", methods=["DELETE"])
+def dc_entry_edit_delete(entry_id):
+    try:
+        entry = IssueEntry.get_by_id(g.sess, entry_id)
+        issue = entry.issue
+        entry.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/dc_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("dc_entry_edit.html", entry=entry), 400)
 
 
 @e.route("/dc_bills/<int:bill_id>/add_element")

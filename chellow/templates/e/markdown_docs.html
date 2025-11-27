@@ -1,0 +1,83 @@
+<table>
+	<caption>Markdown</caption>
+	<thead>
+		<th>Write</th>
+		<th>To Get</th>
+	</thead>
+	<tbody>
+		<tr>
+			<td><code>*Italic*</code></td>
+			<td>{{'*Italic*' | markdown}}</td>
+		</tr>
+		<tr>
+			<td><code>**Bold**</code></td>
+			<td>{{'**Bold**' | markdown}}</td>
+		</tr>
+		<tr>
+			<td><code># Heading 1</code></td>
+			<td>{{'# Heading 1' | markdown}}</td>
+		</tr>
+		<tr>
+			<td><code>## Heading 2</code></td>
+			<td>{{ '## Heading 2' | markdown }}</td>
+		</tr>
+		<tr>
+			<td><code>[Link](https://www.example.com)</code></td>
+			<td>{{ '[Chellow](https://www.chellow.com)' | markdown }} </td>
+		</tr>
+		<tr>
+			<td><code>![Image](https://www.chellow.org/logo-small.png)</code></td>
+			<td>{{ '![Logo](https://www.chellow.org/logo-small.png)' | markdown }}</td>
+		</tr>
+		<tr>
+			<td><code>&gt; Blockquote</code></td>
+			<td>{{ '&gt; Blockquote' | markdown }}</td>
+		</tr>
+		<tr>
+			<td><pre>
+* List
+* List
+* List</pre></td>
+			<td>{{ """* List
+* List
+* List""" | markdown }}</td>
+		</tr>
+		<tr>
+			<td><pre>
+1. One
+2. Two
+3. Three</pre></td>
+				<td>{{ """1. One
+2. Two
+3. Three""" | markdown }}</td>
+		</tr>
+		<tr>
+			<td><pre>
+Horizontal rule:
+		
+---</pre></td>
+			<td>{{ """Horizontal rule:
+		
+---""" | markdown }}</td>
+		</tr>
+		<tr>
+			<td><code>`Inline code` with backticks</code></td>
+			<td>{{ '`Inline code` with backticks' | markdown }}</td>
+		</tr>
+		<tr>
+			<td><pre>```
+
+# code block
+# code block
+# code block
+
+```</pre></td>
+			<td>{{ """```
+
+# code block
+# code block
+# code block
+
+```""" | markdown }}</td>
+	</tbody>
+</table>
