@@ -891,9 +891,6 @@ def general_import_mop_bill(sess, action, vals, args):
         breakdown_str = add_arg(args, "Breakdown", vals, 11)
         breakdown = _parse_breakdown(breakdown_str)
 
-        kwh_str = add_arg(args, "kWh", vals, 12)
-        kwh = Decimal(kwh_str)
-
         bill = batch.insert_bill(
             sess,
             "",
@@ -901,7 +898,7 @@ def general_import_mop_bill(sess, action, vals, args):
             issue_date,
             start_date,
             finish_date,
-            kwh,
+            0,
             net,
             vat,
             gross,
@@ -910,7 +907,7 @@ def general_import_mop_bill(sess, action, vals, args):
             supply,
         )
 
-        i = 14
+        i = 12
         while i < len(vals):
             typ = add_arg(args, "element", vals, i)
             if typ == "element":
@@ -1038,9 +1035,6 @@ def general_import_dc_bill(sess, action, vals, args):
         breakdown_str = add_arg(args, "Breakdown", vals, 11)
         breakdown = _parse_breakdown(breakdown_str)
 
-        kwh_str = add_arg(args, "kWh", vals, 12)
-        kwh = Decimal(kwh_str)
-
         bill = batch.insert_bill(
             sess,
             "",
@@ -1048,7 +1042,7 @@ def general_import_dc_bill(sess, action, vals, args):
             issue_date,
             start_date,
             finish_date,
-            kwh,
+            0,
             net,
             vat,
             gross,
@@ -1057,7 +1051,7 @@ def general_import_dc_bill(sess, action, vals, args):
             supply,
         )
 
-        i = 14
+        i = 12
         while i < len(vals):
             typ = add_arg(args, "element", vals, i)
             if typ == "element":
