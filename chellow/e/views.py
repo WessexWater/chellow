@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO, StringIO
-from itertools import chain, islice
+from itertools import chain
 
 
 from dateutil.relativedelta import relativedelta
@@ -362,68 +362,8 @@ def channel_snags_get():
         contract = None
     else:
         contract = Contract.get_dc_by_id(g.sess, contract_id)
-    days_hidden = req_int("days_hidden")
-    is_ignored = req_checkbox("is_ignored")
-
-    cutoff_date = utc_datetime_now() - relativedelta(days=days_hidden)
-
-    total_snags_q = (
-        select(func.count())
-        .select_from(Snag)
-        .join(Channel)
-        .join(Era)
-        .where(Snag.is_ignored == false(), Snag.start_date < cutoff_date)
-    )
-    snags_q = (
-        select(Snag)
-        .join(Channel)
-        .join(Era)
-        .join(Era.site_eras)
-        .join(SiteEra.site)
-        .where(Snag.is_ignored == is_ignored, Snag.start_date < cutoff_date)
-        .order_by(Site.code, Era.id, Snag.start_date, Snag.finish_date, Snag.channel_id)
-    )
-    if contract is not None:
-        total_snags_q = total_snags_q.where(Era.dc_contract == contract)
-        snags_q = snags_q.where(Era.dc_contract == contract)
-
-    total_snags = g.sess.scalars(total_snags_q).one()
-
-    snag_groups = []
-    prev_snag = None
-    for snag in islice(g.sess.scalars(snags_q), 200):
-        if (
-            prev_snag is None
-            or snag.channel.era != prev_snag.channel.era
-            or snag.start_date != prev_snag.start_date
-            or snag.finish_date != prev_snag.finish_date
-            or snag.description != prev_snag.description
-        ):
-            era = snag.channel.era
-            snag_group = {
-                "snags": [],
-                "sites": g.sess.scalars(
-                    select(Site)
-                    .join(Site.site_eras)
-                    .where(SiteEra.era == era)
-                    .order_by(Site.code)
-                ),
-                "era": era,
-                "description": snag.description,
-                "start_date": snag.start_date,
-                "finish_date": snag.finish_date,
-            }
-            snag_groups.append(snag_group)
-        snag_group["snags"].append(snag)
-        prev_snag = snag
-
-    return render_template(
-        "channel_snags.html",
-        contract=contract,
-        total_snags=total_snags,
-        snag_groups=snag_groups,
-        is_ignored=is_ignored,
-    )
+    comms = g.sess.scalars(select(Comm).order_by(Comm.code))
+    return render_template("channel_snags.html", contract=contract, comms=comms)
 
 
 @e.route("/channel_snags/<int:snag_id>")

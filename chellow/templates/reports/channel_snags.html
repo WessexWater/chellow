@@ -15,13 +15,13 @@
 				<th>Site</th>
 				<th>Description</th>
 				<th>Channels</th>
+				<th>Comm</th>
 				<th>Start Date</th>
 				<th>Finish Date</th>
 				<th>
 					<span title="Blank if the snag is ongoing (ie. if the finish date is 'ongoing' or if it finished less than 'Days Hidden' ago).">Days Since Finished</span>
 				</th>
 				<th>Duration</th>
-				<th>Comm</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -70,6 +70,9 @@
 						</ul>
 					</td>
 					<td>
+						<a href="/e/comms/{{snag_group.era.comm.id}}" title="{{snag_group.era.comm.description}}">{{snag_group.era.comm.code}}</a>
+					</td>
+					<td>
 						{{snag_group.start_date|hh_format}}
 					</td>
 					<td>
@@ -81,9 +84,6 @@
 						{% endif %}
 					</td>
 					<td>{{snag_group.duration}}</td>
-					<td>
-						<a href="/e/comms/{{snag_group.era.comm.id}}" title="{{snag_group.era.comm.description}}">{{snag_group.era.comm.code}}</a>
-					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

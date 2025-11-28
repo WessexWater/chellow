@@ -54,6 +54,17 @@
 			<label>Hide snags &lt; days long</label>
 			{{input_text('days_long_hidden', initial='', size=3, maxlength=3)}}
 
+			<details>
+				<summary>Comm Filter</summary>
+
+				<fieldset>
+					{% for comm in comms %}
+						<label>{{comm.code}}</label>
+						{{input_checkbox('comm_id', initial=True, value=comm.id)}} 
+					{% endfor %}
+				</fieldset>
+			</details>
+
 		</fieldset>
 	</form>
 

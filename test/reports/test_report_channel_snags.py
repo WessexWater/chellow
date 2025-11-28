@@ -2,6 +2,8 @@ import csv
 
 from io import StringIO
 
+from sqlalchemy import select
+
 from utils import match, match_tables
 
 from chellow.models import (
@@ -72,6 +74,7 @@ def test_do_get_as_csv(mocker, sess, client):
         "now_day": 31,
         "now_hour": 0,
         "now_minute": 0,
+        "comm_id": 0,
     }
     response = client.get("/reports/channel_snags", query_string=query_string)
     match(response, 303)
@@ -85,6 +88,7 @@ def test_do_get_as_csv(mocker, sess, client):
         show_settlement,
         None,
         now,
+        [0],
     )
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -304,6 +308,7 @@ def test_content(mocker, sess):
     )
     era = supply.eras[0]
     era.insert_channel(sess, True, "ACTIVE")
+    comm_ids = [c.id for c in sess.scalars(select(Comm))]
     sess.commit()
     f = StringIO()
     f.close = mocker.Mock()
@@ -323,6 +328,7 @@ def test_content(mocker, sess):
         show_settlement,
         days_long_hidden,
         now,
+        comm_ids,
     )
     f.seek(0)
     actual = list(csv.reader(f))
@@ -337,6 +343,7 @@ def test_content(mocker, sess):
             "site_name",
             "snag_description",
             "channel_types",
+            "comm",
             "start_date",
             "finish_date",
             "is_ignored",
@@ -353,6 +360,7 @@ def test_content(mocker, sess):
             "Water Works",
             "Missing",
             "True_ACTIVE",
+            "GSM",
             "2000-01-01 00:00",
             "",
             "False",
@@ -377,6 +385,8 @@ def test_content_not_show_settlement(mocker, sess):
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
     user_id = user.id
     dc_contract_id = dc_contract.id
+    insert_comms(sess)
+    comm_ids = [c.id for c in sess.scalars(select(Comm))]
     sess.commit()
 
     f = StringIO()
@@ -397,6 +407,7 @@ def test_content_not_show_settlement(mocker, sess):
         show_settlement,
         days_long_hidden,
         now,
+        comm_ids,
     )
     f.seek(0)
     actual = list(csv.reader(f))
@@ -411,6 +422,7 @@ def test_content_not_show_settlement(mocker, sess):
             "site_name",
             "snag_description",
             "channel_types",
+            "comm",
             "start_date",
             "finish_date",
             "is_ignored",
@@ -521,6 +533,7 @@ def test_content_days_long_hidden(mocker, sess):
     )
     era = supply.eras[0]
     era.insert_channel(sess, True, "ACTIVE")
+    comm_ids = [c.id for c in sess.scalars(select(Comm))]
     sess.commit()
     f = StringIO()
     f.close = mocker.Mock()
@@ -540,6 +553,7 @@ def test_content_days_long_hidden(mocker, sess):
         show_settlement,
         days_long_hidden,
         now,
+        comm_ids,
     )
     f.seek(0)
     actual = list(csv.reader(f))
@@ -554,6 +568,7 @@ def test_content_days_long_hidden(mocker, sess):
             "site_name",
             "snag_description",
             "channel_types",
+            "comm",
             "start_date",
             "finish_date",
             "is_ignored",
@@ -570,6 +585,7 @@ def test_content_days_long_hidden(mocker, sess):
             "Water Works",
             "Missing",
             "True_ACTIVE",
+            "GSM",
             "2000-01-01 00:00",
             "",
             "False",

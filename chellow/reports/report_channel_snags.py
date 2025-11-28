@@ -46,6 +46,7 @@ def _make_rows(
     show_settlement,
     only_ongoing,
     days_long_hidden,
+    comm_ids,
     limit=None,
 ):
     cutoff_date = now - relativedelta(days=days_hidden)
@@ -60,6 +61,7 @@ def _make_rows(
         .where(
             SiteEra.is_physical == true(),
             Snag.start_date < cutoff_date,
+            Era.comm_id.in_(comm_ids),
         )
         .order_by(
             Site.code,
@@ -162,6 +164,7 @@ def content(
     show_settlement,
     days_long_hidden,
     now,
+    comm_ids,
 ):
     f = writer = None
     try:
@@ -186,6 +189,7 @@ def content(
                 "site_name",
                 "snag_description",
                 "channel_types",
+                "comm",
                 "start_date",
                 "finish_date",
                 "is_ignored",
@@ -203,6 +207,7 @@ def content(
                 show_settlement,
                 only_ongoing,
                 days_long_hidden,
+                comm_ids,
             ):
 
                 vals = {
@@ -224,6 +229,7 @@ def content(
                     "is_ignored": snag_group["is_ignored"],
                     "days_since_finished": snag_group["days_since_finished"],
                     "duration": snag_group["duration"],
+                    "comm": snag_group["era"].comm.code,
                 }
 
                 writer.writerow(csv_make_val(vals[t]) for t in titles)
@@ -251,6 +257,7 @@ def do_get(sess):
         now = req_date("now")
     else:
         now = utc_datetime_now()
+    comm_ids = [int(x) for x in request.values.getlist("comm_id")]
 
     if as_csv:
         args = (
@@ -262,6 +269,7 @@ def do_get(sess):
             show_settlement,
             days_long_hidden,
             now,
+            comm_ids,
         )
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)
@@ -280,6 +288,7 @@ def do_get(sess):
             show_settlement,
             only_ongoing,
             days_long_hidden,
+            comm_ids,
             limit=LIMIT,
         )
         return render_template(
