@@ -136,6 +136,7 @@ PATHS = (
     "d6a4bf54-c63f-4014-a716-49fd3878ca52/resource/"
     "26b0f410-27d4-448a-9437-45277818b838/download/current_rf_bsuos_data.csv",
 )
+CONTRACT_NAME = "bsuos"
 
 
 class BsuosImporter(threading.Thread):
@@ -175,7 +176,18 @@ class BsuosImporter(threading.Thread):
                 with Session() as sess:
                     try:
                         self.log("Starting to check BSUoS rates.")
-                        contract = Contract.get_non_core_by_name(sess, "bsuos")
+                        contract = Contract.find_non_core_by_name(sess, CONTRACT_NAME)
+                        if contract is None:
+                            contract = Contract.insert_non_core(
+                                sess,
+                                CONTRACT_NAME,
+                                "",
+                                {"enabled": True},
+                                to_utc(ct_datetime(1996, 4, 1)),
+                                None,
+                                {},
+                            )
+                            sess.commit()
                         props = contract.make_properties()
                         s = requests.Session()
                         s.verify = False
@@ -347,6 +359,18 @@ def find_rate(file_name, file_like, rate_index):
 
 def rate_server_import(sess, log, set_progress, s, paths):
     log("Starting to check for new BSUoS spreadsheets")
+    contract = Contract.find_non_core_by_name(sess, CONTRACT_NAME)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            CONTRACT_NAME,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
 
     year_entries = {}
     for path, url in paths:
@@ -364,7 +388,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
     for year, year_pdfs in sorted(year_entries.items()):
         year_start = to_utc(ct_datetime(year, 4, 1))
         oct_start = to_utc(ct_datetime(year, 10, 1))
-        contract = Contract.get_non_core_by_name(sess, "bsuos")
         if year_start < contract.start_rate_script.start_date:
             continue
         rs_1 = sess.execute(

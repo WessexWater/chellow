@@ -6900,27 +6900,7 @@ def db_init(sess, root_path):
         None,
         None,
     )
-    for name, properties in (
-        ("aahedc", {}),
-        (
-            "bank_holidays",
-            {
-                "enabled": True,
-                "url": "https://www.gov.uk/bank-holidays/england-and-wales.ics",
-            },
-        ),
-        ("bmarketidx", {}),
-        ("bsuos", {}),
-        ("ccl", {}),
-        ("configuration", {}),
-        ("rcrc", {}),
-        ("ro", {}),
-        ("system_price", {}),
-        ("tlms", {}),
-        ("triad_dates", {}),
-        ("tnuos", {}),
-    ):
-        Contract.insert_non_core(sess, name, "", properties, last_month_start, None, {})
+    Contract.insert_non_core(sess, "configuration", "", {}, last_month_start, None, {})
 
     insert_dtc_meter_types(sess)
     sess.commit()

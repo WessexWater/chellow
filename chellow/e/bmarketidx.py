@@ -107,7 +107,19 @@ class BmarketidxImporter(threading.Thread):
                 with Session() as sess:
                     try:
                         self.log("Starting to check bmarketidx.")
-                        contract = Contract.get_non_core_by_name(sess, "bmarketidx")
+                        contract_name = "bmarketidx"
+                        contract = Contract.find_non_core_by_name(sess, contract_name)
+                        if contract is None:
+                            contract = Contract.insert_non_core(
+                                sess,
+                                contract_name,
+                                "",
+                                {"enabled": True},
+                                to_utc(ct_datetime(1996, 4, 1)),
+                                None,
+                                {},
+                            )
+                            sess.commit()
                         latest_rs = (
                             sess.query(RateScript)
                             .filter(RateScript.contract_id == contract.id)

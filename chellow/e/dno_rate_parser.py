@@ -238,6 +238,15 @@ PERIODS = {
             "finish-day": 31,
         },
     ],
+    "monday to friday mar to oct": [
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+    ],
     "monday to friday (including bank holidays) nov to feb inclusive": [
         {
             "weekend": False,
@@ -255,29 +264,55 @@ PERIODS = {
         },
     ],
     (
-        "monday to friday nov to feb (excluding 22nd dec to 4th jan inclusive)"
-        "monday to friday (including bank holidays) nov to feb inclusive "
-        "(excluding 22nd dec to 4th jan inclusive)"
+        "monday to friday (including bank holidays) "
+        "mar to oct inclusive (plus 22nd dec to 4th jan inclusive)"
     ): [
         {
             "weekend": False,
-            "start-month": 11,
+            "start-month": 3,
             "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 12,
+            "start-day": 22,
             "finish-month": 12,
-            "finish-day": 21,
+            "finish-day": 31,
         },
         {
             "weekend": False,
             "start-month": 1,
-            "start-day": 5,
-            "finish-month": 2,
-            "finish-day": "last",
+            "start-day": 1,
+            "finish-month": 1,
+            "finish-day": 4,
         },
     ],
-    (
-        "monday to friday (including bank holidays) "
-        "mar to oct inclusive (plus 22nd dec to 4th jan inclusive)"
-    ): [
+    "monday to friday (including bank holidays) [month] to [month] inclusive": [
+        {
+            "weekend": False,
+            "start-month": 3,
+            "start-day": 1,
+            "finish-month": 10,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 12,
+            "start-day": 22,
+            "finish-month": 12,
+            "finish-day": 31,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 1,
+            "finish-month": 1,
+            "finish-day": 4,
+        },
+    ],
+    "monday to friday mar to oct (plus 22nd dec to 4th jan inclusive)": [
         {
             "weekend": False,
             "start-month": 3,
@@ -320,6 +355,22 @@ PERIODS = {
             "finish-day": "last",
         },
     ],
+    "monday to friday nov to feb (excluding 22nd dec to 4th jan inclusive)": [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 12,
+            "finish-day": 21,
+        },
+        {
+            "weekend": False,
+            "start-month": 1,
+            "start-day": 4,
+            "finish-month": 2,
+            "finish-day": "last",
+        },
+    ],
     "saturday and sunday all year": [
         {
             "weekend": True,
@@ -333,6 +384,15 @@ PERIODS = {
         "monday to friday (including bank holidays) november to february "
         "monday to friday nov to feb"
     ): [
+        {
+            "weekend": False,
+            "start-month": 11,
+            "start-day": 1,
+            "finish-month": 2,
+            "finish-day": "last",
+        }
+    ],
+    "monday to friday nov to feb": [
         {
             "weekend": False,
             "start-month": 11,

@@ -139,7 +139,9 @@ class Elexon(threading.Thread):
                         if scripting_key is None:
                             raise BadRequest(
                                 f"The property {ELEXON_PORTAL_SCRIPTING_KEY_KEY} "
-                                f"cannot be found in the configuration properties."
+                                f"cannot be found in the configuration properties. "
+                                f"A scripting key can be obtained from "
+                                f"https://www.elexonportal.co.uk/"
                             )
                         run_import(sess, self.log, self.set_progress, scripting_key)
                     except BaseException as e:

@@ -77,7 +77,7 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
         sess.commit()
     contract_props = contract.make_properties()
 
-    if not contract_props.get("enabled", False):
+    if not contract_props.get("enabled", True):
         log(
             "The automatic importer is disabled. To enable it, edit "
             "the contract properties to set 'enabled' to True."

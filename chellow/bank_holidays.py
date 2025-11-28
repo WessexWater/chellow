@@ -12,7 +12,9 @@ from zish import loads
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     HH,
+    ct_datetime,
     hh_format,
+    to_utc,
     utc_datetime,
     utc_datetime_now,
     utc_datetime_parse,
@@ -24,11 +26,23 @@ bh_importer = None
 
 def _run(log_f, sess):
     log_f("Starting to check bank holidays")
-    contract = Contract.get_non_core_by_name(sess, "bank_holidays")
+    contract_name = "bank_holidays"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
     contract_props = contract.make_properties()
 
-    if contract_props.get("enabled", False):
-        url_str = contract_props["url"]
+    if contract_props.get("enabled", True):
+        url_str = "https://www.gov.uk/bank-holidays/england-and-wales.ics"
 
         log_f(f"Downloading from {url_str}.")
         res = requests.get(url_str)

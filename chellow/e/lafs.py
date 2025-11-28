@@ -4,12 +4,12 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 from zipfile import ZipFile
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 
 from werkzeug.exceptions import BadRequest
 from werkzeug.http import parse_options_header
 
-from chellow.models import Contract, Party
+from chellow.models import Contract, MarketRole, Participant, Party
 from chellow.rate_server import download
 from chellow.utils import hh_after, to_ct, to_utc
 
@@ -116,12 +116,8 @@ LAF_END = "ptf.zip"
 
 
 def elexon_import(sess, log, set_progress, s, scripting_key):
-    log(
-        "Starting to check for new LAF files for participant codes in "
-        "configuration.properties.laf_importer.participant_codes"
-    )
+    log("Starting to check for new LAF files for dno participant codes.")
     conf = Contract.get_non_core_by_name(sess, "configuration")
-    props = conf.make_properties()
     state = conf.make_state()
 
     try:
@@ -131,14 +127,17 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
 
     url = "https://downloads.elexonportal.co.uk/svallf/download"
 
-    laf_props = props.get("laf_importer", {})
-    for participant_code in laf_props.get("participant_codes", []):
-        params = {"key": scripting_key, "ldso": participant_code, "format": "PTF"}
+    for participant in sess.scalars(
+        select(Participant).join(Party).join(MarketRole).where(MarketRole.code == "R")
+    ):
+        pcode = participant.code.lower()
+        params = {
+            "key": scripting_key,
+            "ldso": pcode,
+            "format": "PTF",
+        }
 
-        log(
-            f"Downloading from {url}?key={scripting_key}&ldso={participant_code}&"
-            f"format=PTF"
-        )
+        log(f"Downloading from {url}?key={scripting_key}&ldso={pcode}&format=PTF")
         sess.rollback()  # Avoid long-running transactions
         res = s.get(url, params=params)
         log(f"Received {res.status_code} {res.reason}")

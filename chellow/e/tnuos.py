@@ -87,7 +87,19 @@ def _process_banded_hh(ds, hh):
 def national_grid_import(sess, log, set_progress, s):
     log("Starting to check for new TNUoS TDR Tariffs")
 
-    contract = Contract.get_non_core_by_name(sess, "tnuos")
+    contract_name = "tnuos"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
 
     params = {"sql": """SELECT * FROM "dcca94fd-343e-4d4e-8c5d-66009dec4ad3" """}
     res_j = api_get(s, "datastore_search_sql", params=params)

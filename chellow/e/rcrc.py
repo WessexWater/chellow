@@ -10,6 +10,7 @@ from zish import loads
 
 from chellow.models import Contract, RateScript
 from chellow.utils import (
+    ct_datetime,
     ct_datetime_parse,
     hh_format,
     to_utc,
@@ -81,7 +82,19 @@ def _find_month(lines, month_start, month_finish):
 
 def elexon_import(sess, log, set_progress, s, scripting_key):
     log("Starting to check RCRCs.")
-    contract = Contract.get_non_core_by_name(sess, "rcrc")
+    contract_name = "rcrc"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
     latest_rs = (
         sess.query(RateScript)
         .filter(RateScript.contract_id == contract.id)

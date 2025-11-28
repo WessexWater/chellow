@@ -370,6 +370,19 @@ def _find_triad_dates(file_name, file_like):
 
 def rate_server_import(sess, log, set_progress, s, paths):
     log("Starting to check for new TNUoS triad date PDFs")
+    contract_name = "triad_dates"
+    contract = Contract.find_non_core_by_name(sess, contract_name)
+    if contract is None:
+        contract = Contract.insert_non_core(
+            sess,
+            contract_name,
+            "",
+            {"enabled": True},
+            to_utc(ct_datetime(1996, 4, 1)),
+            None,
+            {},
+        )
+        sess.commit()
 
     year_entries = {}
     for path, url in paths:
@@ -385,7 +398,6 @@ def rate_server_import(sess, log, set_progress, s, paths):
 
     for year, year_pdfs in sorted(year_entries.items()):
         year_start = to_utc(ct_datetime(year, 4, 1))
-        contract = Contract.get_non_core_by_name(sess, "triad_dates")
         if year_start < contract.start_rate_script.start_date:
             continue
         rs = sess.execute(

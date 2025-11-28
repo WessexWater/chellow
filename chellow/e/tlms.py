@@ -134,7 +134,7 @@ def import_tlms(sess, log, set_progress, s, scripting_key):
         )
         sess.commit()
     contract_props = contract.make_properties()
-    if contract_props.get("enabled", False):
+    if contract_props.get("enabled", True):
 
         params = {"key": scripting_key}
         url_str = "https://downloads.elexonportal.co.uk/file/download/TLM_FILE"
