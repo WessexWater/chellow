@@ -4,7 +4,11 @@
 	<table class="sticky" id="snags">
 		<caption>
 			Snags (truncated after 200)
-			<a href="/reports/channel_snags?dc_contract_id={{contract.id}}&amp;days_hidden={{days_hidden}}&amp;is_ignored={{is_ignored}}&amp;only_ongoing={{only_ongoing}}&amp;show_settlement={{show_settlement}}&amp;as_csv=true&amp;days_long_hidden={{days_long_hidden}}">Download as CSV</a>
+			<a href="/reports/channel_snags?dc_contract_id={{contract.id}}&amp;days_hidden={{days_hidden}}&amp;is_ignored={{is_ignored}}&amp;only_ongoing={{only_ongoing}}&amp;show_settlement={{show_settlement}}&amp;as_csv=true&amp;days_long_hidden={{days_long_hidden}}
+			{%- for comm_id in comm_ids -%}
+				&amp;comm_id={{comm_id}}
+			{%- endfor -%}
+			">Download as CSV</a>
 		</caption>
 		<thead>
 			<tr>

@@ -301,4 +301,5 @@ def do_get(sess):
             only_ongoing=only_ongoing,
             show_settlement=show_settlement,
             days_long_hidden="" if days_long_hidden is None else days_long_hidden,
+            comm_ids=comm_ids,
         )
