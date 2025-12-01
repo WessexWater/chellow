@@ -727,6 +727,32 @@ def test_dc_rate_script_edit_get(sess, client):
     match(response, 200)
 
 
+def test_dc_entry_edit_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    date_created = to_utc(ct_datetime(2025, 1, 12))
+    issue = dc_contract.insert_issue(sess, date_created, {})
+    entry = issue.add_entry(sess, "")
+    sess.commit()
+
+    data = {
+        "timestamp_year": "2025",
+        "timestamp_month": "03",
+        "timestamp_day": "02",
+        "timestamp_hour": "00",
+        "timestamp_minute": "00",
+        "markdown": "",
+    }
+    response = client.post(f"/e/dc_entries/{entry.id}/edit", data=data)
+
+    match(response, 303)
+
+
 def test_dc_bill_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")

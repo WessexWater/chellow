@@ -1461,7 +1461,7 @@ def dc_entry_edit_post(entry_id):
         markdown = req_markdown("markdown")
         timestamp = req_date("timestamp")
 
-        entry.update(g.sess, timestamp, markdown)
+        entry.update(timestamp, markdown)
         g.sess.commit()
         return chellow_redirect(f"/dc_issues/{entry.issue.id}", 303)
     except BadRequest as e:
