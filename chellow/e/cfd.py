@@ -105,7 +105,7 @@ def hh(data_source, use_bill_check=False):
             levy_rate = float(levy_rate_str) / 1000
 
             h["cfd-rates"] = cfd_cache[h_start] = {
-                "interim": base_rate,
+                "supplier-obligation": base_rate,
                 "operational": levy_rate,
             }
 
