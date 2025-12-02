@@ -277,7 +277,7 @@ def test_hh(sess, mocker):
         "anti-msp-kw": 0,
         "anti-msp-kwh": 0,
         "cfd-rates": {
-            "interim": 0.1,
+            "supplier-obligation": 0.1,
             "operational": 0.0002,
         },
         "ct-day": 1,
@@ -473,7 +473,7 @@ def test_hh_use_period(sess, mocker):
         "anti-msp-kw": 0,
         "anti-msp-kwh": 0,
         "cfd-rates": {
-            "interim": 0.1,
+            "supplier-obligation": 0.1,
             "operational": 0.0002,
         },
         "ct-day": 1,
@@ -671,7 +671,7 @@ def test_hh_use_ilr(sess, mocker):
         "anti-msp-kw": 0,
         "anti-msp-kwh": 0,
         "cfd-rates": {
-            "interim": 0.1,
+            "supplier-obligation": 0.1,
             "operational": 0.0002,
         },
         "ct-day": 1,
