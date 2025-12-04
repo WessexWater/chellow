@@ -31,7 +31,7 @@ ELEMENT_MAP = {
         "ADHOC": {
             "020330": ("eii", None, None),
             "064305": ("fit", None, None),
-            "590346": ("cfd-supplier-oblication", None, None),
+            "590346": ("cfd-supplier-obligation", None, None),
             "493988": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
         },
