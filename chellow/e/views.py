@@ -1314,15 +1314,24 @@ def dc_issues_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     bundles = []
     for issue in g.sess.scalars(
-        select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
+        select(Issue)
+        .where(Issue.contract == contract)
+        .order_by(Issue.is_open.desc(), Issue.date_created)
     ):
         bundle = {}
         bundle["issue"] = issue
-        bundle["supplies"] = g.sess.scalars(
+        supply_bundles = []
+        bundle["supplies"] = supply_bundles
+        for supply in g.sess.scalars(
             select(Supply)
             .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
             .order_by(Supply.id)
-        ).all()
+        ).all():
+            era = supply.eras[0]
+            site = era.get_physical_site(g.sess)
+            supply_bundles.append(
+                {"supply": supply, "era": supply.eras[0], "site": site}
+            )
         bundles.append(bundle)
 
     return render_template(
@@ -1359,12 +1368,16 @@ def dc_issue_add_post(contract_id):
 @e.route("/dc_issues/<int:issue_id>")
 def dc_issue_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
-    supplies = g.sess.scalars(
+    supply_bundles = []
+    for supply in g.sess.scalars(
         select(Supply)
         .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
         .order_by(Supply.id)
-    )
-    return render_template("dc_issue.html", issue=issue, supplies=supplies)
+    ).all():
+        era = supply.eras[0]
+        site = era.get_physical_site(g.sess)
+        supply_bundles.append({"supply": supply, "era": supply.eras[0], "site": site})
+    return render_template("dc_issue.html", issue=issue, supply_bundles=supply_bundles)
 
 
 @e.route("/dc_issues/<int:issue_id>/edit")
@@ -1411,7 +1424,8 @@ def dc_issue_attach_supply_get(issue_id):
 def dc_issue_attach_supply_post(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
     try:
-        mpan_core = req_str("mpan_core")
+        mpan_core_str = req_str("mpan_core")
+        mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(g.sess, mpan_core)
 
         props = issue.properties
@@ -5958,6 +5972,192 @@ def supplier_element_edit_delete(element_id):
         flash(e.description)
         return make_response(
             render_template("supplier_element_edit.html", element=element), 400
+        )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/issues")
+def supplier_issues_get(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    bundles = []
+    for issue in g.sess.scalars(
+        select(Issue)
+        .where(Issue.contract == contract)
+        .order_by(Issue.is_open.desc(), Issue.date_created)
+    ):
+        bundle = {}
+        bundle["issue"] = issue
+        bundle["supplies"] = g.sess.scalars(
+            select(Supply)
+            .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
+            .order_by(Supply.id)
+        ).all()
+        bundles.append(bundle)
+
+    return render_template(
+        "supplier_issues.html",
+        contract=contract,
+        issue_bundles=bundles,
+    )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/add_issue")
+def supplier_issue_add_get(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+
+    return render_template("supplier_issue_add.html", contract=contract)
+
+
+@e.route("/supplier_contracts/<int:contract_id>/add_issue", methods=["POST"])
+def supplier_issue_add_post(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    try:
+        subject = req_str("subject")
+
+        now = utc_datetime_now()
+        issue = contract.insert_issue(g.sess, now, {"subject": subject})
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_issue_add.html", contract=contract), 400
+        )
+
+
+@e.route("/supplier_issues/<int:issue_id>")
+def supplier_issue_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    supplies = g.sess.scalars(
+        select(Supply)
+        .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
+        .order_by(Supply.id)
+    )
+    return render_template("supplier_issue.html", issue=issue, supplies=supplies)
+
+
+@e.route("/supplier_issues/<int:issue_id>/edit")
+def supplier_issue_edit_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("supplier_issue_edit.html", issue=issue)
+
+
+@e.route("/supplier_issues/<int:issue_id>/edit", methods=["POST"])
+def supplier_issue_edit_post(issue_id):
+    try:
+        issue = Issue.get_by_id(g.sess, issue_id)
+        date_created = req_date("date_created")
+        is_open = req_checkbox("is_open")
+        properties = req_json("properties")
+        issue.update(date_created, is_open, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_issue_edit.html", issue=issue), 400
+        )
+
+
+@e.route("/supplier_issues/<int:issue_id>/edit", methods=["DELETE"])
+def supplier_issue_edit_delete(issue_id):
+    try:
+        issue = Issue.get_by_id(g.sess, issue_id)
+        contract = issue.contract
+        issue.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_contracts/{contract.id}/issues", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_issue_edit.html", issue=issue), 400
+        )
+
+
+@e.route("/supplier_issues/<int:issue_id>/attach_supply")
+def supplier_issue_attach_supply_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("supplier_issue_attach_supply.html", issue=issue)
+
+
+@e.route("/supplier_issues/<int:issue_id>/attach_supply", methods=["POST"])
+def supplier_issue_attach_supply_post(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    try:
+        mpan_core_str = req_str("mpan_core")
+        mpan_core = parse_mpan_core(mpan_core_str)
+        supply = Supply.get_by_mpan_core(g.sess, mpan_core)
+
+        props = issue.properties
+        supply_ids = props.get("supply_ids", [])
+        supply_ids.append(supply.id)
+        props["supply_ids"] = supply_ids
+        issue.update_properties(props)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_issue_attach_supply.html", issue=issue), 400
+        )
+
+
+@e.route("/supplier_issues/<int:issue_id>/add_entry")
+def supplier_entry_add_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("supplier_entry_add.html", issue=issue)
+
+
+@e.route("/supplier_issues/<int:issue_id>/add_entry", methods=["POST"])
+def supplier_entry_add_post(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    try:
+        markdown = req_markdown("markdown")
+
+        issue.add_entry(g.sess, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_entry_add.html", issue=issue), 400
+        )
+
+
+@e.route("/supplier_entries/<int:entry_id>/edit")
+def supplier_entry_edit_get(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    return render_template("supplier_entry_edit.html", entry=entry)
+
+
+@e.route("/supplier_entries/<int:entry_id>/edit", methods=["POST"])
+def supplier_entry_edit_post(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    try:
+        markdown = req_markdown("markdown")
+        timestamp = req_date("timestamp")
+
+        entry.update(timestamp, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/supplier_issues/{entry.issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_entry_edit.html", entry=entry), 400
+        )
+
+
+@e.route("/supplier_entries/<int:entry_id>/edit", methods=["DELETE"])
+def supplier_entry_edit_delete(entry_id):
+    try:
+        entry = IssueEntry.get_by_id(g.sess, entry_id)
+        issue = entry.issue
+        entry.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("supplier_entry_edit.html", entry=entry), 400
         )
 
 

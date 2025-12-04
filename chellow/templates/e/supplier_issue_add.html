@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{ contract.name }} &raquo; Issues &raquo; Add
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{contract.id}}/issues">Issues</a> &raquo; Add
+{% endblock %}
+
+{% block content %}
+
+	<form action="/e/supplier_contracts/{{contract.id}}/add_issue" method="post">
+		<fieldset>
+			<legend>Add An Issue</legend>
+				
+			<label>Subject</label>
+			{{input_text('subject')}}
+
+			<input type="submit" value="Add">
+		</fieldset>
+	</form>
+
+{% endblock %}

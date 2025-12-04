@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{issue.contract.name}} &raquo; Issues &raquo; 
+ 	{{issue.id}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{issue.contract.id}}/issues">Issues</a> &raquo; 
+	<a href="/e/supplier_issues/{{issue.id}}">{{issue.id}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+
+
+	<form method="post">
+		<fieldset>
+			<legend>Update Issue</legend>
+			<label>Date Created</label> {{ input_date('date_created', issue.date_created) }}
+			<label>Open?</label> {{input_checkbox('is_open', issue.is_open)}}
+			<label>Properties</label>
+			{{input_textarea('properties', issue.properties|tojson, 40, 80, show_pos=True)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
+
+	<form hx-delete="/e/supplier_issues/{{issue.id}}/edit"
+		 	  hx-confirm="Are you sure you want to delete this issue?">
+		<fieldset>
+			<legend>Delete This Issue</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+
+{% endblock %}

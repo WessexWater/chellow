@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{ issue.contract.name }} &raquo; Issues &raquo;
+ 	{{issue.id}} &raquo; Add Entry
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+	<a href="/e/supplier_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a> &raquo; 
+	<a href="/e/supplier_contracts/{{issue.contract.id}}/issues">Issues</a> &raquo;
+	<a href="/e/supplier_issues/{{issue.id}}">{{issue.id}}</a> &raquo; Add Entry
+{% endblock %}
+
+{% block content %}
+
+	<section style="display: flex;">
+		<form action="/e/supplier_issues/{{issue.id}}/add_entry" method="post">
+			<fieldset>
+				<legend>Add An Entry</legend>
+					
+				<label>Text</label>
+				{{input_textarea('markdown', '', 40, 80, show_pos=True)}}
+
+				<input type="submit" value="Add">
+			</fieldset>
+		</form>
+	
+		{% include 'e/markdown_docs.html' %}
+
+	</section>
+
+{% endblock %}
