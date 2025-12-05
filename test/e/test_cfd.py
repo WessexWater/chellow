@@ -150,7 +150,7 @@ def test_hh(sess, mocker):
         {},
         vf,
         None,
-        {"rate_gbp_per_kwh": 0.30},
+        {"records": {}},
     )
     Contract.insert_non_core(
         sess,
@@ -346,7 +346,7 @@ def test_hh_use_period(sess, mocker):
         {},
         vf,
         None,
-        {"rate_gbp_per_kwh": 0.30},
+        {"records": {"": 0.30}},
     )
     Contract.insert_non_core(
         sess,
@@ -544,7 +544,7 @@ def test_hh_use_ilr(sess, mocker):
         {},
         vf,
         None,
-        {"rate_gbp_per_kwh": 0.30},
+        {"records": {"": 0.30}},
     )
     Contract.insert_non_core(
         sess,
