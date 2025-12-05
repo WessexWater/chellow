@@ -85,14 +85,25 @@ def hh(data_source, use_bill_check=False):
                     base_rate = None
 
                 if base_rate is None:
-                    if _find_quarter_rs(
-                        data_source.sess, "cfd_in_period_tracking", h_start
-                    ):
-                        base_rate_dec = data_source.non_core_rate(
-                            "cfd_in_period_tracking", h_start
-                        )["rate_gbp_per_kwh"]
+                    rates = data_source.non_core_rate("cfd_in_period_tracking", h_start)
+                    records = rates["records"]
 
-                    elif _find_quarter_rs(
+                    try:
+                        runs = records[dt_str]
+                        top_run = _find_top_run(runs)
+                        gbp = _parse_number(
+                            top_run["Actual_CFD_Payments_GBP"]
+                        ) + _parse_number(top_run["Expected_CFD_Payments_GBP"])
+                        mwh = _parse_number(
+                            top_run["Actual_Eligible_Demand_MWh"]
+                        ) + _parse_number(top_run["Expected_Eligible_Demand_MWh"])
+
+                        base_rate = gbp / mwh / 1000
+                    except KeyError:
+                        base_rate = None
+
+                if base_rate is None:
+                    if _find_quarter_rs(
                         data_source.sess, "cfd_forecast_ilr_tra", h_start
                     ):
                         base_rate_dec = Decimal(
@@ -196,21 +207,10 @@ def import_in_period_tracking(sess, log, set_progress, s):
         if rs is None:
             rs = contract.insert_rate_script(sess, quarter_start, {"records": {}})
 
-        gbp = 0
-        kwh = 0
-        for record in quarter.values():
-            gbp += _parse_number(record["Actual_CFD_Payments_GBP"])
-            gbp += _parse_number(record["Expected_CFD_Payments_GBP"])
-            kwh += _parse_number(record["Actual_Eligible_Demand_MWh"]) * 1000
-            kwh += _parse_number(record["Expected_Eligible_Demand_MWh"]) * 1000
-
-        rate = gbp / kwh
-
         rs_script = rs.make_script()
         records = rs_script["records"]
         for k, v in sorted(quarter.items()):
             records[hh_format(k)] = v
-        rs_script["rate_gbp_per_kwh"] = rate
         rs.update(rs_script)
         sess.commit()
     log("Finished LCC CfD In-Period Tracking")
@@ -331,25 +331,6 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
         if rs is None:
             rs = contract.insert_rate_script(sess, quarter_start, {"records": {}})
 
-        gbp = 0
-        kwh = 0
-        run_types_reverse = list(reversed(RUN_TYPES))
-        for runs in quarter.values():
-            top_run = None
-            for run_type in run_types_reverse:
-                if run_type in runs:
-                    top_run = runs[run_type]
-                    break
-
-            eligible_mwh = _parse_number(top_run["Reconciled_Eligible_Demand_MWh"])
-            gbp += (
-                _parse_number(top_run["Reconciled_Daily_Levy_Rate_GBP_Per_MWh"])
-                * eligible_mwh
-            )
-            kwh += eligible_mwh * 1000
-
-        rate = gbp / kwh
-
         rs_script = rs.make_script()
         records = rs_script["records"]
         for dt, runs in sorted(quarter.items()):
@@ -362,7 +343,6 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
             for run_type, record in runs.items():
                 rs_runs[run_type] = record
 
-        rs_script["rate_gbp_per_kwh"] = rate
         rs.update(rs_script)
         sess.commit()
 

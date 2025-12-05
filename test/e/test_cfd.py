@@ -131,7 +131,7 @@ def test_hh(sess, mocker):
     market_role = MarketRole.insert(sess, "Z", "Non-core")
     participant.insert_party(sess, market_role, "None core", vf, None, None)
     Contract.insert_non_core(
-        sess, "cfd_in_period_tracking", "", {}, vf, None, {"rate_gbp_per_kwh": 0.10}
+        sess, "cfd_in_period_tracking", "", {}, vf, None, {"records": {}}
     )
     Contract.insert_non_core(sess, "cfd_forecast_ilr_tra", "", {}, vf, None, {})
     Contract.insert_non_core(
@@ -327,7 +327,7 @@ def test_hh_use_period(sess, mocker):
         {},
         vf,
         to_utc(ct_datetime(2020, 1, 1)),
-        {"rate_gbp_per_kwh": 0.10},
+        {"records": {}},
     )
     Contract.insert_non_core(sess, "cfd_forecast_ilr_tra", "", {}, vf, None, {})
     Contract.insert_non_core(
@@ -517,7 +517,7 @@ def test_hh_use_ilr(sess, mocker):
     market_role = MarketRole.insert(sess, "Z", "Non-core")
     participant.insert_party(sess, market_role, "None core", vf, None, None)
     Contract.insert_non_core(
-        sess, "cfd_in_period_tracking", "", {}, vf, None, {"rate_gbp_per_kwh": 0.10}
+        sess, "cfd_in_period_tracking", "", {}, vf, None, {"records": {}}
     )
     Contract.insert_non_core(
         sess,
