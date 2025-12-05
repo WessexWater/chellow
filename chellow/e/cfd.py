@@ -40,6 +40,13 @@ def _find_quarter_rs(sess, contract_name, date):
             return True
 
 
+def _find_top_run(runs):
+    run_types_reverse = list(reversed(RUN_TYPES))
+    for run_type in run_types_reverse:
+        if run_type in runs:
+            return runs[run_type]
+
+
 def hh(data_source, use_bill_check=False):
     try:
         cfd_cache = data_source.caches["cfd"]
@@ -61,37 +68,49 @@ def hh(data_source, use_bill_check=False):
                     / 1000
                 )
             else:
-                if _find_quarter_rs(
-                    data_source.sess, "cfd_reconciled_daily_levy_rates", h_start
-                ):
-                    base_rate_dec = data_source.non_core_rate(
-                        "cfd_reconciled_daily_levy_rates", h_start
-                    )["rate_gbp_per_kwh"]
+                rates = data_source.non_core_rate(
+                    "cfd_reconciled_daily_levy_rates", h_start
+                )
+                records = rates["records"]
+                dt_str = hh_format(h_start)[:11] + "00:00"
 
-                elif _find_quarter_rs(
-                    data_source.sess, "cfd_in_period_tracking", h_start
-                ):
-                    base_rate_dec = data_source.non_core_rate(
-                        "cfd_in_period_tracking", h_start
-                    )["rate_gbp_per_kwh"]
+                try:
+                    runs = records[dt_str]
+                    top_run = _find_top_run(runs)
+                    base_rate = (
+                        _parse_number(top_run["Reconciled_Daily_Levy_Rate_GBP_Per_MWh"])
+                        / 1000
+                    )
+                except KeyError:
+                    base_rate = None
 
-                elif _find_quarter_rs(
-                    data_source.sess, "cfd_forecast_ilr_tra", h_start
-                ):
-                    base_rate_dec = Decimal(
-                        data_source.non_core_rate("cfd_forecast_ilr_tra", h_start)[
-                            "record"
-                        ]["Interim_Levy_Rate_GBP_Per_MWh"]
-                    ) / Decimal(1000)
+                if base_rate is None:
+                    if _find_quarter_rs(
+                        data_source.sess, "cfd_in_period_tracking", h_start
+                    ):
+                        base_rate_dec = data_source.non_core_rate(
+                            "cfd_in_period_tracking", h_start
+                        )["rate_gbp_per_kwh"]
 
-                else:
-                    base_rate_dec = Decimal(
-                        data_source.non_core_rate(
-                            "cfd_advanced_forecast_ilr_tra", h_start
-                        )["sensitivity"]["Base Case"]["Interim Levy Rate_GBP_Per_MWh"]
-                    ) / Decimal(1000)
+                    elif _find_quarter_rs(
+                        data_source.sess, "cfd_forecast_ilr_tra", h_start
+                    ):
+                        base_rate_dec = Decimal(
+                            data_source.non_core_rate("cfd_forecast_ilr_tra", h_start)[
+                                "record"
+                            ]["Interim_Levy_Rate_GBP_Per_MWh"]
+                        ) / Decimal(1000)
 
-                base_rate = float(base_rate_dec)
+                    else:
+                        base_rate_dec = Decimal(
+                            data_source.non_core_rate(
+                                "cfd_advanced_forecast_ilr_tra", h_start
+                            )["sensitivity"]["Base Case"][
+                                "Interim Levy Rate_GBP_Per_MWh"
+                            ]
+                        ) / Decimal(1000)
+
+                    base_rate = float(base_rate_dec)
 
             effective_ocl_rate = data_source.non_core_rate(
                 "cfd_operational_costs_levy", h["start-date"]
