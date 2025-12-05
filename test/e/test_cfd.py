@@ -327,7 +327,16 @@ def test_hh_use_period(sess, mocker):
         {},
         vf,
         to_utc(ct_datetime(2020, 1, 1)),
-        {"records": {}},
+        {
+            "records": {
+                "2020-01-01 00:00": {
+                    "Actual_CFD_Payments_GBP": "878.3",
+                    "Expected_CFD_Payments_GBP": "981.31",
+                    "Actual_Eligible_Demand_MWh": "852.10",
+                    "Expected_Eligible_Demand_MWh": "9868",
+                }
+            }
+        },
     )
     Contract.insert_non_core(sess, "cfd_forecast_ilr_tra", "", {}, vf, None, {})
     Contract.insert_non_core(
@@ -346,7 +355,7 @@ def test_hh_use_period(sess, mocker):
         {},
         vf,
         None,
-        {"records": {"": 0.30}},
+        {"records": {}},
     )
     Contract.insert_non_core(
         sess,
@@ -473,7 +482,7 @@ def test_hh_use_period(sess, mocker):
         "anti-msp-kw": 0,
         "anti-msp-kwh": 0,
         "cfd-rates": {
-            "supplier-obligation": 0.1,
+            "supplier-obligation": 0.0001734694639042546,
             "operational": 0.0002,
         },
         "ct-day": 1,

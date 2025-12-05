@@ -88,18 +88,17 @@ def hh(data_source, use_bill_check=False):
                     rates = data_source.non_core_rate("cfd_in_period_tracking", h_start)
                     records = rates["records"]
 
-                    try:
-                        runs = records[dt_str]
-                        top_run = _find_top_run(runs)
+                    if dt_str in records:
+                        record = records[dt_str]
                         gbp = _parse_number(
-                            top_run["Actual_CFD_Payments_GBP"]
-                        ) + _parse_number(top_run["Expected_CFD_Payments_GBP"])
+                            record["Actual_CFD_Payments_GBP"]
+                        ) + _parse_number(record["Expected_CFD_Payments_GBP"])
                         mwh = _parse_number(
-                            top_run["Actual_Eligible_Demand_MWh"]
-                        ) + _parse_number(top_run["Expected_Eligible_Demand_MWh"])
+                            record["Actual_Eligible_Demand_MWh"]
+                        ) + _parse_number(record["Expected_Eligible_Demand_MWh"])
 
                         base_rate = gbp / mwh / 1000
-                    except KeyError:
+                    else:
                         base_rate = None
 
                 if base_rate is None:
