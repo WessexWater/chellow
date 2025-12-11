@@ -82,14 +82,12 @@
 				'mop_contract_id', contract.id, contract.name)}}
 		{% endfor %}
 	</select>
-	<label>MOP Account</label> {{input_text('mop_account', required=True)}}
 	<label>DC Contract</label>
 	<select name="dc_contract_id">
 		{% for contract in dc_contracts %}
 			{{input_option('dc_contract_id', contract.id, contract.name)}}
 		{% endfor %}
 	</select>
-	<label>DC Account</label> {{input_text('dc_account', required=True)}}
 
 	<label>Profile Class</label>
 	<select name="pc_id">
