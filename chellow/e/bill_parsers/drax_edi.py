@@ -50,8 +50,8 @@ ELEMENT_MAP = {
         "CFD001": {
             "273237": ("cfd-operational", "rate", "kwh"),
             "954379": ("cfd-supplier-obligation", "rate", "kwh"),
-            "538249": ("cm-settlement-levy", "rate", "kwh"),
-            "568307": ("capacity", "rate", "kwh"),
+            "538249": ("cm-operational", "rate", "kwh"),
+            "568307": ("cm-obligation", "rate", "kwh"),
         },
     },
     "DCA": {
