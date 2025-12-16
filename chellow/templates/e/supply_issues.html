@@ -25,12 +25,13 @@
 		<tbody>
 			{% for issue in issues %}
 				<tr>
-					<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
-					<td>
-						{% if issue.contract.market_role.code == 'C' %}
-							<a href="/e/dc_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a>
-						{% endif %}
-					</td>
+					{% if issue.contract.market_role.code == 'C' %}
+						<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
+						<td><a href="/e/dc_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a></td>
+					{% else if issue.contract.market_role.code == 'X' %}
+						<td><a href="/e/supplier_issues/{{issue.id}}">View</a></td>
+						<td><a href="/e/supplier_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a></td>
+					{% endif %}
 					<td>{{issue.id}}</td>
 					<td>{{issue.date_created|hh_format}}</td>
 					<td>
