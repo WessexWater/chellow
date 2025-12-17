@@ -1341,6 +1341,69 @@ def dc_issues_get(contract_id):
     )
 
 
+@e.route("/dc_contracts/<int:contract_id>/issues/download")
+def dc_issues_download_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    titles = (
+        "issue_id",
+        "contract_name",
+        "date_created",
+        "status",
+        "subject",
+        "imp_mpan_core",
+        "exp_mpan_core",
+        "site_code",
+        "site_name",
+        "latest_entry_timestamp",
+        "latest_entry_markdown",
+    )
+    rows = []
+    for issue in g.sess.scalars(
+        select(Issue)
+        .where(Issue.contract == contract)
+        .order_by(Issue.is_open.desc(), Issue.date_created)
+    ):
+        props = issue.properties
+        values = {
+            "contract_name": contract.name,
+            "issue_id": issue.id,
+            "date_created": issue.date_created,
+            "status": "open" if issue.is_open else "closed",
+            "subject": props["subject"],
+            "imp_mpan_core": None,
+            "exp_mpan_core": None,
+            "site_code": None,
+            "site_name": None,
+        }
+        if len(issue.entries) == 0:
+            values["latest_entry_timestamp"] = None
+            values["latest_entry_text"] = None
+        else:
+            entry = issue.entries[-1]
+            values["latest_entry_timestamp"] = entry.timestamp
+            values["latest_entry_markdown"] = entry.markdown
+
+        supply_ids = props.get("supply_ids", [])
+        if len(supply_ids) == 0:
+            rows.append(csv_make_val(values[title] for title in titles))
+        else:
+            for supply in g.sess.scalars(
+                select(Supply)
+                .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
+                .order_by(Supply.id)
+            ).all():
+                values = values.copy()
+                era = supply.eras[0]
+                site = era.get_physical_site(g.sess)
+                values["imp_mpan_core"] = era.imp_mpan_core
+                values["exp_mpan_core"] = era.exp_mpan_core
+                values["site_code"] = site.code
+                values["site_name"] = site.name
+                rows.append(csv_make_val(values[title] for title in titles))
+
+    return _csv_response("dc_issues.csv", titles, rows)
+
+
 @e.route("/dc_contracts/<int:contract_id>/add_issue")
 def dc_issue_add_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
