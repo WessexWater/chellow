@@ -1550,10 +1550,7 @@ def _find_pair(sess, caches, is_forwards, read_list):
                 digits = int(log10(initial_val)) + 1
                 end_val += 10**digits
 
-            kwh = (
-                end_val * front["coefficients"][tpr_code]
-                - initial_val * back["coefficients"][tpr_code]
-            )
+            kwh = end_val - initial_val
 
             tprs[tpr_code] = kwh / num_hh if num_hh > 0 else 0
 
@@ -1690,7 +1687,6 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             continue
 
         reads = {}
-        coeffs = {}
         for coeff, value, tpr_code in sess.query(
             cast(RegisterRead.coefficient, Float), cast(r_vl, Float), Tpr.code
         ).filter(
@@ -1700,13 +1696,11 @@ def _read_generator(sess, supply, start, is_forwards, is_prev):
             RegisterRead.tpr_id == Tpr.id,
             r_dt == dt,
         ):
-            reads[tpr_code] = value
-            coeffs[tpr_code] = coeff
+            reads[tpr_code] = coeff * value
 
         yield {
             "date": dt,
             "reads": reads,
-            "coefficients": coeffs,
             "msn": r.msn,
             "read_type": read_type.code,
         }
