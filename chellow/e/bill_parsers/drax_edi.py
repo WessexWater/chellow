@@ -98,6 +98,8 @@ ELEMENT_MAP = {
     "FIT": {
         "FIT_LV": {
             "704107": ("fit", "rate", "kwh"),
+            "153972": ("fit", "rate", "kwh"),
+            "138837": ("fit", "rate", "kwh"),
         },
     },
     "NRG": {
