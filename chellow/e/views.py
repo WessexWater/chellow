@@ -1318,10 +1318,12 @@ def dc_issues_get(contract_id):
         .where(Issue.contract == contract)
         .order_by(Issue.is_open.desc(), Issue.date_created)
     ):
-        bundle = {}
-        bundle["issue"] = issue
         supply_bundles = []
-        bundle["supplies"] = supply_bundles
+        bundle = {
+            "issue": issue,
+            "latest_entry": None if len(issue.entries) == 0 else issue.entries[-1],
+            "supplies": supply_bundles,
+        }
         for supply in g.sess.scalars(
             select(Supply)
             .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
@@ -1369,7 +1371,7 @@ def dc_issues_download_get(contract_id):
             "issue_id": issue.id,
             "date_created": issue.date_created,
             "status": "open" if issue.is_open else "closed",
-            "subject": props["subject"],
+            "subject": props.get("subject"),
             "imp_mpan_core": None,
             "exp_mpan_core": None,
             "site_code": None,
@@ -1377,7 +1379,7 @@ def dc_issues_download_get(contract_id):
         }
         if len(issue.entries) == 0:
             values["latest_entry_timestamp"] = None
-            values["latest_entry_text"] = None
+            values["latest_entry_markdown"] = None
         else:
             entry = issue.entries[-1]
             values["latest_entry_timestamp"] = entry.timestamp
@@ -1385,7 +1387,7 @@ def dc_issues_download_get(contract_id):
 
         supply_ids = props.get("supply_ids", [])
         if len(supply_ids) == 0:
-            rows.append(csv_make_val(values[title] for title in titles))
+            rows.append([csv_make_val(values[title]) for title in titles])
         else:
             for supply in g.sess.scalars(
                 select(Supply)
@@ -1399,7 +1401,7 @@ def dc_issues_download_get(contract_id):
                 values["exp_mpan_core"] = era.exp_mpan_core
                 values["site_code"] = site.code
                 values["site_name"] = site.name
-                rows.append(csv_make_val(values[title] for title in titles))
+                rows.append([csv_make_val(values[title]) for title in titles])
 
     return _csv_response("dc_issues.csv", titles, rows)
 

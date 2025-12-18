@@ -727,6 +727,24 @@ def test_dc_rate_script_edit_get(sess, client):
     match(response, 200)
 
 
+def test_dc_issues_download_get(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    contract.insert_issue(sess, vf, {})
+    contract.insert_issue(sess, to_utc(ct_datetime(1997, 1, 1)), {})
+    sess.commit()
+
+    response = client.get(f"/e/dc_contracts/{contract.id}/issues/download")
+    pattern = (
+        r"1,Fusion DC,1996-01-01 00:00,open,,,,,,,\s*"
+        "2,Fusion DC,1997-01-01 00:00,open,,,,,,,"
+    )
+    match(response, 200, pattern)
+
+
 def test_dc_entry_edit_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")

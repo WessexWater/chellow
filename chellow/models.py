@@ -6601,6 +6601,10 @@ class IssueEntry(Base, PersistentClass):
         md.parse(markdown)
         self.markdown = markdown
 
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
 
 def read_file(pth, fname, attr):
     with open(os.path.join(pth, fname), "r") as f:

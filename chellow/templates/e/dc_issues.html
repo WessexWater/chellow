@@ -15,16 +15,22 @@
 		<caption>Issues (<a href="/e/dc_contracts/{{contract.id}}/issues/download">download</a>)</caption>
 		<thead>
 			<tr>
-				<th>View</th>
-				<th>Issue Id</th>
-				<th>Date Created</th>
-				<th>Status</th>
-				<th>Subject</th>
-				<th>Supplies</th>
+				<th rowspan="2">View</th>
+				<th rowspan="2">Issue Id</th>
+				<th rowspan="2">Date Created</th>
+				<th rowspan="2">Status</th>
+				<th rowspan="2">Subject</th>
+				<th rowspan="2">Supplies</th>
+				<th colspan="2">Latest Entry</th>
+			</tr>
+			<tr>
+				<th>Timestamp</th>
+				<th>Text</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for bundle in issue_bundles %}
+				{% set entry = bundle.latest_entry %}
 				<tr>
 					<td><a href="/e/dc_issues/{{bundle.issue.id}}">View</a></td>
 					<td>{{bundle.issue.id}}</td>
@@ -49,6 +55,20 @@
 								</li>
 							{% endfor %}
 						</ul>
+					</td>
+					<td>{{entry.timestamp|hh_format}}</td>
+					<td>
+						{% if entry %}
+							{% set lines = entry.markdown.splitlines() %}
+							{% if lines|length < 2 %}
+								{{lines[0]}}
+							{% else %}
+								<details>
+									<summary>{{lines[0]}}</summary>
+									{{''.join(lines[1:])}}
+								</details>
+							{% endif %}
+						{% endif %}
 					</td>
 				</tr>
 			{% endfor %}
