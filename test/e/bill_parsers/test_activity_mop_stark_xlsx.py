@@ -3,7 +3,17 @@ from io import BytesIO
 
 from openpyxl import Workbook
 
-from chellow.e.bill_parsers.activity_mop_stark_xlsx import Parser
+from chellow.e.bill_parsers.activity_mop_stark_xlsx import Parser, get_ct_date
+
+
+def test_get_ct_date():
+    wb = Workbook()
+    sheet = wb.create_sheet("NHH")
+    sheet.insert_rows(0, 14)
+    sheet.insert_cols(0, 10)
+
+    sheet["C6"].value = "01/03/2022"
+    get_ct_date(sheet, "C", 6)
 
 
 def test_blank():

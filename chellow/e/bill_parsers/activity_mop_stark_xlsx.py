@@ -38,7 +38,7 @@ def get_ct_date(sheet, col, row):
     if isinstance(val, Datetime):
         dt = val
     elif isinstance(val, str):
-        dt = Datetime.strptime(val, "dd/mm/yyyy")
+        dt = Datetime.strptime(val, "%d/%m/%Y")
     else:
         raise BadRequest(
             f"The value {val} at {cell.coordinate} is of type {type(val)}, but "
