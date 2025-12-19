@@ -16,6 +16,16 @@ def test_get_ct_date():
     get_ct_date(sheet, "C", 6)
 
 
+def test_get_ct_date_with_time():
+    wb = Workbook()
+    sheet = wb.create_sheet("NHH")
+    sheet.insert_rows(0, 14)
+    sheet.insert_cols(0, 10)
+
+    sheet["C6"].value = "01/03/2022 11:04:00"
+    get_ct_date(sheet, "C", 6)
+
+
 def test_blank():
     f = BytesIO()
     wb = Workbook()
