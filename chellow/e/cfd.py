@@ -149,7 +149,7 @@ def lcc_import(sess, log, set_progress, s):
 
 def _quarters(log, s):
     quarter = {}
-    for record in api_records(log, s, "2fc2fad9-ad57-4901-982a-f92d4ef6c622"):
+    for record in api_records(log, s, "003f527c-aa35-4198-adbb-21a61fc760eb"):
         settlement_date_str = record["Settlement_Date"]
         settlement_date_ct = to_ct(
             Datetime.strptime(settlement_date_str[:10], "%Y-%m-%d")
@@ -225,7 +225,7 @@ def import_operational_costs_levy(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "44f41eac-61b3-4e8d-8c52-3eda7b8e8517", skip=1):
+    for record in api_records(log, s, "41c32b4f-388b-464f-9c3f-fbf1a6cfdca4", skip=1):
         period_start = _parse_date(record["Period_Start"])
 
         rs = sess.execute(
@@ -249,7 +249,7 @@ RUN_TYPES = ("II", "SF", "R1", "R2", "R3", "RF", "DF")
 def _reconciled_quarters(log, s, search_from):
     quarters = {}
 
-    for record in api_records(log, s, "e0e163cb-ba36-416d-83fe-976992d61516"):
+    for record in api_records(log, s, "24944bfe-b546-4f50-8bf6-895d8f769b2b"):
         settlement_date = _parse_date(record["Settlement_Date"])
         if settlement_date > search_from:
             settlement_date_ct = to_ct(settlement_date)
@@ -359,7 +359,7 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "fbece4ce-7cfc-42b7-8fb2-387cf59a3c32"):
+    for record in api_records(log, s, "63e6a924-8829-4014-95a2-722e92662e5f"):
         period_start_str = record["Period_Start"]
         if len(period_start_str) == 0:
             continue
@@ -391,7 +391,7 @@ def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "e3ad6876-c1e9-46f9-b557-cb9bdae53885"):
+    for record in api_records(log, s, "a80f87c6-cf65-4f9d-9a1a-d78140f50779"):
         period_start = _parse_varying_date(record["Period Start"])
 
         rs = sess.execute(

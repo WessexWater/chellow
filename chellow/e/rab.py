@@ -53,7 +53,7 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "1231fbb3-93ee-4a33-87a9-f15bb377346d"):
+    for record in api_records(log, s, "3c304299-7abb-429c-9706-5e983e5ee10d"):
         period_start_str = record["Month"]
         if len(period_start_str) == 0:
             continue
