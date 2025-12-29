@@ -24,6 +24,7 @@ import chellow.e.bmarketidx
 import chellow.e.bsuos
 import chellow.e.elexon
 import chellow.e.hh_importer
+import chellow.e.isd
 import chellow.e.rcrc
 import chellow.e.system_price
 import chellow.e.views
@@ -58,6 +59,7 @@ TEMPLATE_FORMATS = {
 
 def get_importer_modules():
     return (
+        chellow.e.isd,
         chellow.e.elexon,
         chellow.e.bsuos,
         chellow.e.lcc,

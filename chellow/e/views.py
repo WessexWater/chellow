@@ -2710,6 +2710,20 @@ def hh_datum_edit_post(datum_id):
         return make_response(render_template("hh_datum_edit.html", hh=hh), 400)
 
 
+@e.route("/isd")
+def isd_get():
+    importer = chellow.e.isd.importer
+
+    return render_template("isd.html", importer=importer)
+
+
+@e.route("/isd", methods=["POST"])
+def isd_post():
+    importer = chellow.e.isd.importer
+    importer.go()
+    return chellow_redirect("/isd", 303)
+
+
 @e.route("/lafs")
 def lafs_get():
     llfc_id = req_int("llfc_id")
