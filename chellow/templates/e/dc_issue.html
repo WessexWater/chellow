@@ -33,6 +33,7 @@
 			<tr>
 				<th>Id</th>
 				<th>Date Created</th>
+				<th>Owner</th>
 				<th>Status</th>
 				<th>Subject</th>
 				<th>Supplies [<a href="/e/dc_issues/{{issue.id}}/attach_supply">attach</a>]</th>
@@ -41,6 +42,11 @@
 			<tr>
 				<td>{{issue.id}}</td>
 				<td>{{issue.date_created|hh_format}}</td>
+				<td>
+					{% if owner %}
+						<a href="/users/{{owner.id}}">{{owner.email_address}}</a>
+					{% endif %}
+				</td>
 				<td>
 					{% if issue.is_open %}
 						Open

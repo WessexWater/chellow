@@ -18,6 +18,7 @@
 				<th rowspan="2">View</th>
 				<th rowspan="2">Issue Id</th>
 				<th rowspan="2">Date Created</th>
+				<th rowspan="2">Owner</th>
 				<th rowspan="2">Status</th>
 				<th rowspan="2">Subject</th>
 				<th rowspan="2">Supplies</th>
@@ -31,10 +32,22 @@
 		<tbody>
 			{% for bundle in issue_bundles %}
 				{% set entry = bundle.latest_entry %}
+				{% set market_role_code = bundle.issue.contract.market_role.code %}
 				<tr>
-					<td><a href="/e/dc_issues/{{bundle.issue.id}}">View</a></td>
+					<td>
+						{% if market_role_code == 'C' %}
+							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
+						{% elif market_role_code == 'X' %}
+							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
+						{% endif %}
+					</td>
 					<td>{{bundle.issue.id}}</td>
 					<td>{{bundle.issue.date_created|hh_format}}</td>
+					<td>
+						{% if bundle.owner %}
+							<a href="/users/{{bundle.owner.id}}">{{bundle.owner.email_address}}</a>
+						{% endif %}	
+					</td>
 					<td>
 						{% if bundle.issue.is_open %}
 							Open

@@ -46,6 +46,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lcc
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
+from chellow.e.issues import make_issue_bundles
 from chellow.models import (
     Batch,
     BatchFile,
@@ -92,6 +93,8 @@ from chellow.models import (
     Ssc,
     Supply,
     Tpr,
+    User,
+    UserRole,
     VoltageLevel,
 )
 from chellow.utils import (
@@ -1312,35 +1315,14 @@ def dc_contracts_hh_import_get(contract_id, import_id):
 @e.route("/dc_contracts/<int:contract_id>/issues")
 def dc_issues_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
-    bundles = []
-    for issue in g.sess.scalars(
+    issues = g.sess.scalars(
         select(Issue)
         .where(Issue.contract == contract)
         .order_by(Issue.is_open.desc(), Issue.date_created)
-    ):
-        supply_bundles = []
-        bundle = {
-            "issue": issue,
-            "latest_entry": None if len(issue.entries) == 0 else issue.entries[-1],
-            "supplies": supply_bundles,
-        }
-        for supply in g.sess.scalars(
-            select(Supply)
-            .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
-            .order_by(Supply.id)
-        ).all():
-            era = supply.eras[0]
-            site = era.get_physical_site(g.sess)
-            supply_bundles.append(
-                {"supply": supply, "era": supply.eras[0], "site": site}
-            )
-        bundles.append(bundle)
-
-    return render_template(
-        "dc_issues.html",
-        contract=contract,
-        issue_bundles=bundles,
     )
+    bundles = make_issue_bundles(g.sess, issues)
+
+    return render_template("dc_issues.html", contract=contract, issue_bundles=bundles)
 
 
 @e.route("/dc_contracts/<int:contract_id>/issues/download")
@@ -1433,22 +1415,35 @@ def dc_issue_add_post(contract_id):
 @e.route("/dc_issues/<int:issue_id>")
 def dc_issue_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
+    props = issue.properties
     supply_bundles = []
     for supply in g.sess.scalars(
         select(Supply)
-        .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
+        .where(Supply.id.in_(props.get("supply_ids", [])))
         .order_by(Supply.id)
     ).all():
         era = supply.eras[0]
         site = era.get_physical_site(g.sess)
         supply_bundles.append({"supply": supply, "era": supply.eras[0], "site": site})
-    return render_template("dc_issue.html", issue=issue, supply_bundles=supply_bundles)
+    if "owner_id" in props:
+        owner = User.get_by_id(g.sess, props["owner_id"])
+    else:
+        owner = None
+    return render_template(
+        "dc_issue.html", issue=issue, supply_bundles=supply_bundles, owner=owner
+    )
 
 
 @e.route("/dc_issues/<int:issue_id>/edit")
 def dc_issue_edit_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
-    return render_template("dc_issue_edit.html", issue=issue)
+    users = g.sess.scalars(
+        select(User)
+        .join(UserRole)
+        .where(UserRole.code == "editor")
+        .order_by(User.email_address)
+    )
+    return render_template("dc_issue_edit.html", issue=issue, users=users)
 
 
 @e.route("/dc_issues/<int:issue_id>/edit", methods=["POST"])
@@ -1457,13 +1452,23 @@ def dc_issue_edit_post(issue_id):
         issue = Issue.get_by_id(g.sess, issue_id)
         date_created = req_date("date_created")
         is_open = req_checkbox("is_open")
-        properties = req_json("properties")
+        owner_id = req_int("owner_id")
+        properties = issue.properties
+        properties["owner_id"] = owner_id
         issue.update(date_created, is_open, properties)
         g.sess.commit()
         return chellow_redirect(f"/dc_issues/{issue.id}", 303)
     except BadRequest as e:
         flash(e.description)
-        return make_response(render_template("dc_issue_edit.html", issue=issue), 400)
+        users = g.sess.scalars(
+            select(User)
+            .join(UserRole)
+            .where(UserRole.code == "editor")
+            .order_by(User.email_address)
+        )
+        return make_response(
+            render_template("dc_issue_edit.html", issue=issue, users=users), 400
+        )
 
 
 @e.route("/dc_issues/<int:issue_id>/edit", methods=["DELETE"])

@@ -5,85 +5,109 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/users">Users</a> &raquo; {{ user.email_address }}
+	<a href="/users">Users</a> &raquo;
+	{{ user.email_address }} [<a href="/users/{{user.id}}/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
-	{% if request.values.delete %}
-		<form method="post">
-			<fieldset>
-				<legend>
-					Do you really want to delete the user '{{ user.email_address }}'?
-				</legend>	
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-			<a href="/users/{{user.id}}">Cancel</a>
-		</form>
-	{% else %}
-		<form method="post">
-			<fieldset>
-				<legend>Update details</legend>	
-				<label>Username (case sensitive)</label>
-				<input name="email_address" size="100" value="
-						{%- if request.values.email_address -%}
-							{{ request.values.email_address }}
-						{%- else -%}
-							{{ user.email_address }}
-						{%- endif -%}">
+	<table>
+		<thead>
+			<tr>
+				<th>Username (case sensitive)</th>
+				<th>Role</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{user.email_address}}</td>
+				<td>{{user.user_role.code}}</td>
+			</tr>
+		</tbody>
+	</table>
 
-				<fieldset>
-					<legend>Role</legend>
-					<label>Editor</label>
-					<input type="radio" name="user_role_code" value="editor"
-							{%- if request.values.user_role_editor -%}
-								{%- if request.values.user_role_editor == 'editor' %}
-									checked
-								{%- endif -%}
-							{%- else -%}
-								{%- if user.user_role.code == 'editor' %}
-									checked
-								{%- endif -%}
-							{%- endif -%}
-					>
-					<label>Viewer</label>
-					<input type="radio" name="user_role_code" value="viewer"
-					{% if request.values.user_role_code %}
-						{% if request.values.user_role_code == 'viewer' %}
-							checked
+	<table class="sticky">
+		<caption>Issues</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">View</th>
+				<th rowspan="2">Issue Id</th>
+				<th rowspan="2">Contract</th>
+				<th rowspan="2">Date Created</th>
+				<th rowspan="2">Owner</th>
+				<th rowspan="2">Status</th>
+				<th rowspan="2">Subject</th>
+				<th rowspan="2">Supplies</th>
+				<th colspan="2">Latest Entry</th>
+			</tr>
+			<tr>
+				<th>Timestamp</th>
+				<th>Text</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for bundle in issue_bundles %}
+				{% set entry = bundle.latest_entry %}
+				{% set market_role_code = bundle.issue.contract.market_role.code %}
+				<tr>
+					<td>
+						{% if market_role_code == 'C' %}
+							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
+						{% elif market_role_code == 'X' %}
+							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
 						{% endif %}
-					{% else %}
-						{% if user.user_role.code == 'viewer' %}
-							checked
+					</td>
+					<td>{{bundle.issue.id}}</td>
+					<td>
+						{% if market_role_code == 'C' %}
+							<a href="/e/dc_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+						{% elif market_role_code == 'X' %}
+						<a href="/e/supplier_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
 						{% endif %}
-					{% endif %}
-					>
-				</fieldset>
-				<input type="submit" value="Update">
-			</fieldset>
-		</form>
-
-		{% if not ad_auth_on %}
-			<form method="post">
-				<fieldset>
-					<legend>Change password</legend>	
-					<input type="hidden" name="change_password">
-					<label>Current password (case sensitive)</label>
-					<input type="password" name="current_password">
-					<label>New password (case sensitive)</label>
-					<input type="password" name="new_password">
-					<label>Confirm new Password (case sensitive)</label>
-					<input type="password" name="confirm_new_password">
-					<input type="submit" value="Change">
-				</fieldset>
-			</form>
-		{% endif %}	
-
-		<form>
-			<fieldset>
-				<legend>Delete this user</legend>	
-				<input type="hidden" name="Delete this user">
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-	{% endif %}
+					</td>
+					<td>{{bundle.issue.date_created|hh_format}}</td>
+					<td>
+						{% if bundle.owner %}
+							<a href="/users/{{bundle.owner.id}}">{{bundle.owner.email_address}}</a>
+						{% endif %}	
+					</td>
+					<td>
+						{% if bundle.issue.is_open %}
+							Open
+						{% else %}
+							Closed
+						{% endif %}
+					</td>
+					<td>{{bundle.issue.properties['subject']}}</td>
+					<td>
+						<ul>
+							{% for supply_bundle in bundle.supplies %}
+								{% set era = supply_bundle.era %}
+								{% set supply = supply_bundle.supply %}
+								{% set site = supply_bundle.site %}
+								<li>
+									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+								 	at <a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
+					<td>{{entry.timestamp|hh_format}}</td>
+					<td>
+						{% if entry %}
+							{% set lines = entry.markdown.splitlines() %}
+							{% if lines|length < 2 %}
+								{{lines[0]}}
+							{% else %}
+								<details>
+									<summary>{{lines[0]}}</summary>
+									{{''.join(lines[1:])}}
+								</details>
+							{% endif %}
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	<table>
 {% endblock %}

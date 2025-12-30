@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Users &raquo; {{user.email_address}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/users">Users</a> &raquo; {{ user.email_address }}
+ 	&raquo; Edit
+{% endblock %}
+
+{% block content %}
+	<form method="post" action="/users/{{user.id}}/edit">
+		<fieldset>
+			<legend>Update details</legend>	
+			<label>Username (case sensitive)</label>
+			<input name="email_address" size="100" value="
+					{%- if request.values.email_address -%}
+						{{ request.values.email_address }}
+					{%- else -%}
+						{{ user.email_address }}
+					{%- endif -%}">
+
+			<fieldset>
+				<legend>Role</legend>
+				<label>Editor</label>
+				<input type="radio" name="user_role_code" value="editor"
+						{%- if request.values.user_role_editor -%}
+							{%- if request.values.user_role_editor == 'editor' %}
+								checked
+							{%- endif -%}
+						{%- else -%}
+							{%- if user.user_role.code == 'editor' %}
+								checked
+							{%- endif -%}
+						{%- endif -%}
+				>
+				<label>Viewer</label>
+				<input type="radio" name="user_role_code" value="viewer"
+				{% if request.values.user_role_code %}
+					{% if request.values.user_role_code == 'viewer' %}
+						checked
+					{% endif %}
+				{% else %}
+					{% if user.user_role.code == 'viewer' %}
+						checked
+					{% endif %}
+				{% endif %}
+				>
+			</fieldset>
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>
+
+	{% if not ad_auth_on %}
+		<form method="post">
+			<fieldset>
+				<legend>Change password</legend>	
+				<input type="hidden" name="change_password">
+				<label>Current password (case sensitive)</label>
+				<input type="password" name="current_password">
+				<label>New password (case sensitive)</label>
+				<input type="password" name="new_password">
+				<label>Confirm new Password (case sensitive)</label>
+				<input type="password" name="confirm_new_password">
+				<input type="submit" value="Change">
+			</fieldset>
+		</form>
+	{% endif %}	
+
+	<form hx-delete="/users/{{user.id}}/edit" hx-confirm="Do you really want to delete this user?">
+		<fieldset>
+			<legend>Delete this user</legend>	
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
+
+{% endblock %}

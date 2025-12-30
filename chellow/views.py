@@ -38,6 +38,7 @@ from pympler import muppy, summary
 
 from sqlalchemy import (
     Float,
+    Integer,
     cast,
     false,
     func,
@@ -69,6 +70,7 @@ import chellow.e.tlms
 import chellow.general_import
 import chellow.national_grid
 import chellow.rate_server
+from chellow.e.issues import make_issue_bundles
 from chellow.edi_lib import SEGMENTS, parse_edi
 from chellow.models import (
     Batch,
@@ -89,6 +91,7 @@ from chellow.models import (
     GeneratorType,
     GspGroup,
     HhDatum,
+    Issue,
     MarketRole,
     Participant,
     Party,
@@ -691,8 +694,54 @@ def users_post():
         )
 
 
-@home.route("/users/<int:user_id>", methods=["POST"])
-def user_post(user_id):
+@home.route("/users/<int:user_id>")
+def user_get(user_id):
+    parties = (
+        g.sess.query(Party)
+        .join(MarketRole)
+        .join(Participant)
+        .order_by(MarketRole.code, Participant.code)
+    )
+    user = User.get_by_id(g.sess, user_id)
+    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config_contract.make_properties()
+    ad_props = props.get("ad_authentication", {})
+    ad_auth_on = ad_props.get("on", False)
+    issues = g.sess.scalars(
+        select(Issue)
+        .where(cast(Issue.properties["owner_id"], Integer) == user.id)
+        .order_by(Issue.date_created.desc())
+    )
+    issue_bundles = make_issue_bundles(g.sess, issues)
+    return render_template(
+        "user.html",
+        parties=parties,
+        user=user,
+        ad_auth_on=ad_auth_on,
+        issue_bundles=issue_bundles,
+    )
+
+
+@home.route("/users/<int:user_id>/edit")
+def user_edit_get(user_id):
+    parties = (
+        g.sess.query(Party)
+        .join(MarketRole)
+        .join(Participant)
+        .order_by(MarketRole.code, Participant.code)
+    )
+    user = User.get_by_id(g.sess, user_id)
+    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config_contract.make_properties()
+    ad_props = props.get("ad_authentication", {})
+    ad_auth_on = ad_props.get("on", False)
+    return render_template(
+        "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
+    )
+
+
+@home.route("/users/<int:user_id>/edit", methods=["POST"])
+def user_edit_post(user_id):
     try:
         user = User.get_by_id(g.sess, user_id)
         if "current_password" in request.values:
@@ -707,11 +756,7 @@ def user_post(user_id):
                 raise BadRequest("The password must be at least 6 characters long.")
             user.set_password(new_password)
             g.sess.commit()
-            return redirect("/users/" + str(user.id), 303)
-        elif "delete" in request.values:
-            g.sess.delete(user)
-            g.sess.commit()
-            return redirect("/users", 303)
+            return redirect(f"/users/{user.id}", 303)
         else:
             email_address = req_str("email_address")
             user_role_code = req_str("user_role_code")
@@ -722,7 +767,7 @@ def user_post(user_id):
                 party = Party.get_by_id(g.sess, party_id)
             user.update(email_address, user_role, party)
             g.sess.commit()
-            return redirect("/users/" + str(user.id), 303)
+            return redirect(f"/users/{user.id}", 303)
     except BadRequest as e:
         flash(e.description)
         parties = (
@@ -737,28 +782,37 @@ def user_post(user_id):
         ad_auth_on = ad_props.get("on", False)
         return make_response(
             render_template(
-                "user.html", parties=parties, user=user, ad_auth_on=ad_auth_on
+                "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
             ),
             400,
         )
 
 
-@home.route("/users/<int:user_id>")
-def user_get(user_id):
-    parties = (
-        g.sess.query(Party)
-        .join(MarketRole)
-        .join(Participant)
-        .order_by(MarketRole.code, Participant.code)
-    )
-    user = User.get_by_id(g.sess, user_id)
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = config_contract.make_properties()
-    ad_props = props.get("ad_authentication", {})
-    ad_auth_on = ad_props.get("on", False)
-    return render_template(
-        "user.html", parties=parties, user=user, ad_auth_on=ad_auth_on
-    )
+@home.route("/users/<int:user_id>/edit", methods=["DELETE"])
+def user_edit_delete(user_id):
+    try:
+        user = User.get_by_id(g.sess, user_id)
+        g.sess.delete(user)
+        g.sess.commit()
+        return redirect("/users", 303)
+    except BadRequest as e:
+        flash(e.description)
+        parties = (
+            g.sess.query(Party)
+            .join(MarketRole)
+            .join(Participant)
+            .order_by(MarketRole.code, Participant.code)
+        )
+        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+        props = config_contract.make_properties()
+        ad_props = props.get("ad_authentication", {})
+        ad_auth_on = ad_props.get("on", False)
+        return make_response(
+            render_template(
+                "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
+            ),
+            400,
+        )
 
 
 @home.route("/general_imports")
