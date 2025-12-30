@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Issues
+{% endblock %}
+
+{% block nav %}
+	Issues
+{% endblock %}
+
+{% block content %}
+	<table class="sticky">
+		<caption>Issues</caption>
+		<thead>
+			<tr>
+				<th rowspan="2">View</th>
+				<th rowspan="2">Issue Id</th>
+				<th colspan="2">Contract</th>
+				<th rowspan="2">Date Created</th>
+				<th rowspan="2">Owner</th>
+				<th rowspan="2">Status</th>
+				<th rowspan="2">Subject</th>
+				<th rowspan="2">Supplies</th>
+				<th colspan="2">Latest Entry</th>
+			</tr>
+			<tr>
+				<th>Type</th>
+				<th>Name</th>
+				<th>Timestamp</th>
+				<th>Text</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for bundle in issue_bundles %}
+				{% set entry = bundle.latest_entry %}
+				{% set market_role_code = bundle.issue.contract.market_role.code %}
+				<tr>
+					<td>
+						{% if market_role_code == 'C' %}
+							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
+						{% elif market_role_code == 'X' %}
+							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
+						{% endif %}
+					</td>
+					<td>{{bundle.issue.id}}</td>
+					<td>
+						{% if market_role_code == 'C' %}
+							DC
+						{% elif market_role_code == 'X' %}
+							Supplier
+						{% endif %}
+					</td>
+					<td>
+						{% if market_role_code == 'C' %}
+							<a href="/e/dc_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+						{% elif market_role_code == 'X' %}
+							<a href="/e/supplier_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+						{% endif %}
+					</td>
+					<td>{{bundle.issue.date_created|hh_format}}</td>
+					<td>
+						{% if bundle.owner %}
+							<a href="/users/{{bundle.owner.id}}">{{bundle.owner.email_address}}</a>
+						{% endif %}	
+					</td>
+					<td>
+						{% if bundle.issue.is_open %}
+							Open
+						{% else %}
+							Closed
+						{% endif %}
+					</td>
+					<td>{{bundle.issue.properties['subject']}}</td>
+					<td>
+						<ul>
+							{% for supply_bundle in bundle.supplies %}
+								{% set era = supply_bundle.era %}
+								{% set supply = supply_bundle.supply %}
+								{% set site = supply_bundle.site %}
+								<li>
+									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+								 	at <a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+								</li>
+							{% endfor %}
+						</ul>
+					</td>
+					<td>{{entry.timestamp|hh_format}}</td>
+					<td>
+						{% if entry %}
+							{% set lines = entry.markdown.splitlines() %}
+							{% if lines|length < 2 %}
+								{{lines[0]}}
+							{% else %}
+								<details>
+									<summary>{{lines[0]}}</summary>
+									{{''.join(lines[1:])}}
+								</details>
+							{% endif %}
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}

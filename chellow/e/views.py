@@ -2729,6 +2729,15 @@ def isd_post():
     return chellow_redirect("/isd", 303)
 
 
+@e.route("/issues")
+def issues_get():
+    issues = g.sess.scalars(
+        select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
+    )
+    bundles = make_issue_bundles(g.sess, issues)
+    return render_template("issues.html", issue_bundles=bundles)
+
+
 @e.route("/lafs")
 def lafs_get():
     llfc_id = req_int("llfc_id")
@@ -6062,25 +6071,14 @@ def supplier_element_edit_delete(element_id):
 @e.route("/supplier_contracts/<int:contract_id>/issues")
 def supplier_issues_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
-    bundles = []
-    for issue in g.sess.scalars(
+    issues = g.sess.scalars(
         select(Issue)
         .where(Issue.contract == contract)
         .order_by(Issue.is_open.desc(), Issue.date_created)
-    ):
-        bundle = {}
-        bundle["issue"] = issue
-        bundle["supplies"] = g.sess.scalars(
-            select(Supply)
-            .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
-            .order_by(Supply.id)
-        ).all()
-        bundles.append(bundle)
-
+    )
+    bundles = make_issue_bundles(g.sess, issues)
     return render_template(
-        "supplier_issues.html",
-        contract=contract,
-        issue_bundles=bundles,
+        "supplier_issues.html", contract=contract, issue_bundles=bundles
     )
 
 
