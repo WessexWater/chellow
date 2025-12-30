@@ -64,6 +64,9 @@
 			</tr>
 		</tbody>
 	</table>
+
+	<p><a href="/e/supplier_issues/{{issue.id}}/add_entry">Add Entry</a>
+
 	{% for entry in issue.entries %}
 		<section>
 			<h4>{{entry.timestamp|hh_format}} [<a href="/e/supplier_entries/{{entry.id}}/edit">edit</a>]</h4>
@@ -72,7 +75,6 @@
 		</section>
 	{% endfor %}
 
-	<p><a href="/e/supplier_issues/{{issue.id}}/add_entry">Add Entry</a>
 
 	<h4>Properties</h4>
 

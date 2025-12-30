@@ -6557,6 +6557,7 @@ class Issue(Base, PersistentClass):
         backref="issue",
         cascade="all, delete-orphan",
         passive_deletes=True,
+        order_by="IssueEntry.timestamp.desc()",
     )
 
     def __init__(self, contract, date_created, is_open, properties):
