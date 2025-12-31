@@ -6583,6 +6583,14 @@ def supply_get(supply_id):
             line0 = lines[0]
             if len(lines) > 1 or len(line0) > 50:
                 truncated_line = line0[:50]
+    issues = g.sess.scalars(
+        select(Issue)
+        .where(
+            Issue.is_open == true(),
+            Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+        )
+        .order_by(Issue.date_created)
+    ).all()
 
     return render_template(
         "supply.html",
@@ -6597,6 +6605,7 @@ def supply_get(supply_id):
         this_month_start=this_month_start,
         batch_reports=batch_reports,
         era_bundles=era_bundles,
+        issues=issues,
     )
 
 

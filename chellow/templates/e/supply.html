@@ -70,6 +70,7 @@
 			<th>
 				<a href="/e/supplies/{{supply.id}}/notes">Notes</a>
 			</th>
+			<th>Open Issues</th>
 		</tr>
 		<tr>
 			<td>{{ supply.name }}</td>
@@ -105,6 +106,23 @@
 						{%- else %} {{note.body}}
 						{%- endif -%}
 					</pre>
+				{% endif %}
+			</td>
+			<td>
+				{% if issues|length > 0 %}
+					<ul>
+						{% for issue in issues %}
+							<li>
+								{% if issue.contract.market_role.code == 'X' %}
+									<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+										{{issue.id}} {{issue.properties['subject']}}</a>
+								{% else %}
+									<a href="/e/dc_issues/{{issue.id}}">DC:
+										{{issue.id}} {{issue.properties['subject']}}</a>
+								{% endif %}
+							</li>
+						{% endfor %}
+					</ul>
 				{% endif %}
 			</td>
 		</tr>
