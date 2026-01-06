@@ -2734,8 +2734,29 @@ def issues_get():
     issues = g.sess.scalars(
         select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
     )
+    dc_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "C")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
+    supplier_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "X")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
     bundles = make_issue_bundles(g.sess, issues)
-    return render_template("issues.html", issue_bundles=bundles)
+    return render_template(
+        "issues.html",
+        issue_bundles=bundles,
+        dc_contracts=dc_contracts,
+        supplier_contracts=supplier_contracts,
+    )
 
 
 @e.route("/lafs")

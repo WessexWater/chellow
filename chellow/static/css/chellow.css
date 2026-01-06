@@ -321,3 +321,7 @@ input[type = file] {
 	color: red;
 	text-decoration: underline;
 }
+
+select[multiple] {
+	resize: both;
+}
