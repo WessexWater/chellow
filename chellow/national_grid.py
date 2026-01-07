@@ -1,9 +1,11 @@
 import atexit
 import collections
+import csv
 import threading
 import traceback
 from datetime import timedelta
 from importlib import import_module
+from io import StringIO
 
 import requests
 
@@ -13,7 +15,13 @@ from chellow.models import (
     Contract,
     Session,
 )
-from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
+from chellow.utils import (
+    ct_datetime_now,
+    ct_datetime_parse,
+    hh_format,
+    to_utc,
+    utc_datetime_now,
+)
 
 
 importer = None
@@ -36,6 +44,23 @@ def api_get(s, path, params=None):
     return res_j
 
 
+def csv_get(s, path):
+    res = s.get(f"https://api.neso.energy/{path}", timeout=120)
+    csv_file = StringIO(res.text)
+    return csv.DictReader(csv_file)
+
+
+def parse_date(date_str):
+    if "/" in date_str:
+        fmt = "%d/%m/%Y"
+    elif "-" in date_str:
+        fmt = "%Y-%m-%d"
+    else:
+        raise BadRequest(f"Couldn't parse the date {date_str}")
+
+    return to_utc(ct_datetime_parse(date_str, fmt))
+
+
 def run_import(sess, log, set_progress):
     log("Starting to import data from the National Grid")
     s = requests.Session()
@@ -52,15 +77,13 @@ def run_import(sess, log, set_progress):
 
 
 LAST_RUN_KEY = "last_run"
-GLOBAL_ALERT = (
-    "There's a problem with a <a href='/national_grid'>National Grid import</a>."
-)
+GLOBAL_ALERT = "There's a problem with a <a href='/national_grid'>NESO import</a>."
 NG_STATE_KEY = "national_grid"
 
 
 class NationalGrid(threading.Thread):
     def __init__(self):
-        super().__init__(name="National Grid")
+        super().__init__(name="NESO")
         self.messages = collections.deque(maxlen=500)
         self.progress = ""
         self.stopped = threading.Event()

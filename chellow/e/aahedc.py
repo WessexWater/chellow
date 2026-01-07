@@ -3,7 +3,7 @@ from decimal import Decimal
 from sqlalchemy import select
 
 from chellow.models import Contract, RateScript
-from chellow.national_grid import api_get
+from chellow.national_grid import csv_get, parse_date
 from chellow.utils import ct_datetime, to_utc
 
 
@@ -36,9 +36,11 @@ def national_grid_import(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    params = {"sql": """SELECT * FROM "ffd29cc8-3c55-4e83-aa0e-73212d4fedba" """}
-    res_j = api_get(s, "datastore_search_sql", params=params)
-    for record in res_j["result"]["records"]:
+    path = (
+        "dataset/43d94335-c97f-4939-a8b9-607d2cfb3734/resource/"
+        "ffd29cc8-3c55-4e83-aa0e-73212d4fedba/download"
+    )
+    for record in csv_get(s, path):
         # {
         #   "_full_text": "'-07':4 '-15':5 '0.012247':7 '0.028 '2026':2 'final':1",
         #   "Published Date": "2025-07-15",
@@ -71,11 +73,11 @@ def national_grid_import(sess, log, set_progress, s):
         except KeyError:
             rs_record = rs_script["record"] = {}
 
-        record_published_date = record["Published Date"]
+        record_published_date = parse_date(record["Published Date"])
 
         if (
             "Published Date" not in rs_record
-            or rs_record["Published Date"] < record_published_date
+            or parse_date(rs_record["Published Date"]) < record_published_date
         ):
             rs_script["record"] = record
             rs_script["aahedc_gbp_per_gsp_kwh"] = Decimal(

@@ -207,9 +207,7 @@ def test_national_grid_import(mocker, sess):
         "Published_Date": "2000-01-01",
         "TDR Tariff extra": "3.4",
     }
-    mocker.patch(
-        "chellow.e.tnuos.api_get", return_value={"result": {"records": [record]}}
-    )
+    mocker.patch("chellow.e.tnuos.csv_get", return_value=[record])
 
     s = mocker.Mock()
     national_grid_import(sess, log, set_progress, s)

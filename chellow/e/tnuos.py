@@ -2,7 +2,7 @@ from sqlalchemy import select
 
 
 from chellow.models import Contract, RateScript
-from chellow.national_grid import api_get
+from chellow.national_grid import csv_get, parse_date
 from chellow.utils import (
     ct_datetime,
     to_utc,
@@ -101,9 +101,11 @@ def national_grid_import(sess, log, set_progress, s):
         )
         sess.commit()
 
-    params = {"sql": """SELECT * FROM "dcca94fd-343e-4d4e-8c5d-66009dec4ad3" """}
-    res_j = api_get(s, "datastore_search_sql", params=params)
-    for record in res_j["result"]["records"]:
+    path = (
+        "dataset/eaef4708-1100-4ad9-98d5-d892f3c9a56c/resource/"
+        "dcca94fd-343e-4d4e-8c5d-66009dec4ad3/download"
+    )
+    for record in csv_get(s, path):
         # {
         #   "_id": 1,
         #   "Publication": "Final",
@@ -134,10 +136,10 @@ def national_grid_import(sess, log, set_progress, s):
             bands = rs_script["bands"] = {}
 
         record_key = record["TDR Band"]
-        record_published_date = record["Published_Date"]
+        record_published_date = parse_date(record["Published_Date"])
 
         band = bands.get(record_key)
-        if band is None or band["Published_Date"] < record_published_date:
+        if band is None or parse_date(band["Published_Date"]) < record_published_date:
             if "TDR Tariff" not in record:
                 tdr_tariff = [
                     v for k, v in record.items() if k.startswith("TDR Tariff")
