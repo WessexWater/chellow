@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Users &raquo; {{user.email_address}}
+	&raquo; MOP Contracts &raquo; {{ contract.name }} &raquo; Issues
 {% endblock %}
 
 {% block inside_head %}
@@ -14,8 +14,9 @@
 {% endblock %}
 
 {% block nav %}
-	<a href="/users">Users</a> &raquo;
-	{{ user.email_address }} [<a href="/users/{{user.id}}/edit">edit</a>]
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo;
+	<a href="/e/mop_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
+	Issues [<a href="/e/mop_contracts/{{contract.id}}/add_issue">add</a>]
 {% endblock %}
 
 {% block content %}
@@ -24,9 +25,10 @@
 		<fieldset>
 			<legend>Filters</legend>	
 
-			<input type="hidden" name="owner_id" value="{{user.id}}">
+			<input type="hidden" name="contract_id" value="{{contract.id}}">
 		</fieldset>
 	</form>
 
 	<div id="issues"></div>
+
 {% endblock %}

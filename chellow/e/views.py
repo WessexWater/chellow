@@ -23,6 +23,7 @@ from flask import (
 
 from sqlalchemy import (
     Float,
+    Integer,
     case,
     cast,
     delete,
@@ -1325,69 +1326,6 @@ def dc_issues_get(contract_id):
     return render_template("dc_issues.html", contract=contract, issue_bundles=bundles)
 
 
-@e.route("/dc_contracts/<int:contract_id>/issues/download")
-def dc_issues_download_get(contract_id):
-    contract = Contract.get_dc_by_id(g.sess, contract_id)
-    titles = (
-        "issue_id",
-        "contract_name",
-        "date_created",
-        "status",
-        "subject",
-        "imp_mpan_core",
-        "exp_mpan_core",
-        "site_code",
-        "site_name",
-        "latest_entry_timestamp",
-        "latest_entry_markdown",
-    )
-    rows = []
-    for issue in g.sess.scalars(
-        select(Issue)
-        .where(Issue.contract == contract)
-        .order_by(Issue.is_open.desc(), Issue.date_created)
-    ):
-        props = issue.properties
-        values = {
-            "contract_name": contract.name,
-            "issue_id": issue.id,
-            "date_created": issue.date_created,
-            "status": "open" if issue.is_open else "closed",
-            "subject": props.get("subject"),
-            "imp_mpan_core": None,
-            "exp_mpan_core": None,
-            "site_code": None,
-            "site_name": None,
-        }
-        if len(issue.entries) == 0:
-            values["latest_entry_timestamp"] = None
-            values["latest_entry_markdown"] = None
-        else:
-            entry = issue.entries[-1]
-            values["latest_entry_timestamp"] = entry.timestamp
-            values["latest_entry_markdown"] = entry.markdown
-
-        supply_ids = props.get("supply_ids", [])
-        if len(supply_ids) == 0:
-            rows.append([csv_make_val(values[title]) for title in titles])
-        else:
-            for supply in g.sess.scalars(
-                select(Supply)
-                .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
-                .order_by(Supply.id)
-            ).all():
-                values = values.copy()
-                era = supply.eras[0]
-                site = era.get_physical_site(g.sess)
-                values["imp_mpan_core"] = era.imp_mpan_core
-                values["exp_mpan_core"] = era.exp_mpan_core
-                values["site_code"] = site.code
-                values["site_name"] = site.name
-                rows.append([csv_make_val(values[title]) for title in titles])
-
-    return _csv_response("dc_issues.csv", titles, rows)
-
-
 @e.route("/dc_contracts/<int:contract_id>/add_issue")
 def dc_issue_add_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
@@ -1402,7 +1340,8 @@ def dc_issue_add_post(contract_id):
         subject = req_str("subject")
 
         now = utc_datetime_now()
-        issue = contract.insert_issue(g.sess, now, {"subject": subject})
+        properties = {"subject": subject, "owner_id": g.user.id}
+        issue = contract.insert_issue(g.sess, now, properties)
         g.sess.commit()
         return chellow_redirect(f"/dc_issues/{issue.id}", 303)
     except BadRequest as e:
@@ -2734,6 +2673,14 @@ def issues_get():
     issues = g.sess.scalars(
         select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
     )
+    mop_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "M")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
     dc_contracts = g.sess.scalars(
         select(Contract)
         .join(Issue)
@@ -2750,12 +2697,20 @@ def issues_get():
         .distinct()
         .order_by(Contract.name)
     ).all()
+    owners = g.sess.scalars(
+        select(User)
+        .join(Issue, User.id == cast(Issue.properties["owner_id"], Integer))
+        .distinct()
+        .order_by(User.email_address)
+    ).all()
     bundles = make_issue_bundles(g.sess, issues)
     return render_template(
         "issues.html",
         issue_bundles=bundles,
+        mop_contracts=mop_contracts,
         dc_contracts=dc_contracts,
         supplier_contracts=supplier_contracts,
+        owners=owners,
     )
 
 
@@ -3551,6 +3506,198 @@ def mop_element_edit_delete(element_id):
         return make_response(
             render_template("mop_element_edit.html", element=element), 400
         )
+
+
+@e.route("/mop_contracts/<int:contract_id>/issues")
+def mop_issues_get(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    issues = g.sess.scalars(
+        select(Issue)
+        .where(Issue.contract == contract)
+        .order_by(Issue.is_open.desc(), Issue.date_created)
+    )
+    bundles = make_issue_bundles(g.sess, issues)
+
+    return render_template("mop_issues.html", contract=contract, issue_bundles=bundles)
+
+
+@e.route("/mop_contracts/<int:contract_id>/add_issue")
+def mop_issue_add_get(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+
+    return render_template("mop_issue_add.html", contract=contract)
+
+
+@e.route("/mop_contracts/<int:contract_id>/add_issue", methods=["POST"])
+def mop_issue_add_post(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    try:
+        subject = req_str("subject")
+
+        now = utc_datetime_now()
+        properties = {"subject": subject, "owner_id": g.user.id}
+        issue = contract.insert_issue(g.sess, now, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("mop_issue_add.html", contract=contract), 400
+        )
+
+
+@e.route("/mop_issues/<int:issue_id>")
+def mop_issue_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    props = issue.properties
+    supply_bundles = []
+    for supply in g.sess.scalars(
+        select(Supply)
+        .where(Supply.id.in_(props.get("supply_ids", [])))
+        .order_by(Supply.id)
+    ).all():
+        era = supply.eras[0]
+        site = era.get_physical_site(g.sess)
+        supply_bundles.append({"supply": supply, "era": supply.eras[0], "site": site})
+    if "owner_id" in props:
+        owner = User.get_by_id(g.sess, props["owner_id"])
+    else:
+        owner = None
+    return render_template(
+        "mop_issue.html", issue=issue, supply_bundles=supply_bundles, owner=owner
+    )
+
+
+@e.route("/mop_issues/<int:issue_id>/edit")
+def mop_issue_edit_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    users = g.sess.scalars(
+        select(User)
+        .join(UserRole)
+        .where(UserRole.code == "editor")
+        .order_by(User.email_address)
+    )
+    return render_template("mop_issue_edit.html", issue=issue, users=users)
+
+
+@e.route("/mop_issues/<int:issue_id>/edit", methods=["POST"])
+def mop_issue_edit_post(issue_id):
+    try:
+        issue = Issue.get_by_id(g.sess, issue_id)
+        date_created = req_date("date_created")
+        is_open = req_checkbox("is_open")
+        owner_id = req_int("owner_id")
+        properties = issue.properties
+        properties["owner_id"] = owner_id
+        issue.update(date_created, is_open, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        users = g.sess.scalars(
+            select(User)
+            .join(UserRole)
+            .where(UserRole.code == "editor")
+            .order_by(User.email_address)
+        )
+        return make_response(
+            render_template("mop_issue_edit.html", issue=issue, users=users), 400
+        )
+
+
+@e.route("/mop_issues/<int:issue_id>/edit", methods=["DELETE"])
+def mop_issue_edit_delete(issue_id):
+    try:
+        issue = Issue.get_by_id(g.sess, issue_id)
+        contract = issue.contract
+        issue.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/mop_contracts/{contract.id}/issues", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("mop_issue_edit.html", issue=issue), 400)
+
+
+@e.route("/mop_issues/<int:issue_id>/attach_supply")
+def mop_issue_attach_supply_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("mop_issue_attach_supply.html", issue=issue)
+
+
+@e.route("/mop_issues/<int:issue_id>/attach_supply", methods=["POST"])
+def mop_issue_attach_supply_post(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    try:
+        mpan_core_str = req_str("mpan_core")
+        mpan_core = parse_mpan_core(mpan_core_str)
+        supply = Supply.get_by_mpan_core(g.sess, mpan_core)
+
+        props = issue.properties
+        supply_ids = props.get("supply_ids", [])
+        supply_ids.append(supply.id)
+        props["supply_ids"] = supply_ids
+        issue.update_properties(props)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("mop_issue_attach_supply.html", issue=issue), 400
+        )
+
+
+@e.route("/mop_issues/<int:issue_id>/add_entry")
+def mop_entry_add_get(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    return render_template("mop_entry_add.html", issue=issue)
+
+
+@e.route("/mop_issues/<int:issue_id>/add_entry", methods=["POST"])
+def mop_entry_add_post(issue_id):
+    issue = Issue.get_by_id(g.sess, issue_id)
+    try:
+        markdown = req_markdown("markdown")
+
+        issue.add_entry(g.sess, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("mop_entry_add.html", issue=issue), 400)
+
+
+@e.route("/mop_entries/<int:entry_id>/edit")
+def mop_entry_edit_get(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    return render_template("mop_entry_edit.html", entry=entry)
+
+
+@e.route("/mop_entries/<int:entry_id>/edit", methods=["POST"])
+def mop_entry_edit_post(entry_id):
+    entry = IssueEntry.get_by_id(g.sess, entry_id)
+    try:
+        markdown = req_markdown("markdown")
+        timestamp = req_date("timestamp")
+
+        entry.update(timestamp, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/mop_issues/{entry.issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("mop_entry_edit.html", entry=entry), 400)
+
+
+@e.route("/mop_entries/<int:entry_id>/edit", methods=["DELETE"])
+def mop_entry_edit_delete(entry_id):
+    try:
+        entry = IssueEntry.get_by_id(g.sess, entry_id)
+        issue = entry.issue
+        entry.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/mop_issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("mop_entry_edit.html", entry=entry), 400)
 
 
 @e.route("/mop_rate_scripts/<int:rate_script_id>")
@@ -6117,7 +6264,8 @@ def supplier_issue_add_post(contract_id):
         subject = req_str("subject")
 
         now = utc_datetime_now()
-        issue = contract.insert_issue(g.sess, now, {"subject": subject})
+        properties = {"subject": subject, "owner_id": g.user.id}
+        issue = contract.insert_issue(g.sess, now, properties)
         g.sess.commit()
         return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
     except BadRequest as e:

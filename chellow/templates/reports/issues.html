@@ -8,6 +8,9 @@
 			{%- for contract_id in contract_ids -%}
 				&amp;contract_id={{contract_id}}
 			{%- endfor -%}
+			{%- for owner_id in owner_ids -%}
+				&amp;owner_id={{owner_id}}
+			{%- endfor -%}
 			">Download as CSV</a>
 		</caption>
 		<thead>
@@ -39,6 +42,8 @@
 							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
 						{% elif market_role_code == 'X' %}
 							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
+						{% elif market_role_code == 'M' %}
+							<a href="/e/mop_issues/{{bundle.issue.id}}">View</a>
 						{% endif %}
 					</td>
 					<td>{{bundle.issue.id}}</td>
@@ -47,6 +52,8 @@
 							DC
 						{% elif market_role_code == 'X' %}
 							Supplier
+						{% elif market_role_code == 'M' %}
+							MOP
 						{% endif %}
 					</td>
 					<td>
@@ -54,6 +61,8 @@
 							<a href="/e/dc_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
 						{% elif market_role_code == 'X' %}
 							<a href="/e/supplier_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+						{% elif market_role_code == 'M' %}
+							<a href="/e/mop_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
 						{% endif %}
 					</td>
 					<td>{{bundle.issue.date_created|hh_format}}</td>
@@ -83,7 +92,11 @@
 							{% endfor %}
 						</ul>
 					</td>
-					<td>{{entry.timestamp|hh_format}}</td>
+					<td>
+						{% if entry %}
+							{{entry.timestamp|hh_format}}
+						{% endif %}
+					</td>
 					<td>
 						{% if entry %}
 							{% set lines = entry.markdown.splitlines() %}

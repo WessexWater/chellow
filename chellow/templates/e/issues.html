@@ -25,7 +25,12 @@
 			<legend>Filters</legend>	
 
 			<label>Contract</label>
-			<select name="contract_id" multiple size="{{dc_contracts|length + supplier_contracts|length + 2}}">
+			<select name="contract_id" multiple size="{{mop_contracts|length + dc_contracts|length + supplier_contracts| length + 3}}">
+				<optgroup label="MOP">
+					{% for contract in mop_contracts %}
+						{{input_option('contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</optgroup>
 				<optgroup label="DC">
 					{% for contract in dc_contracts %}
 						{{input_option('contract_id', contract.id, contract.name)}}
@@ -36,6 +41,12 @@
 						{{input_option('contract_id', contract.id, contract.name)}}
 					{% endfor %}
 				</optgroup>
+			</select>
+			<label>Owner</label>
+			<select name="owner_id" multiple size="{{owners|length + 2}}">
+				{% for owner in owners %}
+					{{input_option('owner_id', owner.id, owner.email_address)}}
+				{% endfor %}
 			</select>
 		</fieldset>
 	</form>

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block inside_head %}
+	<style>
+		section > article {
+			border-style: solid;
+			border-color: var(--bg-color);
+			border-width: thin;
+			padding: 1em;
+		}
+		section > h4 {
+			margin-bottom: 0em;
+		}
+	</style>
+{% endblock %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{ issue.contract.name }} &raquo; Issues &raquo;
+ 	{{ issue.id }}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/mop_contracts">MOP Contracts</a> &raquo;
+	<a href="/e/mop_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a> &raquo;
+	<a href="/e/mop_contracts/{{issue.contract.id}}/issues">Issues</a> &raquo;
+ 	{{issue.id}} [<a href="/e/mop_issues/{{issue.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+
+	<table>
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Date Created</th>
+				<th>Owner</th>
+				<th>Status</th>
+				<th>Subject</th>
+				<th>Supplies [<a href="/e/mop_issues/{{issue.id}}/attach_supply">attach</a>]</th>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{issue.id}}</td>
+				<td>{{issue.date_created|hh_format}}</td>
+				<td>
+					{% if owner %}
+						<a href="/users/{{owner.id}}">{{owner.email_address}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if issue.is_open %}
+						Open
+					{% else %}
+						Closed
+					{% endif %}
+				</td>
+				<td>{{issue.properties.subject}}</td>
+				<td>
+					<ul>
+						{% for supply_bundle in supply_bundles %}
+								{% set era = supply_bundle.era %}
+								{% set supply = supply_bundle.supply %}
+								{% set site = supply_bundle.site %}
+								<li>
+									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+								 	at <a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
+								</li>
+						{% endfor %}
+					</ul>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p><a href="/e/mop_issues/{{issue.id}}/add_entry">Add Entry</a>
+
+	{% for entry in issue.entries %}
+		<section>
+			<h4>{{entry.timestamp|hh_format}} [<a href="/e/mop_entries/{{entry.id}}/edit">edit</a>]</h4>
+
+			<article>{{entry.markdown|markdown}}</article>
+		</section>
+	{% endfor %}
+
+
+	<h4>Properties</h4>
+
+	<pre>{{issue.properties|tojson}}</pre>
+
+{% endblock %}
