@@ -4,6 +4,15 @@
 	&raquo; Supplies &raquo; {{supply.name}} &raquo; Issues
 {% endblock %}
 
+{% block inside_head %}
+	<style>
+		#issues.htmx-swapping {
+			opacity: 0;
+			transition: opacity 1s ease-out;
+		}
+	</style>
+{% endblock %}
+
 {% block nav %}
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{supply.id}}">{{supply.id}}</a> &raquo; 
@@ -11,40 +20,59 @@
 {% endblock %}
 
 {% block content %}
-	<table class="sticky">
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Contract</th>
-				<th>Issue Id</th>
-				<th>Date Created</th>
-				<th>Status</th>
-				<th>Subject</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for issue in issues %}
-				<tr>
-					{% if issue.contract.market_role.code == 'C' %}
-						<td><a href="/e/dc_issues/{{issue.id}}">View</a></td>
-						<td><a href="/e/dc_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a></td>
-					{% elif issue.contract.market_role.code == 'X' %}
-						<td><a href="/e/supplier_issues/{{issue.id}}">View</a></td>
-						<td><a href="/e/supplier_contracts/{{issue.contract.id}}">{{issue.contract.name}}</a></td>
-					{% endif %}
-					<td>{{issue.id}}</td>
-					<td>{{issue.date_created|hh_format}}</td>
-					<td>
-						{% if issue.is_open %}
-							Open
-						{% else %}
-							Closed
-						{% endif %}
-					</td>
-					<td>{{issue.properties['subject']}}</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+
+	<ul>
+		<li>
+			<a href="/e/mop_contracts/{{latest_era.mop_contract.id}}/add_issue?supply_id={{supply.id}}">Add MOP Issue</a>
+		</li>
+		<li>
+			<a href="/e/dc_contracts/{{latest_era.dc_contract.id}}/add_issue?supply_id={{supply.id}}">Add DC Issue</a>
+		</li>
+		{% if latest_era.imp_supplier_contract %}
+			<li>
+				<a href="/e/supplier_contracts/{{latest_era.imp_supplier_contract.id}}/add_issue?supply_id={{supply.id}}">Add Import Supplier Issue</a>
+			</li>
+		{% endif %}
+		{% if latest_era.exp_supplier_contract %}
+			<li>
+				<a href="/e/supplier_contracts/{{latest_era.exp_supplier_contract.id}}/add_issue?supply_id={{supply.id}}">Add Export Supplier Issue</a>
+			</li>
+		{% endif %}
+	</ul>
+
+	<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+			hx-target="#issues" hx-swap="outerHTML swap:1s">
+		<fieldset>
+			<input type="hidden" name="supply_id" value="{{supply.id}}"/>
+			<legend>Filters</legend>	
+
+			<label>Contract</label>
+			<select name="contract_id" multiple size="{{mop_contracts|length + dc_contracts|length + supplier_contracts| length + 3}}">
+				<optgroup label="MOP">
+					{% for contract in mop_contracts %}
+						{{input_option('contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</optgroup>
+				<optgroup label="DC">
+					{% for contract in dc_contracts %}
+						{{input_option('contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</optgroup>
+				<optgroup label="Supplier">
+					{% for contract in supplier_contracts %}
+						{{input_option('contract_id', contract.id, contract.name)}}
+					{% endfor %}
+				</optgroup>
+			</select>
+			<label>Owner</label>
+			<select name="owner_id" multiple size="{{owners|length + 2}}">
+				{% for owner in owners %}
+					{{input_option('owner_id', owner.id, owner.email_address)}}
+				{% endfor %}
+			</select>
+		</fieldset>
+	</form>
+
+	<div id="issues"></div>
 
 {% endblock %}

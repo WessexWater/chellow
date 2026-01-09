@@ -1329,8 +1329,13 @@ def dc_issues_get(contract_id):
 @e.route("/dc_contracts/<int:contract_id>/add_issue")
 def dc_issue_add_get(contract_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
+    if "supply_id" in request.values:
+        supply_id = req_int("supply_id")
+        supply = Supply.get_by_id(g.sess, supply_id)
+    else:
+        supply = None
 
-    return render_template("dc_issue_add.html", contract=contract)
+    return render_template("dc_issue_add.html", contract=contract, supply=supply)
 
 
 @e.route("/dc_contracts/<int:contract_id>/add_issue", methods=["POST"])
@@ -1341,6 +1346,8 @@ def dc_issue_add_post(contract_id):
 
         now = utc_datetime_now()
         properties = {"subject": subject, "owner_id": g.user.id}
+        if "supply_id" in request.values:
+            properties["supply_ids"] = [req_int("supply_id")]
         issue = contract.insert_issue(g.sess, now, properties)
         g.sess.commit()
         return chellow_redirect(f"/dc_issues/{issue.id}", 303)
@@ -3524,8 +3531,13 @@ def mop_issues_get(contract_id):
 @e.route("/mop_contracts/<int:contract_id>/add_issue")
 def mop_issue_add_get(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
+    if "supply_id" in request.values:
+        supply_id = req_int("supply_id")
+        supply = Supply.get_by_id(g.sess, supply_id)
+    else:
+        supply = None
 
-    return render_template("mop_issue_add.html", contract=contract)
+    return render_template("mop_issue_add.html", contract=contract, supply=supply)
 
 
 @e.route("/mop_contracts/<int:contract_id>/add_issue", methods=["POST"])
@@ -3533,9 +3545,11 @@ def mop_issue_add_post(contract_id):
     contract = Contract.get_mop_by_id(g.sess, contract_id)
     try:
         subject = req_str("subject")
-
         now = utc_datetime_now()
         properties = {"subject": subject, "owner_id": g.user.id}
+        if "supply_id" in request.values:
+            properties["supply_ids"] = [req_int("supply_id")]
+
         issue = contract.insert_issue(g.sess, now, properties)
         g.sess.commit()
         return chellow_redirect(f"/mop_issues/{issue.id}", 303)
@@ -6253,8 +6267,13 @@ def supplier_issues_get(contract_id):
 @e.route("/supplier_contracts/<int:contract_id>/add_issue")
 def supplier_issue_add_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    if "supply_id" in request.values:
+        supply_id = req_int("supply_id")
+        supply = Supply.get_by_id(g.sess, supply_id)
+    else:
+        supply = None
 
-    return render_template("supplier_issue_add.html", contract=contract)
+    return render_template("supplier_issue_add.html", contract=contract, supply=supply)
 
 
 @e.route("/supplier_contracts/<int:contract_id>/add_issue", methods=["POST"])
@@ -6265,6 +6284,8 @@ def supplier_issue_add_post(contract_id):
 
         now = utc_datetime_now()
         properties = {"subject": subject, "owner_id": g.user.id}
+        if "supply_id" in request.values:
+            properties["supply_ids"] = [req_int("supply_id")]
         issue = contract.insert_issue(g.sess, now, properties)
         g.sess.commit()
         return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
@@ -7289,13 +7310,47 @@ def supply_virtual_bill_get(supply_id):
 @e.route("/supplies/<int:supply_id>/issues")
 def supply_issues_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
-    issues = g.sess.scalars(
-        select(Issue)
-        .where(Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)))
-        .order_by(Issue.is_open.desc(), Issue.date_created)
-    )
+    latest_era = supply.find_last_era(g.sess)
+    mop_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "M")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
+    dc_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "C")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
+    supplier_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Issue)
+        .join(MarketRole)
+        .where(MarketRole.code == "X")
+        .distinct()
+        .order_by(Contract.name)
+    ).all()
+    owners = g.sess.scalars(
+        select(User)
+        .join(Issue, User.id == cast(Issue.properties["owner_id"], Integer))
+        .distinct()
+        .order_by(User.email_address)
+    ).all()
 
-    return render_template("supply_issues.html", supply=supply, issues=issues)
+    return render_template(
+        "supply_issues.html",
+        supply=supply,
+        latest_era=latest_era,
+        mop_contracts=mop_contracts,
+        dc_contracts=dc_contracts,
+        supplier_contracts=supplier_contracts,
+        owners=owners,
+    )
 
 
 @e.route("/tprs")

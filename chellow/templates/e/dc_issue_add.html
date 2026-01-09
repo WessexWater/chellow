@@ -16,6 +16,13 @@
 		<fieldset>
 			<legend>Add An Issue</legend>
 				
+			{% if supply %}
+				{% set era = supply.eras[-1] %}
+				<input type="hidden" name="supply_id" value="{{supply.id}}"/>
+				<label>Supply</label>
+			 	<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+			{% endif %}
+
 			<label>Subject</label>
 			{{input_text('subject')}}
 

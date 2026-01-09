@@ -5,7 +5,8 @@ import traceback
 
 from flask import g, redirect, render_template, request
 
-from sqlalchemy import Integer, cast, select
+from sqlalchemy import Integer, any_, cast, select
+from sqlalchemy.dialects.postgresql import JSONB, array
 
 from chellow.dloads import open_file
 from chellow.e.issues import make_issue_bundles
@@ -24,6 +25,7 @@ def _make_bundles(
     sess,
     contract_ids,
     owner_ids,
+    supply_ids,
     limit=None,
 ):
     q = select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
@@ -33,12 +35,15 @@ def _make_bundles(
         q = q.where(Issue.contract_id.in_(contract_ids))
     if len(owner_ids) > 0:
         q = q.where(cast(Issue.properties["owner_id"], Integer).in_(owner_ids))
+    if len(supply_ids) > 0:
+        ids_jsonb = array([cast([sid], JSONB) for sid in supply_ids])
+        q = q.where(Issue.properties["supply_ids"].op("@>")(any_(ids_jsonb)))
     issues = sess.scalars(q)
     return make_issue_bundles(sess, issues)
 
 
-def _make_vals(sess, contract_ids, owner_ids):
-    for bundle in _make_bundles(sess, contract_ids, owner_ids):
+def _make_vals(sess, contract_ids, owner_ids, supply_ids):
+    for bundle in _make_bundles(sess, contract_ids, owner_ids, supply_ids):
         issue = bundle["issue"]
         props = issue.properties
         owner = bundle["owner"]
@@ -78,7 +83,7 @@ def _make_vals(sess, contract_ids, owner_ids):
                 yield values
 
 
-def content(user_id, contract_ids, owner_ids):
+def content(user_id, contract_ids, owner_ids, supply_ids):
     f = writer = None
     try:
         with RSession() as sess:
@@ -101,7 +106,7 @@ def content(user_id, contract_ids, owner_ids):
                 "latest_entry_markdown",
             )
             writer.writerow(titles)
-            for vals in _make_vals(sess, contract_ids, owner_ids):
+            for vals in _make_vals(sess, contract_ids, owner_ids, supply_ids):
                 writer.writerow(csv_make_val(vals[t]) for t in titles)
 
     except BaseException:
@@ -119,18 +124,22 @@ LIMIT = 200
 def do_get(sess):
     contract_ids = [int(x) for x in request.values.getlist("contract_id")]
     owner_ids = [int(x) for x in request.values.getlist("owner_id")]
+    supply_ids = [int(x) for x in request.values.getlist("supply_id")]
     as_csv = req_checkbox("as_csv")
 
     if as_csv:
-        args = (g.user.id, contract_ids, owner_ids)
+        args = (g.user.id, contract_ids, owner_ids, supply_ids)
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)
     else:
-        issue_bundles = _make_bundles(sess, contract_ids, owner_ids, limit=LIMIT)
+        issue_bundles = _make_bundles(
+            sess, contract_ids, owner_ids, supply_ids, limit=LIMIT
+        )
         return render_template(
             "reports/issues.html",
             contract_ids=contract_ids,
             owner_ids=owner_ids,
+            supply_ids=supply_ids,
             limit=LIMIT,
             issue_bundles=issue_bundles,
         )

@@ -4333,12 +4333,9 @@ class Supply(Base, PersistentClass):
             )
 
     def find_last_era(self, sess):
-        return (
-            sess.query(Era)
-            .filter(Era.supply == self)
-            .order_by(Era.start_date.desc())
-            .first()
-        )
+        return sess.scalars(
+            select(Era).where(Era.supply == self).order_by(Era.start_date.desc())
+        ).first()
 
     def find_eras(self, sess, start, finish):
         eras = (
