@@ -47,7 +47,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lcc
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
-from chellow.e.issues import make_issue_bundles
+from chellow.e.issues import make_issue_bundle, make_issue_bundles
 from chellow.models import (
     Batch,
     BatchFile,
@@ -6278,18 +6278,20 @@ def supplier_issue_add_post(contract_id):
 @e.route("/supplier_issues/<int:issue_id>")
 def supplier_issue_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
-    supplies = g.sess.scalars(
-        select(Supply)
-        .where(Supply.id.in_(issue.properties.get("supply_ids", [])))
-        .order_by(Supply.id)
-    )
-    return render_template("supplier_issue.html", issue=issue, supplies=supplies)
+    issue_bundle = make_issue_bundle(g.sess, issue)
+    return render_template("supplier_issue.html", issue_bundle=issue_bundle)
 
 
 @e.route("/supplier_issues/<int:issue_id>/edit")
 def supplier_issue_edit_get(issue_id):
     issue = Issue.get_by_id(g.sess, issue_id)
-    return render_template("supplier_issue_edit.html", issue=issue)
+    users = g.sess.scalars(
+        select(User)
+        .join(UserRole)
+        .where(UserRole.code == "editor")
+        .order_by(User.email_address)
+    )
+    return render_template("supplier_issue_edit.html", issue=issue, users=users)
 
 
 @e.route("/supplier_issues/<int:issue_id>/edit", methods=["POST"])
@@ -6299,6 +6301,9 @@ def supplier_issue_edit_post(issue_id):
         date_created = req_date("date_created")
         is_open = req_checkbox("is_open")
         properties = req_json("properties")
+        owner_id = req_int("owner_id")
+        properties = issue.properties
+        properties["owner_id"] = owner_id
         issue.update(date_created, is_open, properties)
         g.sess.commit()
         return chellow_redirect(f"/supplier_issues/{issue.id}", 303)

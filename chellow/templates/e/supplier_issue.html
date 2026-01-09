@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% set issue = issue_bundle.issue %}
+
 {% block inside_head %}
 	<style>
 		section > article {
@@ -33,6 +35,7 @@
 			<tr>
 				<th>Id</th>
 				<th>Date Created</th>
+				<th>Owner</th>
 				<th>Status</th>
 				<th>Subject</th>
 				<th>Supplies [<a href="/e/supplier_issues/{{issue.id}}/attach_supply">attach</a>]</th>
@@ -41,6 +44,11 @@
 			<tr>
 				<td>{{issue.id}}</td>
 				<td>{{issue.date_created|hh_format}}</td>
+				<td>
+					{% if issue_bundle.owner %}
+						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.email_address}}</a>
+					{% endif %}
+				</td>
 				<td>
 					{% if issue.is_open %}
 						Open
@@ -51,11 +59,12 @@
 				<td>{{issue.properties.subject}}</td>
 				<td>
 					<ul>
-						{% for supply in supplies %}
+						{% for supply_bundle in issue_bundle.supplies %}
 							<li>
-								{% set era = supply.eras[0] %}
-								<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core}}
-									{{era.exp_mpan_core or ''}}</a>
+								<a href="/e/supplies/{{supply_bundle.supply.id}}">{{supply_bundle.era.imp_mpan_core}}
+									{{supply_bundle.era.exp_mpan_core or ''}}</a>
+								at
+								<a href="/sites/{{supply_bundle.site.id}}">{{supply_bundle.site.code}} {{supply_bundle.site.name}}
 
 							</li>
 						{% endfor %}

@@ -19,6 +19,15 @@
 		<fieldset>
 			<legend>Update Issue</legend>
 			<label>Date Created</label> {{ input_date('date_created', issue.date_created) }}
+
+			<label>Owner</label>
+
+			<select name="owner_id">
+				{% for user in users %}
+					{{ input_option( 'owner_id', user.id, user.email_address, issue.properties.owner_id) }}
+				{% endfor %}
+			</select>
+		 
 			<label>Open?</label> {{input_checkbox('is_open', issue.is_open)}}
 			<label>Properties</label>
 			{{input_textarea('properties', issue.properties|tojson, 40, 80, show_pos=True)}}
