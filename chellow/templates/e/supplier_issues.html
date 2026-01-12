@@ -4,6 +4,15 @@
 	&raquo; Supplier Contracts &raquo; {{ contract.name }} &raquo; Issues
 {% endblock %}
 
+{% block inside_head %}
+	<style>
+		#issues.htmx-swapping {
+			opacity: 0;
+			transition: opacity 1s ease-out;
+		}
+	</style>
+{% endblock %}
+
 {% block nav %}
 	<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo;
 	<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a> &raquo;
@@ -11,44 +20,15 @@
 {% endblock %}
 
 {% block content %}
-	<table class="sticky">
-		<thead>
-			<tr>
-				<th>View</th>
-				<th>Issue Id</th>
-				<th>Date Created</th>
-				<th>Status</th>
-				<th>Subject</th>
-				<th>Supplies</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for bundle in issue_bundles %}
-				<tr>
-					<td><a href="/e/supplier_issues/{{bundle.issue.id}}">View</a></td>
-					<td>{{bundle.issue.id}}</td>
-					<td>{{bundle.issue.date_created|hh_format}}</td>
-					<td>
-						{% if bundle.issue.is_open %}
-							Open
-						{% else %}
-							Closed
-						{% endif %}
-					</td>
-					<td>{{bundle.issue.properties['subject']}}</td>
-					<td>
-						<ul>
-							{% for supply in bundle.supplies %}
-								{% set era = supply.eras[0] %}
-								<li>
-									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
-								</li>
-							{% endfor %}
-						</ul>
-					</td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+			hx-target="#issues" hx-swap="outerHTML swap:1s">
+		<fieldset>
+			<legend>Filters</legend>	
+
+			<input type="hidden" name="contract_id" value="{{contract.id}}">
+		</fieldset>
+	</form>
+
+	<div id="issues"></div>
 
 {% endblock %}
