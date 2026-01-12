@@ -62,4 +62,18 @@
 		</tbody>
 	</table>
 
+	<section>
+		<h2>
+			Issues
+			[<a href="/e/dc_contracts/{{snag.channel.era.dc_contract.id}}/add_issue?supply_id={{snag.channel.era.supply.id}}">add</a>]
+		</h2>
+	<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+			hx-target="#issues" hx-swap="outerHTML swap:1s">
+		<fieldset>
+			<input type="hidden" name="supply_id" value="{{snag.channel.era.supply.id}}"/>
+		</fieldset>
+	</form>
+
+	<div id="issues"></div>
+
 {% endblock %}

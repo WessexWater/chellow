@@ -26,6 +26,7 @@
 					<span title="Blank if the snag is ongoing (ie. if the finish date is 'ongoing' or if it finished less than 'Days Hidden' ago).">Days Since Finished</span>
 				</th>
 				<th>Duration</th>
+				<th>Issues</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -88,6 +89,29 @@
 						{% endif %}
 					</td>
 					<td>{{snag_group.duration}}</td>
+					<td>
+						{% set issue_bundles = snag_group.issue_bundles %}
+						{% if issue_bundles|length > 0 %}
+							<ul>
+								{% for issue_bundle in snag_group.issue_bundles %}
+									{% set issue = issue_bundle.issue %}
+									<li>
+									
+										{% if issue.contract.market_role.code == 'X' %}
+											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% elif issue.contract.market_role.code == 'C' %}
+											<a href="/e/dc_issues/{{issue.id}}">DC:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% else %}
+											<a href="/e/mop_issues/{{issue.id}}">MOP:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

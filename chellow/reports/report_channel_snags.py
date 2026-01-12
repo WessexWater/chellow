@@ -13,10 +13,12 @@ from sqlalchemy.sql.expression import false, select, true
 from werkzeug.exceptions import BadRequest
 
 from chellow.dloads import open_file
+from chellow.e.issues import make_issue_bundles
 from chellow.models import (
     Channel,
     Contract,
     Era,
+    Issue,
     Party,
     RSession,
     Site,
@@ -122,6 +124,13 @@ def _make_rows(
             if limit is not None and len(snag_groups) > limit:
                 break
 
+            issues = sess.scalars(
+                select(Issue)
+                .where(Issue.properties["supply_ids"].contains([supply.id]))
+                .order_by(Issue.date_created)
+            )
+            issue_bundles = make_issue_bundles(sess, issues)
+
             snag_group = {
                 "snags": [],
                 "site": site,
@@ -143,6 +152,7 @@ def _make_rows(
                 "is_ignored": snag.is_ignored,
                 "days_since_finished": age_of_snag,
                 "duration": duration.days,
+                "issue_bundles": issue_bundles,
             }
             snag_groups.append(snag_group)
         snag_group["snags"].append(snag)

@@ -116,8 +116,11 @@
 								{% if issue.contract.market_role.code == 'X' %}
 									<a href="/e/supplier_issues/{{issue.id}}">Supplier:
 										{{issue.id}} {{issue.properties['subject']}}</a>
-								{% else %}
+								{% elif issue.contract.market_role.code == 'H' %}
 									<a href="/e/dc_issues/{{issue.id}}">DC:
+										{{issue.id}} {{issue.properties['subject']}}</a>
+								{% else %}
+									<a href="/e/mop_issues/{{issue.id}}">MOP:
 										{{issue.id}} {{issue.properties['subject']}}</a>
 								{% endif %}
 							</li>
