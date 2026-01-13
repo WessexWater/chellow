@@ -47,6 +47,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lcc
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
+from chellow.e.glossary import glossary_intro, glossary_terms
 from chellow.e.issues import make_issue_bundle, make_issue_bundles
 from chellow.models import (
     Batch,
@@ -729,9 +730,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -2594,6 +2595,13 @@ def era_supplier_bill_add_post(era_id):
         )
 
 
+@e.route("/glossary")
+def glossary_get():
+    return render_template(
+        "glossary.html", glossary_intro=glossary_intro, glossary_terms=glossary_terms
+    )
+
+
 @e.route("/generator_types")
 def generator_types_get():
     generator_types = g.sess.query(GeneratorType).order_by(GeneratorType.code)
@@ -3154,9 +3162,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5763,9 +5771,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
