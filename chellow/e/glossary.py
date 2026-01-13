@@ -26,9 +26,9 @@ glossary_terms = {
     "See 'import'.",
     "exp": "Same as 'export'",
     "displaced": "Electricity that's comes from generation and is used on site. "
-    "It's calculated as Displaced = imp-gen - exp-grid - exp-gen",
-    "used": "The amount of electricity used on a site. The formula is Used = "
-    "imp-grid + imp-gen - exp-grid - exp-gen",
+    "It's calculated as displaced-kwh = imp-gen-kwh - exp-grid-kwh - exp-gen-kwh",
+    "used": "The amount of electricity used on a site. The formula is used-kwh = "
+    "imp-grid-kwh + imp-gen-kwh - exp-grid-kwh - exp-gen-kwh",
     "net-gbp": "The cost net of VAT.",
     "vat-gbp": "The VAT amount.",
     "gross-gbp": "The total of net + VAT",
