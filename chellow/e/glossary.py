@@ -81,6 +81,7 @@ glossary_terms = {
     "agreement.",
     "kva": "The amount of apparent power (kVA).",
     "kw": "The amount of usable power (kW).",
+    "kwh": "The amount of usable energy (kWh).",
     "kvar": "The amount of reactive power (kVAr).",
     "laf": "Loss adjustment multiplier. The losses going through the distribution "
     "network.",
