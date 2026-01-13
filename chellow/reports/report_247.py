@@ -17,7 +17,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.dloads import open_file
 from chellow.e.computer import contract_func, forecast_date
-from chellow.e.glossary import glossary_intro, glossary_terms
+from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
 from chellow.e.scenario import make_calcs, make_site_deltas, scenario_fill_cache
 from chellow.models import (
     Bill,
@@ -69,9 +69,15 @@ def write_spreadsheet(
         sheet.append_table("Site Level", site_rows)
         sheet.append_table("Era Level", era_rows)
         sheet.append_table("Normal Reads", read_rows)
-        metadata_rows = [[glossary_intro], [], ["Term", "Description"]]
+        metadata_rows = [[glossary_intro], [], ["Term", "Category", "Description"]]
         metadata_rows.extend(
-            [[term, desc] for term, desc in sorted(glossary_terms.items())]
+            [[term, "general", desc] for term, desc in sorted(glossary_terms.items())]
+        )
+        metadata_rows.extend(
+            [
+                [term, "elements", desc]
+                for term, desc in sorted(glossary_elements.items())
+            ]
         )
         sheet.append_table("Metadata", metadata_rows)
 

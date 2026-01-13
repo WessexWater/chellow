@@ -12,7 +12,7 @@
 
 	<p>{{glossary_intro}}</p>
 
-	<table>
+	<table class="sticky">
 		<thead>
 			<tr>
 				<th>Term</th>
@@ -21,6 +21,15 @@
 		</thead>
 		<tbody>
 			{% for term, desc in glossary_terms|dictsort %}
+				<tr>
+					<td>{{term}}</td>
+					<td>{{desc}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+		<tbody>
+			<tr><th colspan="2">Tariff Elements</th></tr>
+			{% for term, desc in glossary_elements|dictsort %}
 				<tr>
 					<td>{{term}}</td>
 					<td>{{desc}}</td>

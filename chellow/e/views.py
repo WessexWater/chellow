@@ -47,7 +47,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lcc
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
-from chellow.e.glossary import glossary_intro, glossary_terms
+from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
 from chellow.e.issues import make_issue_bundle, make_issue_bundles
 from chellow.models import (
     Batch,
@@ -2598,7 +2598,10 @@ def era_supplier_bill_add_post(era_id):
 @e.route("/glossary")
 def glossary_get():
     return render_template(
-        "glossary.html", glossary_intro=glossary_intro, glossary_terms=glossary_terms
+        "glossary.html",
+        glossary_intro=glossary_intro,
+        glossary_terms=glossary_terms,
+        glossary_elements=glossary_elements,
     )
 
 
@@ -6610,13 +6613,14 @@ def supplier_contract_add_get():
 @e.route("/supplier_contracts/<int:contract_id>")
 def supplier_contract_get(contract_id):
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    rs_example_func = contract_func({}, contract, "rate_script_example")
+    rs_example = None if rs_example_func is None else rs_example_func()
     rate_scripts = (
         g.sess.query(RateScript)
         .filter(RateScript.contract == contract)
         .order_by(RateScript.start_date.desc())
         .all()
     )
-
     now = Datetime.utcnow() - relativedelta(months=1)
     month_start = Datetime(now.year, now.month, 1)
     month_finish = month_start + relativedelta(months=1) - HH
@@ -6627,6 +6631,7 @@ def supplier_contract_get(contract_id):
         month_start=month_start,
         month_finish=month_finish,
         rate_scripts=rate_scripts,
+        rate_script_example=rs_example,
     )
 
 

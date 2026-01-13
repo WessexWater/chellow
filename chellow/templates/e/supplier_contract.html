@@ -111,6 +111,11 @@
 		</fieldset>
 	</form>
 
+	{% if rate_script_example %}
+			<h2>Elements</h2>
+			<pre>{{rate_script_example}}</pre>
+	{% endif %}
+
 	<h2>Script</h2>	
 
 	<pre>{{contract.charge_script}}</pre>

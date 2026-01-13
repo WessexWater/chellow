@@ -72,10 +72,7 @@ glossary_terms = {
     "or a sub-meter).",
     "comm": "The comms type",
     "cop": "Code of practice for the meter. Describes the capabilities of the meter.",
-    "ccl": "The tariff element Climate Change Levy.",
     "msp": "Meter supply point. The electricity consumption measured at the meter",
-    "cm": "Tariff element Capacity Market",
-    "bsuos": "Tariff element Balancing System Use of System",
     "standing": "Tariff element that's a rolled up per-day charge",
     "availability": "The supply capacity agreed with the DNO in a connection "
     "agreement.",
@@ -91,31 +88,37 @@ glossary_terms = {
     "of electricity that has to be generated to meeting The demand at the meter, "
     "taking into account transmission and distribution losses. It's given for "
     "each half-hour by nbp-kwh = tlm * gsp-kwh.",
-    "duos": "Distribution Use of System. Tariff charges from the DNO.",
-    "excess-availability": "This is the availability used above the agreed supply "
-    "capacity.",
-    "duos-fixed": "The part of duos that's per-day.",
-    "duos-red": "The highest cost period that's charged per-kWh.",
-    "duos-amber": "The medium DUoS cost period that's charged per-kwh.",
-    "duos-green": "The lowest DUoS cost period that's charged per-kwh.",
-    "duos-reactive": "The DUoS charge per-kvarh.",
     "kvarh": "The amount of reactive energy (kVArh)",
     "tlm": "Transmission loss multiplier. Used to calculate the losses between the "
     "notional balancing point and the grid supply point. Depends on the half-hour and "
     "the gsp-group.",
-    "aahedc": "Tariff element Assistance for Areas with High Electricity Distribution "
-    "Costs",
-    "ro": "Tariff element Renewables Obligation",
-    "cfd": "Tariff element Contracts for Difference",
-    "triad": "Tariff element NESO charge based on kW at three triad times",
-    "tnuos": "Tariff element for transmission costs. A per-day tariff based on bands "
+}
+
+glossary_elements = {
+    "ccl": "Climate Change Levy.",
+    "cm": "Capacity Market",
+    "bsuos": "Balancing System Use of System",
+    "standing": "Rolled up per-day charge",
+    "duos": "Distribution Use of System. Tariff charges from the DNO.",
+    "excess-availability": "This is the availability used above the agreed supply "
+    "capacity.",
+    "duos-fixed": "The part of DUoS that's per-day.",
+    "duos-red": "The highest cost period that's charged per-kWh.",
+    "duos-amber": "The medium DUoS cost period that's charged per-kwh.",
+    "duos-green": "The lowest DUoS cost period that's charged per-kwh.",
+    "duos-reactive": "The DUoS charge per-kvarh.",
+    "aahedc": "Assistance for Areas with High Electricity Distribution Costs",
+    "ro": "Renewables Obligation",
+    "cfd": "Contracts for Difference",
+    "triad": "NESO charge based on kW at three triad times",
+    "tnuos": "Transmission costs. A per-day tariff based on bands "
     "derived from LLFCs.",
-    "rab": "Tariff element Regulated Asset Base. The nuclear power subsidy.",
+    "rab": "Regulated Asset Base. The nuclear power subsidy.",
     "duos-black": "DUoS tariff element for unmetered supplies.",
     "duos-yellow": "DUoS tariff element for unmetered supplies.",
     "obligation": "The bigger part of some tariffs, as opposed to 'operational'. "
     "Eg. cm-obligation-gbp",
     "operational": "The smaller part of some tariffs, as opposed to 'obligation'. "
     "Eg. cm-operational-gbp",
-    "elexon": "Tariff element for funding Elexon, charged at nbp-kwh",
+    "elexon": "For funding Elexon, charged at nbp-kwh",
 }
