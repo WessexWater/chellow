@@ -75,7 +75,7 @@ glossary_terms = {
     "ccl": "The tariff element Climate Change Levy.",
     "msp": "Meter supply point. The electricity consumption measured at the meter",
     "cm": "Tariff element Capacity Market",
-    "bsuso": "Tariff element Balancing System Use of System",
+    "bsuos": "Tariff element Balancing System Use of System",
     "standing": "Tariff element that's a rolled up per-day charge",
     "availability": "The supply capacity agreed with the DNO in a connection "
     "agreement.",
@@ -109,7 +109,7 @@ glossary_terms = {
     "triad": "Tariff element NESO charge based on kW at three triad times",
     "tnuos": "Tariff element for transmission costs. A per-day tariff based on bands "
     "derived from LLFCs.",
-    "rab": "Tariff element Rgulated Asset Base. The nuclear power subsidy.",
+    "rab": "Tariff element Regulated Asset Base. The nuclear power subsidy.",
     "duos-black": "DUoS tariff element for unmetered supplies.",
     "duos-yellow": "DUoS tariff element for unmetered supplies.",
     "obligation": "The bigger part of some tariffs, as opposed to 'operational'. "
