@@ -51,9 +51,9 @@
 		</fieldset>
 	</form>
 
-	<form>
-		<fieldset hx-delete="/e/dc_batches/{{batch.id}}/edit"
+	<form hx-delete="/e/dc_batches/{{batch.id}}/edit"
 		 	  hx-confirm="Are you sure you want to delete this batch and all its bills?">
+		<fieldset>
 			<legend>Delete this batch</legend>
 			<input type="submit" name="delete" value="Delete">
 		</fieldset>
