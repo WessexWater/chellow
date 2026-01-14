@@ -682,9 +682,19 @@ def dc_batch_edit_post(batch_id):
 def dc_batch_upload_file_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
     parser_names = chellow.e.bill_importer.find_parser_names()
+    bf = g.sess.scalars(
+        select(BatchFile)
+        .join(Batch)
+        .where(Batch.contract == batch.contract)
+        .order_by(BatchFile.upload_timestamp.desc())
+    ).first()
+    default_parser_name = bf.parser_name if bf is not None else None
 
     return render_template(
-        "dc_batch_upload_file.html", batch=batch, parser_names=parser_names
+        "dc_batch_upload_file.html",
+        batch=batch,
+        parser_names=parser_names,
+        default_parser_name=default_parser_name,
     )
 
 

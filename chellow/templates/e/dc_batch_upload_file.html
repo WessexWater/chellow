@@ -7,9 +7,8 @@
 
 {% block nav %}
 	<a href="/e/dc_contracts">DC Contracts</a> &raquo; 
-	<a href="/e/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a>
- 	&raquo; 
-	<a href="/e/dc_batches?dc_contract_id={{batch.contract.id}}">Batches</a> &raquo;
+	<a href="/e/dc_contracts/{{batch.contract.id}}">{{batch.contract.name}}</a> &raquo; 
+	<a href="/e/dc_contracts/{{batch.contract.id}}/batches">Batches</a> &raquo;
 	<a href="/e/dc_batches/{{batch.id}}">{{batch.reference}}</a> &raquo; 
  	Upload Bill File
 {% endblock %}
@@ -24,7 +23,8 @@
 			<label>Parser</label>
 			<select name="parser_name">
 				{% for parser_name in parser_names  %}
-					{{input_option('bill_parser_name', parser_name, parser_name)}}
+					{{input_option('bill_parser_name', parser_name, parser_name,
+						initial=default_parser_name)}}
 				{% endfor %}
 			</select>
 			<input type="submit" value="Upload">
