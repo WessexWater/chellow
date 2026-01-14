@@ -1,6 +1,7 @@
 from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 
+from dateutil.parser import parse
 from dateutil.relativedelta import relativedelta
 
 from openpyxl import load_workbook
@@ -9,7 +10,7 @@ from openpyxl.utils import get_column_letter
 from werkzeug.exceptions import BadRequest
 
 from chellow.models import Session
-from chellow.utils import parse_mpan_core, to_ct, to_utc
+from chellow.utils import ct_datetime, parse_mpan_core, to_ct, to_utc
 
 COPS = ("2", "3", "5", "10")
 
@@ -45,12 +46,19 @@ def make_column_lookup(sheet):
     return column_lookup
 
 
+def parse_ct_date(date_str):
+    dt = parse(date_str, dayfirst=True)
+    return ct_datetime(dt.year, dt.month, dt.day, dt.hour, dt.minute)
+
+
 def get_ct_date(sheet, col, row):
     cell = get_cell(sheet, col, row)
     val = cell.value
-    if not isinstance(val, Datetime):
-        raise BadRequest(f"Problem reading {val} as a timestamp at {cell.coordinate}.")
-    return to_ct(val)
+    if isinstance(val, Datetime):
+        dt = val
+    elif isinstance(val, str):
+        dt = parse_ct_date(val)
+    return to_ct(dt)
 
 
 def get_start_date(sheet, col, row):
@@ -253,9 +261,7 @@ class Parser:
             with Session() as sess:
                 bills = []
                 issue_date_str = get_str(self.sheet, "A", 7)
-                issue_date = to_utc(
-                    to_ct(Datetime.strptime(issue_date_str[6:-3], "%d/%m/%Y %H:%M"))
-                )
+                issue_date = to_utc(parse_ct_date(issue_date_str[6:]))
                 column_lookup = make_column_lookup(self.sheet)
 
                 for row in range(12, len(self.sheet["A"]) + 1):
