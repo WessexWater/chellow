@@ -102,6 +102,12 @@ ELEMENT_MAP = {
             "138837": ("fit", "rate", "kwh"),
         },
     },
+    "NRA": {
+        "NRAB": {
+            "188466": ("rab-operational", "rate", "kwh"),
+            "180397": ("rab-obligation", "rate", "kwh"),
+        },
+    },
     "NRG": {
         "HH0002": {
             "033667": ("management", "rate", "kwh"),
