@@ -24,14 +24,14 @@ def hh(data_source):
                 "record"
             ]["Interim_Levy_Rate_GBP_MWh"]
             if rate_str == "":
-                base_rate_dec = Decimal("0")
+                ob_rate_dec = Decimal("0")
             else:
-                base_rate_dec = Decimal(rate_str) / Decimal(1000)
+                ob_rate_dec = Decimal(rate_str) / Decimal(1000)
 
-            base_rate = float(base_rate_dec)
+            ob_rate = float(ob_rate_dec)
 
             h["rab"] = rab_cache[h_start] = {
-                "interim": base_rate,
+                "obligation": ob_rate,
             }
 
 
