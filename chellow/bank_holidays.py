@@ -2,16 +2,16 @@ import atexit
 import collections
 import threading
 import traceback
-
-from dateutil.relativedelta import relativedelta
+from datetime import timedelta
 
 import requests
 
-from zish import loads
+from sqlalchemy import select
+
+from werkzeug.exceptions import BadRequest
 
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
-    HH,
     ct_datetime,
     hh_format,
     to_utc,
@@ -20,11 +20,16 @@ from chellow.utils import (
     utc_datetime_parse,
 )
 
+GLOBAL_ALERT = """There's a problem with the <a
+href="/bank_holidays">Bank Holiday importer</a>."""
+LAST_RUN_KEY = "last_run"
+BH_STATE_KEY = "bh"
+DELAY_DAYS = 1
 
-bh_importer = None
+importer = None
 
 
-def _run(log_f, sess):
+def run_import(sess, log_f, set_progress):
     log_f("Starting to check bank holidays")
     contract_name = "bank_holidays"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -56,32 +61,15 @@ def _run(log_f, sess):
 
         for year in sorted(hols.keys()):
             year_start = utc_datetime(year, 1, 1)
-            year_finish = year_start + relativedelta(years=1) - HH
-            rs = (
-                sess.query(RateScript)
-                .filter(
+            rs = sess.scalars(
+                select(RateScript).where(
                     RateScript.contract == contract,
                     RateScript.start_date == year_start,
                 )
-                .first()
-            )
+            ).one_or_none()
             if rs is None:
                 log_f(f"Adding a new rate script starting at {hh_format(year_start)}.")
 
-                latest_rs = (
-                    sess.query(RateScript)
-                    .filter(RateScript.contract == contract)
-                    .order_by(RateScript.start_date.desc())
-                    .first()
-                )
-
-                contract.update_rate_script(
-                    sess,
-                    latest_rs,
-                    latest_rs.start_date,
-                    year_finish,
-                    loads(latest_rs.script),
-                )
                 rs = contract.insert_rate_script(sess, year_start, {})
 
             script = {"bank_holidays": [v.strftime("%Y-%m-%d") for v in hols[year]]}
@@ -101,10 +89,9 @@ class BankHolidayImporter(threading.Thread):
         super(BankHolidayImporter, self).__init__(name="Bank Holiday Importer")
         self.lock = threading.RLock()
         self.messages = collections.deque(maxlen=100)
+        self.progress = ""
         self.stopped = threading.Event()
         self.going = threading.Event()
-        self.PROXY_HOST_KEY = "proxy.host"
-        self.PROXY_PORT_KEY = "proxy.port"
         self.global_alert = None
 
     def stop(self):
@@ -124,40 +111,75 @@ class BankHolidayImporter(threading.Thread):
 
     def log(self, message):
         self.messages.appendleft(
-            utc_datetime_now().strftime("%Y-%m-%d %H:%M:%S") + " - " + message
+            f"{utc_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
         )
 
-    def run(self):
-        while not self.stopped.isSet():
-            if self.lock.acquire(False):
-                try:
-                    with Session() as sess:
-                        self.global_alert = None
-                        _run(self.log, sess)
-                except BaseException:
-                    self.log(f"Outer problem {traceback.format_exc()}")
-                    self.global_alert = (
-                        "There's a problem with the Bank Holiday importer"
-                    )
-                finally:
-                    self.lock.release()
-                    self.log("Finished checking bank holidays.")
+    def set_progress(self, progress):
+        self.progress = progress
 
-            self.going.wait(24 * 60 * 60)
-            self.going.clear()
+    def run(self):
+        while not self.stopped.is_set():
+            with Session() as sess:
+                try:
+                    config = Contract.get_non_core_by_name(sess, "configuration")
+                    state = config.make_state()
+                    bh_state = state.get(BH_STATE_KEY, {})
+                except BaseException as e:
+                    msg = f"{e.description} " if isinstance(e, BadRequest) else ""
+                    self.log(f"{msg}{traceback.format_exc()}")
+                    self.global_alert = GLOBAL_ALERT
+                    sess.rollback()
+
+            last_run = bh_state.get(LAST_RUN_KEY)
+            if last_run is None or utc_datetime_now() - last_run > timedelta(
+                days=DELAY_DAYS
+            ):
+                self.going.set()
+
+            if self.going.is_set():
+                self.global_alert = None
+                with Session() as sess:
+                    try:
+                        config = Contract.get_non_core_by_name(sess, "configuration")
+                        state = config.make_state()
+                        try:
+                            bh_state = state[BH_STATE_KEY]
+                        except KeyError:
+                            bh_state = state[BH_STATE_KEY] = {}
+
+                        bh_state[LAST_RUN_KEY] = utc_datetime_now()
+                        config.update_state(state)
+                        sess.commit()
+                        run_import(sess, self.log, self.set_progress)
+                    except BaseException as e:
+                        msg = f"{e.description} " if isinstance(e, BadRequest) else ""
+                        self.log(f"{msg}{traceback.format_exc()}")
+                        self.global_alert = GLOBAL_ALERT
+                        sess.rollback()
+                    finally:
+                        self.going.clear()
+                        self.log("Finished checking bank holidays.")
+
+            else:
+                self.log(
+                    f"The importer was last run at {hh_format(last_run)}. There will "
+                    f"be another import when {DELAY_DAYS} days have elapsed since the "
+                    f"last run."
+                )
+                self.going.wait(60 * 60)
 
 
 def get_importer():
-    return bh_importer
+    return importer
 
 
 def startup():
-    global bh_importer
-    bh_importer = BankHolidayImporter()
-    bh_importer.start()
+    global importer
+    importer = BankHolidayImporter()
+    importer.start()
 
 
 @atexit.register
 def shutdown():
-    if bh_importer is not None:
-        bh_importer.stop()
+    if importer is not None:
+        importer.stop()

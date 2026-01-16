@@ -154,6 +154,20 @@ def requires_editor(f):
     return decorated_function
 
 
+@home.route("/bank_holidays")
+def bank_holidays_get():
+    importer = chellow.bank_holidays.importer
+
+    return render_template("bank_holidays.html", importer=importer)
+
+
+@home.route("/bank_holidays", methods=["POST"])
+def bank_holidays_post():
+    importer = chellow.bank_holidays.importer
+    importer.go()
+    return redirect("/bank_holidays", 303)
+
+
 @home.route("/configuration", methods=["GET"])
 def configuration():
     config = Contract.get_non_core_by_name(g.sess, "configuration")
