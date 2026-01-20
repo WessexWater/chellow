@@ -395,13 +395,9 @@ def displaced_virtual_bill(ds):
 
     sess.commit()
 
-    scenario_hh = {
-        "CI017": {
-            "generated": """
+    scenario_hh = {"CI017": {"generated": """
                 2009-08-01 00:00, 40
-                2009-08-15 00:00, 40"""
-        }
-    }
+                2009-08-15 00:00, 40"""}}
 
     era_maps = {
         utc_datetime(2000, 8, 1): {

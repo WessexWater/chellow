@@ -11,7 +11,6 @@ from chellow.edi_lib import (
 )
 from chellow.utils import HH, parse_mpan_core
 
-
 read_type_map = {
     "00": "N",
     "09": "N3",

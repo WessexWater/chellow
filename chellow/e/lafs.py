@@ -19,15 +19,13 @@ def _process(sess, log, set_progress, file_like):
     name_list = zip_file.namelist()
     if len(name_list) != 1:
         raise BadRequest("The zip archive must contain exactly one file.")
-    stmt = text(
-        """
+    stmt = text("""
 INSERT INTO laf (llfc_id, timestamp, value) VALUES
 (unnest(CAST(:llfc_ids AS INTEGER[])), unnest(CAST(:timestamps AS TIMESTAMPTZ[])),
 unnest(CAST(:values AS NUMERIC[])))
 ON CONFLICT ON CONSTRAINT laf_llfc_id_timestamp_key
 DO UPDATE SET (llfc_id, timestamp, value) =
-(EXCLUDED.llfc_id, EXCLUDED.timestamp, EXCLUDED.value)"""
-    )
+(EXCLUDED.llfc_id, EXCLUDED.timestamp, EXCLUDED.value)""")
     fname = name_list[0]
     csv_file = StringIO(zip_file.read(fname).decode("utf-8"))
     try:

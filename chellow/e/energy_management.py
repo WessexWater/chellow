@@ -15,7 +15,6 @@ from chellow.e.computer import (
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply
 from chellow.utils import c_months_u, ct_datetime_now, hh_format, hh_max, hh_min
 
-
 CATS = ("imp_grid", "exp_grid", "used", "displaced")
 QUANTS = (
     "kwh",

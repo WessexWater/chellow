@@ -14,7 +14,6 @@ from chellow.edi_lib import (
 from chellow.models import Era, Session
 from chellow.utils import HH, ct_datetime, parse_mpan_core, to_utc
 
-
 read_type_map = {
     "00": "N",
     "09": "N3",

@@ -36,7 +36,6 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-
 processes = defaultdict(list)
 tasks = {}
 

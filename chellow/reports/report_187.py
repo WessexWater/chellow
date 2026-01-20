@@ -103,8 +103,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
                 writer = csv.writer(csv_out)
                 data = iter(
                     sess.execute(
-                        text(
-                            """
+                        text("""
     select hh_base.start_date,
         max(imp_active.value), max(imp_active.status),
         max(imp_active.last_modified),
@@ -147,8 +146,7 @@ def content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id):
         and hh_base.start_date between :start_date and :finish_date
     group by hh_base.start_date
     order by hh_base.start_date
-        """
-                        ),
+        """),
                         params={
                             "supply_id": supply.id,
                             "start_date": start_date,

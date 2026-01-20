@@ -27,7 +27,6 @@ from chellow.models import (
 )
 from chellow.utils import csv_make_val, req_checkbox, utc_datetime_now
 
-
 FNAME = "ecoes_comparison"
 
 

@@ -8,7 +8,6 @@ from chellow.utils import (
     to_utc,
 )
 
-
 BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 

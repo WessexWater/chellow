@@ -16,7 +16,6 @@ from chellow.models import Contract, RateScript
 from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, hh_range, to_ct, to_utc
 
-
 RUNS = ["DF", "RF", "R3", "R2", "R1", "SF", "II"]
 
 

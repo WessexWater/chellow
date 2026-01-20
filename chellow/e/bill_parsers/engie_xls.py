@@ -12,7 +12,6 @@ from xlrd import open_workbook, xldate_as_tuple
 
 from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
-
 ELEM_MAP = {
     None: {
         None: None,

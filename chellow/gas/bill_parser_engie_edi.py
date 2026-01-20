@@ -9,7 +9,6 @@ from werkzeug.exceptions import BadRequest
 from chellow.edi_lib import parse_edi, to_date, to_decimal
 from chellow.utils import HH, to_ct, to_utc
 
-
 READ_TYPE_MAP = {"00": "A", "01": "E"}
 
 TCOD_MAP = {

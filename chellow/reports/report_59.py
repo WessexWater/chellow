@@ -51,7 +51,6 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-
 CATEGORY_ORDER = {None: 0, "unmetered": 1, "nhh": 2, "amr": 3, "hh": 4}
 
 

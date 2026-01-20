@@ -13,7 +13,6 @@ from chellow.models import (
 )
 from chellow.utils import ct_datetime_now
 
-
 tester = None
 
 

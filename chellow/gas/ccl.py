@@ -9,7 +9,6 @@ from chellow.models import GContract, GRateScript
 from chellow.rate_server import download
 from chellow.utils import ct_datetime, hh_format, to_utc
 
-
 DAILY_THRESHOLD = 145
 
 

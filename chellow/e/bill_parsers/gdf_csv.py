@@ -9,7 +9,6 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.utils import HH, parse_mpan_core, to_utc, validate_hh_start
 
-
 col_map = {
     "Gsp Data": "sum-gsp-kwh",
     "Levy Exempt Energy Units": "lec-kwh",

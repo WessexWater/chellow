@@ -11,7 +11,6 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Session, Supply
 from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
-
 READ_TYPE_MAP = {
     "A": "A",
     "C": "C",

@@ -45,7 +45,6 @@ from chellow.models import (
 from chellow.proxy import MsProxy
 from chellow.utils import HH, ct_datetime, to_ct, utc_datetime_now
 
-
 TEMPLATE_FORMATS = {
     "year": "%Y",
     "month": "%m",
@@ -76,6 +75,7 @@ def get_importer_modules():
 
 def create_app(testing=False, instance_path=None):
     app = Flask("chellow", instance_relative_config=True, instance_path=instance_path)
+    app.config["RESTX_VALIDATE"] = True
     app.wsgi_app = MsProxy(app.wsgi_app)
     app.secret_key = os.urandom(24)
     start_sqlalchemy()

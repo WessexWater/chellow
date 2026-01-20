@@ -12,7 +12,6 @@ from chellow.dloads import open_file
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply, User
 from chellow.utils import req_checkbox, req_date, req_int, write_row
 
-
 TYPE_ORDER = {"hh": 0, "amr": 1, "nhh": 2, "unmetered": 3}
 
 

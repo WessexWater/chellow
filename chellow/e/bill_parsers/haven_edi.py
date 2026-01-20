@@ -10,7 +10,6 @@ from chellow.edi_lib import parse_edi, to_date, to_gbp
 from chellow.models import Session, Ssc, Supply
 from chellow.utils import HH, parse_mpan_core, to_ct, to_utc
 
-
 READ_TYPE_MAP = {
     "00": "N",
     "01": "Q",

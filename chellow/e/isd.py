@@ -20,7 +20,6 @@ from chellow.models import (
 )
 from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 
-
 importer = None
 
 # https://bscdocs.elexon.co.uk/guidance-notes/isd-data-store-technical-specification

@@ -7,7 +7,6 @@ from werkzeug.exceptions import BadRequest
 from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
 from chellow.utils import HH, parse_mpan_core
 
-
 read_type_map = {
     "00": "N",
     "09": "N3",

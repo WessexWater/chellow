@@ -230,8 +230,7 @@ def _process_era(caches, sess, era_id, date, year_start):
         month_mds = tuple(
             md[0] * 2
             for md in sess.execute(
-                text(
-                    """
+                text("""
 
 select max(hh_datum.value) as md
 from hh_datum join channel on (hh_datum.channel_id = channel.id)
@@ -244,8 +243,7 @@ group by extract(month from (hh_datum.start_date at time zone 'utc'))
 order by md desc
 limit 3
 
-"""
-                ),
+"""),
                 params=params,
             )
         )

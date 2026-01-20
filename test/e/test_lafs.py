@@ -29,14 +29,12 @@ def test_laf_days(mocker, sess):
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     dno.insert_llfc(sess, "500", "PC 5-8 & HH HV", voltage_level, False, True, vf, None)
     sess.commit()
-    csv_file = StringIO(
-        """ZHD||D0265001|R|IPNL|G|CAPG|20210914142620||||OPER
+    csv_file = StringIO("""ZHD||D0265001|R|IPNL|G|CAPG|20210914142620||||OPER
 DIS|IPNL
 LLF|500
 SDT|20210922
 SPL|1|1.074
-ZPT|40672767|423780412"""
-    )
+ZPT|40672767|423780412""")
     csv_dt = utc_datetime(2021, 9, 1)
     log = mocker.Mock()
     set_progress = mocker.Mock()

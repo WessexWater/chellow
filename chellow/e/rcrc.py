@@ -18,7 +18,6 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
 
 

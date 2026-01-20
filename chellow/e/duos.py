@@ -15,7 +15,6 @@ from chellow.utils import (
     utc_datetime,
 )
 
-
 BANDS = ("black", "super-red", "red", "amber", "yellow", "green")
 
 KEYS = {

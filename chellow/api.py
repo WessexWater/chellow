@@ -1,11 +1,10 @@
+from dateutil.parser import isoparse
 from flask import g
-
 from flask_restx import Api, Resource, fields, inputs, reqparse
 
-from sqlalchemy import null, select
+from sqlalchemy import null, or_, select
 
-from chellow.models import Channel, Era, HhDatum, Site
-
+from chellow.models import Channel, Era, HhDatum, Site, Source, Supply
 
 api = Api(
     version="1.0",
@@ -16,6 +15,32 @@ api = Api(
 )
 
 ns = api.namespace("v1", path="/api/v1/")
+
+generator_type_model = ns.model(
+    "GeneratorType",
+    {
+        "id": fields.Integer(example="884"),
+        "code": fields.String(example="gen"),
+        "description": fields.String(example=""),
+    },
+)
+
+gsp_group_model = ns.model(
+    "GspGroup",
+    {
+        "id": fields.Integer(example="884"),
+        "code": fields.String(example="gen"),
+        "name": fields.String(example=""),
+    },
+)
+
+dno_group_model = ns.model(
+    "Dno",
+    {
+        "id": fields.Integer(example="884"),
+        "dno_code": fields.String(example="22"),
+    },
+)
 
 sites__model = ns.model(
     "Site",
@@ -57,6 +82,14 @@ site__model = ns.model(
     },
 )
 
+source_model = ns.model(
+    "Source",
+    {
+        "id": fields.Integer(example="884"),
+        "code": fields.String(example="GGJ23"),
+        "name": fields.String(example="Trowbridge Waterworks"),
+    },
+)
 hh_data_model = ns.model(
     "HhData",
     {
@@ -243,13 +276,23 @@ era__mop_contract__model = ns.model(
     },
 )
 
+hh_datum_model = ns.model(
+    "HH Datum",
+    {
+        "id": fields.Integer(example="871"),
+        "start_date": fields.DateTime(example="2019-05-18T15:17:00+00:00"),
+        "value": fields.String(example="0.01"),
+        "last_modified": fields.DateTime(example="2019-05-18T15:00:00+00:00"),
+    },
+)
 
-era__channel__model = ns.model(
+channel_model = ns.model(
     "Channel",
     {
         "id": fields.Integer(example="871"),
         "imp_related": fields.Boolean(example="true"),
         "channel_type": fields.String(example="ACTIVE"),
+        "hh_data": fields.List(fields.Nested(hh_datum_model)),
     },
 )
 
@@ -283,19 +326,7 @@ era__model = ns.model(
         "exp_supplier_contract": fields.Nested(era__supplier_contract__model),
         "exp_supplier_account": fields.String(example="h8892"),
         "exp_sc": fields.Integer(example="900"),
-        "channels": fields.List(fields.Nested(era__channel__model)),
-    },
-)
-
-
-channel__hh_datum__model = ns.model(
-    "HH Datum",
-    {
-        "id": fields.Integer(example="871"),
-        "channel_type": fields.String(example="ACTIVE"),
-        "start_date": fields.DateTime(example="2019-05-18T15:17:00+00:00"),
-        "value": fields.String(example="0.01"),
-        "last_modified_date": fields.DateTime(example="2019-05-18T15:17:00+00:00"),
+        "channels": fields.List(fields.Nested(channel_model)),
     },
 )
 
@@ -306,7 +337,7 @@ channel__model = ns.model(
         "id": fields.Integer(example="871"),
         "imp_related": fields.Boolean(example="true"),
         "channel_type": fields.String(example="ACTIVE"),
-        "hh_data": fields.List(fields.Nested(channel__hh_datum__model)),
+        "hh_data": fields.List(fields.Nested(hh_datum_model)),
     },
 )
 
@@ -324,19 +355,6 @@ class SiteResource(Resource):
     @api.marshal_with(site__model)
     def get(self, site_id):
         return Site.get_by_id(g.sess, site_id)
-
-
-channel_get_parser = reqparse.RequestParser()
-channel_get_parser.add_argument(
-    "from",
-    type=inputs.datetime_from_iso8601,
-    help="Beginning of date range for half-hourly data.",
-)
-channel_get_parser.add_argument(
-    "to",
-    type=inputs.datetime_from_iso8601,
-    help="End of date range for half-hourly data.",
-)
 
 
 @ns.route("/eras/<int:era_id>")
@@ -359,13 +377,23 @@ channel_get_parser.add_argument(
 )
 
 
+channel_get_model = api.model(
+    "ChannelGetModel",
+    {
+        "page": fields.Integer(required=True, description="Page number"),
+        "page_size": fields.Integer(required=False, default=50),
+    },
+)
+
+
 @ns.route("/channel/<int:channel_id>")
 @ns.param("from", "YYYY-mm-dd HH:MM")
 @ns.param("to", "YYYY-mm-dd HH:MM")
 class ChannelResource(Resource):
     @api.marshal_with(channel__model)
+    @ns.expect(channel_get_model)
     def get(self, channel_id):
-        args = channel_get_parser.parse_args()
+        data = ns.payload
         channel = Channel.get_by_id(g.sess, channel_id)
         channel_j = {
             "id": channel.id,
@@ -376,11 +404,229 @@ class ChannelResource(Resource):
         channel_j["hh_data"] = g.sess.execute(
             select(HhDatum).where(
                 HhDatum.channel == channel,
-                HhDatum.start_date >= args["from"],
-                HhDatum.start_date <= args["to"],
+                HhDatum.start_date >= data.start_date,
+                HhDatum.start_date <= data.finish_date,
             )
         ).all()
         return channel_j
+
+
+supply_model = ns.model(
+    "Supply",
+    {
+        "id": fields.Integer(example="712"),
+        "name": fields.String(example="hgeoiu"),
+        "source": fields.Nested(source_model),
+        "generator_type": fields.Nested(generator_type_model, required=False),
+        "gsp_group": fields.Nested(gsp_group_model),
+        "dno": fields.Nested(dno_group_model),
+        "eras": fields.List(fields.Nested(era__model)),
+    },
+)
+
+supplies_post_model = ns.model(
+    "SuppliesPostModel",
+    {
+        "start_date": fields.DateTime(
+            description="Start timestamp (ISO 8601 format)",
+            required=True,
+            example="2025-05-01T00:00:00Z",
+        ),
+        "finish_date": fields.DateTime(
+            required=True,
+            description="Finish timestamp (ISO 8601 format)",
+            example="2025-05-31T23:30:00Z",
+        ),
+        "source_code": fields.String(example="gen"),
+    },
+)
+
+
+@ns.route("/supplies")
+class SuppliesResource(Resource):
+    @api.marshal_list_with(supply_model)
+    @ns.expect(supplies_post_model)
+    def post(self):
+        data = ns.payload
+        start_date = isoparse(data["start_date"])
+        finish_date = isoparse(data["finish_date"])
+
+        supplies_j = []
+        supplies_q = (
+            select(Supply)
+            .join(Era)
+            .where(
+                Era.start_date <= finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            )
+            .distinct()
+        )
+        if "source_code" in data:
+            supplies_q = supplies_q.join(Source).where(
+                Source.code == data["source_code"]
+            )
+        for supply in g.sess.scalars(supplies_q):
+            eras_j = []
+            supply_j = {
+                "id": supply.id,
+                "name": supply.name,
+                "source": supply.source,
+                "generator_type": supply.generator_type,
+                "gsp_group": supply.gsp_group,
+                "dno": supply.dno,
+                "eras": eras_j,
+            }
+            supplies_j.append(supply_j)
+            for era in g.sess.scalars(
+                select(Era)
+                .where(
+                    Era.supply == supply,
+                    Era.start_date <= finish_date,
+                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
+                )
+                .order_by(Era.start_date)
+            ):
+                channels_j = []
+                era_j = {
+                    "id": era.id,
+                    "site_eras": era.site_eras,
+                    "start_date": era.start_date,
+                    "finish_date": era.finish_date,
+                    "mop_contract": era.mop_contract,
+                    "dc_contract": era.dc_contract,
+                    "msn": era.msn,
+                    "pc": era.pc,
+                    "mtc_participant": era.mtc_participant,
+                    "cop": era.cop,
+                    "ssc": era.ssc,
+                    "energisation_status": era.energisation_status,
+                    "imp_mpan_core": era.imp_mpan_core,
+                    "imp_llfc": era.imp_llfc,
+                    "imp_supplier_contract": era.imp_supplier_contract,
+                    "imp_supplier_account": era.imp_supplier_account,
+                    "imp_sc": era.imp_sc,
+                    "exp_mpan_core": era.exp_mpan_core,
+                    "exp_llfc": era.exp_llfc,
+                    "exp_supplier_contract": era.exp_supplier_contract,
+                    "exp_supplier_account": era.exp_supplier_account,
+                    "exp_sc": era.exp_sc,
+                    "channels": channels_j,
+                }
+                eras_j.append(era_j)
+                for channel in era.channels:
+
+                    channel_j = {
+                        "id": channel.id,
+                        "era_id": channel.era_id,
+                        "imp_related": channel.imp_related,
+                        "channel_type": channel.channel_type,
+                    }
+                    channels_j.append(channel_j)
+        return supplies_j
+
+
+supply_post_model = ns.model(
+    "SupplyPostModel",
+    {
+        "start_date": fields.DateTime(
+            description="Start timestamp (ISO 8601 format)",
+            required=True,
+            example="2025-05-01T00:00:00Z",
+        ),
+        "finish_date": fields.DateTime(
+            required=True,
+            description="Finish timestamp (ISO 8601 format)",
+            example="2025-05-31T23:30:00Z",
+        ),
+    },
+)
+
+
+@ns.route("/supplies/<int:supply_id>")
+class SupplyResource(Resource):
+    @api.marshal_with(supply_model)
+    @ns.expect(supply_post_model)
+    def post(self, supply_id):
+        data = ns.payload
+        start_date = isoparse(data["start_date"])
+        finish_date = isoparse(data["finish_date"])
+
+        supply = Supply.get_by_id(g.sess, supply_id)
+        eras_j = []
+        supply_j = {
+            "id": supply.id,
+            "name": supply.name,
+            "source": supply.source,
+            "generator_type": supply.generator_type,
+            "gsp_group": supply.gsp_group,
+            "dno": supply.dno,
+            "eras": eras_j,
+        }
+        for era in g.sess.scalars(
+            select(Era)
+            .where(
+                Era.supply == supply,
+                Era.start_date <= finish_date,
+                or_(Era.finish_date == null(), Era.finish_date >= start_date),
+            )
+            .order_by(Era.start_date)
+        ):
+            channels_j = []
+            era_j = {
+                "id": era.id,
+                "site_eras": era.site_eras,
+                "start_date": era.start_date,
+                "finish_date": era.finish_date,
+                "mop_contract": era.mop_contract,
+                "dc_contract": era.dc_contract,
+                "msn": era.msn,
+                "pc": era.pc,
+                "mtc_participant": era.mtc_participant,
+                "cop": era.cop,
+                "ssc": era.ssc,
+                "energisation_status": era.energisation_status,
+                "imp_mpan_core": era.imp_mpan_core,
+                "imp_llfc": era.imp_llfc,
+                "imp_supplier_contract": era.imp_supplier_contract,
+                "imp_supplier_account": era.imp_supplier_account,
+                "imp_sc": era.imp_sc,
+                "exp_mpan_core": era.exp_mpan_core,
+                "exp_llfc": era.exp_llfc,
+                "exp_supplier_contract": era.exp_supplier_contract,
+                "exp_supplier_account": era.exp_supplier_account,
+                "exp_sc": era.exp_sc,
+                "channels": channels_j,
+            }
+            eras_j.append(era_j)
+            for channel in era.channels:
+
+                channel_j = {
+                    "id": channel.id,
+                    "era_id": channel.era_id,
+                    "imp_related": channel.imp_related,
+                    "channel_type": channel.channel_type,
+                }
+                hh_data_j = []
+                for hh_datum in g.sess.scalars(
+                    select(HhDatum)
+                    .where(
+                        HhDatum.channel == channel,
+                        HhDatum.start_date >= start_date,
+                        HhDatum.start_date <= finish_date,
+                    )
+                    .order_by(HhDatum.start_date)
+                ):
+                    hh_datum_j = {
+                        "id": hh_datum.id,
+                        "start_date": hh_datum.start_date,
+                        "value": hh_datum.value,
+                        "last_modified": hh_datum.last_modified,
+                    }
+                    hh_data_j.append(hh_datum_j)
+                channel_j["hh_data"] = hh_data_j
+
+                channels_j.append(channel_j)
+        return supply_j
 
 
 @ns.route("/eras")

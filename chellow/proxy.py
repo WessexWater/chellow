@@ -3,7 +3,6 @@ from functools import lru_cache
 
 from chellow.models import Contract, Session
 
-
 if t.TYPE_CHECKING:
     from wsgiref.types import StartResponse
     from wsgiref.types import WSGIApplication

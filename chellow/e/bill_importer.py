@@ -23,7 +23,6 @@ from chellow.models import (
 )
 from chellow.utils import ct_datetime_now, keydefaultdict
 
-
 import_id = 0
 import_lock = threading.Lock()
 imports = {}

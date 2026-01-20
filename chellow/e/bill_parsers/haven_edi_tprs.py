@@ -7,7 +7,6 @@ from chellow.edi_lib import parse_edi, to_date, to_decimal, to_finish_date
 from chellow.models import Session
 from chellow.utils import parse_mpan_core
 
-
 read_type_map = {
     "00": "N",
     "09": "N3",

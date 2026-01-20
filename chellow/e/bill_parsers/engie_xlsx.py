@@ -11,7 +11,6 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.utils import HH, ct_datetime, parse_mpan_core, to_ct, to_utc
 
-
 ELEM_MAP = {
     None: None,
     "Charge - Recurring": {

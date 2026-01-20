@@ -19,7 +19,6 @@ from chellow.models import (
     Session,
 )
 
-
 importer_id = 0
 import_lock = threading.Lock()
 importers = {}

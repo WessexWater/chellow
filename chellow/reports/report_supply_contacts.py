@@ -22,7 +22,6 @@ from chellow.models import (
     User,
 )
 
-
 FNAME = "supply_contacts"
 
 

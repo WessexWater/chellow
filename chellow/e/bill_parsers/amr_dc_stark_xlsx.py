@@ -11,7 +11,6 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Session
 from chellow.utils import parse_mpan_core, to_ct, to_utc
 
-
 COLUMN_MAP = {}
 
 

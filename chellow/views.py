@@ -449,9 +449,7 @@ def system_get():
                 traces.append(f"  {line.strip()}")
     pg_stats = g.sess.execute(text("select * from pg_stat_activity")).fetchall()
 
-    pg_indexes = g.sess.execute(
-        text(
-            """
+    pg_indexes = g.sess.execute(text("""
         select
             t.relname as table_name,
             i.relname as index_name,
@@ -473,9 +471,7 @@ def system_get():
         order by
             t.relname,
             i.relname;
-        """
-        )
-    ).fetchall()
+        """)).fetchall()
 
     version_number = chellow.__version__
 
@@ -1231,9 +1227,7 @@ def supplies_get():
 
         g_eras = (
             g.sess.query(GEra)
-            .from_statement(
-                text(
-                    """
+            .from_statement(text("""
 select e1.* from g_era as e1 inner join
   (select e2.g_supply_id, max(e2.start_date) as max_start_date
   from g_era as e2 join g_supply on e2.g_supply_id = g_supply.id
@@ -1243,9 +1237,7 @@ select e1.* from g_era as e1 inner join
     or lower(e2.msn) like lower(:pattern)
   group by e2.g_supply_id) as sq
 on e1.g_supply_id = sq.g_supply_id and e1.start_date = sq.max_start_date
-limit :max_results"""
-                )
-            )
+limit :max_results"""))
             .params(pattern="%" + pattern + "%", max_results=max_results)
             .all()
         )

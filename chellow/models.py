@@ -81,7 +81,6 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-
 config = {
     "PGUSER": "postgres",
     "PGPASSWORD": "postgres",
@@ -1604,18 +1603,14 @@ class Contract(Base, PersistentClass):
 
         if prev_rscript is not None:
             if not hh_before(prev_rscript.start_date, start_date):
-                raise BadRequest(
-                    """The start date must be after the start
-                        date of the previous rate script."""
-                )
+                raise BadRequest("""The start date must be after the start
+                        date of the previous rate script.""")
             prev_rscript.finish_date = prev_hh(start_date)
 
         if next_rscript is not None:
             if finish_date is None:
-                raise BadRequest(
-                    """The finish date must be before the start date of the
-                    next rate script."""
-                )
+                raise BadRequest("""The finish date must be before the start date of the
+                    next rate script.""")
 
             if not hh_before(finish_date, next_rscript.finish_date):
                 raise BadRequest(
@@ -7499,9 +7494,7 @@ def db_upgrade_43_to_44(sess, root_path):
             read = RegisterRead.get_by_id(sess, read_id)
             read.delete(sess)
 
-    sess.execute(
-        text(
-            """ALTER TABLE register_read ADD CONSTRAINT
+    sess.execute(text("""ALTER TABLE register_read ADD CONSTRAINT
             register_read_bill_id_msn_mpan_str_coefficient_units_tpr_id_key UNIQUE (
             bill_id,
             msn,
@@ -7515,9 +7508,7 @@ def db_upgrade_43_to_44(sess, root_path):
             present_date,
             present_value,
             present_type_id
-        );"""
-        )
-    )
+        );"""))
 
 
 def db_upgrade_44_to_45(sess, root_path):

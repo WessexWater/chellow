@@ -12,7 +12,6 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.utils import utc_datetime_now
 
-
 download_id = 0
 lock = threading.Lock()
 
