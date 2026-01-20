@@ -616,9 +616,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
 
             sess.rollback()  # Avoid long transactions
 
-            s = requests.Session()
-            s.verify = False
-            res = s.get(url, timeout=120)
+            res = requests.get(url, timeout=120)
             res.raise_for_status()
 
             raw_data = PARSERS[parser_name](log_f, res.json(), properties, mpan_core)

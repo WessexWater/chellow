@@ -81,14 +81,12 @@ def content(user_id, show_ignored, report_run_id):
             url_prefix = "https://www.ecoes.co.uk/"
 
             proxies = props.get("proxies", {})
-            s = requests.Session()
-            s.verify = False
-            r = s.get(url_prefix, proxies=proxies)
+            r = requests.get(url_prefix, proxies=proxies)
             data = {
                 "Username": ecoes_props["user_name"],
                 "Password": ecoes_props["password"],
             }
-            login_j = s.post(url_prefix, data=data, allow_redirects=False).json()
+            login_j = requests.post(url_prefix, data=data, allow_redirects=False).json()
             if not login_j["Success"]:
                 raise BadRequest(f"Login to ECOES failed: {login_j['Messages']}")
             elif "RedirectUrl" in login_j and "SetPassword" in login_j["RedirectUrl"]:
@@ -97,7 +95,7 @@ def content(user_id, show_ignored, report_run_id):
                     "changed"
                 )
 
-            r = s.get(
+            r = requests.get(
                 f"{url_prefix}PortfolioAccess/ExportPortfolioMPANs?fileType=csv",
                 proxies=proxies,
             )

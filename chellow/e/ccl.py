@@ -27,7 +27,7 @@ def ccl(data_source):
         hh["ccl-gbp"] = hh["msp-kwh"] * rate
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new electricity CCL rates")
     contract_name = "ccl"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -86,7 +86,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
                     f"{hh_format(year_start)}"
                 )
                 script = {"a_file_name": file_name}
-                server_j = json.load(BytesIO(download(s, url)))
+                server_j = json.load(BytesIO(download(url)))
                 script["ccl_gbp_per_msp_kwh"] = Decimal(server_j["ccl_gbp_per_msp_kwh"])
                 rs.update(script)
                 log(f"Updated CCL rate script for {hh_format(year_start)}")

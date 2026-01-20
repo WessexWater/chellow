@@ -2,8 +2,8 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
+from chellow.e.neso import csv_get, parse_date
 from chellow.models import Contract, RateScript
-from chellow.national_grid import csv_get, parse_date
 from chellow.utils import ct_datetime, to_utc
 
 
@@ -26,7 +26,7 @@ def hh(supply_source):
         hh["aahedc-gbp"] = hh["gsp-kwh"] * rate
 
 
-def national_grid_import(sess, log, set_progress, s):
+def neso_import(sess, log, set_progress):
     log("Starting to check for new AAHEDC rates")
 
     contract_name = "aahedc"
@@ -36,11 +36,7 @@ def national_grid_import(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    path = (
-        "dataset/43d94335-c97f-4939-a8b9-607d2cfb3734/resource/"
-        "ffd29cc8-3c55-4e83-aa0e-73212d4fedba/download"
-    )
-    for record in csv_get(s, path):
+    for record in csv_get("ffd29cc8-3c55-4e83-aa0e-73212d4fedba"):
         # {
         #   "_full_text": "'-07':4 '-15':5 '0.012247':7 '0.028 '2026':2 'final':1",
         #   "Published Date": "2025-07-15",

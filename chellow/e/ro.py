@@ -30,7 +30,7 @@ def hh(supply_source):
         hh["ro-gbp"] = ro_kwh * ro_rate
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new electricity RO rates")
     contract_name = "ro"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -89,7 +89,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
                     f"{hh_format(year_start)}"
                 )
                 script = {"a_file_name": file_name}
-                server_j = json.load(BytesIO(download(s, url)))
+                server_j = json.load(BytesIO(download(url)))
                 script["ro_gbp_per_msp_kwh"] = Decimal(server_j["ro_gbp_per_msp_kwh"])
                 rs.update(script)
                 log(f"Updated RO rate script for {hh_format(year_start)}")

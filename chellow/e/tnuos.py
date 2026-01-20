@@ -1,8 +1,8 @@
 from sqlalchemy import select
 
 
+from chellow.e.neso import csv_latest, parse_date
 from chellow.models import Contract, RateScript
-from chellow.national_grid import csv_get, parse_date
 from chellow.utils import (
     ct_datetime,
     to_utc,
@@ -83,7 +83,7 @@ def _process_banded_hh(ds, hh):
         hh["tnuos-days"] = 1
 
 
-def national_grid_import(sess, log, set_progress, s):
+def neso_import(sess, log, set_progress):
     log("Starting to check for new TNUoS TDR Tariffs")
 
     contract_name = "tnuos"
@@ -99,12 +99,14 @@ def national_grid_import(sess, log, set_progress, s):
             {},
         )
         sess.commit()
+    state = contract.make_state()
+    last_import_date = state.get("last_import_date")
 
-    path = (
-        "dataset/eaef4708-1100-4ad9-98d5-d892f3c9a56c/resource/"
-        "dcca94fd-343e-4d4e-8c5d-66009dec4ad3/download"
-    )
-    for record in csv_get(s, path):
+    for record in csv_latest(
+        "transmission-network-use-of-system-tnuos-tariffs",
+        last_import_date,
+        name="transmission_demand_residual_(tdr)_tariffs",
+    ):
         # {
         #   "_id": 1,
         #   "Publication": "Final",

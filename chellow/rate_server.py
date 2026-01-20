@@ -19,8 +19,8 @@ from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 importer = None
 
 
-def api_get(s, url, params=None):
-    res = s.get(url, params=params)
+def api_get(url, params=None):
+    res = requests.get(url, params=params)
     try:
         res_j = res.json()
     except requests.exceptions.JSONDecodeError as e:
@@ -34,8 +34,8 @@ def api_get(s, url, params=None):
     return res_j
 
 
-def download(s, url):
-    fl_json = api_get(s, url)
+def download(url):
+    fl_json = api_get(url)
     return b64decode(fl_json["content"])
 
 
@@ -48,19 +48,15 @@ def run_import(sess, log, set_progress):
         "url", "https://api.github.com/repos/WessexWater/chellow-rates"
     )
     repo_branch = repo_props.get("branch", "main")
-    s = requests.Session()
-    s.verify = False
-
-    repo_entry = api_get(s, repo_url)
+    repo_entry = api_get(repo_url)
 
     log(
         f"Looking at {repo_entry['html_url']} and branch "
         f"{'default' if repo_branch is None else repo_branch}"
     )
-    branch_entry = api_get(s, f"{repo_url}/branches/{repo_branch}")
+    branch_entry = api_get(f"{repo_url}/branches/{repo_branch}")
 
     tree_entry = api_get(
-        s,
         branch_entry["commit"]["commit"]["tree"]["url"],
         params={"recursive": "true"},
     )
@@ -83,7 +79,6 @@ def run_import(sess, log, set_progress):
 
     for mod_name in (
         "chellow.e.mdd_importer",
-        "chellow.e.bsuos",
         "chellow.e.ccl",
         "chellow.e.dno_rate_parser",
         "chellow.e.triad",
@@ -94,7 +89,10 @@ def run_import(sess, log, set_progress):
         "chellow.e.ro",
     ):
         mod = import_module(mod_name)
-        mod.rate_server_import(sess, log, set_progress, s, paths)
+        try:
+            mod.rate_server_import(sess, log, set_progress, paths)
+        except TypeError as e:
+            raise BadRequest(f"Problem with module {mod_name}: {e}") from e
 
 
 LAST_RUN_KEY = "rate_server_last_run"

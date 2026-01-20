@@ -21,17 +21,16 @@ import chellow.api
 import chellow.bank_holidays
 import chellow.dloads
 import chellow.e.bmarketidx
-import chellow.e.bsuos
 import chellow.e.elexon
 import chellow.e.hh_importer
 import chellow.e.isd
+import chellow.e.neso
 import chellow.e.rcrc
 import chellow.e.system_price
 import chellow.e.views
 import chellow.fake_batch_updater
 import chellow.gas.cv
 import chellow.gas.views
-import chellow.national_grid
 import chellow.rrun
 import chellow.testing
 from chellow.models import (
@@ -60,13 +59,12 @@ def get_importer_modules():
     return (
         chellow.e.isd,
         chellow.e.elexon,
-        chellow.e.bsuos,
         chellow.e.lcc,
         chellow.testing,
         chellow.bank_holidays,
         chellow.gas.cv,
         chellow.e.bmarketidx,
-        chellow.national_grid,
+        chellow.e.neso,
         chellow.rate_server,
         chellow.rrun,
         chellow.fake_batch_updater,

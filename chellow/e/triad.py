@@ -11,8 +11,8 @@ from sqlalchemy import null, or_, select
 from werkzeug.exceptions import BadRequest
 
 import chellow.e.duos
+from chellow.e.neso import api_get
 from chellow.models import Contract, RateScript
-from chellow.national_grid import api_get
 from chellow.rate_server import download
 from chellow.utils import (
     c_months_u,
@@ -290,7 +290,7 @@ def _parse_varying_date(date_str):
     return Datetime.strptime(date_str, pattern)
 
 
-def national_grid_import(sess, log, set_progress, s):
+def neso_import(sess, log, set_progress):
     log("Starting to check for new TNUoS TRIAD Tariffs")
 
     contract = Contract.find_non_core_by_name(sess, "triad_rates")
@@ -303,7 +303,7 @@ def national_grid_import(sess, log, set_progress, s):
         ("export", "af4501a0-6b96-4088-926c-7c7b0c499b08"),
     ):
         params = {"sql": f"""SELECT * FROM "{datafile}" """}
-        res_j = api_get(s, "datastore_search_sql", params=params)
+        res_j = api_get("datastore_search_sql", params=params)
         for record in res_j["result"]["records"]:
             fy_year = int(record["Year_FY"]) - 1
             fy_start = to_utc(ct_datetime(fy_year, 4, 1))
@@ -368,7 +368,7 @@ def _find_triad_dates(file_name, file_like):
     return rate_script
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new TNUoS triad date PDFs")
     contract_name = "triad_dates"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -414,7 +414,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
 
             rs_script = rs.make_script()
             if rs_script.get("a_file_name") != file_name:
-                rs.update(_find_triad_dates(file_name, BytesIO(download(s, url))))
+                rs.update(_find_triad_dates(file_name, BytesIO(download(url))))
                 log(f"Updated triad dates rate script for {hh_format(year_start)}")
 
     log("Finished TNUoS triad dates PDFs")

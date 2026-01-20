@@ -45,6 +45,7 @@ from zish import ZishException, dumps, loads
 
 import chellow.e.dno_rate_parser
 import chellow.e.lcc
+import chellow.e.neso
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner
 from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
@@ -4277,6 +4278,40 @@ def mtc_llfc_ssc_get(combo_id):
     combo = MtcLlfcSsc.get_by_id(g.sess, combo_id)
     dno = combo.mtc_ssc.mtc_participant.participant.get_dno(g.sess)
     return render_template("mtc_llfc_ssc.html", mtc_llfc_ssc=combo, dno=dno)
+
+
+@e.route("/neso")
+def neso_get():
+    importer = chellow.e.neso.importer
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    now_ct = ct_datetime_now()
+    fy_year = now_ct.year if now_ct.month > 3 else now_ct.year - 1
+    fy_start = to_utc(ct_datetime(fy_year, 4, 1))
+    tnuos_rs = g.sess.scalars(
+        select(RateScript)
+        .join(RateScript.contract)
+        .join(MarketRole)
+        .where(
+            MarketRole.code == "Z",
+            RateScript.start_date >= fy_start,
+            Contract.name == "tnuos",
+        )
+        .order_by(RateScript.start_date.desc())
+    )
+
+    return render_template(
+        "neso.html",
+        importer=importer,
+        config_state=config.make_state(),
+        tnuos_rs=tnuos_rs,
+    )
+
+
+@e.route("/neso", methods=["POST"])
+def neso_post():
+    importer = chellow.e.neso.importer
+    importer.go()
+    return chellow_redirect("/neso", 303)
 
 
 @e.route("/ods_monthly_duration")

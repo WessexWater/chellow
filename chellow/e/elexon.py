@@ -58,8 +58,6 @@ def api_search(s, resource_id, sort=None):
 
 def run_import(sess, log, set_progress, scripting_key):
     log("Starting to import data from Elexon")
-    s = requests.Session()
-    s.verify = False
 
     for mod_name in (
         "chellow.e.system_price",
@@ -68,7 +66,7 @@ def run_import(sess, log, set_progress, scripting_key):
         "chellow.e.lafs",
     ):
         mod = import_module(mod_name)
-        mod.elexon_import(sess, log, set_progress, s, scripting_key)
+        mod.elexon_import(sess, log, set_progress, scripting_key)
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"

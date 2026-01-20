@@ -12,14 +12,13 @@ def test_run_import(mocker, sess):
     sess.commit()
     messages = []
 
-    mocker.patch("chellow.e.bsuos.rate_server_import")
     mocker.patch("chellow.e.dno_rate_parser.rate_server_import")
     mocker.patch("chellow.e.lafs.rate_server_import")
     mocker.patch("chellow.e.mdd_importer.rate_server_import")
     mocker.patch("chellow.e.tlms.rate_server_import")
     mocker.patch("chellow.gas.dn_rate_parser.rate_server_import")
 
-    def mock_api_get(s, url, params=None):
+    def mock_api_get(url, params=None):
         responses = {
             "https://api.github.com/repos/WessexWater/chellow-rates": {
                 "html_url": "https://example.com"
@@ -51,14 +50,13 @@ def test_run_import_lowercase_readme(mocker, sess):
     sess.commit()
     messages = []
 
-    mocker.patch("chellow.e.bsuos.rate_server_import")
     mocker.patch("chellow.e.dno_rate_parser.rate_server_import")
     mocker.patch("chellow.e.lafs.rate_server_import")
     mocker.patch("chellow.e.mdd_importer.rate_server_import")
     mocker.patch("chellow.e.tlms.rate_server_import")
     mocker.patch("chellow.gas.dn_rate_parser.rate_server_import")
 
-    def mock_api_get(s, url, params=None):
+    def mock_api_get(url, params=None):
         responses = {
             "https://api.github.com/repos/WessexWater/chellow-rates": {
                 "html_url": "https://example.com"

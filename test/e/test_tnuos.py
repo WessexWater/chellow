@@ -1,5 +1,5 @@
 from chellow.e.computer import SupplySource
-from chellow.e.tnuos import _process_banded_hh, national_grid_import
+from chellow.e.tnuos import _process_banded_hh, neso_import
 from chellow.models import (
     Comm,
     Contract,
@@ -178,7 +178,7 @@ def test_process_banded_hh_ums(sess):
     }
 
 
-def test_national_grid_import(mocker, sess):
+def test_neso_import(mocker, sess):
     vf = to_utc(ct_datetime(1996, 4, 1))
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
@@ -207,10 +207,9 @@ def test_national_grid_import(mocker, sess):
         "Published_Date": "2000-01-01",
         "TDR Tariff extra": "3.4",
     }
-    mocker.patch("chellow.e.tnuos.csv_get", return_value=[record])
+    mocker.patch("chellow.e.tnuos.csv_latest", return_value=[record])
 
-    s = mocker.Mock()
-    national_grid_import(sess, log, set_progress, s)
+    neso_import(sess, log, set_progress)
     rs = contract.rate_scripts[0]
     assert rs.make_script() == {
         "bands": {

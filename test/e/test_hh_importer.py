@@ -130,13 +130,11 @@ def test_https_handler(mocker, sess):
     sess.commit()
 
     mock_requests = mocker.patch("chellow.e.hh_importer.requests")
-    mock_s = mocker.Mock()
-    mock_requests.Session.return_value = mock_s
     mock_response = mocker.Mock()
-    mock_s.get.return_value = mock_response
     mock_response.json.return_value = {
         "Data": [{"Flags": 0, "Time": 636188256000000000, "Value": 21}]
     }
+    mock_requests.get.return_value = mock_response
 
     log = []
 
@@ -165,7 +163,7 @@ def test_https_handler(mocker, sess):
         "Finished loading.",
     ]
     assert log == expected_log
-    mock_s.get.assert_called_once()
+    mock_requests.get.assert_called_once()
 
 
 def test_HhDataImportProcess(sess):

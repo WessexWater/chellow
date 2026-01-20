@@ -34,9 +34,7 @@ def test_fetch_cvs(mocker, sess):
 """
 
     mock_requests = mocker.patch("chellow.gas.cv.requests")
-    mock_s = mocker.Mock()
-    mock_requests.Session = mocker.Mock(return_value=mock_s)
-    mock_s.get = mocker.Mock(return_value=mock_response)
+    mock_requests.get = mocker.Mock(return_value=mock_response)
 
     messages = []
 

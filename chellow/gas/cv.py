@@ -124,9 +124,7 @@ def fetch_cvs(sess, log_f, g_contract):
         f"to {hh_format(search_finish)} at {url}"
     )
 
-    s = requests.Session()
-    s.verify = False
-    res = s.get(url)
+    res = requests.get(url)
     log_f(f"Received {res.status_code} {res.reason}")
 
     cf = csv.reader(res.text.splitlines())

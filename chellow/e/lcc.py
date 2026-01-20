@@ -42,12 +42,10 @@ def api_records(log, s, resource_id, skip=0):
 
 def run_import(sess, log, set_progress):
     log("Starting to import data from the Low Carbon Contracts Company")
-    s = requests.Session()
-    s.verify = False
 
     for mod_name in ("chellow.e.cfd", "chellow.e.rab"):
         mod = import_module(mod_name)
-        mod.lcc_import(sess, log, set_progress, s)
+        mod.lcc_import(sess, log, set_progress)
 
 
 LAST_RUN_KEY = "last_run"

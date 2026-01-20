@@ -14,24 +14,13 @@
 		<p>
 			<a href="/non_core_contracts/{{contract.id}}/auto_importer">Automatic Importer</a>
 		</p>
-	{% elif contract.name == 'tnuos' %}
+	{% elif contract.name in ['tnuos', 'bsuos', 'bsuos_forecast'] %}
 		<p>
-			<a href="/national_grid">Automatic Importer</a>
+			<a href="/e/neso">Automatic Importer</a>
 		</p>
 	{% elif contract.name == 'triad_dates' %}
 		<p>
 			<a href="/rate_server">Automatic Importer</a>
-		</p>
-	{% elif contract.name == 'bsuos' %}
-		<p>
-			Automatic importers:
-			<ul>
-				<li><a href="/rate_server">Current Rates</a></li>
-				<li>
-					<a href="/non_core_contracts/{{contract.id}}/auto_importer">Old Rates</a>
-				</li>
-				<li><a href="/national_grid">Forecast Rates</a></li>
-			</ul>
 		</p>
 	{% elif contract.name in ['rcrc', 'system_price', 'tlms'] %}
 		<p>

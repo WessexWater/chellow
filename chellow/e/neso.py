@@ -26,9 +26,9 @@ from chellow.utils import (
 importer = None
 
 
-def api_get(s, path, params=None):
+def api_get(path, params=None):
     url = f"https://api.neso.energy/api/3/action/{path}"
-    res = s.get(url, params=params, timeout=120)
+    res = requests.get(url, params=params, timeout=120)
     try:
         res_j = res.json()
     except requests.exceptions.JSONDecodeError as e:
@@ -43,10 +43,35 @@ def api_get(s, path, params=None):
     return res_j
 
 
-def csv_get(s, path):
-    res = s.get(f"https://api.neso.energy/{path}", timeout=120)
+def csv_download(url):
+    res = requests.get(url, timeout=120)
     csv_file = StringIO(res.text)
     return csv.DictReader(csv_file)
+
+
+def csv_get(resource_id):
+    res_j = api_get("resource_show", params={"id": resource_id})
+    download_url = res_j["result"]["url"]
+    return csv_download(download_url)
+
+
+def csv_latest(package_id, last_import_date, name=None):
+    params = {"id": package_id}
+    res_j = api_get("datapackage_show", params=params)
+    latest_lm = None
+    latest_resource = None
+    for resource in res_j["result"]["resources"]:
+        if name is None or resource["name"].startswith(name):
+            last_modified = resource["last_modified"]
+            if last_import_date is None or last_modified > last_import_date:
+                if latest_lm is None or last_modified > latest_lm:
+                    latest_lm = last_modified
+                    latest_resource = resource
+
+    if latest_resource is None:
+        return None
+    else:
+        return csv_download(latest_resource["path"])
 
 
 def parse_date(date_str):
@@ -61,9 +86,7 @@ def parse_date(date_str):
 
 
 def run_import(sess, log, set_progress):
-    log("Starting to import data from the National Grid")
-    s = requests.Session()
-    s.verify = False
+    log("Starting to import data from the NESO")
 
     for mod_name in (
         "chellow.e.aahedc",
@@ -72,15 +95,15 @@ def run_import(sess, log, set_progress):
         "chellow.e.triad",
     ):
         mod = import_module(mod_name)
-        mod.national_grid_import(sess, log, set_progress, s)
+        mod.neso_import(sess, log, set_progress)
 
 
 LAST_RUN_KEY = "last_run"
-GLOBAL_ALERT = "There's a problem with a <a href='/national_grid'>NESO import</a>."
-NG_STATE_KEY = "national_grid"
+GLOBAL_ALERT = "There's a problem with a <a href='/e/neso'>NESO import</a>."
+NG_STATE_KEY = "neso"
 
 
-class NationalGrid(threading.Thread):
+class Neso(threading.Thread):
     def __init__(self):
         super().__init__(name="NESO")
         self.messages = collections.deque(maxlen=500)
@@ -144,7 +167,7 @@ class NationalGrid(threading.Thread):
                         sess.rollback()
                     finally:
                         self.going.clear()
-                        self.log("Finished importing National Grid data.")
+                        self.log("Finished importing NESO data.")
 
             else:
                 self.log(
@@ -160,7 +183,7 @@ def get_importer():
 
 def startup():
     global importer
-    importer = NationalGrid()
+    importer = Neso()
     importer.start()
 
 

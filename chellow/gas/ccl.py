@@ -23,7 +23,7 @@ def vb(ds):
         hh["ccl"] = rate
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new gas CCL rates")
     g_contract_name = "ccl"
     g_contract = GContract.find_industry_by_name(sess, g_contract_name)
@@ -82,7 +82,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
                     f"{hh_format(year_start)}"
                 )
                 script = {"a_file_name": file_name}
-                server_j = json.load(BytesIO(download(s, url)))
+                server_j = json.load(BytesIO(download(url)))
                 script["ccl_gbp_per_kwh"] = Decimal(server_j["ccl_gbp_per_kwh"])
                 rs.update(script)
                 log(f"Updated CCL rate script for {hh_format(year_start)}")
