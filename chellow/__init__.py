@@ -229,6 +229,7 @@ def create_app(testing=False, instance_path=None):
                         "/reports/111",
                         "/reports/149",
                     )
+                    or path.startswith("/api/")
                 )
                 and path not in ("/system",)
             ):
