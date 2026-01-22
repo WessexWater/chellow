@@ -18,6 +18,8 @@ glossary_terms = {
     "(gen) a submeter (sub) or a 3rd-party (from another electricity customer).",
     "generator-type": "If a source is a 'gen' then this column holds the type of "
     "generation: 'chp', 'pv', 'turb' or 'lm'.",
+    "generated": "Electricity that's imported from a generator into the site.",
+    "parasitic": "Electricity that's exported to a generator from the site.",
     "import": "Relates to electricity flowing through a supply towards the site. "
     "Often combined with other terms, eg. import-grid-kwh means electricity flowing "
     "into the site from the grid.",
