@@ -456,9 +456,8 @@ def test_import_mdd(mocker, sess):
         ),
     )
     paths = tuple((p, "") for p in path_list)
-    s = mocker.Mock()
 
-    rate_server_import(sess, log, set_progress, s, paths, with_88_99=False)
+    rate_server_import(sess, log, set_progress, paths, with_88_99=False)
 
 
 def test_import_mdd_two_versions(mocker, sess):
@@ -510,8 +509,7 @@ def test_import_mdd_two_versions(mocker, sess):
 
     log = mocker.Mock()
     set_progress = mocker.Mock()
-    s = mocker.Mock()
-    rate_server_import(sess, log, set_progress, s, paths, with_88_99=False)
+    rate_server_import(sess, log, set_progress, paths, with_88_99=False)
 
 
 def test_88(mocker, sess, client):
@@ -573,7 +571,7 @@ def test_88(mocker, sess, client):
         "2022/electricity/mdd/50/Valid_MTC_LLFC_SSC_PC_Combination_50.csv": [[]],
     }
 
-    def mock_get_csv_reader(s, url):
+    def mock_get_csv_reader(url):
         return files[url]
 
     mocker.patch(
@@ -613,9 +611,8 @@ def test_88(mocker, sess, client):
         ),
     )
     paths = tuple((p, "/".join(p)) for p in path_list)
-    s = mocker.Mock()
 
-    rate_server_import(sess, log, set_progress, s, paths, with_88_99=True)
+    rate_server_import(sess, log, set_progress, paths, with_88_99=True)
     dno_88 = Party.get_dno_by_code(sess, "88", to_utc(ct_datetime(2020, 1, 1)))
     dno_99 = Party.get_dno_by_code(sess, "99", to_utc(ct_datetime(2020, 1, 1)))
     sess.commit()

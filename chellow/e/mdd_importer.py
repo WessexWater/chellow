@@ -928,12 +928,12 @@ def add_88_99(sess, ctx):
     _import_Valid_MTC_LLFC_Combination(sess, rows, ctx)
 
 
-def _get_csv_reader(s, url):
-    csv_file = StringIO(download(s, url).decode("utf8"))
+def _get_csv_reader(url):
+    csv_file = StringIO(download(url).decode("utf8"))
     return csv.reader(csv_file)
 
 
-def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
+def rate_server_import(sess, log, set_progress, paths, with_88_99=True):
     log("Starting to check for a new MDD version")
     mdd_entries = {}
     for path, url in paths:
@@ -968,7 +968,7 @@ def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
     version = None
 
     for file_name, url in fl_entries.items():
-        csv_reader = iter(_get_csv_reader(s, url))
+        csv_reader = iter(_get_csv_reader(url))
         next(csv_reader)  # Skip titles
 
         table_name_elements = file_name.split("_")

@@ -756,7 +756,7 @@ def find_gsp_group_rates(file_name, file_like):
     return gsp_code, rates, vls
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new DNO spreadsheets")
     year_entries = {}
     for path, url in paths:
@@ -797,7 +797,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
             rs_script = rs.make_script()
             if rs_script.get("a_file_name") != file_name:
                 try:
-                    fl = BytesIO(download(s, url))
+                    fl = BytesIO(download(url))
                     rates, vls = find_rates(file_name, fl)
                     rs.update(rates)
                     log(

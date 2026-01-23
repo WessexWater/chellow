@@ -201,7 +201,7 @@ def find_participant_entries(paths, laf_state):
     return participant_entries
 
 
-def rate_server_import(sess, log, set_progress, s, paths):
+def rate_server_import(sess, log, set_progress, paths):
     log("Starting to check for new LAF files")
     conf = Contract.get_non_core_by_name(sess, "configuration")
     state = conf.make_state()
@@ -218,7 +218,7 @@ def rate_server_import(sess, log, set_progress, s, paths):
         for timestamp, url in sorted(fl_entries.items()):
             log(f"Importing file with timestamp {timestamp}")
 
-            fl = BytesIO(download(s, url))
+            fl = BytesIO(download(url))
             _process(sess, log, set_progress, fl)
             laf_state[participant_code] = timestamp
             conf.update_state(state)

@@ -12,11 +12,11 @@ def test_run_import(mocker, sess):
     sess.commit()
     messages = []
 
-    mocker.patch("chellow.e.dno_rate_parser.rate_server_import")
-    mocker.patch("chellow.e.lafs.rate_server_import")
-    mocker.patch("chellow.e.mdd_importer.rate_server_import")
-    mocker.patch("chellow.e.tlms.rate_server_import")
-    mocker.patch("chellow.gas.dn_rate_parser.rate_server_import")
+    mocker.patch("chellow.e.dno_rate_parser.rate_server_import", autospec=True)
+    mocker.patch("chellow.e.lafs.rate_server_import", autospec=True)
+    mocker.patch("chellow.e.mdd_importer.rate_server_import", autospec=True)
+    mocker.patch("chellow.e.tlms.rate_server_import", autospec=True)
+    mocker.patch("chellow.gas.dn_rate_parser.rate_server_import", autospec=True)
 
     def mock_api_get(url, params=None):
         responses = {

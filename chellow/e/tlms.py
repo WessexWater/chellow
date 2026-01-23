@@ -361,7 +361,7 @@ def import_etlms(sess, log, set_progress, s):
 """
 
 
-def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
+def rate_server_import(sess, log, set_progress, paths, with_88_99=True):
     CONFIG_KEY = "etlm_version"
     log("Starting to check for a new ETLM version")
     contract_name = "etlms"
@@ -396,7 +396,7 @@ def rate_server_import(sess, log, set_progress, s, paths, with_88_99=True):
 
     log("Starting to import ETLMs")
 
-    csv_file = StringIO(download(s, url).decode("utf8"))
+    csv_file = StringIO(download(url).decode("utf8"))
     csv_reader = iter(csv.reader(csv_file))
     next(csv_reader)  # Skip titles
     for values in csv_reader:
