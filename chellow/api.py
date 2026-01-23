@@ -286,6 +286,16 @@ hh_datum_model = ns.model(
     },
 )
 
+
+def hh_datum_to_j(hh_datum):
+    return {
+        "id": hh_datum.id,
+        "start_date": hh_datum.start_date,
+        "value": hh_datum.value,
+        "last_modified": hh_datum.last_modified,
+    }
+
+
 channel_model = ns.model(
     "Channel",
     {
@@ -295,6 +305,15 @@ channel_model = ns.model(
         "hh_data": fields.List(fields.Nested(hh_datum_model)),
     },
 )
+
+
+def channel_to_j(channel):
+    return {
+        "id": channel.id,
+        "era_id": channel.era_id,
+        "imp_related": channel.imp_related,
+        "channel_type": channel.channel_type,
+    }
 
 
 era__model = ns.model(
@@ -331,7 +350,7 @@ era__model = ns.model(
 )
 
 
-channel__model = ns.model(
+channel_model = ns.model(
     "Channel",
     {
         "id": fields.Integer(example="871"),
@@ -377,37 +396,43 @@ channel_get_parser.add_argument(
 )
 
 
-channel_get_model = api.model(
-    "ChannelGetModel",
+channel_post_model = api.model(
+    "ChannelPostModel",
     {
-        "page": fields.Integer(required=True, description="Page number"),
-        "page_size": fields.Integer(required=False, default=50),
+        "start_date": fields.DateTime(
+            description="Start timestamp (ISO 8601 format)",
+            required=True,
+            example="2025-05-01T00:00:00Z",
+        ),
+        "finish_date": fields.DateTime(
+            required=True,
+            description="Finish timestamp (ISO 8601 format)",
+            example="2025-05-31T23:30:00Z",
+        ),
     },
 )
 
 
 @ns.route("/channel/<int:channel_id>")
-@ns.param("from", "YYYY-mm-dd HH:MM")
-@ns.param("to", "YYYY-mm-dd HH:MM")
 class ChannelResource(Resource):
-    @api.marshal_with(channel__model)
-    @ns.expect(channel_get_model)
-    def get(self, channel_id):
+    @api.marshal_with(channel_model)
+    @ns.expect(channel_post_model)
+    def post(self, channel_id):
         data = ns.payload
+        start_date = isoparse(data["start_date"])
+        finish_date = isoparse(data["finish_date"])
         channel = Channel.get_by_id(g.sess, channel_id)
-        channel_j = {
-            "id": channel.id,
-            "era_id": channel.era_id,
-            "imp_related": channel.imp_related,
-            "channel_type": channel.channel_type,
-        }
-        channel_j["hh_data"] = g.sess.execute(
+        channel_j = channel_to_j(channel)
+        hh_data_j = []
+        for hh_datum in g.sess.scalars(
             select(HhDatum).where(
                 HhDatum.channel == channel,
-                HhDatum.start_date >= data.start_date,
-                HhDatum.start_date <= data.finish_date,
+                HhDatum.start_date >= start_date,
+                HhDatum.start_date <= finish_date,
             )
-        ).all()
+        ):
+            hh_data_j.append(hh_datum_to_j(hh_datum))
+        channel_j["hh_data"] = hh_data_j
         return channel_j
 
 
