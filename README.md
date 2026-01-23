@@ -347,3 +347,7 @@ something like:
 ## Design Decisions
 
 Why don't you use the +/- infinity values for timestamps? The problem is that it's not clear how this would translate into Python. So we currently use null for infinity, which naturally translates into None in Python. 
+
+## Contributing
+
+The web interface uses HTML, CSS and [HTMX](https://htmx.org/).
