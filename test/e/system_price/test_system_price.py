@@ -37,9 +37,9 @@ def test_process(sess, mocker):
     def log_f(msg):
         log.append(msg)
 
-    mock_s = mocker.Mock()
+    mock_requests = mocker.patch("chellow.e.system_price.requests")
     mock_response = mocker.Mock()
-    mock_s.get.return_value = mock_response
+    mock_requests.get.return_value = mock_response
     with open("test/e/system_price/prices.xls", "rb") as f:
         mock_response.content = f.read()
     mock_response.status_code = 200
@@ -47,7 +47,7 @@ def test_process(sess, mocker):
 
     mock_set_progress = mocker.Mock()
     scripting_key = "xxx"
-    elexon_import(sess, log_f, mock_set_progress, mock_s, scripting_key)
+    elexon_import(sess, log_f, mock_set_progress, scripting_key)
 
     assert log == [
         "Starting to check System Prices.",

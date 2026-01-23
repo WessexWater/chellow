@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
+import requests
 
 from werkzeug.exceptions import BadRequest
 
@@ -79,7 +80,7 @@ def _find_month(lines, month_start, month_finish):
     return month_rcrcs
 
 
-def elexon_import(sess, log, set_progress, s, scripting_key):
+def elexon_import(sess, log, set_progress, scripting_key):
     log("Starting to check RCRCs.")
     contract_name = "rcrc"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -119,7 +120,7 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
         )
 
         sess.rollback()  # Avoid long-running transaction
-        r = s.get(url_str, timeout=120, params=params)
+        r = requests.get(url_str, timeout=120, params=params)
         month_rcrcs = _find_month(
             (x.decode() for x in r.iter_lines()), month_start, month_finish
         )

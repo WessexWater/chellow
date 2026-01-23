@@ -4,6 +4,8 @@ from decimal import Decimal
 from io import BytesIO, StringIO
 from zipfile import ZipFile
 
+import requests
+
 from sqlalchemy import select, text
 
 from werkzeug.exceptions import BadRequest
@@ -113,7 +115,7 @@ LAF_START = "llf"
 LAF_END = "ptf.zip"
 
 
-def elexon_import(sess, log, set_progress, s, scripting_key):
+def elexon_import(sess, log, set_progress, scripting_key):
     log("Starting to check for new LAF files for dno participant codes.")
     conf = Contract.get_non_core_by_name(sess, "configuration")
     state = conf.make_state()
@@ -137,7 +139,7 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
 
         log(f"Downloading from {url}?key={scripting_key}&ldso={pcode}&format=PTF")
         sess.rollback()  # Avoid long-running transactions
-        res = s.get(url, params=params)
+        res = requests.get(url, params=params)
         log(f"Received {res.status_code} {res.reason}")
         res.raise_for_status()
         try:

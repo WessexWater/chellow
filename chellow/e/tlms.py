@@ -5,6 +5,8 @@ from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
+import requests
+
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
 
@@ -110,12 +112,12 @@ def _find_complete_date(caches, sess, contract, cache):
             return rs.finish_date
 
 
-def elexon_import(sess, log, set_progress, s, scripting_key):
-    import_tlms(sess, log, set_progress, s, scripting_key)
+def elexon_import(sess, log, set_progress, scripting_key):
+    import_tlms(sess, log, set_progress, scripting_key)
     # import_etlms(sess, log, set_progress, s)
 
 
-def import_tlms(sess, log, set_progress, s, scripting_key):
+def import_tlms(sess, log, set_progress, scripting_key):
     cache = {"rate_scripts": [], "timestamps": {}}
     caches = {}
     log("Starting to check TLMs.")
@@ -141,7 +143,7 @@ def import_tlms(sess, log, set_progress, s, scripting_key):
         log(f"Found complete up to {complete_date}")
 
         sess.rollback()  # Avoid long-running transaction
-        r = s.get(url_str, params=params, timeout=120)
+        r = requests.get(url_str, params=params, timeout=120)
         parser = csv.reader(
             (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
         )

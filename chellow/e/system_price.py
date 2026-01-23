@@ -2,6 +2,8 @@ import datetime
 import traceback
 from datetime import timedelta as Timedelta
 
+import requests
+
 from sqlalchemy import select
 
 from werkzeug.exceptions import BadRequest
@@ -60,7 +62,7 @@ def hh(data_source):
         h["ssp-gbp"] = h["nbp-kwh"] * ssp
 
 
-def elexon_import(sess, log, set_progress, s, scripting_key):
+def elexon_import(sess, log, set_progress, scripting_key):
     log("Starting to check System Prices.")
     contract_name = "system_price"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -106,7 +108,7 @@ def elexon_import(sess, log, set_progress, s, scripting_key):
     )
 
     sess.rollback()  # Avoid long-running transactions
-    res = s.get(url, params=params)
+    res = requests.get(url, params=params)
     log(f"Received {res.status_code} {res.reason}")
     data = res.content
     book = xlrd.open_workbook(file_contents=data)

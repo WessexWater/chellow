@@ -66,7 +66,10 @@ def run_import(sess, log, set_progress, scripting_key):
         "chellow.e.lafs",
     ):
         mod = import_module(mod_name)
-        mod.elexon_import(sess, log, set_progress, scripting_key)
+        try:
+            mod.elexon_import(sess, log, set_progress, scripting_key)
+        except TypeError as e:
+            raise BadRequest(f"Problem with module {mod_name}: {e}") from e
 
 
 ELEXON_PORTAL_SCRIPTING_KEY_KEY = "elexonportal_scripting_key"
