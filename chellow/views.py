@@ -117,13 +117,13 @@ from chellow.utils import (
     ct_datetime,
     ct_datetime_now,
     hh_range,
+    req_bool,
     req_checkbox,
     req_date,
     req_decimal,
     req_file,
     req_hh_date,
     req_int,
-    req_int_none,
     req_str,
     req_zish,
     send_response,
@@ -2698,41 +2698,46 @@ def input_date_get():
     minute_name = f"{prefix}_minute"
 
     resolution = req_str("resolution")
+    has_is_ended = req_bool("has_is_ended")
 
-    year = req_int_none(year_name)
-    if year is None:
-        initial = ct_datetime_now()
-        year, month, day, hour, minute = (
-            initial.year,
-            initial.month,
-            initial.day,
-            initial.hour,
-            initial.minute,
+    is_ended = req_checkbox(f"{prefix}_is_ended") if has_is_ended else True
+
+    if is_ended:
+        if year_name in request.values:
+            year = req_int(year_name)
+            month = req_int(month_name)
+            if resolution in ("day", "hour", "minute"):
+                day = req_int(day_name)
+            else:
+                day = 1
+
+            if resolution in ("hour", "minute"):
+                hour = req_int(hour_name)
+            else:
+                hour = 0
+
+            if resolution == "minute":
+                minute = req_int(hour_name)
+            else:
+                minute = 0
+        else:
+            initial = ct_datetime_now()
+            year, month, day, hour, minute = (
+                initial.year,
+                initial.month,
+                initial.day,
+                initial.hour,
+                initial.minute,
+            )
+        month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
+        initial = to_utc(
+            ct_datetime(year, month, min(day, month_max_day), hour, minute)
         )
     else:
-        month = req_int(month_name)
-        if resolution in ("day", "hour", "minute"):
-            day = req_int(day_name)
-        else:
-            day = 1
-
-        if resolution in ("hour", "minute"):
-            hour = req_int(hour_name)
-        else:
-            hour = 0
-
-        if resolution == "minute":
-            minute = req_int(hour_name)
-        else:
-            minute = 0
-
-    month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
-
-    initial = to_utc(ct_datetime(year, month, min(day, month_max_day), hour, minute))
+        initial = month_max_day = None
 
     return render_template(
         "input_date.html",
-        initial=initial,
         resolution=resolution,
         prefix=prefix,
         year_name=year_name,
@@ -2741,4 +2746,7 @@ def input_date_get():
         hour_name=hour_name,
         minute_name=minute_name,
         month_max_day=month_max_day,
+        has_is_ended=has_is_ended,
+        is_ended=is_ended,
+        initial=initial,
     )

@@ -8,6 +8,7 @@ from chellow.e.computer import (
     _set_status,
 )
 from chellow.models import (
+    Ca,
     Comm,
     Contract,
     Cop,
@@ -644,6 +645,120 @@ def test_init_hh_data_export(sess, mocker):
         }
     }
     assert hhd == expected_hhd
+
+
+def test_SupplySource_init_ca(sess, mocker):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    bank_holiday_rate_script = {"bank_holidays": []}
+    Contract.insert_non_core(
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    exp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "521", "Export (HV)", voltage_level, False, False, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "grid")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        dc_contract,
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        None,
+        None,
+        None,
+        None,
+        None,
+        "22 7867 6232 781",
+        "521",
+        exp_supplier_contract,
+        "7748",
+        361,
+    )
+    era = supply.eras[0]
+    ca = Ca.insert(sess, vf, None, b"", {"elements": {"tnuos": 300}})
+    era.exp_ca = ca
+    sess.commit()
+
+    caches = {}
+    start_date = utc_datetime(2009, 7, 31, 23, 00)
+    finish_date = utc_datetime(2009, 8, 31, 22, 30)
+    forecast_date = utc_datetime(2019, 8, 31, 22, 30)
+    is_import = False
+    ss = SupplySource(
+        sess,
+        start_date,
+        finish_date,
+        forecast_date,
+        era,
+        is_import,
+        caches,
+    )
+    assert ss.non_primary_elements == {"tnuos"}
 
 
 def test_SupplySource_init_hh(sess, mocker):
@@ -1311,6 +1426,7 @@ def virtual_bill(ds):
         sess, site, start_date, finish_date, forecast_date, caches, era=era
     )
     assert site_source.dtc_meter_type == dtc_meter_type
+    assert site_source.non_primary_elements == set()
 
     sess.commit()
 

@@ -26,6 +26,7 @@
 					<th rowspan="2"><span title="Line Loss Factor Class">LLFC</span></th>
 					<th rowspan="2">MPAN Core</th>
 					<th rowspan="2">kVA</th>
+					<th rowspan="2">Connection <br> Agreement</th>
 					<th colspan="2">Supplier</th>
 				</tr>
 				<tr>
@@ -109,9 +110,15 @@
 							{% if era.imp_mpan_core %}
 								{{era.imp_mpan_core}}
 							{% endif %}
+						</td>
 						<td>
 							{% if era.imp_mpan_core %}
 								{{ era.imp_sc }}
+							{% endif %}
+						</td>
+						<td>
+							{% if era.imp_ca %}
+								<a href="/e/cas/{{ era.imp_ca.id }}">View</a>
 							{% endif %}
 						</td>
 						<td>
@@ -152,8 +159,13 @@
 							{% endif %}
 						</td>
 						<td>
-							{% if era.exp_mpan_core %}
+							{% if era.exp_sc %}
 								{{ era.exp_sc }}
+							{% endif %}
+						</td>
+						<td>
+							{% if era.exp_ca %}
+								<a href="/e/cas/{{ era.exp_ca.id }}">View</a>
 							{% endif %}
 						</td>
 						<td>

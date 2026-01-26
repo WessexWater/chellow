@@ -213,6 +213,53 @@ class PersistentClass:
         return type(other) is type(self) and other.id == self.id
 
 
+class Ca(Base, PersistentClass):
+    __tablename__ = "ca"
+    id = Column("id", Integer, primary_key=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
+    data = Column(LargeBinary, nullable=False)
+    properties = Column(JSONB, nullable=False)
+
+    def __init__(self, start_date, finish_date, data, properties):
+        self.update(start_date, finish_date)
+        self.update_properties(properties)
+        self.data = data
+
+    def update(self, start_date, finish_date):
+        self.start_date = start_date
+        self.finish_date = finish_date
+
+    def update_properties(self, properties):
+        self.properties = _jsonize(properties)
+        attributes.flag_modified(self, "properties")
+
+    def delete(self, sess):
+        eras = sess.scalars(
+            select(Era)
+            .where(or_(Era.imp_ca == self, Era.exp_ca == self))
+            .order_by(Era.supply_id, Era.start_date.desc())
+        ).all()
+        if len(eras) > 1:
+            raise BadRequest(
+                "Can't delete a connection agreement that has more than one era "
+                "referring to it."
+            )
+        era = eras[0]
+        if era.imp_ca == self:
+            era.imp_ca = None
+        else:
+            era.exp_ca = None
+        sess.delete(self)
+        sess.flush()
+
+    @staticmethod
+    def insert(sess, start_date, finish_date, data, properties):
+        ca = Ca(start_date, finish_date, data, properties)
+        sess.add(ca)
+        return ca
+
+
 class GReadType(Base, PersistentClass):
     __tablename__ = "g_read_type"
     id = Column("id", Integer, primary_key=True)
@@ -579,16 +626,16 @@ class RegisterRead(Base, PersistentClass):
     mpan_str = Column(String, nullable=False)
     coefficient = Column(Numeric, nullable=False)
     units = Column(Integer, nullable=False, index=True)
-    tpr_id = Column(Integer, ForeignKey("tpr.id"))
+    tpr_id = Column(Integer, ForeignKey("tpr.id"), index=True)
     previous_date = Column(DateTime(timezone=True), nullable=False)
     previous_value = Column(Numeric, nullable=False)
-    previous_type_id = Column(Integer, ForeignKey("read_type.id"))
+    previous_type_id = Column(Integer, ForeignKey("read_type.id"), index=True)
     previous_type = relationship(
         "ReadType", primaryjoin="ReadType.id==RegisterRead.previous_type_id"
     )
     present_date = Column(DateTime(timezone=True), nullable=False)
     present_value = Column(Numeric, nullable=False)
-    present_type_id = Column(Integer, ForeignKey("read_type.id"))
+    present_type_id = Column(Integer, ForeignKey("read_type.id"), index=True)
     present_type = relationship(
         "ReadType", primaryjoin="ReadType.id==RegisterRead.present_type_id"
     )
@@ -1001,10 +1048,10 @@ class Pc(Base, PersistentClass):
 
     __tablename__ = "pc"
     id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    code = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     eras = relationship("Era", backref="pc")
     valid_mtc_llfc_ssc_pcs = relationship("MtcLlfcSscPc", backref="pc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
@@ -1019,7 +1066,7 @@ class Pc(Base, PersistentClass):
 class Batch(Base, PersistentClass):
     __tablename__ = "batch"
     id = Column(Integer, primary_key=True)
-    contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False)
+    contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False, index=True)
     reference = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
     bills = relationship("Bill", backref="batch")
@@ -1114,10 +1161,10 @@ class Party(Base, PersistentClass):
     market_role_id = Column(Integer, ForeignKey("market_role.id"), index=True)
     participant_id = Column(Integer, ForeignKey("participant.id"), index=True)
     name = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     users = relationship("User", backref="party")
-    dno_code = Column(String)
+    dno_code = Column(String, index=True)
     contracts = relationship("Contract", back_populates="party")
     llfcs = relationship("Llfc", backref="dno")
     supplies = relationship("Supply", backref="dno")
@@ -1522,11 +1569,11 @@ class Contract(Base, PersistentClass):
 
     __tablename__ = "contract"
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, index=True)
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
     state = Column(Text, nullable=False)
-    market_role_id = Column(Integer, ForeignKey("market_role.id"))
+    market_role_id = Column(Integer, ForeignKey("market_role.id"), index=True)
     __table_args__ = (UniqueConstraint("name", "market_role_id"),)
     rate_scripts = relationship(
         "RateScript",
@@ -1534,10 +1581,10 @@ class Contract(Base, PersistentClass):
         primaryjoin="Contract.id==RateScript.contract_id",
     )
     batches = relationship("Batch", backref="contract")
-    party_id = Column(Integer, ForeignKey("party.id"))
+    party_id = Column(Integer, ForeignKey("party.id"), index=True)
     party = relationship("Party", back_populates="contracts")
-    start_rate_script_id = Column(Integer, ForeignKey("rate_script.id"))
-    finish_rate_script_id = Column(Integer, ForeignKey("rate_script.id"))
+    start_rate_script_id = Column(Integer, ForeignKey("rate_script.id"), index=True)
+    finish_rate_script_id = Column(Integer, ForeignKey("rate_script.id"), index=True)
 
     start_rate_script = relationship(
         "RateScript", primaryjoin="RateScript.id==Contract.start_rate_script_id"
@@ -2057,11 +2104,13 @@ class Site(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            None,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            None,
             set(),
         )
         sess.flush()
@@ -2233,8 +2282,8 @@ class User(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     email_address = Column(String, unique=True, nullable=False)
     password_digest = Column(String, nullable=False)
-    user_role_id = Column(Integer, ForeignKey("user_role.id"))
-    party_id = Column(Integer, ForeignKey("party.id"))
+    user_role_id = Column(Integer, ForeignKey("user_role.id"), index=True)
+    party_id = Column(Integer, ForeignKey("party.id"), index=True)
 
     def __init__(self, email_address, password, user_role, party):
         self.update(email_address, user_role, party)
@@ -2446,14 +2495,14 @@ class RateScript(Base, PersistentClass):
 
     __tablename__ = "rate_script"
     id = Column(Integer, primary_key=True)
-    contract_id = Column(Integer, ForeignKey("contract.id"))
+    contract_id = Column(Integer, ForeignKey("contract.id"), index=True)
     contract = relationship(
         "Contract",
         back_populates="rate_scripts",
         primaryjoin="Contract.id==RateScript.contract_id",
     )
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True), nullable=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), nullable=True, index=True)
     script = Column(Text, nullable=False)
 
     def __init__(self, contract, start_date, finish_date, script):
@@ -2474,14 +2523,14 @@ class RateScript(Base, PersistentClass):
 class Llfc(Base, PersistentClass):
     __tablename__ = "llfc"
     id = Column(Integer, primary_key=True)
-    dno_id = Column(Integer, ForeignKey("party.id"))
-    code = Column(String, nullable=False)
+    dno_id = Column(Integer, ForeignKey("party.id"), index=True)
+    code = Column(String, nullable=False, index=True)
     description = Column(String)
-    voltage_level_id = Column(Integer, ForeignKey("voltage_level.id"))
-    is_substation = Column(Boolean, nullable=False)
-    is_import = Column(Boolean, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    voltage_level_id = Column(Integer, ForeignKey("voltage_level.id"), index=True)
+    is_substation = Column(Boolean, nullable=False, index=True)
+    is_import = Column(Boolean, nullable=False, index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     lafs = relationship("Laf", backref="llfc")
     mtc_llfcs = relationship("MtcLlfc", backref="llfc")
     mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="llfc")
@@ -2523,8 +2572,8 @@ class Llfc(Base, PersistentClass):
 class Laf(Base, PersistentClass):
     __tablename__ = "laf"
     id = Column(Integer, primary_key=True)
-    llfc_id = Column(Integer, ForeignKey("llfc.id"), nullable=False)
-    timestamp = Column(DateTime(timezone=True), nullable=False)
+    llfc_id = Column(Integer, ForeignKey("llfc.id"), nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
     value = Column(Numeric, nullable=False)
     __table_args__ = (UniqueConstraint("llfc_id", "timestamp"),)
 
@@ -2577,10 +2626,10 @@ class DtcMeterType(Base, PersistentClass):
 class MeterType(Base, PersistentClass):
     __tablename__ = "meter_type"
     id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False)
+    code = Column(String, nullable=False, index=True)
     description = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     mtc_participants = relationship("MtcParticipant", backref="meter_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2650,10 +2699,10 @@ class MeterPaymentType(Base, PersistentClass):
 
     __tablename__ = "meter_payment_type"
     id = Column(Integer, primary_key=True)
-    code = Column(String, nullable=False)
+    code = Column(String, nullable=False, index=True)
     description = Column(String, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     mtc_participants = relationship("MtcParticipant", backref="meter_payment_type")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2668,10 +2717,10 @@ class Mtc(Base, PersistentClass):
     __tablename__ = "mtc"
     id = Column(Integer, primary_key=True)
     code = Column(String, nullable=False, index=True)
-    is_common = Column(Boolean, nullable=False)
-    has_related_metering = Column(Boolean, nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    is_common = Column(Boolean, nullable=False, index=True)
+    has_related_metering = Column(Boolean, nullable=False, index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     mtc_participants = relationship("MtcParticipant", backref="mtc")
     __table_args__ = (UniqueConstraint("code", "valid_from"),)
 
@@ -2754,13 +2803,15 @@ class MtcParticipant(Base, PersistentClass):
     mtc_id = Column(Integer, ForeignKey("mtc.id"), index=True)
     participant_id = Column(Integer, ForeignKey("participant.id"), index=True)
     description = Column(String, nullable=False)
-    has_comms = Column(Boolean, nullable=False)
-    is_hh = Column(Boolean, nullable=False)
-    meter_type_id = Column(Integer, ForeignKey("meter_type.id"))
-    meter_payment_type_id = Column(Integer, ForeignKey("meter_payment_type.id"))
+    has_comms = Column(Boolean, nullable=False, index=True)
+    is_hh = Column(Boolean, nullable=False, index=True)
+    meter_type_id = Column(Integer, ForeignKey("meter_type.id"), index=True)
+    meter_payment_type_id = Column(
+        Integer, ForeignKey("meter_payment_type.id"), index=True
+    )
     tpr_count = Column(Integer)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     eras = relationship("Era", backref="mtc_participant")
     mtc_sscs = relationship("MtcSsc", backref="mtc_participant")
     mtc_llfcs = relationship("MtcLlfc", backref="mtc_participant")
@@ -2877,8 +2928,8 @@ class MtcLlfc(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     mtc_participant_id = Column(Integer, ForeignKey("mtc_participant.id"), index=True)
     llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     __table_args__ = (UniqueConstraint("mtc_participant_id", "llfc_id", "valid_from"),)
 
     def __init__(
@@ -2962,8 +3013,8 @@ class MtcSsc(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     mtc_participant_id = Column(Integer, ForeignKey("mtc_participant.id"), index=True)
     ssc_id = Column(Integer, ForeignKey("ssc.id"), index=True)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="mtc_ssc")
     __table_args__ = (UniqueConstraint("mtc_participant_id", "ssc_id", "valid_from"),)
 
@@ -3018,8 +3069,8 @@ class MtcLlfcSsc(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     mtc_ssc_id = Column(Integer, ForeignKey("mtc_ssc.id"), index=True)
     llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     mtc_llfc_ssc_pcs = relationship("MtcLlfcSscPc", backref="mtc_llfc_ssc")
     __table_args__ = (UniqueConstraint("mtc_ssc_id", "llfc_id", "valid_from"),)
 
@@ -3077,8 +3128,8 @@ class Tpr(Base, PersistentClass):
     __tablename__ = "tpr"
     id = Column(BigInteger, primary_key=True)
     code = Column(String, unique=True, nullable=False)
-    is_teleswitch = Column(Boolean, nullable=False)
-    is_gmt = Column(Boolean, nullable=False)
+    is_teleswitch = Column(Boolean, nullable=False, index=True)
+    is_gmt = Column(Boolean, nullable=False, index=True)
     clock_intervals = relationship("ClockInterval", backref="tpr")
     measurement_requirements = relationship("MeasurementRequirement", backref="tpr")
     register_reads = relationship("RegisterRead", backref="tpr")
@@ -3151,7 +3202,7 @@ class Tpr(Base, PersistentClass):
 class ClockInterval(Base, PersistentClass):
     __tablename__ = "clock_interval"
     id = Column(Integer, primary_key=True)
-    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False)
+    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False, index=True)
     day_of_week = Column(Integer, nullable=False)
     start_day = Column(Integer, nullable=False)
     start_month = Column(Integer, nullable=False)
@@ -3190,8 +3241,8 @@ class ClockInterval(Base, PersistentClass):
 class MeasurementRequirement(Base, PersistentClass):
     __tablename__ = "measurement_requirement"
     id = Column(Integer, primary_key=True)
-    ssc_id = Column(Integer, ForeignKey("ssc.id"), nullable=False)
-    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False)
+    ssc_id = Column(Integer, ForeignKey("ssc.id"), nullable=False, index=True)
+    tpr_id = Column(Integer, ForeignKey("tpr.id"), nullable=False, index=True)
     __table_args__ = (UniqueConstraint("ssc_id", "tpr_id"),)
 
     def __init__(self, ssc, tpr):
@@ -3209,11 +3260,11 @@ class MeasurementRequirement(Base, PersistentClass):
 class Ssc(Base, PersistentClass):
     __tablename__ = "ssc"
     id = Column(BigInteger, primary_key=True)
-    code = Column(String, nullable=False)
+    code = Column(String, nullable=False, index=True)
     description = Column(String)
-    is_import = Column(Boolean)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    is_import = Column(Boolean, index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     measurement_requirements = relationship("MeasurementRequirement", backref="ssc")
     eras = relationship("Era", backref="ssc")
     mtc_sscs = relationship("MtcSsc", backref="ssc")
@@ -3263,10 +3314,12 @@ class Ssc(Base, PersistentClass):
 class MtcLlfcSscPc(Base, PersistentClass):
     __tablename__ = "mtc_llfc_ssc_pc"
     id = Column(BigInteger, primary_key=True)
-    mtc_llfc_ssc_id = Column(BigInteger, ForeignKey("mtc_llfc_ssc.id"), nullable=False)
-    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False)
-    valid_from = Column(DateTime(timezone=True), nullable=False)
-    valid_to = Column(DateTime(timezone=True))
+    mtc_llfc_ssc_id = Column(
+        BigInteger, ForeignKey("mtc_llfc_ssc.id"), nullable=False, index=True
+    )
+    pc_id = Column(BigInteger, ForeignKey("pc.id"), nullable=False, index=True)
+    valid_from = Column(DateTime(timezone=True), nullable=False, index=True)
+    valid_to = Column(DateTime(timezone=True), index=True)
     __table_args__ = (UniqueConstraint("mtc_llfc_ssc_id", "pc_id", "valid_from"),)
 
     def __init__(self, mtc_llfc_ssc, pc, valid_from, valid_to):
@@ -3317,9 +3370,10 @@ class MtcLlfcSscPc(Base, PersistentClass):
 class SiteEra(Base, PersistentClass):
     __tablename__ = "site_era"
     id = Column(Integer, primary_key=True)
-    site_id = Column(Integer, ForeignKey("site.id"))
-    era_id = Column(Integer, ForeignKey("era.id"))
-    is_physical = Column(Boolean, nullable=False)
+    site_id = Column(Integer, ForeignKey("site.id"), index=True)
+    era_id = Column(Integer, ForeignKey("era.id"), index=True)
+    is_physical = Column(Boolean, nullable=False, index=True)
+    __table_args__ = (UniqueConstraint("site_id", "era_id"),)
 
     def __init__(self, site, era, is_physical):
         self.site = site
@@ -3330,7 +3384,7 @@ class SiteEra(Base, PersistentClass):
 class EnergisationStatus(Base, PersistentClass):
     __tablename__ = "energisation_status"
     id = Column(Integer, primary_key=True)
-    code = Column(String, unique=True, nullable=False)
+    code = Column(String, unique=True, nullable=False, index=True)
     description = Column(String, unique=True, nullable=False)
     eras = relationship("Era", backref="energisation_status")
 
@@ -3359,48 +3413,56 @@ class EnergisationStatus(Base, PersistentClass):
 class Era(Base, PersistentClass):
     __tablename__ = "era"
     id = Column(Integer, primary_key=True)
-    supply_id = Column(Integer, ForeignKey("supply.id"), nullable=False)
+    supply_id = Column(Integer, ForeignKey("supply.id"), nullable=False, index=True)
     site_eras = relationship("SiteEra", backref="era")
-    start_date = Column(DateTime(timezone=True), nullable=False)
-    finish_date = Column(DateTime(timezone=True))
-    mop_contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
+    mop_contract_id = Column(
+        Integer, ForeignKey("contract.id"), nullable=False, index=True
+    )
     mop_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.mop_contract_id"
     )
-    dc_contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False)
+    dc_contract_id = Column(
+        Integer, ForeignKey("contract.id"), nullable=False, index=True
+    )
     dc_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.dc_contract_id"
     )
     msn = Column(String)
-    pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False)
+    pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False, index=True)
     mtc_participant_id = Column(
-        Integer, ForeignKey("mtc_participant.id"), nullable=False
+        Integer, ForeignKey("mtc_participant.id"), nullable=False, index=True
     )
-    cop_id = Column(Integer, ForeignKey("cop.id"), nullable=False)
-    comm_id = Column(Integer, ForeignKey("comm.id"), nullable=False)
-    ssc_id = Column(Integer, ForeignKey("ssc.id"))
+    cop_id = Column(Integer, ForeignKey("cop.id"), nullable=False, index=True)
+    comm_id = Column(Integer, ForeignKey("comm.id"), nullable=False, index=True)
+    ssc_id = Column(Integer, ForeignKey("ssc.id"), index=True)
     energisation_status_id = Column(
-        Integer, ForeignKey("energisation_status.id"), nullable=False
+        Integer, ForeignKey("energisation_status.id"), nullable=False, index=True
     )
-    dtc_meter_type_id = Column(Integer, ForeignKey("dtc_meter_type.id"))
-    imp_mpan_core = Column(String)
-    imp_llfc_id = Column(Integer, ForeignKey("llfc.id"))
+    dtc_meter_type_id = Column(Integer, ForeignKey("dtc_meter_type.id"), index=True)
+    imp_mpan_core = Column(String, index=True)
+    imp_llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
     imp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.imp_llfc_id")
-    imp_supplier_contract_id = Column(Integer, ForeignKey("contract.id"))
+    imp_supplier_contract_id = Column(Integer, ForeignKey("contract.id"), index=True)
     imp_supplier_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.imp_supplier_contract_id"
     )
-    imp_supplier_account = Column(String)
+    imp_supplier_account = Column(String, index=True)
     imp_sc = Column(Integer)
-    exp_mpan_core = Column(String)
-    exp_llfc_id = Column(Integer, ForeignKey("llfc.id"))
+    imp_ca_id = Column(Integer, ForeignKey("ca.id"), index=True)
+    imp_ca = relationship("Ca", primaryjoin="Ca.id==Era.imp_ca_id")
+    exp_mpan_core = Column(String, index=True)
+    exp_llfc_id = Column(Integer, ForeignKey("llfc.id"), index=True)
     exp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.exp_llfc_id")
-    exp_supplier_contract_id = Column(Integer, ForeignKey("contract.id"))
+    exp_supplier_contract_id = Column(Integer, ForeignKey("contract.id"), index=True)
     exp_supplier_contract = relationship(
         "Contract", primaryjoin="Contract.id==Era.exp_supplier_contract_id"
     )
-    exp_supplier_account = Column(String)
+    exp_supplier_account = Column(String, index=True)
     exp_sc = Column(Integer)
+    exp_ca_id = Column(Integer, ForeignKey("ca.id"), index=True)
+    exp_ca = relationship("Ca", primaryjoin="Ca.id==Era.exp_ca_id")
     channels = relationship("Channel", backref="era")
 
     def __init__(
@@ -3424,11 +3486,13 @@ class Era(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         self.supply = supply
         self.update(
@@ -3450,11 +3514,13 @@ class Era(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            exp_ca,
         )
 
     def attach_site(self, sess, site, is_location=False):
@@ -3525,11 +3591,13 @@ class Era(Base, PersistentClass):
                 self.imp_supplier_contract,
                 self.imp_supplier_account,
                 self.imp_sc,
+                self.imp_ca,
                 self.exp_mpan_core,
                 None if self.exp_llfc is None else self.exp_llfc.code,
                 self.exp_supplier_contract,
                 self.exp_supplier_account,
                 self.exp_sc,
+                self.exp_ca,
             )
 
     def update(
@@ -3552,11 +3620,13 @@ class Era(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
@@ -3615,6 +3685,7 @@ class Era(Base, PersistentClass):
                     "supplier_contract",
                     "supplier_account",
                     "sc",
+                    "ca",
                 ]:
                     setattr(self, polarity + "_" + suf, None)
                 continue
@@ -3680,6 +3751,21 @@ class Era(Base, PersistentClass):
                 )
 
             setattr(self, polarity + "_sc", sc)
+
+            ca = locs[f"{polarity}_ca"]
+            if ca is not None:
+                if ca.start_date > start_date:
+                    raise BadRequest(
+                        f"For the era {self.id} the {polarity} connection agreement "
+                        f"{ca.id} starts at {hh_format(ca.start_date)} which is after "
+                        f"the start of the era at {hh_format(start_date)}."
+                    )
+
+                if hh_before(ca.finish_date, finish_date):
+                    raise BadRequest(
+                        "The connection agreement finishes before the era."
+                    )
+            setattr(self, f"{polarity}_ca", ca)
 
             if self.supply.dno.dno_code not in ("99", "88"):
                 if pc.code == "00":
@@ -3887,11 +3973,12 @@ METER_CATEGORY = {
 class Channel(Base, PersistentClass):
     __tablename__ = "channel"
     id = Column(Integer, primary_key=True)
-    era_id = Column(Integer, ForeignKey("era.id"))
-    imp_related = Column(Boolean, nullable=False)
+    era_id = Column(Integer, ForeignKey("era.id"), index=True)
+    imp_related = Column(Boolean, nullable=False, index=True)
     channel_type = Column(
         Enum("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP", name="channel_type"),
         nullable=False,
+        index=True,
     )
     hh_data = relationship("HhDatum", backref="channel")
     snag = relationship("Snag", backref="channel")
@@ -4131,11 +4218,11 @@ class HhDatum(Base, PersistentClass):
 
     __tablename__ = "hh_datum"
     id = Column(Integer, primary_key=True)
-    channel_id = Column(Integer, ForeignKey("channel.id"))
-    start_date = Column(DateTime(timezone=True), nullable=False)
+    channel_id = Column(Integer, ForeignKey("channel.id"), index=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     value = Column(Numeric, nullable=False)
-    status = Column(String, nullable=False)
-    last_modified = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String, nullable=False, index=True)
+    last_modified = Column(DateTime(timezone=True), nullable=False, index=True)
     __table_args__ = (UniqueConstraint("channel_id", "start_date"),)
 
     def __init__(self, channel, datum_raw):
@@ -4272,10 +4359,12 @@ class Supply(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     note = Column(Text, nullable=False)
-    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    generator_type_id = Column(Integer, ForeignKey("generator_type.id"))
-    gsp_group_id = Column(Integer, ForeignKey("gsp_group.id"), nullable=False)
-    dno_id = Column(Integer, ForeignKey("party.id"), nullable=False)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False, index=True)
+    generator_type_id = Column(Integer, ForeignKey("generator_type.id"), index=True)
+    gsp_group_id = Column(
+        Integer, ForeignKey("gsp_group.id"), nullable=False, index=True
+    )
+    dno_id = Column(Integer, ForeignKey("party.id"), nullable=False, index=True)
     eras = relationship("Era", backref="supply", order_by="Era.start_date")
     bills = relationship("Bill", backref="supply")
 
@@ -4366,11 +4455,13 @@ class Supply(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         if era.supply != self:
             raise Exception("The era doesn't belong to this supply.")
@@ -4512,11 +4603,13 @@ class Supply(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            exp_ca,
         )
 
         if prev_era is not None:
@@ -4591,11 +4684,13 @@ class Supply(Base, PersistentClass):
             template_era.imp_supplier_contract,
             template_era.imp_supplier_account,
             template_era.imp_sc,
+            template_era.imp_ca,
             template_era.exp_mpan_core,
             exp_llfc_code,
             template_era.exp_supplier_contract,
             template_era.exp_supplier_account,
             template_era.exp_sc,
+            template_era.exp_ca,
             channel_set,
         )
 
@@ -4621,11 +4716,13 @@ class Supply(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
         channel_set,
     ):
         covered_era = None
@@ -4684,11 +4781,13 @@ class Supply(Base, PersistentClass):
                 imp_supplier_contract,
                 imp_supplier_account,
                 imp_sc,
+                imp_ca,
                 exp_mpan_core,
                 exp_llfc_code,
                 exp_supplier_contract,
                 exp_supplier_account,
                 exp_sc,
+                exp_ca,
             )
         sess.add(era)
         sess.flush()
@@ -4780,7 +4879,7 @@ class Supply(Base, PersistentClass):
 class Report(Base, PersistentClass):
     __tablename__ = "report"
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False, index=True)
     script = Column(Text, nullable=False)
     template = Column(Text, nullable=False)
 
@@ -5058,7 +5157,7 @@ class Scenario(Base, PersistentClass):
 
     __tablename__ = "scenario"
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False, index=True)
     properties = Column(Text, nullable=False)
 
     def __init__(self, name, properties):
@@ -5182,8 +5281,8 @@ class SiteGEra(Base, PersistentClass):
     __tablename__ = "site_g_era"
     id = Column(Integer, primary_key=True)
     site_id = Column(Integer, ForeignKey("site.id"))
-    g_era_id = Column(Integer, ForeignKey("g_era.id"))
-    is_physical = Column(Boolean, nullable=False)
+    g_era_id = Column(Integer, ForeignKey("g_era.id"), index=True)
+    is_physical = Column(Boolean, nullable=False, index=True)
 
     def __init__(self, site, g_era, is_physical):
         self.site = site
@@ -5642,8 +5741,8 @@ class GBill(Base, PersistentClass):
     g_supply_id = Column(Integer, ForeignKey("g_supply.id"), nullable=False, index=True)
     bill_type_id = Column(Integer, ForeignKey("bill_type.id"), index=True)
     bill_type = relationship("BillType", primaryjoin="BillType.id==GBill.bill_type_id")
-    reference = Column(String, nullable=False)
-    account = Column(String, nullable=False)
+    reference = Column(String, nullable=False, index=True)
+    account = Column(String, nullable=False, index=True)
     issue_date = Column(DateTime(timezone=True), nullable=False, index=True)
     start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     finish_date = Column(DateTime(timezone=True), nullable=False, index=True)
@@ -5848,7 +5947,7 @@ class GBatch(Base, PersistentClass):
 class GReadingFrequency(Base, PersistentClass):
     __tablename__ = "g_reading_frequency"
     id = Column("id", Integer, primary_key=True)
-    code = Column(String, nullable=False)
+    code = Column(String, nullable=False, index=True)
     description = Column(String, nullable=False)
 
     def __init__(self, code, description):
@@ -5874,7 +5973,7 @@ class GContract(Base, PersistentClass):
     __tablename__ = "g_contract"
     id = Column("id", Integer, primary_key=True)
     is_industry = Column(Boolean, nullable=False, index=True)
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, index=True)
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
     state = Column(Text, nullable=False)
@@ -5893,6 +5992,7 @@ class GContract(Base, PersistentClass):
             use_alter=True,
             name="g_contract_start_g_rate_script_id_fkey",
         ),
+        index=True,
     )
     finish_g_rate_script_id = Column(
         Integer,
@@ -5901,6 +6001,7 @@ class GContract(Base, PersistentClass):
             use_alter=True,
             name="g_contract_finish_g_rate_script_id_fkey",
         ),
+        index=True,
     )
 
     start_g_rate_script = relationship(
@@ -7644,6 +7745,17 @@ def db_upgrade_51_to_52(sess, root_path):
     sess.execute(text("alter table era drop column dc_account;"))
 
 
+def db_upgrade_52_to_53(sess, root_path):
+    sess.execute(text("alter table era add imp_ca_id integer references ca (id);"))
+    sess.execute(text("alter table era add exp_ca_id integer references ca (id);"))
+    sess.execute(
+        text("CREATE INDEX IF NOT EXISTS ix_era_imp_ca_id ON era (imp_ca_id);")
+    )
+    sess.execute(
+        text("CREATE INDEX IF NOT EXISTS ix_era_exp_ca_id ON era (exp_ca_id);")
+    )
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7681,6 +7793,7 @@ upgrade_funcs.extend(
         db_upgrade_49_to_50,
         db_upgrade_50_to_51,
         db_upgrade_51_to_52,
+        db_upgrade_52_to_53,
     ]
 )
 

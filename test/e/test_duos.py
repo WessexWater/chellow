@@ -433,6 +433,7 @@ def test_lafs_hist(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
+    ds.non_primary_elements = set()
     dno_rates = {
         "_L": {
             "bands": {},
@@ -514,6 +515,7 @@ def test_lafs_forecast_none(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
+    ds.non_primary_elements = set()
     dno_rates = {
         "_L": {
             "bands": {},
@@ -586,6 +588,7 @@ def test_lafs_forecast(mocker, sess):
     ds.get_data_sources = mocker.Mock(return_value=iter([ds]))
     ds.caches = caches
     ds.sess = sess
+    ds.non_primary_elements = set()
     dno_rates = {
         "_L": {
             "bands": {},

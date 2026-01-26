@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|hh_format}}
+{% endblock %}
+
+
+{% block inside_head %}
+	<style>
+		#doc {
+			resize: both;
+			overflow: auto;
+			width: 40em;
+			height: 20em;
+			border: thin solid;
+		}
+
+		#doc iframe {
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
+	</style>
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/cas">Connection Agreements</a> &raquo; 
+	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|hh_format}}</a>
+	[<a href="/e/cas/{{ca.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+	{% set props = ca.properties %}
+	<table>
+		<caption>Connection Agreement</caption>	
+		<thead>
+			<tr>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Filename</th>
+				<th>File Type</th>
+				<th>Download</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{ca.start_date|hh_format}}</td>
+				<td>{{ca.finish_date|hh_format}}</td>
+				<td>{{props.get('filename')}}</td>
+				<td>{{props.get('mime_type')}}</td>
+				<td><a href="/e/cas/{{ca.id}}/download">Download</a></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<table>
+		<caption>Associated Elements</caption>	
+		<thead>
+			<tr>
+				<th rowspan="2">Name</th>
+				<th colspan="3">Primary Supply</th>
+			</tr>
+			<tr>
+				<th>View</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for elname, sup in elements.items() %}
+				{% set era = sup.eras[-1] %}
+				<tr>
+					<td>{{elname}}</td>
+					<td><a href="/e/supplies/{{sup.id}}">View</a></td>
+					<td>{{era.imp_mpan_core or ''}}</td>
+					<td>{{era.exp_mpan_core or ''}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<section>
+		<h3>Document</h3>
+
+		<div id="doc">
+			<iframe src="/e/cas/{{ca.id}}/display"></iframe>
+		</div>
+	</section>
+
+	<table>
+		<caption>Attached Eras</caption>
+		<thead>
+			<tr>
+				<th>View Supply</th>
+				<th>Start Date</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for era in eras %}
+				<tr>
+					<td><a href="/e/supplies/{{era.supply.id}}">View</a></td>
+					<td>{{era.start_date|hh_format}}</td>
+					<td>
+						{% if era.imp_mpan_core is not none %}
+							{{era.imp_mpan_core}}
+						{% endif %}
+					</td>
+					<td>
+						{% if era.exp_mpan_core is not none %}
+							{{era.exp_mpan_core}}
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h3>Properties</h3>
+
+	<pre>{{props}}</pre>
+
+{% endblock %}

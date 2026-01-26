@@ -12,9 +12,10 @@ BANDED_START = to_utc(ct_datetime(2023, 4, 1))
 
 
 def hh(ds):
-    for hh in ds.hh_data:
-        if hh["start-date"] >= BANDED_START:
-            _process_banded_hh(ds, hh)
+    if "tnuos" not in ds.non_primary_elements:
+        for hh in ds.hh_data:
+            if hh["start-date"] >= BANDED_START:
+                _process_banded_hh(ds, hh)
 
 
 BAND_LOOKUP = {

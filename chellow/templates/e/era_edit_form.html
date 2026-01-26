@@ -29,14 +29,12 @@
 			era.mop_contract.id)}}
 		{% endfor %}
 	</select>
-	<label>MOP Account</label> {{input_text('mop_account', era.mop_account)}}
 	<label>DC Contract</label>
 	<select name="dc_contract_id">
 		{% for contract in dc_contracts %}
 			{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
 		{% endfor %}
 	</select>
-	<label>DC Account</label> {{input_text('dc_account', era.dc_account)}}
 	<label>Meter Serial Number</label> {{input_text('msn', era.msn)}}
 	<label>Profile Class</label>
 	<select name="pc_id">

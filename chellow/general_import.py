@@ -265,11 +265,13 @@ def general_import_era(sess, action, vals, args):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            era.imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            era.exp_ca,
         )
     elif action == "delete":
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
@@ -507,11 +509,13 @@ def general_import_era(sess, action, vals, args):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            existing_era.imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            existing_era.exp_ca,
             channel_set,
         )
 

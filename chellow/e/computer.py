@@ -709,6 +709,12 @@ class SiteSource(DataSource):
             self.ssc = self.era.ssc
             self.ssc_code = None if self.ssc is None else self.ssc.code
             self.energisation_status_code = era.energisation_status.code
+            self.ca = self.era.imp_ca
+            self.non_primary_elements = set()
+            if self.ca is not None:
+                for elname, sup_id in self.ca.properties.get("elements", {}).items():
+                    if self.supply.id != sup_id:
+                        self.non_primary_elements.add(elname)
 
         era_q = (
             select(Era.id)
@@ -1023,6 +1029,7 @@ class SupplySource(DataSource):
                 )
             else:
                 self.supplier_contract = era.imp_supplier_contract
+            self.ca = era.imp_ca
         else:
             if era.exp_mpan_core in self.era_map_mpan_cores:
                 self.mpan_core = self.era_map_mpan_cores[era.exp_mpan_core]
@@ -1058,6 +1065,8 @@ class SupplySource(DataSource):
                 )
             else:
                 self.supplier_contract = era.exp_supplier_contract
+
+            self.ca = era.exp_ca
 
         if era.dc_contract.id in self.era_map_dc_contracts:
             self.dc_contract = Contract.get_dc_by_id(
@@ -1136,6 +1145,12 @@ class SupplySource(DataSource):
         self.consumption_info = ""
         self.normal_reads = set()
         hist_map = {}
+
+        self.non_primary_elements = set()
+        if self.ca is not None:
+            for elname, sup_id in self.ca.properties.get("elements", {}).items():
+                if self.supply.id != sup_id:
+                    self.non_primary_elements.add(elname)
 
         if self.years_back == 0:
             hist_eras = [self.era]

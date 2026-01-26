@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Connection Agreements
+{% endblock %}
+
+{% block nav %}
+	Connection Agreements
+{% endblock %}
+
+{% block content %}
+
+	<table>
+		<caption>Connection Agreements</caption>	
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Filename</th>
+				<th>File Type</th>
+				<th>Download</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for ca in cas %}
+				{% set props = ca.properties %}
+				<tr>
+					<td><a href="/e/cas/{{ca.id}}">View</a></td>
+					<td>{{ca.start_date|hh_format}}</td>
+					<td>{{ca.finish_date|hh_format}}</td>
+					<td>
+						{% if 'filename' in props %}
+							{{props['filename']}}
+						{% endif %}
+					</td>
+					<td>
+						{% if 'mime_type' in props %}
+							{{props['mime_type']}}
+						{% endif %}
+					</td>
+					<td><a href="/e/cas/{{ca.id}}/download">Download</a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}

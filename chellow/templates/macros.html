@@ -1,4 +1,4 @@
-{%- macro input_date(prefix='timestamp', initial=None, resolution='minute', is_dynamic=True) -%}
+{%- macro input_date(prefix='timestamp', initial=None, resolution='minute', is_dynamic=True, has_is_ended=False) -%}
 	{% set year_name = prefix + '_year' %}
 	{% set month_name = prefix + '_month' %}
 	{% set day_name = prefix + '_day' %}
@@ -9,8 +9,16 @@
 			{%- if is_dynamic -%}
 				, change
 			{%- endif -%}" hx-include="this">
+
 		<input type="hidden" name="prefix" value="{{prefix}}">
 		<input type="hidden" name="resolution" value="{{resolution}}">
+		<input type="hidden" name="has_is_ended"
+			{% if has_is_ended %}
+				value="true"
+			{% else %}
+				value="false"
+			{% endif %}
+			>
 
 		{% if initial %}
 			{% set initial_ct = initial|to_ct %}
@@ -19,12 +27,6 @@
 			{{input_hidden(day_name, initial=initial_ct.day)}}
 			{{input_hidden(hour_name, initial=initial_ct.hour)}}
 			{{input_hidden(minute_name, initial=initial_ct.minute)}}
-		{% else %}
-			{{input_hidden(year_name, initial=None)}}
-			{{input_hidden(month_name, initial=None)}}
-			{{input_hidden(day_name, initial=None)}}
-			{{input_hidden(hour_name, initial=None)}}
-			{{input_hidden(minute_name, initial=None)}}
 		{% endif %}
 	</div>
 {%- endmacro -%}
