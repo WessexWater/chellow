@@ -6,6 +6,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO, StringIO
 from itertools import chain
+from mimetypes import guess_type
 
 
 from dateutil.relativedelta import relativedelta
@@ -56,6 +57,7 @@ from chellow.models import (
     Bill,
     BillType,
     CHANNEL_TYPES,
+    Ca,
     Channel,
     ClockInterval,
     Comm,
@@ -157,6 +159,106 @@ def asset_comparison_get():
     props = config_contract.make_properties()
     description = props.get("asset_comparison", "")
     return render_template("asset_comparison.html", description=description)
+
+
+@e.route("/eras/<int:era_id>/attach_ca")
+def era_ca_attach_get(era_id):
+    is_import = req_bool("is_import")
+    era = Era.get_by_id(g.sess, era_id)
+    cas_q = select(Ca).where(
+        or_(Ca.finish_date == null(), Ca.finish_date >= era.start_date)
+    )
+    if era.finish_date is not None:
+        cas_q = cas_q.where(Ca.start_date <= era.finish_date)
+    cas = g.sess.scalars(cas_q).all()
+
+    return render_template("era_ca_attach.html", era=era, cas=cas, is_import=is_import)
+
+
+@e.route("/eras/<int:era_id>/attach_ca", methods=["POST"])
+def era_ca_attach_post(era_id):
+    era = Era.get_by_id(g.sess, era_id)
+    is_import = req_bool("is_import")
+    if "ca_file" in request.files:
+        start_date = req_hh_date("start")
+        finish_date = req_hh_date("finish")
+        file_item = request.files["ca_file"]
+        filename = file_item.filename
+        if filename == "":
+            raise BadRequest("No file selected")
+        props = {"filename": filename}
+        props["mime_type"], props["encoding"] = guess_type(filename)
+        data = file_item.stream.read()
+        ca = Ca.insert(g.sess, start_date, finish_date, data, props)
+        if is_import:
+            era.imp_ca = ca
+        else:
+            era.exp_ca = ca
+        g.sess.commit()
+        return chellow_redirect(f"/cas/{ca.id}", 303)
+    else:
+        ca_id = req_int("ca_id")
+        ca = Ca.get_by_id(g.sess, ca_id)
+        if is_import:
+            era.imp_ca = ca
+        else:
+            era.exp_ca = ca
+        g.sess.commit()
+        return chellow_redirect(f"/supplies/{era.supply.id}", 303)
+
+
+@e.route("/cas/<int:ca_id>")
+def ca_get(ca_id):
+    ca = Ca.get_by_id(g.sess, ca_id)
+    eras = g.sess.scalars(
+        select(Era)
+        .where(or_(Era.imp_ca == ca, Era.exp_ca == ca))
+        .order_by(Era.supply_id, Era.start_date.desc())
+    )
+    return render_template("ca.html", ca=ca, eras=eras)
+
+
+@e.route("/cas/<int:ca_id>/edit")
+def ca_edit_get(ca_id):
+    ca = Ca.get_by_id(g.sess, ca_id)
+    return render_template("ca_edit.html", ca=ca)
+
+
+@e.route("/cas/<int:ca_id>/edit", methods=["POST"])
+def ca_edit_post(ca_id):
+    ca = Ca.get_by_id(g.sess, ca_id)
+    props = ca.properties
+    try:
+        if "ca_file" in request.files["ca_file"]:
+            file_item = request.files["ca_file"]
+            filename = file_item.filename
+            if filename == "":
+                raise BadRequest("No file selected")
+            props["mime_type"], props["encoding"] = guess_type(filename)
+            ca.data = file_item.stream.read()
+            ca.update_properties(props)
+        else:
+            start_date = req_hh_date("start_date")
+            finish_date = req_hh_date("finish_date")
+            ca.update(g.sess, start_date, finish_date)
+        g.sess.commit()
+        return chellow_redirect(f"/cas/{ca.id}")
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("ca_edit.html", ca=ca), 400)
+
+
+@e.route("/cas/<int:ca_id>/download")
+def ca_download_get(ca_id):
+    ca = Ca.get_by_id(g.sess, ca_id)
+    props = ca.properties
+
+    output = make_response(ca.data)
+    output.headers["Content-Disposition"] = (
+        f'''attachment; filename="{props['filename']}"'''
+    )
+    output.headers["Content-type"] = props["mime_type"]
+    return output
 
 
 @e.route("/csv_sites_triad")
@@ -2333,6 +2435,35 @@ def era_edit_post(era_id):
             site_id = req_int("site_id")
             site = Site.get_by_id(g.sess, site_id)
             era.set_physical_location(g.sess, site)
+            g.sess.commit()
+            return chellow_redirect(f"/supplies/{era.supply.id}", 303)
+        elif "detach_ca" in request.form:
+            is_import = req_bool("is_import")
+            if is_import:
+                ca_id = era.imp_ca_id
+            else:
+                ca_id = era.exp_ca_id
+            if ca_id is None:
+                raise BadRequest(
+                    "The there isn't an import: {is_import} CA for this era."
+                )
+            ca = Ca.get_by_id(g.sess, ca_id)
+
+            eras = g.sess.scalars(
+                select(Era)
+                .where(or_(Era.imp_ca == ca, Era.exp_ca == ca))
+                .order_by(Era.supply_id, Era.start_date.desc())
+            ).all()
+            if len(eras) < 2:
+                raise BadRequest(
+                    "This is the last era attached to the CA, so the CA itself "
+                    "must be deleted instead."
+                )
+            if is_import:
+                era.imp_ca_id = None
+            else:
+                era.exp_ca_id = None
+
             g.sess.commit()
             return chellow_redirect(f"/supplies/{era.supply.id}", 303)
         else:

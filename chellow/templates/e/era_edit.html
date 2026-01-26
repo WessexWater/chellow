@@ -103,7 +103,42 @@
 			{{input_hidden('exp_sc', initial=era.exp_sc)}}
 		</fieldset>
 	</form>
-		
+
+	<section>
+		<h3>Connection Agreements</h3>
+
+		<section>
+			<h4>Import</h4>
+			{% if era.imp_ca %}
+				<a href="/e/cas/{{era.imp_ca.id}}">View</a>
+				<form method="post" action="/e/eras/{{era.id}}/edit">
+					<fieldset>
+						<input type="hidden" name="is_import" value="true">
+						<input type="submit" name="detach_ca" value="Detach">
+					</fieldset>
+				</form>
+			{% else %}
+				<a href="/e/eras/{{era.id}}/attach_ca?is_import=true">Attach</a>
+			{% endif %}
+		</section>
+
+		<section>
+			<h4>Export</h4>
+			{% if era.exp_ca %}
+				<a href="/e/cas/{{era.exp_ca.id}}">View</a>
+				<form method="post" action="/e/eras/{{era.id}}/edit">
+					<fieldset>
+						<input type="hidden" name="is_import" value="false">
+						<input type="submit" name="detach_ca" value="Detach">
+					</fieldset>
+				</form>
+			{% else %}
+				<a href="/e/eras/{{era.id}}/attach_ca?is_import=false">Attach</a>
+			{% endif %}
+		</section>
+	</section>
+
+
 	{% if era.supply.eras|length > 1 %}
 		<form hx-delete="/e/eras/{{era.id}}/edit"
 				hx-confirm="Are you sure you want to delete this era?">

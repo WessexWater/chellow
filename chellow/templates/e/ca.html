@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|hh_format}}
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/cas">Connection Agreements</a> &raquo; 
+	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|hh_format}}</a>
+	[<a href="/e/cas/{{ca.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+
+	<table>
+		<caption>Connection Agreement</caption>	
+		<thead>
+			<tr>
+				<th>Filename</th>
+				<th>File Type</th>
+				<th>Download</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{ca.filename}}</td>
+				<td>{{ca.properties['filename']}}</td>
+				<td><a href="/e/cas/{{ca.id}}/download">Download</a></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h3>Properties</h3>
+
+	<pre>{{ca.properties}}</pre>
+
+	<table>
+		<caption>Attached Eras</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Start Date</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for era in eras %}
+				<tr>
+					<td><a href="/e/eras/{{era.id}}">{{era.id}}</a></td>
+					<td>{{era.start_date|hh_format}}</td>
+					<td>
+						{% if era.imp_mpan_core is not none %}
+							{{era.imp_mpan_core}}
+						{% endif %}
+					</td>
+					<td>
+						{% if era.exp_mpan_core is not none %}
+							{{era.exp_mpan_core}}
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+
+{% endblock %}

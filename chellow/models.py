@@ -213,6 +213,34 @@ class PersistentClass:
         return type(other) is type(self) and other.id == self.id
 
 
+class Ca(Base, PersistentClass):
+    __tablename__ = "ca"
+    id = Column("id", Integer, primary_key=True)
+    start_date = Column(DateTime(timezone=True), nullable=False, index=True)
+    finish_date = Column(DateTime(timezone=True), index=True)
+    data = Column(LargeBinary, nullable=False)
+    properties = Column(JSONB, nullable=False)
+
+    def __init__(self, start_date, finish_date, data, properties):
+        self.update(start_date, finish_date)
+        self.update_properties(properties)
+        self.data = data
+
+    def update(self, start_date, finish_date):
+        self.start_date = start_date
+        self.finish_date = finish_date
+
+    def update_properties(self, properties):
+        self.properties = _jsonize(properties)
+        attributes.flag_modified(self, "properties")
+
+    @staticmethod
+    def insert(sess, start_date, finish_date, data, properties):
+        ca = Ca(start_date, finish_date, data, properties)
+        sess.add(ca)
+        return ca
+
+
 class GReadType(Base, PersistentClass):
     __tablename__ = "g_read_type"
     id = Column("id", Integer, primary_key=True)
@@ -3392,6 +3420,8 @@ class Era(Base, PersistentClass):
     )
     imp_supplier_account = Column(String)
     imp_sc = Column(Integer)
+    imp_ca_id = Column(Integer, ForeignKey("ca.id"))
+    imp_ca = relationship("Ca", primaryjoin="Ca.id==Era.imp_ca_id")
     exp_mpan_core = Column(String)
     exp_llfc_id = Column(Integer, ForeignKey("llfc.id"))
     exp_llfc = relationship("Llfc", primaryjoin="Llfc.id==Era.exp_llfc_id")
@@ -3401,6 +3431,8 @@ class Era(Base, PersistentClass):
     )
     exp_supplier_account = Column(String)
     exp_sc = Column(Integer)
+    exp_ca_id = Column(Integer, ForeignKey("ca.id"))
+    exp_ca = relationship("Ca", primaryjoin="Ca.id==Era.exp_ca_id")
     channels = relationship("Channel", backref="era")
 
     def __init__(
@@ -7644,6 +7676,11 @@ def db_upgrade_51_to_52(sess, root_path):
     sess.execute(text("alter table era drop column dc_account;"))
 
 
+def db_upgrade_52_to_53(sess, root_path):
+    sess.execute(text("alter table era add imp_ca_id integer references ca (id);"))
+    sess.execute(text("alter table era add exp_ca_id integer references ca (id);"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7681,6 +7718,7 @@ upgrade_funcs.extend(
         db_upgrade_49_to_50,
         db_upgrade_50_to_51,
         db_upgrade_51_to_52,
+        db_upgrade_52_to_53,
     ]
 )
 

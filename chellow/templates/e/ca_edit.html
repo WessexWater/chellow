@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}
+&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|hh_format}} &raquo; Edit
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/cas">Connection Agreements</a> &raquo; 
+	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|hh_format}}</a> &raquo; Edit
+{% endblock %}
+
+{% block content %}
+
+	<form action="/e/cas/{{ca.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update This Connection Agreement</legend>	
+			<label>Start Date</label> {{input_date('start', ca.start_date)}}
+
+			<label>Finished?</label> {{input_checkbox('is_ended')}}
+
+			<label>Finish Date</label> {{input_date('finish', finish_date)}}
+
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>
+
+	<form action="/e/cas/{{ca.id}}/edit" method="post">
+		<fieldset>
+			<legend>Replace File</legend>	
+			<input type="file" name="ca_file" value="{{request.values.ca_file}}">
+			<input type="submit" value="Replace">
+		</fieldset>
+	</form>
+
+{% endblock %}
