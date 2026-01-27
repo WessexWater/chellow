@@ -207,6 +207,12 @@ def era_ca_attach_post(era_id):
         return chellow_redirect(f"/supplies/{era.supply.id}", 303)
 
 
+@e.route("/cas")
+def cas_get():
+    cas = g.sess.scalars(select(Ca).order_by(Ca.start_date.desc()))
+    return render_template("cas.html", cas=cas)
+
+
 @e.route("/cas/<int:ca_id>")
 def ca_get(ca_id):
     ca = Ca.get_by_id(g.sess, ca_id)
@@ -224,28 +230,55 @@ def ca_edit_get(ca_id):
     return render_template("ca_edit.html", ca=ca)
 
 
+@e.route("/cas/<int:ca_id>/edit", methods=["DELETE"])
+def ca_edit_delete(ca_id):
+    try:
+        ca = Ca.get_by_id(g.sess, ca_id)
+        ca.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect("/cas", 303)
+    except BadRequest as e:
+        g.sess.rollback()
+        flash(e.description)
+        return make_response(render_template("ca_edit.html", ca=ca), 400)
+
+
 @e.route("/cas/<int:ca_id>/edit", methods=["POST"])
 def ca_edit_post(ca_id):
     ca = Ca.get_by_id(g.sess, ca_id)
     props = ca.properties
     try:
-        if "ca_file" in request.files["ca_file"]:
-            file_item = request.files["ca_file"]
+        if "replace" in request.values:
+            file_item = req_file("ca_file")
             filename = file_item.filename
             if filename == "":
                 raise BadRequest("No file selected")
+            props["filename"] = filename
             props["mime_type"], props["encoding"] = guess_type(filename)
             ca.data = file_item.stream.read()
-            ca.update_properties(props)
         else:
-            start_date = req_hh_date("start_date")
-            finish_date = req_hh_date("finish_date")
-            ca.update(g.sess, start_date, finish_date)
+            start_date = req_hh_date("start")
+            finish_date = req_hh_date("finish")
+            props_elements = req_json("properties_elements")
+            props["elements"] = props_elements
+            ca.update(start_date, finish_date)
+
+        ca.update_properties(props)
         g.sess.commit()
-        return chellow_redirect(f"/cas/{ca.id}")
+        return chellow_redirect(f"/cas/{ca.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(render_template("ca_edit.html", ca=ca), 400)
+
+
+@e.route("/cas/<int:ca_id>/display")
+def ca_display_get(ca_id):
+    ca = Ca.get_by_id(g.sess, ca_id)
+    props = ca.properties
+
+    output = make_response(ca.data)
+    output.headers["Content-type"] = props["mime_type"]
+    return output
 
 
 @e.route("/cas/<int:ca_id>/download")
@@ -254,9 +287,9 @@ def ca_download_get(ca_id):
     props = ca.properties
 
     output = make_response(ca.data)
-    output.headers["Content-Disposition"] = (
-        f'''attachment; filename="{props['filename']}"'''
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'''attachment; filename="{props['filename']}"'''
     output.headers["Content-type"] = props["mime_type"]
     return output
 
@@ -843,9 +876,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -3307,9 +3340,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5950,9 +5983,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 

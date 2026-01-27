@@ -20,15 +20,38 @@
 
 			<label>Finish Date</label> {{input_date('finish', finish_date)}}
 
-			<input type="submit" value="Update">
+			<label>Elements</label>
+
+			<div>
+				{{input_textarea('properties_elements', ca.properties.get('elements', {})|tojson(indent=2), 10, 40, show_pos=True)}}
+				<h5>Elements Example</h5>
+				<pre>{
+  "tnuos": {
+    "primary": "22 7682 2847 299"
+  },
+  "duos-availability": {
+    "primary": "22 7682 2847 299"
+  }
+}</pre>
+			</div>
+
+			<input type="submit" name="update" value="Update">
 		</fieldset>
 	</form>
 
-	<form action="/e/cas/{{ca.id}}/edit" method="post">
+	<form action="/e/cas/{{ca.id}}/edit" method="post" enctype="multipart/form-data" >
 		<fieldset>
 			<legend>Replace File</legend>	
-			<input type="file" name="ca_file" value="{{request.values.ca_file}}">
-			<input type="submit" value="Replace">
+			<input type="file" name="ca_file" value="{{request.values.ca_file}}" required>
+			<input type="submit" name="replace" value="Replace">
+		</fieldset>
+	</form>
+
+	<form hx-delete="/e/cas/{{ca.id}}/edit"
+	 		hx-confirm="Are you sure you want to delete this connection agreement?">
+		<fieldset>
+			<legend>Delete This Connection Agreement</legend>
+			<input type="submit" name="delete" value="Delete">
 		</fieldset>
 	</form>
 
