@@ -1311,6 +1311,7 @@ def virtual_bill(ds):
         sess, site, start_date, finish_date, forecast_date, caches, era=era
     )
     assert site_source.dtc_meter_type == dtc_meter_type
+    assert site_source.non_primary_elements == set()
 
     sess.commit()
 

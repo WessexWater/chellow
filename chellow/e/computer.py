@@ -709,6 +709,12 @@ class SiteSource(DataSource):
             self.ssc = self.era.ssc
             self.ssc_code = None if self.ssc is None else self.ssc.code
             self.energisation_status_code = era.energisation_status.code
+            self.ca = self.era.imp_ca
+            self.non_primary_elements = set()
+            if self.ca is not None:
+                for elname, elprops in self.ca.properties.get("elements", {}):
+                    if self.supply.id != elprops["primary_supply_id"]:
+                        self.non_primary_elements.add(elname)
 
         era_q = (
             select(Era.id)
