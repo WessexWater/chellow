@@ -516,6 +516,8 @@ def test_Era_update(sess):
         None,
         None,
         None,
+        None,
+        None,
     )
 
     sess.commit()
@@ -1199,6 +1201,8 @@ def test_Supply_insert_era_at(sess):
         imp_supplier_contract,
         "9745y6",
         361,
+        None,
+        None,
         None,
         None,
         None,
