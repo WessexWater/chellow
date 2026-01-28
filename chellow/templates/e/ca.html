@@ -58,14 +58,14 @@
 		<thead>
 			<tr>
 				<th>Name</th>
-				<th>Properties</th>
+				<th>Primary Supply</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for elname, elprops in props.get('elements', {}).items() %}
+			{% for elname, sup_id in props.get('elements', {}).items() %}
 				<tr>
 					<td>{{elname}}</td>
-					<td><pre>{{elprops|tojson(indent=2)}}</pre></td>
+					<td><a href="/e/supplies/{{sup_id}}">{{sup_id}}</a></td>
 				</tr>
 			{% endfor %}
 		</tbody>

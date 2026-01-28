@@ -712,8 +712,8 @@ class SiteSource(DataSource):
             self.ca = self.era.imp_ca
             self.non_primary_elements = set()
             if self.ca is not None:
-                for elname, elprops in self.ca.properties.get("elements", {}):
-                    if self.supply.id != elprops["primary_supply_id"]:
+                for elname, sup_id in self.ca.properties.get("elements", {}).items():
+                    if self.supply.id != sup_id:
                         self.non_primary_elements.add(elname)
 
         era_q = (
@@ -1148,8 +1148,8 @@ class SupplySource(DataSource):
 
         self.non_primary_elements = set()
         if self.ca is not None:
-            for elname, elprops in self.ca.properties.get("elements", {}):
-                if self.supply.id != elprops["primary_supply_id"]:
+            for elname, sup_id in self.ca.properties.get("elements", {}).items():
+                if self.supply.id != sup_id:
                     self.non_primary_elements.add(elname)
 
         if self.years_back == 0:
@@ -1801,7 +1801,8 @@ def _init_hh_data(sess, caches, hist_era, chunk_start, chunk_finish, is_import):
         full_channels = False
         data = iter(
             sess.execute(
-                text("""
+                text(
+                    """
 select sum(cast(coalesce(kwh.value, 0) as double precision)),
 sum(cast(coalesce(anti_kwh.value, 0) as double precision)),
 max(kwh.status),
@@ -1828,7 +1829,8 @@ where channel.era_id = :era_id and hh_datum.start_date >= :start_date
 and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
-"""),
+"""
+                ),
                 params={
                     "era_id": hist_era.id,
                     "start_date": chunk_start,
@@ -1866,7 +1868,8 @@ order by hh_datum.start_date
         # new style
         data = iter(
             sess.execute(
-                text("""
+                text(
+                    """
 select hh_datum.start_date,
 max(kwh.status),
 sum(cast(coalesce(kwh.value, 0) as double precision)),
@@ -1889,7 +1892,8 @@ where channel.era_id = :era_id and hh_datum.start_date >= :start_date
 and hh_datum.start_date <= :finish_date
 group by hh_datum.start_date
 order by hh_datum.start_date
-"""),
+"""
+                ),
                 params={
                     "era_id": hist_era.id,
                     "start_date": chunk_start,

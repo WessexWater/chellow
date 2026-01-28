@@ -1650,14 +1650,18 @@ class Contract(Base, PersistentClass):
 
         if prev_rscript is not None:
             if not hh_before(prev_rscript.start_date, start_date):
-                raise BadRequest("""The start date must be after the start
-                        date of the previous rate script.""")
+                raise BadRequest(
+                    """The start date must be after the start
+                        date of the previous rate script."""
+                )
             prev_rscript.finish_date = prev_hh(start_date)
 
         if next_rscript is not None:
             if finish_date is None:
-                raise BadRequest("""The finish date must be before the start date of the
-                    next rate script.""")
+                raise BadRequest(
+                    """The finish date must be before the start date of the
+                    next rate script."""
+                )
 
             if not hh_before(finish_date, next_rscript.finish_date):
                 raise BadRequest(
@@ -2104,11 +2108,13 @@ class Site(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            None,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            None,
             set(),
         )
         sess.flush()
@@ -3484,11 +3490,13 @@ class Era(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         self.supply = supply
         self.update(
@@ -3510,11 +3518,13 @@ class Era(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            exp_ca,
         )
 
     def attach_site(self, sess, site, is_location=False):
@@ -3612,11 +3622,13 @@ class Era(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
@@ -3675,6 +3687,7 @@ class Era(Base, PersistentClass):
                     "supplier_contract",
                     "supplier_account",
                     "sc",
+                    "ca",
                 ]:
                     setattr(self, polarity + "_" + suf, None)
                 continue
@@ -3740,6 +3753,21 @@ class Era(Base, PersistentClass):
                 )
 
             setattr(self, polarity + "_sc", sc)
+
+            ca = locs[f"{polarity}_ca"]
+            if ca is not None:
+                if ca.start_date > start_date:
+                    raise BadRequest(
+                        f"For the era {self.id} the {polarity} connection agreement "
+                        f"{ca.id} starts at {hh_format(ca.start_date)} which is after "
+                        f"the start of the era at {hh_format(start_date)}."
+                    )
+
+                if hh_before(ca.finish_date, finish_date):
+                    raise BadRequest(
+                        "The connection agreement finishes before the era."
+                    )
+            setattr(self, f"{polarity}_ca", ca)
 
             if self.supply.dno.dno_code not in ("99", "88"):
                 if pc.code == "00":
@@ -4429,11 +4457,13 @@ class Supply(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
     ):
         if era.supply != self:
             raise Exception("The era doesn't belong to this supply.")
@@ -4575,11 +4605,13 @@ class Supply(Base, PersistentClass):
             imp_supplier_contract,
             imp_supplier_account,
             imp_sc,
+            imp_ca,
             exp_mpan_core,
             exp_llfc_code,
             exp_supplier_contract,
             exp_supplier_account,
             exp_sc,
+            exp_ca,
         )
 
         if prev_era is not None:
@@ -4654,11 +4686,13 @@ class Supply(Base, PersistentClass):
             template_era.imp_supplier_contract,
             template_era.imp_supplier_account,
             template_era.imp_sc,
+            template_era.imp_ca,
             template_era.exp_mpan_core,
             exp_llfc_code,
             template_era.exp_supplier_contract,
             template_era.exp_supplier_account,
             template_era.exp_sc,
+            template_era.exp_ca,
             channel_set,
         )
 
@@ -4684,11 +4718,13 @@ class Supply(Base, PersistentClass):
         imp_supplier_contract,
         imp_supplier_account,
         imp_sc,
+        imp_ca,
         exp_mpan_core,
         exp_llfc_code,
         exp_supplier_contract,
         exp_supplier_account,
         exp_sc,
+        exp_ca,
         channel_set,
     ):
         covered_era = None
@@ -4747,11 +4783,13 @@ class Supply(Base, PersistentClass):
                 imp_supplier_contract,
                 imp_supplier_account,
                 imp_sc,
+                imp_ca,
                 exp_mpan_core,
                 exp_llfc_code,
                 exp_supplier_contract,
                 exp_supplier_account,
                 exp_sc,
+                exp_ca,
             )
         sess.add(era)
         sess.flush()
@@ -7559,7 +7597,9 @@ def db_upgrade_43_to_44(sess, root_path):
             read = RegisterRead.get_by_id(sess, read_id)
             read.delete(sess)
 
-    sess.execute(text("""ALTER TABLE register_read ADD CONSTRAINT
+    sess.execute(
+        text(
+            """ALTER TABLE register_read ADD CONSTRAINT
             register_read_bill_id_msn_mpan_str_coefficient_units_tpr_id_key UNIQUE (
             bill_id,
             msn,
@@ -7573,7 +7613,9 @@ def db_upgrade_43_to_44(sess, root_path):
             present_date,
             present_value,
             present_type_id
-        );"""))
+        );"""
+        )
+    )
 
 
 def db_upgrade_44_to_45(sess, root_path):

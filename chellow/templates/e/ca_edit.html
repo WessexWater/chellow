@@ -20,18 +20,14 @@
 
 			<label>Finish Date</label> {{input_date('finish', finish_date)}}
 
-			<label>Elements</label>
+			<label>Element -&gt; Primary Supply Id</label>
 
 			<div>
 				{{input_textarea('properties_elements', ca.properties.get('elements', {})|tojson(indent=2), 10, 40, show_pos=True)}}
-				<h5>Elements Example</h5>
+				<h5>Element -&gt; Primary Supply Id Example</h5>
 				<pre>{
-  "tnuos": {
-    "primary_supply_id": 774
-  },
-  "duos-availability": {
-    "primary_supply_id": 774
-  }
+  "tnuos": 774
+  "duos-availability": 774
 }</pre>
 			</div>
 
