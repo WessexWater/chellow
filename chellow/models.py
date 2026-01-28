@@ -3591,11 +3591,13 @@ class Era(Base, PersistentClass):
                 self.imp_supplier_contract,
                 self.imp_supplier_account,
                 self.imp_sc,
+                self.imp_ca,
                 self.exp_mpan_core,
                 None if self.exp_llfc is None else self.exp_llfc.code,
                 self.exp_supplier_contract,
                 self.exp_supplier_account,
                 self.exp_sc,
+                self.exp_ca,
             )
 
     def update(

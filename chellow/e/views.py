@@ -2599,11 +2599,13 @@ def era_edit_post(era_id):
                 imp_supplier_contract,
                 imp_supplier_account,
                 imp_sc,
+                era.imp_ca,
                 exp_mpan_core,
                 exp_llfc_code,
                 exp_supplier_contract,
                 exp_supplier_account,
                 exp_sc,
+                era.exp_ca,
             )
             g.sess.commit()
             return chellow_redirect(f"/supplies/{era.supply.id}", 303)
