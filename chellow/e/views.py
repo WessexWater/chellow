@@ -258,7 +258,8 @@ def ca_edit_post(ca_id):
             ca.data = file_item.stream.read()
         else:
             start_date = req_hh_date("start")
-            finish_date = req_hh_date("finish")
+            is_ended = req_checkbox("is_ended")
+            finish_date = req_hh_date("finish") if is_ended else None
             props_elements = req_json("properties_elements")
             props["elements"] = props_elements
             ca.update(start_date, finish_date)
@@ -287,9 +288,9 @@ def ca_download_get(ca_id):
     props = ca.properties
 
     output = make_response(ca.data)
-    output.headers["Content-Disposition"] = (
-        f'''attachment; filename="{props['filename']}"'''
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'''attachment; filename="{props['filename']}"'''
     output.headers["Content-type"] = props["mime_type"]
     return output
 
@@ -876,9 +877,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -3340,9 +3341,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -5983,9 +5984,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
