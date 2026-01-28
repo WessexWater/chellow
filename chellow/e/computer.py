@@ -1023,6 +1023,7 @@ class SupplySource(DataSource):
                 )
             else:
                 self.supplier_contract = era.imp_supplier_contract
+            self.ca = era.imp_ca
         else:
             if era.exp_mpan_core in self.era_map_mpan_cores:
                 self.mpan_core = self.era_map_mpan_cores[era.exp_mpan_core]
@@ -1058,6 +1059,8 @@ class SupplySource(DataSource):
                 )
             else:
                 self.supplier_contract = era.exp_supplier_contract
+
+            self.ca = era.exp_ca
 
         if era.dc_contract.id in self.era_map_dc_contracts:
             self.dc_contract = Contract.get_dc_by_id(
@@ -1136,6 +1139,12 @@ class SupplySource(DataSource):
         self.consumption_info = ""
         self.normal_reads = set()
         hist_map = {}
+
+        self.non_primary_elements = set()
+        if self.ca is not None:
+            for elname, elprops in self.ca.properties.get("elements", {}):
+                if self.supply.id != elprops["primary_supply_id"]:
+                    self.non_primary_elements.add(elname)
 
         if self.years_back == 0:
             hist_eras = [self.era]

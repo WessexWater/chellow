@@ -866,10 +866,11 @@ def datum_2012_02_23(ds, hh):
         hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
 
     if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
-        hh["duos-fixed-days"] = 1
-        rate = float(tariff["gbp-per-mpan-per-day"])
-        hh["duos-fixed-rate"] = rate
-        hh["duos-fixed-gbp"] = rate
+        if "duos-fixed" not in ds.non_primary_elements:
+            hh["duos-fixed-days"] = 1
+            rate = float(tariff["gbp-per-mpan-per-day"])
+            hh["duos-fixed-rate"] = rate
+            hh["duos-fixed-gbp"] = rate
 
         hh["duos-availability-days"] = 1
         kva = ds.sc
