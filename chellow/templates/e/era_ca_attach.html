@@ -39,7 +39,7 @@
 				{% for ca in cas  %}
 					{{input_option(
 						'ca_id', ca.id,
-						ca.id|string + ' ' + ca.start_date|hh_format + ' ' + ca.properties.get(filename)|string,
+						ca.id|string + ' : ' + ca.start_date|hh_format + ' : ' + ca.properties.get('filename')|string,
 						initial=default_parser_name)}}
 				{% endfor %}
 			</select>
