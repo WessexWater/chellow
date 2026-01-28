@@ -104,40 +104,46 @@
 		</fieldset>
 	</form>
 
-	<section>
-		<h3>Connection Agreements</h3>
+	<table>
+		<caption>Connection Agreements</caption>
+		<thead>
+			<tr>
+				<th>Direction</th>
+				<th>File Name</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>View</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for direction, ca, dir_bool in
+					[('Import', era.imp_ca, 'true'), ('Export', era.exp_ca, 'false')] %}
 
-		<section>
-			<h4>Import</h4>
-			{% if era.imp_ca %}
-				<a href="/e/cas/{{era.imp_ca.id}}">View</a>
-				<form method="post" action="/e/eras/{{era.id}}/edit">
-					<fieldset>
-						<input type="hidden" name="is_import" value="true">
-						<input type="submit" name="detach_ca" value="Detach">
-					</fieldset>
-				</form>
-			{% else %}
-				<a href="/e/eras/{{era.id}}/attach_ca?is_import=true">Attach</a>
-			{% endif %}
-		</section>
-
-		<section>
-			<h4>Export</h4>
-			{% if era.exp_ca %}
-				<a href="/e/cas/{{era.exp_ca.id}}">View</a>
-				<form method="post" action="/e/eras/{{era.id}}/edit">
-					<fieldset>
-						<input type="hidden" name="is_import" value="false">
-						<input type="submit" name="detach_ca" value="Detach">
-					</fieldset>
-				</form>
-			{% else %}
-				<a href="/e/eras/{{era.id}}/attach_ca?is_import=false">Attach</a>
-			{% endif %}
-		</section>
-	</section>
-
+				<tr>
+					<td>{{direction}}</td>
+					{% if ca %}
+						<td>{{ca.properties.get('filename')}}</td>
+						<td>{{ca.start_date|hh_format}}</td>
+						<td>{{ca.finish_date|hh_format}}</td>
+						<td><a href="/e/cas/{{ca.id}}">View</a></td>
+						<td>
+							<form method="post" action="/e/eras/{{era.id}}/edit">
+								<fieldset>
+									<input type="hidden" name="is_import" value="{{dir_bool}}">
+									<input type="submit" name="detach_ca" value="Detach">
+								</fieldset>
+							</form>
+						</td>
+					{% else %}
+						<td colspan="5" style="text-align: center;">
+							<a href="/e/eras/{{era.id}}/attach_ca?is_import={{dir_bool}}">Attach</a>
+						</td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 
 	{% if era.supply.eras|length > 1 %}
 		<form hx-delete="/e/eras/{{era.id}}/edit"
