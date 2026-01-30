@@ -3760,24 +3760,9 @@ def mop_issue_add_post(contract_id):
 
 @e.route("/mop_issues/<int:issue_id>")
 def mop_issue_get(issue_id):
-    issue = Issue.get_by_id(g.sess, issue_id)
-    props = issue.properties
-    supply_bundles = []
-    for supply in g.sess.scalars(
-        select(Supply)
-        .where(Supply.id.in_(props.get("supply_ids", [])))
-        .order_by(Supply.id)
-    ).all():
-        era = supply.eras[0]
-        site = era.get_physical_site(g.sess)
-        supply_bundles.append({"supply": supply, "era": supply.eras[0], "site": site})
-    if "owner_id" in props:
-        owner = User.get_by_id(g.sess, props["owner_id"])
-    else:
-        owner = None
-    return render_template(
-        "mop_issue.html", issue=issue, supply_bundles=supply_bundles, owner=owner
-    )
+    issue = Issue.get_mop_by_id(g.sess, issue_id)
+    issue_bundle = make_issue_bundle(g.sess, issue)
+    return render_template("mop_issue.html", issue=issue, isue_bundle=issue_bundle)
 
 
 @e.route("/mop_issues/<int:issue_id>/edit")

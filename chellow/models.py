@@ -6684,6 +6684,18 @@ class Issue(Base, PersistentClass):
         sess.delete(self)
         sess.flush()
 
+    @staticmethod
+    def get_mop_by_id(sess, issue_id):
+        issue = sess.scalars(
+            select(Issue)
+            .join(Contract)
+            .join(MarketRole)
+            .where(Issue.id == issue_id, MarketRole.code == "M")
+        ).one_or_none()
+        if issue is None:
+            raise BadRequest(f"The MOP issue with id {issue_id} can't be found.")
+        return issue
+
 
 class IssueEntry(Base, PersistentClass):
     __tablename__ = "issue_entry"

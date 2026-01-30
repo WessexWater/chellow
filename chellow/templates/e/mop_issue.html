@@ -43,8 +43,8 @@
 				<td>{{issue.id}}</td>
 				<td>{{issue.date_created|hh_format}}</td>
 				<td>
-					{% if owner %}
-						<a href="/users/{{owner.id}}">{{owner.email_address}}</a>
+					{% if issue_bundle.owner %}
+						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.email_address}}</a>
 					{% endif %}
 				</td>
 				<td>
@@ -57,7 +57,7 @@
 				<td>{{issue.properties.subject}}</td>
 				<td>
 					<ul>
-						{% for supply_bundle in supply_bundles %}
+						{% for supply_bundle in issue_bundle.supplies %}
 								{% set era = supply_bundle.era %}
 								{% set supply = supply_bundle.supply %}
 								{% set site = supply_bundle.site %}
