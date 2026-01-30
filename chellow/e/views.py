@@ -1553,9 +1553,12 @@ def dc_issue_edit_post(issue_id):
         date_created = req_date("date_created")
         is_open = req_checkbox("is_open")
         owner_id = req_int("owner_id")
-        properties = issue.properties
-        properties["owner_id"] = owner_id
-        issue.update(date_created, is_open, properties)
+        subject = req_str("subject")
+        props = issue.properties
+        props["owner_id"] = owner_id
+        props["subject"] = subject
+
+        issue.update(date_created, is_open, props)
         g.sess.commit()
         return chellow_redirect(f"/dc_issues/{issue.id}", 303)
     except BadRequest as e:
@@ -3796,9 +3799,11 @@ def mop_issue_edit_post(issue_id):
         date_created = req_date("date_created")
         is_open = req_checkbox("is_open")
         owner_id = req_int("owner_id")
-        properties = issue.properties
-        properties["owner_id"] = owner_id
-        issue.update(date_created, is_open, properties)
+        subject = req_str("subject")
+        props = issue.properties
+        props["owner_id"] = owner_id
+        props["subject"] = subject
+        issue.update(date_created, is_open, props)
         g.sess.commit()
         return chellow_redirect(f"/mop_issues/{issue.id}", 303)
     except BadRequest as e:
@@ -6550,11 +6555,12 @@ def supplier_issue_edit_post(issue_id):
         issue = Issue.get_by_id(g.sess, issue_id)
         date_created = req_date("date_created")
         is_open = req_checkbox("is_open")
-        properties = req_json("properties")
         owner_id = req_int("owner_id")
-        properties = issue.properties
-        properties["owner_id"] = owner_id
-        issue.update(date_created, is_open, properties)
+        subject = req_str("subject")
+        props = issue.properties
+        props["owner_id"] = owner_id
+        props["subject"] = subject
+        issue.update(date_created, is_open, props)
         g.sess.commit()
         return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
     except BadRequest as e:

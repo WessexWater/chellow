@@ -14,8 +14,7 @@
 
 {% block content %}
 
-
-	<form method="post">
+	<form method="post" action="/e/supplier_issues/{{issue.id}}/edit">
 		<fieldset>
 			<legend>Update Issue</legend>
 			<label>Date Created</label> {{ input_date('date_created', issue.date_created) }}
@@ -29,8 +28,9 @@
 			</select>
 		 
 			<label>Open?</label> {{input_checkbox('is_open', issue.is_open)}}
-			<label>Properties</label>
-			{{input_textarea('properties', issue.properties|tojson, 40, 80, show_pos=True)}}
+
+			<label>Subject</label> {{ input_text('subject', issue.properties.get('subject', ''), size='40') }}
+
 			<input type="submit" name="update" value="Update">
 		</fieldset>
 	</form>
