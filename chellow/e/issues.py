@@ -16,7 +16,7 @@ def make_issue_bundle(sess, issue):
         owner = None
     bundle = {
         "issue": issue,
-        "latest_entry": None if len(issue.entries) == 0 else issue.entries[-1],
+        "latest_entry": None if len(issue.entries) == 0 else issue.entries[0],
         "supplies": supply_bundles,
         "owner": owner,
     }
@@ -25,7 +25,7 @@ def make_issue_bundle(sess, issue):
         .where(Supply.id.in_(props.get("supply_ids", [])))
         .order_by(Supply.id)
     ).all():
-        era = supply.eras[0]
+        era = supply.eras[-1]
         site = era.get_physical_site(sess)
-        supply_bundles.append({"supply": supply, "era": supply.eras[0], "site": site})
+        supply_bundles.append({"supply": supply, "era": era, "site": site})
     return bundle

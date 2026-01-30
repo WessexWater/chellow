@@ -6599,11 +6599,7 @@ def supplier_issue_attach_supply_post(issue_id):
         mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(g.sess, mpan_core)
 
-        props = issue.properties
-        supply_ids = props.get("supply_ids", [])
-        supply_ids.append(supply.id)
-        props["supply_ids"] = supply_ids
-        issue.update_properties(props)
+        issue.attach_supply(supply)
         g.sess.commit()
         return chellow_redirect(f"/supplier_issues/{issue.id}", 303)
     except BadRequest as e:

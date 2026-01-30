@@ -6666,10 +6666,19 @@ class Issue(Base, PersistentClass):
         self.properties = _jsonize(properties)
         attributes.flag_modified(self, "properties")
 
-    def add_entry(self, sess, markdown):
-        entry = IssueEntry(self, utc_datetime_now(), markdown)
+    def add_entry(self, sess, markdown, timestamp=None):
+        if timestamp is None:
+            timestamp = utc_datetime_now()
+        entry = IssueEntry(self, timestamp, markdown)
         sess.add(entry)
         return entry
+
+    def attach_supply(self, supply):
+        props = self.properties
+        supply_ids = props.get("supply_ids", [])
+        supply_ids.append(supply.id)
+        props["supply_ids"] = supply_ids
+        self.update_properties(props)
 
     def delete(self, sess):
         sess.delete(self)
