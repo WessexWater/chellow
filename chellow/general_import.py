@@ -911,33 +911,6 @@ def general_import_mop_bill(sess, action, vals, args):
             supply,
         )
 
-        i = 12
-        while i < len(vals):
-            typ = add_arg(args, "element", vals, i)
-            if typ == "element":
-                name = add_arg(args, "Name", vals, i + 1)
-                start_date_str = add_arg(args, "Start Date", vals, i + 2)
-                start_date = parse_hh_start(start_date_str)
-                finish_date_str = add_arg(args, "Finish Date", vals, i + 3)
-                finish_date = parse_hh_start(finish_date_str)
-                net_str = add_arg(args, "Net", vals, i + 4)
-                net = Decimal(net_str)
-                breakdown_str = add_arg(args, "Breakdown", vals, i + 5)
-                breakdown = _parse_breakdown(breakdown_str)
-                bill.insert_element(
-                    sess,
-                    name,
-                    start_date,
-                    finish_date,
-                    net,
-                    breakdown,
-                )
-                i += 6
-            else:
-                raise BadRequest(
-                    f"The type must be 'element', but found {typ} at column {i}."
-                )
-
     elif action == "update":
         bill_id_str = add_arg(args, "Bill Id", vals, 0)
         bill_id = int(bill_id_str)
@@ -1008,6 +981,34 @@ def general_import_mop_bill(sess, action, vals, args):
         bill_id = int(bill_id_str)
         bill = Bill.get_by_id(sess, bill_id)
         bill.delete(sess)
+
+
+def general_import_mop_bill_element(sess, action, vals, args):
+    vals = _truncate_vals(vals)
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_mop_by_name(sess, contract_name)
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+        batch = contract.get_batch(sess, batch_reference)
+        bill_reference = add_arg(args, "Bill Reference", vals, 2)
+        bill = batch.get_bill_by_reference(sess, bill_reference)
+        name = add_arg(args, "Name", vals, 3)
+        start_date_str = add_arg(args, "Start Date", vals, 4)
+        start_date = parse_hh_start(start_date_str)
+        finish_date_str = add_arg(args, "Finish Date", vals, 5)
+        finish_date = parse_hh_start(finish_date_str)
+        net_str = add_arg(args, "Net", vals, 6)
+        net = Decimal(net_str)
+        breakdown_str = add_arg(args, "Breakdown", vals, 7)
+        breakdown = _parse_breakdown(breakdown_str)
+        bill.insert_element(
+            sess,
+            name,
+            start_date,
+            finish_date,
+            net,
+            breakdown,
+        )
 
 
 def general_import_dc_bill(sess, action, vals, args):
@@ -1056,33 +1057,6 @@ def general_import_dc_bill(sess, action, vals, args):
             supply,
         )
 
-        i = 12
-        while i < len(vals):
-            typ = add_arg(args, "element", vals, i)
-            if typ == "element":
-                name = add_arg(args, "Name", vals, i + 1)
-                start_date_str = add_arg(args, "Start Date", vals, i + 2)
-                start_date = parse_hh_start(start_date_str)
-                finish_date_str = add_arg(args, "Finish Date", vals, i + 3)
-                finish_date = parse_hh_start(finish_date_str)
-                net_str = add_arg(args, "Net", vals, i + 4)
-                net = Decimal(net_str)
-                breakdown_str = add_arg(args, "Breakdown", vals, i + 5)
-                breakdown = _parse_breakdown(breakdown_str)
-                bill.insert_element(
-                    sess,
-                    name,
-                    start_date,
-                    finish_date,
-                    net,
-                    breakdown,
-                )
-                i += 6
-            else:
-                raise BadRequest(
-                    f"The type must be 'element', but found {typ} at column {i}."
-                )
-
     elif action == "update":
         bill_id_str = add_arg(args, "Bill Id", vals, 0)
         bill_id = int(bill_id_str)
@@ -1153,6 +1127,34 @@ def general_import_dc_bill(sess, action, vals, args):
         bill_id = int(bill_id_str)
         bill = Bill.get_by_id(sess, bill_id)
         bill.delete(sess)
+
+
+def general_import_dc_bill_element(sess, action, vals, args):
+    vals = _truncate_vals(vals)
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_dc_by_name(sess, contract_name)
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+        batch = contract.get_batch(sess, batch_reference)
+        bill_reference = add_arg(args, "Bill Reference", vals, 2)
+        bill = batch.get_bill_by_reference(sess, bill_reference)
+        name = add_arg(args, "Name", vals, 3)
+        start_date_str = add_arg(args, "Start Date", vals, 4)
+        start_date = parse_hh_start(start_date_str)
+        finish_date_str = add_arg(args, "Finish Date", vals, 5)
+        finish_date = parse_hh_start(finish_date_str)
+        net_str = add_arg(args, "Net", vals, 6)
+        net = Decimal(net_str)
+        breakdown_str = add_arg(args, "Breakdown", vals, 7)
+        breakdown = _parse_breakdown(breakdown_str)
+        bill.insert_element(
+            sess,
+            name,
+            start_date,
+            finish_date,
+            net,
+            breakdown,
+        )
 
 
 def general_import_supplier_bill(sess, action, vals, args):
@@ -1206,7 +1208,7 @@ def general_import_supplier_bill(sess, action, vals, args):
 
         i = 14
         while i < len(vals):
-            typ = add_arg(args, "read or element", vals, i)
+            typ = add_arg(args, "read", vals, i)
             if typ == "read":
                 msn = add_arg(args, "Meter Serial Number", vals, i + 1)
                 mpan_str = add_arg(args, "MPAN", vals, i + 2)
@@ -1249,29 +1251,9 @@ def general_import_supplier_bill(sess, action, vals, args):
                     pres_type,
                 )
                 i += 12
-            elif typ == "element":
-                name = add_arg(args, "Name", vals, i + 1)
-                start_date_str = add_arg(args, "Start Date", vals, i + 2)
-                start_date = parse_hh_start(start_date_str)
-                finish_date_str = add_arg(args, "Finish Date", vals, i + 3)
-                finish_date = parse_hh_start(finish_date_str)
-                net_str = add_arg(args, "Net", vals, i + 4)
-                net = Decimal(net_str)
-                breakdown_str = add_arg(args, "Breakdown", vals, i + 5)
-                breakdown = _parse_breakdown(breakdown_str)
-                bill.insert_element(
-                    sess,
-                    name,
-                    start_date,
-                    finish_date,
-                    net,
-                    breakdown,
-                )
-                i += 6
             else:
                 raise BadRequest(
-                    f"The type must be 'read' or 'element', but found {typ} at "
-                    f"column {i}."
+                    f"The type must be 'read', but found {typ} at column {i}."
                 )
 
     elif action == "update":
@@ -1348,6 +1330,34 @@ def general_import_supplier_bill(sess, action, vals, args):
         bill_id = int(bill_id_str)
         bill = Bill.get_by_id(sess, bill_id)
         bill.delete(sess)
+
+
+def general_import_supplier_bill_element(sess, action, vals, args):
+    vals = _truncate_vals(vals)
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_supplier_by_name(sess, contract_name)
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+        batch = contract.get_batch(sess, batch_reference)
+        bill_reference = add_arg(args, "Bill Reference", vals, 2)
+        bill = batch.get_bill_by_reference(sess, bill_reference)
+        name = add_arg(args, "Name", vals, 3)
+        start_date_str = add_arg(args, "Start Date", vals, 4)
+        start_date = parse_hh_start(start_date_str)
+        finish_date_str = add_arg(args, "Finish Date", vals, 5)
+        finish_date = parse_hh_start(finish_date_str)
+        net_str = add_arg(args, "Net", vals, 6)
+        net = Decimal(net_str)
+        breakdown_str = add_arg(args, "Breakdown", vals, 7)
+        breakdown = _parse_breakdown(breakdown_str)
+        bill.insert_element(
+            sess,
+            name,
+            start_date,
+            finish_date,
+            net,
+            breakdown,
+        )
 
 
 def general_import_g_bill(sess, action, vals, args):

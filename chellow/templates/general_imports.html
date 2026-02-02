@@ -43,6 +43,7 @@
 			Timestamps are in clock-time, unless a Z is appended, which
 			means it's in UTC.
 		</li>
+		<li>The timestamp format is <code>YYYY-MM-DD HH:MM</code>, or blank for ongoing.</li>
 	</ul>
 
 	<table>
@@ -153,8 +154,8 @@
 				<td><em>update</em></td>
 				<td><em>era</em></td>
 				<td>MPAN Core</td>
-				<td>Date</td>
-				<td>Start date</td>
+				<td>Date (YYYY-MM-DD HH:MM)</td>
+				<td>Start date (YYYY-MM-DD HH:MM)</td>
 				<td>Finish date</td>
 				<td>MOP Contract</td>
 				<td>DC Contract</td>
@@ -297,12 +298,6 @@
 				<td>Reference</td>
 				<td>Type</td>
 				<td>Breakdown</td>
-				<td>'element'</td>
-				<td>Name</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>Net</td>
-				<td>Breakdown</td>
 			</tr>
 			<tr>
 				<td><em>update</em></td>
@@ -329,26 +324,31 @@
 				<td><em>mop_bill</em></td>
 				<td>Bill Chellow Id</td>
 			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>mop_bill_element</em></td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Bill Reference</td>
+				<td>Name</td>
+				<td>Start Date (YYYY-MM-DD HH:MM)</td>
+				<td>Finish Date (YYYY-MM-DD HH:MM)</td>
+				<td>Net</td>
+				<td>Breakdown</td>
 			<tr>
 				<td><em>insert<em></td>
 				<td><em>dc_bill</em></td>
 				<td>Contract Name</td>
 				<td>Batch Reference</td>
 				<td>Mpan Core</td>
-				<td>Issue Date</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
+				<td>Issue Date (YYYY-MM-DD HH:MM)</td>
+				<td>Start Date (YYYY-MM-DD HH:MM)</td>
+				<td>Finish Date (YYYY-MM-DD HH:MM)</td>
 				<td>Net</td>
 				<td>Vat</td>
 				<td>Gross</td>
 				<td>Reference</td>
 				<td>Type</td>
-				<td>Breakdown</td>
-				<td>'element'</td>
-				<td>Name</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>Net</td>
 				<td>Breakdown</td>
 			</tr>
 			<tr>
@@ -370,6 +370,17 @@
 				<td><em>dc_bill</em></td>
 				<td>Bill Chellow Id</td>
 			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>dc_bill_element</em></td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Bill Reference</td>
+				<td>Name</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Breakdown</td>
 			<tr>
 				<td><em>insert<em></td>
 				<td><em>supplier_bill</em></td>
@@ -387,12 +398,6 @@
 				<td>Type</td>
 				<td>Breakdown</td>
 				<td>Kwh</td>
-				<td>'element'</td>
-				<td>Name</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>Net</td>
-				<td>Breakdown</td>
 			</tr>
 			<tr>
 				<td><em>update</em></td>
@@ -414,6 +419,18 @@
 				<td><em>delete</em></td>
 				<td><em>supplier_bill</em></td>
 				<td>Bill Chellow Id</td>
+			</tr>
+			<tr>
+				<td><em>insert<em></td>
+				<td><em>supplier_bill_element</em></td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Bill Reference</td>
+				<td>Name</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Breakdown</td>
 			</tr>
 			<tr>
 				<td><em>update</em></td>

@@ -5,6 +5,7 @@ from sqlalchemy import select
 from chellow.general_import import (
     _parse_breakdown,
     general_import_dc_bill,
+    general_import_dc_bill_element,
     general_import_era,
     general_import_g_batch,
     general_import_g_bill,
@@ -173,6 +174,131 @@ def test_general_import_dc_bill_insert(sess):
     ]
     args = []
     general_import_dc_bill(sess, action, vals, args)
+
+
+def test_general_import_dc_bill_element_insert(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    dc_contract_name = "Fusion DC 2000"
+    dc_contract = Contract.insert_dc(
+        sess, dc_contract_name, participant, "", {}, vf, None, {}
+    )
+    pc = Pc.insert(sess, "00", "HH", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    exp_supplier_contract = Contract.insert_supplier(
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    )
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "521", "Export (HV)", voltage_level, False, False, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "grid")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    mpan_core = "22 7867 6232 781"
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        dc_contract,
+        "hgjeyhuw",
+        dno,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        None,
+        None,
+        None,
+        None,
+        None,
+        mpan_core,
+        "521",
+        exp_supplier_contract,
+        "7748",
+        361,
+    )
+    batch_reference = "dgnsdjh55"
+    batch = dc_contract.insert_batch(sess, batch_reference, "")
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, "N")
+    bill_reference = "xxhguewr7"
+    batch.insert_bill(
+        sess,
+        "7748",
+        bill_reference,
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 1),
+        utc_datetime(2000, 1, 1),
+        Decimal("0"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        Decimal("0.00"),
+        bill_type_n,
+        {},
+        supply,
+    )
+    sess.commit()
+    action = "insert"
+    vals = [
+        dc_contract_name,
+        batch_reference,
+        bill_reference,
+        "nrg",
+        "2019-08-01 00:00",
+        "2019-08-31 23:30",
+        "56.20",
+        "{}",
+    ]
+    args = []
+    general_import_dc_bill_element(sess, action, vals, args)
 
 
 def test_general_import_g_batch(mocker):

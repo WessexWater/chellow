@@ -11,6 +11,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from hashlib import pbkdf2_hmac
 from itertools import takewhile
+from uuid import uuid4
 
 from dateutil.relativedelta import relativedelta
 
@@ -32,6 +33,7 @@ from sqlalchemy import (
     create_engine,
     delete,
     event,
+    func,
     not_,
     null,
     or_,
@@ -57,6 +59,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.sql.expression import false, true
+
 
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -836,6 +839,7 @@ class Bill(Base, PersistentClass):
     bill_type = relationship("BillType")
     breakdown = Column(String, nullable=False)
     kwh = Column(Numeric, nullable=False)
+    __table_args__ = (UniqueConstraint("batch_id", "reference"),)
     reads = relationship(
         "RegisterRead",
         backref="bill",
@@ -1136,6 +1140,14 @@ class Batch(Base, PersistentClass):
         sess.add(batch_file)
         sess.flush()
         return batch_file
+
+    def get_bill_by_reference(self, sess, reference):
+        bill = sess.scalars(select(Bill).where(Bill.batch == self)).one_or_none()
+        if bill is None:
+            raise BadRequest(
+                "The bill with reference '{reference}' can't be found in this batch."
+            )
+        return bill
 
     @staticmethod
     def get_mop_by_id(sess, batch_id):
@@ -7777,6 +7789,21 @@ def db_upgrade_52_to_53(sess, root_path):
     )
 
 
+def db_upgrade_53_to_54(sess, root_path):
+    for batch_id, reference, num in sess.execute(
+        select(Bill.batch_id, Bill.reference, func.count().label("count"))
+        .group_by(Bill.batch_id, Bill.reference)
+        .having(func.count() > 1)
+    ):
+        for bill in sess.scalars(
+            select(Bill).where(Bill.batch_id == batch_id, Bill.reference == reference)
+        ):
+            bill.reference = f"{bill.reference}_{uuid4()}"
+            sess.commit()
+
+    sess.execute(text("ALTER TABLE bill ADD UNIQUE (batch_id, reference);"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7815,6 +7842,7 @@ upgrade_funcs.extend(
         db_upgrade_50_to_51,
         db_upgrade_51_to_52,
         db_upgrade_52_to_53,
+        db_upgrade_53_to_54,
     ]
 )
 
