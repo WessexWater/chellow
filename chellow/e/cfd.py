@@ -7,7 +7,7 @@ from sqlalchemy import null, or_, select
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.e.lcc import api_records
+from chellow.e.lccc import api_records
 from chellow.models import Contract, RateScript
 from chellow.utils import c_months_u, ct_datetime, hh_format, to_ct, to_utc
 
@@ -139,17 +139,17 @@ def hh(data_source, use_bill_check=False):
             }
 
 
-def lcc_import(sess, log, set_progress, s):
-    import_in_period_tracking(sess, log, set_progress, s)
-    import_operational_costs_levy(sess, log, set_progress, s)
-    import_reconciled_daily_levy_rates(sess, log, set_progress, s)
-    import_forecast_ilr_tra(sess, log, set_progress, s)
-    import_advanced_forecast_ilr_tra(sess, log, set_progress, s)
+def lccc_import(sess, log, set_progress):
+    import_in_period_tracking(sess, log, set_progress)
+    import_operational_costs_levy(sess, log, set_progress)
+    import_reconciled_daily_levy_rates(sess, log, set_progress)
+    import_forecast_ilr_tra(sess, log, set_progress)
+    import_advanced_forecast_ilr_tra(sess, log, set_progress)
 
 
-def _quarters(log, s):
+def _quarters(log):
     quarter = {}
-    for record in api_records(log, s, "003f527c-aa35-4198-adbb-21a61fc760eb"):
+    for record in api_records(log, "003f527c-aa35-4198-adbb-21a61fc760eb"):
         settlement_date_str = record["Settlement_Date"]
         settlement_date_ct = to_ct(
             Datetime.strptime(settlement_date_str[:10], "%Y-%m-%d")
@@ -185,8 +185,8 @@ def _parse_varying_date(date_str):
     return to_utc(to_ct(Datetime.strptime(date_str[:10], pattern)))
 
 
-def import_in_period_tracking(sess, log, set_progress, s):
-    log("Starting to check for new LCC CfD In-Period Tracking")
+def import_in_period_tracking(sess, log, set_progress):
+    log("Starting to check for new LCCC CfD In-Period Tracking")
 
     contract_name = "cfd_in_period_tracking"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -195,7 +195,7 @@ def import_in_period_tracking(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for quarter in _quarters(log, s):
+    for quarter in _quarters(log):
         quarter_start = sorted(quarter.keys())[0]
         rs = sess.execute(
             select(RateScript).where(
@@ -212,11 +212,11 @@ def import_in_period_tracking(sess, log, set_progress, s):
             records[hh_format(k)] = v
         rs.update(rs_script)
         sess.commit()
-    log("Finished LCC CfD In-Period Tracking")
+    log("Finished LCCC CfD In-Period Tracking")
 
 
-def import_operational_costs_levy(sess, log, set_progress, s):
-    log("Starting to check for new LCC CfD Operational Costs Levy")
+def import_operational_costs_levy(sess, log, set_progress):
+    log("Starting to check for new LCCC CfD Operational Costs Levy")
 
     contract_name = "cfd_operational_costs_levy"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -225,7 +225,7 @@ def import_operational_costs_levy(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "41c32b4f-388b-464f-9c3f-fbf1a6cfdca4", skip=1):
+    for record in api_records(log, "41c32b4f-388b-464f-9c3f-fbf1a6cfdca4", skip=1):
         period_start = _parse_date(record["Period_Start"])
 
         rs = sess.execute(
@@ -246,10 +246,10 @@ def import_operational_costs_levy(sess, log, set_progress, s):
 RUN_TYPES = ("II", "SF", "R1", "R2", "R3", "RF", "DF")
 
 
-def _reconciled_quarters(log, s, search_from):
+def _reconciled_quarters(log, search_from):
     quarters = {}
 
-    for record in api_records(log, s, "24944bfe-b546-4f50-8bf6-895d8f769b2b"):
+    for record in api_records(log, "24944bfe-b546-4f50-8bf6-895d8f769b2b"):
         settlement_date = _parse_date(record["Settlement_Date"])
         if settlement_date > search_from:
             settlement_date_ct = to_ct(settlement_date)
@@ -277,8 +277,8 @@ def _reconciled_quarters(log, s, search_from):
     return quarters
 
 
-def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
-    log("Starting to check for new LCC CfD Reconciled Daily Levy Rates")
+def import_reconciled_daily_levy_rates(sess, log, set_progress):
+    log("Starting to check for new LCCC CfD Reconciled Daily Levy Rates")
 
     contract_name = "cfd_reconciled_daily_levy_rates"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -319,7 +319,7 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
         else:
             break
 
-    for quarter_start, quarter in _reconciled_quarters(log, s, search_from).items():
+    for quarter_start, quarter in _reconciled_quarters(log, search_from).items():
 
         rs = sess.execute(
             select(RateScript).where(
@@ -345,12 +345,12 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress, s):
         rs.update(rs_script)
         sess.commit()
 
-    log("Finished LCC CfD Reconciled Daily Levy Rates")
+    log("Finished LCCC CfD Reconciled Daily Levy Rates")
     sess.commit()
 
 
-def import_forecast_ilr_tra(sess, log, set_progress, s):
-    log("Starting to check for new LCC CfD Forecast ILR TRA")
+def import_forecast_ilr_tra(sess, log, set_progress):
+    log("Starting to check for new LCCC CfD Forecast ILR TRA")
 
     contract_name = "cfd_forecast_ilr_tra"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -359,7 +359,7 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "63e6a924-8829-4014-95a2-722e92662e5f"):
+    for record in api_records(log, "63e6a924-8829-4014-95a2-722e92662e5f"):
         period_start_str = record["Period_Start"]
         if len(period_start_str) == 0:
             continue
@@ -378,11 +378,11 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
         rs_script["record"] = record
         rs.update(rs_script)
         sess.commit()
-    log("Finished LCC CfD Forecast ILR TRA")
+    log("Finished LCCC CfD Forecast ILR TRA")
 
 
-def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
-    log("Starting to check for new LCC CfD Advanced Forecast ILR TRA")
+def import_advanced_forecast_ilr_tra(sess, log, set_progress):
+    log("Starting to check for new LCCC CfD Advanced Forecast ILR TRA")
 
     contract_name = "cfd_advanced_forecast_ilr_tra"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -391,7 +391,7 @@ def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "a80f87c6-cf65-4f9d-9a1a-d78140f50779"):
+    for record in api_records(log, "a80f87c6-cf65-4f9d-9a1a-d78140f50779"):
         period_start = _parse_varying_date(record["Period Start"])
 
         rs = sess.execute(
@@ -414,4 +414,4 @@ def import_advanced_forecast_ilr_tra(sess, log, set_progress, s):
 
         sess.commit()
 
-    log("Finished LCC CfD Advanced Forecast ILR TRA")
+    log("Finished LCCC CfD Advanced Forecast ILR TRA")

@@ -37,13 +37,12 @@ def test_process(sess, mocker):
     def log_f(msg):
         log.append(msg)
 
-    mock_requests = mocker.patch("chellow.e.system_price.requests")
     mock_response = mocker.Mock()
-    mock_requests.get.return_value = mock_response
     with open("test/e/system_price/prices.xls", "rb") as f:
         mock_response.content = f.read()
     mock_response.status_code = 200
     mock_response.reason = "OK"
+    mocker.patch("chellow.e.system_price.download_file", return_value=mock_response)
 
     mock_set_progress = mocker.Mock()
     scripting_key = "xxx"
@@ -51,9 +50,7 @@ def test_process(sess, mocker):
 
     assert log == [
         "Starting to check System Prices.",
-        "Downloading from "
-        "https://downloads.elexonportal.co.uk/file/download/BESTVIEWPRICES_FILE?"
-        "key=xxx and extracting data from 2001-04-01 01:00",
+        "Extracting data from 2001-04-01 01:00",
         "Received 200 OK",
         "Successfully extracted data.",
         "Updating rate script starting at 2001-04-01 01:00.",

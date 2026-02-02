@@ -59,7 +59,7 @@ def get_importer_modules():
     return (
         chellow.e.isd,
         chellow.e.elexon,
-        chellow.e.lcc,
+        chellow.e.lccc,
         chellow.testing,
         chellow.bank_holidays,
         chellow.gas.cv,

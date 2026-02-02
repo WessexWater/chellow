@@ -45,7 +45,7 @@ from werkzeug.exceptions import BadRequest
 from zish import ZishException, dumps, loads
 
 import chellow.e.dno_rate_parser
-import chellow.e.lcc
+import chellow.e.lccc
 import chellow.e.neso
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.energy_management import totals_runner

@@ -34,7 +34,6 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_reconciled_quarters(mocker):
-    s = mocker.Mock()
     search_from = to_utc(ct_datetime(2023, 1, 1))
     log = mocker.Mock()
     result = [
@@ -44,7 +43,7 @@ def test_reconciled_quarters(mocker):
         {"Settlement_Date": "2023-03-31", "Settlement_Run_Type": "RF"},
     ]
     mocker.patch("chellow.e.cfd.api_records", return_value=result)
-    actual = _reconciled_quarters(log, s, search_from)
+    actual = _reconciled_quarters(log, search_from)
     expected = {}
     assert actual == expected
 
@@ -77,18 +76,10 @@ def test_import_forecast_ilr_tra(sess, mocker):
     participant.insert_party(sess, market_role, "None core", vf, None, None)
     sess.commit()
 
-    s = mocker.Mock()
-    mock_request = mocker.Mock()
-    req_j = {
-        "success": True,
-        "fields": [],
-        "records": [],
-    }
-    mock_request.json = mocker.Mock(return_value=req_j)
-    s.get = mocker.Mock(return_value=mock_request)
+    mocker.patch("chellow.e.cfd.api_records", return_value=[])
     log = mocker.Mock()
     set_progress = mocker.Mock()
-    import_forecast_ilr_tra(sess, log, set_progress, s)
+    import_forecast_ilr_tra(sess, log, set_progress)
 
 
 def test_import_forecast_ilr_tra_blank_lines(sess, mocker):
@@ -98,30 +89,25 @@ def test_import_forecast_ilr_tra_blank_lines(sess, mocker):
     participant.insert_party(sess, market_role, "None core", vf, None, None)
     sess.commit()
 
-    s = mocker.Mock()
-    mock_request = mocker.Mock()
-    req_j = {
-        "success": True,
-        "fields": [
-            {"id": "_id", "type": "int"},
-            {"id": "Quarterly_Obligation_Period", "type": "text"},
-            {"id": "Period_Start", "type": "text"},
-            {"id": "Period_End", "type": "text"},
-            {"id": "Interim_Levy_Rate_GBP_Per_MWh", "type": "text"},
-            {"id": "Total_Reserve_Amount_GBP", "type": "text"},
-            {"id": "Eligible_Demand_MWh", "type": "text"},
-            {"id": "BMRP_GBP_Per_MWh", "type": "text"},
-            {"id": "IMRP_GBP_Per_MWh", "type": "text"},
-            {"id": "Adjusted_ILR_GBP_Per_MWh", "type": "text"},
-            {"id": "Additional_TRA_GBP", "type": "text"},
-        ],
-        "records": [[1, "", "", "", "", "", "", "", "", "", ""]],
-    }
-    mock_request.json = mocker.Mock(return_value=req_j)
-    s.get = mocker.Mock(return_value=mock_request)
+    records = [
+        {
+            "_id": 1,
+            "Quarterly_Obligation_Period": "",
+            "Period_Start": "",
+            "Period_End": "",
+            "Interim_Levy_Rate_GBP_Per_MWh": "",
+            "Total_Reserve_Amount_GBP": "",
+            "Eligible_Demand_MWh": "",
+            "BMRP_GBP_Per_MWh": "",
+            "IMRP_GBP_Per_MWh": "",
+            "Adjusted_ILR_GBP_Per_MWh": "",
+            "Additional_TRA_GBP": "",
+        },
+    ]
+    mocker.patch("chellow.e.cfd.api_records", return_value=records)
     log = mocker.Mock()
     set_progress = mocker.Mock()
-    import_forecast_ilr_tra(sess, log, set_progress, s)
+    import_forecast_ilr_tra(sess, log, set_progress)
 
 
 def test_hh(sess, mocker):

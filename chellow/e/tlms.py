@@ -5,7 +5,6 @@ from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
-import requests
 
 from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null
@@ -14,6 +13,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import dumps, loads
 
+from chellow.e.elexon import download_file
 from chellow.models import Contract, RateScript
 from chellow.rate_server import download
 from chellow.utils import HH, ct_datetime, hh_format, hh_range, to_ct, to_utc
@@ -136,18 +136,14 @@ def import_tlms(sess, log, set_progress, scripting_key):
         sess.commit()
     contract_props = contract.make_properties()
     if contract_props.get("enabled", True):
-
-        params = {"key": scripting_key}
-        url_str = "https://downloads.elexonportal.co.uk/file/download/TLM_FILE"
         complete_date = _find_complete_date(caches, sess, contract, cache)
         log(f"Found complete up to {complete_date}")
 
         sess.rollback()  # Avoid long-running transaction
-        r = requests.get(url_str, params=params, timeout=120)
+        r = download_file(log, scripting_key, "TLM_FILE")
         parser = csv.reader(
             (x.decode() for x in r.iter_lines()), delimiter=",", quotechar='"'
         )
-        log(f"Opened {url_str}?key={scripting_key}.")
 
         next(parser, None)
         for values in parser:

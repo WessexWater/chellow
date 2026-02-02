@@ -18,10 +18,10 @@ from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 importer = None
 
 
-def api_records(log, s, resource_id, skip=0):
+def api_records(log, resource_id, skip=0):
     url = f"https://dp.lowcarboncontracts.uk/datastore/dump/{resource_id}"
     params = {"format": "json"}
-    res = s.get(url, params=params)
+    res = requests.get(url, params=params, timeout=120)
     log(f"Requested URL {res.url}")
     try:
         res_j = res.json()
@@ -45,7 +45,7 @@ def run_import(sess, log, set_progress):
 
     for mod_name in ("chellow.e.cfd", "chellow.e.rab"):
         mod = import_module(mod_name)
-        mod.lcc_import(sess, log, set_progress)
+        mod.lccc_import(sess, log, set_progress)
 
 
 LAST_RUN_KEY = "last_run"

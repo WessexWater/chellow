@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from chellow.e.lcc import api_records
+from chellow.e.lccc import api_records
 from chellow.models import Contract, RateScript
 from chellow.utils import ct_datetime, to_ct, to_utc
 
@@ -35,16 +35,16 @@ def hh(data_source):
             }
 
 
-def lcc_import(sess, log, set_progress, s):
-    import_forecast_ilr_tra(sess, log, set_progress, s)
+def lccc_import(sess, log, set_progress):
+    import_forecast_ilr_tra(sess, log, set_progress)
 
 
 def _parse_date(date_str):
     return to_utc(to_ct(Datetime.strptime(date_str[:10], "%Y-%m-%d")))
 
 
-def import_forecast_ilr_tra(sess, log, set_progress, s):
-    log("Starting to check for new LCC RAB Forecast ILR TRA")
+def import_forecast_ilr_tra(sess, log, set_progress):
+    log("Starting to check for new LCCC RAB Forecast ILR TRA")
 
     contract_name = "rab_forecast_ilr_tra"
     contract = Contract.find_non_core_by_name(sess, contract_name)
@@ -53,7 +53,7 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
             sess, contract_name, "", {}, to_utc(ct_datetime(1996, 4, 1)), None, {}
         )
 
-    for record in api_records(log, s, "3c304299-7abb-429c-9706-5e983e5ee10d"):
+    for record in api_records(log, "3c304299-7abb-429c-9706-5e983e5ee10d"):
         period_start_str = record["Month"]
         if len(period_start_str) == 0:
             continue
@@ -72,4 +72,4 @@ def import_forecast_ilr_tra(sess, log, set_progress, s):
         rs_script["record"] = record
         rs.update(rs_script)
         sess.commit()
-    log("Finished LCC RAB Forecast ILR TRA")
+    log("Finished LCCC RAB Forecast ILR TRA")

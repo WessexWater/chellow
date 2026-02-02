@@ -211,11 +211,10 @@ def test_elexon_import(sess, mocker):
     def set_progress(msg):
         pass
 
-    mock_requests = mocker.patch("chellow.e.tlms.requests")
     mock_response = mocker.Mock()
     lines = [b"", b""]
     mock_response.iter_lines = mocker.Mock(return_value=lines)
-    mock_requests.get = mocker.Mock(return_value=mock_response)
+    mocker.patch("chellow.e.tlms.download_file", return_value=mock_response)
     scripting_key = mocker.Mock()
 
     elexon_import(sess, log, set_progress, scripting_key)

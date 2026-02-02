@@ -2,8 +2,6 @@ import datetime
 import traceback
 from datetime import timedelta as Timedelta
 
-import requests
-
 from sqlalchemy import select
 
 from werkzeug.exceptions import BadRequest
@@ -12,6 +10,7 @@ import xlrd
 
 from zish import loads
 
+from chellow.e.elexon import download_file
 from chellow.models import Contract, RateScript
 from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc
 
@@ -99,16 +98,10 @@ def elexon_import(sess, log, set_progress, scripting_key):
         elif rates[key_format(rscript.finish_date)]["run"] == "DF":
             fill_start = rscript.finish_date + HH
             break
-    params = {"key": scripting_key}
-    url = "https://downloads.elexonportal.co.uk/file/download/BESTVIEWPRICES_FILE"
-
-    log(
-        f"Downloading from {url}?key={scripting_key} and extracting data from "
-        f"{hh_format(fill_start)}"
-    )
+    res = download_file(log, scripting_key, "BESTVIEWPRICES_FILE")
+    log(f"Extracting data from {hh_format(fill_start)}")
 
     sess.rollback()  # Avoid long-running transactions
-    res = requests.get(url, params=params)
     log(f"Received {res.status_code} {res.reason}")
     data = res.content
     book = xlrd.open_workbook(file_contents=data)

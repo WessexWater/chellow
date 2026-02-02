@@ -18,42 +18,13 @@ from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
 importer = None
 
 
-def api_sql(s, sql):
-    url = "https://dp.lowcarboncontracts.uk/api/3/action/datastore_search_sql"
-    params = {"sql": sql}
-    res = s.get(url, params=params)
-    try:
-        res_j = res.json()
-    except requests.exceptions.JSONDecodeError as e:
-        raise BadRequest(
-            f"Couldn't parse as JSON the content from {url} with error {e}: "
-            f"{res.text}"
-        )
+def download_file(log, scripting_key, file_name):
+    params = {"key": scripting_key}
+    url = f"https://downloads.elexonportal.co.uk/file/download/{file_name}"
 
-    if "success" in res_j and not res_j["success"]:
-        raise BadRequest(res_j)
+    log(f"Downloading from {url}?key={scripting_key}")
 
-    return res_j
-
-
-def api_search(s, resource_id, sort=None):
-    url = "https://dp.lowcarboncontracts.uk/api/3/action/datastore_search"
-    params = {"resource_id": resource_id}
-    if sort is not None:
-        params["sort"] = sort
-    res = s.get(url, params=params)
-    try:
-        res_j = res.json()
-    except requests.exceptions.JSONDecodeError as e:
-        raise BadRequest(
-            f"Couldn't parse as JSON the content from {url} with error {e}: "
-            f"{res.text}"
-        )
-
-    if "success" in res_j and not res_j["success"]:
-        raise BadRequest(res_j)
-
-    return res_j
+    return requests.get(url, params=params, timeout=120)
 
 
 def run_import(sess, log, set_progress, scripting_key):

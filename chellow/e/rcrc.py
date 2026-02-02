@@ -3,12 +3,11 @@ from decimal import Decimal
 
 from dateutil.relativedelta import relativedelta
 
-import requests
-
 from werkzeug.exceptions import BadRequest
 
 from zish import loads
 
+from chellow.e.elexon import download_file
 from chellow.models import Contract, RateScript
 from chellow.utils import (
     ct_datetime,
@@ -112,15 +111,13 @@ def elexon_import(sess, log, set_progress, scripting_key):
     month_start, month_finish = months[1]
     now = utc_datetime_now()
     if now > month_finish:
-        params = {"key": scripting_key}
-        url_str = "https://downloads.elexonportal.co.uk/file/download/RCRC_FILE"
+        sess.rollback()  # Avoid long-running transaction
+        r = download_file(log, scripting_key, "RCRC_FILE")
         log(
-            f"Downloading {url_str}?key={scripting_key} to see if data is available "
-            f"from {hh_format(month_start)} to {hh_format(month_finish)}."
+            f"Checking if data available from {hh_format(month_start)} to "
+            f"{hh_format(month_finish)}."
         )
 
-        sess.rollback()  # Avoid long-running transaction
-        r = requests.get(url_str, timeout=120, params=params)
         month_rcrcs = _find_month(
             (x.decode() for x in r.iter_lines()), month_start, month_finish
         )

@@ -192,7 +192,7 @@ def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
         sess.rollback()
         q_str = "&".join(f"{k}={v}" for k, v in params.items())
         log_f(f"Attempting to download {base_url}?{q_str}")
-        r = requests.get(base_url, params=params, timeout=60, verify=False)
+        r = requests.get(base_url, params=params, timeout=60)
         res = r.json()
         for h in res["data"]:
             # {
