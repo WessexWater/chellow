@@ -252,53 +252,22 @@ def ca_edit_post(ca_id):
     ca = Ca.get_by_id(g.sess, ca_id)
     props = ca.properties
     try:
-        if "replace" in request.values:
-            file_item = req_file("ca_file")
-            filename = file_item.filename
-            if filename == "":
-                raise BadRequest("No file selected")
-            props["filename"] = filename
-            props["mime_type"], props["encoding"] = guess_type(filename)
-            ca.data = file_item.stream.read()
-        else:
-            start_date = req_hh_date("start")
-            is_ended = req_checkbox("is_ended")
-            finish_date = req_hh_date("finish") if is_ended else None
-            props_elements = req_json("properties_elements")
-            for _, sup_id in props_elements.items():
-                Supply.get_by_id(g.sess, sup_id)  # Check exists
-            props["elements"] = props_elements
-            ca.update(start_date, finish_date)
-
+        start_date = req_hh_date("start")
+        is_ended = req_checkbox("is_ended")
+        finish_date = req_hh_date("finish") if is_ended else None
+        props_elements = req_json("properties_elements")
+        url = req_str("url")
+        for _, sup_id in props_elements.items():
+            Supply.get_by_id(g.sess, sup_id)  # Check exists
+        props["elements"] = props_elements
+        props["url"] = url
+        ca.update(start_date, finish_date)
         ca.update_properties(props)
         g.sess.commit()
         return chellow_redirect(f"/cas/{ca.id}", 303)
     except BadRequest as e:
         flash(e.description)
         return make_response(render_template("ca_edit.html", ca=ca), 400)
-
-
-@e.route("/cas/<int:ca_id>/display")
-def ca_display_get(ca_id):
-    ca = Ca.get_by_id(g.sess, ca_id)
-    props = ca.properties
-
-    output = make_response(ca.data)
-    output.headers["Content-type"] = props["mime_type"]
-    return output
-
-
-@e.route("/cas/<int:ca_id>/download")
-def ca_download_get(ca_id):
-    ca = Ca.get_by_id(g.sess, ca_id)
-    props = ca.properties
-
-    output = make_response(ca.data)
-    output.headers["Content-Disposition"] = (
-        f'''attachment; filename="{props['filename']}"'''
-    )
-    output.headers["Content-type"] = props["mime_type"]
-    return output
 
 
 @e.route("/csv_sites_triad")

@@ -17,9 +17,7 @@
 				<th>View</th>
 				<th>Start Date</th>
 				<th>Finish Date</th>
-				<th>Filename</th>
-				<th>File Type</th>
-				<th>Download</th>
+				<th>Document</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -30,16 +28,10 @@
 					<td>{{ca.start_date|hh_format}}</td>
 					<td>{{ca.finish_date|hh_format}}</td>
 					<td>
-						{% if 'filename' in props %}
-							{{props['filename']}}
+						{% if 'url' in props %}
+							<a href="{{props['url']}}" target="_blank" rel="noopener noreferrer">Document</a>
 						{% endif %}
 					</td>
-					<td>
-						{% if 'mime_type' in props %}
-							{{props['mime_type']}}
-						{% endif %}
-					</td>
-					<td><a href="/e/cas/{{ca.id}}/download">Download</a></td>
 				</tr>
 			{% endfor %}
 		</tbody>

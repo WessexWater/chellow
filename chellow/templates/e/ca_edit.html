@@ -18,6 +18,8 @@
 
 			<label>Finish Date</label> {{input_date('finish', finish_date, has_is_ended=True)}}
 
+			<label>URL</label> {{input_text('url', initial=ca.properties.get('url'))}}
+
 			<label>Element → Primary Supply Id</label>
 
 			<div>
@@ -30,14 +32,6 @@
 			</div>
 
 			<input type="submit" name="update" value="Update">
-		</fieldset>
-	</form>
-
-	<form action="/e/cas/{{ca.id}}/edit" method="post" enctype="multipart/form-data" >
-		<fieldset>
-			<legend>Replace File</legend>	
-			<input type="file" name="ca_file" value="{{request.values.ca_file}}" required>
-			<input type="submit" name="replace" value="Replace">
 		</fieldset>
 	</form>
 

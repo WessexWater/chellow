@@ -221,7 +221,6 @@ class Ca(Base, PersistentClass):
     id = Column("id", Integer, primary_key=True)
     start_date = Column(DateTime(timezone=True), nullable=False, index=True)
     finish_date = Column(DateTime(timezone=True), index=True)
-    data = Column(LargeBinary, nullable=False)
     properties = Column(JSONB, nullable=False)
 
     def __init__(self, start_date, finish_date, data, properties):
@@ -7804,6 +7803,10 @@ def db_upgrade_53_to_54(sess, root_path):
     sess.execute(text("ALTER TABLE bill ADD UNIQUE (batch_id, reference);"))
 
 
+def db_upgrade_54_to_55(sess, root_path):
+    sess.execute(text("ALTER TABLE ca DROP data;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7843,6 +7846,7 @@ upgrade_funcs.extend(
         db_upgrade_51_to_52,
         db_upgrade_52_to_53,
         db_upgrade_53_to_54,
+        db_upgrade_54_to_55,
     ]
 )
 

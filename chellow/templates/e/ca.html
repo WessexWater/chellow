@@ -37,18 +37,16 @@
 			<tr>
 				<th>Start Date</th>
 				<th>Finish Date</th>
-				<th>Filename</th>
-				<th>File Type</th>
-				<th>Download</th>
+				<th>Document</th>
 			</tr>
 		</thead>
 		<tbody>
 			<tr>
 				<td>{{ca.start_date|hh_format}}</td>
 				<td>{{ca.finish_date|hh_format}}</td>
-				<td>{{props.get('filename')}}</td>
-				<td>{{props.get('mime_type')}}</td>
-				<td><a href="/e/cas/{{ca.id}}/download">Download</a></td>
+				<td>
+					<a href="{{props.get('url')}}" target="_blank" rel="noopener noreferrer">Document</a>
+				</td>
 			</tr>
 		</tbody>
 	</table>
@@ -78,14 +76,6 @@
 			{% endfor %}
 		</tbody>
 	</table>
-
-	<section>
-		<h3>Document</h3>
-
-		<div id="doc">
-			<iframe src="/e/cas/{{ca.id}}/display"></iframe>
-		</div>
-	</section>
 
 	<table>
 		<caption>Attached Eras</caption>
