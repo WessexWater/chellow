@@ -28,15 +28,18 @@ from chellow.models import (
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_supplies_post(sess, client):
+def test_supplies_get(sess, client):
     sess.commit()
 
-    json = {"start_date": "2024-05-01T00:00:00Z", "finish_date": "2024-05-01T00:00:00Z"}
-    response = client.post("/api/v1/supplies", json=json)
+    query_string = {
+        "start_date": "2024-05-01T00:00:00Z",
+        "finish_date": "2024-05-01T00:00:00Z",
+    }
+    response = client.get("/api/v1/supplies", query_string=query_string)
     match(response, 200)
 
 
-def test_channel_post(sess, client):
+def test_channel_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
 
@@ -133,6 +136,9 @@ def test_channel_post(sess, client):
     channel = era.insert_channel(sess, True, "ACTIVE")
     sess.commit()
 
-    json = {"start_date": "2024-05-01T00:00:00Z", "finish_date": "2024-05-01T00:00:00Z"}
-    response = client.post(f"/api/v1/channel/{channel.id}", json=json)
+    query_string = {
+        "start_date": "2024-05-01T00:00:00Z",
+        "finish_date": "2024-05-01T00:00:00Z",
+    }
+    response = client.get(f"/api/v1/channel/{channel.id}", query_string=query_string)
     match(response, 200)

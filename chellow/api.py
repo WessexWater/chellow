@@ -1,10 +1,10 @@
-from dateutil.parser import isoparse
 from flask import g
 from flask_restx import Api, Resource, fields, inputs, reqparse
 
 from sqlalchemy import null, or_, select
 
 from chellow.models import Channel, Era, HhDatum, Site, Source, Supply
+from chellow.utils import to_utc
 
 api = Api(
     version="1.0",
@@ -396,31 +396,31 @@ channel_get_parser.add_argument(
 )
 
 
-channel_post_model = api.model(
-    "ChannelPostModel",
-    {
-        "start_date": fields.DateTime(
-            description="Start timestamp (ISO 8601 format)",
-            required=True,
-            example="2025-05-01T00:00:00Z",
-        ),
-        "finish_date": fields.DateTime(
-            required=True,
-            description="Finish timestamp (ISO 8601 format)",
-            example="2025-05-31T23:30:00Z",
-        ),
-    },
+channel_parser = ns.parser()
+channel_parser.add_argument(
+    "start_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Start of HH data",
+    default="2025-12-01T00:00Z",
+)
+channel_parser.add_argument(
+    "finish_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Finish of HH data",
+    default="2025-12-31T23:30Z",
 )
 
 
 @ns.route("/channel/<int:channel_id>")
 class ChannelResource(Resource):
     @api.marshal_with(channel_model)
-    @ns.expect(channel_post_model)
-    def post(self, channel_id):
-        data = ns.payload
-        start_date = isoparse(data["start_date"])
-        finish_date = isoparse(data["finish_date"])
+    @ns.expect(channel_parser)
+    def get(self, channel_id):
+        args = channel_parser.parse_args()
+        start_date = to_utc(args["start_date"])
+        finish_date = to_utc(args["finish_date"])
         channel = Channel.get_by_id(g.sess, channel_id)
         channel_j = channel_to_j(channel)
         hh_data_j = []
@@ -449,32 +449,32 @@ supply_model = ns.model(
     },
 )
 
-supplies_post_model = ns.model(
-    "SuppliesPostModel",
-    {
-        "start_date": fields.DateTime(
-            description="Start timestamp (ISO 8601 format)",
-            required=True,
-            example="2025-05-01T00:00:00Z",
-        ),
-        "finish_date": fields.DateTime(
-            required=True,
-            description="Finish timestamp (ISO 8601 format)",
-            example="2025-05-31T23:30:00Z",
-        ),
-        "source_code": fields.String(example="gen"),
-    },
+supplies_parser = ns.parser()
+supplies_parser.add_argument(
+    "start_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Start of eras, channels and HH data",
+    default="2025-12-01T00:00Z",
 )
+supplies_parser.add_argument(
+    "finish_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Finish of eras, channales and HH data",
+    default="2025-12-31T23:30Z",
+)
+supplies_parser.add_argument("source_code", type=str, default="gen")
 
 
 @ns.route("/supplies")
 class SuppliesResource(Resource):
     @api.marshal_list_with(supply_model)
-    @ns.expect(supplies_post_model)
-    def post(self):
-        data = ns.payload
-        start_date = isoparse(data["start_date"])
-        finish_date = isoparse(data["finish_date"])
+    @ns.expect(supplies_parser)
+    def get(self):
+        args = supplies_parser.parse_args()
+        start_date = to_utc(args["start_date"])
+        finish_date = to_utc(args["finish_date"])
 
         supplies_j = []
         supplies_q = (
@@ -486,9 +486,9 @@ class SuppliesResource(Resource):
             )
             .distinct()
         )
-        if "source_code" in data:
+        if "source_code" in args:
             supplies_q = supplies_q.join(Source).where(
-                Source.code == data["source_code"]
+                Source.code == args["source_code"]
             )
         for supply in g.sess.scalars(supplies_q):
             eras_j = []
@@ -550,31 +550,31 @@ class SuppliesResource(Resource):
         return supplies_j
 
 
-supply_post_model = ns.model(
-    "SupplyPostModel",
-    {
-        "start_date": fields.DateTime(
-            description="Start timestamp (ISO 8601 format)",
-            required=True,
-            example="2025-05-01T00:00:00Z",
-        ),
-        "finish_date": fields.DateTime(
-            required=True,
-            description="Finish timestamp (ISO 8601 format)",
-            example="2025-05-31T23:30:00Z",
-        ),
-    },
+supply_parser = ns.parser()
+supply_parser.add_argument(
+    "start_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Start of HH data",
+    default="2025-12-01T00:00Z",
+)
+supply_parser.add_argument(
+    "finish_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Finish of HH data",
+    default="2025-12-31T23:30Z",
 )
 
 
 @ns.route("/supplies/<int:supply_id>")
 class SupplyResource(Resource):
     @api.marshal_with(supply_model)
-    @ns.expect(supply_post_model)
-    def post(self, supply_id):
-        data = ns.payload
-        start_date = isoparse(data["start_date"])
-        finish_date = isoparse(data["finish_date"])
+    @ns.expect(supply_parser)
+    def get(self, supply_id):
+        args = supply_parser.parse_args()
+        start_date = to_utc(args["start_date"])
+        finish_date = to_utc(args["finish_date"])
 
         supply = Supply.get_by_id(g.sess, supply_id)
         eras_j = []
