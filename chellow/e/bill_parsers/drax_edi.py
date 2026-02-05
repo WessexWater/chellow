@@ -30,7 +30,7 @@ ELEMENT_MAP = {
         "ADHOC": {
             "020330": ("eii", None, None),
             "064305": ("fit", None, None),
-            "590346": ("cfd-supplier-obligation", None, None),
+            "590346": ("cfd-obligation", None, None),
             "493988": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
         },
@@ -48,7 +48,7 @@ ELEMENT_MAP = {
     "CFD": {
         "CFD001": {
             "273237": ("cfd-operational", "rate", "kwh"),
-            "954379": ("cfd-supplier-obligation", "rate", "kwh"),
+            "954379": ("cfd-obligation", "rate", "kwh"),
             "538249": ("cm-operational", "rate", "kwh"),
             "568307": ("cm-obligation", "rate", "kwh"),
         },
