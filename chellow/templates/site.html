@@ -40,7 +40,8 @@
 					<ul>
 						{% for link in properties.site_links %}
 							<li>
-								<a href="{{link.href}}{{site.code}}">{{link.name}}</a>
+								<a href="{{link.href}}{{site.code}}" target="_blank"
+										rel="noopener noreferrer">{{link.name}}</a>
 							</li>
 						{% endfor %}
 					</ul>
