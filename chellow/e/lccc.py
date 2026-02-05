@@ -50,9 +50,9 @@ def run_import(sess, log, set_progress):
 
 LAST_RUN_KEY = "last_run"
 GLOBAL_ALERT = (
-    "There's a problem with a <a href='/e/lcc'>Low Carbon Contracts import</a>."
+    "There's a problem with a <a href='/e/lccc'>Low Carbon Contracts import</a>."
 )
-LCC_STATE_KEY = "lcc"
+LCC_STATE_KEY = "lccc"
 DELAY_DAYS = 7
 
 
@@ -87,14 +87,14 @@ class LowCarbonContracts(threading.Thread):
                 try:
                     config = Contract.get_non_core_by_name(sess, "configuration")
                     state = config.make_state()
-                    lcc_state = state.get(LCC_STATE_KEY, {})
+                    lccc_state = state.get(LCC_STATE_KEY, {})
                 except BaseException as e:
                     msg = f"{e.description} " if isinstance(e, BadRequest) else ""
                     self.log(f"{msg}{traceback.format_exc()}")
                     self.global_alert = GLOBAL_ALERT
                     sess.rollback()
 
-            last_run = lcc_state.get(LAST_RUN_KEY)
+            last_run = lccc_state.get(LAST_RUN_KEY)
             if last_run is None or utc_datetime_now() - last_run > timedelta(
                 days=DELAY_DAYS
             ):
@@ -107,11 +107,11 @@ class LowCarbonContracts(threading.Thread):
                         config = Contract.get_non_core_by_name(sess, "configuration")
                         state = config.make_state()
                         try:
-                            lcc_state = state[LCC_STATE_KEY]
+                            lccc_state = state[LCC_STATE_KEY]
                         except KeyError:
-                            lcc_state = state[LCC_STATE_KEY] = {}
+                            lccc_state = state[LCC_STATE_KEY] = {}
 
-                        lcc_state[LAST_RUN_KEY] = utc_datetime_now()
+                        lccc_state[LAST_RUN_KEY] = utc_datetime_now()
                         config.update_state(state)
                         sess.commit()
                         run_import(sess, self.log, self.set_progress)

@@ -2916,21 +2916,18 @@ def lafs_get():
     )
 
 
-@e.route("/lcc")
+@e.route("/lccc")
 def lcc_get():
-    importer = chellow.e.lcc.importer
+    importer = chellow.e.lc.importer
 
-    return render_template(
-        "lcc.html",
-        importer=importer,
-    )
+    return render_template("lccc.html", importer=importer)
 
 
 @e.route("/lcc", methods=["POST"])
 def lcc_post():
-    importer = chellow.e.lcc.importer
+    importer = chellow.e.lccc.importer
     importer.go()
-    return chellow_redirect("/lcc", 303)
+    return chellow_redirect("/lccc", 303)
 
 
 @e.route("/llfcs")
