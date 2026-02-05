@@ -550,7 +550,10 @@ def utc_datetime(year, month, day=1, hour=0, minute=0):
 
 
 def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
-    return tz.normalize(tz.localize(Datetime(year, month, day, hour, minute)))
+    try:
+        return tz.normalize(tz.localize(Datetime(year, month, day, hour, minute)))
+    except ValueError as e:
+        raise BadRequest(f"Problem creating datetime: {e}")
 
 
 def to_tz(tz, dt):

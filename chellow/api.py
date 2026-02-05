@@ -3,7 +3,17 @@ from flask_restx import Api, Resource, fields, inputs, reqparse
 
 from sqlalchemy import null, or_, select
 
-from chellow.models import Channel, Era, HhDatum, Site, Source, Supply
+import chellow.reports.report_247
+from chellow.models import (
+    Channel,
+    Era,
+    HhDatum,
+    ReportRun,
+    ReportRunRow,
+    Site,
+    Source,
+    Supply,
+)
 from chellow.utils import to_utc
 
 api = Api(
@@ -361,6 +371,53 @@ channel_model = ns.model(
 )
 
 
+def report_run_row_to_j(report_run_row):
+    return {
+        "id": report_run_row.id,
+        "report_run_id": report_run_row.report_run_id,
+        "tab": report_run_row.tab,
+        "data": report_run_row.data,
+    }
+
+
+report_run_row_model = ns.model(
+    "ReportRunRow",
+    {
+        "id": fields.Integer(example="712"),
+        "report_run_id": fields.Integer(example="782"),
+        "tab": fields.String(example="sites"),
+        "data": fields.Raw(),
+    },
+)
+
+
+def report_run_to_j(report_run):
+    return {
+        "id": report_run.id,
+        "date_created": report_run.date_created,
+        "creator": report_run.creator,
+        "name": report_run.name,
+        "title": report_run.title,
+        "state": report_run.state,
+        "data": report_run.data,
+    }
+
+
+report_run_model = ns.model(
+    "ReportRun",
+    {
+        "id": fields.Integer(example="712"),
+        "date_created": fields.DateTime(example="2019-05-18T15:17:00+00:00"),
+        "creator": fields.String(example="H. G. Wells"),
+        "name": fields.String(example="bill_check"),
+        "title": fields.String(example="batch_55-00"),
+        "state": fields.Raw(),
+        "data": fields.Raw(),
+        "rows": fields.List(fields.Nested(report_run_row_model)),
+    },
+)
+
+
 @ns.route("/sites")
 class SitesResource(Resource):
     @api.marshal_list_with(sites__model)
@@ -661,3 +718,81 @@ class ErasResource(Resource):
         return (
             g.sess.query(Era).filter(Era.finish_date == null()).order_by(Era.id).all()
         )
+
+
+report_model = ns.model(
+    "Report",
+    {
+        "report_run_id": fields.Integer(example="712"),
+    },
+)
+
+report_monthly_duration_parser = ns.parser()
+report_monthly_duration_parser.add_argument(
+    "finish_year",
+    type=int,
+    help="Finish year of period",
+    default="2025",
+)
+report_monthly_duration_parser.add_argument(
+    "finish_month",
+    type=int,
+    help="Finish month of period",
+    default="12",
+)
+report_monthly_duration_parser.add_argument(
+    "months",
+    type=int,
+    help="Duration of period",
+    default="1",
+)
+
+
+@ns.route("/reports/monthly_duration")
+class ReportMonthlyDurationResource(Resource):
+    @api.marshal_with(report_model)
+    @ns.expect(report_monthly_duration_parser)
+    def get(self):
+        args = report_monthly_duration_parser.parse_args()
+        return chellow.reports.report_247.do_get_j(args)
+
+
+report_runs_parser = ns.parser()
+
+
+@ns.route("/report_runs")
+class ReportRunsResource(Resource):
+    @api.marshal_list_with(report_run_model)
+    @ns.expect(report_runs_parser)
+    def get(self):
+        report_runs_parser.parse_args()
+
+        report_runs_j = []
+        for report_run in g.sess.scalars(select(ReportRun)):
+            report_runs_j.append(report_run_to_j(report_run))
+        return report_runs_j
+
+
+report_run_parser = ns.parser()
+report_run_parser.add_argument(
+    "include_rows",
+    type=inputs.boolean,
+    help="Show report rows in the response",
+    default="false",
+)
+
+
+@ns.route("/report_runs/<int:report_run_id>")
+class ReportRunResource(Resource):
+    @api.marshal_list_with(report_run_model)
+    @ns.expect(report_run_parser)
+    def get(self, report_run_id):
+        report_run_parser.parse_args()
+        report_run_j = report_run_to_j(ReportRun.get_by_id(g.sess, report_run_id))
+        rows = []
+        for row in g.sess.scalars(
+            select(ReportRunRow).where(ReportRunRow.report_run_id == report_run_id)
+        ):
+            rows.append(report_run_row_to_j(row))
+        report_run_j["rows"] = rows
+        return report_run_j

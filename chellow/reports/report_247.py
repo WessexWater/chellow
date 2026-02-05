@@ -700,7 +700,7 @@ class Object:
     pass
 
 
-def content(scenario_props, base_name, user_id, compression, now):
+def content(scenario_props, base_name, user_id, compression, now, report_run_id):
     report_context = {}
 
     sess = rf = None
@@ -1039,10 +1039,7 @@ def content(scenario_props, base_name, user_id, compression, now):
                 write_spreadsheet(
                     rf, compression, site_rows, era_rows, normal_read_rows
                 )
-        if scenario_props.get("save_report_run", False):
-            report_run_id = ReportRun.w_insert(
-                "monthly_duration", user_id, fname, {"scenario": scenario_props}
-            )
+        if report_run_id is not None:
             for tab, rows in (
                 ("org", org_rows),
                 ("site", site_rows),
@@ -1130,8 +1127,17 @@ def do_post(sess):
         uncompressed = req_checkbox("uncompressed")
 
         user = g.user
+        if scenario_props.get("save_report_run", False):
+            report_run_id = ReportRun.w_insert(
+                "monthly_duration",
+                user.id,
+                "monthly_duration",
+                {"scenario": scenario_props},
+            )
+        else:
+            report_run_id = None
 
-        args = (scenario_props, base_name, user.id, not uncompressed, now)
+        args = scenario_props, base_name, user.id, not uncompressed, now, report_run_id
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)
     except BadRequest as e:
@@ -1152,3 +1158,97 @@ def do_post(sess):
                 ),
                 400,
             )
+
+
+def api_str(args, name):
+    try:
+        return args[name]
+    except KeyError:
+        raise BadRequest(f"The field {name} is required")
+
+
+def api_int(args, name):
+    value = api_str(args, name)
+    try:
+        return int(value)
+    except ValueError as e:
+        raise BadRequest(
+            f"Can't parse as an integer the value '{value}' of the field  '{name}': {e}"
+        )
+
+
+def do_get_j(params):
+    base_name = []
+    now = utc_datetime_now()
+
+    if "scenario_id" in params:
+        scenario_id = params["scenario_id"]
+        scenario = Scenario.get_by_id(g.sess, scenario_id)
+        scenario_props = scenario.props
+        base_name.append(scenario.name)
+    else:
+        scenario_props = {}
+        base_name.append("monthly_duration")
+
+    if "finish_year" in params:
+        year = api_int(params, "finish_year")
+        month = api_int(params, "finish_month")
+        months = api_int(params, "months")
+        start_date, _ = next(
+            c_months_c(finish_year=year, finish_month=month, months=months)
+        )
+        scenario_props["scenario_start_year"] = start_date.year
+        scenario_props["scenario_start_month"] = start_date.month
+        scenario_props["scenario_duration"] = months
+
+    for k in ("scenario_start_year", "scenario_start_month", "scenario_duration"):
+        if k not in scenario_props:
+            raise BadRequest(
+                f"The scenario property '{k}' can't be found in the scenario "
+                f"properties. You can provide it either in a specified scenario, "
+                f"or by supplying the 'finish_year', 'finish_month' and 'months' "
+                f"request parameters."
+            )
+
+    if "by_hh" in params:
+        scenario_props["by_hh"] = True
+
+    if "site_id" in params:
+        site_id = params["site_id"]
+        scenario_props["site_codes"] = [Site.get_by_id(g.sess, site_id).code]
+
+    if "site_codes" in params:
+        site_codes_raw_str = params["site_codes"]
+        site_codes_str = site_codes_raw_str.strip()
+        if len(site_codes_str) > 0:
+            site_codes = []
+
+            for site_code in site_codes_str.splitlines():
+                Site.get_by_code(g.sess, site_code)  # Check valid
+                site_codes.append(site_code)
+
+            scenario_props["site_codes"] = site_codes
+
+    if "supply_id" in params:
+        supply_id = params["supply_id"]
+        supply = Supply.get_by_id(g.sess, supply_id)
+        era = supply.eras[-1]
+        imp_mpan_core, exp_mpan_core = era.imp_mpan_core, era.exp_mpan_core
+        scenario_props["mpan_cores"] = [
+            exp_mpan_core if imp_mpan_core is None else imp_mpan_core
+        ]
+
+    uncompressed = "uncompressed" in params
+
+    user = g.user
+    scenario_props["save_report_run"] = True
+    report_run_id = ReportRun.w_insert(
+        "monthly_duration",
+        user.id,
+        "monthly_duration",
+        {"scenario": scenario_props},
+    )
+
+    args = scenario_props, base_name, user.id, not uncompressed, now, report_run_id
+    threading.Thread(target=content, args=args).start()
+    return {"report_run_id": report_run_id}

@@ -101,7 +101,7 @@ def test_with_scenario(mocker, sess, client):
     user = User.get_by_email_address(sess, "admin@example.com")
     scenario_props["site_codes"] = [site_code]
     scenario_props["by_hh"] = False
-    args = (scenario_props, base_name, user.id, False, now)
+    args = (scenario_props, base_name, user.id, False, now, None)
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -136,7 +136,7 @@ def test_do_post_without_scenario(mocker, sess, client):
         "scenario_duration": 1,
         "by_hh": False,
     }
-    args = (scenario_props, base_name, user.id, False, now)
+    args = (scenario_props, base_name, user.id, False, now, None)
 
     mock_Thread.assert_called_with(target=content, args=args)
 
@@ -355,7 +355,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
@@ -658,7 +658,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
@@ -894,7 +894,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
@@ -1363,7 +1363,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
@@ -1945,7 +1945,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
 
@@ -2293,7 +2293,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
@@ -2646,7 +2646,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
@@ -3322,7 +3322,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
@@ -3811,7 +3811,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
@@ -4182,7 +4182,7 @@ def displaced_virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     era_table = sheet.tables[1].rows
@@ -4532,7 +4532,7 @@ def test_content_error(mocker):
         AttributeError,
         match="'NoneType' object has no attribute 'write'",
     ):
-        content(scenario_props, base_name, user_id, compression, now)
+        content(scenario_props, base_name, user_id, compression, now, None)
 
 
 def test_content_no_mpan_cores(mocker, sess, client):
@@ -4550,7 +4550,7 @@ def test_content_no_mpan_cores(mocker, sess, client):
     sess.commit()
     compression = False
     now = to_utc(ct_datetime(2020, 1, 1))
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
     sheet = parse_spreadsheet(mock_file)
     table = sheet.tables[0].rows
 
@@ -4827,7 +4827,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
@@ -5290,7 +5290,7 @@ def virtual_bill(ds):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_247.open_file", return_value=mock_file)
 
-    content(scenario_props, base_name, user_id, compression, now)
+    content(scenario_props, base_name, user_id, compression, now, None)
 
     sheet = parse_spreadsheet(mock_file)
     site_table = sheet.tables[0].rows
