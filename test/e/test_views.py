@@ -2273,7 +2273,12 @@ def test_lafs_get(sess, client):
     match(response, 200)
 
 
-def test_llfc_eidt_post(sess, client):
+def test_lccc_get(sess, client):
+    response = client.get("/e/lccc")
+    match(response, 200)
+
+
+def test_llfc_edit_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
