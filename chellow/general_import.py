@@ -2131,6 +2131,8 @@ class GeneralImporter(threading.Thread):
                         self.args.insert(0, ("Error", e.description))
                         self.failed_args.append(self.args)
                         self.failed_lines.append(line)
+                        if len(self.failed_lines) > 1000:
+                            break
 
                 HhDatum.insert(sess, hh_data)
 
