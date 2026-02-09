@@ -1218,14 +1218,13 @@ def do_get_j(params):
         scenario_props["site_codes"] = [Site.get_by_id(g.sess, site_id).code]
 
     if "site_codes" in params:
-        site_codes_raw_str = params["site_codes"]
-        site_codes_str = site_codes_raw_str.strip()
-        if len(site_codes_str) > 0:
+        site_codes_raw = params["site_code"]
+        if len(site_codes_raw) > 0:
             site_codes = []
 
-            for site_code in site_codes_str.splitlines():
-                Site.get_by_code(g.sess, site_code)  # Check valid
-                site_codes.append(site_code)
+            for site_code_raw in site_codes_raw:
+                site = Site.get_by_code(g.sess, site_code_raw.strip())  # Check valid
+                site_codes.append(site.code)
 
             scenario_props["site_codes"] = site_codes
 

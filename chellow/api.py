@@ -746,6 +746,13 @@ report_monthly_duration_parser.add_argument(
     help="Duration of period",
     default="1",
 )
+report_monthly_duration_parser.add_argument(
+    "site_code",
+    action="append",
+    type=str,
+    help="Runs for these site codes. If no site codes specified, "
+    "then runs for all sites",
+)
 
 
 @ns.route("/reports/monthly_duration")
