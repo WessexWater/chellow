@@ -1,7 +1,8 @@
-from csv import reader
+from datetime import datetime
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO
 
+from odio import parse_spreadsheet
 
 from chellow.models import (
     BillType,
@@ -156,18 +157,18 @@ def test_content(mocker, sess):
 
     sess.commit()
 
-    mock_file = StringIO()
+    mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_bills.open_file", return_value=mock_file)
 
     content(user_id, batch.id)
     mock_file.seek(0)
-    table = [row for row in reader(mock_file)]
+    sheet = parse_spreadsheet(mock_file)
+    table = sheet.tables[0].rows
 
     expected = [
         [
-            "chellow_id",
-            "supplier_contract",
+            "contract",
             "batch_reference",
             "bill_reference",
             "imp_mpan_core",
@@ -189,29 +190,26 @@ def test_content(mocker, sess):
             "breakdown",
         ],
         [
-            "1",
             "Fusion Supplier 2000",
             "b",
             "ref",
             "22 7867 6232 781",
             "acc",
-            "2020-01-01 00:00",
-            "2019-01-01 00:00",
-            "2019-01-31 00:00",
-            "0",
-            "0.00",
-            "0.00",
-            "0.00",
+            datetime(2020, 1, 1),
+            datetime(2019, 1, 1),
+            datetime(2019, 1, 31),
+            0.0,
+            0.0,
+            0.0,
+            0.0,
             "N",
-            "",
-            "3",
-            "6",
-            "",
-            "",
-            "",
-            '{\n  "vat": {\n    5: {\n      "net": 3,'
-            '\n      "vat": 6,\n    },\n  },\n}',
+            None,
+            3.0,
+            6.0,
+            None,
+            None,
+            None,
+            '{"vat": {5: {"net": 3,"vat": 6,},},}',
         ],
     ]
-    print(table)
     assert expected == table

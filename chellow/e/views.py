@@ -21,7 +21,6 @@ from flask import (
     render_template as rtemplate,
     request,
 )
-
 from sqlalchemy import (
     Float,
     Integer,
@@ -3214,56 +3213,6 @@ def mop_batch_get(batch_id):
             batch_reports.append(Report.get_by_id(g.sess, report_id))
         fields["batch_reports"] = batch_reports
     return render_template("mop_batch.html", **fields)
-
-
-@e.route("/mop_batches/<int:batch_id>/csv")
-def mop_batch_csv_get(batch_id):
-    batch = Batch.get_by_id(g.sess, batch_id)
-    si = StringIO()
-    cw = csv.writer(si)
-    cw.writerow(
-        [
-            "MOP Contract",
-            "Batch Reference",
-            "Bill Reference",
-            "Account",
-            "Issued",
-            "From",
-            "To",
-            "kWh",
-            "Net",
-            "VAT",
-            "Gross",
-            "Type",
-        ]
-    )
-    for bill in (
-        g.sess.query(Bill)
-        .filter(Bill.batch == batch)
-        .order_by(Bill.reference, Bill.start_date)
-        .options(joinedload(Bill.bill_type))
-    ):
-        cw.writerow(
-            [
-                batch.contract.name,
-                batch.reference,
-                bill.reference,
-                bill.account,
-                hh_format(bill.issue_date),
-                hh_format(bill.start_date),
-                hh_format(bill.finish_date),
-                str(bill.kwh),
-                str(bill.net),
-                str(bill.vat),
-                str(bill.gross),
-                bill.bill_type.code,
-            ]
-        )
-
-    output = make_response(si.getvalue())
-    output.headers["Content-Disposition"] = 'attachment; filename="batch.csv"'
-    output.headers["Content-type"] = "text/csv"
-    return output
 
 
 @e.route("/mop_batches/<int:batch_id>/upload_file")

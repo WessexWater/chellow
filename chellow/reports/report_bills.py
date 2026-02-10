@@ -1,23 +1,23 @@
-import csv
 import threading
 import traceback
 from collections import defaultdict
 
 from flask import g, redirect
 
+from odio import create_spreadsheet
+
 from sqlalchemy import select
 from sqlalchemy.orm import joinedload
 
 from chellow.dloads import open_file
 from chellow.models import Batch, Bill, Session, User
-from chellow.utils import csv_make_val, req_int
+from chellow.utils import make_val, req_int
 
 
-def _content(sess, writer, batch_id):
+def _make_rows(sess, batch_id):
     batch = Batch.get_by_id(sess, batch_id)
-    titles = [
-        "chellow_id",
-        "supplier_contract",
+    bill_titles = [
+        "contract",
         "batch_reference",
         "bill_reference",
         "imp_mpan_core",
@@ -38,7 +38,18 @@ def _content(sess, writer, batch_id):
         "vat_2_vat",
         "breakdown",
     ]
-    writer.writerow(titles)
+    element_titles = [
+        "contract",
+        "batch_reference",
+        "bill_reference",
+        "name",
+        "start_date",
+        "finish_date",
+        "net",
+        "breakdown",
+    ]
+    bill_rows = [bill_titles]
+    element_rows = [element_titles]
 
     for bill in sess.scalars(
         select(Bill)
@@ -60,9 +71,8 @@ def _content(sess, writer, batch_id):
                 vbd["vat"] += vat_vals["vat"]
                 vbd["net"] += vat_vals["net"]
 
-        vals = {
-            "chellow_id": bill.id,
-            "supplier_contract": batch.contract.name,
+        bill_vals = {
+            "contract": batch.contract.name,
             "batch_reference": batch.reference,
             "bill_reference": bill.reference,
             "imp_mpan_core": None if era is None else era.imp_mpan_core,
@@ -84,21 +94,37 @@ def _content(sess, writer, batch_id):
             "breakdown": bill.breakdown,
         }
         for i, (percentage, vbd) in enumerate(sorted(vat_breakdown.items()), 1):
-            vals[f"vat_{i}_percentage"] = percentage
-            vals[f"vat_{i}_net"] = vbd["net"]
-            vals[f"vat_{i}_vat"] = vbd["vat"]
+            bill_vals[f"vat_{i}_percentage"] = percentage
+            bill_vals[f"vat_{i}_net"] = vbd["net"]
+            bill_vals[f"vat_{i}_vat"] = vbd["vat"]
+        for element in bill.elements:
+            element_vals = {
+                "contract": batch.contract.name,
+                "batch_reference": batch.reference,
+                "bill_reference": bill.reference,
+                "name": element.name,
+                "start_date": element.start_date,
+                "finish_date": element.finish_date,
+                "net": element.net,
+                "breakdown": element.breakdown,
+            }
+            element_rows.append([make_val(element_vals[t]) for t in element_titles])
 
-        writer.writerow(csv_make_val(vals[t]) for t in titles)
+        bill_rows.append([make_val(bill_vals[t]) for t in bill_titles])
+    return bill_rows, element_rows
 
 
 def content(user_id, batch_id):
-    f = writer = None
+    f = None
     try:
         with Session() as sess:
             user = User.get_by_id(sess, user_id)
-            f = open_file(f"bills_batch_{batch_id}.csv", user, mode="w", newline="")
-            writer = csv.writer(f, lineterminator="\n")
-            _content(sess, writer, batch_id)
+            f = open_file(f"bills_batch_{batch_id}.ods", user, mode="wb")
+            bill_rows, element_rows = _make_rows(sess, batch_id)
+            with create_spreadsheet(f, compressed=True) as sheet:
+                for title, rows in (("bills", bill_rows), ("elements", element_rows)):
+                    prep_rows = [[make_val(v) for v in row] for row in rows]
+                    sheet.append_table(title, prep_rows)
 
     except BaseException:
         msg = traceback.format_exc()
