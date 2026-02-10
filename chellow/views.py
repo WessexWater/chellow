@@ -2081,7 +2081,9 @@ def site_months_get(site_id):
 
     months.append(totals)
 
-    return render_template("site_months.html", site=site, months=months)
+    return render_template(
+        "site_months.html", site=site, months=months, finish_date=month_finish
+    )
 
 
 @home.route("/non_core_contracts/<int:contract_id>/add_rate_script")

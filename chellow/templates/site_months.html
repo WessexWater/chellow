@@ -25,7 +25,7 @@
 	<form action="/sites/{{site.id}}/months">
 		<fieldset>
 			<label>For 12 months finishing at the end of</label>
-		 	{{input_date('finish', resolution='month')}}
+			{{input_date(prefix='finish', initial=finish_date, resolution='month')}}
 			<input type="submit" value="Show">
 		</fieldset>
 	</form>
