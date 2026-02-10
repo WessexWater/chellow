@@ -1056,6 +1056,11 @@ def content(scenario_props, base_name, user_id, compression, now, report_run_id)
         sys.stderr.write(msg + "\n")
         site_rows.append(["Problem " + msg])
         write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+        if report_run_id is not None:
+            ReportRun.w_update(report_run_id, "interrupted")
+            ReportRun.w_insert_row(
+                report_run_id, "org", ["problem"], {"problem": msg}, {}
+            )
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg + "\n")
@@ -1067,6 +1072,11 @@ def content(scenario_props, base_name, user_id, compression, now, report_run_id)
             ef.close()
         else:
             write_spreadsheet(rf, compression, site_rows, era_rows, normal_read_rows)
+        if report_run_id is not None:
+            ReportRun.w_update(report_run_id, "interrupted")
+            ReportRun.w_insert_row(
+                report_run_id, "org", ["problem"], {"problem": msg}, {}
+            )
     finally:
         if rf is not None:
             rf.close()
