@@ -26,24 +26,19 @@
 					{% endif %}
 					data by month
 			</legend>
-			<input
-					type="hidden" name="is_import"
-					value="{{request.values.is_import}}">
+			<input type="hidden" name="is_import" value="{{request.values.is_import}}">
 			<input type="hidden" name="supply_id" value="{{supply.id}}">
-			<legend>View Supply Months</legend>
-			<br>
-			For {{input_text('years', '1', 2, 2)}}
-			years, ending 31st December
-			{{input_text('year', now.year, 4, 4)}}
-			<input type="submit" value="View"><br><br>
+			<label>Number of Years</label> {{input_text('years', '1', 2, 2)}}
+			<label>Final Year</label> {{input_text('year', now.year, 4, 4)}}
+			<input type="submit" value="View">
 		</fieldset>
 	</form>
 
-	<table>
+	<table class="sticky">
 		<caption>Months</caption>
 		<thead>
 			<tr>
-				<th rowspan="2">Month Starting</th>
+				<th rowspan="2">Month</th>
 				<th rowspan="2">MPAN Core</th>
 				<th colspan="5">At MD kVA</th>
 				<th rowspan="2">Agreed Supply Capacity (kVA)</th>
@@ -59,8 +54,9 @@
 		</thead>
 		<tbody>
 			{% for month in months %}
+				{% set month_str = month.start_date|hh_format %}
 				<tr>
-					<td>{{month.start_date|hh_format}}</td>
+					<td>{{month_str[:7]}}</td>
 					<td>{{month.mpan_core}}</td>
 
 					{% if month.md_date %}
