@@ -1141,7 +1141,9 @@ class Batch(Base, PersistentClass):
         return batch_file
 
     def get_bill_by_reference(self, sess, reference):
-        bill = sess.scalars(select(Bill).where(Bill.batch == self)).one_or_none()
+        bill = sess.scalars(
+            select(Bill).where(Bill.batch == self, Bill.reference == reference)
+        ).one_or_none()
         if bill is None:
             raise BadRequest(
                 "The bill with reference '{reference}' can't be found in this batch."
