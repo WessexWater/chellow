@@ -52,6 +52,7 @@
 				<th rowspan="3">Import MPAN Core</th>
 				<th rowspan="3">Export MPAN Core</th>
 				<th rowspan="3">Site</th>
+				<th rowspan="3">Issues</th>
 				<th rowspan="3">Period Start</th>
 				<th rowspan="3">Period Finish</th>
 				<th rowspan="3" style="white-space: nowrap">
@@ -98,7 +99,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			{% for row in rows %}
+			{% for row_bundle in row_bundles %}
+				{% set row = row_bundle['row'] %}
 				{% set data = row.data['data'] %}
 				{% set properties = row.data.get('properties', {}) %}
 				{% set market_role_code = data['market_role_code'] %}
@@ -129,6 +131,26 @@
 					<td style="white-space: nowrap">
 						{% if data['site_id'] is not none %}
 						  <a href="/sites/{{data['site_id']}}" title="{{data.site_name}}">{{data.site_code}}</a>
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+						{% if row_bundle['issues']|length > 0 %}
+							<ul>
+								{% for issue in row_bundle['issues'] %}
+									<li>
+										{% if issue.contract.market_role.code == 'X' %}
+											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% elif issue.contract.market_role.code == 'C' %}
+											<a href="/e/dc_issues/{{issue.id}}">DC:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% else %}
+											<a href="/e/mop_issues/{{issue.id}}">MOP:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
 						{% endif %}
 					</td>
 					<td style="white-space: nowrap">

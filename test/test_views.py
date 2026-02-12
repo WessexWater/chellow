@@ -1011,6 +1011,7 @@ def test_report_run_row_get_bill_check(sess, client):
             "virtual_net_gbp": 20.32,
             "difference_net_gbp": 23.6,
             "elements": {},
+            "supply_id": 4,
         },
     )
     sess.commit()

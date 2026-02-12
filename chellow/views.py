@@ -49,6 +49,7 @@ from sqlalchemy import (
     text,
     true,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -1487,13 +1488,24 @@ def report_run_get(run_id):
                     "difference"
                 ]
             order_by = (func.abs(func.coalesce(ob.as_float(), 0)).desc(),)
-        q = q.order_by(*order_by)
 
-        rows = g.sess.scalars(q).all()
+        q = q.order_by(*order_by)
+        row_bundles = []
+        for row in g.sess.scalars(q):
+            supply_id = row.data["data"]["supply_id"]
+            issues = g.sess.scalars(
+                select(Issue)
+                .where(
+                    Issue.is_open == true(),
+                    Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+                )
+                .order_by(Issue.date_created)
+            ).all()
+            row_bundles.append({"row": row, "issues": issues})
         return render_template(
             "report_run_bill_check.html",
             run=run,
-            rows=rows,
+            row_bundles=row_bundles,
             summary=summary,
             elements=elements,
             element=element,
@@ -1741,8 +1753,21 @@ def report_run_row_get(row_id):
             reverse=True,
         ):
             tables.append(el_name)
+        supply_id = row.data["data"]["supply_id"]
+        issues = g.sess.scalars(
+            select(Issue)
+            .where(
+                Issue.is_open == true(),
+                Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+            )
+            .order_by(Issue.date_created)
+        ).all()
         return render_template(
-            "report_run_row_bill_check.html", row=row, raw_data=raw_data, tables=tables
+            "report_run_row_bill_check.html",
+            row=row,
+            raw_data=raw_data,
+            tables=tables,
+            issues=issues,
         )
     elif row.report_run.name == "g_bill_check":
         g_contract = GContract.get_by_id(g.sess, row.report_run.data["g_contract_id"])

@@ -31,6 +31,7 @@
 				<th>Import MPAN Core</th>
 				<th>Export MPAN Core</th>
 				<th>Site</th>
+				<th>Issues</th>
 				<th>From</th>
 				<th>To</th>
 				<th>Actual Net GBP</th>
@@ -60,6 +61,26 @@
 				<td>
 					{% if data.site_id is not none %}
 					  <a href="/sites/{{data['site_id']}}">{{data['site_code']}} {{data['site_name']}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if issues|length > 0 %}
+						<ul>
+							{% for issue in issues %}
+								<li>
+									{% if issue.contract.market_role.code == 'X' %}
+										<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+											{{issue.id}} {{issue.properties['subject']}}</a>
+									{% elif issue.contract.market_role.code == 'C' %}
+										<a href="/e/dc_issues/{{issue.id}}">DC:
+											{{issue.id}} {{issue.properties['subject']}}</a>
+									{% else %}
+										<a href="/e/mop_issues/{{issue.id}}">MOP:
+											{{issue.id}} {{issue.properties['subject']}}</a>
+									{% endif %}
+								</li>
+							{% endfor %}
+						</ul>
 					{% endif %}
 				</td>
 				<td>{{data['period_start']}}</td>
