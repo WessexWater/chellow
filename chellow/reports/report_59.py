@@ -334,10 +334,10 @@ def _process_site(
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 gbp = exp_supplier_bill.get("net-gbp", 0)
 
-                if source_code in ("net", "gen-net"):
+                if source_code in ("grid", "gen-grid"):
                     vals["export-grid-net-gbp"] += gbp
-                    vals["export-grid-net-kwh"] += kwh
-                    if source_code == "gen-net":
+                    vals["export-grid-kwh"] += kwh
+                    if source_code == "gen-grid":
                         vals["import-gen-kwh"] += kwh
 
                 elif source_code == "3rd-party":
