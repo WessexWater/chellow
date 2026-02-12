@@ -106,5 +106,15 @@
 		</tbody>
 	</table>
 
+	<h3>Raw Lines</h3>
+
+	{% if 'raw-lines' in bill.bd %}
+		<pre>{% for line in bill.bd['raw-lines'] %}
+{{line}}
+			{%- endfor %}</pre>
+	{% endif %}
+
+	<h3>Raw Breakdown</h3>
+
 	<pre>{{bill.breakdown}}</pre>
 {% endblock %}

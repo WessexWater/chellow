@@ -4178,8 +4178,8 @@ def test_supplier_bill_get(sess, client):
     response = client.get(f"/e/supplier_bills/{bill.id}")
     patterns = [
         r"<table>\s*"
-        r"<legend>Elements "
-        r'\[<a href="/e/supplier_bills/1/add_element">add</a>\]</legend>\s*'
+        r"<caption>Elements "
+        r'\[<a href="/e/supplier_bills/1/add_element">add</a>\]</caption>\s*'
         r"<thead>\s*"
         r"<tr>\s*"
         r"<th>Edit</th>\s*"

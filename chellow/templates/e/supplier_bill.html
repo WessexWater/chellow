@@ -70,7 +70,7 @@
 	</table>
 
 	<table>
-		<legend>Reads [<a href="/e/supplier_bills/{{bill.id}}/add_read">add</a>]</legend>	
+		<caption>Reads [<a href="/e/supplier_bills/{{bill.id}}/add_read">add</a>]</caption>	
 		<thead>
 			<tr>
 				<th rowspan="2">Edit</th>
@@ -120,7 +120,7 @@
 	</table>
 
 	<table>
-		<legend>Elements [<a href="/e/supplier_bills/{{bill.id}}/add_element">add</a>]</legend>	
+		<caption>Elements [<a href="/e/supplier_bills/{{bill.id}}/add_element">add</a>]</caption>	
 		<thead>
 			<tr>
 				<th>Edit</th>
@@ -170,9 +170,11 @@
 	<table>
 		<caption>VAT Breakdown</caption>
 		<thead>
-			<th>VAT %</th>
-			<th>Net GBP</th>
-			<th>VAT GBP</th>
+			<tr>
+				<th>VAT %</th>
+				<th>Net GBP</th>
+				<th>VAT GBP</th>
+			</tr>
 		</thead>
 		<tbody>
 			{% for k, v in vat_breakdown.items()|sort %}
@@ -184,6 +186,16 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<h3>Raw Lines</h3>
+
+	{% if 'raw-lines' in bill.bd %}
+		<pre>{% for line in bill.bd['raw-lines'] %}
+{{line}}
+			{%- endfor %}</pre>
+	{% endif %}
+
+	<h3>Raw Breakdown</h3>
 
 	<pre>{{bill.breakdown}}</pre>
 
