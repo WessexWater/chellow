@@ -7278,8 +7278,10 @@ def supply_note_edit_post(supply_id, index):
     try:
         supply = Supply.get_by_id(g.sess, supply_id)
         supply_note = loads(supply.note)
+        timestamp = req_date("timestamp")
         body = req_str("body")
         note = supply_note["notes"][index]
+        note["timestamp"] = timestamp
         note["body"] = body
         supply.note = dumps(supply_note)
         g.sess.commit()

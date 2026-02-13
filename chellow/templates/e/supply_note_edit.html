@@ -12,12 +12,10 @@
 
 {% block content %}
 
-	<form method="post">
+	<form method="post" action="/e/supplies/{{supply.id}}/notes/{{note.index}}/edit">
 		<fieldset>
 			<legend>Update Supply Note</legend>
-			{% if note.timestamp %}
-				<label>Timestamp</label> {{ note.timestamp|hh_format }}
-			{% endif %}
+			<label>Timestamp</label> {{ input_date('timestamp', note.timestamp) }}
 			<label>Body</label> {{input_textarea('body', note.body, 30, 80)}}
 			<input type="submit" value="Update">
 		</fieldset>
