@@ -81,6 +81,20 @@ site__site_era__model = ns.model(
         "is_physical": fields.Boolean(example="true"),
     },
 )
+site_hh_datum_model = ns.model(
+    "SiteHhDatum",
+    {
+        "start_date": fields.DateTime(example="2019-05-18T15:17:00+00:00"),
+        "imp_grid": fields.Float,
+        "exp_grid": fields.Float,
+        "imp_gen": fields.Float,
+        "exp_gen": fields.Float,
+        "imp_3p": fields.Float,
+        "exp_3p": fields.Float,
+        "used": fields.Float,
+        "displaced": fields.Float,
+    },
+)
 
 site__model = ns.model(
     "Site",
@@ -89,6 +103,7 @@ site__model = ns.model(
         "code": fields.String(example="GGJ23"),
         "name": fields.String(example="Trowbridge Waterworks"),
         "site_eras": fields.List(fields.Nested(site__site_era__model)),
+        "hh_data": fields.List(fields.Nested(site_hh_datum_model)),
     },
 )
 
@@ -418,6 +433,14 @@ report_run_model = ns.model(
 )
 
 
+def site_to_j(site):
+    return {
+        "id": site.id,
+        "code": site.code,
+        "name": site.name,
+    }
+
+
 @ns.route("/sites")
 class SitesResource(Resource):
     @api.marshal_list_with(sites__model)
@@ -425,12 +448,38 @@ class SitesResource(Resource):
         return g.sess.query(Site).order_by(Site.code).all()
 
 
+site_parser = ns.parser()
+site_parser.add_argument(
+    "start_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Start of HH data",
+    default="2025-12-01T00:00Z",
+)
+site_parser.add_argument(
+    "finish_date",
+    type=inputs.datetime_from_iso8601,
+    required=True,
+    help="Finish of HH data",
+    default="2025-12-31T23:30Z",
+)
+
+
 @ns.route("/sites/<int:site_id>")
 @ns.param("site_id", "The site identifier")
 class SiteResource(Resource):
     @api.marshal_with(site__model)
+    @ns.expect(site_parser)
     def get(self, site_id):
-        return Site.get_by_id(g.sess, site_id)
+        args = site_parser.parse_args()
+        start_date = to_utc(args["start_date"])
+        finish_date = to_utc(args["finish_date"])
+        site = Site.get_by_id(g.sess, site_id)
+        site_j = site_to_j(site)
+        site_j["hh_data"] = site.hh_data(
+            g.sess, start_date, finish_date, exclude_virtual=True
+        )
+        return site_j
 
 
 @ns.route("/eras/<int:era_id>")
