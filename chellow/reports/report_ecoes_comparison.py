@@ -2,7 +2,6 @@ import csv
 import sys
 import threading
 import traceback
-from itertools import zip_longest
 
 from flask import g, redirect
 
@@ -224,11 +223,8 @@ def _process(
             "meter-type",
             "map-id",
         ]
-        print(values)
 
-        ecoes_row = dict(
-            zip_longest(ecoes_titles, map(str.strip, values), fillvalue="")
-        )
+        ecoes_row = dict(zip(ecoes_titles, map(str.strip, values)))
         mpan_core = ecoes_row["mpan-core"]
         mpan_spaces = " ".join(
             (
