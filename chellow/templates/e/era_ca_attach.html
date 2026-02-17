@@ -37,7 +37,7 @@
 			<label>Connection Agreement</label>
 			<select name="ca_id">
 				{% for ca in cas  %}
-					{{input_option('ca_id', ca.id, ca.id|string + ' : ' + ca.start_date|hh_format)}}
+					{{input_option('ca_id', ca.id, ca.id|string + ' : ' + ca.start_date|hh_format + ' : ' + ca.properties.get('title'))}}
 				{% endfor %}
 			</select>
 			<input type="submit" name="attach" value="Attach">
