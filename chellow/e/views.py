@@ -6,7 +6,6 @@ from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO, StringIO
 from itertools import chain
-from mimetypes import guess_type
 
 
 from dateutil.relativedelta import relativedelta
@@ -178,18 +177,13 @@ def era_ca_attach_get(era_id):
 def era_ca_attach_post(era_id):
     era = Era.get_by_id(g.sess, era_id)
     is_import = req_bool("is_import")
-    if "ca_file" in request.files:
+    if "create" in request.values:
         start_date = req_hh_date("start")
         is_ended = req_checkbox("is_ended")
         finish_date = req_hh_date("finish") if is_ended else None
-        file_item = request.files["ca_file"]
-        filename = file_item.filename
-        if filename == "":
-            raise BadRequest("No file selected")
-        props = {"filename": filename}
-        props["mime_type"], props["encoding"] = guess_type(filename)
-        data = file_item.stream.read()
-        ca = Ca.insert(g.sess, start_date, finish_date, data, props)
+        title = req_str("title")
+        props = {"title": title}
+        ca = Ca.insert(g.sess, start_date, finish_date, props)
         if is_import:
             era.imp_ca = ca
         else:
@@ -256,10 +250,12 @@ def ca_edit_post(ca_id):
         finish_date = req_hh_date("finish") if is_ended else None
         props_elements = req_json("properties_elements")
         url = req_str("url")
+        title = req_str("title")
         for _, sup_id in props_elements.items():
             Supply.get_by_id(g.sess, sup_id)  # Check exists
         props["elements"] = props_elements
         props["url"] = url
+        props["title"] = title
         ca.update(start_date, finish_date)
         ca.update_properties(props)
         g.sess.commit()

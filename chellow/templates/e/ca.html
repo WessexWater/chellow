@@ -37,6 +37,7 @@
 			<tr>
 				<th>Start Date</th>
 				<th>Finish Date</th>
+				<th>Title</th>
 				<th>Document</th>
 			</tr>
 		</thead>
@@ -44,6 +45,7 @@
 			<tr>
 				<td>{{ca.start_date|hh_format}}</td>
 				<td>{{ca.finish_date|hh_format}}</td>
+				<td>{{ca.properties.get('title')}}</td>
 				<td>
 					<a href="{{props.get('url')}}" target="_blank" rel="noopener noreferrer">Document</a>
 				</td>

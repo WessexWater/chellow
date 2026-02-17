@@ -740,7 +740,7 @@ def test_SupplySource_init_ca(sess, mocker):
         361,
     )
     era = supply.eras[0]
-    ca = Ca.insert(sess, vf, None, b"", {"elements": {"tnuos": 300}})
+    ca = Ca.insert(sess, vf, None, {"elements": {"tnuos": 300}})
     era.exp_ca = ca
     sess.commit()
 

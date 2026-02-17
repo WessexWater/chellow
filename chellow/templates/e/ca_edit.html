@@ -18,6 +18,8 @@
 
 			<label>Finish Date</label> {{input_date('finish', finish_date, has_is_ended=True)}}
 
+			<label>Title</label> {{input_text('title', initial=ca.properties.get('title'))}}
+
 			<label>URL</label> {{input_text('url', initial=ca.properties.get('url'))}}
 
 			<label>Element → Primary Supply Id</label>

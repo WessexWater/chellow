@@ -37,17 +37,14 @@
 			<label>Connection Agreement</label>
 			<select name="ca_id">
 				{% for ca in cas  %}
-					{{input_option(
-						'ca_id', ca.id,
-						ca.id|string + ' : ' + ca.start_date|hh_format + ' : ' + ca.properties.get('filename')|string,
-						initial=default_parser_name)}}
+					{{input_option('ca_id', ca.id, ca.id|string + ' : ' + ca.start_date|hh_format)}}
 				{% endfor %}
 			</select>
 			<input type="submit" name="attach" value="Attach">
 		</fieldset>
 	</form>
 
-	<form enctype="multipart/form-data" method="post" action="/e/eras/{{era.id}}/attach_ca">
+	<form method="post" action="/e/eras/{{era.id}}/attach_ca">
 		<fieldset>
 			<input type="hidden" name="is_import"
 				{% if is_import %}
@@ -57,8 +54,8 @@
 				{% endif %}
 			>
 			<legend>Create New Connection Agreement</legend>	
-			<label>File</label>
-			<input type="file" name="ca_file" value="{{request.values.ca_file}}" required>
+
+			<label>Title</label> {{input_text('title')}}
 
 			<label>Start Date</label> {{input_date('start', era.start_date)}}
 

@@ -223,10 +223,9 @@ class Ca(Base, PersistentClass):
     finish_date = Column(DateTime(timezone=True), index=True)
     properties = Column(JSONB, nullable=False)
 
-    def __init__(self, start_date, finish_date, data, properties):
+    def __init__(self, start_date, finish_date, properties):
         self.update(start_date, finish_date)
         self.update_properties(properties)
-        self.data = data
 
     def update(self, start_date, finish_date):
         self.start_date = start_date
@@ -256,8 +255,8 @@ class Ca(Base, PersistentClass):
         sess.flush()
 
     @staticmethod
-    def insert(sess, start_date, finish_date, data, properties):
-        ca = Ca(start_date, finish_date, data, properties)
+    def insert(sess, start_date, finish_date, properties):
+        ca = Ca(start_date, finish_date, properties)
         sess.add(ca)
         return ca
 
