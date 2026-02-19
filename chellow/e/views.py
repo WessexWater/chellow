@@ -2839,9 +2839,6 @@ def isd_post():
 
 @e.route("/issues")
 def issues_get():
-    issues = g.sess.scalars(
-        select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
-    )
     mop_contracts = g.sess.scalars(
         select(Contract)
         .join(Issue)
@@ -2872,10 +2869,8 @@ def issues_get():
         .distinct()
         .order_by(User.email_address)
     ).all()
-    bundles = make_issue_bundles(g.sess, issues)
     return render_template(
         "issues.html",
-        issue_bundles=bundles,
         mop_contracts=mop_contracts,
         dc_contracts=dc_contracts,
         supplier_contracts=supplier_contracts,
@@ -3673,7 +3668,7 @@ def mop_issue_add_post(contract_id):
 def mop_issue_get(issue_id):
     issue = Issue.get_mop_by_id(g.sess, issue_id)
     issue_bundle = make_issue_bundle(g.sess, issue)
-    return render_template("mop_issue.html", issue=issue, isue_bundle=issue_bundle)
+    return render_template("mop_issue.html", issue=issue, issue_bundle=issue_bundle)
 
 
 @e.route("/mop_issues/<int:issue_id>/edit")

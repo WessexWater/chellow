@@ -29,7 +29,7 @@ def test_do_get_as_csv(mocker, sess, client):
     response = client.get("/reports/issues", query_string=query_string)
     match(response, 303)
 
-    args = (1, [2], [], [])
+    args = (1, [2], [], [], [])
     mock_Thread.assert_called_with(target=content, args=args)
 
 
@@ -52,7 +52,8 @@ def test_content(mocker, sess):
     mocker.patch("chellow.reports.report_issues.open_file", return_value=f)
     user_ids = []
     supply_ids = []
-    content(user_id, contract_ids, user_ids, supply_ids)
+    is_opens = []
+    content(user_id, contract_ids, user_ids, supply_ids, is_opens)
     f.seek(0)
     actual = list(csv.reader(f))
     expected = [

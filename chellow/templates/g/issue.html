@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% set issue = issue_bundle.issue %}
+
+{% block inside_head %}
+	<style>
+		section > article {
+			border-style: solid;
+			border-color: var(--bg-color);
+			border-width: thin;
+			padding: 1em;
+		}
+		section > h4 {
+			margin-bottom: 0em;
+		}
+	</style>
+{% endblock %}
+
+{% block title %}
+	&raquo; Gas Supplier Contracts &raquo; {{ issue.g_contract.name }} &raquo; Issues &raquo;
+ 	{{ issue.id }}
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo;
+	<a href="/g/supplier_contracts/{{issue.g_contract.id}}">{{issue.g_contract.name}}</a> &raquo;
+	<a href="/g/supplier_contracts/{{issue.g_contract.id}}/issues">Issues</a> &raquo;
+ 	{{issue.id}} [<a href="/g/issues/{{issue.id}}/edit">edit</a>]
+{% endblock %}
+
+{% block content %}
+
+	<table>
+		<thead>
+			<tr>
+				<th>Id</th>
+				<th>Date Created</th>
+				<th>Owner</th>
+				<th>Status</th>
+				<th>Subject</th>
+				<th>Supplies [<a href="/g/issues/{{issue.id}}/attach_supply">attach</a>]</th>
+		</thead>
+		<tbody>
+			<tr>
+				<td>{{issue.id}}</td>
+				<td>{{issue.date_created|hh_format}}</td>
+				<td>
+					{% if issue_bundle.owner %}
+						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.email_address}}</a>
+					{% endif %}
+				</td>
+				<td>
+					{% if issue.is_open %}
+						Open
+					{% else %}
+						Closed
+					{% endif %}
+				</td>
+				<td>{{issue.properties.subject}}</td>
+				<td>
+					<ul>
+						{% for supply_bundle in issue_bundle.supplies %}
+							<li>
+								<a href="/g/supplies/{{supply_bundle.supply.id}}">{{supply_bundle.supply.mprn}}</a>
+								at
+								<a href="/sites/{{supply_bundle.site.id}}">{{supply_bundle.site.code}} {{supply_bundle.site.name}}
+
+							</li>
+						{% endfor %}
+					</ul>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p><a href="/g/issues/{{issue.id}}/add_entry">Add Entry</a>
+
+	{% for entry in issue.g_entries %}
+		<section>
+			<h4>{{entry.timestamp|hh_format}} [<a href="/g/entries/{{entry.id}}/edit">edit</a>]</h4>
+
+			<article>{{entry.markdown|markdown}}</article>
+		</section>
+	{% endfor %}
+
+
+	<h4>Properties</h4>
+
+	<pre>{{issue.properties|tojson}}</pre>
+
+{% endblock %}

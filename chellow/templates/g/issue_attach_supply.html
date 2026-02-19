@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Gas Supplier Contracts &raquo; {{issue.g_contract.name}} &raquo; Issues &raquo; 
+	{{issue.id}} &raquo; Attach Supply
+{% endblock %}
+
+{% block nav %}
+	<a href="/g/supplier_contracts">Gas Supplier Contracts</a> &raquo; 
+	<a href="/g/supplier_contracts/{{issue.g_contract.id}}">{{issue.g_contract.name}}</a> &raquo; 
+	<a href="/g/supplier_contract/{{issue.g_contract.id}}/issues">Issues</a> &raquo; 
+	<a href="/g/issues/{{issue.id}}">{{issue.id}}</a> &raquo; Attach Supply
+{% endblock %}
+
+{% block content %}
+	<form action="/g/issues/{{issue.id}}/attach_supply" method="post">
+		<fieldset>
+			<legend>Attach A Supply</legend>
+
+			<label>MPRN</label> {{input_text('mprn')}}
+
+			<input type="submit" value="Attach">
+		</fieldset>
+	</form>
+{% endblock %}

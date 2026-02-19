@@ -18,7 +18,7 @@ from flask import (
     request,
 )
 
-from sqlalchemy import false, func, null, select, text, true
+from sqlalchemy import Integer, cast, false, func, null, select, text, true
 from sqlalchemy.orm import aliased, joinedload
 
 
@@ -28,6 +28,7 @@ from zish import dumps, loads
 
 import chellow.gas.bill_import
 import chellow.gas.dn_rate_parser
+from chellow.gas.issues import make_issue_bundle, make_issue_bundles
 from chellow.models import (
     BillType,
     Contract,
@@ -37,6 +38,8 @@ from chellow.models import (
     GDn,
     GEra,
     GExitZone,
+    GIssue,
+    GIssueEntry,
     GLdz,
     GRateScript,
     GReadType,
@@ -47,6 +50,8 @@ from chellow.models import (
     Report,
     Site,
     SiteGEra,
+    User,
+    UserRole,
 )
 from chellow.utils import (
     HH,
@@ -56,6 +61,7 @@ from chellow.utils import (
     req_decimal,
     req_file,
     req_int,
+    req_markdown,
     req_str,
     req_zish,
     utc_datetime,
@@ -77,6 +83,197 @@ gas = Blueprint("g", __name__, template_folder="templates", url_prefix="/g")
 
 def render_template(tname, **kwargs):
     return rtemplate(f"g/{tname}", **kwargs)
+
+
+@gas.route("/issues")
+def issues_get():
+    supplier_contracts = g.sess.scalars(
+        select(GContract)
+        .join(GIssue)
+        .where(GContract.is_industry == false())
+        .distinct()
+        .order_by(GContract.name)
+    ).all()
+    owners = g.sess.scalars(
+        select(User)
+        .join(GIssue, User.id == cast(GIssue.properties["owner_id"], Integer))
+        .distinct()
+        .order_by(User.email_address)
+    ).all()
+    return render_template(
+        "issues.html", supplier_contracts=supplier_contracts, owners=owners
+    )
+
+
+@gas.route("/supplier_contracts/<int:contract_id>/issues")
+def supplier_issues_get(contract_id):
+    contract = GContract.get_supplier_by_id(g.sess, contract_id)
+    issues = g.sess.scalars(
+        select(GIssue)
+        .where(GIssue.g_contract == contract)
+        .order_by(GIssue.is_open.desc(), GIssue.date_created)
+    )
+    bundles = make_issue_bundles(g.sess, issues)
+    return render_template(
+        "supplier_issues.html", contract=contract, issue_bundles=bundles
+    )
+
+
+@gas.route("/supplier_contracts/<int:contract_id>/add_issue")
+def issue_add_get(contract_id):
+    contract = GContract.get_supplier_by_id(g.sess, contract_id)
+    if "supply_id" in request.values:
+        supply_id = req_int("supply_id")
+        supply = GSupply.get_by_id(g.sess, supply_id)
+    else:
+        supply = None
+
+    return render_template("issue_add.html", contract=contract, supply=supply)
+
+
+@gas.route("/supplier_contracts/<int:contract_id>/add_issue", methods=["POST"])
+def issue_add_post(contract_id):
+    contract = GContract.get_supplier_by_id(g.sess, contract_id)
+    try:
+        subject = req_str("subject")
+
+        now = utc_datetime_now()
+        properties = {"subject": subject, "owner_id": g.user.id}
+        if "supply_id" in request.values:
+            properties["supply_ids"] = [req_int("supply_id")]
+        issue = contract.insert_issue(g.sess, now, properties)
+        g.sess.commit()
+        return chellow_redirect(f"/issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("issue_add.html", contract=contract), 400)
+
+
+@gas.route("/issues/<int:issue_id>")
+def issue_get(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    issue_bundle = make_issue_bundle(g.sess, issue)
+    return render_template("issue.html", issue_bundle=issue_bundle)
+
+
+@gas.route("/issues/<int:issue_id>/edit")
+def issue_edit_get(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    users = g.sess.scalars(
+        select(User)
+        .join(UserRole)
+        .where(UserRole.code == "editor")
+        .order_by(User.email_address)
+    )
+    return render_template("issue_edit.html", issue=issue, users=users)
+
+
+@gas.route("/issues/<int:issue_id>/edit", methods=["POST"])
+def issue_edit_post(issue_id):
+    try:
+        issue = GIssue.get_by_id(g.sess, issue_id)
+        date_created = req_date("date_created")
+        is_open = req_checkbox("is_open")
+        owner_id = req_int("owner_id")
+        subject = req_str("subject")
+        props = issue.properties
+        props["owner_id"] = owner_id
+        props["subject"] = subject
+        issue.update(date_created, is_open, props)
+        g.sess.commit()
+        return chellow_redirect(f"/issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("issue_edit.html", issue=issue), 400)
+
+
+@gas.route("/issues/<int:issue_id>/edit", methods=["DELETE"])
+def issue_edit_delete(issue_id):
+    try:
+        issue = GIssue.get_by_id(g.sess, issue_id)
+        contract = issue.g_contract
+        issue.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/supplier_contracts/{contract.id}/issues", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("issue_edit.html", issue=issue), 400)
+
+
+@gas.route("/issues/<int:issue_id>/attach_supply")
+def issue_attach_supply_get(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    return render_template("issue_attach_supply.html", issue=issue)
+
+
+@gas.route("/issues/<int:issue_id>/attach_supply", methods=["POST"])
+def issue_attach_supply_post(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    try:
+        mprn = req_str("mprn")
+        supply = GSupply.get_by_mprn(g.sess, mprn)
+        issue.attach_g_supply(supply)
+        g.sess.commit()
+        return chellow_redirect(f"/issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(
+            render_template("issue_attach_supply.html", issue=issue), 400
+        )
+
+
+@gas.route("/issues/<int:issue_id>/add_entry")
+def entry_add_get(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    return render_template("entry_add.html", issue=issue)
+
+
+@gas.route("/issues/<int:issue_id>/add_entry", methods=["POST"])
+def entry_add_post(issue_id):
+    issue = GIssue.get_by_id(g.sess, issue_id)
+    try:
+        markdown = req_markdown("markdown")
+
+        issue.add_g_entry(g.sess, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("entry_add.html", issue=issue), 400)
+
+
+@gas.route("/entries/<int:entry_id>/edit")
+def entry_edit_get(entry_id):
+    entry = GIssueEntry.get_by_id(g.sess, entry_id)
+    return render_template("entry_edit.html", entry=entry)
+
+
+@gas.route("/entries/<int:entry_id>/edit", methods=["POST"])
+def entry_edit_post(entry_id):
+    entry = GIssueEntry.get_by_id(g.sess, entry_id)
+    try:
+        markdown = req_markdown("markdown")
+        timestamp = req_date("timestamp")
+
+        entry.update(timestamp, markdown)
+        g.sess.commit()
+        return chellow_redirect(f"/issues/{entry.g_issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("entry_edit.html", entry=entry), 400)
+
+
+@gas.route("/entries/<int:entry_id>/edit", methods=["DELETE"])
+def entry_edit_delete(entry_id):
+    try:
+        entry = GIssueEntry.get_by_id(g.sess, entry_id)
+        issue = entry.issue
+        entry.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/issues/{issue.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        return make_response(render_template("entry_edit.html", entry=entry), 400)
 
 
 @gas.route("/supplies")

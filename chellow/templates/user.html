@@ -10,6 +10,10 @@
 			opacity: 0;
 			transition: opacity 1s ease-out;
 		}
+		#g_issues.htmx-swapping {
+			opacity: 0;
+			transition: opacity 1s ease-out;
+		}
 	</style>
 {% endblock %}
 
@@ -19,14 +23,46 @@
 {% endblock %}
 
 {% block content %}
-	<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
-			hx-target="#issues" hx-swap="outerHTML swap:1s">
-		<fieldset>
-			<legend>Filters</legend>	
 
-			<input type="hidden" name="owner_id" value="{{user.id}}">
-		</fieldset>
-	</form>
+	<section>
+		<h3>Eelectricity</h3>
 
-	<div id="issues"></div>
+		<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+				hx-target="#issues" hx-swap="outerHTML swap:1s">
+			<fieldset>
+				<legend>Filters</legend>	
+
+				<input type="hidden" name="owner_id" value="{{user.id}}">
+
+				<label>Status</label>
+				<select name="is_open" multiple size="2">
+					<option name="is_open" value="true" selected>Open</option> 
+					<option name="is_open" value="false">Closed</option> 
+				</select>
+			</fieldset>
+		</form>
+
+		<div id="issues"></div>
+	</section>
+
+	<section>
+		<h3>Gas</h3>
+
+		<form hx-get="/reports/g_issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+				hx-target="#g_issues" hx-swap="outerHTML swap:1s">
+			<fieldset>
+				<legend>Filters</legend>	
+
+				<input type="hidden" name="owner_id" value="{{user.id}}">
+
+				<label>Status</label>
+				<select name="is_open" multiple size="2">
+					<option name="is_open" value="true" selected>Open</option> 
+					<option name="is_open" value="false">Closed</option> 
+				</select>
+			</fieldset>
+		</form>
+
+		<div id="g_issues"></div>
+	</section>
 {% endblock %}

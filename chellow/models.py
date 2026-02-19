@@ -261,6 +261,80 @@ class Ca(Base, PersistentClass):
         return ca
 
 
+class GIssue(Base, PersistentClass):
+    __tablename__ = "g_issue"
+    id = Column(Integer, primary_key=True)
+    g_contract_id = Column(Integer, ForeignKey("g_contract.id"), nullable=False)
+    date_created = Column(DateTime(timezone=True), nullable=False, index=True)
+    properties = Column(JSONB, nullable=False)
+    is_open = Column(Boolean, nullable=False, index=True)
+    g_entries = relationship(
+        "GIssueEntry",
+        backref="g_issue",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="GIssueEntry.timestamp.desc()",
+    )
+
+    def __init__(self, g_contract, date_created, is_open, properties):
+        self.g_contract = g_contract
+        self.update(date_created, is_open, properties)
+
+    def update(self, date_created, is_open, properties):
+        self.date_created = date_created
+        self.is_open = is_open
+        self.update_properties(properties)
+
+    def update_properties(self, properties):
+        self.properties = _jsonize(properties)
+        attributes.flag_modified(self, "properties")
+
+    def add_g_entry(self, sess, markdown, timestamp=None):
+        if timestamp is None:
+            timestamp = utc_datetime_now()
+        g_entry = GIssueEntry(self, timestamp, markdown)
+        sess.add(g_entry)
+        return g_entry
+
+    def attach_g_supply(self, g_supply):
+        props = self.properties
+        supply_ids = props.get("supply_ids", [])
+        supply_ids.append(g_supply.id)
+        props["supply_ids"] = supply_ids
+        self.update_properties(props)
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
+class GIssueEntry(Base, PersistentClass):
+    __tablename__ = "g_issue_entry"
+    id = Column(Integer, primary_key=True)
+    g_issue_id = Column(
+        Integer,
+        ForeignKey("g_issue.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    markdown = Column(JSONB, nullable=False)
+
+    def __init__(self, g_issue, timestamp, markdown):
+        self.g_issue = g_issue
+        self.update(timestamp, markdown)
+
+    def update(self, timestamp, markdown):
+        self.timestamp = timestamp
+        md = MarkdownIt()
+        md.parse(markdown)
+        self.markdown = markdown
+
+    def delete(self, sess):
+        sess.delete(self)
+        sess.flush()
+
+
 class GReadType(Base, PersistentClass):
     __tablename__ = "g_read_type"
     id = Column("id", Integer, primary_key=True)
@@ -5460,6 +5534,13 @@ class GEra(Base, PersistentClass):
             ssgen.is_physical = ssgen == target_ssgen
         sess.flush()
 
+    def get_physical_site(self, sess):
+        return sess.scalar(
+            select(Site)
+            .join(SiteGEra)
+            .where(SiteGEra.g_era == self, SiteGEra.is_physical == true())
+        )
+
 
 class GSupply(Base, PersistentClass):
     __tablename__ = "g_supply"
@@ -5995,6 +6076,7 @@ class GContract(Base, PersistentClass):
         primaryjoin="GContract.id==GRateScript.g_contract_id",
     )
     g_batches = relationship("GBatch", backref="g_contract")
+    g_issues = relationship("GIssue", backref="g_contract")
     __table_args__ = (UniqueConstraint("is_industry", "name"),)
 
     start_g_rate_script_id = Column(
@@ -6267,6 +6349,12 @@ class GContract(Base, PersistentClass):
         if batch is None:
             raise BadRequest(f"Can't find the batch with reference {reference}")
         return batch
+
+    def insert_issue(self, sess, date_created, properties):
+        issue = GIssue(self, date_created, True, properties)
+        sess.add(issue)
+        sess.flush()
+        return issue
 
     @staticmethod
     def insert(

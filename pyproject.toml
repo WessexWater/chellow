@@ -15,7 +15,7 @@ classifiers = [
 ]
 dependencies = [
 	"odio==0.0.23",
-	"pypdf==6.6.2",
+	"pypdf==6.7.1",
 	"pg8000==1.31.5",
 	"Flask==3.1.2",
 	"SQLAlchemy==2.0.45",

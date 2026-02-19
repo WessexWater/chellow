@@ -9,28 +9,31 @@ from sqlalchemy import Integer, any_, cast, select
 from sqlalchemy.dialects.postgresql import JSONB, array
 
 from chellow.dloads import open_file
-from chellow.e.issues import make_issue_bundles
+from chellow.gas.issues import make_issue_bundles
 from chellow.models import (
-    Issue,
+    GIssue,
     RSession,
     User,
 )
-from chellow.utils import csv_make_val, req_checkbox
+from chellow.utils import (
+    csv_make_val,
+    req_checkbox,
+)
 
 
 def _make_bundles(sess, contract_ids, owner_ids, supply_ids, is_opens, limit=None):
-    q = select(Issue).order_by(Issue.is_open.desc(), Issue.date_created)
+    q = select(GIssue).order_by(GIssue.is_open.desc(), GIssue.date_created)
     if limit is not None:
         q = q.limit(limit)
     if len(contract_ids) > 0:
-        q = q.where(Issue.contract_id.in_(contract_ids))
+        q = q.where(GIssue.g_contract_id.in_(contract_ids))
     if len(owner_ids) > 0:
-        q = q.where(cast(Issue.properties["owner_id"], Integer).in_(owner_ids))
+        q = q.where(cast(GIssue.properties["owner_id"], Integer).in_(owner_ids))
     if len(supply_ids) > 0:
         ids_jsonb = array([cast([sid], JSONB) for sid in supply_ids])
-        q = q.where(Issue.properties["supply_ids"].op("@>")(any_(ids_jsonb)))
+        q = q.where(GIssue.properties["supply_ids"].op("@>")(any_(ids_jsonb)))
     if len(is_opens) > 0:
-        q = q.where(Issue.is_open.in_(is_opens))
+        q = q.where(GIssue.is_open.in_(is_opens))
     issues = sess.scalars(q)
     return make_issue_bundles(sess, issues)
 
@@ -40,16 +43,15 @@ def _make_vals(sess, contract_ids, owner_ids, supply_ids, is_opens):
         issue = bundle["issue"]
         props = issue.properties
         owner = bundle["owner"]
+        contract = issue.g_contract
         values = {
             "issue_id": issue.id,
-            "contract_role": issue.contract.market_role.code,
-            "contract_name": issue.contract.name,
+            "contract_name": contract.name,
             "date_created": issue.date_created,
             "owner": None if owner is None else owner.email_address,
             "status": "open" if issue.is_open else "closed",
             "subject": props.get("subject"),
-            "imp_mpan_core": None,
-            "exp_mpan_core": None,
+            "mprn_core": None,
             "site_code": None,
             "site_name": None,
         }
@@ -67,10 +69,8 @@ def _make_vals(sess, contract_ids, owner_ids, supply_ids, is_opens):
         else:
             for supply_bundle in supplies:
                 values = values.copy()
-                era = supply_bundle["era"]
                 site = supply_bundle["site"]
-                values["imp_mpan_core"] = era.imp_mpan_core
-                values["exp_mpan_core"] = era.exp_mpan_core
+                values["mprn"] = supply_bundle["supply"].mprn
                 values["site_code"] = site.code
                 values["site_name"] = site.name
                 yield values
@@ -85,14 +85,12 @@ def content(user_id, contract_ids, owner_ids, supply_ids, is_opens):
             writer = csv.writer(f, lineterminator="\n")
             titles = (
                 "issue_id",
-                "contract_role",
                 "contract_name",
                 "date_created",
                 "owner",
                 "status",
                 "subject",
-                "imp_mpan_core",
-                "exp_mpan_core",
+                "mprn",
                 "site_code",
                 "site_name",
                 "latest_entry_timestamp",
@@ -122,7 +120,7 @@ def do_get(sess):
     as_csv = req_checkbox("as_csv")
 
     if as_csv:
-        args = g.user.id, contract_ids, owner_ids, supply_ids, is_opens
+        args = (g.user.id, contract_ids, owner_ids, supply_ids, is_opens)
         threading.Thread(target=content, args=args).start()
         return redirect("/downloads", 303)
     else:
@@ -130,7 +128,7 @@ def do_get(sess):
             sess, contract_ids, owner_ids, supply_ids, is_opens, limit=LIMIT
         )
         return render_template(
-            "reports/issues.html",
+            "reports/g_issues.html",
             contract_ids=contract_ids,
             owner_ids=owner_ids,
             supply_ids=supply_ids,

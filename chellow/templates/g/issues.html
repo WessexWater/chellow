@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Electricity Issues
+	&raquo; Gas Issues
 {% endblock %}
 
 {% block inside_head %}
@@ -14,33 +14,21 @@
 {% endblock %}
 
 {% block nav %}
-	Electricity Issues
+	Gas Issues
 {% endblock %}
 
 {% block content %}
 
-	<form hx-get="/reports/issues" hx-params="*" hx-include="this" hx-trigger="load, change"
+	<form hx-get="/reports/g_issues" hx-params="*" hx-include="this" hx-trigger="load, change"
 			hx-target="#issues" hx-swap="outerHTML swap:1s">
 		<fieldset>
 			<legend>Filters</legend>	
 
 			<label>Contract</label>
-			<select name="contract_id" multiple size="{{mop_contracts|length + dc_contracts|length + supplier_contracts| length + 3}}">
-				<optgroup label="MOP">
-					{% for contract in mop_contracts %}
-						{{input_option('contract_id', contract.id, contract.name)}}
-					{% endfor %}
-				</optgroup>
-				<optgroup label="DC">
-					{% for contract in dc_contracts %}
-						{{input_option('contract_id', contract.id, contract.name)}}
-					{% endfor %}
-				</optgroup>
-				<optgroup label="Supplier">
-					{% for contract in supplier_contracts %}
-						{{input_option('contract_id', contract.id, contract.name)}}
-					{% endfor %}
-				</optgroup>
+			<select name="contract_id" multiple size="{{supplier_contracts| length + 3}}">
+				{% for contract in supplier_contracts %}
+					{{input_option('contract_id', contract.id, contract.name)}}
+				{% endfor %}
 			</select>
 
 			<label>Owner</label>
@@ -55,6 +43,7 @@
 				<option name="is_open" value="true" selected>Open</option> 
 				<option name="is_open" value="false">Closed</option> 
 			</select>
+
 		</fieldset>
 	</form>
 

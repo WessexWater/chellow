@@ -4,7 +4,7 @@
 	<table class="sticky" id="issues">
 		<caption>
 			Issues (truncated after 200)
-			<a href="/reports/issues?as_csv=true
+			<a href="/reports/g_issues?as_csv=true
 			{%- for contract_id in contract_ids -%}
 				&amp;contract_id={{contract_id}}
 			{%- endfor -%}
@@ -24,7 +24,7 @@
 			<tr>
 				<th rowspan="2">View</th>
 				<th rowspan="2">Issue Id</th>
-				<th colspan="2">Contract</th>
+				<th rowspan="2">Contract</th>
 				<th rowspan="2">Date Created</th>
 				<th rowspan="2">Owner</th>
 				<th rowspan="2">Status</th>
@@ -33,8 +33,6 @@
 				<th colspan="2">Latest Entry</th>
 			</tr>
 			<tr>
-				<th>Type</th>
-				<th>Name</th>
 				<th>Timestamp</th>
 				<th>Text</th>
 			</tr>
@@ -42,35 +40,13 @@
 		<tbody>
 			{% for bundle in issue_bundles %}
 				{% set entry = bundle.latest_entry %}
-				{% set market_role_code = bundle.issue.contract.market_role.code %}
 				<tr>
 					<td>
-						{% if market_role_code == 'C' %}
-							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
-						{% elif market_role_code == 'X' %}
-							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
-						{% elif market_role_code == 'M' %}
-							<a href="/e/mop_issues/{{bundle.issue.id}}">View</a>
-						{% endif %}
+						<a href="/g/issues/{{bundle.issue.id}}">View</a>
 					</td>
 					<td>{{bundle.issue.id}}</td>
 					<td>
-						{% if market_role_code == 'C' %}
-							DC
-						{% elif market_role_code == 'X' %}
-							Supplier
-						{% elif market_role_code == 'M' %}
-							MOP
-						{% endif %}
-					</td>
-					<td>
-						{% if market_role_code == 'C' %}
-							<a href="/e/dc_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
-						{% elif market_role_code == 'X' %}
-							<a href="/e/supplier_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
-						{% elif market_role_code == 'M' %}
-							<a href="/e/mop_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
-						{% endif %}
+						<a href="/g/supplier_contracts/{{bundle.issue.g_contract.id}}">{{bundle.issue.g_contract.name}}</a>
 					</td>
 					<td>{{bundle.issue.date_created|hh_format}}</td>
 					<td>
@@ -89,11 +65,10 @@
 					<td>
 						<ul>
 							{% for supply_bundle in bundle.supplies %}
-								{% set era = supply_bundle.era %}
 								{% set supply = supply_bundle.supply %}
 								{% set site = supply_bundle.site %}
 								<li>
-									<a href="/e/supplies/{{supply.id}}">{{era.imp_mpan_core or ''}} {{era.exp_mpan_core or ''}}</a>
+									<a href="/g/supplies/{{supply.id}}">{{supply.mprn}}</a>
 								 	at <a href="/sites/{{site.id}}">{{site.code}} {{site.name}}</a>
 								</li>
 							{% endfor %}
