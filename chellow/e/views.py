@@ -89,6 +89,7 @@ from chellow.models import (
     ReadType,
     RegisterRead,
     Report,
+    ReportRun,
     Site,
     SiteEra,
     Snag,
@@ -595,22 +596,34 @@ def dc_batches_edit_post(contract_id):
 @e.route("/dc_batches/<int:batch_id>")
 def dc_batch_get(batch_id):
     batch = Batch.get_by_id(g.sess, batch_id)
-    bills = (
-        g.sess.query(Bill).filter(Bill.batch == batch).order_by(Bill.reference).all()
-    )
+    bills = g.sess.scalars(
+        select(Bill).where(Bill.batch == batch).order_by(Bill.reference)
+    ).all()
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
     importer_ids = sorted(
         chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
     )
-    fields = {"batch": batch, "bills": bills, "importer_ids": importer_ids}
-    if "batch_reports" in properties:
-        batch_reports = []
-        for report_id in properties["batch_reports"]:
-            batch_reports.append(Report.get_by_id(g.sess, report_id))
-        fields["batch_reports"] = batch_reports
-    return render_template("dc_batch.html", **fields)
+    report_runs = g.sess.scalars(
+        select(ReportRun)
+        .where(
+            ReportRun.state == "finished",
+            ReportRun.title == f"_batch_{batch.reference}",
+        )
+        .order_by(ReportRun.date_created.desc())
+    )
+    batch_reports = []
+    for report_id in properties.get("batch_reports", []):
+        batch_reports.append(Report.get_by_id(g.sess, report_id))
+    return render_template(
+        "dc_batch.html",
+        batch=batch,
+        bills=bills,
+        importer_ids=importer_ids,
+        batch_reports=batch_reports,
+        report_runs=report_runs,
+    )
 
 
 @e.route("/dc_batches/<int:batch_id>/csv")
@@ -3197,13 +3210,25 @@ def mop_batch_get(batch_id):
     importer_ids = sorted(
         chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
     )
-    fields = {"batch": batch, "bills": bills, "importer_ids": importer_ids}
-    if "batch_reports" in properties:
-        batch_reports = []
-        for report_id in properties["batch_reports"]:
-            batch_reports.append(Report.get_by_id(g.sess, report_id))
-        fields["batch_reports"] = batch_reports
-    return render_template("mop_batch.html", **fields)
+    report_runs = g.sess.scalars(
+        select(ReportRun)
+        .where(
+            ReportRun.state == "finished",
+            ReportRun.title == f"_batch_{batch.reference}",
+        )
+        .order_by(ReportRun.date_created.desc())
+    )
+    batch_reports = []
+    for report_id in properties["batch_reports"]:
+        batch_reports.append(Report.get_by_id(g.sess, report_id))
+    return render_template(
+        "mop_batch.html",
+        batch=batch,
+        bills=bills,
+        importer_ids=importer_ids,
+        batch_reports=batch_reports,
+        report_runs=report_runs,
+    )
 
 
 @e.route("/mop_batches/<int:batch_id>/upload_file")
@@ -5724,6 +5749,14 @@ def supplier_batch_get(batch_id):
         importer_ids = sorted(
             chellow.e.bill_importer.get_bill_import_ids(batch), reverse=True
         )
+        report_runs = g.sess.scalars(
+            select(ReportRun)
+            .where(
+                ReportRun.state == "finished",
+                ReportRun.title == f"_batch_{batch.reference}",
+            )
+            .order_by(ReportRun.date_created.desc())
+        )
         return render_template(
             "supplier_batch.html",
             batch=batch,
@@ -5736,6 +5769,7 @@ def supplier_batch_get(batch_id):
             sum_kwh=sum_kwh,
             vat_breakdown=vat_breakdown,
             importer_ids=importer_ids,
+            report_runs=report_runs,
         )
     except BadRequest as e:
         flash(e.description)

@@ -86,6 +86,26 @@
 		</tbody>
 	</table>
 
+	<table>
+		<caption>Previous Bill Checks</caption>
+		<thead>
+			<th>View</th>
+			<th>Date Created</th>
+			<th>Created By</th>
+			<th>Title</th>
+		</thead>
+		<tbody>
+			{% for report_run in report_runs %}
+				<tr>
+					<td><a href="/report_runs/{{report_run.id}}">View</a></td>
+					<td>{{report_run.date_created|hh_format}}</td>
+					<td>{{report_run.creator}}</td>
+					<td>{{report_run.title}}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
 	<ul>
 		<li><a href="/reports/111?batch_id={{batch.id}}">Check Bills</a></li>
 		<li><a href="/reports/bills?batch_id={{batch.id}}/ods">Download Bills</a></li>
