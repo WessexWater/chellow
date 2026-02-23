@@ -88,6 +88,7 @@
 				<th>Also Supplies</th>
 				<th>Meter Category</th>
 				<th>Meter Serial Number</th>
+				<th>Open Issues</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -145,6 +146,27 @@
 					</td>
 					<td>{{group.meter_category}}</td>
 					<td>{{last_era.msn}}</td>
+					<td>
+						{% set issues = group['issues'] %}
+						{% if issues|length > 0 %}
+							<ul>
+								{% for issue in issues %}
+									<li>
+										{% if issue.contract.market_role.code == 'X' %}
+											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% elif issue.contract.market_role.code == 'C' %}
+											<a href="/e/dc_issues/{{issue.id}}">DC:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% else %}
+											<a href="/e/mop_issues/{{issue.id}}">MOP:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

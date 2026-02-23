@@ -1295,6 +1295,16 @@ def site_get(site_id):
                     "last_era": era,
                     "is_ongoing": era.finish_date is None,
                     "meter_category": meter_cat,
+                    "issues": g.sess.scalars(
+                        select(Issue)
+                        .where(
+                            Issue.is_open == true(),
+                            Issue.properties["supply_ids"].op("@>")(
+                                cast([era.supply_id], JSONB)
+                            ),
+                        )
+                        .order_by(Issue.date_created)
+                    ).all(),
                 }
             )
 
