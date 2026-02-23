@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Electricity Dashboard &raquo; Rolling Year
+{% endblock %}
+
+{% block nav %}
+	<a href="/e/dashboard">Electricity Dashboard</a> &raquo; Rolling Year
+{% endblock %}
+
+{% block content %}
+
+<h1>Rolling Year</h1> 
+
+<div>
+	  <canvas id="imp_gbp"></canvas>
+</div>
+
+<br>
+<br>
+
+<div>
+	  <canvas id="imp_kwh"></canvas>
+</div>
+
+<br>
+<br>
+
+<div>
+	  <canvas id="exp_gbp"></canvas>
+</div>
+
+<br>
+<br>
+
+<div>
+	  <canvas id="exp_kwh"></canvas>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<script>
+		const ct_imp_gbp = document.getElementById('imp_gbp');
+
+		new Chart(ct_imp_gbp, {
+			type: 'bar',
+			data: {
+				labels: [
+					{% for org_row in org_rows %}
+						'{{org_row['data']['values']['month'][:7]}}',
+					{% endfor %}
+				],
+				datasets: [
+					{
+						label: 'Billed Gross £',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['billed-import-gross-gbp']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+					{
+						label: 'Metered Gross £',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['import-grid-gross-gbp']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+				]
+			},
+			options: {
+				plugins: {
+					title: {
+						display: true,
+						text: 'Imported Gross £'
+					}
+				}
+			},
+		});
+	</script>
+
+	<script>
+		  const ct_imp_kwh = document.getElementById('imp_kwh');
+
+  		new Chart(ct_imp_kwh, {
+		    type: 'bar',
+		    data: {
+					labels: [
+						{% for org_row in org_rows %}
+							'{{org_row['data']['values']['month'][:7]}}',
+						{% endfor %}
+					],
+					datasets: [
+						{
+							label: 'Billed kWh',
+							data: [
+								{% for org_row in org_rows %}
+									{{org_row['data']['values']['billed-import-kwh']}},
+								{% endfor %}
+							],
+							borderWidth: 1
+						},
+						{
+							label: 'Metered kWh',
+							data: [
+								{% for org_row in org_rows %}
+									{{org_row['data']['values']['import-grid-kwh']}},
+								{% endfor %}
+							],
+							borderWidth: 1
+						},
+					]
+				},
+			options: {
+				plugins: {
+					title: {
+														          display: true,
+														          text: 'Imported kWh'
+														        }
+									      }
+					    },
+		  });
+	</script>
+
+	<script>
+		const ct_exp_gbp = document.getElementById('exp_gbp');
+
+		new Chart(ct_exp_gbp, {
+			type: 'bar',
+			data: {
+				labels: [
+					{% for org_row in org_rows %}
+						'{{org_row['data']['values']['month'][:7]}}',
+					{% endfor %}
+				],
+				datasets: [
+					{
+						label: 'Billed Net £',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['billed-export-net-gbp']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+					{
+						label: 'Metered Net £',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['export-grid-net-gbp']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+				]
+			},
+			options: {
+				plugins: {
+					title: {
+						display: true,
+						text: 'Exported £'
+					}
+				}
+			},
+		});
+	</script>
+
+	<script>
+
+		const ct_exp_kwh = document.getElementById('exp_kwh');
+
+		new Chart(ct_exp_kwh, {
+			type: 'bar',
+			data: {
+				labels: [
+					{% for org_row in org_rows %}
+						'{{org_row['data']['values']['month'][:7]}}',
+					{% endfor %}
+				],
+				datasets: [
+					{
+						label: 'Billed kWh',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['billed-export-kwh']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+					{
+						label: 'Metered kWh',
+						data: [
+							{% for org_row in org_rows %}
+								{{org_row['data']['values']['export-grid-kwh']}},
+							{% endfor %}
+						],
+						borderWidth: 1
+					},
+				]
+			},
+			options: {
+				plugins: {
+					title: {
+						display: true,
+						text: 'Exported kWh'
+					}
+				}
+			},
+		});
+	</script>
+
+
+	<table>
+		<caption>Electricity Rolling Year</caption>
+		<thead>
+			<tr>
+				<th rowspan="3">Month</th>
+				<th colspan="4">Imported</th>
+				<th colspan="4">Exported</th>
+			</tr>
+			<tr>
+				<th colspan="2">Billed</th>
+				<th colspan="2">Metered</th>
+				<th colspan="2">Billed</th>
+				<th colspan="2">Metered</th>
+			</tr>
+			<tr>
+				<th>£</th>
+				<th>kWh</th>
+				<th>£</th>
+				<th>kWh</th>
+				<th>£</th>
+				<th>kWh</th>
+				<th>£</th>
+				<th>kWh</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for org_row in org_rows %}
+				{% set values = org_row['data']['values'] %}
+				{% set imp_grid_kwh = values['billed-import-gross-gbp'] %}
+				<tr>
+					<td>{{values.month[:7]}}</td>
+					<td style="text-align: right;">
+						 {{ "{:,.0f}".format(values['billed-import-gross-gbp']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['billed-import-kwh']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['import-grid-gross-gbp']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['import-grid-kwh']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['billed-export-net-gbp']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['billed-export-kwh']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['export-grid-net-gbp']) }}
+					</td>
+					<td style="text-align: right;">
+						{{ "{:,.0f}".format(values['export-grid-kwh']) }}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}

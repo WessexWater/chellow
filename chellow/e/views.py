@@ -90,6 +90,7 @@ from chellow.models import (
     RegisterRead,
     Report,
     ReportRun,
+    ReportRunRow,
     Site,
     SiteEra,
     Snag,
@@ -158,6 +159,62 @@ def asset_comparison_get():
     props = config_contract.make_properties()
     description = props.get("asset_comparison", "")
     return render_template("asset_comparison.html", description=description)
+
+
+@e.route("/dashboard", methods=["GET"])
+def dashboard():
+    return render_template("dashboard.html")
+
+
+@e.route("/dashboard/ecoes", methods=["GET"])
+def dashboard_ecoes():
+    ecoes_runs = g.sess.scalars(
+        select(ReportRun)
+        .where(
+            ReportRun.name == "ecoes_comparison",
+            ReportRun.state == "finished",
+            ReportRun.data["keep"].as_boolean() == true(),
+        )
+        .order_by(ReportRun.date_created.desc())
+    ).all()
+    return render_template("dashboard_ecoes.html", ecoes_runs=ecoes_runs)
+
+
+@e.route("/dashboard/rolling_year", methods=["GET"])
+def dashboard_rolling_year():
+    run = g.sess.scalars(
+        select(ReportRun)
+        .where(
+            ReportRun.name == "monthly_duration",
+            ReportRun.state == "finished",
+            ReportRun.data["scenario"]["name"].astext == "rolling_year",
+        )
+        .order_by(ReportRun.date_created.desc())
+    ).first()
+
+    org_rows = g.sess.scalars(
+        select(ReportRunRow)
+        .where(ReportRunRow.report_run == run, ReportRunRow.tab == "org")
+        .order_by(ReportRunRow.data["values"]["month"])
+    ).all()
+
+    site_rows = g.sess.scalars(
+        select(ReportRunRow)
+        .where(
+            ReportRunRow.report_run == run,
+            ReportRunRow.tab == "site",
+        )
+        .order_by(ReportRunRow.data["values"]["site-name"])
+    ).all()
+
+    site_set = {
+        (r.data["values"]["site-name"], r.data["values"]["site-id"]) for r in site_rows
+    }
+    site_pairs = sorted(site_set)
+
+    return render_template(
+        "dashboard_rolling_year.html", run=run, org_rows=org_rows, site_pairs=site_pairs
+    )
 
 
 @e.route("/eras/<int:era_id>/attach_ca")

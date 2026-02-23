@@ -85,6 +85,11 @@ def render_template(tname, **kwargs):
     return rtemplate(f"g/{tname}", **kwargs)
 
 
+@gas.route("/dashboard", methods=["GET"])
+def dashboard():
+    return render_template("dashboard.html")
+
+
 @gas.route("/issues")
 def issues_get():
     supplier_contracts = g.sess.scalars(
