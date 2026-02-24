@@ -33,6 +33,7 @@ ELEMENT_MAP = {
             "590346": ("cfd-obligation", None, None),
             "493988": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
+            "346982": ("rab-obligation", "rate", "kwh"),
         },
     },
     "BUS": {
@@ -81,6 +82,9 @@ ELEMENT_MAP = {
             "794486": ("duos-availability", "rate", "kva"),
             "209269": ("tnuos", "rate", "days"),
             "065950": ("eii", "rate", "kwh"),
+            "188466": ("rab-operational", "rate", "kwh"),
+            "180397": ("rab-obligation", "rate", "kwh"),
+            "563194": ("rab-obligation", "rate", "kwh"),
         },
         "DUSDIS": {
             "122568": ("nrg-gsp-losses", "rate", "kwh"),
