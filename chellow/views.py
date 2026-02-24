@@ -1587,6 +1587,15 @@ def report_run_get(run_id):
             .scalars()
             .all()
         )
+        supply_id = row.data["data"]["supply_id"]
+        issues = g.sess.scalars(
+            select(Issue)
+            .where(
+                Issue.is_open == true(),
+                Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+            )
+            .order_by(Issue.date_created)
+        ).all()
         return render_template(
             "report_run_asset_comparison.html",
             run=run,
@@ -1621,6 +1630,22 @@ def report_run_get(run_id):
             .scalars()
             .all()
         )
+        for row in rows:
+            supply_id = row.data["values"].get("chellow_supply_id")
+            if supply_id is not None:
+                issues = g.sess.scalars(
+                    select(Issue)
+                    .where(
+                        Issue.is_open == true(),
+                        Issue.properties["supply_ids"].op("@>")(
+                            cast([supply_id], JSONB)
+                        ),
+                    )
+                    .order_by(Issue.date_created)
+                ).all()
+            else:
+                issues = []
+            row.data["values"]["issues"] = issues
         return render_template(
             "report_run_ecoes_comparison.html",
             run=run,
