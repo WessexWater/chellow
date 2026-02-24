@@ -11,6 +11,7 @@ from flask import flash, g, make_response, redirect, render_template, request
 from odio import create_spreadsheet
 
 from sqlalchemy import or_, select, true
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.expression import null
 
 from werkzeug.exceptions import BadRequest
@@ -20,6 +21,7 @@ from chellow.e.computer import contract_func, forecast_date
 from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
 from chellow.e.scenario import make_calcs, make_site_deltas, scenario_fill_cache
 from chellow.models import (
+    Batch,
     Bill,
     Contract,
     Element,
@@ -89,10 +91,16 @@ def _add_bills(sess, era, chunk_start, chunk_finish):
     bill_data = defaultdict(int)
     num = 0
     for bill in sess.scalars(
-        select(Bill).where(
+        select(Bill)
+        .where(
             Bill.supply == era.supply,
             Bill.start_date <= chunk_finish,
             Bill.finish_date >= chunk_start,
+        )
+        .options(
+            joinedload(Bill.batch)
+            .joinedload(Batch.contract)
+            .joinedload(Contract.market_role)
         )
     ):
         num += 1
