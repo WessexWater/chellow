@@ -35,7 +35,7 @@
 			{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
 		{% endfor %}
 	</select>
-	<label>Meter Serial Number</label> {{input_text('msn', era.msn)}}
+	<label>Meter Serial Number</label> {{input_text('msn')}}
 	<label>Profile Class</label>
 	<select name="pc_id">
 		{% for p in pcs %}
