@@ -587,8 +587,11 @@ def batch_add_post(g_contract_id):
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         reference = req_str("reference")
         description = req_str("description")
+        date_created = req_date("date_created")
 
-        g_batch = g_contract.insert_g_batch(g.sess, reference, description)
+        g_batch = g_contract.insert_g_batch(
+            g.sess, reference, description, date_created
+        )
         g.sess.commit()
         return chellow_redirect(f"/batches/{g_batch.id}", 303)
     except BadRequest as e:
@@ -695,7 +698,8 @@ def batch_edit_post(g_batch_id):
         if "update" in request.values:
             reference = req_str("reference")
             description = req_str("description")
-            g_batch.update(g.sess, reference, description)
+            date_created = req_date("date_created")
+            g_batch.update(g.sess, reference, description, date_created)
             g.sess.commit()
             return chellow_redirect(f"/batches/{g_batch.id}", 303)
         elif "delete_bills" in request.values:

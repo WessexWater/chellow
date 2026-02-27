@@ -21,7 +21,7 @@ from chellow.models import RSession, Session, User, UserRole, stop_sqlalchemy
 @pytest.fixture
 def fresh_db():
     stop_sqlalchemy()
-    config = chellow.models.config
+    config = chellow.models.make_config()
     database = config["PGDATABASE"]
     with pg8000.connect(
         config["PGUSER"],

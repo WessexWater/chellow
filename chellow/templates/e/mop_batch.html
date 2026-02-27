@@ -27,6 +27,10 @@
 			<td>{{ batch.description }}</td>
 		</tr>
 		<tr>
+			<th>Date Created</th>
+			<td>{{batch.date_created|hh_format}}</td>
+		</tr>
+		<tr>
 			<th>Number Of Bills</th>
 			<td>{{ bills|length }}</td>
 		</tr>

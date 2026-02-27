@@ -21,6 +21,7 @@
 			<tr>
 				<th>Reference</th>
 				<th>Description</th>
+				<th>Date Created</th>
 				<th>Number Of Bills</th>
 				<th>Sum net GBP</th>
 				<th>Sum VAT GBP</th>
@@ -34,6 +35,7 @@
 			<tr>
 				<td>{{g_batch.reference}}</td>
 				<td>{{g_batch.description}}</td>
+				<td>{{g_batch.date_created|hh_format}}</td>
 				<td>{{ "{:,}".format(num_bills) }}</td>
 				<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
 				<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>

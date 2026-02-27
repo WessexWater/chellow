@@ -26,11 +26,10 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_batch_get_empty(client, sess):
-    g_contract = GContract.insert_supplier(
-        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    vf = utc_datetime(2000, 1, 1)
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     sess.commit()
 
@@ -40,32 +39,23 @@ def test_batch_get_empty(client, sess):
 
 
 def test_batch_get(client, sess):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
-
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
-
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
-
     insert_g_units(sess)
-
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
-
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
     insert_g_reading_frequencies(sess)
-
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
-
     g_supply = site.insert_g_supply(
         sess,
         "87614362",
         "main",
         g_exit_zone,
-        utc_datetime(2018, 1, 1),
+        vf,
         None,
         "hgeu8rhg",
         1,
@@ -77,14 +67,10 @@ def test_batch_get(client, sess):
         1,
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
-
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     breakdown = {"units_consumed": 771}
-
     insert_bill_types(sess)
-
     bill_type_n = BillType.get_by_code(sess, "N")
-
     g_batch.insert_g_bill(
         sess,
         g_supply,
@@ -110,14 +96,12 @@ def test_batch_get(client, sess):
 
 
 def test_batch_add_get(client, sess):
-    valid_from = to_utc(ct_datetime(2000, 1, 1))
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, valid_from, None, {}
-    )
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
 
     batch_reference = "b1"
     batch_description = "Jan batch"
-    g_contract.insert_g_batch(sess, batch_reference, batch_description)
+    g_contract.insert_g_batch(sess, batch_reference, batch_description, vf)
 
     sess.commit()
 
@@ -127,15 +111,14 @@ def test_batch_add_get(client, sess):
 
 
 def test_batch_edit_post(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
     insert_g_units(sess)
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     mprn = "750278673"
@@ -155,13 +138,18 @@ def test_batch_edit_post(sess, client):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     sess.commit()
 
     data = {
         "update": "Update",
         "reference": "b2",
         "description": "Feb batch",
+        "date_created_year": "2018",
+        "date_created_month": "01",
+        "date_created_day": "01",
+        "date_created_hour": "00",
+        "date_created_minute": "00",
     }
 
     response = client.post(f"/g/batches/{g_batch.id}/edit", data=data)
@@ -172,7 +160,7 @@ def test_batch_edit_post(sess, client):
 def test_batch_edit_delete(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     sess.commit()
 
     response = client.delete(f"/g/batches/{g_batch.id}/edit")
@@ -212,7 +200,7 @@ def test_batch_csv_get(sess, client):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     breakdown = {"units_consumed": 771}
 
     insert_bill_types(sess)
@@ -315,6 +303,7 @@ def test_batch_csv_get(sess, client):
 
 
 def test_bill_get(client, sess):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -327,9 +316,7 @@ def test_bill_get(client, sess):
 
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
 
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
 
     insert_g_reading_frequencies(sess)
 
@@ -352,7 +339,7 @@ def test_bill_get(client, sess):
         1,
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     breakdown = {"units_consumed": 771}
 
@@ -385,15 +372,14 @@ def test_bill_get(client, sess):
 
 
 def test_bill_add_post(sess, client):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
     insert_g_units(sess)
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     mprn = "750278673"
@@ -413,7 +399,7 @@ def test_bill_add_post(sess, client):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     insert_bill_types(sess)
     sess.commit()
 
@@ -450,15 +436,14 @@ def test_bill_add_post(sess, client):
 
 
 def test_bill_edit_post(sess, client):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
     insert_g_units(sess)
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     g_supply = site.insert_g_supply(
@@ -477,7 +462,7 @@ def test_bill_edit_post(sess, client):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     breakdown = {"units_consumed": 771}
     insert_bill_types(sess)
@@ -547,6 +532,8 @@ def test_bill_edit_post(sess, client):
 
 
 def test_bill_imports_post_full(mocker, app, client, sess):
+    vf = utc_datetime(2000, 1, 1)
+
     file_lines = (
         "STX=ANA:1+Marsh Gas:MARSH Gas Limited+BPAJA:Bill Paja 771+"
         "171023:867369+856123++UTLHDR'",
@@ -611,11 +598,9 @@ def test_bill_imports_post_full(mocker, app, client, sess):
 
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
 
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     insert_bill_types(sess)
 
@@ -700,7 +685,9 @@ def test_bill_imports_post(mocker, app, client, sess):
         {},
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(
+        sess, "b1", "Jan batch", utc_datetime(2019, 1, 1)
+    )
 
     sess.commit()
 
@@ -746,7 +733,15 @@ def test_batch_add_post(client, sess):
 
     sess.commit()
 
-    data = {"reference": "engie_edi", "description": "Engie EDI"}
+    data = {
+        "reference": "engie_edi",
+        "description": "Engie EDI",
+        "date_created_year": "2000",
+        "date_created_month": "01",
+        "date_created_day": "01",
+        "date_created_hour": "00",
+        "date_created_minute": "00",
+    }
 
     response = client.post(
         f"/g/supplier_contracts/{g_contract.id}/add_batch", data=data
@@ -883,6 +878,7 @@ def test_supply_get(client, sess):
 
 
 def test_supply_get_bill_after_end(client, sess):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -891,9 +887,7 @@ def test_supply_get_bill_after_end(client, sess):
     insert_g_units(sess)
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
 
-    g_contract = GContract.insert_supplier(
-        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
 
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
@@ -914,12 +908,10 @@ def test_supply_get_bill_after_end(client, sess):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     insert_bill_types(sess)
-
     bill_type_n = BillType.get_by_code(sess, "N")
-
     g_batch.insert_g_bill(
         sess,
         g_supply,
@@ -1082,21 +1074,15 @@ def test_supply_edit_post(client, sess):
 
 
 def test_read_edit_post_delete(sess, client):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
-
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
-
     g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
-
     insert_g_units(sess)
-
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
-
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
 
     insert_g_reading_frequencies(sess)
 
@@ -1119,7 +1105,7 @@ def test_read_edit_post_delete(sess, client):
         1,
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     insert_bill_types(sess)
 
@@ -1259,6 +1245,7 @@ def test_supplier_rate_script_edit_post_delete(sess, client):
 
 
 def test_read_add_get(sess, client):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
 
     g_dn = GDn.insert(sess, "EE", "East of England")
@@ -1275,9 +1262,7 @@ def test_read_add_get(sess, client):
 
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
 
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
 
     g_supply = site.insert_g_supply(
         sess,
@@ -1296,7 +1281,7 @@ def test_read_add_get(sess, client):
         1,
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     insert_bill_types(sess)
 
@@ -1356,7 +1341,7 @@ def test_read_add_post(sess, client):
         1,
     )
 
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     insert_bill_types(sess)
 

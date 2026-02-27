@@ -150,7 +150,7 @@ def test_Bill_update(sess):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a", "ba")
+    batch = supplier_contract.insert_batch(sess, "a", "ba", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
 
@@ -258,7 +258,7 @@ def test_Bill_insert_read_duplicate(sess):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -387,7 +387,7 @@ def test_Batch_get_by_reference(sess):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill_reference = "hrghj88"
@@ -1052,14 +1052,14 @@ def test_Contract_insert_batch_duplicate(sess):
     participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
 
     contract = Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
-    contract.insert_batch(sess, "a", "a ref")
+    contract.insert_batch(sess, "a", "a ref", vf)
     sess.commit()
 
     with pytest.raises(
         BadRequest,
         match="There's already a batch with the reference 'a'.",
     ):
-        contract.insert_batch(sess, "a", "a ref")
+        contract.insert_batch(sess, "a", "a ref", vf)
 
 
 def test_Site_hh_check(sess):

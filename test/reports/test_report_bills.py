@@ -132,7 +132,7 @@ def test_content(mocker, sess):
         None,
     )
 
-    batch = imp_supplier_contract.insert_batch(sess, "b", "b")
+    batch = imp_supplier_contract.insert_batch(sess, "b", "b", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     batch.insert_bill(

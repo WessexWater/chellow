@@ -148,7 +148,7 @@ def test_general_import_dc_bill_insert(sess):
         361,
     )
     batch_reference = "dgnsdjh55"
-    dc_contract.insert_batch(sess, batch_reference, "")
+    dc_contract.insert_batch(sess, batch_reference, "", vf)
     insert_bill_types(sess)
     sess.commit()
     action = "insert"
@@ -266,7 +266,7 @@ def test_general_import_dc_bill_element_insert(sess):
         361,
     )
     batch_reference = "dgnsdjh55"
-    batch = dc_contract.insert_batch(sess, batch_reference, "")
+    batch = dc_contract.insert_batch(sess, batch_reference, "", vf)
     insert_bill_types(sess)
     bill_type_n = BillType.get_by_code(sess, "N")
     bill_reference = "xxhguewr7"
@@ -345,7 +345,7 @@ def test_general_import_g_register_reads(sess):
         1,
     )
     batch_name = "b1"
-    g_batch = g_contract.insert_g_batch(sess, batch_name, "batch 1")
+    g_batch = g_contract.insert_g_batch(sess, batch_name, "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     insert_g_read_types(sess)
@@ -424,7 +424,7 @@ def test_general_import_g_bill_reads(sess):
         1,
     )
     batch_reference = "b1"
-    g_contract.insert_g_batch(sess, batch_reference, "batch 1")
+    g_contract.insert_g_batch(sess, batch_reference, "batch 1", vf)
     insert_bill_types(sess)
     insert_g_read_types(sess)
     sess.commit()

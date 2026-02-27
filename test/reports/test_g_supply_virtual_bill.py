@@ -133,7 +133,7 @@ def virtual_bill(ds):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     breakdown = {"units_consumed": 771}
     insert_bill_types(sess)

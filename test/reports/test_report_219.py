@@ -130,7 +130,7 @@ def test_content(mocker, sess):
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin@example.com", "xxx", editor, None)
     user_id = user.id
-    batch = imp_supplier_contract.insert_batch(sess, "a", "batch")
+    batch = imp_supplier_contract.insert_batch(sess, "a", "batch", vf)
 
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")

@@ -61,7 +61,8 @@ def make_fake_bills(
         None,
         g_contract_rate_script,
     )
-    g_contract.insert_g_batch(sess, f"fake_g_batch_{g_contract.id}", "Fake Batch")
+    g_contract.insert_g_batch(sess, f"fake_g_batch_{g_contract.id}", "Fake Batch", vf)
+
     sess.commit()
     messages = []
 

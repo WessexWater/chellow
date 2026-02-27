@@ -1894,7 +1894,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "a b", "")
+    batch = imp_supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
     batch.insert_bill(
@@ -2555,7 +2555,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "a b", "")
+    batch = imp_supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
     batch.insert_bill(
@@ -3216,7 +3216,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "a b", "")
+    batch = imp_supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = sess.execute(select(BillType).where(BillType.code == "N")).scalar_one()
     batch.insert_bill(

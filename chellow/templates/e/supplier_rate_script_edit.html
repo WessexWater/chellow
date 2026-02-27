@@ -17,10 +17,7 @@
 	<form action="/e/supplier_rate_scripts/{{supplier_rate_script.id}}/edit" method="post">
 		<fieldset>
 			<legend>Update Rate Script</legend>	
-			<fieldset>
-				<legend>Start date</legend>
-				{{ input_date('start', supplier_rate_script.start_date) }}
-			</fieldset>
+			<label>Start date</label> {{ input_date('start', supplier_rate_script.start_date) }}
 			<fieldset>
 				<legend>Finish date</legend>
 				<label>

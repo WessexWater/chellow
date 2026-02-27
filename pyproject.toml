@@ -33,6 +33,7 @@ dependencies = [
 	"psutil==7.1.1",
 	"xlrd==2.0.2",
 	"zish==0.1.12",
+	"azure-identity",
 ]
 
 [project.urls]

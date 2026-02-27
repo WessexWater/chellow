@@ -84,50 +84,48 @@ from chellow.utils import (
     utc_datetime_now,
 )
 
-config = {
-    "PGUSER": "postgres",
-    "PGPASSWORD": "postgres",
-    "PGHOST": "localhost",
-    "PGDATABASE": "chellow",
-    "PGPORT": "5432",
-}
 
+def make_config():
+    config = {
+        "PGUSER": "postgres",
+        "PGPASSWORD": "postgres",
+        "PGHOST": "localhost",
+        "PGDATABASE": "chellow",
+        "PGPORT": "5432",
+    }
 
-if "RDS_HOSTNAME" in os.environ:
-    for conf_name, rds_name in (
-        ("PGDATABASE", "RDS_DB_NAME"),
-        ("PGUSER", "RDS_USERNAME"),
-        ("PGPASSWORD", "RDS_PASSWORD"),
-        ("PGHOST", "RDS_HOSTNAME"),
-        ("PGPORT", "RDS_PORT"),
+    if "RDS_HOSTNAME" in os.environ:
+        for conf_name, rds_name in (
+            ("PGDATABASE", "RDS_DB_NAME"),
+            ("PGUSER", "RDS_USERNAME"),
+            ("PGPASSWORD", "RDS_PASSWORD"),
+            ("PGHOST", "RDS_HOSTNAME"),
+            ("PGPORT", "RDS_PORT"),
+        ):
+            config[conf_name] = os.environ[rds_name]
+
+    for var_name in (
+        "PGUSER",
+        "PGPASSWORD",
+        "PGHOST",
+        "PGPORT",
+        "PGDATABASE",
+        "CHELLOW_PORT",
     ):
-        config[conf_name] = os.environ[rds_name]
+        if var_name in os.environ:
+            config[var_name] = os.environ[var_name]
 
-for var_name in (
-    "PGUSER",
-    "PGPASSWORD",
-    "PGHOST",
-    "PGPORT",
-    "PGDATABASE",
-    "CHELLOW_PORT",
-):
-    if var_name in os.environ:
-        config[var_name] = os.environ[var_name]
+    if os.environ.get("POSTGRES_AUTH") == "entra":
+        print("Chellow: Using Entra ID for Postgres Auth")
+        from azure.identity import DefaultAzureCredential
 
-db_url = "".join(
-    [
-        "postgresql+pg8000://",
-        config["PGUSER"],
-        ":",
-        config["PGPASSWORD"],
-        "@",
-        config["PGHOST"],
-        ":",
-        config["PGPORT"],
-        "/",
-        config["PGDATABASE"],
-    ]
-)
+        credential = DefaultAzureCredential()
+        scope = "https://ossrdbms-aad.database.windows.net/.default"
+        token = credential.get_token(scope)
+        config["PGPASSWORD"] = token.token
+
+    return config
+
 
 Base = declarative_base()
 
@@ -143,6 +141,12 @@ def start_sqlalchemy():
 
     if engine is not None or session is not None:
         raise Exception("SQLAlchemy has already been started!")
+
+    config = make_config()
+    db_url = (
+        f"postgresql+pg8000://{config['PGUSER']}:{config['PGPASSWORD']}@"
+        f"{config['PGHOST']}:{config['PGPORT']}/{config['PGDATABASE']}"
+    )
 
     engine = create_engine(
         db_url, execution_options={"isolation_level": "SERIALIZABLE"}
@@ -1145,25 +1149,29 @@ class Batch(Base, PersistentClass):
     contract_id = Column(Integer, ForeignKey("contract.id"), nullable=False, index=True)
     reference = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=False)
+    date_created = Column(
+        DateTime(timezone=True), nullable=False, index=True, unique=True
+    )
     bills = relationship("Bill", backref="batch")
     files = relationship(
         "BatchFile", backref="batch", cascade="all, delete-orphan", passive_deletes=True
     )
 
-    def __init__(self, sess, contract, reference, description):
+    def __init__(self, sess, contract, reference, description, date_created):
         self.contract = contract
-        self._update(sess, reference, description)
+        self._update(sess, reference, description, date_created)
 
-    def _update(self, sess, reference, description):
+    def _update(self, sess, reference, description, date_created):
         reference = reference.strip()
         if len(reference) == 0:
             raise BadRequest("The batch reference can't be blank.")
 
         self.reference = reference
         self.description = description.strip()
+        self.date_created = date_created
 
-    def update(self, sess, reference, description):
-        self._update(sess, reference, description)
+    def update(self, sess, reference, description, date_created):
+        self._update(sess, reference, description, date_created)
         sess.flush()
 
     def delete(self, sess):
@@ -1911,8 +1919,8 @@ class Contract(Base, PersistentClass):
         sess.flush()
         return new_script
 
-    def insert_batch(self, sess, reference, description):
-        batch = Batch(sess, self, reference, description)
+    def insert_batch(self, sess, reference, description, date_created):
+        batch = Batch(sess, self, reference, description, date_created)
         try:
             sess.add(batch)
             sess.flush()
@@ -5967,23 +5975,27 @@ class GBatch(Base, PersistentClass):
     )
     reference = Column(String, nullable=False)
     description = Column(String, nullable=False)
+    date_created = Column(
+        DateTime(timezone=True), nullable=False, index=True, unique=True
+    )
     bills = relationship("GBill", backref="g_batch")
     __table_args__ = (UniqueConstraint("g_contract_id", "reference"),)
 
-    def __init__(self, sess, g_contract, reference, description):
+    def __init__(self, sess, g_contract, reference, description, date_created):
         self.g_contract = g_contract
-        self._update(sess, reference, description)
+        self._update(sess, reference, description, date_created)
 
-    def _update(self, sess, reference, description):
+    def _update(self, sess, reference, description, date_created):
         reference = reference.strip()
         if len(reference) == 0:
             raise BadRequest("The batch reference can't be blank.")
 
         self.reference = reference
         self.description = description.strip()
+        self.date_created = date_created
 
-    def update(self, sess, reference, description):
-        self._update(sess, reference, description)
+    def update(self, sess, reference, description, date_created):
+        self._update(sess, reference, description, date_created)
         try:
             sess.flush()
         except SQLAlchemyError:
@@ -6323,8 +6335,8 @@ class GContract(Base, PersistentClass):
         sess.flush()
         return new_script
 
-    def insert_g_batch(self, sess, reference, description):
-        batch = GBatch(sess, self, reference, description)
+    def insert_g_batch(self, sess, reference, description, date_created):
+        batch = GBatch(sess, self, reference, description, date_created)
         try:
             sess.add(batch)
         except ProgrammingError:
@@ -6338,11 +6350,11 @@ class GContract(Base, PersistentClass):
         return loads(self.state)
 
     def find_g_batch_by_reference(self, sess, reference):
-        return (
-            sess.query(GBatch)
-            .filter(GBatch.g_contract == self, GBatch.reference == reference)
-            .first()
-        )
+        return sess.scalars(
+            select(GBatch).where(
+                GBatch.g_contract == self, GBatch.reference == reference
+            )
+        ).first()
 
     def get_g_batch_by_reference(self, sess, reference):
         batch = self.find_g_batch_by_reference(sess, reference)
@@ -7072,6 +7084,7 @@ def insert_read_types(sess):
 
 
 def db_init(sess, root_path):
+    config = make_config()
     db_name = config["PGDATABASE"]
     log_message("Initializing database.")
 
@@ -7896,6 +7909,30 @@ def db_upgrade_54_to_55(sess, root_path):
     sess.execute(text("ALTER TABLE ca DROP data;"))
 
 
+def db_upgrade_55_to_56(sess, root_path):
+    sess.execute(
+        text(
+            "ALTER TABLE batch ADD COLUMN date_created TIMESTAMPTZ NOT "
+            "NULL DEFAULT clock_timestamp()"
+        )
+    )
+    for batch in sess.scalars(select(Batch).order_by(Batch.id.desc())):
+        batch.date_created = utc_datetime_now()
+        sess.flush()
+    sess.execute(text("ALTER TABLE batch ADD UNIQUE (date_created)"))
+
+    sess.execute(
+        text(
+            "ALTER TABLE g_batch ADD COLUMN date_created TIMESTAMPTZ NOT "
+            "NULL DEFAULT clock_timestamp()"
+        )
+    )
+    for g_batch in sess.scalars(select(GBatch).order_by(GBatch.id.desc())):
+        g_batch.date_created = utc_datetime_now()
+        sess.flush()
+    sess.execute(text("ALTER TABLE g_batch ADD UNIQUE (date_created)"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7936,6 +7973,7 @@ upgrade_funcs.extend(
         db_upgrade_52_to_53,
         db_upgrade_53_to_54,
         db_upgrade_54_to_55,
+        db_upgrade_55_to_56,
     ]
 )
 

@@ -78,22 +78,14 @@ def test_ete_error_message_for_invalid_bill_id(client, sess):
 
 
 def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
+    vf = utc_datetime(2000, 1, 1)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     participant = Participant.insert(sess, "hhak", "AK Industries")
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = supplier_contract.insert_batch(sess, "005", "batch 5")
+    batch = supplier_contract.insert_batch(sess, "005", "batch 5", vf)
     sess.commit()
     user = User.get_by_email_address(sess, "admin@example.com")
     MockThread = mocker.patch("chellow.reports.report_111.threading.Thread")
@@ -253,7 +245,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a b", "")
+    batch = supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -514,7 +506,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a b", "")
+    batch = supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -767,7 +759,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a b", "")
+    batch = supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -1028,7 +1020,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a b", "")
+    batch = supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -1238,7 +1230,7 @@ def virtual_bill(ds):
         None,
         None,
     )
-    batch = supplier_contract.insert_batch(sess, "a b", "")
+    batch = supplier_contract.insert_batch(sess, "a b", "", vf)
     insert_bill_types(sess)
     bill_type = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(

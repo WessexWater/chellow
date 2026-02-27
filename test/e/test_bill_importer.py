@@ -122,7 +122,7 @@ def test_status(sess, mocker):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     bill_import = BillImport(batch)
     bill_import.isAlive = mocker.Mock(return_value=True)
     bill_import.status()
@@ -220,7 +220,7 @@ def test_BillImport_run(sess):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
 
     data = [

@@ -434,7 +434,7 @@ def test_dc_batches_get(sess, client):
     market_role_C = MarketRole.insert(sess, "C", "DC")
     participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
     contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
-    contract.insert_batch(sess, "b1", "batch 1")
+    contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/dc_contracts/{contract.id}/batches")
@@ -442,21 +442,12 @@ def test_dc_batches_get(sess, client):
 
 
 def test_dc_batch_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", valid_from, None, None)
-    contract = Contract.insert_dc(
-        sess,
-        "Fusion DC",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
-    )
-    batch = contract.insert_batch(sess, "b1", "batch 1")
+    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    batch = contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/dc_batches/{batch.id}")
@@ -464,16 +455,12 @@ def test_dc_batch_get(sess, client):
 
 
 def test_dc_batch_upload_file_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(
-        sess, market_role_C, "Fusion Dc Ltd", valid_from, None, None
-    )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion", participant, "", {}, valid_from, None, {}
-    )
-    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
+    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/dc_batches/{batch.id}/upload_file")
@@ -481,16 +468,12 @@ def test_dc_batch_upload_file_get(sess, client):
 
 
 def test_dc_batch_file_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(
-        sess, market_role_C, "Fusion Dc Ltd", valid_from, None, None
-    )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion", participant, "", {}, valid_from, None, {}
-    )
-    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
+    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
 
@@ -504,7 +487,7 @@ def test_dc_batch_file_edit_get(sess, client):
     market_role_C = MarketRole.insert(sess, "C", "DC")
     participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
     dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
-    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
 
@@ -841,7 +824,7 @@ def test_dc_bill_get(sess, client):
         None,
         None,
     )
-    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -877,14 +860,14 @@ def test_dc_bill_get(sess, client):
 
 
 def test_dc_bill_import(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, valid_from, None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    batch = dc_contract.insert_batch(sess, "b1", "batch 1")
+    batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     data = {"import_bills": "Import Bills"}
@@ -1976,7 +1959,7 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     """Check that a bill starting after the end of a supply still gets
     shown.
     """
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
     source = Source.get_by_code(sess, "grid")
@@ -1986,22 +1969,16 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
@@ -2016,14 +1993,10 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
         None,
         {},
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -2034,22 +2007,15 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
@@ -2084,7 +2050,7 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     batch.insert_bill(
@@ -2113,7 +2079,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     """Where there's more than one era, check that a bill starting in a
     previous era actuall appears in that era.
     """
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
     source = Source.get_by_code(sess, "grid")
@@ -2123,36 +2089,27 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -2163,22 +2120,15 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
@@ -2214,7 +2164,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
         None,
     )
     supply.insert_era_at(sess, utc_datetime(2020, 1, 15))
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     batch.insert_bill(
@@ -2313,7 +2263,7 @@ def test_mop_batches_get(sess, client):
     contract = Contract.insert_mop(
         sess, "Fusion MOP", participant, "", {}, vf, None, {}
     )
-    contract.insert_batch(sess, "b1", "batch 1")
+    contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/mop_contracts/{contract.id}/batches")
@@ -2405,7 +2355,7 @@ def test_mop_batch_edit_post_import(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     data = {"import_bills": "Import Bills"}
@@ -2505,7 +2455,7 @@ def test_mop_batch_edit_post_delete_import(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     data = {"delete_import_bills": "Import Bills"}
@@ -2521,16 +2471,14 @@ def test_mop_batch_edit_post_delete_import(sess, client):
 
 
 def test_mop_batch_upload_file_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, valid_from, None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
-    batch = mop_contract.insert_batch(sess, "b1", "batch 1")
+    batch = mop_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
 
@@ -2539,7 +2487,7 @@ def test_mop_batch_upload_file_get(sess, client):
 
 
 def test_mop_batch_upload_file_post(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
     source = Source.get_by_code(sess, "grid")
@@ -2586,7 +2534,7 @@ def test_mop_batch_upload_file_post(sess, client):
     meter_payment_type = MeterPaymentType.insert(
         sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
     )
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -2612,7 +2560,7 @@ def test_mop_batch_upload_file_post(sess, client):
         utc_datetime(1996, 1, 1),
         None,
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
@@ -2647,7 +2595,7 @@ def test_mop_batch_upload_file_post(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     file_name = "bills.xlsx"
@@ -2749,7 +2697,7 @@ def test_mop_batches_edit_post(sess, client):
         None,
         None,
     )
-    batch = mop_contract.insert_batch(sess, "01", "ksdhfll")
+    batch = mop_contract.insert_batch(sess, "01", "ksdhfll", vf)
     data = [
         "N",
         "xhhl",
@@ -2806,7 +2754,7 @@ def test_mop_batch_file_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "MOP")
     participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
     contract = Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
-    batch = contract.insert_batch(sess, "b1", "batch 1")
+    batch = contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
 
@@ -3099,7 +3047,7 @@ def test_read_add_get_no_existing_era(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -3214,7 +3162,7 @@ def test_read_add_get_existing_era(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -3656,7 +3604,7 @@ def test_supplier_batches_get(sess, client):
     contract = Contract.insert_supplier(
         sess, "Fusion Supplier", participant, "", {}, vf, None, {}
     )
-    contract.insert_batch(sess, "b1", "batch 1")
+    contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/supplier_contracts/{contract.id}/batches")
@@ -3678,7 +3626,7 @@ def test_supplier_batch_edit_delete(sess, client):
         None,
         {},
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.delete(f"/e/supplier_batches/{batch.id}/edit")
@@ -3693,7 +3641,7 @@ def test_supplier_batch_get(sess, client):
     imp_supplier_contract = Contract.insert_supplier(
         sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/supplier_batches/{batch.id}")
@@ -3786,7 +3734,7 @@ def test_supplier_batch_get_vat(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     batch.insert_bill(
@@ -3823,21 +3771,14 @@ def test_supplier_batch_get_vat(sess, client):
 
 
 def test_supplier_batch_post_import_bills(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
     data = {"import_bills": "Import"}
     response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
@@ -3852,21 +3793,14 @@ def test_supplier_batch_post_import_bills(sess, client):
 
 
 def test_supplier_batch_post_delete_import_bills_no_bills(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
     data = {"delete_import_bills": "Import"}
     response = client.post(f"/e/supplier_batches/{batch.id}", data=data)
@@ -3972,7 +3906,7 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -4011,21 +3945,14 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
 
 
 def test_supplier_batch_upload_file_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
     response = client.get(f"/e/supplier_batches/{batch.id}/upload_file")
@@ -4033,21 +3960,14 @@ def test_supplier_batch_upload_file_get(sess, client):
 
 
 def test_supplier_batch_file_edit_get(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        valid_from,
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "afile.csv", b"", "csv")
     sess.commit()
 
@@ -4147,7 +4067,7 @@ def test_supplier_bill_get(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -4298,7 +4218,7 @@ def test_supplier_bill_get_zish_error(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(
@@ -4438,7 +4358,7 @@ def test_supplier_bill_add_post(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     sess.commit()
@@ -4478,7 +4398,7 @@ def test_supplier_bill_add_post(sess, client):
 
 
 def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
-    valid_from = to_utc(ct_datetime(1996, 1, 1))
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")
     insert_sources(sess)
     source = Source.get_by_code(sess, "grid")
@@ -4488,44 +4408,27 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
-        sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
-    )
-    participant.insert_party(
-        sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
     mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion", participant, "", {}, vf, None, {}
     )
     dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
     )
-    dno = participant.insert_party(
-        sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(
-        sess, "CR", "Credit", utc_datetime(1996, 1, 1), None
-    )
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -4536,22 +4439,15 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
         meter_type,
         meter_payment_type,
         0,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
     llfc = dno.insert_llfc(
-        sess,
-        "510",
-        "PC 5-8 & HH HV",
-        voltage_level,
-        False,
-        True,
-        utc_datetime(1996, 1, 1),
-        None,
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
@@ -4586,7 +4482,7 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
         None,
         None,
     )
-    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1")
+    batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     bill = batch.insert_bill(

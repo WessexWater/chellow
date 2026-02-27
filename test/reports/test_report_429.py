@@ -75,7 +75,7 @@ def test_process_g_bill_ids(mocker):
 
 
 def test_batch(mocker, sess, client):
-    from_date = utc_datetime(2000, 1, 1)
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
@@ -84,9 +84,7 @@ def test_batch(mocker, sess, client):
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.get_by_code(sess, "Z")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     g_cv_rate_script = {
         "cvs": {
             "EA": {
@@ -94,26 +92,16 @@ def test_batch(mocker, sess, client):
             }
         }
     }
-    GContract.insert_industry(
-        sess, "cv", "", {}, utc_datetime(2000, 1, 1), None, g_cv_rate_script
-    )
+    GContract.insert_industry(sess, "cv", "", {}, vf, None, g_cv_rate_script)
     ug_rate_script = {
         "ug_gbp_per_kwh": {"EA1": Decimal("40.1")},
     }
-    GContract.insert_industry(
-        sess, "ug", "", {}, utc_datetime(2000, 1, 1), None, ug_rate_script
-    )
+    GContract.insert_industry(sess, "ug", "", {}, vf, None, ug_rate_script)
     ccl_rate_script = {"ccl_gbp_per_kwh": Decimal("0.00339")}
-    GContract.insert_industry(sess, "ccl", "", {}, from_date, None, ccl_rate_script)
+    GContract.insert_industry(sess, "ccl", "", {}, vf, None, ccl_rate_script)
     bank_holiday_rate_script = {"bank_holidays": []}
     Contract.insert_non_core(
-        sess,
-        "bank_holidays",
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        bank_holiday_rate_script,
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     charge_script = """
 import chellow.gas.ccl
@@ -198,7 +186,7 @@ def virtual_bill(ds):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
     g_batch_id = g_batch.id
 
     breakdown = {"units_consumed": 771}
@@ -341,10 +329,9 @@ def virtual_bill(ds):
 
 
 def test_batch_http(mocker, sess, client):
-    g_contract = GContract.insert(
-        sess, False, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    vf = utc_datetime(2000, 1, 1)
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     user = User.get_by_email_address(sess, "admin@example.com")
     sess.commit()
@@ -365,6 +352,7 @@ def test_batch_http(mocker, sess, client):
 
 
 def test_bill_http(mocker, sess, client):
+    vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
     g_dn = GDn.insert(sess, "EE", "East of England")
     g_ldz = g_dn.insert_g_ldz(sess, "EA")
@@ -373,12 +361,8 @@ def test_bill_http(mocker, sess, client):
     g_unit_M3 = GUnit.get_by_code(sess, "M3")
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.get_by_code(sess, "Z")
-    participant.insert_party(
-        sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
-    )
-    g_contract = GContract.insert_supplier(
-        sess, "Fusion 2020", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract = GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
     insert_g_reading_frequencies(sess)
     g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
     g_supply = site.insert_g_supply(
@@ -397,7 +381,7 @@ def test_bill_http(mocker, sess, client):
         1,
         1,
     )
-    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch")
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
     breakdown = {"units_consumed": 771}
     insert_bill_types(sess)

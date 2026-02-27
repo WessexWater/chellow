@@ -68,6 +68,7 @@ In ``/home/site/wwwroot`` create a file called ``app.py`` containing the followi
     
     app = chellow.create_app()
 
+If you're using Entra ID to access Postgres, include the environment variable `POSTGRES_AUTH=entra`.
 
 ### Manually Upgrading Chellow
 
