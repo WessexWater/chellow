@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from chellow.general_import import (
     _parse_breakdown,
+    general_import_dc_batch,
     general_import_dc_bill,
     general_import_dc_bill_element,
     general_import_era,
@@ -56,6 +57,55 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.utils import ct_datetime, hh_format, to_utc, utc_datetime
+
+
+def test_general_import_dc_batch(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_contract_name = "Fusion DC 2000"
+    Contract.insert_dc(sess, dc_contract_name, participant, "", {}, vf, None, {})
+    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno.insert_llfc(
+        sess, "521", "Export (HV)", voltage_level, False, False, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    sess.commit()
+    action = "insert"
+    vals = [
+        dc_contract_name,
+        "dgnsdjh55",
+        "a batch",
+        "2019-09-08 00:00",
+    ]
+    args = []
+    general_import_dc_batch(sess, action, vals, args)
 
 
 def test_general_import_dc_bill_insert(sess):

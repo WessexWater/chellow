@@ -867,6 +867,29 @@ def _truncate_vals(vals):
     return _truncate_vals(vals[:-1]) if len(vals) > 0 and vals[0] == "" else vals
 
 
+def general_import_mop_batch(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_mop_by_name(sess, contract_name)
+        reference = add_arg(args, "Reference", vals, 1)
+        description = add_arg(args, "Description", vals, 2)
+        date_created_str = add_arg(args, "Date Created", vals, 3)
+        date_created = parse_hh_start(date_created_str)
+        contract.insert_batch(sess, reference, description, date_created)
+
+    elif action == "update":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_mop_by_name(sess, contract_name)
+
+        old_reference = add_arg(args, "Old Reference", vals, 1)
+        batch = contract.get_batch(sess, sess, old_reference)
+        new_reference = add_arg(args, "New Reference", vals, 2)
+        description = add_arg(args, "Description", vals, 3)
+        date_created_str = add_arg(args, "Date Created", vals, 4)
+        date_created = parse_hh_start(date_created_str)
+        batch.update(sess, new_reference, description, date_created)
+
+
 def general_import_mop_bill(sess, action, vals, args):
     vals = _truncate_vals(vals)
     if action == "insert":
@@ -1009,6 +1032,29 @@ def general_import_mop_bill_element(sess, action, vals, args):
             net,
             breakdown,
         )
+
+
+def general_import_dc_batch(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_dc_by_name(sess, contract_name)
+        reference = add_arg(args, "Reference", vals, 1)
+        description = add_arg(args, "Description", vals, 2)
+        date_created_str = add_arg(args, "Date Created", vals, 3)
+        date_created = parse_hh_start(date_created_str)
+        contract.insert_batch(sess, reference, description, date_created)
+
+    elif action == "update":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_dc_by_name(sess, contract_name)
+
+        old_reference = add_arg(args, "Old Reference", vals, 1)
+        batch = contract.get_batch(sess, sess, old_reference)
+        new_reference = add_arg(args, "New Reference", vals, 2)
+        description = add_arg(args, "Description", vals, 3)
+        date_created_str = add_arg(args, "Date Created", vals, 4)
+        date_created = parse_hh_start(date_created_str)
+        batch.update(sess, new_reference, description, date_created)
 
 
 def general_import_dc_bill(sess, action, vals, args):
@@ -1155,6 +1201,29 @@ def general_import_dc_bill_element(sess, action, vals, args):
             net,
             breakdown,
         )
+
+
+def general_import_supplier_batch(sess, action, vals, args):
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_supplier_by_name(sess, contract_name)
+        reference = add_arg(args, "Reference", vals, 1)
+        description = add_arg(args, "Description", vals, 2)
+        date_created_str = add_arg(args, "Date Created", vals, 3)
+        date_created = parse_hh_start(date_created_str)
+        contract.insert_batch(sess, reference, description, date_created)
+
+    elif action == "update":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_supplier_by_name(sess, contract_name)
+
+        old_reference = add_arg(args, "Old Reference", vals, 1)
+        batch = contract.get_batch(sess, sess, old_reference)
+        new_reference = add_arg(args, "New Reference", vals, 2)
+        description = add_arg(args, "Description", vals, 3)
+        date_created_str = add_arg(args, "Date Created", vals, 4)
+        date_created = parse_hh_start(date_created_str)
+        batch.update(sess, new_reference, description, date_created)
 
 
 def general_import_supplier_bill(sess, action, vals, args):
@@ -1949,43 +2018,6 @@ def general_import_site(sess, action, vals, args):
             if name == NO_CHANGE:
                 name = site.name
             site.update(new_code, name)
-
-
-def general_import_batch(sess, action, vals, args):
-    if action == "insert":
-        role_name = add_arg(args, "Role Name", vals, 0).lower()
-        contract_name = add_arg(args, "Contract Name", vals, 1)
-
-        if role_name == "dc":
-            contract = Contract.get_dc_by_name(sess, contract_name)
-        elif role_name == "supplier":
-            contract = Contract.get_supplier_by_name(sess, contract_name)
-        elif role_name == "mop":
-            contract = Contract.get_mop_by_name(sess, contract_name)
-        else:
-            raise BadRequest("The role name must be one of dc, supplier or mop.")
-
-        reference = add_arg(args, "Reference", vals, 2)
-        description = add_arg(args, "Description", vals, 3)
-        contract.insert_batch(sess, reference, description)
-    elif action == "update":
-        role_name = add_arg(args, "Role Name", vals, 0).lower()
-        contract_name = add_arg(args, "Contract Name", vals, 1)
-
-        if role_name == "dc":
-            contract = Contract.get_dc_by_name(sess, contract_name)
-        elif role_name == "supplier":
-            contract = Contract.get_supplier_by_name(sess, contract_name)
-        elif role_name == "mop":
-            contract = Contract.get_mop_by_name(sess, contract_name)
-        else:
-            raise BadRequest("The role name must be one of dc, supplier or mop.")
-
-        old_reference = add_arg(args, "Old Reference", vals, 2)
-        batch = contract.get_batch(sess, sess, old_reference)
-        new_reference = add_arg(args, "New Reference", vals, 3)
-        description = add_arg(args, "Description", vals, 4)
-        batch.update(sess, new_reference, description)
 
 
 def general_import_site_snag_ignore(sess, action, vals, args):
