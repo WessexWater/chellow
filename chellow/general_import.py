@@ -1431,6 +1431,133 @@ def general_import_supplier_bill_element(sess, action, vals, args):
         )
 
 
+def general_import_register_read(sess, action, vals, args):
+    vals = _truncate_vals(vals)
+    if action == "insert":
+        contract_name = add_arg(args, "Contract Name", vals, 0)
+        contract = Contract.get_supplier_by_name(sess, contract_name)
+        batch_reference = add_arg(args, "Batch Reference", vals, 1)
+        batch = contract.get_batch(sess, batch_reference)
+        bill_reference = add_arg(args, "Bill Reference", vals, 2)
+        bill = batch.get_bill_by_reference(sess, bill_reference)
+
+        msn = add_arg(args, "Meter Serial Number", vals, 3)
+        mpan_str = add_arg(args, "MPAN", vals, 4)
+        coefficient_str = add_arg(args, "Coefficient", vals, 5)
+        coefficient = Decimal(coefficient_str)
+        units = add_arg(args, "Units", vals, 6)
+        tpr_code = add_arg(args, "TPR", vals, 7)
+        if len(tpr_code) > 0:
+            tpr = Tpr.get_by_code(sess, tpr_code)
+        else:
+            tpr = None
+
+        prev_date_str = add_arg(args, "Previous Date", vals, 8)
+        prev_date = parse_hh_start(prev_date_str)
+        prev_value_str = add_arg(args, "Previous Value", vals, 9)
+        prev_value = Decimal(prev_value_str)
+
+        prev_type_str = add_arg(args, "Previous Type", vals, 10)
+        prev_type = ReadType.get_by_code(sess, prev_type_str)
+
+        pres_date_str = add_arg(args, "Present Date", vals, 11)
+        pres_date = parse_hh_start(pres_date_str)
+        pres_value_str = add_arg(args, "Present Value", vals, 12)
+        pres_value = Decimal(pres_value_str)
+
+        pres_type_str = add_arg(args, "Present Type", vals, 13)
+        pres_type = ReadType.get_by_code(sess, pres_type_str)
+        bill.insert_read(
+            sess,
+            tpr,
+            coefficient,
+            units,
+            msn,
+            mpan_str,
+            prev_date,
+            prev_value,
+            prev_type,
+            pres_date,
+            pres_value,
+            pres_type,
+        )
+    elif action == "update":
+        read_id_str = add_arg(args, "Chellow Id", vals, 0)
+        read = RegisterRead.get_by_id(int(read_id_str))
+
+        tpr_code = add_arg(args, "TPR", vals, 1)
+        if tpr_code == NO_CHANGE:
+            tpr = read.tpr
+        else:
+            tpr = Tpr.get_by_code(sess, tpr_code)
+
+        coefficient_str = add_arg(args, "Coefficient", vals, 2)
+        if coefficient_str == NO_CHANGE:
+            coefficient = read.coefficient
+        else:
+            coefficient = Decimal(coefficient_str)
+
+        units = add_arg(args, "Units", vals, 3)
+
+        msn = add_arg(args, "Meter Serial Number", vals, 4)
+        if msn == NO_CHANGE:
+            msn = read.msn
+
+        mpan_str = add_arg(args, "MPAN", vals, 5)
+        if mpan_str == NO_CHANGE:
+            mpan_str = read.mpan_str
+
+        prev_date_str = add_arg(args, "Previous Date", vals, 6)
+        if prev_date_str == NO_CHANGE:
+            prev_date = read.prev_date
+        else:
+            prev_date = parse_hh_start(prev_date_str)
+
+        prev_value_str = add_arg(args, "Previous Value", vals, 7)
+        if prev_value_str == NO_CHANGE:
+            prev_value = read.prev_value
+        else:
+            prev_value = parse_hh_start(prev_value_str)
+
+        prev_type_code = add_arg(args, "Previous Type", vals, 8)
+        if prev_type_code == NO_CHANGE:
+            prev_type = read.prev_type
+        else:
+            prev_type = ReadType.get_by_code(sess, prev_type_code)
+
+        pres_date_str = add_arg(args, "Present Date", vals, 9)
+        if pres_date_str == NO_CHANGE:
+            pres_date = read.pres_date
+        else:
+            pres_date = parse_hh_start(pres_date_str)
+
+        pres_value_str = add_arg(args, "Present Value", vals, 10)
+        if pres_value_str == NO_CHANGE:
+            pres_value = read.pres_value
+        else:
+            pres_value = parse_hh_start(pres_value_str)
+
+        pres_type_code = add_arg(args, "Present Type", vals, 11)
+        if pres_type_code == NO_CHANGE:
+            pres_type = read.pres_type
+        else:
+            pres_type = ReadType.get_by_code(sess, pres_type_code)
+
+        read.update(
+            tpr,
+            coefficient,
+            units,
+            msn,
+            mpan_str,
+            prev_date,
+            prev_value,
+            prev_type,
+            pres_date,
+            pres_value,
+            pres_type,
+        )
+
+
 def general_import_g_bill(sess, action, vals, args):
     if action == "insert":
         contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
@@ -1592,86 +1719,6 @@ def general_import_g_register_read(sess, action, vals, args):
                 pres_date,
                 pres_type,
             )
-
-
-def general_import_register_read(sess, action, vals, args):
-    if action == "insert":
-        pass
-    elif action == "update":
-        read_id_str = add_arg(args, "Chellow Id", vals, 0)
-        read = RegisterRead.get_by_id(int(read_id_str))
-
-        tpr_code = add_arg(args, "TPR", vals, 1)
-        if tpr_code == NO_CHANGE:
-            tpr = read.tpr
-        else:
-            tpr = Tpr.get_by_code(sess, tpr_code)
-
-        coefficient_str = add_arg(args, "Coefficient", vals, 2)
-        if coefficient_str == NO_CHANGE:
-            coefficient = read.coefficient
-        else:
-            coefficient = Decimal(coefficient_str)
-
-        units = add_arg(args, "Units", vals, 3)
-
-        msn = add_arg(args, "Meter Serial Number", vals, 4)
-        if msn == NO_CHANGE:
-            msn = read.msn
-
-        mpan_str = add_arg(args, "MPAN", vals, 5)
-        if mpan_str == NO_CHANGE:
-            mpan_str = read.mpan_str
-
-        prev_date_str = add_arg(args, "Previous Date", vals, 6)
-        if prev_date_str == NO_CHANGE:
-            prev_date = read.prev_date
-        else:
-            prev_date = parse_hh_start(prev_date_str)
-
-        prev_value_str = add_arg(args, "Previous Value", vals, 7)
-        if prev_value_str == NO_CHANGE:
-            prev_value = read.prev_value
-        else:
-            prev_value = parse_hh_start(prev_value_str)
-
-        prev_type_code = add_arg(args, "Previous Type", vals, 8)
-        if prev_type_code == NO_CHANGE:
-            prev_type = read.prev_type
-        else:
-            prev_type = ReadType.get_by_code(sess, prev_type_code)
-
-        pres_date_str = add_arg(args, "Present Date", vals, 9)
-        if pres_date_str == NO_CHANGE:
-            pres_date = read.pres_date
-        else:
-            pres_date = parse_hh_start(pres_date_str)
-
-        pres_value_str = add_arg(args, "Present Value", vals, 10)
-        if pres_value_str == NO_CHANGE:
-            pres_value = read.pres_value
-        else:
-            pres_value = parse_hh_start(pres_value_str)
-
-        pres_type_code = add_arg(args, "Present Type", vals, 11)
-        if pres_type_code == NO_CHANGE:
-            pres_type = read.pres_type
-        else:
-            pres_type = ReadType.get_by_code(sess, pres_type_code)
-
-        read.update(
-            tpr,
-            coefficient,
-            units,
-            msn,
-            mpan_str,
-            prev_date,
-            prev_value,
-            prev_type,
-            pres_date,
-            pres_value,
-            pres_type,
-        )
 
 
 def general_import_supply(sess, action, vals, args):
