@@ -441,6 +441,27 @@ def test_dc_batches_get(sess, client):
     match(response, 200)
 
 
+def test_dc_batch_add_post(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    sess.commit()
+
+    data = {
+        "reference": "b1",
+        "description": "batch 1",
+        "date_created_year": "1996",
+        "date_created_month": "01",
+        "date_created_day": "01",
+        "date_created_hour": "00",
+        "date_created_minute": "00",
+    }
+    response = client.post(f"/e/dc_contracts/{contract.id}/batches/add", data=data)
+    match(response, 303)
+
+
 def test_dc_batch_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")

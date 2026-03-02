@@ -792,7 +792,9 @@ def dc_batch_add_post(contract_id):
         contract = Contract.get_dc_by_id(g.sess, contract_id)
         reference = req_str("reference")
         description = req_str("description")
-        batch = contract.insert_batch(g.sess, reference, description)
+        date_created = req_date("date_created")
+
+        batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()
         return chellow_redirect(f"/dc_batches/{batch.id}", 303)
     except BadRequest as e:
@@ -3192,8 +3194,9 @@ def mop_batch_add_post(contract_id):
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         reference = req_str("reference")
         description = req_str("description")
+        date_created = req_date("date_created")
 
-        batch = contract.insert_batch(g.sess, reference, description)
+        batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()
         return chellow_redirect(f"/mop_batches/{batch.id}", 303)
     except BadRequest as e:
@@ -5681,8 +5684,9 @@ def supplier_batch_add_post(contract_id):
     try:
         reference = req_str("reference")
         description = req_str("description")
+        date_created = req_date("date_created")
 
-        batch = contract.insert_batch(g.sess, reference, description)
+        batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()
         return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
 
