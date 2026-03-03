@@ -351,10 +351,17 @@ def test_general_import_dc_bill_element_insert(sess):
     general_import_dc_bill_element(sess, action, vals, args)
 
 
-def test_general_import_g_batch(mocker):
-    sess = mocker.Mock()
+def test_general_import_g_batch(sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_Z = MarketRole.insert(sess, "Z", "non core")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    g_contract_name = "Fusion 2020"
+    GContract.insert_supplier(sess, "Fusion 2020", "", {}, vf, None, {})
+    sess.commit()
+
     action = "insert"
-    vals = ["CH4U", "batch 8883", "Apr 2019"]
+    vals = [g_contract_name, "batch 8883", "Apr 2019", "2020-01-01 00:00"]
     args = []
     general_import_g_batch(sess, action, vals, args)
 
