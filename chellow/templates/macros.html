@@ -4,6 +4,8 @@
 	{% set day_name = prefix + '_day' %}
 	{% set hour_name = prefix + '_hour' %}
 	{% set minute_name = prefix + '_minute' %}
+	{% set second_name = prefix + '_second' %}
+	{% set microsecond_name = prefix + '_microsecond' %}
 
 	<div style="white-space: nowrap;" hx-get="/input_date" hx-params="*" hx-trigger="load
 			{%- if is_dynamic -%}
@@ -27,6 +29,8 @@
 			{{input_hidden(day_name, initial=initial_ct.day)}}
 			{{input_hidden(hour_name, initial=initial_ct.hour)}}
 			{{input_hidden(minute_name, initial=initial_ct.minute)}}
+			{{input_hidden(second_name, initial=initial_ct.second)}}
+			{{input_hidden(microsecond_name, initial='%06d'|format(initial_ct.microsecond))}}
 		{% endif %}
 	</div>
 {%- endmacro -%}
@@ -50,7 +54,7 @@
         {%- endif -%}">
 {%- endmacro -%}
 
-{% macro input_hidden_checkbox(name, initial=None) %}
+{% macro input_hidden_checkbox(name, initial=None) -%}
     <input type="hidden" name="{{name}}" value="
         {%- if request.values[name] -%}
             {{ request.values[name] }}
@@ -81,7 +85,7 @@
 
 {% macro input_number(
   name, initial=None, size=None, maxlength=None, placeholder=None,
-  required=None) %}
+  required=None, max=None, min=None) -%}
     <input type="number" name="{{name}}" value="
         {%- if request.values[name] -%}
             {{ request.values[name] }}
@@ -91,6 +95,8 @@
         {%- if size %} size="{{ size }}"{% endif %}
         {%- if placeholder %} placeholder="{{ placeholder }}"{% endif %}
         {%- if maxlength %} maxlength="{{ maxlength }}"{% endif %}
+        {%- if max %} max="{{ max }}"{% endif %}
+        {%- if min %} min="{{ min }}"{% endif %}
         {%- if required %} required="required"{% endif %}>
 {%- endmacro -%}
 

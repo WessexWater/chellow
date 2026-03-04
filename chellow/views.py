@@ -2743,6 +2743,8 @@ def input_date_get():
     day_name = f"{prefix}_day"
     hour_name = f"{prefix}_hour"
     minute_name = f"{prefix}_minute"
+    second_name = f"{prefix}_second"
+    microsecond_name = f"{prefix}_microsecond"
 
     resolution = req_str("resolution")
     has_is_ended = req_bool("has_is_ended")
@@ -2767,18 +2769,32 @@ def input_date_get():
                 minute = req_int(hour_name)
             else:
                 minute = 0
+
+            if resolution == "second":
+                second = req_int(second_name)
+            else:
+                second = 0
+
+            if resolution == "microsecond":
+                microsecond = req_int(microsecond_name)
+            else:
+                microsecond = 0
         else:
             initial = ct_datetime_now()
-            year, month, day, hour, minute = (
+            year, month, day, hour, minute, second, microsecond = (
                 initial.year,
                 initial.month,
                 initial.day,
                 initial.hour,
                 initial.minute,
+                initial.second,
+                initial.microsecond,
             )
         month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
         initial = to_utc(
-            ct_datetime(year, month, min(day, month_max_day), hour, minute)
+            ct_datetime(
+                year, month, min(day, month_max_day), hour, minute, second, microsecond
+            )
         )
     else:
         initial = month_max_day = None
@@ -2792,6 +2808,8 @@ def input_date_get():
         day_name=day_name,
         hour_name=hour_name,
         minute_name=minute_name,
+        second_name=second_name,
+        microsecond_name=microsecond_name,
         month_max_day=month_max_day,
         has_is_ended=has_is_ended,
         is_ended=is_ended,

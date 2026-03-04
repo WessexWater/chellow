@@ -113,7 +113,7 @@ from chellow.utils import (
     hh_max,
     hh_min,
     hh_range,
-    parse_hh_start,
+    parse_date,
     parse_mpan_core,
     req_bool,
     req_checkbox,
@@ -5876,7 +5876,8 @@ def supplier_batch_edit_post(batch_id):
         batch = Batch.get_by_id(g.sess, batch_id)
         reference = req_str("reference")
         description = req_str("description")
-        batch.update(g.sess, reference, description)
+        date_created = req_date("date_created", resolution="microsecond")
+        batch.update(g.sess, reference, description, date_created)
         g.sess.commit()
         return chellow_redirect(f"/supplier_batches/{batch.id}", 303)
     except BadRequest as e:
@@ -6881,7 +6882,7 @@ def supply_post(supply_id):
 
         if "new_msn" in request.form:
             start_date_str = req_str("start_date")
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
             if start_date is None:
                 raise BadRequest("The date of the MSN change is blank.")
 
@@ -6909,7 +6910,7 @@ def supply_post(supply_id):
 
         if "new_llfc" in request.form:
             start_date_str = req_str("start_date")
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
             if start_date is None:
                 raise BadRequest("The date of the MSN change is blank.")
 
@@ -6961,7 +6962,7 @@ def supply_post(supply_id):
 @e.route("/supplies/<int:supply_id>/eras")
 def supply_eras_get(supply_id):
     supply = Supply.get_by_id(g.sess, supply_id)
-    last_start_date = parse_hh_start(req_str("last_start_date"))
+    last_start_date = parse_date(req_str("last_start_date"))
     era_bundles = get_era_bundles(g.sess, supply, last_start_date)
     return render_template("supply_eras.html", era_bundles=era_bundles, supply=supply)
 

@@ -25,7 +25,7 @@
 		</tr>
 		<tr>
 			<th>Date Created</th>
-			<td>{{batch.date_created|hh_format}}</td>
+			<td>{{batch.date_created.strftime('%Y-%m-%dT%H:%M:%S.%f%z')}}</td>
 		</tr>
 		<tr>
 			<th>Number Of Bills</th>

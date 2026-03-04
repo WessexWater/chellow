@@ -7,7 +7,7 @@ from werkzeug.exceptions import BadRequest
 
 from zish import ZishLocationException, loads
 
-from chellow.utils import parse_hh_start
+from chellow.utils import parse_date
 
 
 def get_str(row, idx, name, lineno):
@@ -17,19 +17,11 @@ def get_str(row, idx, name, lineno):
 def get_datetime(row, idx, name, lineno):
     val = get_str(row, idx, name, lineno)
     try:
-        return parse_hh_start(val)
+        return parse_date(val)
     except BadRequest as e:
         raise BadRequest(
-            "Problem parsing the timestamp '"
-            + val
-            + "' at line number "
-            + str(lineno)
-            + " for the field '"
-            + name
-            + "' in column "
-            + str(idx + 1)
-            + ": "
-            + e.description
+            f"Problem parsing the timestamp '{val}' at line number {lineno} "
+            f"for the field '{name}' in column {idx + 1}: {e.description}"
         )
 
 
@@ -39,16 +31,8 @@ def get_decimal(row, idx, name, lineno):
         return Decimal(val)
     except InvalidOperation as e:
         raise BadRequest(
-            "Problem parsing the decimal '"
-            + val
-            + "' at line number "
-            + str(lineno)
-            + " for the field '"
-            + name
-            + "' at "
-            + str(idx + 1)
-            + ": "
-            + str(e)
+            f"Problem parsing the decimal '{val}' at line number {lineno} "
+            f"for the field '{name}' at {idx + 1}: {e}"
         )
 
 
@@ -89,10 +73,8 @@ class Parser:
                 breakdown = loads(row[11])
             except ZishLocationException as e:
                 raise BadRequest(
-                    "Problem parsing the breakdown field at line number "
-                    + str(self.line_number)
-                    + ": "
-                    + str(e)
+                    f"Problem parsing the breakdown field at line number "
+                    f"{self.line_number}: {e}"
                 )
 
             reads = []

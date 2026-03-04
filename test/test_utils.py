@@ -8,7 +8,7 @@ from chellow.utils import (
     ct_datetime,
     hh_format,
     make_val,
-    parse_hh_start,
+    parse_date,
     parse_mpan_core,
     to_utc,
     u_months_u,
@@ -106,8 +106,8 @@ def test_hh_format_none():
     assert actual == "ongoing"
 
 
-def test_parse_hh_start():
-    actual = parse_hh_start("2019-01-01 00:00Z")
+def test_parse_date():
+    actual = parse_date("2019-01-01 00:00Z")
     assert actual == utc_datetime(2019, 1, 1)
 
 

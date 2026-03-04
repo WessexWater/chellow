@@ -2748,12 +2748,7 @@ def test_mop_batches_edit_post(sess, client):
     )
     match(response, 200, r"/mop_bill_imports/0")
 
-    response = client.get("/e/mop_bill_imports/0")
-    match(
-        response,
-        200,
-        r"rolled back",
-    )
+    match_repeat(client, "/e/mop_bill_imports/0", r"rolled back", seconds=5)
 
 
 def test_mop_contract_edit_delete(sess, client):

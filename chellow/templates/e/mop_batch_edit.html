@@ -19,7 +19,9 @@
 			<legend>Update batch</legend>
 			<label>Reference</label> {{input_text('reference', batch.reference)}}
 			<label>Description</label> {{input_text('description', batch.description)}}
-			<label>Date Created</label> {{ input_date('date_created', batch.date_created) }}
+			<label>Date Created</label>
+		 	{{ input_date('date_created', batch.date_created, resolution='microsecond') }}
+
 			<input type="submit" name="update" value="Update">
 		</fieldset>
 	</form>

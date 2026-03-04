@@ -55,7 +55,7 @@ from chellow.utils import (
     hh_format,
     parse_bool,
     parse_channel_type,
-    parse_hh_start,
+    parse_date,
     parse_mpan_core,
     parse_pc_code,
 )
@@ -87,7 +87,7 @@ def general_import_era(sess, action, vals, args):
         mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         date_str = add_arg(args, "date", vals, 1)
-        dt = parse_hh_start(date_str)
+        dt = parse_date(date_str)
         era = supply.find_era_at(sess, dt)
         if era is None:
             raise BadRequest("There isn't a era at this date.")
@@ -96,13 +96,13 @@ def general_import_era(sess, action, vals, args):
         if start_date_str == NO_CHANGE:
             start_date = era.start_date
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         finish_date_str = add_arg(args, "Finish date", vals, 3)
         if finish_date_str == NO_CHANGE:
             finish_date = era.finish_date
         else:
-            finish_date = parse_hh_start(finish_date_str)
+            finish_date = parse_date(finish_date_str)
 
         mop_contract = None
         mop_contract_name = add_arg(args, "MOP Contract", vals, 4)
@@ -277,7 +277,7 @@ def general_import_era(sess, action, vals, args):
         mpan_core = add_arg(args, "MPAN Core", vals, 0)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         date_str = add_arg(args, "Date", vals, 1)
-        dt = parse_hh_start(date_str)
+        dt = parse_date(date_str)
         era = supply.find_era_at(sess, dt)
         if era is None:
             raise BadRequest("There isn't a era at this date.")
@@ -291,7 +291,7 @@ def general_import_era(sess, action, vals, args):
         if len(start_date_str) == 0:
             start_date = None
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
         existing_era = (
             sess.query(Era)
             .filter(
@@ -529,9 +529,9 @@ def general_import_g_supply(sess, action, vals, args):
         g_exit_zone_code = add_arg(args, "Exit Zone", vals, 3)
         g_exit_zone = GExitZone.get_by_code(sess, g_exit_zone_code)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         msn = add_arg(args, "Meter Serial Number", vals, 6)
         correction_factor_str = add_arg(args, "Correction Factor", vals, 7)
         correction_factor = Decimal(correction_factor_str)
@@ -594,7 +594,7 @@ def general_import_g_era(sess, action, vals, args):
         if len(start_date_str) == 0:
             start_date = None
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         existing_g_era = sess.scalars(
             select(GEra).where(
@@ -679,7 +679,7 @@ def general_import_g_era(sess, action, vals, args):
         mprn = add_arg(args, "MPRN", vals, 0)
         g_supply = GSupply.get_by_mprn(sess, mprn)
         date_str = add_arg(args, "date", vals, 1)
-        dt = parse_hh_start(date_str)
+        dt = parse_date(date_str)
         g_era = g_supply.find_g_era_at(sess, dt)
         if g_era is None:
             raise BadRequest("There isn't a gas era at this date.")
@@ -688,13 +688,13 @@ def general_import_g_era(sess, action, vals, args):
         if start_date_str == NO_CHANGE:
             start_date = g_era.start_date
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         finish_date_str = add_arg(args, "Finish Date", vals, 3)
         if finish_date_str == NO_CHANGE:
             finish_date = g_era.finish_date
         else:
-            finish_date = parse_hh_start(finish_date_str)
+            finish_date = parse_date(finish_date_str)
 
         msn = add_arg(args, "Meter Serial Number", vals, 4)
         if msn == NO_CHANGE:
@@ -754,7 +754,7 @@ def general_import_g_era(sess, action, vals, args):
         mprn = add_arg(args, "MPRN", vals, 0)
         g_supply = GSupply.get_by_mprn(sess, mprn)
         date_str = add_arg(args, "Date", vals, 1)
-        dt = parse_hh_start(date_str)
+        dt = parse_date(date_str)
         g_era = g_supply.find_g_era_at(sess, dt)
         if g_era is None:
             raise BadRequest("There isn't a gas era at this date.")
@@ -771,7 +771,7 @@ def general_import_g_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         g_contract.insert_g_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -793,9 +793,9 @@ def general_import_party(sess, action, vals, args):
         participant = Participant.get_by_code(sess, participant_code)
         name = add_arg(args, "Name", vals, 2)
         valid_from_str = add_arg(args, "Valid From", vals, 3)
-        valid_from = parse_hh_start(valid_from_str)
+        valid_from = parse_date(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 4)
-        valid_to = parse_hh_start(valid_to_str)
+        valid_to = parse_date(valid_to_str)
         dno_code_str = add_arg(args, "DNO Code", vals, 5)
         dno_code = None if len(dno_code_str) == 0 else dno_code_str
         party = Party(
@@ -818,9 +818,9 @@ def general_import_party(sess, action, vals, args):
         name = add_arg(args, "Name", vals, 2)
         party.name = name
         valid_from_str = add_arg(args, "Valid From", vals, 3)
-        party.valid_from = parse_hh_start(valid_from_str)
+        party.valid_from = parse_date(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 4)
-        party.valid_to = parse_hh_start(valid_to_str)
+        party.valid_to = parse_date(valid_to_str)
         dno_code_str = add_arg(args, "DNO Code", vals, 5)
         dno_code = None if len(dno_code_str) == 0 else dno_code_str
         party.dno_code = dno_code
@@ -832,9 +832,9 @@ def general_import_meter_type(sess, action, vals, args):
         code = add_arg(args, "Code", vals, 0)
         description = add_arg(args, "Description", vals, 1)
         valid_from_str = add_arg(args, "Valid From", vals, 2)
-        valid_from = parse_hh_start(valid_from_str)
+        valid_from = parse_date(valid_from_str)
         valid_to_str = add_arg(args, "Valid To", vals, 3)
-        valid_to = parse_hh_start(valid_to_str)
+        valid_to = parse_date(valid_to_str)
         meter_type = MeterType(
             code=code, description=description, valid_from=valid_from, valid_to=valid_to
         )
@@ -847,10 +847,10 @@ def general_import_meter_type(sess, action, vals, args):
         description = add_arg(args, "Description", vals, 1)
         mt.description = description
         valid_from_str = add_arg(args, "Valid From", vals, 2)
-        valid_from = parse_hh_start(valid_from_str)
+        valid_from = parse_date(valid_from_str)
         mt.valid_from = valid_from
         valid_to_str = add_arg(args, "Valid To", vals, 3)
-        valid_to = parse_hh_start(valid_to_str)
+        valid_to = parse_date(valid_to_str)
         mt.valid_to = valid_to
         sess.flush()
 
@@ -876,7 +876,7 @@ def general_import_mop_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -888,7 +888,7 @@ def general_import_mop_batch(sess, action, vals, args):
         new_reference = add_arg(args, "New Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
         date_created_str = add_arg(args, "Date Created", vals, 4)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         batch.update(sess, new_reference, description, date_created)
 
 
@@ -903,11 +903,11 @@ def general_import_mop_bill(sess, action, vals, args):
         mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         issue_date_str = add_arg(args, "Issue Date", vals, 3)
-        issue_date = parse_hh_start(issue_date_str)
+        issue_date = parse_date(issue_date_str)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         vat_str = add_arg(args, "Vat", vals, 7)
@@ -951,19 +951,19 @@ def general_import_mop_bill(sess, action, vals, args):
         if issue_date_str == NO_CHANGE:
             issue_date = bill.issue_date
         else:
-            issue_date = parse_hh_start(issue_date_str)
+            issue_date = parse_date(issue_date_str)
 
         start_date_str = add_arg(args, "Start Date", vals, 3)
         if start_date_str == NO_CHANGE:
             start_date = bill.start_date
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         finish_date_str = add_arg(args, "Finish Date", vals, 4)
         if finish_date_str == NO_CHANGE:
             finish_date = bill.finish_date
         else:
-            finish_date = parse_hh_start(finish_date_str)
+            finish_date = parse_date(finish_date_str)
 
         kwh_str = add_arg(args, "kWh", vals, 5)
         kwh = bill.kwh if kwh_str == NO_CHANGE else Decimal(kwh_str)
@@ -1019,9 +1019,9 @@ def general_import_mop_bill_element(sess, action, vals, args):
         bill = batch.get_bill_by_reference(sess, bill_reference)
         name = add_arg(args, "Name", vals, 3)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         breakdown_str = add_arg(args, "Breakdown", vals, 7)
@@ -1043,7 +1043,7 @@ def general_import_dc_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -1055,7 +1055,7 @@ def general_import_dc_batch(sess, action, vals, args):
         new_reference = add_arg(args, "New Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
         date_created_str = add_arg(args, "Date Created", vals, 4)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         batch.update(sess, new_reference, description, date_created)
 
 
@@ -1072,11 +1072,11 @@ def general_import_dc_bill(sess, action, vals, args):
         mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         issue_date_str = add_arg(args, "Issue Date", vals, 3)
-        issue_date = parse_hh_start(issue_date_str)
+        issue_date = parse_date(issue_date_str)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         vat_str = add_arg(args, "Vat", vals, 7)
@@ -1120,19 +1120,19 @@ def general_import_dc_bill(sess, action, vals, args):
         if issue_date_str == NO_CHANGE:
             issue_date = bill.issue_date
         else:
-            issue_date = parse_hh_start(issue_date_str)
+            issue_date = parse_date(issue_date_str)
 
         start_date_str = add_arg(args, "Start Date", vals, 3)
         if start_date_str == NO_CHANGE:
             start_date = bill.start_date
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         finish_date_str = add_arg(args, "Finish Date", vals, 4)
         if finish_date_str == NO_CHANGE:
             finish_date = bill.finish_date
         else:
-            finish_date = parse_hh_start(finish_date_str)
+            finish_date = parse_date(finish_date_str)
 
         kwh_str = add_arg(args, "kWh", vals, 5)
         kwh = bill.kwh if kwh_str == NO_CHANGE else Decimal(kwh_str)
@@ -1188,9 +1188,9 @@ def general_import_dc_bill_element(sess, action, vals, args):
         bill = batch.get_bill_by_reference(sess, bill_reference)
         name = add_arg(args, "Name", vals, 3)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         breakdown_str = add_arg(args, "Breakdown", vals, 7)
@@ -1212,7 +1212,7 @@ def general_import_supplier_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -1224,7 +1224,7 @@ def general_import_supplier_batch(sess, action, vals, args):
         new_reference = add_arg(args, "New Reference", vals, 2)
         description = add_arg(args, "Description", vals, 3)
         date_created_str = add_arg(args, "Date Created", vals, 4)
-        date_created = parse_hh_start(date_created_str)
+        date_created = parse_date(date_created_str)
         batch.update(sess, new_reference, description, date_created)
 
 
@@ -1240,11 +1240,11 @@ def general_import_supplier_bill(sess, action, vals, args):
         mpan_core = parse_mpan_core(mpan_core_str)
         supply = Supply.get_by_mpan_core(sess, mpan_core)
         issue_date_str = add_arg(args, "Issue Date", vals, 3)
-        issue_date = parse_hh_start(issue_date_str)
+        issue_date = parse_date(issue_date_str)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         vat_str = add_arg(args, "Vat", vals, 7)
@@ -1293,7 +1293,7 @@ def general_import_supplier_bill(sess, action, vals, args):
                     tpr = None
 
                 prev_date_str = add_arg(args, "Previous Date", vals, i + 6)
-                prev_date = parse_hh_start(prev_date_str)
+                prev_date = parse_date(prev_date_str)
                 prev_value_str = add_arg(args, "Previous Value", vals, i + 7)
                 prev_value = Decimal(prev_value_str)
 
@@ -1301,7 +1301,7 @@ def general_import_supplier_bill(sess, action, vals, args):
                 prev_type = ReadType.get_by_code(sess, prev_type_str)
 
                 pres_date_str = add_arg(args, "Present Date", vals, i + 9)
-                pres_date = parse_hh_start(pres_date_str)
+                pres_date = parse_date(pres_date_str)
                 pres_value_str = add_arg(args, "Present Value", vals, i + 10)
                 pres_value = Decimal(pres_value_str)
 
@@ -1346,19 +1346,19 @@ def general_import_supplier_bill(sess, action, vals, args):
         if issue_date_str == NO_CHANGE:
             issue_date = bill.issue_date
         else:
-            issue_date = parse_hh_start(issue_date_str)
+            issue_date = parse_date(issue_date_str)
 
         start_date_str = add_arg(args, "Start Date", vals, 4)
         if start_date_str == NO_CHANGE:
             start_date = bill.start_date
         else:
-            start_date = parse_hh_start(start_date_str)
+            start_date = parse_date(start_date_str)
 
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
         if finish_date_str == NO_CHANGE:
             finish_date = bill.finish_date
         else:
-            finish_date = parse_hh_start(finish_date_str)
+            finish_date = parse_date(finish_date_str)
 
         kwh_str = add_arg(args, "kWh", vals, 6)
         kwh = bill.kwh if kwh_str == NO_CHANGE else Decimal(kwh_str)
@@ -1414,9 +1414,9 @@ def general_import_supplier_bill_element(sess, action, vals, args):
         bill = batch.get_bill_by_reference(sess, bill_reference)
         name = add_arg(args, "Name", vals, 3)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_str = add_arg(args, "Net", vals, 6)
         net = Decimal(net_str)
         breakdown_str = add_arg(args, "Breakdown", vals, 7)
@@ -1453,7 +1453,7 @@ def general_import_register_read(sess, action, vals, args):
             tpr = None
 
         prev_date_str = add_arg(args, "Previous Date", vals, 8)
-        prev_date = parse_hh_start(prev_date_str)
+        prev_date = parse_date(prev_date_str)
         prev_value_str = add_arg(args, "Previous Value", vals, 9)
         prev_value = Decimal(prev_value_str)
 
@@ -1461,7 +1461,7 @@ def general_import_register_read(sess, action, vals, args):
         prev_type = ReadType.get_by_code(sess, prev_type_str)
 
         pres_date_str = add_arg(args, "Present Date", vals, 11)
-        pres_date = parse_hh_start(pres_date_str)
+        pres_date = parse_date(pres_date_str)
         pres_value_str = add_arg(args, "Present Value", vals, 12)
         pres_value = Decimal(pres_value_str)
 
@@ -1511,13 +1511,13 @@ def general_import_register_read(sess, action, vals, args):
         if prev_date_str == NO_CHANGE:
             prev_date = read.prev_date
         else:
-            prev_date = parse_hh_start(prev_date_str)
+            prev_date = parse_date(prev_date_str)
 
         prev_value_str = add_arg(args, "Previous Value", vals, 7)
         if prev_value_str == NO_CHANGE:
             prev_value = read.prev_value
         else:
-            prev_value = parse_hh_start(prev_value_str)
+            prev_value = parse_date(prev_value_str)
 
         prev_type_code = add_arg(args, "Previous Type", vals, 8)
         if prev_type_code == NO_CHANGE:
@@ -1529,13 +1529,13 @@ def general_import_register_read(sess, action, vals, args):
         if pres_date_str == NO_CHANGE:
             pres_date = read.pres_date
         else:
-            pres_date = parse_hh_start(pres_date_str)
+            pres_date = parse_date(pres_date_str)
 
         pres_value_str = add_arg(args, "Present Value", vals, 10)
         if pres_value_str == NO_CHANGE:
             pres_value = read.pres_value
         else:
-            pres_value = parse_hh_start(pres_value_str)
+            pres_value = parse_date(pres_value_str)
 
         pres_type_code = add_arg(args, "Present Type", vals, 11)
         if pres_type_code == NO_CHANGE:
@@ -1572,11 +1572,11 @@ def general_import_g_bill(sess, action, vals, args):
         g_supply = GSupply.get_by_mprn(sess, mprn)
 
         issue_date_str = add_arg(args, "Issue Date", vals, 3)
-        issue_date = parse_hh_start(issue_date_str)
+        issue_date = parse_date(issue_date_str)
         start_date_str = add_arg(args, "Start Date", vals, 4)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 5)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         net_gbp_str = add_arg(args, "Net GBP", vals, 6)
         net_gbp = Decimal(net_gbp_str)
         vat_gbp_str = add_arg(args, "Vat GBP", vals, 7)
@@ -1620,7 +1620,7 @@ def general_import_g_bill(sess, action, vals, args):
             calorific_value = Decimal(calorific_value_str)
 
             prev_date_str = add_arg(args, "Previous Date", vals, i + 4)
-            prev_date = parse_hh_start(prev_date_str)
+            prev_date = parse_date(prev_date_str)
             prev_value_str = add_arg(args, "Previous Value", vals, i + 5)
             prev_value = Decimal(prev_value_str)
 
@@ -1628,7 +1628,7 @@ def general_import_g_bill(sess, action, vals, args):
             prev_type = GReadType.get_by_code(sess, prev_type_str)
 
             pres_date_str = add_arg(args, "Present Date", vals, i + 7)
-            pres_date = parse_hh_start(pres_date_str)
+            pres_date = parse_date(pres_date_str)
             pres_value_str = add_arg(args, "Present Value", vals, i + 8)
             pres_value = Decimal(pres_value_str)
 
@@ -1664,7 +1664,7 @@ def general_import_g_register_read(sess, action, vals, args):
         g_supply = GSupply.get_by_mprn(sess, mprn)
 
         bill_start_date_str = add_arg(args, "Bill Start Date", vals, 3)
-        bill_start_date = parse_hh_start(bill_start_date_str)
+        bill_start_date = parse_date(bill_start_date_str)
 
         g_bill = sess.scalars(
             select(GBill).where(
@@ -1691,7 +1691,7 @@ def general_import_g_register_read(sess, action, vals, args):
             calorific_value = Decimal(calorific_value_str)
 
             prev_date_str = add_arg(args, "Previous Date", vals, i + 4)
-            prev_date = parse_hh_start(prev_date_str)
+            prev_date = parse_date(prev_date_str)
             prev_value_str = add_arg(args, "Previous Value", vals, i + 5)
             prev_value = Decimal(prev_value_str)
 
@@ -1699,7 +1699,7 @@ def general_import_g_register_read(sess, action, vals, args):
             prev_type = GReadType.get_by_code(sess, prev_type_str)
 
             pres_date_str = add_arg(args, "Present Date", vals, i + 7)
-            pres_date = parse_hh_start(pres_date_str)
+            pres_date = parse_date(pres_date_str)
             pres_value_str = add_arg(args, "Present Value", vals, i + 8)
             pres_value = Decimal(pres_value_str)
 
@@ -1736,9 +1736,9 @@ def general_import_supply(sess, action, vals, args):
         gsp_group_code = add_arg(args, "Gsp Group", vals, 4)
         gsp_group = GspGroup.get_by_code(sess, gsp_group_code)
         start_date_str = add_arg(args, "Start Date", vals, 5)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 6)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
         mop_contract_name = add_arg(args, "MOP Contract", vals, 7)
         mop_contract = Contract.get_mop_by_name(sess, mop_contract_name)
         dc_contract_name = add_arg(args, "DC Contract", vals, 8)
@@ -1897,9 +1897,9 @@ def general_import_llfc(sess, action, vals, args):
         is_import_str = add_arg(args, "is_import", vals, 5)
         is_import = parse_bool(is_import_str)
         valid_from_str = add_arg(args, "valid_from", vals, 6)
-        valid_from = parse_hh_start(valid_from_str)
+        valid_from = parse_date(valid_from_str)
         valid_to_str = add_arg(args, "valid_to", vals, 7)
-        valid_to = parse_hh_start(valid_to_str)
+        valid_to = parse_date(valid_to_str)
 
         dno = Party.get_dno_by_code(sess, dno_code, valid_from)
         existing_llfc = dno.find_llfc_by_code(sess, llfc_code, valid_from)
@@ -1926,7 +1926,7 @@ def general_import_llfc(sess, action, vals, args):
         dno_code = add_arg(args, "dno", vals, 0)
         llfc_code = add_arg(args, "llfc", vals, 1)
         valid_from_str = add_arg(args, "valid_from", vals, 2)
-        valid_from = parse_hh_start(valid_from_str)
+        valid_from = parse_date(valid_from_str)
 
         dno = Party.get_dno_by_code(sess, dno_code, valid_from)
         llfc = (
@@ -1970,7 +1970,7 @@ def general_import_llfc(sess, action, vals, args):
         if valid_to_str == NO_CHANGE:
             valid_to = llfc.valid_to
         else:
-            valid_to = parse_hh_start(valid_to_str)
+            valid_to = parse_date(valid_to_str)
 
         llfc.update(
             llfc_description, vl, is_substation, is_import, llfc.valid_from, valid_to
@@ -1982,7 +1982,7 @@ def general_import_llfc(sess, action, vals, args):
         dno = Party.get_dno_by_code(sess, dno_code)
         llfc_code = add_arg(args, "llfc", vals, 1)
         date_str = add_arg(args, "date", vals, 2)
-        date = parse_hh_start(date_str)
+        date = parse_date(date_str)
 
         llfc = dno.get_llfc_by_code(sess, llfc_code, date)
         sess.delete(llfc)
@@ -2010,7 +2010,7 @@ def general_import_channel(sess, action, vals, args):
     mpan_core = parse_mpan_core(mpan_core_raw)
     supply = Supply.find_by_mpan_core(sess, mpan_core)
     dt_raw = add_arg(args, "Date", vals, 1)
-    dt = parse_hh_start(dt_raw)
+    dt = parse_date(dt_raw)
     era = supply.find_era_at(sess, dt)
     import_related_str = add_arg(args, "Import Related?", vals, 2)
     import_related = parse_bool(import_related_str)
@@ -2075,9 +2075,9 @@ def general_import_site_snag_ignore(sess, action, vals, args):
         site = Site.get_by_code(sess, site_code)
         description = add_arg(args, "Snag Description", vals, 1)
         start_date_str = add_arg(args, "Start Date", vals, 2)
-        start_date = parse_hh_start(start_date_str)
+        start_date = parse_date(start_date_str)
         finish_date_str = add_arg(args, "Finish Date", vals, 3)
-        finish_date = parse_hh_start(finish_date_str)
+        finish_date = parse_date(finish_date_str)
 
         for snag in sess.query(Snag).filter(
             Snag.site_id == site.id,
@@ -2111,9 +2111,9 @@ def _channel_snag_update(sess, action, vals, args, ignore):
         channel_type = parse_channel_type(channel_type_str)
         description = add_arg(args, "Snag Description", vals, 3)
         start_str = add_arg(args, "From", vals, 4)
-        start_date = parse_hh_start(start_str)
+        start_date = parse_date(start_str)
         finish_str = add_arg(args, "To", vals, 5)
-        finish_date = parse_hh_start(finish_str)
+        finish_date = parse_date(finish_str)
 
         for era in supply.find_eras(sess, start_date, finish_date):
             channel = (
@@ -2163,7 +2163,7 @@ def _process_line(sess, hh_data, line, args):
             hh_data.append(
                 {
                     "mpan_core": parse_mpan_core(add_arg(args, "MPAN Core", vals, 0)),
-                    "start_date": parse_hh_start(add_arg(args, "Start Date", vals, 1)),
+                    "start_date": parse_date(add_arg(args, "Start Date", vals, 1)),
                     "channel_type": parse_channel_type(
                         add_arg(args, "Channel Type", vals, 2)
                     ),

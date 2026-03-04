@@ -25,7 +25,7 @@ from chellow.utils import (
     hh_max,
     hh_min,
     hh_range,
-    parse_hh_start,
+    parse_date,
     to_ct,
     to_utc,
 )
@@ -115,7 +115,7 @@ def make_site_deltas(
                 )
 
             date_str, kwh_str = cells
-            ts = parse_hh_start(date_str)
+            ts = parse_date(date_str)
             earliest_delta = min(ts, earliest_delta)
             latest_delta = max(ts, latest_delta)
             try:

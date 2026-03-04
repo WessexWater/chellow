@@ -99,23 +99,31 @@ def req_json(name):
         raise BadRequest(f"Problem parsing the field {name} as JSON: {e}")
 
 
-def req_date(prefix, resolution="minute"):
+def req_date(prefix, resolution="hh"):
     year = req_int(f"{prefix}_year")
     month = req_int(f"{prefix}_month")
+    day = 1
+    hour = minute = second = microsecond = 0
+
+    if resolution in ["day", "hour", "hh", "minute", "second", "microsecond"]:
+        day = req_int(f"{prefix}_day")
+    if resolution in ["hour", "hh", "minute", "second", "microsecond"]:
+        hour = req_int(f"{prefix}_hour")
+
+    if resolution in ["hh", "minute", "second", "microsecond"]:
+        minute = req_int(f"{prefix}_minute")
+    if resolution in ["second", "microsecond"]:
+        second = req_int(f"{prefix}_second")
+    if resolution == "microsecond":
+        microsecond = req_int(f"{prefix}_microsecond")
 
     try:
-        if resolution == "month":
-            d = ct_datetime(year, month)
-        elif resolution == "day":
-            day = req_int(f"{prefix}_day")
-            d = ct_datetime(year, month, day)
-        elif resolution == "minute":
-            day = req_int(f"{prefix}_day")
-            hour = req_int(f"{prefix}_hour")
-            minute = req_int(f"{prefix}_minute")
-            d = ct_datetime(year, month, day, hour, minute)
+        d = ct_datetime(year, month, day, hour, minute, second, microsecond)
     except ValueError as e:
         raise BadRequest(f"Problem parsing the date {prefix}: {e}.")
+
+    if resolution == "hh":
+        validate_hh_start(d)
 
     return to_utc(d)
 
@@ -183,25 +191,52 @@ def validate_hh_start(dt):
     return dt
 
 
-def parse_hh_start(start_date_str):
-    if len(start_date_str) == 0:
+def parse_date(date_str, resolution="hh"):
+    if len(date_str) == 0:
         return None
 
     try:
-        year = int(start_date_str[:4])
-        month = int(start_date_str[5:7])
-        day = int(start_date_str[8:10])
-        hour = int(start_date_str[11:13])
-        minute = int(start_date_str[14:16])
-        if start_date_str[-1] == "Z":
-            dt = utc_datetime(year, month, day, hour, minute)
+        year = int(date_str[:4])
+        month = int(date_str[5:7])
+        day = 1
+        hour = minute = second = microsecond = 0
+
+        if resolution in ["day", "hour", "hh", "minute", "second", "microsecond"]:
+            day = int(date_str[8:10])
+        if resolution in ["hour", "hh", "minute", "second", "microsecond"]:
+            hour = int(date_str[11:13])
+        if resolution in ["hh", "minute", "second", "microsecond"]:
+            minute = int(date_str[14:16])
+        if resolution in ["second", "microsecond"]:
+            second = int(date_str[17:19])
+        if resolution == "microsecond":
+            microsecond = int(date_str[19:25])
+
+        if date_str[-1] == "Z":
+            dt = utc_datetime(year, month, day, hour, minute, second, microsecond)
         else:
-            dt = to_utc(ct_datetime(year, month, day, hour, minute))
-        return validate_hh_start(dt)
+            dt = to_utc(
+                ct_datetime(year, month, day, hour, minute, second, microsecond)
+            )
+
+        if resolution == "hh":
+            validate_hh_start(dt)
+
+        return dt
     except ValueError as e:
+        formats = {
+            "year": "YYYY",
+            "month": "YYYY-MM",
+            "day": "YYYY-MM-DD",
+            "hour": "YYYY-MM-DD hh",
+            "hh": "YYYY-MM-DD hh:mm",
+            "minute": "YYYY-MM-DD hh:mm",
+            "second": "YYYY-MM-DD hh:mm:ss",
+            "microsecond": "YYYY-MM-DD hh:mm:ss.ffffff",
+        }
         raise BadRequest(
-            f"Can't parse the date: {start_date_str}. It needs to be of the "
-            f"form yyyy-mm-dd hh:MM with an optional Z on the end. {e}"
+            f"Can't parse the date: {date_str}. It needs to be of the "
+            f"form {formats['resolution']} with an optional Z on the end. {e}"
         )
 
 
@@ -541,17 +576,19 @@ ct = timezone("Europe/London")
 root_path = None
 
 
-def ct_datetime(year, month, day=1, hour=0, minute=0):
-    return tz_datetime(ct, year, month, day, hour, minute)
+def ct_datetime(year, month, day=1, hour=0, minute=0, second=0, microsecond=0):
+    return tz_datetime(ct, year, month, day, hour, minute, second, microsecond)
 
 
-def utc_datetime(year, month, day=1, hour=0, minute=0):
-    return tz_datetime(utc, year, month, day, hour, minute)
+def utc_datetime(year, month, day=1, hour=0, minute=0, second=0, microsecond=0):
+    return tz_datetime(utc, year, month, day, hour, minute, second, microsecond=0)
 
 
-def tz_datetime(tz, year, month, day=1, hour=0, minute=0):
+def tz_datetime(tz, year, month, day=1, hour=0, minute=0, second=0, microsecond=0):
     try:
-        return tz.normalize(tz.localize(Datetime(year, month, day, hour, minute)))
+        return tz.normalize(
+            tz.localize(Datetime(year, month, day, hour, minute, second, microsecond))
+        )
     except ValueError as e:
         raise BadRequest(f"Problem creating datetime: {e}")
 
