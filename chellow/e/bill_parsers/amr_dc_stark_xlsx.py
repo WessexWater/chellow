@@ -61,7 +61,15 @@ def get_cell(sheet, col, row):
 
 
 def get_str(sheet, col, row):
-    return get_cell(sheet, col, row).value.strip()
+    cell = get_cell(sheet, col, row)
+    val = cell.value
+    if isinstance(val, str):
+        return val.strip()
+    else:
+        raise BadRequest(
+            f"Can't find a string at {cell.coordinate}. Found {val} which is a "
+            f"{type(val)}"
+        )
 
 
 def get_dec(sheet, col, row):
