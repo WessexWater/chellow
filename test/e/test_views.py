@@ -2291,6 +2291,32 @@ def test_mop_batches_get(sess, client):
     match(response, 200)
 
 
+def test_mop_batch_add_post(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
+    mop_contract = Contract.insert_mop(
+        sess, "Fusion", participant, "", {}, vf, None, {}
+    )
+    sess.commit()
+
+    data = {
+        "contract_id": mop_contract.id,
+        "reference": "kauegrhke",
+        "description": "ytehrglkl",
+        "date_created_year": "2020",
+        "date_created_month": "01",
+        "date_created_day": "01",
+        "date_created_hour": "00",
+        "date_created_minute": "01",
+        "date_created_second": "53",
+        "date_created_microsecond": "000001",
+    }
+    response = client.post(f"/e/mop_contracts/{mop_contract.id}/batches/add", data=data)
+    match(response, 303, r"/mop_batches/1")
+
+
 def test_mop_batch_edit_post_import(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "22488", "Water Works")

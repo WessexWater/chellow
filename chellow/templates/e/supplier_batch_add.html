@@ -28,7 +28,7 @@
 			{{input_text('reference', next_batch_reference, required=True)}}
 			<label>Description</label>
 			{{ input_text('description', '', placeholder=next_batch_description) }}
-			<label>Date Created</label> {{ input_date('date_created') }}
+			<label>Date Created</label> {{ input_date('date_created', resolution='microsecond') }}
 			<input type="submit" value="Add">
 		</fieldset>
 	</form>

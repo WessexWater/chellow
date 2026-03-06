@@ -792,7 +792,7 @@ def dc_batch_add_post(contract_id):
         contract = Contract.get_dc_by_id(g.sess, contract_id)
         reference = req_str("reference")
         description = req_str("description")
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="microsecond")
 
         batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()
@@ -3194,7 +3194,7 @@ def mop_batch_add_post(contract_id):
         contract = Contract.get_mop_by_id(g.sess, contract_id)
         reference = req_str("reference")
         description = req_str("description")
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="microsecond")
 
         batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()
@@ -5684,7 +5684,7 @@ def supplier_batch_add_post(contract_id):
     try:
         reference = req_str("reference")
         description = req_str("description")
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="microsecond")
 
         batch = contract.insert_batch(g.sess, reference, description, date_created)
         g.sess.commit()

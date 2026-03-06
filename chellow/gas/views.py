@@ -587,7 +587,7 @@ def batch_add_post(g_contract_id):
         g_contract = GContract.get_by_id(g.sess, g_contract_id)
         reference = req_str("reference")
         description = req_str("description")
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="microsecond")
 
         g_batch = g_contract.insert_g_batch(
             g.sess, reference, description, date_created
