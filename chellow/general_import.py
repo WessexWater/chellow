@@ -58,6 +58,7 @@ from chellow.utils import (
     parse_date,
     parse_mpan_core,
     parse_pc_code,
+    utc_datetime_now,
 )
 
 process_id = 0
@@ -771,7 +772,10 @@ def general_import_g_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_date(date_created_str)
+        if len(date_created_str) == 0:
+            date_created = parse_date(date_created_str)
+        else:
+            date_created = utc_datetime_now()
         g_contract.insert_g_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -876,7 +880,10 @@ def general_import_mop_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_date(date_created_str)
+        if len(date_created_str) == 0:
+            date_created = parse_date(date_created_str)
+        else:
+            date_created = utc_datetime_now()
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -1043,7 +1050,10 @@ def general_import_dc_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_date(date_created_str)
+        if len(date_created_str) == 0:
+            date_created = parse_date(date_created_str)
+        else:
+            date_created = utc_datetime_now()
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -1212,7 +1222,11 @@ def general_import_supplier_batch(sess, action, vals, args):
         reference = add_arg(args, "Reference", vals, 1)
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
-        date_created = parse_date(date_created_str)
+        if len(date_created_str) == 0:
+            date_created = parse_date(date_created_str)
+        else:
+            date_created = utc_datetime_now()
+
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
