@@ -44,8 +44,8 @@
 					<td>
 						<a href="/e/sscs/{{mtc_ssc.ssc.id}}">{{mtc_ssc.ssc.code}} {{mtc_ssc.ssc.description}}</a>
 					</td>
-					<td>{{mtc_ssc.valid_from|hh_format}}</td>
-					<td>{{mtc_ssc.valid_to|hh_format}}</td>
+					<td>{{mtc_ssc.valid_from|date_format}}</td>
+					<td>{{mtc_ssc.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

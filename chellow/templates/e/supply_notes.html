@@ -25,7 +25,7 @@
 					<td>
 						[<a href="/e/supplies/{{supply.id}}/notes/{{loop.revindex0}}/edit">edit</a>]
 					</td>
-					<td>{% if note.timestamp %}{{note.timestamp|hh_format}}{% endif %}</td>
+					<td>{% if note.timestamp %}{{note.timestamp|date_format}}{% endif %}</td>
 					<td>
 						<pre style="white-space: pre-wrap;">{{note.body}}</pre>
 					</td>

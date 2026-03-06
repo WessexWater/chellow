@@ -24,7 +24,7 @@
 				<tr>
 					<td><a href="/e/dc_contracts/{{contract.id}}">View</a></td>
 					<td>{{contract.name}}</td>
-					<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+					<td>{{ contract.start_rate_script.start_date|date_format }}</td>
 					<td><a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a></td>
 				</tr>
 			{% endfor %}
@@ -49,7 +49,7 @@
 		<tbody>
 			{% for ts, contract_name, path in latest_imports %}
 				<tr>
-					<td>{{ts|hh_format}}</td>
+					<td>{{ts|date_format}}</td>
 					<td>{{contract_name}}</td>
 					<td>{{path}}</td>
 				</tr>
@@ -73,8 +73,8 @@
 					<td>
 						<a href="/e/dc_contracts/{{contract.id}}">{{contract.name}}</a>
 					</td>
-					<td>{{ contract.start_rate_script.start_date|hh_format }}</td>
-					<td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+					<td>{{ contract.start_rate_script.start_date|date_format }}</td>
+					<td>{{ contract.finish_rate_script.finish_date|date_format }}</td>
 					<td>
 						<a href="/e/parties/{{contract.party.id}}"
 							>{{contract.party.name}}</a>

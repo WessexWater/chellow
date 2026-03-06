@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|hh_format}} &raquo; Edit
+&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/cas">Connection Agreements</a> &raquo; 
-	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|hh_format}}</a> &raquo; Edit
+	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|date_format}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}

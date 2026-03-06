@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|hh_format}}
+	&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|date_format}}
 {% endblock %}
 
 
@@ -25,7 +25,7 @@
 
 {% block nav %}
 	<a href="/e/cas">Connection Agreements</a> &raquo; 
-	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|hh_format}}</a>
+	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|date_format}}</a>
 	[<a href="/e/cas/{{ca.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -43,8 +43,8 @@
 		</thead>
 		<tbody>
 			<tr>
-				<td>{{ca.start_date|hh_format}}</td>
-				<td>{{ca.finish_date|hh_format}}</td>
+				<td>{{ca.start_date|date_format}}</td>
+				<td>{{ca.finish_date|date_format}}</td>
 				<td>{{ca.properties.get('title')}}</td>
 				<td>
 					<a href="{{props.get('url')}}" target="_blank" rel="noopener noreferrer">Document</a>
@@ -93,7 +93,7 @@
 			{% for era in eras %}
 				<tr>
 					<td><a href="/e/supplies/{{era.supply.id}}">View</a></td>
-					<td>{{era.start_date|hh_format}}</td>
+					<td>{{era.start_date|date_format}}</td>
 					<td>
 						{% if era.imp_mpan_core is not none %}
 							{{era.imp_mpan_core}}

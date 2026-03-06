@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; Supplies &raquo; {{era.supply.name}} &raquo;
- 	Era {{era.start_date|hh_format}} Attach
+ 	Era {{era.start_date|date_format}} Attach
 	{% if is_import %}
 		Import
 	{% else %}
@@ -14,7 +14,7 @@
 {% block nav %}
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{era.supply.id}}">{{era.supply.id}}</a> &raquo; 
- 	Era {{era.start_date|hh_format}} Attach
+ 	Era {{era.start_date|date_format}} Attach
 	{% if is_import %}
 		Import
 	{% else %}
@@ -37,7 +37,7 @@
 			<label>Connection Agreement</label>
 			<select name="ca_id">
 				{% for ca in cas  %}
-					{{input_option('ca_id', ca.id, ca.id|string + ' : ' + ca.start_date|hh_format + ' : ' + ca.properties.get('title'))}}
+					{{input_option('ca_id', ca.id, ca.id|string + ' : ' + ca.start_date|date_format + ' : ' + ca.properties.get('title'))}}
 				{% endfor %}
 			</select>
 			<input type="submit" name="attach" value="Attach">

@@ -12,7 +12,7 @@ from zish import loads
 
 from chellow.e.elexon import download_file
 from chellow.models import Contract, RateScript
-from chellow.utils import HH, ct_datetime, hh_format, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, date_format, to_ct, to_utc
 
 
 def key_format(dt):
@@ -44,12 +44,12 @@ def hh(data_source):
                 system_price_cache[h_start] = (sbp, ssp)
             except KeyError:
                 raise BadRequest(
-                    f"For the System Price rate script at {hh_format(h_start)} "
+                    f"For the System Price rate script at {date_format(h_start)} "
                     f"the rate cannot be found."
                 )
             except TypeError:
                 raise BadRequest(
-                    f"For the System Price rate script at {hh_format(h_start)} "
+                    f"For the System Price rate script at {date_format(h_start)} "
                     f"the rate 'rates_gbp_per_mwh' has the problem: "
                     f"{traceback.format_exc()}"
                 )
@@ -99,7 +99,7 @@ def elexon_import(sess, log, set_progress, scripting_key):
             fill_start = rscript.finish_date + HH
             break
     res = download_file(log, scripting_key, "BESTVIEWPRICES_FILE")
-    log(f"Extracting data from {hh_format(fill_start)}")
+    log(f"Extracting data from {date_format(fill_start)}")
 
     sess.rollback()  # Avoid long-running transactions
     log(f"Received {res.status_code} {res.reason}")
@@ -153,7 +153,7 @@ def elexon_import(sess, log, set_progress, scripting_key):
             .first()
         )
         if rs is None:
-            log(f"Adding a new rate script starting at {hh_format(month_start)}.")
+            log(f"Adding a new rate script starting at {date_format(month_start)}.")
 
             latest_rs = (
                 sess.query(RateScript)
@@ -174,6 +174,6 @@ def elexon_import(sess, log, set_progress, scripting_key):
         script = {
             "gbp_per_nbp_mwh": dict((key_format(k), v) for k, v in sp_month.items())
         }
-        log(f"Updating rate script starting at {hh_format(month_start)}.")
+        log(f"Updating rate script starting at {date_format(month_start)}.")
         contract.update_rate_script(sess, rs, rs.start_date, rs.finish_date, script)
         sess.commit()

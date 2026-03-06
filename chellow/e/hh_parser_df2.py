@@ -4,7 +4,7 @@ from codecs import iterdecode
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.utils import HH, hh_format, parse_mpan_core, utc_datetime
+from chellow.utils import HH, date_format, parse_mpan_core, utc_datetime
 
 
 def _append_new_message(messages, message):
@@ -96,15 +96,16 @@ class StarkDf2HhParser:
                                 _append_new_message(
                                     self.messages,
                                     f"The MPAN core {self.core} is ignored from "
-                                    f"{hh_format(from_date)} to {hh_format(to_date)}",
+                                    f"{date_format(from_date)} to "
+                                    f"{date_format(to_date)}",
                                 )
                                 continue
                             else:
                                 _append_new_message(
                                     self.messages,
                                     f"The MPAN core {self.core} is changed to "
-                                    f"{mpan_core} from {hh_format(from_date)} to "
-                                    f"{hh_format(to_date)}",
+                                    f"{mpan_core} from {date_format(from_date)} to "
+                                    f"{date_format(to_date)}",
                                 )
 
                     local_datum = {

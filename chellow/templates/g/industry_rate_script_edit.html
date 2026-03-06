@@ -2,7 +2,7 @@
 
 {% block title %}
 	Gas Industry Contracts &raquo; {{g_rate_script.g_contract.name}} &raquo;
- 	Rate Scripts &raquo; {{g_rate_script.start_date|hh_format}} &raquo; Edit
+ 	Rate Scripts &raquo; {{g_rate_script.start_date|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
@@ -12,7 +12,7 @@
 			>{{g_rate_script.g_contract.name}}</a> &raquo;
 	<a
 	 		href="/g/industry_rate_scripts/{{g_rate_script.id}}"
-			>Rate Script {{g_rate_script.start_date|hh_format}}</a> &raquo; Edit
+			>Rate Script {{g_rate_script.start_date|date_format}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}

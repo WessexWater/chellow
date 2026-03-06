@@ -40,8 +40,8 @@
 							No
 						{% endif %}
 					</td>
-					<td>{{mtc.valid_from|hh_format}}</td>
-					<td>{{mtc.valid_to|hh_format}}</td>
+					<td>{{mtc.valid_from|date_format}}</td>
+					<td>{{mtc.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

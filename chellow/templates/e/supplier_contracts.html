@@ -25,9 +25,9 @@
 					<td>
 						<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
 					</td>
-					<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+					<td>{{contract.start_rate_script.start_date|date_format}}</td>
 					<td>
-						{{contract.finish_rate_script.finish_date|hh_format}}
+						{{contract.finish_rate_script.finish_date|date_format}}
 					</td>
 					<td>
 						<a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a>
@@ -54,10 +54,10 @@
 						<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
 					</td>
 					<td>
-						{{contract.start_rate_script.start_date|hh_format}}
+						{{contract.start_rate_script.start_date|date_format}}
 					</td>
 					<td>
-						{{contract.finish_rate_script.finish_date|hh_format}}
+						{{contract.finish_rate_script.finish_date|date_format}}
 					</td>
 					<td>
 						<a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a>

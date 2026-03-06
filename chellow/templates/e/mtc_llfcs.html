@@ -46,8 +46,8 @@
 					<td>
 						<a href="/e/llfcs/{{mtc_llfc.llfc.id}}">{{mtc_llfc.llfc.code}} {{mtc_llfc.llfc.description}}</a>
 					</td>
-					<td>{{mtc_llfc.valid_from|hh_format}}</td>
-					<td>{{mtc_llfc.valid_to|hh_format}}</td>
+					<td>{{mtc_llfc.valid_from|date_format}}</td>
+					<td>{{mtc_llfc.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

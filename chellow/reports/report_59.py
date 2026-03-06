@@ -37,7 +37,7 @@ from chellow.utils import (
     c_months_u,
     ct_datetime,
     ct_datetime_now,
-    hh_format,
+    date_format,
     hh_min,
     hh_range,
     make_val,
@@ -1037,7 +1037,9 @@ def do_post(sess):
                 "scenario_finish_hour": finish_date_ct.hour,
                 "scenario_finish_minute": finish_date_ct.minute,
             }
-            base_name.append(hh_format(start_date).replace(" ", "_").replace(":", "_"))
+            base_name.append(
+                date_format(start_date).replace(" ", "_").replace(":", "_")
+            )
 
         if "mpan_cores" in request.values:
             mpan_cores_str = req_str("mpan_cores")

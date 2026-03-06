@@ -1,5 +1,4 @@
 import json
-import time
 import traceback
 from collections import defaultdict
 from collections.abc import Mapping, Set
@@ -10,8 +9,6 @@ from decimal import Decimal, InvalidOperation
 from dateutil.relativedelta import relativedelta
 
 from flask import Response, request
-
-from jinja2 import Environment
 
 from markdown_it import MarkdownIt
 
@@ -269,7 +266,23 @@ def parse_bool(bool_str):
         raise BadRequest(f"A boolean must be 'true' or 'false', but got '{bool_str}'.")
 
 
-def hh_format(dt, ongoing_str="ongoing", with_hh=False):
+DATE_FORMATS = {
+    "year": "%Y",
+    "month": "%m",
+    "day": "%d",
+    "hour": "%H",
+    "minute": "%M",
+    "month_res": "%Y-%m",
+    "day_res": "%Y-%m-%d",
+    "hour_res": "%Y-%m-%d %H",
+    "hh_res": "%Y-%m-%d %H:%M",
+    "minute_res": "%Y-%m-%d %H:%M",
+    "second_res": "%Y-%m-%d %H:%M:%S",
+    "microsecond_res": "%Y-%m-%d %H:%M:%S.%f",
+}
+
+
+def date_format(dt, ongoing_str="ongoing", with_hh=False, fmt="hh_res"):
     if dt is None:
         return (ongoing_str, ongoing_str) if with_hh else ongoing_str
     else:
@@ -278,7 +291,7 @@ def hh_format(dt, ongoing_str="ongoing", with_hh=False):
         else:
             ts = dt
         d = to_ct(ts)
-        dt_str = d.strftime("%Y-%m-%d %H:%M")
+        dt_str = d.strftime(DATE_FORMATS[fmt])
         if with_hh:
             dc = ct_datetime(d.year, d.month, d.day)
             du = to_utc(dc)
@@ -328,16 +341,6 @@ def send_response(
     )
 
 
-FORMATS = {
-    "year": "%Y",
-    "month": "%m",
-    "day": "%d",
-    "hour": "%H",
-    "minute": "%M",
-    "full": "%Y-%m-%d %H:%M",
-    "date": "%Y-%m-%d",
-}
-
 prefix = """
 {%- macro input_date(prefix, initial=None, resolution='minute') -%}
   {% if prefix != None %}
@@ -360,7 +363,7 @@ prefix = """
     {%- if request.values.year_field -%}
       {{ request.values.year_field }}
     {%- else -%}
-      {{ initial|hh_format('year') }}
+      {{ initial|date_format(resolution='year') }}
     {%- endif %}">
 
   {%- if resolution in ['month', 'day', 'hour', 'minute'] -%}
@@ -464,48 +467,6 @@ prefix = """
                     {%- endif -%}>
 {%- endmacro -%}
 """
-
-
-def hh_format_filter(dt, modifier="full"):
-    return "Ongoing" if dt is None else dt.strftime(FORMATS[modifier])
-
-
-def now_if_none(dt):
-    return utc_datetime_now() if dt is None else dt
-
-
-env = Environment(autoescape=True)
-
-env.filters["hh_format"] = hh_format_filter
-env.filters["now_if_none"] = now_if_none
-
-template_cache = {}
-
-
-def render(template, vals, status_code=200, content_type="text/html"):
-    if len(template_cache) > 10000:
-        template_cache.clear()
-    templ_str = prefix + template
-    try:
-        templ = template_cache[templ_str]
-    except KeyError:
-        templ = env.from_string(templ_str)
-        template_cache[templ_str] = templ
-
-    vals["request"] = request
-
-    headers = {
-        "mimetype": content_type,
-        "Date": int(round(time.time() * 1000)),
-        "Cache-Control": "no-cache",
-    }
-
-    try:
-        template_str = templ.render(vals)
-    except BaseException:
-        raise BadRequest(f"Problem rendering template: {traceback.format_exc()}")
-
-    return Response(template_str, status_code, headers)
 
 
 def hh_range(caches, start_date, finish_date):
@@ -689,7 +650,7 @@ def csv_make_val(v):
         else:
             return ""
     elif isinstance(v, Datetime):
-        return hh_format(v)
+        return date_format(v)
     elif v is None:
         return ""
     else:

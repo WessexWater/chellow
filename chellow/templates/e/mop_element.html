@@ -31,8 +31,8 @@
 		<tbody>
 			<tr>
 				<td>{{element.name}}</td>
-				<td>{{element.start_date|hh_format }}</td>
-				<td>{{element.finish_date|hh_format }}</td>
+				<td>{{element.start_date|date_format }}</td>
+				<td>{{element.finish_date|date_format }}</td>
 				<td>{{element.net}}</td>
 				<td><pre>{{element.breakdown}}</pre></td>
 			</tr>

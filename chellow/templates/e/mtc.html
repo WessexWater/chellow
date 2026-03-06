@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; MTCs &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|hh_format}}
+	&raquo; MTCs &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|date_format}}
 {% endblock %}
 
 {% block nav %}
-	<a href="/e/mtcs">MTCs</a> &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|hh_format}}
+	<a href="/e/mtcs">MTCs</a> &raquo; {{mtc.code}} &raquo; {{mtc.valid_from|date_format}}
 {% endblock %}
 
 {% block content %}
@@ -30,11 +30,11 @@
 		</tr>
 		<tr>
 			<th>Valid From</th>
-			<td>{{mtc.valid_from|hh_format}}</td>
+			<td>{{mtc.valid_from|date_format}}</td>
 		</tr>
 		<tr>
 			<th>Valid To</th>
-			<td>{{mtc.valid_to|hh_format}}</td>
+			<td>{{mtc.valid_to|date_format}}</td>
 		</tr>
 	</table>
 
@@ -76,8 +76,8 @@
 							>{{mtc_participant.meter_payment_type.code}}</a>
 					</td>
 					<td>{{mtc_participant.tpr_count}}</td>
-					<td>{{mtc_participant.valid_from|hh_format}}</td>
-					<td>{{mtc_participant.valid_to|hh_format}}</td>
+					<td>{{mtc_participant.valid_from|date_format}}</td>
+					<td>{{mtc_participant.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

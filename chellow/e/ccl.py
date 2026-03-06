@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from chellow.models import Contract, RateScript
 from chellow.rate_server import download
-from chellow.utils import ct_datetime, hh_format, to_utc
+from chellow.utils import ct_datetime, date_format, to_utc
 
 
 def ccl(data_source):
@@ -83,13 +83,13 @@ def rate_server_import(sess, log, set_progress, paths):
             if rs_script.get("a_file_name") != file_name:
                 log(
                     f"Found new file {file_name} for rate script starting "
-                    f"{hh_format(year_start)}"
+                    f"{date_format(year_start)}"
                 )
                 script = {"a_file_name": file_name}
                 server_j = json.load(BytesIO(download(url)))
                 script["ccl_gbp_per_msp_kwh"] = Decimal(server_j["ccl_gbp_per_msp_kwh"])
                 rs.update(script)
-                log(f"Updated CCL rate script for {hh_format(year_start)}")
+                log(f"Updated CCL rate script for {date_format(year_start)}")
 
     log("Finished CCL rates")
     sess.commit()

@@ -30,7 +30,7 @@ from chellow.models import (
 from chellow.utils import (
     c_months_u,
     ct_datetime_now,
-    hh_format,
+    date_format,
     keydefaultdict,
     utc_datetime_now,
 )
@@ -307,7 +307,7 @@ class FakeBatchUpdater(threading.Thread):
 
             else:
                 self.log(
-                    f"The updater was last run at {hh_format(last_run)}. There will "
+                    f"The updater was last run at {date_format(last_run)}. There will "
                     f"be another update when a hour has elapsed since the last run."
                 )
                 self.going.wait(60 * 60)

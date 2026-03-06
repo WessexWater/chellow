@@ -18,7 +18,7 @@ from chellow.utils import (
     HH,
     c_months_u,
     ct_datetime,
-    hh_format,
+    date_format,
     to_ct,
     to_utc,
     utc_datetime_now,
@@ -51,7 +51,7 @@ def hh(data_source, provider="APXMIDP"):
                 except KeyError:
                     raise BadRequest(
                         f"For the bmarketidx rate script at "
-                        f"{hh_format(h_start)} the rate cannot be found."
+                        f"{date_format(h_start)} the rate cannot be found."
                     )
 
             try:
@@ -62,7 +62,7 @@ def hh(data_source, provider="APXMIDP"):
                 except KeyError:
                     raise BadRequest(
                         f"For the bmarketidx rate script at "
-                        f"{hh_format(h_start)} a rate cannot be found for the "
+                        f"{date_format(h_start)} a rate cannot be found for the "
                         f"provider {provider}."
                     )
 
@@ -174,8 +174,8 @@ class BmarketidxImporter(threading.Thread):
 def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
     latest_rs_id = latest_rs.id
     log_f(
-        f"Checking to see if data is available from {hh_format(month_start)} "
-        f"to {hh_format(month_finish)} on BMRS."
+        f"Checking to see if data is available from {date_format(month_start)} "
+        f"to {date_format(month_finish)} on BMRS."
     )
     rates = {}
     month_finish_ct = to_ct(month_finish)
@@ -221,7 +221,7 @@ def _process_month(log_f, sess, contract, latest_rs, month_start, month_finish):
         )
         contract.insert_rate_script(sess, month_start, script)
         sess.commit()
-        log_f(f"Added a new rate script starting at {hh_format(month_start)}.")
+        log_f(f"Added a new rate script starting at {date_format(month_start)}.")
     else:
         msg = "There isn't a whole month there yet."
         if len(rates) > 0:

@@ -37,12 +37,12 @@
 			<tbody>
 				<tr>
 					<td rowspan="4">
-						<span title="{{ era.start_date|hh_format }}"
-							>{{ era.start_date|hh_format(modifier='date') }}</span>
+						<span title="{{ era.start_date|date_format }}"
+							>{{ era.start_date|date_format(fmt='day') }}</span>
 					</td>
 					<td rowspan="4">
-							<span title="{{ era.finish_date|hh_format }}"
-								>{{ era.finish_date|hh_format(modifier='date') }}</span>
+							<span title="{{ era.finish_date|date_format }}"
+								>{{ era.finish_date|date_format(fmt='day') }}</span>
 					</td>
 					<td rowspan="4">
 							<a href="/sites/{{physical_site.id}}"
@@ -267,10 +267,10 @@
 											<a href="/e/supplier_bills/{{bill.id}}">View</a>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<label title="{{bill.start_date|hh_format}}">{{bill.start_date|hh_format('date')}}</label>
+									<label title="{{bill.start_date|date_format}}">{{bill.start_date|date_format('date')}}</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
+									<label title="{{ bill.finish_date|date_format }}">{{ bill.finish_date|date_format('date') }}</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
 									<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -293,7 +293,7 @@
 									{% for read in read_row['inner_reads'] %}
 										<td style="border-right: none;">
 											{% if read %}
-												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
+												<label title="{{ read.previous_date|date_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none; text-align: right;">
@@ -303,7 +303,7 @@
 										</td>
 										<td style="border-right: none;">
 											{% if read %}
-												<label title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</label>
+												<label title="{{ read.present_date|date_format }} {{ read.msn }}">{{ read.present_value }}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none; text-align: right;">
@@ -324,7 +324,7 @@
 										</td>
 										<td style="border-right: none;">
 											{% if read %}
-												<label title="{{read.previous_date|hh_format}} {{read.msn}}">{{read.previous_value}}</label>
+												<label title="{{read.previous_date|date_format}} {{read.msn}}">{{read.previous_value}}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none; text-align: right;">
@@ -334,7 +334,7 @@
 										</td>
 										<td style="border-right: none;">
 											{% if read %}
-												<label title="{{read.present_date|hh_format}} {{read.msn}}">{{read.present_value}}</label>
+												<label title="{{read.present_date|date_format}} {{read.msn}}">{{read.present_value}}</label>
 											{% endif %}
 										</td>
 										<td style="border-left: none; text-align: right;">
@@ -404,10 +404,10 @@
 												<a href="/e/supplier_bills/{{bill.id}}">View</a>
 										</td>
 										<td rowspan="{{ rows_high }}">
-												<label title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</label>
+												<label title="{{ bill.start_date|date_format }}">{{ bill.start_date|date_format('date') }}</label>
 										</td>
 										<td rowspan="{{ rows_high }}">
-												<label title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</label>
+												<label title="{{ bill.finish_date|date_format }}">{{ bill.finish_date|date_format('date') }}</label>
 										</td>
 										<td rowspan="{{ rows_high }}">
 												<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -424,7 +424,7 @@
 										{% for read in read_row['inner_reads'] %}
 										<td style="border-right: none;">
 												{% if read %}
-												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
+												<label title="{{ read.previous_date|date_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 												{% endif %}
 										</td>
 										<td style="border-left: none;">
@@ -434,7 +434,7 @@
 										</td>
 										<td style="border-right: none;">
 												{% if read %}
-												<label title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</label>
+												<label title="{{ read.presentDate|date_format }} {{ read.msn }}">{{ read.presentValue }}</label>
 												{% endif %}
 										</td>
 										<td style="border-left: none;">
@@ -453,13 +453,13 @@
 												{% endif %}
 										</td>
 										<td style="border-right: none;">
-												<label title="{{ read.previous_date|hh_format }} {{ read.msn }}">{{ read.previous_value }}</label>
+												<label title="{{ read.previous_date|date_format }} {{ read.msn }}">{{ read.previous_value }}</label>
 										</td>
 										<td style="border-left: none;">
 												{{ read.previous_type.code }}
 										</td>
 										<td style="border-right: none;">
-												<label title="{{ read.present_date|hh_format }} {{ read.msn }}">{{ read.present_value }}</label>
+												<label title="{{ read.present_date|date_format }} {{ read.msn }}">{{ read.present_value }}</label>
 										</td>
 										<td style="border-left: none;">
 												{{ read.present_type.code }}
@@ -502,9 +502,9 @@
 								</td>
 								<td>{{ bill.reference }}</td>
 								<td>{{ bill.account }}</td>
-								<td>{{ bill.issue_date|hh_format }}</td>
-								<td>{{ bill.start_date|hh_format }}</td>
-								<td>{{ bill.finish_date|hh_format }}</td>
+								<td>{{ bill.issue_date|date_format }}</td>
+								<td>{{ bill.start_date|date_format }}</td>
+								<td>{{ bill.finish_date|date_format }}</td>
 								<td>{{ bill.kwh }}</td>
 								<td>{{ bill.net }}</td>
 								<td>{{ bill.vat }}</td>
@@ -545,9 +545,9 @@
 							</td>
 							<td>{{ bill.reference }}</td>
 							<td>{{ bill.account }}</td>
-							<td>{{ bill.issue_date|hh_format }}</td>
-							<td>{{ bill.start_date|hh_format }}</td>
-							<td>{{ bill.finish_date|hh_format }}</td>
+							<td>{{ bill.issue_date|date_format }}</td>
+							<td>{{ bill.start_date|date_format }}</td>
+							<td>{{ bill.finish_date|date_format }}</td>
 							<td>{{ bill.kwh }}</td>
 							<td>{{ bill.net }}</td>
 							<td>{{ bill.vat }}</td>
@@ -567,7 +567,7 @@
 
 		{% set last_start_date = era_bundles[-1]['era'].start_date %}
 		<p style="text-align: center;" hx-target="this" hx-swap="outerHTML">
-			<button hx-get="/e/supplies/{{supply.id}}/eras?last_start_date={{last_start_date|hh_format}}">
+			<button hx-get="/e/supplies/{{supply.id}}/eras?last_start_date={{last_start_date|date_format}}">
 				Load older eras...
 			</button>
 		</p>

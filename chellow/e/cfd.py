@@ -9,7 +9,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.e.lccc import api_records
 from chellow.models import Contract, RateScript
-from chellow.utils import c_months_u, ct_datetime, hh_format, to_ct, to_utc
+from chellow.utils import c_months_u, ct_datetime, date_format, to_ct, to_utc
 
 
 def _find_quarter_rs(sess, contract_name, date):
@@ -72,7 +72,7 @@ def hh(data_source, use_bill_check=False):
                     "cfd_reconciled_daily_levy_rates", h_start
                 )
                 records = rates["records"]
-                dt_str = hh_format(h_start)[:11] + "00:00"
+                dt_str = date_format(h_start)[:11] + "00:00"
 
                 try:
                     runs = records[dt_str]
@@ -209,7 +209,7 @@ def import_in_period_tracking(sess, log, set_progress):
         rs_script = rs.make_script()
         records = rs_script["records"]
         for k, v in sorted(quarter.items()):
-            records[hh_format(k)] = v
+            records[date_format(k)] = v
         rs.update(rs_script)
         sess.commit()
     log("Finished LCCC CfD In-Period Tracking")
@@ -307,7 +307,7 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress):
         day_ct = rs_start_ct
         while day_ct <= quarter_finish_ct:
             try:
-                records[hh_format(to_utc(day_ct))]["DF"]
+                records[date_format(to_utc(day_ct))]["DF"]
             except KeyError:
                 complete = False
                 break
@@ -333,7 +333,7 @@ def import_reconciled_daily_levy_rates(sess, log, set_progress):
         rs_script = rs.make_script()
         records = rs_script["records"]
         for dt, runs in sorted(quarter.items()):
-            date_str = hh_format(dt)
+            date_str = date_format(dt)
             try:
                 rs_runs = records[date_str]
             except KeyError:

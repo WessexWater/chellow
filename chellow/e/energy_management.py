@@ -13,7 +13,7 @@ from chellow.e.computer import (
     forecast_date,
 )
 from chellow.models import Era, Session, Site, SiteEra, Source, Supply
-from chellow.utils import c_months_u, ct_datetime_now, hh_format, hh_max, hh_min
+from chellow.utils import c_months_u, ct_datetime_now, date_format, hh_max, hh_min
 
 CATS = ("imp_grid", "exp_grid", "used", "displaced")
 QUANTS = (
@@ -236,7 +236,7 @@ def _process(sess, log, start_year, start_month, mem_id, jval, site):
         }
 
         for quant in QUANTS:
-            row = [hh_format(month_start)[:7], quant]
+            row = [date_format(month_start)[:7], quant]
             fmt = FORMAT_LOOKUP[quant]
             for cat in CATS:
                 row.append(fmt.format(vals[cat][quant]))

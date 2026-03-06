@@ -2,17 +2,17 @@
 
 {% block title %}
 	&raquo; Supplies &raquo; 
- 	Supply {{hh.channel.era.supply.id}} Era {{hh.channel.era.start_date|hh_format}} &raquo; 
+ 	Supply {{hh.channel.era.supply.id}} Era {{hh.channel.era.start_date|date_format}} &raquo; 
 	Channel {% if hh.channel.imp_related %}Import{% else %}Export{% endif %}
 	{{hh.channel.channel_type}} &raquo; 
-	HH {{hh.start_date|hh_format}} Edit
+	HH {{hh.start_date|date_format}} Edit
 {% endblock %}
 
 
 {% block nav %}
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{hh.channel.era.supply.id}}">Supply
-	 	{{hh.channel.era.supply.name}} Era {{hh.channel.era.start_date|hh_format}}</a>
+	 	{{hh.channel.era.supply.name}} Era {{hh.channel.era.start_date|date_format}}</a>
 	&raquo; 
 	<a href="/e/channels/{{hh.channel.id}}">Channel
 		{%- if hh.channel.imp_related -%}
@@ -21,7 +21,7 @@
 			&nbspExport
 		{%- endif -%}
 		&nbsp{{hh.channel.channel_type}}</a> &raquo;
-	HH {{hh.start_date|hh_format}} Edit
+	HH {{hh.start_date|date_format}} Edit
 {% endblock %}
 
 {% block content %}

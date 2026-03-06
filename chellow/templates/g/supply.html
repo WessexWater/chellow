@@ -98,7 +98,7 @@
 			<td>
 				{% if note %}
 					<pre style="white-space pre-wrap;">
-						{%- if note.timestamp -%}<em>{{note.timestamp|hh_format}}</em>{%- endif %}
+						{%- if note.timestamp -%}<em>{{note.timestamp|date_format}}</em>{%- endif %}
 						{%- if truncated_line -%}
 							<details><summary><span>{{truncated_line}}</span></summary>{{note.body}}</details>
 						{%- else %} {{note.body}}
@@ -136,13 +136,13 @@
 				<tr>
 					<td>
 						<span
-								title="{{g_era.start_date|hh_format}}"
-								>{{g_era.start_date|hh_format(modifier='date') }}</span>
+								title="{{g_era.start_date|date_format}}"
+								>{{g_era.start_date|date_format(fmt='day') }}</span>
 					</td>
 					<td>
 						<span
-								title="{{g_era.finish_date|hh_format}}"
-								>{{ g_era.finish_date|hh_format(modifier='date') }}</span>
+								title="{{g_era.finish_date|date_format}}"
+								>{{ g_era.finish_date|date_format(fmt='day') }}</span>
 					</td>
 					<td>
 						<a
@@ -246,18 +246,18 @@
 						</td>
 						<td rowspan="{{rows_high}}">
 							<span
-									title="{{g_bill.start_date|hh_format}}"
-							>{{g_bill.start_date|hh_format('date')}}</span>
+									title="{{g_bill.start_date|date_format}}"
+							>{{g_bill.start_date|date_format('day_res')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
 							<span
-									title="{{g_bill.finish_date|hh_format}}"
-							>{{g_bill.finish_date|hh_format('date')}}</span>
+									title="{{g_bill.finish_date|date_format}}"
+							>{{g_bill.finish_date|date_format('day_res')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
 							<span
-									title="{{g_bill.issue_date|hh_format}}"
-							>{{g_bill.issue_date|hh_format('date')}}</span>
+									title="{{g_bill.issue_date|date_format}}"
+							>{{g_bill.issue_date|date_format('day_res')}}</span>
 						</td>
 						<td rowspan="{{rows_high}}">
 							<a
@@ -288,7 +288,7 @@
 								<td style="border-right: none;">
 									{% if read %}
 										<span
-												title="{{read.prev_date|hh_format}} {{read.msn }}"
+												title="{{read.prev_date|date_format}} {{read.msn }}"
 										>{{read.prev_value}}</span>
 									{% endif %}
 								</td>
@@ -305,7 +305,7 @@
 								<td style="border-right: none;">
 									{% if read %}
 										<span
-												title="{{read.pres_date|hh_format}} {{read.msn}}"
+												title="{{read.pres_date|date_format}} {{read.msn}}"
 										>{{read.pres_value}}</span>
 									{% endif %}
 								</td>

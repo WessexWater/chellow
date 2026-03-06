@@ -6,7 +6,7 @@ from chellow.utils import (
     PropDict,
     c_months_u,
     ct_datetime,
-    hh_format,
+    date_format,
     make_val,
     parse_date,
     parse_mpan_core,
@@ -76,33 +76,33 @@ def test_u_months_u_start_none():
     assert month_1 == (utc_datetime(2009, 3), utc_datetime(2009, 3, 31, 23, 30))
 
 
-def test_hh_format_ct():
+def test_date_format_ct():
     dt = utc_datetime(2019, 6, 30)
-    actual = hh_format(dt)
+    actual = date_format(dt)
     assert actual == ("2019-06-30 01:00")
 
 
-def test_hh_format_hh():
+def test_date_format_hh():
     dt = utc_datetime(2019, 6, 30)
-    actual = hh_format(dt, with_hh=True)
+    actual = date_format(dt, with_hh=True)
     assert actual == ("2019-06-30 01:00", 3)
 
 
-def test_hh_format_hh_46():
+def test_date_format_hh_46():
     dt = to_utc(ct_datetime(2019, 3, 31, 23, 30))
-    actual = hh_format(dt, with_hh=True)
+    actual = date_format(dt, with_hh=True)
     assert actual == ("2019-03-31 23:30", 46)
 
 
-def test_hh_format_hh_50():
+def test_date_format_hh_50():
     dt = to_utc(ct_datetime(2019, 10, 27, 23, 30))
-    actual = hh_format(dt, with_hh=True)
+    actual = date_format(dt, with_hh=True)
     assert actual == ("2019-10-27 23:30", 50)
 
 
-def test_hh_format_none():
+def test_date_format_none():
     dt = None
-    actual = hh_format(dt)
+    actual = date_format(dt)
     assert actual == "ongoing"
 
 

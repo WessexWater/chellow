@@ -2,13 +2,13 @@
 
 {% block title %}
 	&raquo; Gas Supplies &raquo; {{g_era.g_supply.id}} &raquo;
- 	Era {{g_era.start_date|hh_format}} Edit
+ 	Era {{g_era.start_date|date_format}} Edit
 {% endblock %}
 
 {% block nav %}
 	<a href="/g/supplies">Gas Supplies</a> &raquo;
 	<a href="/g/supplies/{{g_era.g_supply.id}}">{{g_era.g_supply.id}}</a> &raquo;
- 	Era {{g_era.start_date|hh_format}} Edit
+ 	Era {{g_era.start_date|date_format}} Edit
 {% endblock %}
 
 {% block content %}

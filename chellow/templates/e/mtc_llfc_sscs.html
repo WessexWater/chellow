@@ -55,8 +55,8 @@
 						>{{mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}
 						{{mtc_llfc_ssc.mtc_ssc.mtc_participant.description}}</a>
 					</td>
-					<td>{{mtc_llfc_ssc.valid_from|hh_format}}</td>
-					<td>{{mtc_llfc_ssc.valid_to|hh_format}}</td>
+					<td>{{mtc_llfc_ssc.valid_from|date_format}}</td>
+					<td>{{mtc_llfc_ssc.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

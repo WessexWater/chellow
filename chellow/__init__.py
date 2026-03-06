@@ -42,17 +42,7 @@ from chellow.models import (
     start_sqlalchemy,
 )
 from chellow.proxy import MsProxy
-from chellow.utils import HH, ct_datetime, to_ct, utc_datetime_now
-
-TEMPLATE_FORMATS = {
-    "year": "%Y",
-    "month": "%m",
-    "day": "%d",
-    "hour": "%H",
-    "minute": "%M",
-    "full": "%Y-%m-%d %H:%M",
-    "date": "%Y-%m-%d",
-}
+from chellow.utils import HH, ct_datetime, date_format, to_ct, utc_datetime_now
 
 
 def get_importer_modules():
@@ -313,12 +303,9 @@ def create_app(testing=False, instance_path=None):
         if getattr(g, "sess", None) is not None:
             g.sess.close()
 
-    @app.template_filter("hh_format")
-    def hh_format_filter(dt, modifier="full"):
-        if dt is None:
-            return "Ongoing"
-        else:
-            return to_ct(dt).strftime(TEMPLATE_FORMATS[modifier])
+    @app.template_filter("date_format")
+    def date_format_filter(dt, fmt="hh_res"):
+        return date_format(dt, ongoing_str="Ongoing", fmt=fmt)
 
     @app.template_filter("now_if_none")
     def now_if_none(dt):

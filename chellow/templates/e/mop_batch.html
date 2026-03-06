@@ -28,7 +28,7 @@
 		</tr>
 		<tr>
 			<th>Date Created</th>
-			<td>{{batch.date_created.strftime('%Y-%m-%dT%H:%M:%S.%f%z')}}</td>
+			<td>{{batch.date_created|date_format(fmt='microsecond_res')}}</td>
 		</tr>
 		<tr>
 			<th>Number Of Bills</th>
@@ -67,7 +67,7 @@
 				<tr>
 					<td><a href="/e/mop_batch_files/{{file.id}}"/>View</td>
 					<td>{{file.filename}}</td>
-					<td>{{file.upload_timestamp|hh_format}}</td>
+					<td>{{file.upload_timestamp|date_format}}</td>
 					<td>{{file.parser_name}}</td>
 				</tr>
 			{% endfor %}
@@ -102,7 +102,7 @@
 			{% for report_run in report_runs %}
 				<tr>
 					<td><a href="/report_runs/{{report_run.id}}">View</a></td>
-					<td>{{report_run.date_created|hh_format}}</td>
+					<td>{{report_run.date_created|date_format}}</td>
 					<td>{{report_run.creator}}</td>
 					<td>{{report_run.title}}</td>
 				</tr>
@@ -140,9 +140,9 @@
 					<td>{{bill.reference}}</td>
 					<td><a href="/e/supplies/{{bill.supply.id}}">supply</a></td>
 					<td>{{ bill.account }}</td>
-					<td>{{ bill.issue_date|hh_format }}</td>
-					<td>{{ bill.start_date|hh_format }}</td>
-					<td>{{ bill.finish_date|hh_format }}</td>
+					<td>{{ bill.issue_date|date_format }}</td>
+					<td>{{ bill.start_date|date_format }}</td>
+					<td>{{ bill.finish_date|date_format }}</td>
 					<td>{{ bill.kwh }}</td>
 					<td>{{ bill.net }}</td>
 					<td>{{ bill.vat }}</td>

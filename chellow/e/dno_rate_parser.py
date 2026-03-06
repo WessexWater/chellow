@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 
 from chellow.models import Contract, Llfc, Party, RateScript, VoltageLevel
 from chellow.rate_server import download
-from chellow.utils import ct_datetime, hh_format, to_utc
+from chellow.utils import ct_datetime, date_format, to_utc
 
 
 def get_cell(sheet, col, row):
@@ -816,7 +816,7 @@ def rate_server_import(sess, log, set_progress, paths):
                     rs.update(rates)
                     log(
                         f"Updated DNO {dno_code} rate script for "
-                        f"{hh_format(fy_start)}"
+                        f"{date_format(fy_start)}"
                     )
                     update_vls(sess, log, vls, dno_code, fy_start, rs.finish_date)
                 except BadRequest as e:
@@ -935,7 +935,8 @@ def update_vls(sess, logger, vls, dno_code, fy_start, rs_finish):
         if llfc is None:
             logger(
                 f"There is no LLFC with the code '{vl_code}' associated with the DNO "
-                f"{dno.dno_code} from {hh_format(fy_start)} to {hh_format(rs_finish)}."
+                f"{dno.dno_code} from {date_format(fy_start)} to "
+                f"{date_format(rs_finish)}."
             )
         else:
             vl_voltage_level = VoltageLevel.get_by_code(sess, vl["voltage_level"])

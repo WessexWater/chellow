@@ -48,7 +48,7 @@
 					<td>
 						<a href="/g/supplier_contracts/{{bundle.issue.g_contract.id}}">{{bundle.issue.g_contract.name}}</a>
 					</td>
-					<td>{{bundle.issue.date_created|hh_format}}</td>
+					<td>{{bundle.issue.date_created|date_format}}</td>
 					<td>
 						{% if bundle.owner %}
 							<a href="/users/{{bundle.owner.id}}">{{bundle.owner.email_address}}</a>
@@ -76,7 +76,7 @@
 					</td>
 					<td>
 						{% if entry %}
-							{{entry.timestamp|hh_format}}
+							{{entry.timestamp|date_format}}
 						{% endif %}
 					</td>
 					<td>

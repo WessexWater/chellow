@@ -59,56 +59,56 @@
 				<th>{{"{:,.1f}".format(total.used.md)}}</th>
 				<th>
 					{% if total.used.md_date %}
-						{{total.used.md_date|hh_format}}
+						{{total.used.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.used.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.displaced.md)}}</th>
 				<th>
 					{% if total.displaced.md_date %}
-						{{total.displaced.md_date|hh_format}}
+						{{total.displaced.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.displaced.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.imp_grid.md)}}</th>
 				<th>
 					{% if total.imp_grid.md_date %}
-						{{total.imp_grid.md_date|hh_format}}
+						{{total.imp_grid.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.imp_grid.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.imp_3p.md)}}</th>
 				<th>
 					{% if total.imp_3p.md_date %}
-						{{total.imp_3p.md_date|hh_format}}
+						{{total.imp_3p.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.imp_3p.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.imp_gen.md)}}</th>
 				<th>
 					{% if total.imp_gen.md_date %}
-						{{total.imp_gen.md_date|hh_format}}
+						{{total.imp_gen.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.imp_gen.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.exp_grid.md)}}</th>
 				<th>
 					{% if total.exp_grid.md_date %}
-						{{total.exp_grid.md_date|hh_format}}
+						{{total.exp_grid.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.exp_grid.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.exp_3p.md)}}</th>
 				<th>
 					{% if total.exp_3p.md_date %}
-						{{months[-1].exp_3p.md_date|hh_format}}
+						{{months[-1].exp_3p.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.exp_3p.kwh)}}</th>
 				<th>{{"{:,.1f}".format(total.exp_gen.md)}}</th>
 				<th>
 					{% if total.exp_gen.md_date %}
-						{{total.exp_gen.md_date|hh_format}}
+						{{total.exp_gen.md_date|date_format}}
 					{% endif %}
 				</th>
 				<th>{{"{:,.1f}".format(total.exp_gen.kwh)}}</th>
@@ -165,12 +165,12 @@
 						class="error"
 					{%- endif -%}
 				>
-					<td>{{month.start_date|hh_format('date')}}</td>
+					<td>{{month.start_date|date_format('date')}}</td>
 
 					<td>{{ "{:,.1f}".format(month.used.md) }}</td>
 					<td>
 						{% if month.used.md_date %}
-							{{month.used.md_date|hh_format}}
+							{{month.used.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.used.kwh)}}</td>
@@ -178,7 +178,7 @@
 					<td>{{ "{:,.1f}".format(month.displaced.md)}}</td>
 					<td>
 						{% if month.displaced.md_date %}
-							{{month.displaced.md_date|hh_format}}
+							{{month.displaced.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.displaced.kwh)}}</td>
@@ -186,7 +186,7 @@
 					<td>{{ "{:,.1f}".format(month.imp_grid.md)}}</td>
 					<td>
 						{% if month.imp_grid.md_date %}
-							{{month.imp_grid.md_date|hh_format}}
+							{{month.imp_grid.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.imp_grid.kwh)}}</td>
@@ -194,7 +194,7 @@
 					<td>{{ "{:,.1f}".format(month.imp_3p.md)}}</td>
 					<td>
 						{% if month.imp_3p.md_date %}
-							{{month.imp_3p.md_date|hh_format}}
+							{{month.imp_3p.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.imp_3p.kwh)}}</td>
@@ -203,7 +203,7 @@
 					<td>{{ "{:,.1f}".format(month.imp_gen.md)}}</td>
 					<td>
 						{% if month.imp_gen.md_date %}
-							{{month.imp_gen.md_date|hh_format}}
+							{{month.imp_gen.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.imp_gen.kwh)}}</td>
@@ -211,7 +211,7 @@
 					<td>{{ "{:,.1f}".format(month.exp_grid.md)}}</td>
 					<td>
 						{% if month.exp_grid.md_date %}
-							{{month.exp_grid.md_date|hh_format}}
+							{{month.exp_grid.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.exp_grid.kwh)}}</td>
@@ -219,7 +219,7 @@
 					<td>{{ "{:,.1f}".format(month.exp_3p.md)}}</td>
 					<td>
 						{% if month.exp_3p.md_date %}
-							{{month.exp_3p.md_date|hh_format}}
+							{{month.exp_3p.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.exp_3p.kwh)}}</td>
@@ -227,7 +227,7 @@
 					<td>{{ "{:,.1f}".format(month.exp_gen.md)}}</td>
 					<td>
 						{% if month.exp_gen.md_date %}
-							{{month.exp_gen.md_date|hh_format}}
+							{{month.exp_gen.md_date|date_format}}
 						{% endif %}
 					</td>
 					<td>{{ "{:,.1f}".format(month.exp_gen.kwh)}}</td>

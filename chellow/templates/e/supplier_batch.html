@@ -34,7 +34,7 @@
 			<tr>
 				<td>{{batch.reference}}</td>
 				<td>{{batch.description}}</td>
-				<td>{{batch.date_created.strftime('%Y-%m-%dT%H:%M:%S.%f%z')}}</td>
+				<td>{{batch.date_created|date_format('microsecond_res')}}</td>
 				<td>{{ "{:,}".format(num_bills) }}</td>
 				<td>{{ "£{:,}".format(sum_net_gbp) }}</td>
 				<td>{{ "£{:,}".format(sum_vat_gbp) }}</td>
@@ -93,7 +93,7 @@
 				<tr>
 					<td><a href="/e/supplier_batch_files/{{file.id}}">View</a></td>
 					<td>{{file.filename}}</td>
-					<td>{{file.upload_timestamp|hh_format}}</td>
+					<td>{{file.upload_timestamp|date_format}}</td>
 					<td>{{file.parser_name}}</td>
 				</tr>
 			{% endfor %}
@@ -128,7 +128,7 @@
 			{% for report_run in report_runs %}
 				<tr>
 					<td><a href="/report_runs/{{report_run.id}}">View</a></td>
-					<td>{{report_run.date_created|hh_format}}</td>
+					<td>{{report_run.date_created|date_format}}</td>
 					<td>{{report_run.creator}}</td>
 					<td>{{report_run.title}}</td>
 				</tr>
@@ -205,9 +205,9 @@
 					<td><a href="/e/supplier_bills/{{bill.id}}">View</a></td>
 					<td>{{bill.reference}}</td>
 					<td>{{bill.account}}</td>
-					<td>{{bill.issue_date|hh_format}}</td>
-					<td>{{bill.start_date|hh_format}}</td>
-					<td>{{bill.finish_date|hh_format}}</td>
+					<td>{{bill.issue_date|date_format}}</td>
+					<td>{{bill.start_date|date_format}}</td>
+					<td>{{bill.finish_date|date_format}}</td>
 					<td>{{bill.kwh}}</td>
 					<td>{{bill.net}}</td>
 					<td>{{bill.vat}}</td>

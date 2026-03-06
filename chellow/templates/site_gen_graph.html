@@ -88,7 +88,7 @@
 						<rect
 							x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
 							height="{{hh.height}}px" fill="{{hh.colour}}">
-						<title>{{hh.value}} kW @ {{hh.start_date|hh_format}}</title>
+						<title>{{hh.value}} kW @ {{hh.start_date|date_format}}</title>
 						</rect>
 					{%- endfor %}
 
@@ -97,7 +97,7 @@
 								x="{{hh.x}}px" y="{{hh.y}}px" width="1px"
 								height="{{hh.height}}px" fill="{{hh.colour}}">
 							<title>
-								-{{hh.value}} kW @ {{hh.start_date|hh_format}}
+								-{{hh.value}} kW @ {{hh.start_date|date_format}}
 							</title>
 						</rect>
 					{%- endfor %}

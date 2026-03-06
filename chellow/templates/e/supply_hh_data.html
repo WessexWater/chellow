@@ -79,13 +79,13 @@
 		{% for hh_line in hh_lines %}
 			<tr>
 				<td>
-					{{hh_line.timestamp|hh_format}}
+					{{hh_line.timestamp|date_format}}
 				</td>
 			{% if hh_line.import_active %}
 				{% set hh = hh_line.import_active %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>
@@ -95,7 +95,7 @@
 				{% set hh = hh_line.import_reactive_imp %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>
@@ -105,7 +105,7 @@
 				{% set hh = hh_line.import_reactive_exp %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>
@@ -115,7 +115,7 @@
 				{% set hh = hh_line.export_active %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>
@@ -125,7 +125,7 @@
 				{% set hh = hh_line.export_reactive_imp %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>
@@ -135,7 +135,7 @@
 				{% set hh = hh_line.export_reactive_exp %}
 				<td><a href="/e/hh_data/{{hh.id}}/edit">{{hh.value}}</a></td>
 				<td>{{hh.status}}</td>
-				<td>{{hh.last_modified|hh_format}}</td>
+				<td>{{hh.last_modified|date_format}}</td>
 			{% else %}
 				<td></td>
 				<td></td>

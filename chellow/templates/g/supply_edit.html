@@ -53,8 +53,8 @@
 		<tbody>
 			{% for g_era in g_eras %}
 				<tr>
-					<td>{{g_era.start_date|hh_format}}</td>
-					<td>{{g_era.finish_date|hh_format}}</td>
+					<td>{{g_era.start_date|date_format}}</td>
+					<td>{{g_era.finish_date|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

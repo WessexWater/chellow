@@ -29,11 +29,11 @@
 			</tr>
 			<tr>
 				<td>Valid From</td>
-				<td>{{dno.valid_from|hh_format }}</td>
+				<td>{{dno.valid_from|date_format }}</td>
 			</tr>
 			<tr>
 				<td>Valid To</td>
-				<td>{{dno.valid_to|hh_format }}</td>
+				<td>{{dno.valid_to|date_format }}</td>
 			</tr>
 			<tr>
 				<td>Custom Reports</td>
@@ -104,8 +104,8 @@
 			{% for rs in rate_scripts %}
 				<tr>
 					<td><a href="/e/dno_rate_scripts/{{rs.id}}">View</a></td>
-					<td>{{rs.start_date|hh_format}}</td>
-					<td>{{rs.finish_date|hh_format}}</td>
+					<td>{{rs.start_date|date_format}}</td>
+					<td>{{rs.finish_date|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

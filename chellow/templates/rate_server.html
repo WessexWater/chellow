@@ -91,7 +91,7 @@
 									{% set script = rs.make_script() %}
 									<tr>
 										<td>{{rs.contract.name}}</td>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -113,7 +113,7 @@
 								{% for rs in triad_dates_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -135,7 +135,7 @@
 								{% for rs in bsuos_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -157,7 +157,7 @@
 								{% for rs in ccl_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -183,7 +183,7 @@
 								{% for rs in ro_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -211,7 +211,7 @@
 								{% for rs in nts_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -233,7 +233,7 @@
 								{% for rs in dn_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}
@@ -255,7 +255,7 @@
 								{% for rs in gas_ccl_rs %}
 									{% set script = rs.make_script() %}
 									<tr>
-										<td>{{rs.start_date|hh_format}}</td>
+										<td>{{rs.start_date|date_format}}</td>
 										<td>{{script.a_file_name}}</td>
 									</tr>
 								{% endfor %}

@@ -78,10 +78,10 @@
 						<a href="/e/comms/{{snag_group.era.comm.id}}" title="{{snag_group.era.comm.description}}">{{snag_group.era.comm.code}}</a>
 					</td>
 					<td>
-						{{snag_group.start_date|hh_format}}
+						{{snag_group.start_date|date_format}}
 					</td>
 					<td>
-						{{snag_group.finish_date|hh_format}}
+						{{snag_group.finish_date|date_format}}
 					</td>
 					<td>
 						{% if snag_group.days_since_finished %}

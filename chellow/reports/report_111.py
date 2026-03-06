@@ -40,7 +40,7 @@ from chellow.models import (
 from chellow.utils import (
     HH,
     csv_make_val,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     hh_range,
@@ -279,7 +279,7 @@ def do_post(sess):
 
         s = ["contract", str(contract.id)]
         for dt in (start_date, finish_date):
-            s.append(hh_format(dt).replace(" ", "T").replace(":", ""))
+            s.append(date_format(dt).replace(" ", "T").replace(":", ""))
         fname_additional = "_".join(s)
     else:
         raise BadRequest(
@@ -586,7 +586,7 @@ def _process_period(
             era.exp_supplier_contract,
         ):
             virtual_bill["problem"] += (
-                f"From {hh_format(chunk_start)} to {hh_format(chunk_finish)} "
+                f"From {date_format(chunk_start)} to {date_format(chunk_finish)} "
                 f"the contract of the era doesn't match the contract of the bill."
             )
             continue

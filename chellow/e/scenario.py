@@ -21,7 +21,7 @@ from chellow.models import Era, Llfc, MtcParticipant, Pc, SiteEra, Source, Suppl
 from chellow.utils import (
     PropDict,
     c_months_u,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     hh_range,
@@ -480,7 +480,7 @@ def make_calcs(
                     )
 
         order = (
-            f"{meter_order[measurement_type]}_{supply.id}_{hh_format(era.start_date)}"
+            f"{meter_order[measurement_type]}_{supply.id}_{date_format(era.start_date)}"
         )
         calcs.append((order, era.imp_mpan_core, era.exp_mpan_core, imp_ss, exp_ss))
 
@@ -535,7 +535,9 @@ def make_calcs(
                 )
             disp_vb_function(site_ds)
 
-            calcs.append((f"1_{hh_format(ss_start)}", "displaced", None, site_ds, None))
+            calcs.append(
+                (f"1_{date_format(ss_start)}", "displaced", None, site_ds, None)
+            )
 
         if len(extra_sss) > 0:
             if True in extra_sss:

@@ -70,8 +70,8 @@
 		<tbody>
 		{% for era in eras %}
 			<tr>
-				<td>{{era.start_date|hh_format}}</td>
-				<td>{{era.finish_date|hh_format}}</td>
+				<td>{{era.start_date|date_format}}</td>
+				<td>{{era.finish_date|date_format}}</td>
 				<td>
 					{% if era.imp_mpan_core %}
 						{{era.imp_mpan_core}}

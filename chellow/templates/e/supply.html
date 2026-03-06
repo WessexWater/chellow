@@ -100,7 +100,7 @@
 			<td>
 				{% if note %}
 					<pre style="white-space pre-wrap;">
-						{%- if note.timestamp -%}<em>{{note.timestamp|hh_format}}</em>{%- endif %}
+						{%- if note.timestamp -%}<em>{{note.timestamp|date_format}}</em>{%- endif %}
 						{%- if truncated_line -%}
 							<details><summary><span>{{truncated_line}}</span></summary>{{note.body}}</details>
 						{%- else %} {{note.body}}

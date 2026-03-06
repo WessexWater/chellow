@@ -25,10 +25,10 @@
 						<a href="/g/industry_contracts/{{g_contract.id}}">{{g_contract.name}}</a>
 					</td>
 					<td>
-						{{g_contract.start_g_rate_script.start_date|hh_format}}
+						{{g_contract.start_g_rate_script.start_date|date_format}}
 					</td>
 					<td>
-						{{g_contract.finish_g_rate_script.finish_date|hh_format}}
+						{{g_contract.finish_g_rate_script.finish_date|date_format}}
 					</td>
 				</tr>
 			{% endfor %}

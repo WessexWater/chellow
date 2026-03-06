@@ -13,7 +13,7 @@ from chellow.e.computer import SupplySource, forecast_date
 from chellow.models import Era, RSession, Site, SiteEra, Supply
 from chellow.utils import (
     csv_make_val,
-    hh_format,
+    date_format,
     hh_range,
     req_date,
     req_int,
@@ -119,7 +119,7 @@ def content(supply_id, start_date, finish_date, user):
                     "mpan_core": ds.mpan_core,
                     "site_code": site.code,
                     "site_name": site.name,
-                    "hh_start": hh_format(ds.start_date),
+                    "hh_start": date_format(ds.start_date),
                 }
 
                 ds.contract_func(era.mop_contract, "virtual_bill")(ds)

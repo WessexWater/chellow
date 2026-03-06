@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 
 from chellow.dloads import open_file
 from chellow.models import Llfc, Session, User
-from chellow.utils import hh_format
+from chellow.utils import date_format
 
 
 def content(user_id):
@@ -46,8 +46,8 @@ def content(user_id):
                         llfc.voltage_level.code,
                         llfc.is_substation,
                         llfc.is_import,
-                        hh_format(llfc.valid_from),
-                        hh_format(llfc.valid_to),
+                        date_format(llfc.valid_from),
+                        date_format(llfc.valid_to),
                     )
                 )
     except BaseException:

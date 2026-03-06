@@ -44,7 +44,7 @@
 		<tbody>
 			{% for hh in hh_data %}
 				<tr>
-					<td style="white-space: nowrap">{{hh.start_date|hh_format}}</td>
+					<td style="white-space: nowrap">{{hh.start_date|date_format}}</td>
 					<td>{{"{:,.1f}".format(hh.import_kwh)}}</td>
 					<td>{{"{:,.1f}".format(hh.used_kwh)}}</td>
 					<td>{{"{:,.1f}".format(hh.displaced_kwh)}}</td>

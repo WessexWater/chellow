@@ -18,8 +18,8 @@ from chellow.models import GContract, GRateScript, Session
 from chellow.utils import (
     HH,
     c_months_u,
+    date_format,
     hh_after,
-    hh_format,
     to_ct,
     to_utc,
     utc_datetime_now,
@@ -60,7 +60,7 @@ class CvImporter(threading.Thread):
             return True
 
     def log(self, message):
-        self.messages.appendleft(f"{hh_format(utc_datetime_now())} - {message}")
+        self.messages.appendleft(f"{date_format(utc_datetime_now())} - {message}")
 
     def run(self):
         while not self.stopped.isSet():
@@ -120,8 +120,8 @@ def fetch_cvs(sess, log_f, g_contract):
         f"PUBOBJ1662&type=CSV"
     )
     log_f(
-        f"Checking to see if data is was made available from {hh_format(search_start)} "
-        f"to {hh_format(search_finish)} at {url}"
+        f"Checking to see if data is was made available from "
+        f"{date_format(search_start)} to {date_format(search_finish)} at {url}"
     )
 
     res = requests.get(url)

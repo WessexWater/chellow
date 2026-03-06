@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.models import Contract, Era, Session, User
-from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
+from chellow.utils import csv_make_val, date_format, hh_max, hh_min, req_date, req_int
 
 
 def content(user_id, start_date, finish_date, contract_id):
@@ -112,7 +112,7 @@ def content(user_id, start_date, finish_date, contract_id):
         if supply_source is not None:
             msg += (
                 f"with supply {supply_source.mpan_core} starting at "
-                f"{hh_format(supply_source.start_date)} "
+                f"{date_format(supply_source.start_date)} "
             )
         msg += str(e)
         sys.stderr.write(msg)

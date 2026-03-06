@@ -54,13 +54,13 @@
 		</thead>
 		<tbody>
 			{% for month in months %}
-				{% set month_str = month.start_date|hh_format %}
+				{% set month_str = month.start_date|date_format %}
 				<tr>
 					<td>{{month_str[:7]}}</td>
 					<td>{{month.mpan_core}}</td>
 
 					{% if month.md_date %}
-						<td>{{month.md_date|hh_format}}</td>
+						<td>{{month.md_date|date_format}}</td>
 						<td>{{month.md_kw|round(1)}}</td>
 						<td>{{month.md_kvar|round(1)}}</td>
 						<td>{{month.md_pf|round(2)}}</td>

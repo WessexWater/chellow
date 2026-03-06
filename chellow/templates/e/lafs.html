@@ -33,7 +33,7 @@
 		<tbody>
 			{% for laf in lafs %}
 				<tr>
-					<td style="white-space: nowrap">{{laf.timestamp|hh_format}}</td>
+					<td style="white-space: nowrap">{{laf.timestamp|date_format}}</td>
 					<td>{{laf.value}}</td>
 				</tr>
 			{% endfor %}

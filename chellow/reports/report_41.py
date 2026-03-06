@@ -18,7 +18,7 @@ from chellow.utils import (
     HH,
     csv_make_val,
     ct_datetime,
-    hh_format,
+    date_format,
     reduce_bill_hhs,
     req_int,
     to_utc,
@@ -190,7 +190,7 @@ def content(year, supply_id, user_id):
                     + triad_csv(exp_supply_source)
                 ):
                     if isinstance(value, Datetime):
-                        vals.append(hh_format(value))
+                        vals.append(date_format(value))
                     else:
                         vals.append(str(value))
                 writer.writerow(vals)

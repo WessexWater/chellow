@@ -37,9 +37,9 @@
 				<td><a href="/e/supplies/{{bill.supply.id}}">Supply</a></td>
 				<td>{{bill.reference}}</td>
 				<td>{{bill.account}}</td>
-				<td>{{bill.issue_date.strftime('%Y-%m-%d %H:%M')}}</td>
-				<td>{{bill.start_date|hh_format }}</td>
-				<td>{{bill.finish_date|hh_format }}</td>
+				<td>{{bill.issue_date|date_format}}</td>
+				<td>{{bill.start_date|date_format }}</td>
+				<td>{{bill.finish_date|date_format }}</td>
 				<td>{{bill.kwh}}</td>
 				<td>{{bill.net}}</td>
 				<td>{{bill.vat}}</td>
@@ -71,8 +71,8 @@
 				<tr>
 					<td>[<a href="/e/mop_elements/{{element.id}}/edit">edit</a>]</td>
 					<td>{{element.name}}</td>
-					<td>{{element.start_date|hh_format}}</td>
-					<td>{{element.finish_date|hh_format}}</td>
+					<td>{{element.start_date|date_format}}</td>
+					<td>{{element.finish_date|date_format}}</td>
 					<td style="text-align: right">{{element.net}}</td>
 					<td>{{element.breakdown}}</td>
 				</tr>

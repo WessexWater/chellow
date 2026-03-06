@@ -41,7 +41,7 @@
 		<tbody>
 			<tr>
 				<td>{{issue.id}}</td>
-				<td>{{issue.date_created|hh_format}}</td>
+				<td>{{issue.date_created|date_format}}</td>
 				<td>
 					{% if issue_bundle.owner %}
 						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.email_address}}</a>
@@ -76,7 +76,7 @@
 
 	{% for entry in issue.entries %}
 		<section>
-			<h4>{{entry.timestamp|hh_format}} [<a href="/e/mop_entries/{{entry.id}}/edit">edit</a>]</h4>
+			<h4>{{entry.timestamp|date_format}} [<a href="/e/mop_entries/{{entry.id}}/edit">edit</a>]</h4>
 
 			<article>{{entry.markdown|markdown}}</article>
 		</section>

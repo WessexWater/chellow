@@ -70,9 +70,9 @@
 						<td>{{bill.mprn}}</td>
 						<td>{{bill.account}}</td>
 						<td>{{bill.reference}}</td>
-						<td>{{bill.issue_date|hh_format}}</td>
-						<td>{{bill.start_date|hh_format}}</td>
-						<td>{{bill.finish_date|hh_format}}</td>
+						<td>{{bill.issue_date|date_format}}</td>
+						<td>{{bill.start_date|date_format}}</td>
+						<td>{{bill.finish_date|date_format}}</td>
 						<td>{{bill.kwh}}</td>
 						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_gbp}}</td>
@@ -83,10 +83,10 @@
 							<td>{{read.correction_factor}}</td>
 							<td>{{read.msn}}</td>
 							<td>{{read. unit}}</td>
-							<td>{{read.prev_date|hh_format}}</td>
+							<td>{{read.prev_date|date_format}}</td>
 							<td>{{read.prev_value}}</td>
 							<td>{{read.prev_type_code}}</td>
-							<td>{{read.pres_date|hh_format}}</td>
+							<td>{{read.pres_date|date_format}}</td>
 							<td>{{read.pres_value}}</td>
 							<td>{{read.pres_type_code}}</td>
 						{% endfor %}
@@ -134,9 +134,9 @@
 						<td>{{bill.mprn}}</td>
 						<td>{{bill.reference}}</td>
 						<td>{{bill.account}}</td>
-						<td>{{bill.issue_date|hh_format}}</td>
-						<td>{{bill.start_date|hh_format}}</td>
-						<td>{{bill.finish_date|hh_format}}</td>
+						<td>{{bill.issue_date|date_format}}</td>
+						<td>{{bill.start_date|date_format}}</td>
+						<td>{{bill.finish_date|date_format}}</td>
 						<td>{{bill.kwh}}</td>
 						<td>{{bill.net_gbp}}</td>
 						<td>{{bill.vat_gbp}}</td>
@@ -144,10 +144,10 @@
 						<td><pre>{{bill.breakdown|dumps}}</pre></td>
 						{% for g_read in bill.reads %}
 							<td>{{g_read.msn}}</td>
-							<td>{{g_read.prev_date|hh_format}}</td>
+							<td>{{g_read.prev_date|date_format}}</td>
 							<td>{{g_read.prev_value}}</td>
 							<td>{{g_read.prev_type_code}}</td>
-							<td>{{g_read.pres_date|hh_format}}</td>
+							<td>{{g_read.pres_date|date_format}}</td>
 							<td>{{g_read.pres_value}}</td>
 							<td>{{g_read.pres_type_code}}</td>
 							<td>{{g_read.unit}}</td>                 

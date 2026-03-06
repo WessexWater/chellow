@@ -15,7 +15,7 @@ from chellow.models import Era, RSession, Site, SiteEra, Supply, User
 from chellow.utils import (
     csv_make_val,
     ct_datetime,
-    hh_format,
+    date_format,
     req_date,
     req_int,
     req_str,
@@ -148,8 +148,8 @@ def site_content(site_id, start_date, finish_date, user_id, file_name):
             writer = csv.writer(f, lineterminator="\n")
             site = Site.get_by_id(rsess, site_id)
             sites = rsess.query(Site).filter(Site.id == site_id)
-            start_date_str = hh_format(start_date)
-            finish_date_str = hh_format(finish_date)
+            start_date_str = date_format(start_date)
+            finish_date_str = date_format(finish_date)
 
             for site in sites:
                 writer.writerow(

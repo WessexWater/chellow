@@ -54,8 +54,8 @@
 						{{combo.mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.code}}
 						{{combo.mtc_llfc_ssc.mtc_ssc.mtc_participant.mtc.description}}
 					</td>
-					<td>{{combo.valid_from|hh_format}}</td>
-					<td>{{combo.valid_to|hh_format}}</td>
+					<td>{{combo.valid_from|date_format}}</td>
+					<td>{{combo.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

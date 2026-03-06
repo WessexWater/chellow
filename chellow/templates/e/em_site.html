@@ -43,7 +43,7 @@
 						<a href="/e/supplies/{{supply.id}}">view</a>
 					</td>
 					<td>{{supply.name}}</td>
-					<td>{{supply_dict.first_era.start_date|hh_format}}</td>
+					<td>{{supply_dict.first_era.start_date|date_format}}</td>
 					<td>{{supply.source.code}}</td>
 					<td>{{supply.generator_type.code}}</td>
 					<td><a href="/dnos/{{supply.dno.id}}">{{supply.dno.dno_code}}</a></td>

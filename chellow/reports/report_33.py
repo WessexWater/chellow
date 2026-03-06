@@ -35,7 +35,7 @@ from chellow.utils import (
     CHANNEL_TYPES,
     HH,
     csv_make_val,
-    hh_format,
+    date_format,
     hh_min,
     parse_mpan_core,
     req_date,
@@ -167,7 +167,7 @@ def _process_era(caches, sess, era_id, date, year_start):
             latest_normal_read_date = latest_prev_normal_read.previous_date
             latest_normal_read_type = latest_prev_normal_read.previous_type.code
         if latest_normal_read_date is not None:
-            latest_normal_read_date = hh_format(latest_normal_read_date)
+            latest_normal_read_date = date_format(latest_normal_read_date)
 
     else:
         latest_normal_read_date = metering_type
@@ -188,7 +188,7 @@ def _process_era(caches, sess, era_id, date, year_start):
     )
 
     if latest_mop_bill_date is not None:
-        latest_mop_bill_date = hh_format(latest_mop_bill_date[0])
+        latest_mop_bill_date = date_format(latest_mop_bill_date[0])
 
     dc_contract = era.dc_contract
     dc_contract_name = dc_contract.name
@@ -205,7 +205,7 @@ def _process_era(caches, sess, era_id, date, year_start):
     )
 
     if latest_dc_bill_date is not None:
-        latest_dc_bill_date = hh_format(latest_dc_bill_date[0])
+        latest_dc_bill_date = date_format(latest_dc_bill_date[0])
 
     channel_values = []
     for imp_related in [True, False]:
@@ -307,7 +307,7 @@ limit 3
             )
 
             if latest_bill_date is not None:
-                latest_bill_date = hh_format(latest_bill_date[0])
+                latest_bill_date = date_format(latest_bill_date[0])
 
                 if is_import:
                     imp_latest_supplier_bill_date = latest_bill_date

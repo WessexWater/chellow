@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; Supplies &raquo; 
- 	Supply {{channel.era.supply.name}} Era {{channel.era.start_date|hh_format}}
+ 	Supply {{channel.era.supply.name}} Era {{channel.era.start_date|date_format}}
  	&raquo; 
 	Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}
@@ -11,7 +11,7 @@
 {% block nav %}
 	<a href="/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{channel.era.supply.id}}">Supply {{channel.era.supply.name}}
-	 	Era {{channel.era.start_date|hh_format}}</a> &raquo; 
+	 	Era {{channel.era.start_date|date_format}}</a> &raquo; 
 	Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}
 	[<a href="/e/channels/{{channel.id}}/edit">edit</a>]
@@ -34,8 +34,8 @@
 			{% for snag in snags %}
 				<tr>
 					<td><a href="/e/channel_snags/{{snag.id}}">view</a></td>
-					<td>{{snag.start_date|hh_format}}</td>
-					<td>{{snag.finish_date|hh_format}}</td>
+					<td>{{snag.start_date|date_format}}</td>
+					<td>{{snag.finish_date|date_format}}</td>
 					<td>{{snag.description}}</td>
 					<td>
 						{% if snag.is_ignored %}
@@ -79,7 +79,7 @@
 			{% for hh in hh_data %}
 				<tr>
 					<td>[<a href="/e/hh_data/{{hh.id}}/edit">edit</a>]</td>
-					<td>{{hh.start_date|hh_format}}</td>
+					<td>{{hh.start_date|date_format}}</td>
 					<td>{{hh.value}}</td>
 					<td>{{hh.status}}</td>
 				</tr>

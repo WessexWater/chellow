@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; {{dc_rate_script.contract.name}} &raquo; Rate Scripts &raquo; 
-	{{dc_rate_script.start_date|hh_format}} &raquo; Edit
+	{{dc_rate_script.start_date|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
@@ -10,7 +10,7 @@
 	<a href="/e/dc_contracts/{{dc_rate_script.contract.id}}"
 		>{{dc_rate_script.contract.name}}</a> &raquo; 
 	<a href="/e/dc_rate_scripts/{{dc_rate_script.id}}"
-		>{{dc_rate_script.start_date|hh_format}}</a>
+		>{{dc_rate_script.start_date|date_format}}</a>
 	&raquo; Edit
 {% endblock %}
 

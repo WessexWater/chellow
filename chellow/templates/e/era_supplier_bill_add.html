@@ -8,7 +8,7 @@
 {% block nav %}
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{era.supply.id}}">{{era.supply.name}}</a> &raquo; 
-	Era {{era.start_date|hh_format}} Add Import Supplier Batch And Bill
+	Era {{era.start_date|date_format}} Add Import Supplier Batch And Bill
 {% endblock %}
 
 {% block content %}

@@ -56,7 +56,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.utils import ct_datetime, hh_format, to_utc, utc_datetime
+from chellow.utils import ct_datetime, date_format, to_utc, utc_datetime
 
 
 def test_general_import_dc_batch(sess):
@@ -517,10 +517,10 @@ def test_general_import_g_bill_reads(sess):
         g_unit_code,
         correction_factor_str,
         calorific_value_str,
-        hh_format(prev_date),
+        date_format(prev_date),
         str(prev_value),
         prev_type_code,
-        hh_format(pres_date),
+        date_format(pres_date),
         str(pres_value),
         pres_type_code,
     ]
@@ -1687,7 +1687,7 @@ def test_general_import_supply_insert_HH(sess):
         "",
         supply_name,
         gsp_group_code,
-        hh_format(start_date),
+        date_format(start_date),
         "",
         mop_contract_name,
         dc_contract_name,
@@ -1791,7 +1791,7 @@ def test_general_import_supply_insert_NHH(sess):
         "",
         supply_name,
         gsp_group_code,
-        hh_format(start_date),
+        date_format(start_date),
         "",
         mop_contract_name,
         dc_contract_name,

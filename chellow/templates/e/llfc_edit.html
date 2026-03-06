@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; DNOs &raquo; {{llfc.dno.dno_code}} &raquo; 
-	LLFCs &raquo; {{llfc.code}} {{llfc.valid_from|hh_format}} &raquo; Edit
+	LLFCs &raquo; {{llfc.code}} {{llfc.valid_from|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
@@ -11,7 +11,7 @@
 	<a href="/e/llfcs?dno_id={{llfc.dno.id}}">LLFCs</a> &raquo;
 	<a
 			href="/e/llfcs/{{llfc.id}}"
-			>{{llfc.code}} {{llfc.valid_from|hh_format}}</a> &raquo;
+			>{{llfc.code}} {{llfc.valid_from|date_format}}</a> &raquo;
 	Edit
 {% endblock %}
 

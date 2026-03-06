@@ -16,7 +16,15 @@ from werkzeug.exceptions import BadRequest
 from chellow.dloads import open_file
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.models import Era, Session, Site, SiteEra, Supply, User
-from chellow.utils import HH, csv_make_val, hh_format, hh_max, hh_min, req_bool, req_int
+from chellow.utils import (
+    HH,
+    csv_make_val,
+    date_format,
+    hh_max,
+    hh_min,
+    req_bool,
+    req_int,
+)
 
 
 def content(
@@ -110,8 +118,8 @@ def content(
                         site.code,
                         site.name,
                         ss.supplier_account,
-                        hh_format(ss.start_date),
-                        hh_format(ss.finish_date),
+                        date_format(ss.start_date),
+                        date_format(ss.finish_date),
                         ss.years_back > 0,
                     ]
 

@@ -10,7 +10,7 @@ from chellow.utils import (
     HH,
     c_months_u,
     ct_datetime,
-    hh_format,
+    date_format,
     to_utc,
     utc_datetime,
 )
@@ -132,7 +132,7 @@ def datum_beginning_20(ds, hh):
             "The tariff for the LLFC "
             + ds.llfc_code
             + " cannot be found for the DNO 20 at "
-            + hh_format(hh["start-date"])
+            + date_format(hh["start-date"])
             + "."
         )
 
@@ -186,7 +186,7 @@ def datum_beginning_20(ds, hh):
                 "The tariff for the LLFC "
                 + ds.llfc_code
                 + " cannot be found for the DNO 20 at "
-                + hh_format(hh["start-date"])
+                + date_format(hh["start-date"])
                 + "."
             )
         if not ds.is_displaced:
@@ -448,9 +448,10 @@ def datum_2010_04_01(ds, hh):
 
             if tariff is None:
                 raise BadRequest(
-                    f"For the DNO {ds.dno_code} and timestamp {hh_format(start_date)} "
-                    f"and GSP group {ds.gsp_group_code}, the LLFC '{ds.llfc_code}' "
-                    f"can't be found in the 'tariffs' section."
+                    f"For the DNO {ds.dno_code} and timestamp "
+                    f"{date_format(start_date)} and GSP group {ds.gsp_group_code}, "
+                    f"the LLFC '{ds.llfc_code}' can't be found in the 'tariffs' "
+                    f"section."
                 )
 
             tariffs[start_date] = tariff
@@ -648,9 +649,10 @@ def datum_2012_02_23(ds, hh):
 
             if tariff is None:
                 raise BadRequest(
-                    f"For the DNO {ds.dno_code} and timestamp {hh_format(start_date)} "
-                    f"and GSP group {ds.gsp_group_code}, the LLFC {ds.llfc_code} "
-                    f"with PC {ds.pc_code} can't be found in the 'tariffs' section."
+                    f"For the DNO {ds.dno_code} and timestamp "
+                    f"{date_format(start_date)} and GSP group {ds.gsp_group_code}, the "
+                    f"LLFC {ds.llfc_code} with PC {ds.pc_code} can't be found in the "
+                    f"'tariffs' section."
                 )
 
             tariffs[start_date] = tariff

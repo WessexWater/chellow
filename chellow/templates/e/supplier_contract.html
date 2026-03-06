@@ -25,11 +25,11 @@
 			</tr>
 			<tr>
 				<th>Start Date</th>
-				<td>{{contract.start_rate_script.start_date|hh_format}}</td>
+				<td>{{contract.start_rate_script.start_date|date_format}}</td>
 			</tr>
 			<tr>
 				<th>Finish Date</th>
-				<td>{{contract.finish_rate_script.finish_date|hh_format}}</td>
+				<td>{{contract.finish_rate_script.finish_date|date_format}}</td>
 			</tr>
 		</tbody>
 	</table>
@@ -50,8 +50,8 @@
 			{% for rate_script in rate_scripts %}
 				<tr>
 					<td><a href="/e/supplier_rate_scripts/{{rate_script.id}}">view</a></td>
-					<td>{{rate_script.start_date|hh_format}}</td>
-					<td>{{rate_script.finish_date|hh_format}}</td>
+					<td>{{rate_script.start_date|date_format}}</td>
+					<td>{{rate_script.finish_date|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

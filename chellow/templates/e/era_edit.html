@@ -2,13 +2,13 @@
 
 {% block title %}
 	&raquo; Supplies &raquo; {{era.supply.id}} &raquo;
- 	Era {{era.start_date|hh_format}} Edit
+ 	Era {{era.start_date|date_format}} Edit
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{era.supply.id}}">{{era.supply.id}}</a> &raquo;
- 	Era {{era.start_date|hh_format}} Edit
+ 	Era {{era.start_date|date_format}} Edit
 {% endblock %}
 
 {% block content %}
@@ -124,8 +124,8 @@
 					<td>{{direction}}</td>
 					{% if ca %}
 						<td>{{ca.properties.get('filename')}}</td>
-						<td>{{ca.start_date|hh_format}}</td>
-						<td>{{ca.finish_date|hh_format}}</td>
+						<td>{{ca.start_date|date_format}}</td>
+						<td>{{ca.finish_date|date_format}}</td>
 						<td><a href="/e/cas/{{ca.id}}">View</a></td>
 						<td>
 							<form method="post" action="/e/eras/{{era.id}}/edit">

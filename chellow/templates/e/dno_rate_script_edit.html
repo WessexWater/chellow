@@ -2,14 +2,14 @@
 
 {% block title %}
 	&raquo; DNOs &raquo; {{dno.dno_code}} &raquo; 
- 	Rate Scripts &raquo; {{rate_script.start_date|hh_format}} &raquo; Edit
+ 	Rate Scripts &raquo; {{rate_script.start_date|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/dnos">DNOs</a> &raquo; 
 	<a href="/e/dnos/{{dno.id}}">{{dno.dno_code}}</a> &raquo; 
 	<a href="/e/dno_rate_scripts/{{rate_script.id}}"
-		>Rate Script {{rate_script.start_date|hh_format}}</a> &raquo; Edit
+		>Rate Script {{rate_script.start_date|date_format}}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}

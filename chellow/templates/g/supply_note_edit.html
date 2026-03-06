@@ -15,7 +15,7 @@
 		<fieldset>
 			<legend>Update Supply Note</legend>
 			{% if note.timestamp %}
-				<label>Timestamp</label> {{ note.timestamp|hh_format }}
+				<label>Timestamp</label> {{ note.timestamp|date_format }}
 			{% endif %}
 			<label>Body</label> {{input_textarea('body', note.body, 30, 80)}}
 			<input type="submit" value="Update">

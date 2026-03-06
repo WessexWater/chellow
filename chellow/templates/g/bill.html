@@ -42,9 +42,9 @@
 				<td><a href="/g/supplies/{{g_bill.g_supply.id}}">Supply</a></td>
 				<td>{{g_bill.reference}}</td>
 				<td>{{g_bill.account}}</td>
-				<td>{{g_bill.issue_date|hh_format}}</td>
-				<td>{{g_bill.start_date|hh_format}}</td>
-				<td>{{g_bill.finish_date|hh_format}}</td>
+				<td>{{g_bill.issue_date|date_format}}</td>
+				<td>{{g_bill.start_date|date_format}}</td>
+				<td>{{g_bill.finish_date|date_format}}</td>
 				<td>{{g_bill.kwh}}</td>
 				<td>{{g_bill.net}}</td>
 				<td>{{g_bill.vat}}</td>
@@ -90,7 +90,7 @@
 					<td>{{g_read.g_unit.code}}</td>
 					<td>{{g_read.correction_factor}}</td>
 					<td>{{g_read.calorific_value}}</td>
-					<td>{{g_read.prev_date|hh_format}}</td>
+					<td>{{g_read.prev_date|date_format}}</td>
 					<td>{{g_read.prev_value}}
 					<td>
 						<a
@@ -98,7 +98,7 @@
 								href="/g/read_types/{{g_read.prev_type.id}}"
 								>{{g_read.prev_type.code}}</a>
 					</td>
-					<td>{{g_read.pres_date|hh_format}}</td>
+					<td>{{g_read.pres_date|date_format}}</td>
 					<td>{{g_read.pres_value}}</td>
 					<td>
 						<a

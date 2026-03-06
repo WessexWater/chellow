@@ -2,14 +2,14 @@
 
 {% block title %}
 	&raquo; Non-core Contracts &raquo; {{ rate_script.contract.name }} &raquo; 
- 	{{ rate_script.start_date|hh_format }}
+ 	{{ rate_script.start_date|date_format }}
 {% endblock %}
 
 {% block nav %}
 	<a href="/non_core_contracts">Non-core Contracts</a> &raquo; 
 	<a href="/non_core_contracts/{{rate_script.contract.id}}"
 		>{{rate_script.contract.name}}</a> &raquo;
- {{ rate_script.start_date|hh_format }} [<a
+ {{ rate_script.start_date|date_format }} [<a
 	href="/non_core_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -18,11 +18,11 @@
 		<caption>Rate Script</caption>	
 		<tr>
 			<th>Start Date</th>
-			<td>{{ rate_script.start_date|hh_format }}</td>
+			<td>{{ rate_script.start_date|date_format }}</td>
 		</tr>
 		<tr>
 			<th>Finish Date</th>
-			<td>{{ rate_script.finish_date|hh_format }}</td>
+			<td>{{ rate_script.finish_date|date_format }}</td>
 		</tr>
 		<tr>
 			<td>

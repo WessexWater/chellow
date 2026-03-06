@@ -10,7 +10,7 @@
 	<a
 			href="/g/supplier_contracts/{{g_rate_script.g_contract.id}}"
 			>{{g_rate_script.g_contract.name}}</a> &raquo;
-	 	Rate Script {{g_rate_script.start_date|hh_format}}
+	 	Rate Script {{g_rate_script.start_date|date_format}}
 	[<a href="/g/supplier_rate_scripts/{{g_rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -19,11 +19,11 @@
 		<caption>Properties</caption>	
 		<tr>
 			<th>Start Date</th>
-			<td>{{ g_rate_script.start_date|hh_format }}</td>
+			<td>{{ g_rate_script.start_date|date_format }}</td>
 		</tr>
 		<tr>
 			<th>Finish Date</th>
-			<td>{{ g_rate_script.finish_date|hh_format }}</td>
+			<td>{{ g_rate_script.finish_date|date_format }}</td>
 		</tr>
 		<tr>
 			<td>

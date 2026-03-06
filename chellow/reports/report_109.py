@@ -12,12 +12,12 @@ from sqlalchemy.sql.expression import null
 from chellow.dloads import open_file
 from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
-from chellow.utils import c_months_u, hh_format, hh_range, req_int
+from chellow.utils import c_months_u, date_format, hh_range, req_int
 
 
 def to_val(v):
     if isinstance(v, Datetime):
-        return hh_format(v)
+        return date_format(v)
     elif isinstance(v, set):
         if len(v) == 1:
             return to_val(v.pop())
@@ -133,8 +133,8 @@ def content(contract_id, end_year, end_month, months, user):
                         site.code,
                         site.name,
                         ", ".join(list(linked_sites)),
-                        hh_format(month_start),
-                        hh_format(month_finish),
+                        date_format(month_start),
+                        date_format(month_finish),
                         ", ".join(list(generator_types)),
                     ]
 

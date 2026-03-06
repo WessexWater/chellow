@@ -47,7 +47,7 @@ from chellow.utils import (
     c_months_u,
     ct_datetime,
     ct_datetime_now,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     hh_range,
@@ -75,8 +75,8 @@ lec_cats = list(
 def get_times(start_date, finish_date, forecast_date):
     if start_date > finish_date:
         raise Exception(
-            "The start date {hh_format(start_date)} is after the finish date "
-            "{hh_format(finish_date)}."
+            "The start date {date_format(start_date)} is after the finish date "
+            "{date_format(finish_date)}."
         )
     hist_start = start_date
     hist_finish = finish_date
@@ -297,7 +297,7 @@ def displaced_era(
                     (
                         era.pc.code,
                         str(era.exp_mpan_core is None),
-                        hh_format(era.start_date),
+                        date_format(era.start_date),
                         era.imp_mpan_core,
                     )
                 )
@@ -530,8 +530,8 @@ class DataSource:
         self.finish_date = finish_date
         if self.start_date > self.finish_date:
             raise Exception(
-                f"The start date {hh_format(start_date)} is after the finish date "
-                f"{hh_format(finish_date)}."
+                f"The start date {date_format(start_date)} is after the finish date "
+                f"{date_format(finish_date)}."
             )
         self.deltas = deltas
         times = get_times(start_date, finish_date, forecast_date)
@@ -1365,8 +1365,8 @@ class SupplySource(DataSource):
                             kwh = advance * coefficient
                             self.consumption_info += (
                                 f"dumb nhh kwh for {tpr_code} from "
-                                f"{hh_format(chunk_start)} to "
-                                f"{hh_format(chunk_finish)} is {kwh}\n"
+                                f"{date_format(chunk_start)} to "
+                                f"{date_format(chunk_finish)} is {kwh}\n"
                             )
 
                             kws[tpr_code] += kwh

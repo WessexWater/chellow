@@ -25,7 +25,7 @@
 			data: {
 				labels: [
 					{% for run in ecoes_runs %}
-						'{{run.date_created|hh_format}}',
+						'{{run.date_created|date_format}}',
 					{% endfor %}
 				],
 				datasets: [

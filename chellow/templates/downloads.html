@@ -30,7 +30,7 @@
 					<td style="text-align: right;">
 						{{"{:,}".format(file.size)}} B
 					</td>
-					<td>{{file.last_modified|hh_format}}</td>
+					<td>{{file.last_modified|date_format}}</td>
 					<td>
 						<form hx-delete="/downloads/{{file.name}}"
 								hx-confirm="Are you sure you want to delete this file?">

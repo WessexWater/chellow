@@ -52,7 +52,7 @@ from chellow.models import (
     VoltageLevel,
 )
 from chellow.utils import (
-    hh_format,
+    date_format,
     parse_bool,
     parse_channel_type,
     parse_date,
@@ -1692,7 +1692,7 @@ def general_import_g_register_read(sess, action, vals, args):
             raise BadRequest(
                 f"Can't find a bill in batch {batch_reference} in contract "
                 f"{contract_name} with MPRN {mprn} starting at "
-                f"{hh_format(bill_start_date)}"
+                f"{date_format(bill_start_date)}"
             )
 
         for i in range(4, len(vals), 10):
@@ -1953,7 +1953,7 @@ def general_import_llfc(sess, action, vals, args):
         if llfc is None:
             raise BadRequest(
                 f"Can't find an LLFC for the DNO {dno_code} and 'valid from' "
-                f"date {hh_format(valid_from)}."
+                f"date {date_format(valid_from)}."
             )
 
         llfc_description_str = add_arg(args, "llfc_description", vals, 3)

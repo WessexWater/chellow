@@ -12,7 +12,7 @@ from sqlalchemy.sql.expression import null
 
 from chellow.dloads import open_file
 from chellow.models import Session, Site, Snag, User
-from chellow.utils import hh_format
+from chellow.utils import date_format
 
 
 def content(user_id):
@@ -60,8 +60,8 @@ def content(user_id):
                         snag.site.code,
                         snag.site.name,
                         snag.description,
-                        hh_format(snag_start),
-                        hh_format(snag_finish),
+                        date_format(snag_start),
+                        date_format(snag_finish),
                         str(age_of_snag.days + age_of_snag.seconds / (3600 * 24)),
                         str(duration.days + duration.seconds / (3600 * 24)),
                         str(snag.is_ignored),

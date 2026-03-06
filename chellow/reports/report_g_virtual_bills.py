@@ -17,7 +17,7 @@ from chellow.gas.engine import GDataSource
 from chellow.models import GContract, GEra, Session, Site, SiteGEra, User
 from chellow.utils import (
     c_months_u,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     make_val,
@@ -96,8 +96,8 @@ def content(start_date, finish_date, g_contract_id, user_id):
                         site.code,
                         site.name,
                         data_source.account,
-                        hh_format(data_source.start_date),
-                        hh_format(data_source.finish_date),
+                        date_format(data_source.start_date),
+                        date_format(data_source.finish_date),
                     ]
 
                     contract_func(report_context, g_contract, "virtual_bill")(

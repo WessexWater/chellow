@@ -41,8 +41,8 @@
 				<td>{{bill.reference}}</td>
 				<td>{{bill.account}}</td>
 				<td>{{bill.issue_date.strftime('%Y-%m-%d %H:%M')}}</td>
-				<td>{{bill.start_date|hh_format }}</td>
-				<td>{{bill.finish_date|hh_format }}</td>
+				<td>{{bill.start_date|date_format }}</td>
+				<td>{{bill.finish_date|date_format }}</td>
 				<td>{{bill.kwh}}</td>
 				<td>{{bill.net}}</td>
 				<td>{{bill.vat}}</td>
@@ -58,7 +58,7 @@
 							{% for rate_script in rate_scripts %}
 								<li>
 									<a href="/e/supplier_rate_scripts/{{rate_script.id}}">
-										{{rate_script.start_date|hh_format}}
+										{{rate_script.start_date|date_format}}
 									</a>
 								</li>
 							{% endfor %}
@@ -100,14 +100,14 @@
 					<td>{{read.units_as_str()}}</td>
 					<td><a href="/e/tprs/{{read.tpr.id}}">{{read.tpr.code}}</a></td>
 					<td>{{read.msn}}</td>
-					<td>{{read.previous_date|hh_format}}</td>
+					<td>{{read.previous_date|date_format}}</td>
 					<td>{{read.previous_value}}</td>
 					<td>
 						<a title="{{read.previous_type.description}}"
 						href="/e/read_types/{{read.previous_type.id}}"
 						>{{read.previous_type.code}}</a>
 					</td>
-					<td>{{read.present_date|hh_format}}</td>
+					<td>{{read.present_date|date_format}}</td>
 					<td>{{read.present_value}}</td>
 					<td>
 						<a title="{{read.present_type.description}}"
@@ -136,8 +136,8 @@
 				<tr>
 					<td>[<a href="/e/supplier_elements/{{element.id}}/edit">edit</a>]</td>
 					<td>{{element.name}}</td>
-					<td>{{element.start_date|hh_format}}</td>
-					<td>{{element.finish_date|hh_format}}</td>
+					<td>{{element.start_date|date_format}}</td>
+					<td>{{element.finish_date|date_format}}</td>
 					<td style="text-align: right">{{element.net}}</td>
 					<td>{{element.breakdown}}</td>
 				</tr>

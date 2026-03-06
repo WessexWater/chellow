@@ -3,7 +3,7 @@
 {% block title %}
 	&raquo; Supplies &raquo; 
 	Supply {{channel.era.supply.id}} Era
- 	{{channel.era.start_date|hh_format}} &raquo; 
+ 	{{channel.era.start_date|date_format}} &raquo; 
 	Channel {% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}
 {% endblock %}
@@ -12,7 +12,7 @@
 	<a href="/e/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{channel.era.supply.id }}">Supply
 	{{channel.era.supply.name}}
- 	Era {{channel.era.start_date|hh_format}}</a> &raquo; 
+ 	Era {{channel.era.start_date|date_format}}</a> &raquo; 
 	<a href="/e/channels/{{channel.id}}">Channel
 	{% if channel.imp_related %}Import{% else %}Export{% endif %}
 	{{channel.channel_type}}</a> &raquo; Edit

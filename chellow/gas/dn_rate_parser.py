@@ -12,7 +12,7 @@ from chellow.models import GContract, GRateScript
 from chellow.rate_server import download
 from chellow.utils import (
     ct_datetime,
-    hh_format,
+    date_format,
     to_utc,
 )
 
@@ -313,17 +313,17 @@ def rate_server_import(sess, log, set_progress, paths):
             nts_rs_1_script = nts_rs_1.make_script()
             if nts_rs_1_script.get("a_file_name") != file_name:
                 nts_rs_1.update(find_nts_1_rates(file_name, BytesIO(download(url))))
-                log(f"Updated NTS rate script for {hh_format(year_start)}")
+                log(f"Updated NTS rate script for {date_format(year_start)}")
 
             nts_rs_2_script = nts_rs_2.make_script()
             if nts_rs_2_script.get("a_file_name") != file_name:
                 nts_rs_2.update(find_nts_2_rates(file_name, BytesIO(download(url))))
-                log(f"Updated NTS rate script for {hh_format(oct_start)}")
+                log(f"Updated NTS rate script for {date_format(oct_start)}")
 
             dn_rs_script = dn_rs.make_script()
             if dn_rs_script.get("a_file_name") != file_name:
                 dn_rs.update(find_dn_rates(file_name, BytesIO(download(url))))
-                log(f"Updated DN rate script for {hh_format(year_start)}")
+                log(f"Updated DN rate script for {date_format(year_start)}")
 
     log("Finished DN spreadsheets")
     sess.commit()

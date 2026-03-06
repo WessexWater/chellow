@@ -42,7 +42,7 @@ from chellow.utils import (
     HH,
     c_months_c,
     c_months_u,
-    hh_format,
+    date_format,
     hh_min,
     hh_range,
     make_val,
@@ -731,7 +731,7 @@ def content(scenario_props, base_name, user_id, compression, now, report_run_id)
             finish_date_utc = month_pairs[-1][-1]
 
             base_name.append(
-                hh_format(start_date_utc)
+                date_format(start_date_utc)
                 .replace(" ", "_")
                 .replace(":", "")
                 .replace("-", "")

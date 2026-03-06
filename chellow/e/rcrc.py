@@ -12,7 +12,7 @@ from chellow.models import Contract, RateScript
 from chellow.utils import (
     ct_datetime,
     ct_datetime_parse,
-    hh_format,
+    date_format,
     to_utc,
     u_months_u,
     utc_datetime_now,
@@ -45,8 +45,8 @@ def hh(data_source):
                     )
                 except KeyError:
                     raise BadRequest(
-                        f"For the RCRC rate script at {hh_format(dt)} the rate cannot "
-                        f"be found."
+                        f"For the RCRC rate script at {date_format(dt)} the rate "
+                        f"cannot be found."
                     )
 
         hh["rcrc-kwh"] = hh["nbp-kwh"]
@@ -114,8 +114,8 @@ def elexon_import(sess, log, set_progress, scripting_key):
         sess.rollback()  # Avoid long-running transaction
         r = download_file(log, scripting_key, "RCRC_FILE")
         log(
-            f"Checking if data available from {hh_format(month_start)} to "
-            f"{hh_format(month_finish)}."
+            f"Checking if data available from {date_format(month_start)} to "
+            f"{date_format(month_finish)}."
         )
 
         month_rcrcs = _find_month(
@@ -131,7 +131,7 @@ def elexon_import(sess, log, set_progress, scripting_key):
             )
             contract.insert_rate_script(sess, month_start, script)
             sess.commit()
-            log(f"Added a new rate script starting at {hh_format(month_start)}.")
+            log(f"Added a new rate script starting at {date_format(month_start)}.")
         else:
             msg = "There isn't a whole month there yet."
             if len(month_rcrcs) > 0:

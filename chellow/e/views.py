@@ -108,8 +108,8 @@ from chellow.utils import (
     csv_make_val,
     ct_datetime,
     ct_datetime_now,
+    date_format,
     hh_after,
-    hh_format,
     hh_max,
     hh_min,
     hh_range,
@@ -716,9 +716,9 @@ def dc_batch_csv_get(batch_id):
                 batch.reference,
                 bill.reference,
                 bill.account,
-                hh_format(bill.issue_date),
-                hh_format(bill.start_date),
-                hh_format(bill.finish_date),
+                date_format(bill.issue_date),
+                date_format(bill.start_date),
+                date_format(bill.finish_date),
                 str(bill.kwh),
                 str(bill.net),
                 str(bill.vat),
@@ -6895,7 +6895,7 @@ def supply_post(supply_id):
             for era in supply.find_eras(g.sess, start_date, None):
                 if era.msn == msn:
                     msg += (
-                        f"The era at {hh_format(era.start_date)} already has the "
+                        f"The era at {date_format(era.start_date)} already has the "
                         f"MSN {msn}. "
                     )
                 else:
@@ -6903,7 +6903,7 @@ def supply_post(supply_id):
 
                     g.sess.commit()
                     msg += (
-                        f"The era at {hh_format(era.start_date)} has been "
+                        f"The era at {date_format(era.start_date)} has been "
                         f"successfully updated with the MSN {msn}. "
                     )
             flash(msg)
@@ -6926,7 +6926,7 @@ def supply_post(supply_id):
                 if era.imp_mpan_core == mpan_core:
                     if era.imp_llfc.code == llfc.code:
                         msg += (
-                            f"The era at {hh_format(era.start_date)} already has the "
+                            f"The era at {date_format(era.start_date)} already has the "
                             f"import LLFC {llfc.code}. "
                         )
                     else:
@@ -6934,13 +6934,13 @@ def supply_post(supply_id):
 
                         g.sess.commit()
                         msg += (
-                            f"The era at {hh_format(era.start_date)} has been "
+                            f"The era at {date_format(era.start_date)} has been "
                             f"successfully updated with the import LLFC {llfc.code}. "
                         )
                 elif era.exp_mpan_core == mpan_core:
                     if era.exp_llfc.code == llfc.code:
                         msg += (
-                            f"The era at {hh_format(era.start_date)} already has the "
+                            f"The era at {date_format(era.start_date)} already has the "
                             f"export LLFC {llfc.code}. "
                         )
                     else:
@@ -6948,7 +6948,7 @@ def supply_post(supply_id):
 
                         g.sess.commit()
                         msg += (
-                            f"The era at {hh_format(era.start_date)} has been "
+                            f"The era at {date_format(era.start_date)} has been "
                             f"successfully updated with the export LLFC {llfc.code}. "
                         )
             flash(msg)

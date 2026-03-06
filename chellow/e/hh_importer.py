@@ -27,7 +27,7 @@ from chellow.utils import (
     HH,
     ct_datetime,
     ct_datetime_now,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     to_ct,
@@ -580,8 +580,8 @@ def https_handler(sess, log_f, properties, contract, now=None):
     window_start = utc_datetime(now.year, now.month, now.day) - Timedelta(
         days=download_days
     )
-    log_f(f"Window start: {hh_format(window_start)}")
-    log_f(f"Window finish: {hh_format(window_finish)}")
+    log_f(f"Window start: {date_format(window_start)}")
+    log_f(f"Window finish: {date_format(window_finish)}")
     env = jinja2.Environment(autoescape=True, undefined=jinja2.StrictUndefined)
     url_template = env.from_string(url_template_str)
     for era in (

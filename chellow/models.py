@@ -70,9 +70,9 @@ from chellow.utils import (
     c_months_u,
     ct_datetime,
     ct_datetime_now,
+    date_format,
     hh_after,
     hh_before,
-    hh_format,
     hh_max,
     hh_min,
     hh_range,
@@ -874,8 +874,8 @@ class Element(Base, PersistentClass):
         self.name = name
         if start_date > finish_date:
             raise BadRequest(
-                f"The element start date {hh_format(start_date)} can't be after the "
-                f"finish date {hh_format(finish_date)}."
+                f"The element start date {date_format(start_date)} can't be after the "
+                f"finish date {date_format(finish_date)}."
             )
 
         self.start_date = start_date
@@ -989,8 +989,8 @@ class Bill(Base, PersistentClass):
         self.issue_date = issue_date
         if start_date > finish_date:
             raise BadRequest(
-                f"The bill start date {hh_format(start_date)} can't be after the "
-                f"finish date {hh_format(finish_date)}."
+                f"The bill start date {date_format(start_date)} can't be after the "
+                f"finish date {date_format(finish_date)}."
             )
 
         self.start_date = start_date
@@ -1292,7 +1292,7 @@ class Party(Base, PersistentClass):
         if llfc is None:
             raise BadRequest(
                 f"There is no LLFC with the code '{code}' associated with the DNO "
-                f"{self.dno_code} at the date {hh_format(date)}."
+                f"{self.dno_code} at the date {date_format(date)}."
             )
         return llfc
 
@@ -1349,7 +1349,7 @@ class Party(Base, PersistentClass):
         if party is None:
             raise BadRequest(
                 f"There isn't a party with participant {participant} and market role "
-                f"{market_role} at {hh_format(valid_from)}."
+                f"{market_role} at {date_format(valid_from)}."
             )
         return party
 
@@ -1385,7 +1385,7 @@ class Party(Base, PersistentClass):
         if party is None:
             raise BadRequest(
                 f"There isn't a party with participant code {participant_code} and "
-                f"market role code {market_role_code} at {hh_format(valid_from)}"
+                f"market role code {market_role_code} at {date_format(valid_from)}"
             )
         return party
 
@@ -1429,7 +1429,7 @@ class Party(Base, PersistentClass):
         if dno is None:
             raise BadRequest(
                 f"There is no DNO with the code '{dno_code}' at time "
-                f"{hh_format(date)}."
+                f"{date_format(date)}."
             )
         return dno
 
@@ -2756,7 +2756,7 @@ class MeterType(Base, PersistentClass):
         meter_type = cls.find_by_code(sess, code, date)
         if meter_type is None:
             raise Exception(
-                f"Can't find the meter type with code {code} at {hh_format(date)}."
+                f"Can't find the meter type with code {code} at {date_format(date)}."
             )
         return meter_type
 
@@ -2886,7 +2886,7 @@ class Mtc(Base, PersistentClass):
         mtc = cls.find_by_code(sess, code, date)
         if mtc is None:
             raise BadRequest(
-                f"There isn't an MTC with the code {code} at date {hh_format(date)}."
+                f"There isn't an MTC with the code {code} at date {date_format(date)}."
             )
         return mtc
 
@@ -3012,7 +3012,7 @@ class MtcParticipant(Base, PersistentClass):
         if mtc_participant is None:
             raise BadRequest(
                 f"There isn't an MTC Participant with the MTC {mtc} and participant "
-                f"{participant} at date {hh_format(date)}."
+                f"{participant} at date {date_format(date)}."
             )
         return mtc_participant
 
@@ -3095,9 +3095,9 @@ class MtcLlfc(Base, PersistentClass):
             raise BadRequest(
                 f"There isn't an MTC LLFC with the MTC Participant "
                 f"{mtc_participant.mtc.code} "
-                f"{hh_format(mtc_participant.mtc.valid_from)} "
+                f"{date_format(mtc_participant.mtc.valid_from)} "
                 f"{mtc_participant.participant.code} and LLFC {llfc.code} "
-                f"{hh_format(llfc.valid_from)} at date {hh_format(date)}."
+                f"{date_format(llfc.valid_from)} at date {date_format(date)}."
             )
         return mtc_llfc
 
@@ -3153,7 +3153,7 @@ class MtcSsc(Base, PersistentClass):
             raise BadRequest(
                 f"For the participant {mtc_participant.participant.code} there isn't "
                 f"an MTC SSC with the MTC {mtc_participant.mtc.code} and SSC "
-                f"{ssc.code} at date {hh_format(date)}."
+                f"{ssc.code} at date {date_format(date)}."
             )
         return mtc_ssc
 
@@ -3209,11 +3209,11 @@ class MtcLlfcSsc(Base, PersistentClass):
             raise BadRequest(
                 f"There isn't an MTC LLFC SSC with the MTC Participant "
                 f"{mtc_ssc.mtc_participant.mtc.code} "
-                f"{hh_format(mtc_ssc.mtc_participant.mtc.valid_from)} "
+                f"{date_format(mtc_ssc.mtc_participant.mtc.valid_from)} "
                 f"{mtc_ssc.mtc_participant.participant.code} "
-                f"{hh_format(mtc_ssc.mtc_participant.valid_from)} LLFC {llfc.code} "
-                f"{hh_format(llfc.valid_from)} SSC {mtc_ssc.ssc.code} "
-                f"{hh_format(mtc_ssc.ssc.valid_from)} date {hh_format(date)}."
+                f"{date_format(mtc_ssc.mtc_participant.valid_from)} LLFC {llfc.code} "
+                f"{date_format(llfc.valid_from)} SSC {mtc_ssc.ssc.code} "
+                f"{date_format(mtc_ssc.ssc.valid_from)} date {date_format(date)}."
             )
         return mtc_llfc_ssc
 
@@ -3396,7 +3396,7 @@ class Ssc(Base, PersistentClass):
         ssc = cls.find_by_code(sess, code, date)
         if ssc is None:
             raise BadRequest(
-                f"The SSC with code '{code}' can't be found at {hh_format(date)}."
+                f"The SSC with code '{code}' can't be found at {date_format(date)}."
             )
         return ssc
 
@@ -3456,7 +3456,7 @@ class MtcLlfcSscPc(Base, PersistentClass):
         if combo is None:
             raise BadRequest(
                 f"The valid combination of MTC LLFC SSC {mtc_llfc_ssc.id} and PC "
-                f"{pc.code} at {hh_format(date)} can't be found."
+                f"{pc.code} at {date_format(date)} can't be found."
             )
         return combo
 
@@ -3804,8 +3804,8 @@ class Era(Base, PersistentClass):
                 raise BadRequest(
                     f"For the era {self.id} the {polarity} supplier contract "
                     f"{supplier_contract.id} starts at "
-                    f"{hh_format(supplier_contract.start_date())} which is after "
-                    f"the start of the era at {hh_format(start_date)}."
+                    f"{date_format(supplier_contract.start_date())} which is after "
+                    f"the start of the era at {date_format(start_date)}."
                 )
 
             if hh_before(supplier_contract.finish_date(), finish_date):
@@ -3819,8 +3819,8 @@ class Era(Base, PersistentClass):
             if finish_date is not None and hh_before(llfc.valid_to, finish_date):
                 raise BadRequest(
                     f"The {polarity} line loss factor {llfc_code} is only valid "
-                    f"until {hh_format(llfc.valid_to)} but the era ends at "
-                    f"{hh_format(finish_date)}."
+                    f"until {date_format(llfc.valid_to)} but the era ends at "
+                    f"{date_format(finish_date)}."
                 )
 
             if llfc.is_import != ("imp" == polarity):
@@ -3851,8 +3851,8 @@ class Era(Base, PersistentClass):
                 if ca.start_date > start_date:
                     raise BadRequest(
                         f"For the era {self.id} the {polarity} connection agreement "
-                        f"{ca.id} starts at {hh_format(ca.start_date)} which is after "
-                        f"the start of the era at {hh_format(start_date)}."
+                        f"{ca.id} starts at {date_format(ca.start_date)} which is "
+                        f"after the start of the era at {date_format(start_date)}."
                     )
 
                 if hh_before(ca.finish_date, finish_date):
@@ -3872,8 +3872,8 @@ class Era(Base, PersistentClass):
                         raise BadRequest(
                             f"The {polarity} combination of MTC "
                             f"{self.mtc_participant.mtc.code} LLFC {llfc.code} is "
-                            f"only valid until {hh_format(mtc_llfc.valid_to)} but "
-                            f"the era ends at {hh_format(finish_date)}."
+                            f"only valid until {date_format(mtc_llfc.valid_to)} but "
+                            f"the era ends at {date_format(finish_date)}."
                         )
                 else:
                     mtc_ssc = MtcSsc.get_by_values(
@@ -3892,8 +3892,8 @@ class Era(Base, PersistentClass):
                             f"The {polarity} combination of MTC "
                             f"{self.mtc_participant.mtc.code} LLFC {llfc.code} SSC "
                             f"{self.ssc.code} PC {pc.code} is only valid until "
-                            f"{hh_format(combo.valid_to)} but the era ends at "
-                            f"{hh_format(finish_date)}."
+                            f"{date_format(combo.valid_to)} but the era ends at "
+                            f"{date_format(finish_date)}."
                         )
 
         if cop.code not in [
@@ -4289,7 +4289,7 @@ class HhDatum(Base, PersistentClass):
                     datum_str = ", ".join(
                         [
                             mpan_core,
-                            hh_format(datum["start_date"]),
+                            date_format(datum["start_date"]),
                             channel_type,
                             str(datum["value"]),
                             datum["status"],
@@ -4386,8 +4386,8 @@ class Supply(Base, PersistentClass):
                     hh_data = hh_data.filter(HhDatum.start_date <= finish_date)
                 if hh_data.count() > 0:
                     raise BadRequest(
-                        f"There are orphaned HH data between {hh_format(start_date)} "
-                        f"and {hh_format(finish_date)}."
+                        f"There are orphaned HH data between {date_format(start_date)} "
+                        f"and {date_format(finish_date)}."
                     )
 
         if old_era is not None and new_era is not None:
@@ -4433,9 +4433,9 @@ class Supply(Base, PersistentClass):
                             f"There is no channel for the import related: "
                             f"{channel.imp_related} and channel type: "
                             f"{channel.channel_type} HH data from "
-                            f"{hh_format(start_date)} to move to in the era starting "
-                            f"{hh_format(new_era.start_date)}, finishing "
-                            f"{hh_format(new_era.finish_date)}."
+                            f"{date_format(start_date)} to move to in the era starting "
+                            f"{date_format(new_era.start_date)}, finishing "
+                            f"{date_format(new_era.finish_date)}."
                         )
 
                     q = (
@@ -6726,7 +6726,7 @@ def _jsonize(val):
         return float(val)
 
     elif isinstance(val, Datetime):
-        return hh_format(val)
+        return date_format(val)
 
     else:
         return val

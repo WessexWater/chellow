@@ -14,7 +14,7 @@ from chellow.models import (
     Contract,
     Session,
 )
-from chellow.utils import ct_datetime_now, hh_format, utc_datetime_now
+from chellow.utils import ct_datetime_now, date_format, utc_datetime_now
 
 importer = None
 
@@ -166,7 +166,7 @@ class RateServer(threading.Thread):
 
             else:
                 self.log(
-                    f"The importer was last run at {hh_format(last_run)}. There will "
+                    f"The importer was last run at {date_format(last_run)}. There will "
                     f"be another import when 24 hours have elapsed since the last run."
                 )
                 self.going.wait(60 * 60)

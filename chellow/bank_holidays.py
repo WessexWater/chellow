@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest
 from chellow.models import Contract, RateScript, Session
 from chellow.utils import (
     ct_datetime,
-    hh_format,
+    date_format,
     to_utc,
     utc_datetime,
     utc_datetime_now,
@@ -68,7 +68,9 @@ def run_import(sess, log_f, set_progress):
                 )
             ).one_or_none()
             if rs is None:
-                log_f(f"Adding a new rate script starting at {hh_format(year_start)}.")
+                log_f(
+                    f"Adding a new rate script starting at {date_format(year_start)}."
+                )
 
                 rs = contract.insert_rate_script(sess, year_start, {})
 
@@ -76,7 +78,7 @@ def run_import(sess, log_f, set_progress):
 
             contract.update_rate_script(sess, rs, rs.start_date, rs.finish_date, script)
             sess.commit()
-            log_f(f"Updated rate script starting at {hh_format(year_start)}.")
+            log_f(f"Updated rate script starting at {date_format(year_start)}.")
     else:
         log_f(
             "The automatic importer is disabled. To enable it, edit the contract "
@@ -162,7 +164,7 @@ class BankHolidayImporter(threading.Thread):
 
             else:
                 self.log(
-                    f"The importer was last run at {hh_format(last_run)}. There will "
+                    f"The importer was last run at {date_format(last_run)}. There will "
                     f"be another import when {DELAY_DAYS} days have elapsed since the "
                     f"last run."
                 )

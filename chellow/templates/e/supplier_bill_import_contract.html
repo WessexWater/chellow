@@ -75,17 +75,17 @@
 						<td>{{bill.bill_type_code}}</td>
 						<td>
 							{% if 'issue_date' in bill %}
-								{{bill.issue_date|hh_format}}
+								{{bill.issue_date|date_format}}
 							{% endif %}
 						</td>
 						<td>
 							{% if 'start_date' in bill %}
-								{{bill.start_date|hh_format}}
+								{{bill.start_date|date_format}}
 							{% endif %}
 						</td>
 						<td>
 							{% if 'finish_date' in bill %}
-								{{bill.finish_date|hh_format}}</td>
+								{{bill.finish_date|date_format}}</td>
 							{% endif %}
 						<td>{{bill.kwh}}</td>
 						<td>{{bill.net}}</td>
@@ -102,10 +102,10 @@
 							<td>{{read.coefficient}}</td>
 							<td>{{read.units}}</td>
 							<td>{{read.tpr_code}}</td>
-							<td>{{read.prev_date|hh_format}}</td>
+							<td>{{read.prev_date|date_format}}</td>
 							<td>{{read.prev_value}}</td>
 							<td>{{read.prev_type_code}}</td>
-							<td>{{read.pres_date|hh_format}}</td>
+							<td>{{read.pres_date|date_format}}</td>
 							<td>{{read.pres_value}}</td>
 							<td>{{read.pres_type_code}}</td>
 						{% endfor %}

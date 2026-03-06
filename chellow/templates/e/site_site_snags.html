@@ -27,10 +27,10 @@
 						<a href="/e/site_snags/{{snag.id}}">view</a>
 						[<a href="/e/site_snags/{{snag.id}}/edit">edit</a>]
 					</td>
-					<td>{{snag.date_created|hh_format}}</td>
+					<td>{{snag.date_created|date_format}}</td>
 					<td>{{snag.description}}</td>
-					<td>{{snag.start_date|hh_format}}</td>
-					<td>{{snag.finish_date|hh_format}}</td>
+					<td>{{snag.start_date|date_format}}</td>
+					<td>{{snag.finish_date|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

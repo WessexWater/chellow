@@ -13,7 +13,7 @@ from chellow.dloads import open_file
 from chellow.e.computer import forecast_date
 from chellow.gas.engine import GDataSource, g_contract_func
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
-from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
+from chellow.utils import csv_make_val, date_format, hh_max, hh_min, req_date, req_int
 
 
 def content(g_supply_id, file_name, start_date, finish_date, user):
@@ -60,8 +60,8 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
                     site.code,
                     site.name,
                     ds.account,
-                    hh_format(ds.start_date),
-                    hh_format(ds.finish_date),
+                    date_format(ds.start_date),
+                    date_format(ds.finish_date),
                     "",
                 ]
 

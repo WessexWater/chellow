@@ -35,8 +35,8 @@
 							Export
 						{%- endif -%}
 					</td>
-					<td>{{ ssc.valid_from|hh_format }}</td>
-					<td>{{ ssc.valid_to|hh_format }}</td>
+					<td>{{ ssc.valid_from|date_format }}</td>
+					<td>{{ ssc.valid_to|date_format }}</td>
 					<td>
 						{%- for mr in ssc.measurement_requirements -%}
 							<a href="/e/tprs/{{mr.tpr.id}}">{{mr.tpr.code}}</a>

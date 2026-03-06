@@ -53,7 +53,7 @@
 		</thead>
 		<tbody>
 			{% for hh in hh_data %}
-				{% set start_str = hh.start_date|hh_format %}
+				{% set start_str = hh.start_date|date_format %}
 				<tr id="{{start_str}}">
 					<td style="white-space: nowrap">{{start_str}}</td>
 					<td>{{hh.import_kwh}}</td>

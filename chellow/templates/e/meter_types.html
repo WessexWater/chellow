@@ -25,8 +25,8 @@
 				<tr>
 					<td><a href="/e/meter_types/{{meter_type.id}}" >{{meter_type.code}}</a></td>
 					<td>{{meter_type.description}}</td>
-					<td>{{meter_type.valid_from|hh_format}}</td>
-					<td>{{meter_type.valid_to|hh_format}}</td>
+					<td>{{meter_type.valid_from|date_format}}</td>
+					<td>{{meter_type.valid_to|date_format}}</td>
 				</tr>
 			{% endfor %}
 		</tbody>

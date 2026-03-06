@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; Gas Supplier Contracts &raquo; {{entry.g_issue.g_contract.name}} &raquo; Issues &raquo; 
- 	{{entry.g_issue.id}} &raquo; {{entry.timestamp|hh_format}} Edit
+ 	{{entry.g_issue.id}} &raquo; {{entry.timestamp|date_format}} Edit
 {% endblock %}
 
 {% block nav %}
@@ -10,7 +10,7 @@
 	<a href="/g/supplier_contracts/{{entry.g_issue.g_contract.id}}">{{entry.g_issue.g_contract.name}}</a> &raquo; 
 	<a href="/g/supplier_contracts/{{entry.g_issue.g_contract.id}}/issues">Issues</a> &raquo; 
 	<a href="/g/issues/{{entry.g_issue.id}}">{{entry.g_issue.id}}</a> &raquo;
-	{{entry.timestamp|hh_format}} Edit
+	{{entry.timestamp|date_format}} Edit
 {% endblock %}
 
 {% block content %}

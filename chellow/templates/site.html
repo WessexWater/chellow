@@ -102,8 +102,8 @@
 						<a href="/e/supplies/{{last_era.supply_id}}">view</a>
 					</td>
 					<td>{{last_era.supply.name}}</td>
-					<td>{{group['first_era'].start_date|hh_format}}</td>
-					<td>{{last_era.finish_date|hh_format}}</td>
+					<td>{{group['first_era'].start_date|date_format}}</td>
+					<td>{{last_era.finish_date|date_format}}</td>
 					<td>{{last_era.supply.source.code}}</td>
 					<td>
 						{% if last_era.supply.generator_type %}
@@ -331,8 +331,8 @@ Table of site level monthly kWh, MD kWh etc.</a>
 						<a href="/g/supplies/{{last_g_era.g_supply_id}}">view</a>
 					</td>
 					<td>{{last_g_era.g_supply.name}}</td>
-					<td>{{g_group['first_g_era'].start_date|hh_format}}</td>
-					<td>{{last_g_era.finish_date|hh_format}}</td>
+					<td>{{g_group['first_g_era'].start_date|date_format}}</td>
+					<td>{{last_g_era.finish_date|date_format}}</td>
 					<td>{{last_g_era.g_supply.mprn}}</td>
 					<td>
 						{% for site_era in last_g_era.site_g_eras %}

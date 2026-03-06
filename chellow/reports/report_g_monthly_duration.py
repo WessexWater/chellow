@@ -31,7 +31,7 @@ from chellow.utils import (
     PropDict,
     c_months_c,
     c_months_u,
-    hh_format,
+    date_format,
     hh_max,
     hh_min,
     hh_range,
@@ -188,7 +188,7 @@ def content(scenario_props, user_id, compression, now, base_name):
             finish_date = month_pairs[-1][-1]
 
             base_name.append(
-                hh_format(start_date)
+                date_format(start_date)
                 .replace(" ", "_")
                 .replace(":", "")
                 .replace("-", "")

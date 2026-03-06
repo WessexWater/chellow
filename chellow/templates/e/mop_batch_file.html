@@ -30,7 +30,7 @@
 		<tbody>
 			<tr>
 				<td>{{batch_file.filename}}</td>
-				<td>{{batch_file.upload_timestamp|hh_format}}</td>
+				<td>{{batch_file.upload_timestamp|date_format}}</td>
 				<td>{{batch_file.parser_name}}</td>
 				<td><a href="/e/mop_batch_files/{{batch_file.id}}/download">Download</a></td>
 			</tr>

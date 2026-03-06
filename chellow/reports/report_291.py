@@ -22,7 +22,7 @@ from chellow.models import (
     Tpr,
     User,
 )
-from chellow.utils import csv_make_val, hh_format, hh_max, hh_min, req_date, req_int
+from chellow.utils import csv_make_val, date_format, hh_max, hh_min, req_date, req_int
 
 
 def content(supply_id, start_date, finish_date, user_id):
@@ -87,8 +87,8 @@ def content(supply_id, start_date, finish_date, user_id):
                     site.code,
                     site.name,
                     ds.supplier_account,
-                    hh_format(ds.start_date),
-                    hh_format(ds.finish_date),
+                    date_format(ds.start_date),
+                    date_format(ds.finish_date),
                     "",
                 ]
 

@@ -2,7 +2,7 @@
 
 {% block title %}
 	&raquo; MOP Contracts &raquo; {{rate_script.contract.name}} &raquo; 
-	{{rate_script.start_date|hh_format}} &raquo; Edit
+	{{rate_script.start_date|date_format}} &raquo; Edit
 {% endblock %}
 
 {% block nav %}
@@ -12,7 +12,7 @@
 	>{{rate_script.contract.name}}</a> &raquo; 
 	<a
 		 href="/e/mop_rate_scripts/{{rate_script.id}}"
-	>{{rate_script.start_date|hh_format }}</a> &raquo; Edit
+	>{{rate_script.start_date|date_format }}</a> &raquo; Edit
 {% endblock %}
 
 {% block content %}

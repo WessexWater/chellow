@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block title %}
-	&raquo; Supplies &raquo; Supply {{era.supply.id}} Era {{era.start_date|hh_format}} &raquo; 
+	&raquo; Supplies &raquo; Supply {{era.supply.id}} Era {{era.start_date|date_format}} &raquo; 
  	Add Channel
 {% endblock %}
 
 {% block nav %}
 	<a href="/supplies">Supplies</a> &raquo; 
 	<a href="/e/supplies/{{era.supply.id}}">Supply {{era.supply.id}} Era
-	{{era.start_date|hh_format}}</a> &raquo; 
+	{{era.start_date|date_format}}</a> &raquo; 
 	Add Channel
 {% endblock %}
 

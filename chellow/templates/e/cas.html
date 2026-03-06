@@ -25,8 +25,8 @@
 				{% set props = ca.properties %}
 				<tr>
 					<td><a href="/e/cas/{{ca.id}}">View</a></td>
-					<td>{{ca.start_date|hh_format}}</td>
-					<td>{{ca.finish_date|hh_format}}</td>
+					<td>{{ca.start_date|date_format}}</td>
+					<td>{{ca.finish_date|date_format}}</td>
 					<td>
 						{% if 'url' in props %}
 							<a href="{{props['url']}}" target="_blank" rel="noopener noreferrer">Document</a>

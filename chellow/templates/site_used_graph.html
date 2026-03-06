@@ -43,7 +43,7 @@
 							{%- else -%}
 								black
 							{%- endif -%}">
-						<title>{{hh.value * 2}} kW at {{hh.start_date|hh_format}}</title>
+						<title>{{hh.value * 2}} kW at {{hh.start_date|date_format}}</title>
 					</rect> 
 				{% else %}
 					<rect
@@ -56,7 +56,7 @@
 									black
 								{%- endif -%}"/>
 							<title
-									>{{hh.value * 2}} kW at {{hh.start_date|hh_format}}</title>
+									>{{hh.value * 2}} kW at {{hh.start_date|date_format}}</title>
 				{%- endif %}
 			{%- endfor %}
 

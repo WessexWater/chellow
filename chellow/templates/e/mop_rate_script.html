@@ -2,14 +2,14 @@
 
 {% block title %}
 	&raquo; MOP Contracts &raquo; {{rate_script.contract.name}} &raquo; 
- 	Rate Script {{rate_script.start_date|hh_format}}
+ 	Rate Script {{rate_script.start_date|date_format}}
 {% endblock %}
 
 {% block nav %}
 	<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
 	<a href="/e/mop_contracts/{{rate_script.contract.id}}"
 		>{{rate_script.contract.name}}</a> &raquo; 
-	{{rate_script.start_date|hh_format}}
+	{{rate_script.start_date|date_format}}
 	[<a href="/e/mop_rate_scripts/{{rate_script.id}}/edit">edit</a>]
 {% endblock %}
 
@@ -17,11 +17,11 @@
 	<table>
 		<tr>
 			<th>Start Date</th>
-			<td>{{rate_script.start_date|hh_format}}</td>
+			<td>{{rate_script.start_date|date_format}}</td>
 		</tr>
 		<tr>
 			<th>Finish Date</th>
-			<td>{{rate_script.finish_date|hh_format}}</td>
+			<td>{{rate_script.finish_date|date_format}}</td>
 		</tr>
 		<tr>
 			<td>

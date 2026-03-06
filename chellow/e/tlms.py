@@ -16,7 +16,7 @@ from zish import dumps, loads
 from chellow.e.elexon import download_file
 from chellow.models import Contract, RateScript
 from chellow.rate_server import download
-from chellow.utils import HH, ct_datetime, hh_format, hh_range, to_ct, to_utc
+from chellow.utils import HH, ct_datetime, date_format, hh_range, to_ct, to_utc
 
 RUNS = ["DF", "RF", "R3", "R2", "R1", "SF", "II"]
 
@@ -230,7 +230,7 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
             )
             assert rs is None
             while rs is None:
-                log_func(f"There's no rate script at {hh_format(hh_date)}.")
+                log_func(f"There's no rate script at {date_format(hh_date)}.")
                 latest_rs = (
                     sess.query(RateScript)
                     .filter(RateScript.contract == contract)
@@ -240,7 +240,7 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
                 if hh_date < latest_rs.start_date:
                     raise BadRequest(
                         f"The start of the latest rate script must be before "
-                        f"{hh_format(hh_date)}"
+                        f"{date_format(hh_date)}"
                     )
                 contract.update_rate_script(
                     sess,
@@ -256,7 +256,9 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
                 for h in hh_range(caches, new_rs.start_date, new_rs.finish_date):
                     cache["timestamps"][h] = rt
                 sess.commit()
-                log_func(f"Added a rate script starting at {hh_format(new_rs_start)}.")
+                log_func(
+                    f"Added a rate script starting at {date_format(new_rs_start)}."
+                )
 
                 rs = (
                     sess.query(RateScript)
@@ -286,7 +288,7 @@ def _process_line(cache, sess, contract, log_func, values, complete_date, caches
         group[run] = {"off_taking": off_taking, "delivering": delivering}
 
         log_func(
-            f"Found rate at {hh_format(hh_date)} for GSP Group {gsp_group_code} "
+            f"Found rate at {date_format(hh_date)} for GSP Group {gsp_group_code} "
             f"and run {run}."
         )
 

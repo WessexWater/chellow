@@ -17,8 +17,8 @@ from chellow.rate_server import download
 from chellow.utils import (
     c_months_u,
     ct_datetime,
+    date_format,
     hh_after,
-    hh_format,
     hh_min,
     to_ct,
     to_utc,
@@ -415,7 +415,7 @@ def rate_server_import(sess, log, set_progress, paths):
             rs_script = rs.make_script()
             if rs_script.get("a_file_name") != file_name:
                 rs.update(_find_triad_dates(file_name, BytesIO(download(url))))
-                log(f"Updated triad dates rate script for {hh_format(year_start)}")
+                log(f"Updated triad dates rate script for {date_format(year_start)}")
 
     log("Finished TNUoS triad dates PDFs")
     sess.commit()
