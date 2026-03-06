@@ -741,6 +741,8 @@ def test_batch_add_post(client, sess):
         "date_created_day": "01",
         "date_created_hour": "00",
         "date_created_minute": "00",
+        "date_created_second": "00",
+        "date_created_microsecond": "007811",
     }
 
     response = client.post(
