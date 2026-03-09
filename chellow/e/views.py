@@ -406,7 +406,7 @@ def channel_add_get(era_id):
 @e.route("/eras/<int:era_id>/add_channel", methods=["POST"])
 def channel_add_post(era_id):
     try:
-        imp_related = req_checkbox("imp_related")
+        imp_related = req_bool("imp_related")
         channel_type = req_str("channel_type")
         era = Era.get_by_id(g.sess, era_id)
         channel = era.insert_channel(g.sess, imp_related, channel_type)
