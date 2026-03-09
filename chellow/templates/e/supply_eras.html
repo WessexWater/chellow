@@ -38,11 +38,11 @@
 				<tr>
 					<td rowspan="4">
 						<span title="{{ era.start_date|date_format }}"
-							>{{ era.start_date|date_format(fmt='day') }}</span>
+							>{{ era.start_date|date_format(fmt='day_res') }}</span>
 					</td>
 					<td rowspan="4">
 							<span title="{{ era.finish_date|date_format }}"
-								>{{ era.finish_date|date_format(fmt='day') }}</span>
+								>{{ era.finish_date|date_format(fmt='day_res') }}</span>
 					</td>
 					<td rowspan="4">
 							<a href="/sites/{{physical_site.id}}"
@@ -267,10 +267,14 @@
 											<a href="/e/supplier_bills/{{bill.id}}">View</a>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<label title="{{bill.start_date|date_format}}">{{bill.start_date|date_format('date')}}</label>
+									<label title="{{bill.start_date|date_format}}">
+										{{bill.start_date|date_format('day_res')}}
+									</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
-									<label title="{{ bill.finish_date|date_format }}">{{ bill.finish_date|date_format('date') }}</label>
+									<label title="{{ bill.finish_date|date_format }}">
+										{{ bill.finish_date|date_format('day_res') }}
+									</label>
 								</td>
 								<td rowspan="{{ rows_high }}">
 									<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
@@ -404,10 +408,14 @@
 												<a href="/e/supplier_bills/{{bill.id}}">View</a>
 										</td>
 										<td rowspan="{{ rows_high }}">
-												<label title="{{ bill.start_date|date_format }}">{{ bill.start_date|date_format('date') }}</label>
+											<label title="{{ bill.start_date|date_format }}">
+												{{ bill.start_date|date_format('day_res') }}
+											</label>
 										</td>
 										<td rowspan="{{ rows_high }}">
-												<label title="{{ bill.finish_date|date_format }}">{{ bill.finish_date|date_format('date') }}</label>
+											<label title="{{ bill.finish_date|date_format }}">
+												{{ bill.finish_date|date_format('day_res') }}
+											</label>
 										</td>
 										<td rowspan="{{ rows_high }}">
 												<a href="/e/supplier_batches/{{bill.batch.id}}">{{bill.batch.reference}}</a>
