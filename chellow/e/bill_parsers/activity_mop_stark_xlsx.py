@@ -81,14 +81,7 @@ def _process_row(issue_date, sheet, row):
         "start_date": start_date,
         "finish_date": finish_date,
         "mpan_core": mpan_core,
-        "reference": "_".join(
-            (
-                start_date.strftime("%Y%m%d"),
-                finish_date.strftime("%Y%m%d"),
-                issue_date.strftime("%Y%m%d"),
-                mpan_core,
-            )
-        ),
+        "reference": str(row),
         "elements": [
             {
                 "name": "activity",
