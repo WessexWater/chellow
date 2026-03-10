@@ -3386,6 +3386,7 @@ def test_site_add_e_supply_form_get(client, sess):
     sess.commit()
 
     query_string = {
+        "start_year": "",
         "dno_id": "",
         "source_id": "",
         "pc_id": "",

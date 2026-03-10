@@ -618,6 +618,7 @@ def test_88(mocker, sess, client):
     sess.commit()
 
     query_string = {
+        "start_year": "",
         "dno_id": dno_88.id,
         "source_id": "",
         "pc_id": "",
@@ -629,6 +630,7 @@ def test_88(mocker, sess, client):
     patterns = []
     match(response, 200, *patterns)
     query_string = {
+        "start_year": "",
         "dno_id": dno_99.id,
         "source_id": "",
         "pc_id": "",

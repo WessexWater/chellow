@@ -5029,6 +5029,7 @@ def site_add_e_supply_get(site_id):
 @e.route("/sites/<int:site_id>/add_e_supply/form")
 def site_add_e_supply_form_get(site_id):
     try:
+        site = Site.get_by_id(g.sess, site_id)
         ct_now = ct_datetime_now()
         cops = g.sess.query(Cop).order_by(Cop.code)
         comms = g.sess.scalars(select(Comm).order_by(Comm.code))
@@ -5043,10 +5044,11 @@ def site_add_e_supply_form_get(site_id):
         gsp_groups = g.sess.scalars(gsp_groups_q)
         RateScriptAliasStart = aliased(RateScript)
         RateScriptAliasFinish = aliased(RateScript)
-        if "start_year" in request.values:
-            start_date = req_date("start")
-        else:
+        start_year_str = req_str("start_year")
+        if start_year_str == "":
             start_date = to_utc(ct_datetime(ct_now.year, ct_now.month, ct_now.day))
+        else:
+            start_date = req_date("start")
 
         mop_contracts = g.sess.scalars(
             select(Contract)
@@ -5103,7 +5105,6 @@ def site_add_e_supply_form_get(site_id):
             .order_by(Contract.name)
         ).all()
 
-        site = Site.get_by_id(g.sess, site_id)
         sources = g.sess.scalars(select(Source).order_by(Source.code))
         source_id = req_int_none("source_id")
         if source_id is None:
