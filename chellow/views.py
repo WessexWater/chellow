@@ -1888,6 +1888,10 @@ def non_core_contract_get(contract_id):
         .order_by(RateScript.start_date.desc())
         .all()
     )
+    now = utc_datetime_now()
+    last_month_start, last_month_finish = list(
+        c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+    )[0]
     try:
         import_module("chellow." + contract.name).get_importer()
         has_auto_importer = True
@@ -1901,6 +1905,9 @@ def non_core_contract_get(contract_id):
         contract=contract,
         rate_scripts=rate_scripts,
         has_auto_importer=has_auto_importer,
+        last_month_start=last_month_start,
+        last_month_finish=last_month_finish,
+        now=now,
     )
 
 

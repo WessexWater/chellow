@@ -55,6 +55,7 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
+    c_months_u,
     csv_make_val,
     req_checkbox,
     req_date,
@@ -1388,11 +1389,19 @@ def industry_contract_get(contract_id):
     except ImportError:
         has_auto_importer = False
 
+    now = utc_datetime_now()
+    last_month_start, last_month_finish = list(
+        c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+    )[0]
+
     return render_template(
         "industry_contract.html",
         contract=contract,
         rate_scripts=rate_scripts,
         has_auto_importer=has_auto_importer,
+        last_month_start=last_month_start,
+        last_month_finish=last_month_finish,
+        now=now,
     )
 
 
@@ -1796,9 +1805,10 @@ def supplier_contract_get(contract_id):
         .order_by(GRateScript.start_date.desc())
     ).scalars()
 
-    now = Datetime.utcnow() - relativedelta(months=1)
-    month_start = Datetime(now.year, now.month, 1)
-    month_finish = month_start + relativedelta(months=1) - HH
+    now = utc_datetime_now()
+    month_start, month_finish = list(
+        c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+    )[0]
 
     return render_template(
         "supplier_contract.html",
@@ -1806,6 +1816,7 @@ def supplier_contract_get(contract_id):
         month_start=month_start,
         month_finish=month_finish,
         rate_scripts=rate_scripts,
+        now=now,
     )
 
 

@@ -236,6 +236,10 @@ table.sticky thead {
   background: white;
 }
 
+tr.current {
+	background-color: gainsboro;
+}
+
 fieldset {
 	border-right: none;
 	border-left: none;

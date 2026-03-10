@@ -1304,12 +1304,16 @@ def dc_contract_get(dc_contract_id):
             .all()
         )
         now = utc_datetime_now()
-        last_month_finish = Datetime(now.year, now.month, 1) - relativedelta(minutes=30)
+        last_month_start, last_month_finish = list(
+            c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+        )[0]
         return render_template(
             "dc_contract.html",
             dc_contract=contract,
             rate_scripts=rate_scripts,
+            last_month_start=last_month_start,
             last_month_finish=last_month_finish,
+            now=now,
         )
     except BadRequest as e:
         desc = e.description
@@ -4031,12 +4035,10 @@ def mop_contract_get(contract_id):
         .order_by(RateScript.start_date.desc())
         .all()
     )
-    now_ct = ct_datetime_now()
-    last_month_start_ct = ct_datetime(now_ct.year, now_ct.month) - relativedelta(
-        months=1
-    )
-    last_month_start = to_utc(last_month_start_ct)
-    last_month_finish = to_utc(last_month_start_ct + relativedelta(months=1) - HH)
+    now = utc_datetime_now()
+    last_month_start, last_month_finish = list(
+        c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+    )[0]
     party = contract.party
     return render_template(
         "mop_contract.html",
@@ -4045,6 +4047,7 @@ def mop_contract_get(contract_id):
         last_month_start=last_month_start,
         last_month_finish=last_month_finish,
         party=party,
+        now=now,
     )
 
 
@@ -6828,9 +6831,10 @@ def supplier_contract_get(contract_id):
         .order_by(RateScript.start_date.desc())
         .all()
     )
-    now = Datetime.utcnow() - relativedelta(months=1)
-    month_start = Datetime(now.year, now.month, 1)
-    month_finish = month_start + relativedelta(months=1) - HH
+    now = utc_datetime_now()
+    month_start, month_finish = list(
+        c_months_u(finish_year=now.year, finish_month=now.month, months=2)
+    )[0]
 
     return render_template(
         "supplier_contract.html",
@@ -6839,6 +6843,7 @@ def supplier_contract_get(contract_id):
         month_finish=month_finish,
         rate_scripts=rate_scripts,
         rate_script_example=rs_example,
+        now=now,
     )
 
 
