@@ -15,6 +15,12 @@
 		<fieldset hx-get="/e/sites/{{site.id}}/add_e_supply/form" hx-params="*"
 			 hx-trigger="load, change" hx-include="this">
 			{{ input_hidden('source_id')}}
+			{{ input_hidden('msn')}}
+			{{ input_hidden('start_year')}}
+			{{ input_hidden('start_month')}}
+			{{ input_hidden('start_day')}}
+			{{ input_hidden('start_hour')}}
+			{{ input_hidden('start_minute')}}
 			<input type="hidden" name="cop_id" value="{{request.values.cop_id}}">
 			<input type="hidden" name="comm_id" value="{{request.values.comm_id}}">
 			<input type="hidden" name="energisation_status_id"
