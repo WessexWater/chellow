@@ -81,9 +81,7 @@
 				<tr>
 					<td>Chellow</td>
 					<td>
-						{% if vals['chellow_supply_id'] is none %}
-							{{vals['mpan_core']}}
-						{% else %}
+						{% if vals['chellow_supply_id'] is not none %}
 							<a href="/e/supplies/{{vals['chellow_supply_id']}}">{{vals['mpan_core']}}</a>
 						{% endif %}
 					</td>
@@ -158,6 +156,7 @@
 						ECOES
 					</td>
 					<td>
+						{{vals['mpan_core_no_spaces']}}
 					</td>
 					<td>
 					</td>
