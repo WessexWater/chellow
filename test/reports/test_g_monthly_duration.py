@@ -174,7 +174,7 @@ def virtual_bill(ds):
         utc_datetime(2015, 9, 25),
         g_read_type_A,
     )
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     sess.commit()
 
@@ -428,7 +428,7 @@ def virtual_bill(ds):
         utc_datetime(2015, 9, 25),
         g_read_type_A,
     )
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     sess.commit()
 

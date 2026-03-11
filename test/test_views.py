@@ -683,6 +683,12 @@ def test_system(client):
     match(response, 200)
 
 
+def test_users_get(client):
+    response = client.get("/users")
+
+    match(response, 200)
+
+
 def test_general_import_post_full(sess, client):
     """General import of channel snag unignore and check the import that's
     been created.

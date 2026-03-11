@@ -78,7 +78,7 @@ def test_do_post_scenario(mocker, sess, client):
 
     base_name = ["duration", "test"]
 
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     is_bill_check = False
     args = (
         scenario_props,
@@ -146,7 +146,7 @@ def test_do_post(mocker, sess, client):
         "scenario_finish_minute": finish_minute,
         "site_codes": [site_code],
     }
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     is_bill_check = False
     args = (
         scenario_props,
@@ -396,7 +396,7 @@ def displaced_virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -1281,7 +1281,7 @@ def virtual_bill(ds):
     era.attach_site(sess, associated_site)
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -1914,7 +1914,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -2575,7 +2575,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -3236,7 +3236,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -3800,7 +3800,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
@@ -4173,7 +4173,7 @@ def virtual_bill(ds):
     active_channel.add_hh_data(sess, active_data_raw)
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()

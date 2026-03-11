@@ -87,7 +87,7 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
     )
     batch = supplier_contract.insert_batch(sess, "005", "batch 5", vf)
     sess.commit()
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     MockThread = mocker.patch("chellow.reports.report_111.threading.Thread")
 
     query_string = {
@@ -1039,7 +1039,7 @@ def virtual_bill(ds):
         supply,
     )
     user_role = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "admin", user_role, None)
+    user = User.insert(sess, "admin", user_role, None)
     user_id = user.id
     report_run = ReportRun.insert(sess, "", user, "", {})
     report_run_id = report_run.id
@@ -1249,7 +1249,7 @@ def virtual_bill(ds):
         supply,
     )
     user_role = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "admin", user_role, None)
+    user = User.insert(sess, "admin", user_role, None)
     user_id = user.id
     report_run = ReportRun.insert(sess, "", user, "", {})
     report_run_id = report_run.id

@@ -123,7 +123,7 @@ def test_content(mocker, sess):
     ]
     channel.add_hh_data(sess, data_raw)
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
 
     sess.commit()
     f = StringIO()

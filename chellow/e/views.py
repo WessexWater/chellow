@@ -1581,7 +1581,7 @@ def dc_issue_edit_get(issue_id):
         select(User)
         .join(UserRole)
         .where(UserRole.code == "editor")
-        .order_by(User.email_address)
+        .order_by(User.username)
     )
     return render_template("dc_issue_edit.html", issue=issue, users=users)
 
@@ -1607,7 +1607,7 @@ def dc_issue_edit_post(issue_id):
             select(User)
             .join(UserRole)
             .where(UserRole.code == "editor")
-            .order_by(User.email_address)
+            .order_by(User.username)
         )
         return make_response(
             render_template("dc_issue_edit.html", issue=issue, users=users), 400
@@ -2943,7 +2943,7 @@ def issues_get():
         select(User)
         .join(Issue, User.id == cast(Issue.properties["owner_id"], Integer))
         .distinct()
-        .order_by(User.email_address)
+        .order_by(User.username)
     ).all()
     return render_template(
         "issues.html",
@@ -3767,7 +3767,7 @@ def mop_issue_edit_get(issue_id):
         select(User)
         .join(UserRole)
         .where(UserRole.code == "editor")
-        .order_by(User.email_address)
+        .order_by(User.username)
     )
     return render_template("mop_issue_edit.html", issue=issue, users=users)
 
@@ -3792,7 +3792,7 @@ def mop_issue_edit_post(issue_id):
             select(User)
             .join(UserRole)
             .where(UserRole.code == "editor")
-            .order_by(User.email_address)
+            .order_by(User.username)
         )
         return make_response(
             render_template("mop_issue_edit.html", issue=issue, users=users), 400
@@ -6535,7 +6535,7 @@ def supplier_issue_edit_get(issue_id):
         select(User)
         .join(UserRole)
         .where(UserRole.code == "editor")
-        .order_by(User.email_address)
+        .order_by(User.username)
     )
     return render_template("supplier_issue_edit.html", issue=issue, users=users)
 
@@ -7567,7 +7567,7 @@ def supply_issues_get(supply_id):
         select(User)
         .join(Issue, User.id == cast(Issue.properties["owner_id"], Integer))
         .distinct()
-        .order_by(User.email_address)
+        .order_by(User.username)
     ).all()
 
     return render_template(

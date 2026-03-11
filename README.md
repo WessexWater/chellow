@@ -25,7 +25,7 @@ https://github.com/WessexWater/chellow.
 Chellow is a Python web application that uses the PostgreSQL database. To install
 Chellow, follow these steps:
 
-* Install [PostgreSQL](http://www.postgresql.org/) 15
+* Install [PostgreSQL](http://www.postgresql.org/)
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
 * Set up the following environment variables to configure Chellow:
 
@@ -45,15 +45,12 @@ in Windows an environment variable can be set by doing:
 
 `set PGUSER=postgres`
 
-* Install Python 3.11
+* Install Python
 * Create a virtual environment: `python3 -m venv venv`
 * Activate the virtual environment: `source venv/bin/activate`
 * Install Chellow: `pip install chellow`
 * Start Chellow:`waitress-serve --host=0.0.0.0 --port=8080 --call chellow:create_app`
-* You should now be able to visit `http://localhost:8080/` in a browser. You should be
-  prompted to enter a username and password. Enter the admin user name
-  `admin@example.com` and the password `admin`, and then the home page should appear.
-  Change the admin password from the `users` page.
+* You should now be able to visit `http://localhost:8080/` in a browser.
 
 ### Azure
 
@@ -69,6 +66,9 @@ In ``/home/site/wwwroot`` create a file called ``app.py`` containing the followi
     app = chellow.create_app()
 
 If you're using Entra ID to access Postgres, include the environment variable `POSTGRES_AUTH=entra`.
+If you're using Azure Easy Auth for user authentication, set environment variable
+ `USER_AUTH=MS_EASY_AUTH`.
+
 
 ### Manually Upgrading Chellow
 

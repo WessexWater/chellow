@@ -17,7 +17,7 @@ from chellow.utils import ct_datetime, to_utc
 
 def test_content(sess):
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     report_run = ReportRun.insert(sess, "asset", None, "asset", {})
     vf = to_utc(ct_datetime(2020, 1, 1))
@@ -41,7 +41,7 @@ def test_content(sess):
     content(user_id, file_like, report_run_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_example_com_asset_comparison.csv"]
+    assert files == ["00000_FINISHED_admin_asset_comparison.csv"]
 
 
 def test_process_sites(sess):

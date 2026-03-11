@@ -28,7 +28,7 @@
 				{% for user in users %}
 					<tr>
 						<td><a href="/users/{{user.id}}">view</a></td>
-						<td>{{ user.email_address }}</td>
+						<td>{{ user.username }}</td>
 						<td>{{ user.user_role.code }}</td>
 						<td>{{ user.party.name }}</td>
 					</tr>
@@ -42,12 +42,7 @@
 		<fieldset>
 			<legend>Add new user</legend>	
 
-			<label>Username (case sensitive)</label>
-			{{input_text('email_address')}}
-			{% if not ad_auth_on %}
-				<label>Password (case sensitive)</label>
-				<input type="password" name="password">
-			{% endif %}
+			<label>Username (case sensitive)</label> {{input_text('username')}}
 			<fieldset>
 				<legend>Role</legend>
 				<label>Editor</label>

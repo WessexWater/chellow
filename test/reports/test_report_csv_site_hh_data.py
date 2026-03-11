@@ -12,7 +12,7 @@ def test_do_get(client, mocker, sess):
     MockThread = mocker.patch(
         "chellow.reports.report_csv_site_hh_data.threading.Thread"
     )
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     start_date = to_utc(ct_datetime(2020, 1, 1))
     finish_date = to_utc(ct_datetime(2020, 1, 31, 23, 30))
     site_id = None
@@ -45,7 +45,7 @@ def test_content(mocker, sess):
     site = Site.insert(sess, "CI017", "Water Works")
     site_id = site.id
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()

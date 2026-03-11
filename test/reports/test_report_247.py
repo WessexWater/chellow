@@ -98,7 +98,7 @@ def test_with_scenario(mocker, sess, client):
     match(response, 303)
 
     base_name = ["New Gen"]
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     scenario_props["site_codes"] = [site_code]
     scenario_props["by_hh"] = False
     args = (scenario_props, base_name, user.id, False, now, None)
@@ -129,7 +129,7 @@ def test_do_post_without_scenario(mocker, sess, client):
     match(response, 303)
 
     base_name = ["monthly_duration"]
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     scenario_props = {
         "scenario_start_year": 2009,
         "scenario_start_month": 8,
@@ -333,7 +333,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -637,7 +637,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
     sess.commit()
@@ -872,7 +872,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -1340,7 +1340,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -1908,7 +1908,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -2245,7 +2245,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     site_1_code = site_1.code
     user_id = user.id
 
@@ -2568,7 +2568,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -3207,7 +3207,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -3663,7 +3663,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -4034,7 +4034,7 @@ def displaced_virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -4419,7 +4419,7 @@ def test_content_no_mpan_cores(mocker, sess, client):
         "scenario_duration": 1,
     }
     base_name = ["no_mpan_cores"]
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     sess.commit()
     compression = False
@@ -4679,7 +4679,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 
@@ -5142,7 +5142,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site_code = site.code
 

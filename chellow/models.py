@@ -5,11 +5,9 @@ import os.path
 import sys
 import traceback
 from ast import literal_eval, parse
-from binascii import hexlify, unhexlify
 from collections.abc import Mapping, Set
 from datetime import datetime as Datetime
 from decimal import Decimal
-from hashlib import pbkdf2_hmac
 from itertools import takewhile
 from uuid import uuid4
 
@@ -2374,17 +2372,15 @@ SALT_LENGTH = 16
 class User(Base, PersistentClass):
     __tablename__ = "user"
     id = Column(Integer, primary_key=True)
-    email_address = Column(String, unique=True, nullable=False)
-    password_digest = Column(String, nullable=False)
+    username = Column(String, unique=True, nullable=False)
     user_role_id = Column(Integer, ForeignKey("user_role.id"), index=True)
     party_id = Column(Integer, ForeignKey("party.id"), index=True)
 
-    def __init__(self, email_address, password, user_role, party):
-        self.update(email_address, user_role, party)
-        self.set_password(password)
+    def __init__(self, username, user_role, party):
+        self.update(username, user_role, party)
 
-    def update(self, email_address, user_role, party):
-        self.email_address = email_address
+    def update(self, username, user_role, party):
+        self.username = username
         self.user_role = user_role
         if user_role.code == "party-viewer":
             if party is None:
@@ -2393,44 +2389,33 @@ class User(Base, PersistentClass):
         else:
             self.party = None
 
-    def password_matches(self, password):
-        digest = unhexlify(self.password_digest.encode("ascii"))
-        salt = digest[:SALT_LENGTH]
-        dk = digest[SALT_LENGTH:]
-
-        return pbkdf2_hmac("sha256", password.encode("utf8"), salt, 100000) == dk
-
-    def set_password(self, password):
-        salt = os.urandom(SALT_LENGTH)
-        dk = pbkdf2_hmac("sha256", password.encode("utf8"), salt, 100000)
-        self.password_digest = hexlify(salt + dk).decode("ascii")
+    def delete(self, sess):
+        if self.username in ["admin", "viewer"]:
+            raise BadRequest("Can't delete the built-in users 'admin' or 'viewer'")
+        sess.delete(self)
 
     @staticmethod
-    def insert(sess, email_address, password, user_role, party):
+    def insert(sess, username, user_role, party):
         try:
-            user = User(email_address, password, user_role, party)
+            user = User(username, user_role, party)
             sess.add(user)
             sess.flush()
         except IntegrityError as e:
             if (
                 "duplicate key value violates unique "
-                + 'constraint "user_email_address_key"'
+                + 'constraint "user_username_key"'
                 in str(e)
             ):
-                raise BadRequest("There's already a user with this email address.")
+                raise BadRequest("There's already a user with this username.")
             else:
                 raise e
         return user
 
     @staticmethod
-    def get_by_email_address(sess, email_address):
-        user = sess.execute(
-            select(User).where(User.email_address == email_address)
-        ).scalar_one_or_none()
+    def get_by_username(sess, username):
+        user = sess.scalars(select(User).where(User.username == username)).one_or_none()
         if user is None:
-            raise BadRequest(
-                f"There isn't a user with the email address {email_address}."
-            )
+            raise BadRequest(f"There isn't a user with the username {username}.")
         return user
 
 
@@ -6639,10 +6624,7 @@ class ReportRun(Base, PersistentClass):
         if user is None:
             creator = ""
         else:
-            if hasattr(user, "proxy_username"):
-                creator = user.proxy_username
-            else:
-                creator = user.email_address
+            creator = user.username
         self.creator = creator
 
         self.title = title
@@ -7098,6 +7080,10 @@ def db_init(sess, root_path):
 
     for code in ("editor", "viewer", "party-viewer"):
         UserRole.insert(sess, code)
+    sess.commit()
+
+    User.insert(sess, "admin", UserRole.get_by_code(sess, "editor"), None)
+    User.insert(sess, "viewer", UserRole.get_by_code(sess, "viewer"), None)
     sess.commit()
 
     insert_sources(sess)
@@ -7933,6 +7919,11 @@ def db_upgrade_55_to_56(sess, root_path):
     sess.execute(text("ALTER TABLE g_batch ADD UNIQUE (date_created)"))
 
 
+def db_upgrade_56_to_57(sess, root_path):
+    sess.execute(text('ALTER TABLE "user" RENAME COLUMN email_address TO username'))
+    sess.execute(text('ALTER TABLE "user" DROP COLUMN password_digest'))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7974,6 +7965,7 @@ upgrade_funcs.extend(
         db_upgrade_53_to_54,
         db_upgrade_54_to_55,
         db_upgrade_55_to_56,
+        db_upgrade_56_to_57,
     ]
 )
 

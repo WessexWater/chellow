@@ -2,8 +2,6 @@ import csv
 from collections import deque
 from io import BytesIO, TextIOWrapper
 
-from flask import g, render_template
-
 from sqlalchemy import select
 
 from chellow.e.bill_importer import BillImport, find_parser_names
@@ -266,22 +264,6 @@ def test_BillImport_run(sess):
     )
     bill = sess.scalars(select(Bill)).one()
     assert len(bill.elements) == 1
-
-
-def test_supplier_bill_import_html(mocker, app):
-    with app.app_context():
-        with app.test_request_context():
-            g.user = None
-            g.config = {}
-            batch = mocker.Mock()
-            failed_bills = [{"error": "MPAN not found"}]
-            failed_max_registers = 0
-            render_template(
-                "/e/supplier_bill_import.html",
-                batch=batch,
-                failed_bills=failed_bills,
-                failed_max_registers=failed_max_registers,
-            )
 
 
 def test_find_parser_names():

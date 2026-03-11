@@ -1,11 +1,9 @@
-import json
 import os
-from base64 import b64decode
 from datetime import datetime as Datetime
 from importlib.metadata import version
 from pathlib import Path
 
-from flask import Flask, Response, g, make_response, render_template, request
+from flask import Flask, g, make_response, render_template, request
 
 from markdown_it import MarkdownIt
 
@@ -13,7 +11,7 @@ from markupsafe import Markup
 
 from sqlalchemy import select
 
-from werkzeug.exceptions import NotFound
+from werkzeug.exceptions import BadRequest, NotFound
 
 from zish import ZishException, dumps
 
@@ -33,15 +31,14 @@ import chellow.gas.cv
 import chellow.gas.views
 import chellow.rrun
 import chellow.testing
+from chellow.auth import set_user_func
 from chellow.models import (
     Contract,
     Session,
     User,
-    UserRole,
     db_upgrade,
     start_sqlalchemy,
 )
-from chellow.proxy import MsProxy
 from chellow.utils import HH, ct_datetime, date_format, to_ct, utc_datetime_now
 
 
@@ -64,7 +61,7 @@ def get_importer_modules():
 def create_app(testing=False, instance_path=None):
     app = Flask("chellow", instance_relative_config=True, instance_path=instance_path)
     app.config["RESTX_VALIDATE"] = True
-    app.wsgi_app = MsProxy(app.wsgi_app)
+    app.wsgi_app = set_user_func(app.wsgi_app)
     app.secret_key = os.urandom(24)
     start_sqlalchemy()
 
@@ -113,153 +110,75 @@ def create_app(testing=False, instance_path=None):
         print(msg)
 
     @app.before_request
-    def check_permissions(*args, **kwargs):
+    def get_user(*args, **kwargs):
         g.user = None
-        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        try:
-            g.config = config_contract.make_properties()
-        except ZishException:
-            g.config = {}
-        ad_props = g.config.get("ad_authentication", {})
-        ad_auth_on = ad_props.get("on", False)
-        easy_auth_props = g.config.get("easy_auth", {})
-        easy_auth_on = easy_auth_props.get("on", False)
-        path = request.path
-        if path in ("/health", "/robots933456.txt"):
-            return
-        if ad_auth_on:
-            username = request.headers["X-Isrw-Proxy-Logon-User"].upper()
+        username = request.environ.get("REMOTE_USER")
+        if username is None:
+            username = "viewer"
+        user = g.sess.scalars(
+            select(User).where(User.username == username)
+        ).one_or_none()
+        if user is None:
             user = g.sess.scalars(
-                select(User).where(User.email_address == username)
-            ).first()
+                select(User).where(User.username == "viewer")
+            ).one_or_none()
             if user is None:
-                try:
-                    username = ad_props["default_user"]
-                    user = g.sess.scalars(
-                        select(User).where(User.email_address == username)
-                    ).first()
-                except KeyError:
-                    user = None
-            if user is not None:
-                g.user = user
-        elif easy_auth_on:
-            jwt_enc = request.headers["X-MS-CLIENT-PRINCIPAL"]
-            jwt = json.loads(b64decode(jwt_enc))
-            for claim in jwt["claims"]:
-                if claim["typ"] == (
-                    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/"
-                    "emailaddress"
-                ):
-                    username = claim["val"]
-                    user = g.sess.scalars(
-                        select(User).where(User.email_address == username)
-                    ).first()
-                    break
-            if user is None:
-                try:
-                    username = easy_auth_props["default_user"]
-                    user = g.sess.scalars(
-                        select(User).where(User.email_address == username)
-                    ).first()
-                except KeyError:
-                    user = None
-            if user is not None:
-                g.user = user
-        else:
-            auth = request.authorization
+                raise BadRequest("The default user 'viewer' is not set up in Chellow.")
+        g.user = user
 
-            if auth is None:
-                try:
-                    ips = g.config["ips"]
-                    if request.remote_addr in ips:
-                        key = request.remote_addr
-                    elif "*.*.*.*" in ips:
-                        key = "*.*.*.*"
-                    else:
-                        key = None
-
-                    email = ips[key]
-                    g.user = g.sess.scalars(
-                        select(User).where(User.email_address == email)
-                    ).first()
-                except KeyError:
-                    pass
-            else:
-                user = g.sess.scalars(
-                    select(User).where(User.email_address == auth.username)
-                ).first()
-                if user is not None and user.password_matches(auth.password):
-                    g.user = user
-
-        # Got our user
+    @app.before_request
+    def check_permissions(*args, **kwargs):
         method = request.method
 
-        if g.user is not None:
-            if "X-Isrw-Proxy-Logon-User" in request.headers:
-                g.user.proxy_username = request.headers[
-                    "X-Isrw-Proxy-Logon-User"
-                ].upper()
+        role_code = g.user.user_role.code
+        path = request.path
 
-            role = g.user.user_role
-            role_code = role.code
-
-            if (
-                role_code == "viewer"
-                and (
-                    method in ("GET", "HEAD")
-                    or path
-                    in (
-                        "/reports/59",
-                        "/reports/169",
-                        "/reports/183",
-                        "/reports/187",
-                        "/reports/247",
-                        "/reports/111",
-                        "/reports/149",
-                    )
-                    or path.startswith("/api/")
+        if (
+            role_code == "viewer"
+            and (
+                method in ("GET", "HEAD")
+                or path
+                in (
+                    "/reports/59",
+                    "/reports/169",
+                    "/reports/183",
+                    "/reports/187",
+                    "/reports/247",
+                    "/reports/111",
+                    "/reports/149",
                 )
-                and path not in ("/system",)
-            ):
-                return
-            elif role_code == "editor":
-                return
-            elif role_code == "party-viewer":
-                if method in ("GET", "HEAD"):
-                    party = g.user.party
-                    market_role_code = party.market_role.code
-                    if market_role_code in ("C", "D"):
-                        dc_contract_id = request.args["dc_contract_id"]
-                        dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
-                        if dc_contract.party == party and request.full_path.startswith(
-                            "/channel_snags?"
-                        ):
-                            return
-                    elif market_role_code == "X":
-                        if path.startswith(f"/e/supplier_contracts/{party.id}"):
-                            return
-
-        if g.user is None and g.sess.query(User).count() == 0:
-            g.sess.rollback()
-            user_role = g.sess.query(UserRole).filter(UserRole.code == "editor").one()
-            User.insert(g.sess, "admin@example.com", "admin", user_role, None)
-            g.sess.commit()
-            return
-
-        if (not easy_auth_on) and (
-            (g.user is None) or (not ad_auth_on and auth is None)
-        ):
-            return Response(
-                "Could not verify your access level for that URL.\n"
-                "You have to login with proper credentials",
-                401,
-                {"WWW-Authenticate": 'Basic realm="Chellow"'},
+                or path.startswith("/api/")
             )
+            and path not in ("/system",)
+        ):
+            return
+        elif role_code == "editor":
+            return
+        elif role_code == "party-viewer":
+            if method in ("GET", "HEAD"):
+                party = g.user.party
+                market_role_code = party.market_role.code
+                if market_role_code in ("C", "D"):
+                    dc_contract_id = request.args["dc_contract_id"]
+                    dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
+                    if dc_contract.party == party and request.full_path.startswith(
+                        "/channel_snags?"
+                    ):
+                        return
+                elif market_role_code == "X":
+                    if path.startswith(f"/e/supplier_contracts/{party.id}"):
+                        return
 
         return make_response(render_template("403.html", properties=g.config), 403)
 
     @app.context_processor
     def chellow_context_processor():
+        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+        try:
+            g.config = config_contract.make_properties()
+        except ZishException:
+            g.config = {}
+
         global_alerts = []
         for task in chellow.e.hh_importer.tasks.values():
             if task.is_error:

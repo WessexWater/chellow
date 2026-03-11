@@ -1024,10 +1024,13 @@ def test_em_totals(sess, client):
     client.get(f"/e/sites/{site.id}/energy_management/totals")
 
     response = match_repeat(
-        client, f"/e/sites/{site.id}/energy_management/totals?mem_id=0", "table"
+        client,
+        f"/e/sites/{site.id}/energy_management/totals?mem_id=0",
+        "table",
+        seconds=10,
     )
 
-    assert response.status_code == 286
+    assert response.status_code == 286, response.get_data(as_text=True)
 
 
 def test_em_hh_data(sess, client):
@@ -2494,11 +2497,10 @@ def test_mop_batch_edit_post_import(sess, client):
     response = client.post(f"/e/mop_batches/{batch.id}/edit", data=data)
     match(response, 303, r"/mop_bill_imports/0")
 
-    response = client.get("/e/mop_bill_imports/0")
-    match(
-        response,
-        200,
-        r"All the bills have been successfully loaded and attached to " r"the batch\.",
+    match_repeat(
+        client,
+        "/e/mop_bill_imports/0",
+        "All the bills have been successfully loaded and attached to the batch.",
     )
 
 
@@ -2594,11 +2596,10 @@ def test_mop_batch_edit_post_delete_import(sess, client):
     response = client.post(f"/e/mop_batches/{batch.id}/edit", data=data)
     match(response, 303, r"/mop_bill_imports/0")
 
-    response = client.get("/e/mop_bill_imports/0")
-    match(
-        response,
-        200,
-        r"All the bills have been successfully loaded and attached to " r"the batch\.",
+    match_repeat(
+        client,
+        "/e/mop_bill_imports/0",
+        "All the bills have been successfully loaded and attached to the batch.",
     )
 
 
@@ -3938,7 +3939,6 @@ def test_supplier_batch_post_delete_import_bills_no_bills(sess, client):
         client,
         "/e/supplier_bill_imports/0",
         "All the bills have been successfully loaded and attached to the batch.",
-        seconds=1,
     )
 
 

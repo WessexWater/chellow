@@ -10,7 +10,7 @@ from chellow.utils import ct_datetime, to_utc
 
 def test_content(sess):
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     vf = to_utc(ct_datetime(2020, 1, 1))
     g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
@@ -21,4 +21,4 @@ def test_content(sess):
     content(start_date, finish_date, g_contract.id, user_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_example_com_gas_virtual_bills.csv"]
+    assert files == ["00000_FINISHED_admin_gas_virtual_bills.csv"]

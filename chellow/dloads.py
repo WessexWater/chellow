@@ -103,10 +103,7 @@ def open_file(base, user, mode="r", newline=None, is_zip=False):
     if user is None:
         uname = ""
     else:
-        if hasattr(user, "proxy_username"):
-            un = user.proxy_username
-        else:
-            un = user.email_address
+        un = user.username
         uname = "".join(x if (x.isalnum() or x in "_") else "_" for x in un)
 
     names = tuple("_".join((serial, v, uname, base)) for v in ("RUNNING", "FINISHED"))

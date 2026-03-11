@@ -629,37 +629,21 @@ def bill_types_get():
 
 @home.route("/users", methods=["GET"])
 def users_get():
-    users = g.sess.query(User).order_by(User.email_address).all()
-    parties = (
-        g.sess.query(Party)
+    users = g.sess.scalars(select(User).order_by(User.username)).all()
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
         .order_by(MarketRole.code, Participant.code)
-        .all()
-    )
+    ).all()
 
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = config_contract.make_properties()
-    ad_props = props.get("ad_authentication", {})
-    ad_auth_on = ad_props.get("on", False)
-    return render_template(
-        "users.html", users=users, parties=parties, ad_auth_on=ad_auth_on
-    )
+    return render_template("users.html", users=users, parties=parties)
 
 
 @home.route("/users", methods=["POST"])
 def users_post():
-    email_address = req_str("email_address")
+    username = req_str("username")
 
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = config_contract.make_properties()
-    ad_props = props.get("ad_authentication", {})
-    ad_auth_on = ad_props.get("on", False)
-
-    if ad_auth_on:
-        password = ""
-    else:
-        password = req_str("password")
     user_role_code = req_str("user_role_code")
     role = UserRole.get_by_code(g.sess, user_role_code)
     try:
@@ -667,9 +651,9 @@ def users_post():
         if role.code == "party-viewer":
             party_id = req_int("party_id")
             party = g.sess.query(Party).get(party_id)
-        user = User.insert(g.sess, email_address, password, role, party)
+        user = User.insert(g.sess, username, role, party)
         g.sess.commit()
-        return redirect("/users/" + str(user.id), 303)
+        return redirect(f"/users/{user.id}", 303)
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
@@ -682,26 +666,19 @@ def users_post():
             .all()
         )
         return make_response(
-            render_template(
-                "users.html", users=users, parties=parties, ad_auth_on=ad_auth_on
-            ),
-            400,
+            render_template("users.html", users=users, parties=parties), 400
         )
 
 
 @home.route("/users/<int:user_id>")
 def user_get(user_id):
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
         .order_by(MarketRole.code, Participant.code)
     )
     user = User.get_by_id(g.sess, user_id)
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = config_contract.make_properties()
-    ad_props = props.get("ad_authentication", {})
-    ad_auth_on = ad_props.get("on", False)
     issues = g.sess.scalars(
         select(Issue)
         .where(cast(Issue.properties["owner_id"], Integer) == user.id)
@@ -709,60 +686,36 @@ def user_get(user_id):
     )
     issue_bundles = make_issue_bundles(g.sess, issues)
     return render_template(
-        "user.html",
-        parties=parties,
-        user=user,
-        ad_auth_on=ad_auth_on,
-        issue_bundles=issue_bundles,
+        "user.html", parties=parties, user=user, issue_bundles=issue_bundles
     )
 
 
 @home.route("/users/<int:user_id>/edit")
 def user_edit_get(user_id):
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
         .order_by(MarketRole.code, Participant.code)
     )
     user = User.get_by_id(g.sess, user_id)
-    config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-    props = config_contract.make_properties()
-    ad_props = props.get("ad_authentication", {})
-    ad_auth_on = ad_props.get("on", False)
-    return render_template(
-        "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
-    )
+    return render_template("user_edit.html", parties=parties, user=user)
 
 
 @home.route("/users/<int:user_id>/edit", methods=["POST"])
 def user_edit_post(user_id):
     try:
         user = User.get_by_id(g.sess, user_id)
-        if "current_password" in request.values:
-            current_password = req_str("current_password")
-            new_password = req_str("new_password")
-            confirm_new_password = req_str("confirm_new_password")
-            if not user.password_matches(current_password):
-                raise BadRequest("The current password is incorrect.")
-            if new_password != confirm_new_password:
-                raise BadRequest("The new passwords aren't the same.")
-            if len(new_password) < 6:
-                raise BadRequest("The password must be at least 6 characters long.")
-            user.set_password(new_password)
-            g.sess.commit()
-            return redirect(f"/users/{user.id}", 303)
-        else:
-            email_address = req_str("email_address")
-            user_role_code = req_str("user_role_code")
-            user_role = UserRole.get_by_code(g.sess, user_role_code)
-            party = None
-            if user_role.code == "party-viewer":
-                party_id = req_int("party_id")
-                party = Party.get_by_id(g.sess, party_id)
-            user.update(email_address, user_role, party)
-            g.sess.commit()
-            return redirect(f"/users/{user.id}", 303)
+        username = req_str("username")
+        user_role_code = req_str("user_role_code")
+        user_role = UserRole.get_by_code(g.sess, user_role_code)
+        party = None
+        if user_role.code == "party-viewer":
+            party_id = req_int("party_id")
+            party = Party.get_by_id(g.sess, party_id)
+        user.update(username, user_role, party)
+        g.sess.commit()
+        return redirect(f"/users/{user.id}", 303)
     except BadRequest as e:
         flash(e.description)
         parties = (
@@ -771,15 +724,8 @@ def user_edit_post(user_id):
             .join(Participant)
             .order_by(MarketRole.code, Participant.code)
         )
-        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        props = config_contract.make_properties()
-        ad_props = props.get("ad_authentication", {})
-        ad_auth_on = ad_props.get("on", False)
         return make_response(
-            render_template(
-                "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
-            ),
-            400,
+            render_template("user_edit.html", parties=parties, user=user), 400
         )
 
 
@@ -787,7 +733,7 @@ def user_edit_post(user_id):
 def user_edit_delete(user_id):
     try:
         user = User.get_by_id(g.sess, user_id)
-        g.sess.delete(user)
+        user.delete(g.sess)
         g.sess.commit()
         return redirect("/users", 303)
     except BadRequest as e:
@@ -798,15 +744,8 @@ def user_edit_delete(user_id):
             .join(Participant)
             .order_by(MarketRole.code, Participant.code)
         )
-        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        props = config_contract.make_properties()
-        ad_props = props.get("ad_authentication", {})
-        ad_auth_on = ad_props.get("on", False)
         return make_response(
-            render_template(
-                "user_edit.html", parties=parties, user=user, ad_auth_on=ad_auth_on
-            ),
-            400,
+            render_template("user_edit.html", parties=parties, user=user), 400
         )
 
 

@@ -68,7 +68,7 @@ def test_summertime(mocker):
     finish_date = to_utc(finish_date_ct)
     contract_id = 1
     user = mocker.Mock()
-    user.email_address = "sfreud"
+    user.username = "sfreud"
 
     mock_c_months_u = mocker.patch(
         "chellow.reports.report_87.c_months_u", autospec=True
@@ -102,7 +102,7 @@ def test_content_no_supplies(mocker, sess):
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_87.open_file", return_value=mock_file)
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     vf = to_utc(ct_datetime(1996, 1, 1))
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
@@ -247,7 +247,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 

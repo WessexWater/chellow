@@ -300,7 +300,7 @@ def test_content(mocker, sess):
         None,
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 
@@ -310,4 +310,4 @@ def test_content(mocker, sess):
     content(supply_id, start_date, finish_date, user_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_example_com_supply_virtual_bills_1.csv"]
+    assert files == ["00000_FINISHED_admin_supply_virtual_bills_1.csv"]

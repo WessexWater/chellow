@@ -1,14 +1,10 @@
 from tempfile import TemporaryDirectory
 
-from flask.testing import FlaskClient
-
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 import pg8000
 
 import pytest
-
-from requests.auth import _basic_auth_str
 
 from sqlalchemy import text
 
@@ -50,17 +46,6 @@ def raw_client(app):
     return app.test_client()
 
 
-class CustomClient(FlaskClient):
-    def open(self, *args, **kwargs):
-        if "headers" in kwargs:
-            headers = kwargs["headers"]
-        else:
-            headers = kwargs["headers"] = {}
-
-        headers["Authorization"] = _basic_auth_str("admin@example.com", "admin")
-        return super().open(*args, **kwargs)
-
-
 @pytest.fixture
 def sess(app):
     sess = Session()
@@ -77,12 +62,11 @@ def rsess(app):
 
 @pytest.fixture
 def client(app, sess):
-    app.test_client_class = CustomClient
 
     with app.test_client() as client:
         with app.app_context():
             user_role = UserRole.insert(sess, "editor")
-            User.insert(sess, "admin@example.com", "admin", user_role, None)
+            User.insert(sess, "admin", user_role, None)
 
             sess.execute(
                 text(

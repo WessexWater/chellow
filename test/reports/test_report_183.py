@@ -1,8 +1,6 @@
 from io import BytesIO
 from zipfile import ZipFile
 
-from requests.auth import _basic_auth_str
-
 from utils import match
 
 from chellow.models import Contract, MarketRole, Participant, Site, User, UserRole
@@ -11,7 +9,7 @@ from chellow.utils import ct_datetime, to_utc
 
 
 def test_do_post(mocker, client, sess):
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     MockThread = mocker.patch("chellow.reports.report_183.threading.Thread")
 
     data = {
@@ -41,7 +39,7 @@ def test_do_post(mocker, client, sess):
 
 
 def test_do_post_site_codes(mocker, client, sess):
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     MockThread = mocker.patch("chellow.reports.report_183.threading.Thread")
 
     data = {
@@ -73,7 +71,7 @@ def test_do_post_site_codes(mocker, client, sess):
 def test_do_post_viewer(mocker, raw_client, sess):
     vf = to_utc(ct_datetime(2022, 7, 1))
     user_role = UserRole.insert(sess, "viewer")
-    user = User.insert(sess, "admin@example.com", "admin", user_role, None)
+    user = User.insert(sess, "admin", user_role, None)
     participant = Participant.insert(sess, "CALB", "Calb")
     market_role = MarketRole.insert(sess, "Z", "Non-core")
     participant.insert_party(sess, market_role, "neut", vf, None, "")
@@ -92,8 +90,7 @@ def test_do_post_viewer(mocker, raw_client, sess):
         "type": "used",
         "site_codes": "",
     }
-    headers = {"Authorization": _basic_auth_str("admin@example.com", "admin")}
-    response = raw_client.post("/reports/183", data=data, headers=headers)
+    response = raw_client.post("/reports/183", data=data)
 
     match(response, 303)
 
@@ -122,7 +119,7 @@ def test_process_site(sess):
 
 def test_none_content(mocker, sess):
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 

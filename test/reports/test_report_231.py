@@ -71,7 +71,7 @@ def virtual_bill(ds):
         sess, "Fusion MOP 2000", participant, mop_charge_script, {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 
@@ -228,7 +228,7 @@ def virtual_bill(ds):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 

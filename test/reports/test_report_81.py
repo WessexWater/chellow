@@ -42,7 +42,7 @@ def virtual_bill(ds):
         sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     dc_contract_id = dc_contract.id
 

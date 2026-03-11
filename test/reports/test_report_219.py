@@ -128,7 +128,7 @@ def test_content(mocker, sess):
     )
     supply_id = supply.id
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     batch = imp_supplier_contract.insert_batch(sess, "a", "batch", vf)
 

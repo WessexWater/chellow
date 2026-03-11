@@ -48,7 +48,7 @@ def test_do_get_as_csv(mocker, sess, client):
     dc_contract = Contract.insert_dc(
         sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     dc_contract_id = dc_contract.id
     sess.commit()
@@ -220,7 +220,7 @@ def test_content(mocker, sess):
         sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     dc_contract_id = dc_contract.id
 
@@ -382,7 +382,7 @@ def test_content_not_show_settlement(mocker, sess):
         sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     dc_contract_id = dc_contract.id
     insert_comms(sess)
@@ -445,7 +445,7 @@ def test_content_days_long_hidden(mocker, sess):
         sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     dc_contract_id = dc_contract.id
 

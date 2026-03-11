@@ -42,7 +42,7 @@ def test_content(mocker, sess):
     contract.insert_issue(sess, vf, {})
     contract.insert_issue(sess, to_utc(ct_datetime(1997, 1, 1)), {})
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     contract_ids = [contract.id]
     sess.commit()

@@ -56,7 +56,7 @@ def test_eras(mocker):
 
 def test_content(mocker, sess):
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     sess.commit()
 
     mock_file = StringIO()

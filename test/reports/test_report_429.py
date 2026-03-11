@@ -209,7 +209,7 @@ def virtual_bill(ds):
         breakdown,
     )
     g_bill_id = g_bill.id
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     report_run = ReportRun.insert(sess, "g_bill_check", None, "", {})
     report_run_id = report_run.id
@@ -333,7 +333,7 @@ def test_batch_http(mocker, sess, client):
     g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
     g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
 
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     sess.commit()
 
     query_string = {"g_batch_id": g_batch.id}
@@ -402,7 +402,7 @@ def test_bill_http(mocker, sess, client):
         "",
         breakdown,
     )
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     sess.commit()
 
     query_string = {"g_bill_id": g_bill.id}

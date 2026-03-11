@@ -37,7 +37,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 def test_do_post(mocker, sess, client):
     mock_Thread = mocker.patch("chellow.reports.report_187.threading.Thread")
-    user = User.get_by_email_address(sess, "admin@example.com")
+    user = User.get_by_username(sess, "admin")
     user_id = user.id
     sess.commit()
     start_date_ct = ct_datetime(2023, 7, 5)
@@ -71,7 +71,7 @@ def test_content_no_data(mocker, sess):
     mpan_cores = None
     is_zipped = False
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
     content(start_date, finish_date, supply_id, mpan_cores, is_zipped, user_id)
@@ -194,7 +194,7 @@ def test_content(mocker, sess):
         None,
     )
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 

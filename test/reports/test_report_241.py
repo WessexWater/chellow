@@ -32,7 +32,7 @@ from chellow.utils import ct_datetime, to_utc
 
 def test_content(sess):
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     site = Site.insert(sess, "CI017", "Water Works 1")
     vf = to_utc(ct_datetime(2000, 1, 1))
@@ -214,4 +214,4 @@ def virtual_bill(ds):
     )
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_example_com_daily_supplier_virtual_bill.csv"]
+    assert files == ["00000_FINISHED_admin_daily_supplier_virtual_bill.csv"]

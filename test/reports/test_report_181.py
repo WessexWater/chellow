@@ -8,7 +8,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 def test_content(sess):
     site = Site.insert(sess, "a", "a")
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
 
@@ -17,7 +17,7 @@ def test_content(sess):
     content(year, site_id, user_id)
 
     files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_example_com_output.csv"]
+    assert files == ["00000_FINISHED_admin_output.csv"]
 
 
 def test_write_sites(mocker):

@@ -35,7 +35,7 @@ from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
 def test_handle_request(mocker, client, rsess):
-    user = User.get_by_email_address(rsess, "admin@example.com")
+    user = User.get_by_username(rsess, "admin")
     MockThread = mocker.patch("chellow.reports.report_169.threading.Thread")
 
     channel_type = "ACTIVE"
@@ -70,7 +70,7 @@ def test_handle_request(mocker, client, rsess):
 
 
 def test_content(mocker, client, rsess):
-    user = User.get_by_email_address(rsess, "admin@example.com")
+    user = User.get_by_username(rsess, "admin")
 
     mock_file = StringIO()
     mock_file.close = mocker.Mock()
@@ -256,7 +256,7 @@ def test_content_zip(mocker, sess):
     )
 
     editor = UserRole.insert(sess, "editor")
-    user = User.insert(sess, "admin@example.com", "xxx", editor, None)
+    user = User.insert(sess, "admin", editor, None)
     user_id = user.id
 
     sess.commit()
