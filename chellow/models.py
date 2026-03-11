@@ -1227,7 +1227,7 @@ class Batch(Base, PersistentClass):
         ).one_or_none()
         if bill is None:
             raise BadRequest(
-                "The bill with reference '{reference}' can't be found in this batch."
+                f"The bill with reference '{reference}' can't be found in this batch."
             )
         return bill
 
