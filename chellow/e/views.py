@@ -1590,7 +1590,7 @@ def dc_issue_edit_get(issue_id):
 def dc_issue_edit_post(issue_id):
     try:
         issue = Issue.get_by_id(g.sess, issue_id)
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="minute")
         is_open = req_checkbox("is_open")
         owner_id = req_int("owner_id")
         subject = req_str("subject")
@@ -3776,7 +3776,7 @@ def mop_issue_edit_get(issue_id):
 def mop_issue_edit_post(issue_id):
     try:
         issue = Issue.get_by_id(g.sess, issue_id)
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="minute")
         is_open = req_checkbox("is_open")
         owner_id = req_int("owner_id")
         subject = req_str("subject")
@@ -6544,7 +6544,7 @@ def supplier_issue_edit_get(issue_id):
 def supplier_issue_edit_post(issue_id):
     try:
         issue = Issue.get_by_id(g.sess, issue_id)
-        date_created = req_date("date_created")
+        date_created = req_date("date_created", resolution="minute")
         is_open = req_checkbox("is_open")
         owner_id = req_int("owner_id")
         subject = req_str("subject")

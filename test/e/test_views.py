@@ -37,6 +37,7 @@ from chellow.models import (
     Site,
     Source,
     Ssc,
+    User,
     VoltageLevel,
     insert_bill_types,
     insert_comms,
@@ -773,6 +774,33 @@ def virtual_bill(ds):
     match(response, 303)
     sess.rollback()
     assert contract.make_properties() == properties
+
+
+def test_dc_issue_edit_post(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_contract = Contract.insert_dc(
+        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    )
+    issue = dc_contract.insert_issue(sess, vf, {})
+    user = User.get_by_username(sess, "admin")
+    sess.commit()
+    data = {
+        "date_created_year": "2020",
+        "date_created_month": "11",
+        "date_created_day": "01",
+        "date_created_hour": "01",
+        "date_created_minute": "33",
+        "owner_id": user.id,
+        "subject": "Missing data",
+    }
+    response = client.post(f"/e/dc_issues/{issue.id}/edit", data=data)
+    match(response, 303)
 
 
 def test_dc_rate_script_add_post(sess, client):
