@@ -15,6 +15,7 @@ from chellow.general_import import (
     general_import_g_supply,
     general_import_llfc,
     general_import_site,
+    general_import_supplier_batch,
     general_import_supply,
 )
 from chellow.models import (
@@ -1604,6 +1605,52 @@ def test_general_import_site_update(sess):
     site = sess.scalars(select(Site)).one()
     assert site.code == site_code
     assert site.name == site_name
+
+
+def test_general_import_supplier_batch(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    supplier_contract_name = "Fusion 2000"
+    Contract.insert_supplier(
+        sess, supplier_contract_name, participant, "", {}, vf, None, {}
+    )
+    sess.commit()
+    action = "insert"
+    vals = [
+        supplier_contract_name,
+        "dgnsdjh55",
+        "a batch",
+        "2019-09-08 00:00",
+    ]
+    args = []
+    general_import_supplier_batch(sess, action, vals, args)
+
+
+def test_general_import_supplier_batch_now(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    supplier_contract_name = "Fusion 2000"
+    Contract.insert_supplier(
+        sess, supplier_contract_name, participant, "", {}, vf, None, {}
+    )
+    sess.commit()
+    action = "insert"
+    vals = [
+        supplier_contract_name,
+        "dgnsdjh55",
+        "a batch",
+        "",
+    ]
+    args = []
+    general_import_supplier_batch(sess, action, vals, args)
 
 
 def test_general_import_supply_insert_HH(sess):
