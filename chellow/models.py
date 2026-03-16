@@ -80,6 +80,7 @@ from chellow.utils import (
     to_utc,
     utc_datetime,
     utc_datetime_now,
+    validate_hh_start,
 )
 
 
@@ -3709,6 +3710,8 @@ class Era(Base, PersistentClass):
     ):
         orig_start_date = self.start_date
         orig_finish_date = self.finish_date
+        validate_hh_start(start_date)
+        validate_hh_start(finish_date)
 
         if hh_after(start_date, finish_date):
             raise BadRequest("The era start date can't be after the finish date.")

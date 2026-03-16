@@ -1,4 +1,4 @@
-{%- macro input_date(prefix='timestamp', initial=None, resolution='minute', is_dynamic=True, has_is_ended=False) -%}
+{%- macro input_date(prefix='timestamp', initial=None, resolution='hh', is_dynamic=True, has_is_ended=False) -%}
 	{% set year_name = prefix + '_year' %}
 	{% set month_name = prefix + '_month' %}
 	{% set day_name = prefix + '_day' %}

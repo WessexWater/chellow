@@ -181,7 +181,9 @@ def req_hh_date(prefix):
 
 
 def validate_hh_start(dt):
-    if dt.minute not in [0, 30] or dt.second != 0 or dt.microsecond != 0:
+    if dt is not None and (
+        dt.minute not in (0, 30) or dt.second != 0 or dt.microsecond != 0
+    ):
         raise BadRequest(
             "The half-hour must start exactly on the hour or half past the hour."
         )
