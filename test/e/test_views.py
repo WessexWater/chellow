@@ -78,24 +78,26 @@ def test_channel_add_post(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -114,7 +116,7 @@ def test_channel_add_post(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -136,7 +138,7 @@ def test_channel_add_post(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -174,24 +176,26 @@ def test_channel_add_post_export_related(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -210,7 +214,7 @@ def test_channel_add_post_export_related(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -232,7 +236,7 @@ def test_channel_add_post_export_related(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -267,33 +271,37 @@ def test_channel_snags_get(sess, client):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -312,7 +320,7 @@ def test_channel_snags_get(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -334,7 +342,7 @@ def test_channel_snags_get(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -376,9 +384,11 @@ def test_channel_snag_get(sess, client):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", valid_from, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -391,24 +401,29 @@ def test_channel_snag_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", valid_from, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", valid_from, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", valid_from, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -517,8 +532,8 @@ def test_dc_batches_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
-    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
     contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
@@ -530,8 +545,8 @@ def test_dc_batch_add_post(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
-    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
     sess.commit()
 
     data = {
@@ -553,8 +568,8 @@ def test_dc_batch_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
-    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
     batch = contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
@@ -566,8 +581,10 @@ def test_dc_batch_upload_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
-    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion Dc Ltd", vf, None, None
+    )
+    dc_contract = dc_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
@@ -579,8 +596,10 @@ def test_dc_batch_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
-    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion Dc Ltd", vf, None, None
+    )
+    dc_contract = dc_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
@@ -593,8 +612,10 @@ def test_dc_batch_file_edit_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion Dc Ltd", vf, None, None)
-    dc_contract = Contract.insert_dc(sess, "Fusion", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion Dc Ltd", vf, None, None
+    )
+    dc_contract = dc_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
@@ -606,11 +627,11 @@ def test_dc_batch_file_edit_get(sess, client):
 def test_dc_contract_edit_post_error(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_dc(
-        sess, "Lowri Beck", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    contract = dc_party.insert_contract(
+        sess, "Lowri Beck", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
 
@@ -624,11 +645,11 @@ def test_dc_contract_edit_post_error(sess, client):
 def test_dc_contract_get(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_dc(
-        sess, "Lowri Beck", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    contract = dc_party.insert_contract(
+        sess, "Lowri Beck", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
 
@@ -640,14 +661,14 @@ def test_dc_contract_get(sess, client):
 def test_dc_contracts_add_post(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(
+    party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
 
     sess.commit()
 
     data = {
-        "participant_id": str(participant.id),
+        "party_id": str(party.id),
         "name": "NHH DC contract",
         "start_year": "2000",
         "start_month": "01",
@@ -669,8 +690,10 @@ def test_dc_contracts_hh_imports_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    contract = dc_party.insert_contract(sess, "DC 2000", "", {}, vf, None, {})
     sess.commit()
 
     response = client.get(f"/e/dc_contracts/{contract.id}/hh_imports")
@@ -681,8 +704,10 @@ def test_dc_contracts_hh_imports_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    contract = dc_party.insert_contract(sess, "DC 2000", "", {}, vf, None, {})
     sess.commit()
 
     file_name = "hh.simple.csv"
@@ -699,11 +724,11 @@ def test_dc_contracts_hh_imports_post(sess, client):
 def test_dc_auto_importer_get(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_dc(
-        sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    contract = dc_party.insert_contract(
+        sess, "DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
 
@@ -715,11 +740,11 @@ def test_dc_auto_importer_get(sess, client):
 def test_dc_auto_importer_post(mocker, sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_dc(
-        sess, "DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    contract = dc_party.insert_contract(
+        sess, "DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
 
@@ -734,8 +759,8 @@ def test_dc_contract_edit_delete(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_C = MarketRole.insert(sess, "C", "DC")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_C, "DC Ltd.", vf, None, None)
-    contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "DC Ltd.", vf, None, None)
+    contract = dc_party.insert_contract(sess, "DC 2000", "", {}, vf, None, {})
     sess.commit()
 
     response = client.delete(f"/e/dc_contracts/{contract.id}/edit")
@@ -749,9 +774,7 @@ def test_dc_contract_edit_post(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     party = participant.insert_party(sess, market_role_C, "DC Ltd.", vf, None, None)
     properties = {"sora": "ai"}
-    contract = Contract.insert_dc(
-        sess, "DC 2000", participant, "", properties, vf, None, {}
-    )
+    contract = party.insert_contract(sess, "DC 2000", "", properties, vf, None, {})
     sess.commit()
 
     data = {
@@ -783,10 +806,10 @@ def test_dc_issue_edit_post(sess, client):
     participant = Participant.insert(sess, "CALB", "AK Industries")
     participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     issue = dc_contract.insert_issue(sess, vf, {})
     user = User.get_by_username(sess, "admin")
     sess.commit()
@@ -806,11 +829,11 @@ def test_dc_issue_edit_post(sess, client):
 def test_dc_rate_script_add_post(sess, client):
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     sess.commit()
 
@@ -833,10 +856,10 @@ def test_dc_rate_script_edit_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     dc_rate_script = dc_contract.rate_scripts[0]
     sess.commit()
 
@@ -849,10 +872,10 @@ def test_dc_entry_edit_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     date_created = to_utc(ct_datetime(2025, 1, 12))
     issue = dc_contract.insert_issue(sess, date_created, {})
     entry = issue.add_entry(sess, "")
@@ -882,18 +905,20 @@ def test_dc_bill_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -914,12 +939,12 @@ def test_dc_bill_get(sess, client):
     pc = Pc.insert(sess, "00", "", vf, None)
     cop = Cop.get_by_code(sess, "5")
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -940,7 +965,7 @@ def test_dc_bill_get(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -998,10 +1023,10 @@ def test_dc_bill_import(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     batch = dc_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
@@ -1036,9 +1061,11 @@ def test_em_totals(sess, client):
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1066,9 +1093,11 @@ def test_em_hh_data(sess, client):
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1081,24 +1110,27 @@ def test_em_hh_data(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -1189,33 +1221,37 @@ def test_era_edit_get(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -1234,7 +1270,7 @@ def test_era_edit_get(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -1256,7 +1292,7 @@ def test_era_edit_get(client, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -1290,33 +1326,37 @@ def test_era_edit_form_get(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -1335,7 +1375,7 @@ def test_era_edit_form_get(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -1357,7 +1397,7 @@ def test_era_edit_form_get(client, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -1400,33 +1440,37 @@ def test_era_edit_form_get_ended_llfc(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -1445,7 +1489,7 @@ def test_era_edit_form_get_ended_llfc(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1474,7 +1518,7 @@ def test_era_edit_form_get_ended_llfc(client, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -1518,9 +1562,11 @@ def test_dno_rate_script_edit_post(sess, client):
     valid_from = to_utc(ct_datetime(2000, 1, 1))
     participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_R = MarketRole.insert(sess, "R", "WPD")
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    dno_contract = Contract.insert_dno(
-        sess, dno.dno_code, participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dno_party = participant.insert_party(
+        sess, market_role_R, "WPD", valid_from, None, "22"
+    )
+    dno_contract = dno_party.insert_contract(
+        sess, dno_party.dno_code, "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     rs = dno_contract.rate_scripts[0]
     sess.commit()
@@ -1545,9 +1591,11 @@ def test_era_edit_post_hh(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", valid_from, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1560,31 +1608,38 @@ def test_era_edit_post_hh(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", valid_from, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", valid_from, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", valid_from, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno_party = participant.insert_party(
+        sess, market_role_R, "WPD", valid_from, None, "22"
+    )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
     mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
@@ -1603,7 +1658,7 @@ def test_era_edit_post_hh(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -1632,7 +1687,7 @@ def test_era_edit_post_hh(client, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -1692,11 +1747,11 @@ def test_era_edit_post_nhh(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
+    non_core_party = participant.insert_party(
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1709,30 +1764,29 @@ def test_era_edit_post_nhh(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "03", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -1862,9 +1916,11 @@ def test_era_edit_post_fail(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", valid_from, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1877,24 +1933,29 @@ def test_era_edit_post_fail(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", valid_from, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", valid_from, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", valid_from, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -1984,9 +2045,11 @@ def test_era_edit_delete_fail(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -1999,24 +2062,29 @@ def test_era_edit_delete_fail(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -2106,24 +2174,25 @@ def test_get_era_bundles_bill_after_supply_end(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -2226,24 +2295,26 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -2262,7 +2333,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -2281,7 +2352,7 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -2396,10 +2467,8 @@ def test_mop_batches_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "MOP")
-    participant.insert_party(sess, market_role_M, "Fusion", vf, None, None)
-    contract = Contract.insert_mop(
-        sess, "Fusion MOP", participant, "", {}, vf, None, {}
-    )
+    mop_party = participant.insert_party(sess, market_role_M, "Fusion", vf, None, None)
+    contract = mop_party.insert_contract(sess, "Fusion MOP", "", {}, vf, None, {})
     contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
 
@@ -2411,10 +2480,10 @@ def test_mop_batch_add_post(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     sess.commit()
 
     data = {
@@ -2444,24 +2513,26 @@ def test_mop_batch_edit_post_import(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -2480,7 +2551,7 @@ def test_mop_batch_edit_post_import(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -2499,7 +2570,7 @@ def test_mop_batch_edit_post_import(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -2543,22 +2614,24 @@ def test_mop_batch_edit_post_delete_import(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
@@ -2635,10 +2708,10 @@ def test_mop_batch_upload_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     batch = mop_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
@@ -2658,30 +2731,29 @@ def test_mop_batch_upload_file_post(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -2784,24 +2856,26 @@ def test_mop_batches_edit_post(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -2820,7 +2894,7 @@ def test_mop_batches_edit_post(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -2839,7 +2913,7 @@ def test_mop_batches_edit_post(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -2895,8 +2969,10 @@ def test_mop_contract_edit_delete(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_M = MarketRole.insert(sess, "M", "MOP")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_M, "MOP Ltd.", vf, None, None)
-    contract = Contract.insert_mop(sess, "MOP 2000", participant, "", {}, vf, None, {})
+    mop_party = participant.insert_party(
+        sess, market_role_M, "MOP Ltd.", vf, None, None
+    )
+    contract = mop_party.insert_contract(sess, "MOP 2000", "", {}, vf, None, {})
     sess.commit()
 
     response = client.delete(f"/e/mop_contracts/{contract.id}/edit")
@@ -2908,8 +2984,10 @@ def test_mop_batch_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_M = MarketRole.insert(sess, "M", "MOP")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    contract = Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
+    )
+    contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
     batch = contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "bills.csv", b"a bill", "csv")
     sess.commit()
@@ -2922,10 +3000,10 @@ def test_mop_rate_script_edit_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_M = MarketRole.insert(sess, "M", "HH Dc")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_M, "Fusion MOP", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion MOP", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion MOP", vf, None, None
     )
+    mop_contract = mop_party.insert_contract(sess, "Fusion MOP", "", {}, vf, None, {})
     mop_rate_script = mop_contract.rate_scripts[0]
     sess.commit()
 
@@ -3126,18 +3204,20 @@ def test_read_add_get_no_existing_era(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -3158,12 +3238,12 @@ def test_read_add_get_no_existing_era(sess, client):
     pc = Pc.insert(sess, "00", "", vf, None)
     cop = Cop.get_by_code(sess, "5")
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -3184,7 +3264,7 @@ def test_read_add_get_no_existing_era(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -3241,18 +3321,20 @@ def test_read_add_get_existing_era(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -3273,12 +3355,12 @@ def test_read_add_get_existing_era(sess, client):
     pc = Pc.insert(sess, "00", "", vf, None)
     cop = Cop.get_by_code(sess, "5")
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -3299,7 +3381,7 @@ def test_read_add_get_existing_era(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -3359,19 +3441,23 @@ def test_site_add_e_supply_form_get(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    Contract.insert_mop(sess, "Fusion", participant, "", {}, vf, None, {})
-    Contract.insert_dc(sess, "Fusion DC 2000", participant, "", {}, vf, None, {})
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     insert_cops(sess)
     insert_comms(sess)
     insert_dtc_meter_types(sess)
-    Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
-    )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    supplier_party.insert_contract(sess, "Fusion Supplier 2000", "", {}, vf, None, {})
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -3404,7 +3490,7 @@ def test_site_add_e_supply_form_get(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant_hh, llfc, vf, None)
@@ -3451,31 +3537,32 @@ def test_site_add_e_supply_post_hh(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -3494,7 +3581,7 @@ def test_site_add_e_supply_post_hh(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -3521,7 +3608,7 @@ def test_site_add_e_supply_post_hh(sess, client):
         "dc_contract_id": dc_contract.id,
         "dc_account": "dc1",
         "msn": "jjl4",
-        "dno_id": dno.id,
+        "dno_id": dno_party.id,
         "pc_id": pc.id,
         "mtc_participant_id": mtc_participant.id,
         "cop_id": cop.id,
@@ -3557,22 +3644,24 @@ def test_site_add_e_supply_post_nhh(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "03", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
@@ -3648,9 +3737,11 @@ def test_site_add_e_supply_post_fail(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -3663,23 +3754,24 @@ def test_site_add_e_supply_post_fail(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     insert_comms(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -3757,9 +3849,11 @@ def test_supplier_batches_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    contract = Contract.insert_supplier(
-        sess, "Fusion Supplier", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
+    )
+    contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier", "", {}, vf, None, {}
     )
     contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
@@ -3772,11 +3866,12 @@ def test_supplier_batch_edit_delete(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         vf,
@@ -3794,9 +3889,11 @@ def test_supplier_batch_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
@@ -3817,22 +3914,24 @@ def test_supplier_batch_get_vat(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
@@ -3931,9 +4030,11 @@ def test_supplier_batch_post_import_bills(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
@@ -3953,9 +4054,11 @@ def test_supplier_batch_post_delete_import_bills_no_bills(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
@@ -3981,31 +4084,32 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -4024,7 +4128,7 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -4043,7 +4147,7 @@ def test_supplier_batch_post_delete_import_bills(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -4104,9 +4208,11 @@ def test_supplier_batch_upload_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     sess.commit()
@@ -4119,9 +4225,11 @@ def test_supplier_batch_file_edit_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     batch = imp_supplier_contract.insert_batch(sess, "b1", "batch 1", vf)
     batch_file = batch.insert_file(sess, "afile.csv", b"", "csv")
@@ -4142,29 +4250,24 @@ def test_supplier_bill_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess,
-        "Fusion Supplier 2000",
-        participant,
-        "",
-        {},
-        utc_datetime(2000, 1, 1),
-        None,
-        {},
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
@@ -4293,31 +4396,32 @@ def test_supplier_bill_get_zish_error(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -4336,7 +4440,7 @@ def test_supplier_bill_get_zish_error(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -4355,7 +4459,7 @@ def test_supplier_bill_get_zish_error(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -4440,24 +4544,26 @@ def test_supplier_bill_add_post(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -4476,7 +4582,7 @@ def test_supplier_bill_add_post(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -4495,7 +4601,7 @@ def test_supplier_bill_add_post(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -4564,24 +4670,26 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -4600,7 +4708,7 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -4619,7 +4727,7 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -4697,11 +4805,11 @@ def test_supplier_contracts_add_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
+    party = participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
     sess.commit()
 
     data = {
-        "participant_id": participant.id,
+        "party_id": party.id,
         "name": "Fusion Supplier 2000",
         "charge_script": "",
         "start_year": "2000",
@@ -4721,10 +4829,9 @@ def test_supplier_contract_edit_post_missing_properties(sess, client):
     party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    contract = Contract.insert_supplier(
+    contract = party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -4854,9 +4961,11 @@ def test_supplier_issues_get(sess, client):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -4869,22 +4978,23 @@ def test_supplier_issues_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         vf,
@@ -4964,11 +5074,12 @@ def test_supplier_rate_script_edit_get(client, sess):
     valid_from = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    supplier_contract = Contract.insert_supplier(
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", valid_from, None, None
+    )
+    supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         valid_from,
@@ -4988,11 +5099,11 @@ def test_supply_edit_post(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
+    non_core_party = participant.insert_party(
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -5005,28 +5116,27 @@ def test_supply_edit_post(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -5129,11 +5239,11 @@ def test_supply_post(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
+    non_core_party = participant.insert_party(
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -5146,28 +5256,27 @@ def test_supply_post(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -5271,11 +5380,11 @@ def test_supply_post_no_era_error(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(
+    non_core_party = participant.insert_party(
         sess, market_role_Z, "None core", utc_datetime(2000, 1, 1), None, None
     )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -5288,28 +5397,27 @@ def test_supply_post_no_era_error(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
@@ -5418,22 +5526,24 @@ def test_supply_get(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -5452,7 +5562,7 @@ def test_supply_get(client, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -5476,7 +5586,7 @@ def test_supply_get(client, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -5512,31 +5622,32 @@ def test_supply_get_bill(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -5555,7 +5666,7 @@ def test_supply_get_bill(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -5574,7 +5685,7 @@ def test_supply_get_bill(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -5631,9 +5742,11 @@ def test_supply_issues_get(client, sess):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -5646,22 +5759,23 @@ def test_supply_issues_get(client, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         vf,
@@ -5751,37 +5865,36 @@ def test_supply_months_get(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    supplier_party = participant.insert_party(
         sess, market_role_X, "Fusion Ltc", utc_datetime(2000, 1, 1), None, None
     )
-    participant.insert_party(
+    dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", utc_datetime(2000, 1, 1), None, None
     )
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(
+    dno_party = participant.insert_party(
         sess, market_role_R, "WPD", utc_datetime(2000, 1, 1), None, "22"
     )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
@@ -5804,7 +5917,7 @@ def test_supply_months_get(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -5833,7 +5946,7 @@ def test_supply_months_get(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -5874,24 +5987,26 @@ def test_supply_months_get_export(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -5910,7 +6025,7 @@ def test_supply_months_get_export(sess, client):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -5932,7 +6047,7 @@ def test_supply_months_get_export(sess, client):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -5973,24 +6088,25 @@ def test_supply_hh_data(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         vf,
@@ -6086,24 +6202,25 @@ def test_supply_notes(sess, client):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         vf,
@@ -6200,18 +6317,26 @@ def test_supply_virtual_bill_get(sess, client):
 
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -6229,10 +6354,9 @@ def virtual_bill(ds):
 
     ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
-    mop_contract = Contract.insert_mop(
+    mop_contract = mop_party.insert_contract(
         sess,
         "Fusion Mop Contract",
-        participant,
         mop_charge_script,
         {},
         utc_datetime(2000, 1, 1),
@@ -6257,10 +6381,9 @@ def virtual_bill(ds):
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
 
-    dc_contract = Contract.insert_dc(
+    dc_contract = dc_party.insert_contract(
         sess,
         "Fusion DC 2000",
-        participant,
         dc_charge_script,
         {},
         utc_datetime(2000, 1, 1),
@@ -6295,18 +6418,17 @@ def virtual_bill(ds):
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         supplier_charge_script,
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -6325,7 +6447,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -6347,7 +6469,7 @@ def virtual_bill(ds):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,

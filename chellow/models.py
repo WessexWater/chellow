@@ -181,6 +181,8 @@ def RSession():
 
 
 CHANNEL_TYPES = ("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP")
+DC_MARKET_ROLE_CODES = "C", "D", "Q"
+MOP_MARKET_ROLE_CODES = ("M",)
 
 
 def log_message(msg):
@@ -1323,6 +1325,28 @@ class Party(Base, PersistentClass):
         else:
             raise BadRequest("This party isn't a DNO.")
 
+    def insert_contract(
+        self,
+        sess,
+        name,
+        charge_script,
+        properties,
+        start_date,
+        finish_date,
+        rate_script,
+    ):
+        contract = Contract.insert(
+            sess,
+            name,
+            self,
+            charge_script,
+            properties,
+            start_date,
+            finish_date,
+            rate_script,
+        )
+        return contract
+
     @classmethod
     def insert(
         cls, sess, participant, market_role, name, valid_from, valid_to, dno_code
@@ -1447,39 +1471,39 @@ class Party(Base, PersistentClass):
 class Contract(Base, PersistentClass):
     @staticmethod
     def find_non_core_by_name(sess, name):
-        return Contract.find_by_role_code_name(sess, "Z", name)
+        return Contract.find_by_role_codes_name(sess, ("Z",), name)
 
     @staticmethod
     def get_non_core_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, "Z", name)
+        return Contract.get_by_role_codes_name(sess, ("Z",), name)
 
     @staticmethod
     def get_dc_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, "C", oid)
+        return Contract.get_by_role_codes_id(sess, DC_MARKET_ROLE_CODES, oid)
 
     @staticmethod
     def get_dc_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, "C", name)
+        return Contract.get_by_role_codes_name(sess, DC_MARKET_ROLE_CODES, name)
 
     @staticmethod
     def find_dno_by_name(sess, name):
-        return Contract.find_by_role_code_name(sess, "R", name)
+        return Contract.find_by_role_codes_name(sess, ("R",), name)
 
     @staticmethod
     def get_dno_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, "R", name)
+        return Contract.get_by_role_codes_name(sess, ("R",), name)
 
     @staticmethod
     def get_mop_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, "M", oid)
+        return Contract.get_by_role_codes_id(sess, MOP_MARKET_ROLE_CODES, oid)
 
     @staticmethod
     def get_mop_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, "M", name)
+        return Contract.get_by_role_codes_name(sess, MOP_MARKET_ROLE_CODES, name)
 
     @staticmethod
     def get_supplier_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, "X", oid)
+        return Contract.get_by_role_codes_id(sess, ("X",), oid)
 
     @staticmethod
     def find_supplier_by_name(sess, name):
@@ -1487,172 +1511,70 @@ class Contract(Base, PersistentClass):
 
     @staticmethod
     def get_supplier_by_name(sess, name):
-        return Contract.get_by_role_code_name(sess, "X", name)
+        return Contract.get_by_role_codes_name(sess, ("X",), name)
 
     @staticmethod
     def get_non_core_by_id(sess, oid):
-        return Contract.get_by_role_code_id(sess, "Z", oid)
+        return Contract.get_by_role_codes_id(sess, ("Z",), oid)
 
     @staticmethod
-    def get_by_role_code_id(sess, role_code, oid):
-        cont = Contract.find_by_role_code_id(sess, role_code, oid)
+    def get_by_role_codes_id(sess, role_codes, oid):
+        cont = Contract.find_by_role_codes_id(sess, role_codes, oid)
         if cont is None:
             raise NotFound(
-                f"There isn't a contract with the role code '{role_code}' and id "
+                f"There isn't a contract with a role code in '{role_codes}' and id "
                 f"'{oid}'."
             )
         return cont
 
     @staticmethod
-    def find_by_role_code_id(sess, role_code, oid):
-        return (
-            sess.query(Contract)
+    def find_by_role_codes_id(sess, role_codes, oid):
+        return sess.scalars(
+            select(Contract)
             .join(MarketRole)
-            .filter(MarketRole.code == role_code, Contract.id == oid)
-            .first()
-        )
+            .where(MarketRole.code.in_(role_codes), Contract.id == oid)
+        ).first()
 
     @staticmethod
-    def get_by_role_code_name(sess, role_code, name):
-        cont = Contract.find_by_role_code_name(sess, role_code, name)
+    def get_by_role_codes_name(sess, role_codes, name):
+        cont = Contract.find_by_role_codes_name(sess, role_codes, name)
         if cont is None:
             raise BadRequest(
-                f"There isn't a contract with the role code '{role_code}' and name "
+                f"There isn't a contract with the role codes '{role_codes}' and name "
                 f"'{name}'."
             )
         return cont
 
     @staticmethod
-    def find_by_role_code_name(sess, role_code, name):
+    def find_by_role_codes_name(sess, role_codes, name):
         return (
-            sess.query(Contract)
-            .join(MarketRole)
-            .filter(MarketRole.code == role_code, Contract.name == name)
-            .first()
-        )
-
-    @staticmethod
-    def insert_mop(
-        sess,
-        name,
-        participant,
-        charge_script,
-        properties,
-        start_date,
-        finish_date,
-        rate_script,
-    ):
-        return Contract.insert(
-            sess,
-            name,
-            participant,
-            "M",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
-        )
+            sess.scalars(
+                select(Contract)
+                .join(MarketRole)
+                .where(MarketRole.code.in_(role_codes), Contract.name == name)
+            )
+        ).first()
 
     @staticmethod
     def insert_non_core(
         sess, name, charge_script, properties, start_date, finish_date, rate_script
     ):
-        return Contract.insert(
-            sess,
-            name,
-            Participant.get_by_code(sess, "CALB"),
-            "Z",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
-        )
-
-    @staticmethod
-    def insert_dc(
-        sess,
-        name,
-        participant,
-        charge_script,
-        properties,
-        start_date,
-        finish_date,
-        rate_script,
-    ):
-        return Contract.insert(
-            sess,
-            name,
-            participant,
-            "C",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
-        )
-
-    @staticmethod
-    def insert_supplier(
-        sess,
-        name,
-        participant,
-        charge_script,
-        properties,
-        start_date,
-        finish_date,
-        rate_script,
-    ):
-        return Contract.insert(
-            sess,
-            name,
-            participant,
-            "X",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
-        )
-
-    @classmethod
-    def insert_dno(
-        cls,
-        sess,
-        name,
-        participant,
-        charge_script,
-        properties,
-        start_date,
-        finish_date,
-        rate_script,
-    ):
-        return cls.insert(
-            sess,
-            name,
-            participant,
-            "R",
-            charge_script,
-            properties,
-            start_date,
-            finish_date,
-            rate_script,
+        party = Party.get_by_participant_code_role_code(sess, "CALB", "Z", None)
+        return party.insert_contract(
+            sess, name, charge_script, properties, start_date, finish_date, rate_script
         )
 
     @staticmethod
     def insert(
         sess,
         name,
-        participant,
-        role_code,
+        party,
         charge_script,
         properties,
         start_date,
         finish_date,
         rate_script,
     ):
-        party = Party.get_by_participant_id_role_code(sess, participant.id, role_code)
         contract = Contract(name, party, charge_script, properties, {})
         sess.add(contract)
         sess.flush()

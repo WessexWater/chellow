@@ -1,7 +1,6 @@
 import chellow.dloads
 from chellow.models import (
     Comm,
-    Contract,
     Cop,
     DtcMeterType,
     EnergisationStatus,
@@ -39,18 +38,26 @@ def test_content(sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
 
     mop_charge_script = """
 from chellow.utils import reduce_bill_hhs
@@ -68,8 +75,8 @@ def virtual_bill(ds):
 
     ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion Mop Contract", participant, mop_charge_script, {}, vf, None, {}
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion Mop Contract", mop_charge_script, {}, vf, None, {}
     )
 
     dc_charge_script = """
@@ -89,8 +96,8 @@ def virtual_bill(ds):
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
 
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", dc_charge_script, {}, vf, None, {}
     )
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
@@ -120,18 +127,17 @@ def virtual_bill(ds):
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         supplier_charge_script,
         {},
         vf,
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -150,7 +156,7 @@ def virtual_bill(ds):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -172,7 +178,7 @@ def virtual_bill(ds):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,

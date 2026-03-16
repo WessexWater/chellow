@@ -2,7 +2,6 @@ from chellow.e.computer import SupplySource
 from chellow.e.tnuos import _process_banded_hh, neso_import
 from chellow.models import (
     Comm,
-    Contract,
     Cop,
     EnergisationStatus,
     GspGroup,
@@ -36,38 +35,42 @@ def test_process_banded_hh_ums(sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
     )
     tnuos_rate_script = {
         "bands": {"Unmetered": {"TDR Tariff": "1"}},
     }
-    Contract.insert_non_core(sess, "tnuos", "", {}, vf, None, tnuos_rate_script)
+    non_core_party.insert_contract(sess, "tnuos", "", {}, vf, None, tnuos_rate_script)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop Ltd", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
     meter_type = MeterType.insert(sess, "UM", "Unmetered", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", True, False, vf, None)
@@ -86,7 +89,7 @@ def test_process_banded_hh_ums(sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
@@ -107,7 +110,7 @@ def test_process_banded_hh_ums(sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -183,8 +186,10 @@ def test_neso_import(mocker, sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
-    contract = Contract.insert_non_core(
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
+    contract = non_core_party.insert_contract(
         sess,
         "tnuos",
         "",

@@ -3,7 +3,6 @@ from decimal import Decimal
 from chellow.e.issues import make_issue_bundle
 from chellow.models import (
     Comm,
-    Contract,
     Cop,
     DtcMeterType,
     EnergisationStatus,
@@ -34,9 +33,11 @@ def test_make_issue_bundle(sess):
     site = Site.insert(sess, "CI017", "Water Works")
     participant = Participant.insert(sess, "CALB", "Calb")
     market_role = MarketRole.insert(sess, "Z", "Non-core")
-    participant.insert_party(sess, market_role, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role, "None core", vf, None, None
+    )
     ss_start = to_utc(ct_datetime(2025, 1, 1))
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bsuos",
         "",
@@ -46,7 +47,7 @@ def test_make_issue_bundle(sess):
         {"record": {"Fixed Tariff £/MWh": Decimal("6.22")}},
     )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -59,25 +60,27 @@ def test_make_issue_bundle(sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, vf, None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
     )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
-    Contract.insert_dno(sess, dno.dno_code, participant, "", {}, vf, None, {})
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
     mtc = Mtc.insert(sess, "845", False, True, vf, None)
@@ -96,7 +99,7 @@ def test_make_issue_bundle(sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -125,7 +128,7 @@ def test_make_issue_bundle(sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -163,10 +166,10 @@ def test_make_issue_bundle_latest_entry(sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "CALB", "Calb")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, vf, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
     issue = dc_contract.insert_issue(sess, vf, {})
     issue.add_entry(sess, "First", timestamp=utc_datetime(2021, 1, 1))
     entry = issue.add_entry(sess, "Second", timestamp=utc_datetime(2021, 1, 2))

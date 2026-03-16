@@ -1,5 +1,5 @@
 from chellow.e.system_price import elexon_import
-from chellow.models import Contract, MarketRole, Participant
+from chellow.models import MarketRole, Participant
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
@@ -7,12 +7,14 @@ def test_process(sess, mocker):
     from_date = to_utc(ct_datetime(2000, 1, 1))
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "non-core", from_date, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "non-core", from_date, None, None
+    )
     system_price_properties = {
         "enabled": True,
     }
     rate_script_properties = {"gbp_per_nbp_mwh": {}}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "system_price",
         "",
@@ -21,7 +23,7 @@ def test_process(sess, mocker):
         None,
         rate_script_properties,
     )
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "configuration",
         "",

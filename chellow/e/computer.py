@@ -144,8 +144,8 @@ def hh_rate(
         if market_role_code is None:
             contract_id = Contract.get_by_id(sess, contract_id_or_name).id
         else:
-            contract_id = Contract.get_by_role_code_name(
-                sess, market_role_code, contract_id_or_name
+            contract_id = Contract.get_by_role_codes_name(
+                sess, (market_role_code,), contract_id_or_name
             ).id
 
         mr_cache[contract_id_or_name] = contract_id

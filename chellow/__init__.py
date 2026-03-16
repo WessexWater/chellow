@@ -178,7 +178,6 @@ def create_app(testing=False, instance_path=None):
 
     @app.context_processor
     def chellow_context_processor():
-
         global_alerts = []
         for task in chellow.e.hh_importer.tasks.values():
             if task.is_error:

@@ -15,7 +15,6 @@ from chellow.e.mdd_importer import (
     rate_server_import,
 )
 from chellow.models import (
-    Contract,
     MarketRole,
     MeasurementRequirement,
     MeterPaymentType,
@@ -414,8 +413,10 @@ def test_import_mdd(mocker, sess):
     MeterPaymentType.insert(sess, "CR", "credit", vf, None)
     calb_participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
-    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
+    non_core_party = calb_participant.insert_party(
+        sess, market_role_Z, "NonCore", vf, None, ""
+    )
+    non_core_party.insert_contract(sess, "configuration", "", {}, vf, None, {})
     sess.commit()
 
     log = mocker.Mock()
@@ -503,8 +504,10 @@ def test_import_mdd_two_versions(mocker, sess):
     MeterPaymentType.insert(sess, "CR", "credit", vf, None)
     calb_participant = Participant.insert(sess, "CALB", "AK Industries")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
-    calb_participant.insert_party(sess, market_role_Z, "NonCore", vf, None, "")
-    Contract.insert_non_core(sess, "configuration", "", {}, vf, None, {})
+    non_core_party = calb_participant.insert_party(
+        sess, market_role_Z, "NonCore", vf, None, ""
+    )
+    non_core_party.insert_contract(sess, "configuration", "", {}, vf, None, {})
     sess.commit()
 
     log = mocker.Mock()

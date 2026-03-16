@@ -61,6 +61,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DC_MARKET_ROLE_CODES,
     DtcMeterType,
     Element,
     EnergisationStatus,
@@ -1204,30 +1205,32 @@ def dc_bill_edit_post(bill_id):
 def dc_contracts_get():
     RateScriptAliasFinish = aliased(RateScript)
 
-    current_dc_contracts = (
-        g.sess.execute(
-            select(Contract)
-            .join(MarketRole)
-            .join(
-                RateScriptAliasFinish,
-                Contract.finish_rate_script_id == RateScriptAliasFinish.id,
-            )
-            .where(MarketRole.code == "C", RateScriptAliasFinish.finish_date == null())
-            .order_by(Contract.name)
-        )
-        .scalars()
-        .all()
-    )
-    ended_dc_contracts = g.sess.execute(
+    current_dc_contracts = g.sess.scalars(
         select(Contract)
         .join(MarketRole)
         .join(
             RateScriptAliasFinish,
             Contract.finish_rate_script_id == RateScriptAliasFinish.id,
         )
-        .where(MarketRole.code == "C", RateScriptAliasFinish.finish_date != null())
-        .order_by(Contract.name)
-    ).scalars()
+        .where(
+            MarketRole.code.in_(DC_MARKET_ROLE_CODES),
+            RateScriptAliasFinish.finish_date == null(),
+        )
+        .order_by(MarketRole.code, Contract.name)
+    ).all()
+    ended_dc_contracts = g.sess.scalars(
+        select(Contract)
+        .join(MarketRole)
+        .join(
+            RateScriptAliasFinish,
+            Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+        )
+        .where(
+            MarketRole.code.in_(DC_MARKET_ROLE_CODES),
+            RateScriptAliasFinish.finish_date != null(),
+        )
+        .order_by(MarketRole.code, Contract.name)
+    )
     latest_imports = []
     for contract in current_dc_contracts:
         state = contract.make_state()
@@ -1246,13 +1249,11 @@ def dc_contracts_get():
 @e.route("/dc_contracts/add", methods=["POST"])
 def dc_contracts_add_post():
     try:
-        participant_id = req_int("participant_id")
+        party_id = req_int("party_id")
         name = req_str("name")
         start_date = req_date("start")
-        participant = Participant.get_by_id(g.sess, participant_id)
-        contract = Contract.insert_dc(
-            g.sess, name, participant, "{}", {}, start_date, None, {}
-        )
+        party = Party.get_by_id(g.sess, party_id)
+        contract = party.insert_contract(g.sess, name, "{}", {}, start_date, None, {})
         g.sess.commit()
         chellow.e.hh_importer.startup_contract(contract.id)
         return chellow_redirect(f"/dc_contracts/{contract.id}", 303)
@@ -1260,14 +1261,13 @@ def dc_contracts_add_post():
         flash(e.description)
         initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
-        parties = (
-            g.sess.query(Party)
+        parties = g.sess.scalars(
+            select(Party)
             .join(MarketRole)
             .join(Participant)
-            .filter(MarketRole.code == "C")
+            .filter(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
             .order_by(Participant.code)
-            .all()
-        )
+        ).all()
         return make_response(
             render_template(
                 "dc_contracts_add.html", initial_date=initial_date, parties=parties
@@ -1280,13 +1280,13 @@ def dc_contracts_add_post():
 def dc_contracts_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
-    parties = g.sess.execute(
+    parties = g.sess.scalars(
         select(Party)
         .join(MarketRole)
         .join(Participant)
-        .where(MarketRole.code == "C")
-        .order_by(Participant.code)
-    ).scalars()
+        .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
+        .order_by(Participant.code, MarketRole.code)
+    )
     return render_template(
         "dc_contracts_add.html", initial_date=initial_date, parties=parties
     )
@@ -6767,14 +6767,14 @@ def supplier_contracts_get():
 @e.route("/supplier_contracts/add", methods=["POST"])
 def supplier_contract_add_post():
     try:
-        participant_id = req_int("participant_id")
-        participant = Participant.get_by_id(g.sess, participant_id)
+        party_id = req_int("party_id")
+        party = Party.get_by_id(g.sess, party_id)
         name = req_str("name")
         start_date = req_date("start")
         charge_script = req_str("charge_script")
         properties = req_zish("properties")
-        contract = Contract.insert_supplier(
-            g.sess, name, participant, charge_script, properties, start_date, None, {}
+        contract = party.insert_contract(
+            g.sess, name, charge_script, properties, start_date, None, {}
         )
         g.sess.commit()
         return chellow_redirect(f"/supplier_contracts/{contract.id}", 303)
@@ -6787,11 +6787,11 @@ def supplier_contract_add_post():
             .filter(MarketRole.code == "X")
             .order_by(Contract.name)
         )
-        parties = (
-            g.sess.query(Party)
-            .join(MarketRole, Participant)
-            .filter(MarketRole.code == "X")
-            .order_by(Participant.code)
+        parties = g.sess.scalars(
+            select(Party)
+            .join(MarketRole)
+            .where(MarketRole.code == "X")
+            .order_by(Party.name)
         )
         return make_response(
             render_template(

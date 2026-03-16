@@ -2,7 +2,6 @@ from io import StringIO
 
 from chellow.models import (
     Comm,
-    Contract,
     Cop,
     DtcMeterType,
     EnergisationStatus,
@@ -41,18 +40,24 @@ def test_content(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", vf, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", vf, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
-    mop_contract = Contract.insert_mop(sess, "Mop", participant, "", {}, vf, None, {})
-    dc_contract = Contract.insert_dc(sess, "DC 2000", participant, "", {}, vf, None, {})
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Mop", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "DC 2000", "", {}, vf, None, {})
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, vf, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
     dno = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)

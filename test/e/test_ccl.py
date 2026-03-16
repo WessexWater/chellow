@@ -59,35 +59,41 @@ def test_hh(sess, mocker):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(sess, market_role_M, "Fusion Mop", valid_from, None, None)
-    participant.insert_party(sess, market_role_X, "Fusion", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", valid_from, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, utc_datetime(2000, 1, 1), None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", valid_from, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", valid_from, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
     )
     pc = Pc.insert(sess, "00", "hh", utc_datetime(2000, 1, 1), None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
+    imp_supplier_contract = supplier_party.insert_contract(
         sess,
         "Fusion Supplier 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),
         None,
         {},
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
-    Contract.insert_dno(
+    dno_party = participant.insert_party(
+        sess, market_role_R, "WPD", valid_from, None, "22"
+    )
+    dno_party.insert_contract(
         sess,
-        dno.dno_code,
-        participant,
+        dno_party.dno_code,
         "",
         {},
         valid_from,
@@ -112,7 +118,7 @@ def test_hh(sess, mocker):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess,
         "510",
         "PC 5-8 & HH HV",
@@ -141,7 +147,7 @@ def test_hh(sess, mocker):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,

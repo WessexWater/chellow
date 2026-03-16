@@ -1,6 +1,6 @@
 from io import StringIO
 
-from chellow.models import Contract, MarketRole, Participant, User, UserRole
+from chellow.models import MarketRole, Participant, User, UserRole
 from chellow.reports.report_81 import content
 from chellow.utils import ct_datetime, to_utc
 
@@ -9,9 +9,11 @@ def test_content(mocker, sess):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -21,7 +23,9 @@ def test_content(mocker, sess):
         bank_holiday_rate_script,
     )
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "Fusion DC", vf, None, None)
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
     dc_charge_script = """
 from chellow.utils import reduce_bill_hhs
 
@@ -38,8 +42,8 @@ def virtual_bill(ds):
 
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, dc_charge_script, {}, vf, None, {}
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", dc_charge_script, {}, vf, None, {}
     )
     editor = UserRole.insert(sess, "editor")
     user = User.insert(sess, "admin", editor, None)

@@ -8,7 +8,6 @@ from chellow.e.hh_importer import (
 )
 from chellow.models import (
     Comm,
-    Contract,
     Cop,
     DtcMeterType,
     EnergisationStatus,
@@ -45,26 +44,32 @@ def test_https_handler(mocker, sess):
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
-    participant.insert_party(
+    mop_party = participant.insert_party(
         sess, market_role_M, "Fusion Mop Ltd", valid_from, None, None
     )
-    participant.insert_party(sess, market_role_X, "Fusion Ltc", valid_from, None, None)
-    participant.insert_party(sess, market_role_C, "Fusion DC", valid_from, None, None)
-    mop_contract = Contract.insert_mop(
-        sess, "Fusion", participant, "", {}, valid_from, None, {}
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion Ltc", valid_from, None, None
     )
-    dc_contract = Contract.insert_dc(
-        sess, "Fusion DC 2000", participant, "", {}, valid_from, None, {}
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", valid_from, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", "", {}, valid_from, None, {}
+    )
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", "", {}, valid_from, None, {}
     )
     pc = Pc.insert(sess, "00", "hh", valid_from, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
-    imp_supplier_contract = Contract.insert_supplier(
-        sess, "Fusion Supplier 2000", participant, "", {}, valid_from, None, {}
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, valid_from, None, {}
     )
-    dno = participant.insert_party(sess, market_role_R, "WPD", valid_from, None, "22")
+    dno_party = participant.insert_party(
+        sess, market_role_R, "WPD", valid_from, None, "22"
+    )
     meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
     meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
     mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
@@ -83,7 +88,7 @@ def test_https_handler(mocker, sess):
     )
     insert_voltage_levels(sess)
     voltage_level = VoltageLevel.get_by_code(sess, "HV")
-    llfc = dno.insert_llfc(
+    llfc = dno_party.insert_llfc(
         sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, valid_from, None
     )
     MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
@@ -105,7 +110,7 @@ def test_https_handler(mocker, sess):
         mop_contract,
         dc_contract,
         "hgjeyhuw",
-        dno,
+        dno_party,
         pc,
         "845",
         cop,
@@ -171,9 +176,11 @@ def test_HhDataImportProcess(sess):
 
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AB Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", valid_from, None, None
+    )
     bank_holiday_rate_script = {"bank_holidays": []}
-    Contract.insert_non_core(
+    non_core_party.insert_contract(
         sess,
         "bank_holidays",
         "",
@@ -183,11 +190,12 @@ def test_HhDataImportProcess(sess):
         bank_holiday_rate_script,
     )
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
-    participant.insert_party(sess, market_role_C, "FDC Ltd.", valid_from, None, None)
-    dc_contract = Contract.insert_dc(
+    dc_party = participant.insert_party(
+        sess, market_role_C, "FDC Ltd.", valid_from, None, None
+    )
+    dc_contract = dc_party.insert_contract(
         sess,
         "Fusion DC 2000",
-        participant,
         "",
         {},
         utc_datetime(2000, 1, 1),

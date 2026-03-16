@@ -4,7 +4,6 @@ from io import StringIO
 from utils import match, match_tables
 
 from chellow.models import (
-    Contract,
     MarketRole,
     Participant,
     User,
@@ -19,8 +18,8 @@ def test_do_get_as_csv(mocker, sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
-    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
     contract.insert_issue(sess, vf, {})
     contract.insert_issue(sess, to_utc(ct_datetime(1997, 1, 1)), {})
     sess.commit()
@@ -37,8 +36,8 @@ def test_content(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
     market_role_C = MarketRole.insert(sess, "C", "DC")
-    participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
-    contract = Contract.insert_dc(sess, "Fusion DC", participant, "", {}, vf, None, {})
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
     contract.insert_issue(sess, vf, {})
     contract.insert_issue(sess, to_utc(ct_datetime(1997, 1, 1)), {})
     editor = UserRole.insert(sess, "editor")
