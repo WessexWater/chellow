@@ -125,6 +125,11 @@ def create_app(testing=False, instance_path=None):
             if user is None:
                 raise BadRequest("The default user 'viewer' is not set up in Chellow.")
         g.user = user
+        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
+        try:
+            g.config = config_contract.make_properties()
+        except ZishException:
+            g.config = {}
 
     @app.before_request
     def check_permissions(*args, **kwargs):
@@ -173,11 +178,6 @@ def create_app(testing=False, instance_path=None):
 
     @app.context_processor
     def chellow_context_processor():
-        config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
-        try:
-            g.config = config_contract.make_properties()
-        except ZishException:
-            g.config = {}
 
         global_alerts = []
         for task in chellow.e.hh_importer.tasks.values():

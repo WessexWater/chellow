@@ -34,7 +34,7 @@ class AuthMsIis:
 
     def __call__(self, environ, start_response):
         username = environ["HTTP_X_ISRW_PROXY_LOGON_USER"]
-        environ["REMOTE_USER"] = username
+        environ["REMOTE_USER"] = username.upper()
         return self.app(environ, start_response)
 
 
