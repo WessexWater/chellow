@@ -17,7 +17,7 @@ class AuthMsEasyAuth:
         self.app = app
 
     def __call__(self, environ, start_response):
-        jwt_enc = environ["X-MS-CLIENT-PRINCIPAL"]
+        jwt_enc = environ["HTTP_X_MS_CLIENT_PRINCIPAL"]
         jwt = loads(b64decode(jwt_enc))
         for claim in jwt["claims"]:
             if claim["typ"] == (
