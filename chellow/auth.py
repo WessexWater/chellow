@@ -17,14 +17,17 @@ class AuthMsEasyAuth:
         self.app = app
 
     def __call__(self, environ, start_response):
-        jwt_enc = environ["HTTP_X_MS_CLIENT_PRINCIPAL"]
-        jwt = loads(b64decode(jwt_enc))
-        for claim in jwt["claims"]:
-            if claim["typ"] == (
-                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
-            ):
-                username = claim["val"]
-                environ["REMOTE_USER"] = username
+        jwt_enc = environ.get("HTTP_X_MS_CLIENT_PRINCIPAL")
+        if jwt_enc is None:
+            environ["REMOTE_USER"] = "viewer"
+        else:
+            jwt = loads(b64decode(jwt_enc))
+            for claim in jwt["claims"]:
+                if claim["typ"] == (
+                    "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+                ):
+                    username = claim["val"]
+                    environ["REMOTE_USER"] = username
         return self.app(environ, start_response)
 
 
