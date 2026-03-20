@@ -1507,7 +1507,7 @@ class Contract(Base, PersistentClass):
 
     @staticmethod
     def find_supplier_by_name(sess, name):
-        return Contract.find_by_role_code_name(sess, "X", name)
+        return Contract.find_by_role_codes_name(sess, ("X",), name)
 
     @staticmethod
     def get_supplier_by_name(sess, name):
