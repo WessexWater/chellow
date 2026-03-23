@@ -171,7 +171,7 @@ def _process_site(
 
         if imp_mpan_core == "displaced":
             try:
-                supply_data = supplies_data["displaced"]
+                supply_data = supplies_data[-1]
             except KeyError:
                 supply_data = supplies_data[-1] = defaultdict(
                     int,
@@ -482,6 +482,7 @@ def _process_site(
             v = vals.get(t)
             if v is not None:
                 site_data[t] += v
+                supply_data[t] += v
 
     q = select(Supply).join(Era).join(SiteEra).where(SiteEra.site == site).distinct()
     if supply_ids is not None:
