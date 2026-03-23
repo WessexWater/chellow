@@ -2335,8 +2335,12 @@ class User(Base, PersistentClass):
         return user
 
     @staticmethod
+    def find_by_username(sess, username):
+        return sess.scalars(select(User).where(User.username == username)).one_or_none()
+
+    @staticmethod
     def get_by_username(sess, username):
-        user = sess.scalars(select(User).where(User.username == username)).one_or_none()
+        user = User.find_by_username(sess, username)
         if user is None:
             raise BadRequest(f"There isn't a user with the username {username}.")
         return user
@@ -7849,6 +7853,15 @@ def db_upgrade_56_to_57(sess, root_path):
     sess.execute(text('ALTER TABLE "user" DROP COLUMN password_digest'))
 
 
+def db_upgrade_57_to_58(sess, root_path):
+    admin = User.find_by_username(sess, "admin")
+    if admin is None:
+        User.insert(sess, "admin", UserRole.get_by_code(sess, "editor"), None)
+    viewer = User.find_by_username(sess, "viewer")
+    if viewer is None:
+        User.insert(sess, "viewer", UserRole.get_by_code(sess, "viewer"), None)
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7891,6 +7904,7 @@ upgrade_funcs.extend(
         db_upgrade_54_to_55,
         db_upgrade_55_to_56,
         db_upgrade_56_to_57,
+        db_upgrade_57_to_58,
     ]
 )
 
