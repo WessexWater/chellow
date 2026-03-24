@@ -46,7 +46,7 @@
 				<td>{{issue.date_created|date_format}}</td>
 				<td>
 					{% if issue_bundle.owner %}
-						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.email_address}}</a>
+						<a href="/users/{{issue_bundle.owner.id}}">{{issue_bundle.owner.username}}</a>
 					{% endif %}
 				</td>
 				<td>

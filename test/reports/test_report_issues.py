@@ -32,6 +32,22 @@ def test_do_get_as_csv(mocker, sess, client):
     mock_Thread.assert_called_with(target=content, args=args)
 
 
+def test_do_get_as_html(mocker, sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    market_role_C = MarketRole.insert(sess, "C", "DC")
+    dc_party = participant.insert_party(sess, market_role_C, "Fusion", vf, None, None)
+    contract = dc_party.insert_contract(sess, "Fusion DC", "", {}, vf, None, {})
+    contract.insert_issue(sess, vf, {})
+    user = User.get_by_username(sess, "admin")
+    contract.insert_issue(sess, to_utc(ct_datetime(1997, 1, 1)), {"owner_id": user.id})
+    sess.commit()
+
+    query_string = {"contract_id": contract.id}
+    response = client.get("/reports/issues", query_string=query_string)
+    match(response, 200, r"admin")
+
+
 def test_content(mocker, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")

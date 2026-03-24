@@ -657,7 +657,7 @@ def users_post():
     except BadRequest as e:
         g.sess.rollback()
         flash(e.description)
-        users = g.sess.query(User).order_by(User.email_address).all()
+        users = g.sess.query(User).order_by(User.username).all()
         parties = (
             g.sess.query(Party)
             .join(MarketRole)

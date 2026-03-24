@@ -34,7 +34,7 @@
 			<label>Owner</label>
 			<select name="owner_id" multiple size="{{owners|length + 2}}">
 				{% for owner in owners %}
-					{{input_option('owner_id', owner.id, owner.email_address)}}
+					{{input_option('owner_id', owner.id, owner.username)}}
 				{% endfor %}
 			</select>
 

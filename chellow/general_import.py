@@ -2040,25 +2040,16 @@ def general_import_channel(sess, action, vals, args):
 
 def general_import_user(sess, action, vals, args):
     if action == "insert":
-        email_address = add_arg(args, "email_address", vals, 0)
-        password = add_arg(args, "password", vals, 1)
-        digest = add_arg(args, "password_digest", vals, 2)
-        user_role_code = add_arg(args, "user_role_code", vals, 3)
+        username = add_arg(args, "username", vals, 0)
+        user_role_code = add_arg(args, "user_role_code", vals, 1)
         user_role = UserRole.get_by_code(sess, user_role_code)
-        participant_code = add_arg(args, "participant_code", vals, 4)
+        participant_code = add_arg(args, "participant_code", vals, 2)
         party = None
         if len(participant_code.strip()) > 0:
-            market_role_code = add_arg(args, "market_role_code", vals, 5)
+            market_role_code = add_arg(args, "market_role_code", vals, 3)
         party = Party.get_by_participant_role(participant_code, market_role_code)
-        if len(password) == 0:
-            if len(digest) == 0:
-                raise BadRequest("The password and digest fields can't both be blank.")
-        elif len(digest) > 0:
-            raise BadRequest("The password and digest fields can't both be filled.")
-        else:
-            digest = User.digest(password)
 
-        User.insert(email_address, user_role, party, digest)
+        User.insert(username, user_role, party)
     elif action == "update":
         pass
 

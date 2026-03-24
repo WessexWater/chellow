@@ -104,7 +104,7 @@ def issues_get():
         select(User)
         .join(GIssue, User.id == cast(GIssue.properties["owner_id"], Integer))
         .distinct()
-        .order_by(User.email_address)
+        .order_by(User.username)
     ).all()
     return render_template(
         "issues.html", supplier_contracts=supplier_contracts, owners=owners
@@ -169,7 +169,7 @@ def issue_edit_get(issue_id):
         select(User)
         .join(UserRole)
         .where(UserRole.code == "editor")
-        .order_by(User.email_address)
+        .order_by(User.username)
     )
     return render_template("issue_edit.html", issue=issue, users=users)
 

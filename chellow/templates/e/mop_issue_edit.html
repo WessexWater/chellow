@@ -25,7 +25,7 @@
 
 			<select name="owner_id">
 				{% for user in users %}
-					{{ input_option( 'owner_id', user.id, user.email_address, issue.properties.owner_id) }}
+					{{ input_option( 'owner_id', user.id, user.username, issue.properties.owner_id) }}
 				{% endfor %}
 			</select>
 		 

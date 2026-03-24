@@ -48,7 +48,7 @@ def _make_vals(sess, contract_ids, owner_ids, supply_ids, is_opens):
             "issue_id": issue.id,
             "contract_name": contract.name,
             "date_created": issue.date_created,
-            "owner": None if owner is None else owner.email_address,
+            "owner": None if owner is None else owner.username,
             "status": "open" if issue.is_open else "closed",
             "subject": props.get("subject"),
             "mprn_core": None,
