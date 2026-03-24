@@ -26,8 +26,8 @@ class AuthMsEasyAuth:
                 if claim["typ"] == (
                     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
                 ):
-                    username = claim["val"]
-                    environ["REMOTE_USER"] = username
+                    email_address = claim["val"]
+                    environ["REMOTE_USER"] = email_address.lower()
         return self.app(environ, start_response)
 
 
