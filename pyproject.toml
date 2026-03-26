@@ -25,7 +25,7 @@ dependencies = [
 	"openpyxl==3.1.5",
 	"python-dateutil==2.8.2",
 	"pytz==2025.2",
-	"requests==2.32.5",
+	"requests==2.33.0",
 	"waitress==3.0.2",
 	"pip>=9.0.1",
 	"paramiko==4.0.0",
