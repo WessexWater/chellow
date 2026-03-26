@@ -47,6 +47,41 @@ from chellow.reports.report_247 import content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
+def test_do_get_j(mocker, sess, client):
+    mock_Thread = mocker.patch("chellow.reports.report_247.threading.Thread")
+
+    site_code = "CI017"
+    Site.insert(sess, site_code, "Water Works")
+    sess.commit()
+
+    now = utc_datetime(2020, 1, 1)
+    mocker.patch("chellow.reports.report_247.utc_datetime_now", return_value=now)
+
+    query_string = {
+        "finish_year": 2009,
+        "finish_month": 8,
+        "months": 1,
+        "site_code": site_code,
+    }
+
+    response = client.get("/api/v1/reports/monthly_duration", query_string=query_string)
+
+    match(response, 200)
+
+    base_name = ["monthly_duration"]
+    user = User.get_by_username(sess, "admin")
+    scenario_props = {
+        "scenario_start_year": 2009,
+        "scenario_start_month": 8,
+        "scenario_duration": 1,
+        "site_codes": [site_code],
+        "save_report_run": True,
+    }
+    args = (scenario_props, base_name, user.id, True, now, 1)
+
+    mock_Thread.assert_called_with(target=content, args=args)
+
+
 def test_with_scenario(mocker, sess, client):
     mock_Thread = mocker.patch("chellow.reports.report_247.threading.Thread")
 

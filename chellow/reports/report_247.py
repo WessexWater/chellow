@@ -1235,7 +1235,7 @@ def do_get_j(params):
         site_id = params["site_id"]
         scenario_props["site_codes"] = [Site.get_by_id(g.sess, site_id).code]
 
-    if "site_codes" in params:
+    if "site_code" in params:
         site_codes_raw = params["site_code"]
         if len(site_codes_raw) > 0:
             site_codes = []
