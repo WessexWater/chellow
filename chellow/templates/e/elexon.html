@@ -5,15 +5,26 @@
 {% endblock %}
 
 {% block nav %}
-	 Elexon Importer
+	Elexon Importer [<a href="/e/elexon/edit">edit</a>]
 {% endblock %}
 
 {% block content %}
 	{% if importer %}
 		<ul>
+			<li><a href="#configuration">Configuration</a></li>
 			<li><a href="#controls">Controls</a></li>
 			<li><a href="#log">Log</a></li>
 		</ul>
+
+		<h4 id="configuration">Configuration [<a href="/e/elexon/edit">edit</a>]</h4>
+
+		{% if scripting_key is none %}
+			<p>The Elexon scripting key <a href="/e/elexon/edit">needs to be set</a>.</p>
+		{% else %}
+			<p>Elexon Scripting Key: <code>{{scripting_key}}</code></p>
+		{% endif %}
+
+
 
 		<h4 id="controls">Controls</h4>
 

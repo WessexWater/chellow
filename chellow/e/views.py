@@ -46,6 +46,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lccc
 import chellow.e.neso
 from chellow.e.computer import SupplySource, contract_func, forecast_date
+from chellow.e.elexon import ELEXON_PORTAL_SCRIPTING_KEY_KEY
 from chellow.e.energy_management import totals_runner
 from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
 from chellow.e.issues import make_issue_bundle, make_issue_bundles
@@ -2064,14 +2065,37 @@ def duration_report_get(ct_now=None):
 @e.route("/elexon")
 def elexon_get():
     importer = chellow.e.elexon.importer
-
-    return render_template("elexon.html", importer=importer)
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+    scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+    return render_template(
+        "elexon.html", importer=importer, scripting_key=scripting_key
+    )
 
 
 @e.route("/elexon", methods=["POST"])
 def elexon_post():
     importer = chellow.e.elexon.importer
     importer.go()
+    return chellow_redirect("/elexon", 303)
+
+
+@e.route("/elexon/edit")
+def elexon_edit_get():
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+    scripting_key = props.get(ELEXON_PORTAL_SCRIPTING_KEY_KEY)
+    return render_template("elexon_edit.html", scripting_key=scripting_key)
+
+
+@e.route("/elexon/edit", methods=["POST"])
+def elexon_edit_post():
+    scripting_key = req_str("scripting_key")
+    config = Contract.get_non_core_by_name(g.sess, "configuration")
+    props = config.make_properties()
+    props[ELEXON_PORTAL_SCRIPTING_KEY_KEY] = scripting_key
+    config.update_properties(props)
+    g.sess.commit()
     return chellow_redirect("/elexon", 303)
 
 

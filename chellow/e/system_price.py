@@ -85,6 +85,7 @@ def elexon_import(sess, log, set_progress, scripting_key):
         )
         return
 
+    fill_start = None
     for rscript in sess.scalars(
         select(RateScript)
         .where(RateScript.contract == contract)
@@ -92,12 +93,15 @@ def elexon_import(sess, log, set_progress, scripting_key):
     ):
         ns = loads(rscript.script)
         rates = ns.get("gbp_per_nbp_mwh", {})
-        if len(rates) == 0:
-            fill_start = rscript.start_date
-            break
-        elif rates[key_format(rscript.finish_date)]["run"] == "DF":
+        if (
+            rscript.finish_date is not None
+            and rates.get(key_format(rscript.finish_date), {}).get("run") == "DF"
+        ):
             fill_start = rscript.finish_date + HH
             break
+    if fill_start is None:
+        fill_start = contract.start_rate_script.start_date
+
     res = download_file(log, scripting_key, "BESTVIEWPRICES_FILE")
     log(f"Extracting data from {date_format(fill_start)}")
 

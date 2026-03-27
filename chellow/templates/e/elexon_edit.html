@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Elexon Importer &rquo; Edit
+{% endblock %}
+
+{% block nav %}
+	Elexon Importer &rquo; Edit
+{% endblock %}
+
+{% block content %}
+	<p>
+		An Elexon scripting key can be obtained from
+		<a href="https://www.elexonportal.co.uk/">https://www.elexonportal.co.uk/</a>.
+	</p>
+
+	<form action="/e/elexon/edit" method="post">
+		<fieldset>
+			<legend>Update Scripting Key</legend>	
+			<label>Scripting Key</label> {{ input_text('scripting_key', initial=scripting_key) }}
+			<input type="submit" value="Update">
+		</fieldset>
+	</form>
+
+{% endblock %}
