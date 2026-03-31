@@ -14,6 +14,7 @@ from chellow.general_import import (
     general_import_g_register_read,
     general_import_g_supply,
     general_import_llfc,
+    general_import_mop_batch,
     general_import_site,
     general_import_supplier_batch,
     general_import_supply,
@@ -1594,6 +1595,29 @@ def test_general_import_llfc_update_valid_to_no_change(sess):
     ]
     args = []
     general_import_llfc(sess, action, vals, args)
+
+
+def test_general_import_mop_batch_now(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_M = MarketRole.insert(sess, "M", "MOP")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Ltc", vf, None, None
+    )
+    mop_contract_name = "Fusion 2000"
+    mop_party.insert_contract(sess, mop_contract_name, "", {}, vf, None, {})
+    sess.commit()
+    action = "insert"
+    vals = [
+        mop_contract_name,
+        "dgnsdjh55",
+        "a batch",
+        "",
+    ]
+    args = []
+    general_import_mop_batch(sess, action, vals, args)
 
 
 def test_general_import_site_update(sess):

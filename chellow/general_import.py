@@ -881,9 +881,9 @@ def general_import_mop_batch(sess, action, vals, args):
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
         if len(date_created_str) == 0:
-            date_created = parse_date(date_created_str)
-        else:
             date_created = utc_datetime_now()
+        else:
+            date_created = parse_date(date_created_str)
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
@@ -1051,9 +1051,9 @@ def general_import_dc_batch(sess, action, vals, args):
         description = add_arg(args, "Description", vals, 2)
         date_created_str = add_arg(args, "Date Created", vals, 3)
         if len(date_created_str) == 0:
-            date_created = parse_date(date_created_str)
-        else:
             date_created = utc_datetime_now()
+        else:
+            date_created = parse_date(date_created_str)
         contract.insert_batch(sess, reference, description, date_created)
 
     elif action == "update":
