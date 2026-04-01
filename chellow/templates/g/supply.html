@@ -134,16 +134,8 @@
 			</thead>
 			<tbody>
 				<tr>
-					<td>
-						<span
-								title="{{g_era.start_date|date_format}}"
-								>{{g_era.start_date|date_format(fmt='day') }}</span>
-					</td>
-					<td>
-						<span
-								title="{{g_era.finish_date|date_format}}"
-								>{{ g_era.finish_date|date_format(fmt='day') }}</span>
-					</td>
+					<td>{{g_era.start_date|date_format}}</td>
+					<td>{{g_era.finish_date|date_format}}</td>
 					<td>
 						<a
 								href="/sites/{{physical_site.id}}"
