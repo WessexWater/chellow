@@ -27,6 +27,7 @@ Chellow, follow these steps:
 
 * Install [PostgreSQL](http://www.postgresql.org/)
 * Create a PostgreSQL database: `createdb --encoding=UTF8 chellow`
+* Install the btree\_gist extension with the SQL: `CREATE EXTENSION IF NOT EXISTS btree_gist;`
 * Set up the following environment variables to configure Chellow:
 
 | Name         | Default     | Description            |

@@ -39,7 +39,7 @@ from sqlalchemy import (
     text,
     update,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ExcludeConstraint, JSONB
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import (
     IntegrityError,
@@ -150,6 +150,7 @@ def start_sqlalchemy():
     engine = create_engine(
         db_url, execution_options={"isolation_level": "SERIALIZABLE"}
     )
+
     session = sessionmaker(bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -2540,7 +2541,18 @@ class Llfc(Base, PersistentClass):
     lafs = relationship("Laf", backref="llfc")
     mtc_llfcs = relationship("MtcLlfc", backref="llfc")
     mtc_llfc_sscs = relationship("MtcLlfcSsc", backref="llfc")
-    __table_args__ = (UniqueConstraint("dno_id", "code", "valid_from"),)
+    __table_args__ = (
+        UniqueConstraint("dno_id", "code", "valid_from"),
+        ExcludeConstraint(
+            ("dno_id", "="),
+            ("code", "="),
+            (
+                func.tstzrange(valid_from, func.coalesce(valid_to, text("'infinity'"))),
+                "&&",
+            ),
+            using="gist",
+        ),
+    )
 
     def __init__(
         self,
@@ -7862,6 +7874,28 @@ def db_upgrade_57_to_58(sess, root_path):
         User.insert(sess, "viewer", UserRole.get_by_code(sess, "viewer"), None)
 
 
+def db_upgrade_58_to_59(sess, root_path):
+    sess.execute(text("CREATE EXTENSION IF NOT EXISTS btree_gist;"))
+    dt = to_utc(ct_datetime(2025, 4, 1))
+    dno = Party.get_dno_by_code(sess, "23", dt)
+    for llfc_code in ("ME1", "ME2", "MX1", "MX2"):
+        sess.execute(
+            delete(Llfc).where(
+                Llfc.dno == dno,
+                Llfc.code == llfc_code,
+                Llfc.valid_from == dt,
+            )
+        )
+    sess.execute(text("""
+    ALTER TABLE llfc
+    ADD CONSTRAINT ix_llfc_no_overlap
+    EXCLUDE USING gist (
+        dno_id WITH =,
+        code WITH =,
+        tstzrange(valid_from, COALESCE(valid_to, 'infinity')) WITH &&
+    );"""))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7905,6 +7939,7 @@ upgrade_funcs.extend(
         db_upgrade_55_to_56,
         db_upgrade_56_to_57,
         db_upgrade_57_to_58,
+        db_upgrade_58_to_59,
     ]
 )
 

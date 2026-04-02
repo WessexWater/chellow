@@ -32,6 +32,18 @@ def fresh_db():
         cursor.execute(f"DROP DATABASE IF EXISTS {database};")
         cursor.execute(f"CREATE DATABASE {database} ENCODING 'UTF8';")
 
+    with pg8000.connect(
+        config["PGUSER"],
+        host=config["PGHOST"],
+        database=database,
+        port=int(config["PGPORT"]),
+        password=config["PGPASSWORD"],
+    ) as con:
+        cursor = con.cursor()
+        con.rollback()
+        con.autocommit = True
+        cursor.execute("CREATE EXTENSION IF NOT EXISTS btree_gist;")
+
 
 @pytest.fixture
 def app(fresh_db):
