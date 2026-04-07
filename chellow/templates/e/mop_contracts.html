@@ -10,16 +10,19 @@
 
 {% block content %}
 	<table>
+		<caption>Current MOP Contracts</caption>
 		<thead>
 			<tr>
 				<th>Name</th>
 				<th>Start Date</th>
 				<th>Finish Date</th>
-				<th>MOP</th>
+				<th>Party</th>
+				<th>Market Role</th>
+				<th>Participant</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for contract in mop_contracts %}
+			{% for contract in current_mop_contracts %}
 				<tr>
 					<td>
 						<a href="/e/mop_contracts/{{contract.id}}">{{contract.name}}</a>
@@ -28,6 +31,46 @@
 					<td>{{contract.finish_rate_script.finish_date|date_format}}</td>
 					<td>
 						<a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+					</td>
+					<td>
+						<a href="/e/market_roles/{{contract.party.market_role.id}}">{{contract.party.market_role.code}}</a>
+					</td>
+					<td>
+						<a href="/e/participants/{{contract.party.participant.id}}">{{contract.party.participant.code}}</a>
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table>
+		<caption>Ended MOP Contracts</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Start Date</th>
+				<th>Finish Date</th>
+				<th>Party</th>
+				<th>Market Role</th>
+				<th>Participant</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for contract in ended_mop_contracts %}
+				<tr>
+					<td>
+						<a href="/e/mop_contracts/{{contract.id}}">{{contract.name}}</a>
+					</td>
+					<td>{{contract.start_rate_script.start_date|date_format }}</td>
+					<td>{{contract.finish_rate_script.finish_date|date_format}}</td>
+					<td>
+						<a href="/e/parties/{{contract.party.id}}">{{contract.party.name}}</a>
+					</td>
+					<td>
+						<a href="/e/market_roles/{{contract.party.market_role.id}}">{{contract.party.market_role.code}}</a>
+					</td>
+					<td>
+						<a href="/e/participants/{{contract.party.participant.id}}">{{contract.party.participant.code}}</a>
 					</td>
 				</tr>
 			{% endfor %}

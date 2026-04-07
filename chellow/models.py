@@ -182,7 +182,7 @@ def RSession():
 
 CHANNEL_TYPES = ("ACTIVE", "REACTIVE_IMP", "REACTIVE_EXP")
 DC_MARKET_ROLE_CODES = "C", "D", "Q"
-MOP_MARKET_ROLE_CODES = ("M",)
+MOP_MARKET_ROLE_CODES = "M", "4"
 
 
 def log_message(msg):

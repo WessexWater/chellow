@@ -24,8 +24,10 @@ from chellow.models import (
     Batch,
     Bill,
     Contract,
+    DC_MARKET_ROLE_CODES,
     Element,
     Era,
+    MOP_MARKET_ROLE_CODES,
     MeasurementRequirement,
     RSession,
     ReportRun,
@@ -119,10 +121,10 @@ def _add_bills(sess, era, chunk_start, chunk_finish):
         if bill_role_code == "X":
             role_name = "supplier"
             polarity = "export" if contract == era.exp_supplier_contract else "import"
-        elif bill_role_code == "C":
+        elif bill_role_code in DC_MARKET_ROLE_CODES:
             role_name = "dc"
             polarity = "import"
-        elif bill_role_code == "M":
+        elif bill_role_code in MOP_MARKET_ROLE_CODES:
             role_name = "mop"
             polarity = "import"
         else:
@@ -157,10 +159,10 @@ def _add_bills(sess, era, chunk_start, chunk_finish):
         if bill_role_code == "X":
             role_name = "supplier"
             polarity = "export" if contract == era.exp_supplier_contract else "import"
-        elif bill_role_code == "C":
+        elif bill_role_code in DC_MARKET_ROLE_CODES:
             role_name = "dc"
             polarity = "import"
-        elif bill_role_code == "M":
+        elif bill_role_code in MOP_MARKET_ROLE_CODES:
             role_name = "mop"
             polarity = "import"
         else:

@@ -74,6 +74,7 @@ from chellow.models import (
     IssueEntry,
     Laf,
     Llfc,
+    MOP_MARKET_ROLE_CODES,
     MarketRole,
     MeasurementRequirement,
     MeterPaymentType,
@@ -2128,16 +2129,16 @@ def era_edit_get(era_id):
     comms = g.sess.query(Comm).order_by(Comm.code)
     gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
     dtc_meter_types = g.sess.scalars(select(DtcMeterType).order_by(DtcMeterType.code))
-    mop_contracts = (
-        g.sess.query(Contract)
+    mop_contracts = g.sess.scalars(
+        select(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code == "M")
+        .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .order_by(Contract.name)
     )
-    dc_contracts = (
-        g.sess.query(Contract)
+    dc_contracts = g.sess.scalars(
+        select(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code == "C")
+        .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
         .order_by(Contract.name)
     )
     supplier_contracts = (
@@ -2212,7 +2213,7 @@ def era_edit_form_get(era_id):
                 Contract.finish_rate_script_id == RateScriptAliasFinish.id,
             )
             .where(
-                MarketRole.code == "M",
+                MarketRole.code.in_(MOP_MARKET_ROLE_CODES),
                 start_date >= RateScriptAliasStart.start_date,
             )
             .order_by(Contract.name)
@@ -2690,16 +2691,16 @@ def era_edit_post(era_id):
         cops = g.sess.query(Cop).order_by(Cop.code)
         comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
         gsp_groups = g.sess.query(GspGroup).order_by(GspGroup.code)
-        mop_contracts = (
-            g.sess.query(Contract)
+        mop_contracts = g.sess.scalars(
+            select(Contract)
             .join(MarketRole)
-            .filter(MarketRole.code == "M")
+            .filter(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
             .order_by(Contract.name)
         )
-        dc_contracts = (
-            g.sess.query(Contract)
+        dc_contracts = g.sess.scalars(
+            select(Contract)
             .join(MarketRole)
-            .filter(MarketRole.code.in_(("C", "D")))
+            .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
             .order_by(Contract.name)
         )
         supplier_contracts = (
@@ -2943,7 +2944,7 @@ def issues_get():
         select(Contract)
         .join(Issue)
         .join(MarketRole)
-        .where(MarketRole.code == "M")
+        .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .distinct()
         .order_by(Contract.name)
     ).all()
@@ -2951,7 +2952,7 @@ def issues_get():
         select(Contract)
         .join(Issue)
         .join(MarketRole)
-        .where(MarketRole.code == "C")
+        .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
         .distinct()
         .order_by(Contract.name)
     ).all()
@@ -3577,11 +3578,11 @@ def mop_bill_add_post(batch_id):
 
 @e.route("/mop_contracts/<int:contract_id>/edit")
 def mop_contract_edit_get(contract_id):
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code == "M")
+        .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .order_by(Participant.code)
         .all()
     )
@@ -3641,7 +3642,7 @@ def mop_contract_edit_post(contract_id):
             g.sess.query(Party)
             .join(MarketRole)
             .join(Participant)
-            .filter(MarketRole.code == "M")
+            .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
             .order_by(Participant.code)
             .all()
         )
@@ -3991,39 +3992,61 @@ def mop_rate_script_edit_post(rate_script_id):
 
 @e.route("/mop_contracts")
 def mop_contracts_get():
-    mop_contracts = (
-        g.sess.query(Contract)
+    RateScriptAliasFinish = aliased(RateScript)
+
+    current_mop_contracts = g.sess.scalars(
+        select(Contract)
         .join(MarketRole)
-        .filter(MarketRole.code == "M")
-        .order_by(Contract.name)
-        .all()
+        .join(
+            RateScriptAliasFinish,
+            Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+        )
+        .where(
+            MarketRole.code.in_(MOP_MARKET_ROLE_CODES),
+            RateScriptAliasFinish.finish_date == null(),
+        )
+        .order_by(MarketRole.code, Contract.name)
+    ).all()
+    ended_mop_contracts = g.sess.scalars(
+        select(Contract)
+        .join(MarketRole)
+        .join(
+            RateScriptAliasFinish,
+            Contract.finish_rate_script_id == RateScriptAliasFinish.id,
+        )
+        .where(
+            MarketRole.code.in_(MOP_MARKET_ROLE_CODES),
+            RateScriptAliasFinish.finish_date != null(),
+        )
+        .order_by(MarketRole.code, Contract.name)
     )
-    return render_template("mop_contracts.html", mop_contracts=mop_contracts)
+    return render_template(
+        "mop_contracts.html",
+        current_mop_contracts=current_mop_contracts,
+        ended_mop_contracts=ended_mop_contracts,
+    )
 
 
 @e.route("/mop_contracts/add", methods=["POST"])
 def mop_contract_add_post():
     try:
-        participant_id = req_int("participant_id")
+        party_id = req_int("party_id")
         name = req_str("name")
         start_date = req_date("start")
-        participant = Participant.get_by_id(g.sess, participant_id)
-        contract = Contract.insert_mop(
-            g.sess, name, participant, "{}", {}, start_date, None, {}
-        )
+        party = Party.get_mop_by_id(g.sess, party_id)
+        contract = party.insert_contract(g.sess, name, "{}", {}, start_date, None, {})
         g.sess.commit()
         return chellow_redirect(f"/mop_contracts/{contract.id}", 303)
     except BadRequest as e:
         flash(e.description)
         initial_date = utc_datetime_now()
         initial_date = Datetime(initial_date.year, initial_date.month, 1)
-        parties = (
-            g.sess.query(Party)
+        parties = g.sess.scalars(
+            select(Party)
             .join(MarketRole)
             .join(Participant)
-            .filter(MarketRole.code == "M")
+            .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
             .order_by(Participant.code)
-            .all()
         )
         return make_response(
             render_template(
@@ -4037,13 +4060,12 @@ def mop_contract_add_post():
 def mop_contract_add_get():
     initial_date = utc_datetime_now()
     initial_date = Datetime(initial_date.year, initial_date.month, 1)
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code == "M")
+        .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .order_by(Participant.code)
-        .all()
     )
     return render_template(
         "mop_contract_add.html", inital_date=initial_date, parties=parties
@@ -5086,7 +5108,7 @@ def site_add_e_supply_form_get(site_id):
                 Contract.finish_rate_script_id == RateScriptAliasFinish.id,
             )
             .where(
-                MarketRole.code == "M",
+                MarketRole.code.in_(MOP_MARKET_ROLE_CODES),
                 start_date >= RateScriptAliasStart.start_date,
                 RateScriptAliasFinish.finish_date == null(),
             )
@@ -5104,7 +5126,7 @@ def site_add_e_supply_form_get(site_id):
                 Contract.finish_rate_script_id == RateScriptAliasFinish.id,
             )
             .where(
-                MarketRole.code.in_(("C", "D")),
+                MarketRole.code.in_(DC_MARKET_ROLE_CODES),
                 start_date >= RateScriptAliasStart.start_date,
                 RateScriptAliasFinish.finish_date == null(),
             )
@@ -5493,16 +5515,16 @@ def site_add_e_supply_post(site_id):
             .filter(SiteEra.site == site)
             .order_by(Era.start_date.desc())
         )
-        mop_contracts = (
-            g.sess.query(Contract)
+        mop_contracts = g.sess.scalars(
+            select(Contract)
             .join(MarketRole)
-            .filter(MarketRole.code == "M")
+            .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
             .order_by(Contract.name)
         )
-        dc_contracts = (
-            g.sess.query(Contract)
+        dc_contracts = g.sess.scalars(
+            select(Contract)
             .join(MarketRole)
-            .filter(MarketRole.code.in_(("C", "D")))
+            .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
             .order_by(Contract.name)
         )
         supplier_contracts = (
@@ -5513,7 +5535,7 @@ def site_add_e_supply_post(site_id):
         )
         pcs = g.sess.query(Pc).order_by(Pc.code)
         cops = g.sess.query(Cop).order_by(Cop.code)
-        comms = g.sess.execute(select(Comm).order_by(Comm.code)).scalars()
+        comms = g.sess.scalars(select(Comm).order_by(Comm.code))
         return make_response(
             render_template(
                 "site_add_e_supply.html",
@@ -7567,7 +7589,7 @@ def supply_issues_get(supply_id):
         select(Contract)
         .join(Issue)
         .join(MarketRole)
-        .where(MarketRole.code == "M")
+        .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .distinct()
         .order_by(Contract.name)
     ).all()
@@ -7575,7 +7597,7 @@ def supply_issues_get(supply_id):
         select(Contract)
         .join(Issue)
         .join(MarketRole)
-        .where(MarketRole.code == "C")
+        .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
         .distinct()
         .order_by(Contract.name)
     ).all()
@@ -7756,9 +7778,9 @@ def get_era_bundles(sess, supply, latest_start_date=None):
                 else:
                     bill_group_name = "imp_bills"
 
-            elif bill_role_code in ("C", "D"):
+            elif bill_role_code in DC_MARKET_ROLE_CODES:
                 bill_group_name = "dc_bills"
-            elif bill_role_code == "M":
+            elif bill_role_code in MOP_MARKET_ROLE_CODES:
                 bill_group_name = "mop_bills"
             else:
                 raise BadRequest(
