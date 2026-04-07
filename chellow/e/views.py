@@ -2795,9 +2795,10 @@ def era_supplier_bill_add_post(era_id):
 
         batch_reference = req_str("batch_reference")
         batch_description = req_str("batch_description")
+        date_created = req_date("date_created", resolution="microsecond")
 
         batch = era.imp_supplier_contract.insert_batch(
-            g.sess, batch_reference, batch_description
+            g.sess, batch_reference, batch_description, date_created
         )
 
         account = req_str("account")
@@ -5033,18 +5034,23 @@ def site_energy_management_months_get(site_id):
 @e.route("/sites/<int:site_id>/energy_management/totals")
 def em_totals(site_id):
     site = Site.get_by_id(g.sess, site_id)
+    print("Calling em totals")
 
     if "mem_id" in request.values:
+        print("found mem id")
         mem_id = req_int("mem_id")
         site_info = chellow.dloads.get_mem_val(mem_id)
+        print(f"sit einfo {site_info}")
 
         status_code = 200 if site_info["status"] == "running" else 286
+        print(f"status code {status_code}")
         return make_response(
             render_template("em_totals.html", site=site, site_info=site_info),
             status_code,
         )
 
     else:
+        print("no mem id")
         mem_id = chellow.dloads.get_mem_id()
         chellow.dloads.put_mem_val(mem_id, {"status": "running", "progress": 0})
 
