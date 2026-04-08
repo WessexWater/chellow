@@ -42,7 +42,7 @@ def match_repeat(client, path, match, seconds=5):
         response_str = response.get_data(as_text=True)
         if match in response_str:
             return response
-        elif second == seconds - 1:
-            assert match in response_str, response_str
         else:
             sleep(1)
+
+    assert False, f"Match not found after {seconds} seconds. {response_str}"

@@ -1,3 +1,4 @@
+<p>Site Info: {{site_info}}</p>
 {% if site_info is none %}
 	<div
 			hx-get="/e/sites/{{site.id}}/energy_management/totals?mem_id={{mem_id}}"
