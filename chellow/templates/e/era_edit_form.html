@@ -35,7 +35,22 @@
 			{{input_option('dc_contract_id', contract.id, contract.name, era.dc_contract.id)}}
 		{% endfor %}
 	</select>
-	<label>Meter Serial Number</label> {{input_text('msn')}}
+
+	<label>DTC Meter Type</label>
+	<select name="dtc_meter_type_id">
+		{{input_option('dtc_meter_type_id', '', 'Unmetered')}}
+		{% for dtc_meter_type in dtc_meter_types %}
+			{{input_option('dtc_meter_type_id', dtc_meter_type.id,
+		 		dtc_meter_type.code + ' ' + dtc_meter_type.description, era.dtc_meter_type.id)}}
+		{% endfor %}
+	</select>
+
+	{% if dtc_meter_type is none %}
+		<input type="hidden" name="msn" value="">
+	{% else %}
+		<label>Meter Serial Number</label> {{input_text('msn', initial=era.msn)}}
+	{% endif %}
+
 	<label>Profile Class</label>
 	<select name="pc_id">
 		{% for p in pcs %}
@@ -84,15 +99,6 @@
 			{{input_option(
 				'energisation_status_id', energisation_status.id,
 				energisation_status.description, era.energisation_status.id)}}
-		{% endfor %}
-	</select>
-
-	<label>DTC Meter Type</label>
-	<select name="dtc_meter_type_id">
-		{{input_option('dtc_meter_type_id', '', 'Unmetered')}}
-		{% for dtc_meter_type in dtc_meter_types %}
-			{{input_option('dtc_meter_type_id', dtc_meter_type.id,
-		 		dtc_meter_type.code + ' ' + dtc_meter_type.description, era.dtc_meter_type.id)}}
 		{% endfor %}
 	</select>
 

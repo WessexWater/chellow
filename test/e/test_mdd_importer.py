@@ -626,6 +626,7 @@ def test_88(mocker, sess, client):
         "source_id": "",
         "pc_id": "",
         "mtc_participant_id": "",
+        "dtc_meter_type_id": "",
     }
     response = client.get(
         f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string
@@ -638,6 +639,7 @@ def test_88(mocker, sess, client):
         "source_id": "",
         "pc_id": "",
         "mtc_participant_id": "",
+        "dtc_meter_type_id": "",
     }
     response = client.get(
         f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string

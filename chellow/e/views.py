@@ -2295,6 +2295,12 @@ def era_edit_form_get(era_id):
         else:
             pc = Pc.get_by_id(g.sess, pc_id)
 
+        dtc_meter_type_id = req_int_none("dtc_meter_type_id")
+        if dtc_meter_type_id is None:
+            dtc_meter_type = None
+        else:
+            dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
+
         dno = era.supply.dno
 
         participant = dno.participant
@@ -2502,6 +2508,7 @@ def era_edit_form_get(era_id):
             imp_llfcs=imp_llfcs,
             exp_llfcs=exp_llfcs,
             dtc_meter_types=dtc_meter_types,
+            dtc_meter_type=dtc_meter_type,
         )
     except BadRequest as e:
         g.sess.rollback()
@@ -5040,7 +5047,7 @@ def em_totals(site_id):
         print("found mem id")
         mem_id = req_int("mem_id")
         site_info = chellow.dloads.get_mem_val(mem_id)
-        print(f"sit einfo {site_info}")
+        print(f"sit einfo status {site_info.get('status')}")
 
         status_code = 200 if site_info["status"] == "running" else 286
         print(f"status code {status_code}")
@@ -5201,6 +5208,12 @@ def site_add_e_supply_form_get(site_id):
         else:
             pc = Pc.get_by_id(g.sess, pc_id)
 
+        dtc_meter_type_id = req_int_none("dtc_meter_type_id")
+        if dtc_meter_type_id is None:
+            dtc_meter_type = None
+        else:
+            dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
+
         participant = dno.participant
 
         if pc.code == "00":
@@ -5352,6 +5365,7 @@ def site_add_e_supply_form_get(site_id):
             imp_llfcs=imp_llfcs,
             exp_llfcs=exp_llfcs,
             dtc_meter_types=dtc_meter_types,
+            dtc_meter_type=dtc_meter_type,
         )
     except BadRequest as e:
         g.sess.rollback()

@@ -1420,7 +1420,11 @@ def test_era_edit_form_get(client, sess):
 
     sess.commit()
 
-    query_string = {"pc_id": pc.id, "mtc_participant_id": mtc_participant.id}
+    query_string = {
+        "pc_id": pc.id,
+        "mtc_participant_id": mtc_participant.id,
+        "dtc_meter_type_id": dtc_meter_type.id,
+    }
 
     response = client.get(f"/e/eras/{era.id}/edit/form", query_string=query_string)
 
@@ -1546,6 +1550,7 @@ def test_era_edit_form_get_ended_llfc(client, sess):
         "pc_id": pc.id,
         "mtc_participant_id": mtc_participant.id,
         "has_imp_mpan": "true",
+        "dtc_meter_type_id": dtc_meter_type.id,
     }
 
     response = client.get(f"/e/eras/{era.id}/edit/form", query_string=query_string)
@@ -3649,6 +3654,7 @@ def test_site_add_e_supply_form_get(client, sess):
         "source_id": "",
         "pc_id": "",
         "mtc_participant_id": "",
+        "dtc_meter_type_id": "",
     }
     response = client.get(
         f"/e/sites/{site.id}/add_e_supply/form", query_string=query_string
@@ -3660,7 +3666,7 @@ def test_site_add_e_supply_form_get(client, sess):
         r'<option value="1">845 HH COP5 And Above With Comms</option>\s*'
         r"</select>\s*",
         r'<select name="dtc_meter_type_id">\s*'
-        r'<option value="">Unmetered</option>\s*'
+        r'<option value="" selected>Unmetered</option>\s*'
         r'<option value="23">'
         r"2ADEF Single Element with ALCS, Boost "
         r"Function and APC that is compliant with SMETS2"

@@ -31,7 +31,21 @@
 			{% endfor %}
 		</select>
 	{% endif %}
-	<label>Meter Serial Number</label> {{input_text('msn')}}
+
+	<label>DTC Meter Type</label>
+	<select name="dtc_meter_type_id">
+		{{input_option('dtc_meter_type_id', '', 'Unmetered')}}
+		{% for dtc_meter_type in dtc_meter_types %}
+			{{input_option( 'dtc_meter_type_id', dtc_meter_type.id,
+		 			dtc_meter_type.code + ' ' + dtc_meter_type.description)}}
+		{% endfor %}
+	</select>
+
+	{% if dtc_meter_type is none %}
+		<input type="hidden" name="msn" value="">
+	{% else %}
+		<label>Meter Serial Number</label> {{input_text('msn')}}
+	{% endif %}
 
 	<label>DNO</label>
 	<select name="dno_id">
@@ -112,15 +126,6 @@
 		{% for mtc_participant in mtc_participants %}
 			{{input_option( 'mtc_participant_id', mtc_participant.id,
 		 			mtc_participant.mtc.code + ' ' + mtc_participant.description)}}
-		{% endfor %}
-	</select>
-
-	<label>DTC Meter Type</label>
-	<select name="dtc_meter_type_id">
-		{{input_option('dtc_meter_type_id', '', 'Unmetered')}}
-		{% for dtc_meter_type in dtc_meter_types %}
-			{{input_option( 'dtc_meter_type_id', dtc_meter_type.id,
-		 			dtc_meter_type.code + ' ' + dtc_meter_type.description)}}
 		{% endfor %}
 	</select>
 
