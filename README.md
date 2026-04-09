@@ -70,6 +70,20 @@ If you're using Entra ID to access Postgres, include the environment variable `P
 If you're using Azure Easy Auth for user authentication, set environment variable
  `USER_AUTH=MS_EASY_AUTH`.
 
+### Database Permissions
+
+If you need to grant a user app\_user read-write privileges then connect as superuser to the `chellow`
+database and do:
+
+    GRANT CONNECT ON DATABASE chellow TO app_user;
+    GRANT USAGE ON SCHEMA public TO app_user;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
+    GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO app_user;
+    GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO app_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO app_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO app_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO app_user;
+
 
 ### Manually Upgrading Chellow
 
