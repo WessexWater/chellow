@@ -9,17 +9,17 @@
 {% endblock %}
 
 {% block content %}
-	<form method="post">
+	<form action="/e/mop_contracts/add" method="post">
 		<fieldset>
 			<legend>Add a MOP contract</legend>
-			<label>Participant</label>
-			<select name="participant_id">
+			<label>Party</label>
+			<select name="party_id">
 				{% for party in parties %}
-					{{ input_option('participant_id', party.id,
+					{{ input_option('party_id', party.id,
 							party.participant.code + " : " + party.name + " : " + party.market_role.description) }}
 				{% endfor %}
 			</select>
-			<label>Name</label> {{input_text('name')}}
+			<label>Name</label> {{input_text('name', required=True)}}
 			<label>Start Date</label> {{ input_date('start') }}
 
 			<input type="submit" value="Add">

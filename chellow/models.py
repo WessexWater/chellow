@@ -1468,6 +1468,24 @@ class Party(Base, PersistentClass):
             raise BadRequest(f"There is no DNO with the id '{dno_id}'.")
         return dno
 
+    @staticmethod
+    def get_by_role_codes_id(sess, role_codes, party_id):
+        party = sess.scalars(
+            select(Party)
+            .join(MarketRole)
+            .where(Party.id == party_id, MarketRole.code.in_(role_codes))
+        ).one_or_none()
+        if party is None:
+            raise BadRequest(
+                f"There is no party with the id '{party_id}' and market "
+                f"roles {role_codes}."
+            )
+        return party
+
+    @staticmethod
+    def get_mop_by_id(sess, party_id):
+        return Party.get_by_role_codes_id(sess, MOP_MARKET_ROLE_CODES, party_id)
+
 
 class Contract(Base, PersistentClass):
     @staticmethod

@@ -4041,7 +4041,7 @@ def mop_contract_add_post():
         name = req_str("name")
         start_date = req_date("start")
         party = Party.get_mop_by_id(g.sess, party_id)
-        contract = party.insert_contract(g.sess, name, "{}", {}, start_date, None, {})
+        contract = party.insert_contract(g.sess, name, "", {}, start_date, None, {})
         g.sess.commit()
         return chellow_redirect(f"/mop_contracts/{contract.id}", 303)
     except BadRequest as e:
@@ -5045,7 +5045,7 @@ def em_totals(site_id):
     if "mem_id" in request.values:
         print("found mem id")
         mem_id = req_int("mem_id")
-        site_info = chellow.dloads.get_mem_val(mem_id)
+        site_info = chellow.dloads.get_mem_val(mem_id).copy()
         print(f"sit einfo status {site_info.get('status')}")
 
         status_code = 200 if site_info["status"] == "running" else 286

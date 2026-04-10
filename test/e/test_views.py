@@ -3143,6 +3143,18 @@ def test_mop_contract_edit_get(sess, client):
     match(response, 200)
 
 
+def test_mop_contract_add_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_M = MarketRole.insert(sess, "M", "MOP")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_M, "MOP Ltd.", vf, None, None)
+    sess.commit()
+
+    response = client.get("/e/mop_contracts/add")
+
+    match(response, 200, r"party_id")
+
+
 def test_mop_batch_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
