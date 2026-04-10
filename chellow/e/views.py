@@ -1371,13 +1371,12 @@ def dc_contract_properties_edit_post(dc_contract_id):
 
 @e.route("/dc_contracts/<int:dc_contract_id>/edit")
 def dc_contract_edit_get(dc_contract_id):
-    parties = (
-        g.sess.query(Party)
+    parties = g.sess.scalars(
+        select(Party)
         .join(MarketRole)
         .join(Participant)
-        .filter(MarketRole.code == "C")
+        .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
         .order_by(Participant.code)
-        .all()
     )
     dc_contract = Contract.get_dc_by_id(g.sess, dc_contract_id)
     initial_date = utc_datetime_now()
@@ -1438,7 +1437,7 @@ def dc_contract_edit_post(contract_id):
                 g.sess.query(Party)
                 .join(MarketRole)
                 .join(Participant)
-                .filter(MarketRole.code == "C")
+                .filter(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
                 .order_by(Participant.code)
                 .all()
             )
@@ -2242,7 +2241,7 @@ def era_edit_form_get(era_id):
                 Contract.finish_rate_script_id == RateScriptAliasFinish.id,
             )
             .where(
-                MarketRole.code.in_(("C", "D")),
+                MarketRole.code.in_(DC_MARKET_ROLE_CODES),
                 start_date >= RateScriptAliasStart.start_date,
             )
             .order_by(Contract.name)
