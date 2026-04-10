@@ -3592,7 +3592,6 @@ def mop_contract_edit_get(contract_id):
         .join(Participant)
         .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .order_by(Participant.code)
-        .all()
     )
     initial_date = utc_datetime_now()
     contract = Contract.get_mop_by_id(g.sess, contract_id)

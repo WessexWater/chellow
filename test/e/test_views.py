@@ -3128,6 +3128,21 @@ def test_mop_contract_edit_delete(sess, client):
     match(response, 303)
 
 
+def test_mop_contract_edit_get(sess, client):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    market_role_M = MarketRole.insert(sess, "M", "MOP")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "MOP Ltd.", vf, None, None
+    )
+    contract = mop_party.insert_contract(sess, "MOP 2000", "", {}, vf, None, {})
+    sess.commit()
+
+    response = client.get(f"/e/mop_contracts/{contract.id}/edit")
+
+    match(response, 200)
+
+
 def test_mop_batch_file_get(sess, client):
     vf = to_utc(ct_datetime(1996, 1, 1))
     participant = Participant.insert(sess, "hhak", "AK Industries")
