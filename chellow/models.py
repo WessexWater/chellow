@@ -2472,51 +2472,39 @@ class Participant(Base, PersistentClass):
 
 class RateScript(Base, PersistentClass):
     @staticmethod
-    def get_by_role_code_id(sess, market_role_code, oid):
+    def get_by_role_codes_id(sess, market_role_codes, oid):
         try:
-            return sess.execute(
+            return sess.scalars(
                 select(RateScript)
                 .join(Contract.rate_scripts)
                 .join(MarketRole)
-                .where(RateScript.id == oid, MarketRole.code == market_role_code)
-            ).scalar_one()
+                .where(RateScript.id == oid, MarketRole.code.in_(market_role_codes))
+            ).one()
         except NoResultFound:
             raise NotFound(
                 f"There isn't a rate script with the id {oid} attached to a "
-                f"contract with market role code {market_role_code}."
+                f"contract with a market role code in {market_role_codes}."
             )
 
     @staticmethod
     def get_dc_by_id(sess, oid):
-        roles = ("C", "D")
-        try:
-            return sess.execute(
-                select(RateScript)
-                .join(Contract.rate_scripts)
-                .join(MarketRole)
-                .where(RateScript.id == oid, MarketRole.code.in_(roles))
-            ).scalar_one()
-        except NoResultFound:
-            raise NotFound(
-                f"There isn't a rate script with the id {oid} attached to a contract "
-                f"with market role codes {roles}."
-            )
+        return RateScript.get_by_role_codes_id(sess, DC_MARKET_ROLE_CODES, oid)
 
     @staticmethod
     def get_supplier_by_id(sess, oid):
-        return RateScript.get_by_role_code_id(sess, "X", oid)
+        return RateScript.get_by_role_codes_id(sess, ("X",), oid)
 
     @staticmethod
     def get_non_core_by_id(sess, oid):
-        return RateScript.get_by_role_code_id(sess, "Z", oid)
+        return RateScript.get_by_role_codes_id(sess, ("Z",), oid)
 
     @staticmethod
     def get_mop_by_id(sess, oid):
-        return RateScript.get_by_role_code_id(sess, "M", oid)
+        return RateScript.get_by_role_codes_id(sess, MOP_MARKET_ROLE_CODES, oid)
 
     @staticmethod
     def get_dno_by_id(sess, oid):
-        return RateScript.get_by_role_code_id(sess, "R", oid)
+        return RateScript.get_by_role_codes_id(sess, ("R",), oid)
 
     __tablename__ = "rate_script"
     id = Column(Integer, primary_key=True)
