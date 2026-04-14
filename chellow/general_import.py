@@ -2180,9 +2180,10 @@ def _process_line(sess, hh_data, line, args):
     else:
         try:
             typ_func = typ_funcs[typ]
-            typ_func(sess, action, vals, args)
         except KeyError:
             raise BadRequest(f"The type {typ} is not recognized.")
+
+        typ_func(sess, action, vals, args)
 
 
 class GeneralImporter(threading.Thread):

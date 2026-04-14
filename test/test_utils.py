@@ -1,6 +1,10 @@
 from datetime import datetime as Datetime
 
+import pytest
+
 from pytz import utc
+
+from werkzeug.exceptions import BadRequest
 
 from chellow.utils import (
     PropDict,
@@ -109,6 +113,11 @@ def test_date_format_none():
 def test_parse_date():
     actual = parse_date("2019-01-01 00:00Z")
     assert actual == utc_datetime(2019, 1, 1)
+
+
+def test_parse_date_error():
+    with pytest.raises(BadRequest):
+        parse_date("x")
 
 
 def test_parse_mpan_core():
