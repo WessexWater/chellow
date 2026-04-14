@@ -34,6 +34,11 @@ ELEMENT_MAP = {
             "493988": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
             "346982": ("rab-obligation", "rate", "kwh"),
+            "080788": ("vtp", None, None),
+            "467705": ("vtp", None, None),
+            "633675": ("vtp", None, None),
+            "183968": ("vtp", None, None),
+            "627692": ("vtp", None, None),
         },
     },
     "BUS": {
