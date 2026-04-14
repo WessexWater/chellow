@@ -235,7 +235,8 @@ def parse_date(date_str, resolution="hh"):
         }
         raise BadRequest(
             f"Can't parse the date: {date_str}. It needs to be of the "
-            f"form {formats[resolution]} with an optional Z on the end. {e}"
+            f"form {formats[resolution]} with an optional Z on the end. Or blank for "
+            f"ongoing. {e}"
         )
 
 
