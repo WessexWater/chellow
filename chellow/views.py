@@ -2726,24 +2726,22 @@ def input_date_get():
             else:
                 microsecond = 0
         else:
-            initial = ct_datetime_now()
+            init_ct = ct_datetime_now()
             year, month, day, hour, minute, second, microsecond = (
-                initial.year,
-                initial.month,
-                initial.day,
-                initial.hour,
-                initial.minute,
-                initial.second,
-                initial.microsecond,
+                init_ct.year,
+                init_ct.month,
+                init_ct.day,
+                init_ct.hour,
+                init_ct.minute,
+                init_ct.second,
+                init_ct.microsecond,
             )
         month_max_day = (ct_datetime(year, month, 1) + relativedelta(months=1) - HH).day
-        initial = to_utc(
-            ct_datetime(
-                year, month, min(day, month_max_day), hour, minute, second, microsecond
-            )
+        initial_ct = ct_datetime(
+            year, month, min(day, month_max_day), hour, minute, second, microsecond
         )
     else:
-        initial = month_max_day = None
+        initial_ct = month_max_day = None
 
     return render_template(
         "input_date.html",
@@ -2759,5 +2757,5 @@ def input_date_get():
         month_max_day=month_max_day,
         has_is_ended=has_is_ended,
         is_ended=is_ended,
-        initial=initial,
+        initial_ct=initial_ct,
     )
