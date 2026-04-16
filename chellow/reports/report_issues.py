@@ -11,7 +11,9 @@ from sqlalchemy.dialects.postgresql import JSONB, array
 from chellow.dloads import open_file
 from chellow.e.issues import make_issue_bundles
 from chellow.models import (
+    DC_MARKET_ROLE_CODES,
     Issue,
+    MOP_MARKET_ROLE_CODES,
     RSession,
     User,
 )
@@ -137,4 +139,6 @@ def do_get(sess):
             is_opens=is_opens,
             limit=LIMIT,
             issue_bundles=issue_bundles,
+            DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
+            MOP_MARKET_ROLE_CODES=MOP_MARKET_ROLE_CODES,
         )

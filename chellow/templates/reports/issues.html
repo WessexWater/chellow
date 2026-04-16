@@ -45,11 +45,11 @@
 				{% set market_role_code = bundle.issue.contract.market_role.code %}
 				<tr>
 					<td>
-						{% if market_role_code == 'C' %}
+						{% if market_role_code in DC_MARKET_ROLE_CODES %}
 							<a href="/e/dc_issues/{{bundle.issue.id}}">View</a>
 						{% elif market_role_code == 'X' %}
 							<a href="/e/supplier_issues/{{bundle.issue.id}}">View</a>
-						{% elif market_role_code == 'M' %}
+						{% elif market_role_code in MOP_MARKET_ROLE_CODES %}
 							<a href="/e/mop_issues/{{bundle.issue.id}}">View</a>
 						{% endif %}
 					</td>
@@ -64,12 +64,12 @@
 						{% endif %}
 					</td>
 					<td>
-						{% if market_role_code == 'C' %}
+						{% if market_role_code in DC_MARKET_ROLE_CODES %}
 							<a href="/e/dc_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
 						{% elif market_role_code == 'X' %}
-							<a href="/e/supplier_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
-						{% elif market_role_code == 'M' %}
-							<a href="/e/mop_issues/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+							<a href="/e/supplier_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
+						{% elif market_role_code in MOP_MARKET_ROLE_CODES %}
+							<a href="/e/mop_contracts/{{bundle.issue.contract.id}}">{{bundle.issue.contract.name}}</a>
 						{% endif %}
 					</td>
 					<td>{{bundle.issue.date_created|date_format}}</td>
