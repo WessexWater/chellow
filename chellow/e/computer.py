@@ -212,9 +212,9 @@ def hh_rate(
                 vals = None
             else:
                 market_role_code = rs.contract.market_role.code
-                if market_role_code == MOP_MARKET_ROLE_CODES:
+                if market_role_code in MOP_MARKET_ROLE_CODES:
                     seg = "/e/mop_rate_scripts/"
-                elif market_role_code == DC_MARKET_ROLE_CODES:
+                elif market_role_code in DC_MARKET_ROLE_CODES:
                     seg = "/e/dc_rate_scripts/"
                 elif market_role_code == "X":
                     seg = "/e/supplier_rate_scripts/"

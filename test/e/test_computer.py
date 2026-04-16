@@ -6,6 +6,7 @@ from chellow.e.computer import (
     _init_hh_data,
     _make_reads,
     _set_status,
+    hh_rate,
 )
 from chellow.models import (
     Ca,
@@ -293,6 +294,21 @@ def test_find_hhs_two_pairs(mocker):
             "tpr": "00001",
         },
     }
+
+
+def test_hh_rate(sess):
+    vf = utc_datetime(1996, 1, 1)
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop Ltd", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    sess.commit()
+
+    caches = {}
+    date = utc_datetime(2009, 7, 31, 23, 00)
+    hh_rate(sess, caches, mop_contract.id, date)
 
 
 def test_set_status(mocker):
