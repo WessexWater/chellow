@@ -22,10 +22,12 @@ from chellow.models import (
     Channel,
     ClockInterval,
     Contract,
+    DC_MARKET_ROLE_CODES,
     DtcMeterType,
     Era,
     HhDatum,
     Llfc,
+    MOP_MARKET_ROLE_CODES,
     MeasurementRequirement,
     MtcParticipant,
     Party,
@@ -210,9 +212,9 @@ def hh_rate(
                 vals = None
             else:
                 market_role_code = rs.contract.market_role.code
-                if market_role_code == "M":
+                if market_role_code == MOP_MARKET_ROLE_CODES:
                     seg = "/e/mop_rate_scripts/"
-                elif market_role_code == "C":
+                elif market_role_code == DC_MARKET_ROLE_CODES:
                     seg = "/e/dc_rate_scripts/"
                 elif market_role_code == "X":
                     seg = "/e/supplier_rate_scripts/"
