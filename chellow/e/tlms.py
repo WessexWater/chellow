@@ -185,17 +185,27 @@ GSP_GROUP_LOOKUP = {
     "12": "_M",
     "13": "_N",
     "14": "_P",
+    "15": None,  # Special
+    "16": None,  # Non-gb, interconnector
 }
 
 
 def _process_line(cache, sess, contract, log_func, values, complete_date, caches):
-    hh_date_ct = to_ct(Datetime.strptime(values[0], "%d/%m/%Y"))
+    hh_date_str = values[0]
+    if "-" in hh_date_str:
+        fmt = "%Y-%m-%d"
+    else:
+        fmt = "%d/%m/%Y"
+    hh_date_ct = to_ct(Datetime.strptime(hh_date_str, fmt))
     hh_date = to_utc(hh_date_ct)
     hh_date += relativedelta(minutes=30 * (int(values[2]) - 1))
     if complete_date is not None and hh_date <= complete_date:
         return
     run = values[1]
     gsp_group_code = GSP_GROUP_LOOKUP[values[3]]
+    if gsp_group_code is None:
+        return
+
     off_taking_str = values[4]
 
     try:
