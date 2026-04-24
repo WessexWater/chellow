@@ -6831,15 +6831,20 @@ def supplier_rate_script_edit_post(rate_script_id):
 
 @e.route("/supplier_contracts")
 def supplier_contracts_get():
-    contracts = (
-        g.sess.query(Contract)
+    contracts_q = (
+        select(Contract)
+        .join(Party)
         .join(MarketRole)
         .join(Contract.finish_rate_script)
-        .filter(MarketRole.code == "X")
+        .where(MarketRole.code == "X")
         .order_by(Contract.name)
     )
-    ongoing_contracts = contracts.filter(RateScript.finish_date == null())
-    ended_contracts = contracts.filter(RateScript.finish_date != null())
+    ongoing_contracts = g.sess.scalars(
+        contracts_q.where(RateScript.finish_date == null())
+    )
+    ended_contracts = g.sess.scalars(
+        contracts_q.where(RateScript.finish_date != null())
+    )
     return render_template(
         "supplier_contracts.html",
         ongoing_supplier_contracts=ongoing_contracts,

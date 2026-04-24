@@ -5005,6 +5005,11 @@ def test_supplier_bill_edit_post_breakdown_malformed(sess, client):
     )
 
 
+def test_supplier_contracts_get_edit(sess, client):
+    response = client.get("/e/supplier_contracts")
+    match(response, 200)
+
+
 def test_supplier_contracts_add_post(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
