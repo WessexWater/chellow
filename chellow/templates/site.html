@@ -152,10 +152,10 @@
 							<ul>
 								{% for issue in issues %}
 									<li>
-										{% if issue.contract.market_role.code == 'X' %}
+										{% if issue.contract.party.market_role.code == 'X' %}
 											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
 												{{issue.id}} {{issue.properties['subject']}}</a>
-										{% elif issue.contract.market_role.code == 'C' %}
+										{% elif issue.contract.party.market_role.code == 'C' %}
 											<a href="/e/dc_issues/{{issue.id}}">DC:
 												{{issue.id}} {{issue.properties['subject']}}</a>
 										{% else %}
