@@ -3119,6 +3119,12 @@ def test_mop_batches_edit_post(sess, client):
     match_repeat(client, "/e/mop_bill_imports/0", r"rolled back", seconds=5)
 
 
+def test_mop_contracts_get(sess, client):
+    response = client.get("/e/mop_contracts")
+
+    match(response, 200)
+
+
 def test_mop_contract_edit_delete(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_M = MarketRole.insert(sess, "M", "MOP")

@@ -4013,6 +4013,7 @@ def mop_contracts_get():
 
     current_mop_contracts = g.sess.scalars(
         select(Contract)
+        .join(Party)
         .join(MarketRole)
         .join(
             RateScriptAliasFinish,
@@ -4026,6 +4027,7 @@ def mop_contracts_get():
     ).all()
     ended_mop_contracts = g.sess.scalars(
         select(Contract)
+        .join(Party)
         .join(MarketRole)
         .join(
             RateScriptAliasFinish,
