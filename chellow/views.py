@@ -1808,13 +1808,13 @@ def report_run_row_post(row_id):
 
 @home.route("/non_core_contracts")
 def non_core_contracts_get():
-    non_core_contracts = (
-        g.sess.query(Contract)
+    non_core_contracts = g.sess.scalars(
+        select(Contract)
+        .join(Party)
         .join(MarketRole)
-        .filter(MarketRole.code == "Z")
+        .where(MarketRole.code == "Z")
         .order_by(Contract.name)
-        .all()
-    )
+    ).all()
     return render_template(
         "non_core_contracts.html", non_core_contracts=non_core_contracts
     )

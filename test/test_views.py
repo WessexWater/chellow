@@ -910,6 +910,12 @@ def test_non_core_auto_importer_post(mocker, sess, client):
     match(response, 303)
 
 
+def test_non_core_contracts_get(sess, client):
+    response = client.get("/non_core_contracts")
+
+    match(response, 200)
+
+
 def test_non_core_contract_edit_post(sess, client):
     market_role_Z = MarketRole.get_by_code(sess, "Z")
     participant = Participant.insert(sess, "CALB", "AK Industries")
