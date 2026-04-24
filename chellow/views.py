@@ -78,6 +78,7 @@ from chellow.models import (
     Comm,
     Contract,
     Cop,
+    DC_MARKET_ROLE_CODES,
     EnergisationStatus,
     Era,
     GBatch,
@@ -1589,6 +1590,7 @@ def report_run_get(run_id):
             "report_run_ecoes_comparison.html",
             run=run,
             rows=rows,
+            DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
         )
 
     elif run.name == "supply_contacts":
