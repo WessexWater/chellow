@@ -18,11 +18,19 @@ from paramiko import AutoAddPolicy, RSAKey, SFTPError, SSHClient
 
 import requests
 
-from sqlalchemy import null, or_
+from sqlalchemy import null, or_, select
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.models import Contract, Era, HhDatum, MarketRole, Session
+from chellow.models import (
+    Contract,
+    DC_MARKET_ROLE_CODES,
+    Era,
+    HhDatum,
+    MarketRole,
+    Party,
+    Session,
+)
 from chellow.utils import (
     HH,
     ct_datetime,
@@ -645,10 +653,11 @@ def startup():
                 )
 
     with Session() as sess:
-        for contract in (
-            sess.query(Contract)
+        for contract in sess.scalars(
+            select(Contract)
+            .join(Party)
             .join(MarketRole)
-            .filter(MarketRole.code == "C")
+            .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
             .order_by(Contract.id)
         ):
             startup_contract(contract.id)

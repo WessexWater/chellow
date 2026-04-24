@@ -101,9 +101,9 @@ def client(app, sess):
             sess.execute(
                 text(
                     "INSERT INTO contract (name, charge_script, properties, "
-                    "state, market_role_id, party_id, start_rate_script_id, "
+                    "state, party_id, start_rate_script_id, "
                     "finish_rate_script_id) VALUES ('configuration', '{}', '{}', "
-                    "'{}', 1, 1, null, null)"
+                    "'{}', 1, null, null)"
                 )
             )
             sess.execute(

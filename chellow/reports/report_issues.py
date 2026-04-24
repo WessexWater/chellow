@@ -44,7 +44,7 @@ def _make_vals(sess, contract_ids, owner_ids, supply_ids, is_opens):
         owner = bundle["owner"]
         values = {
             "issue_id": issue.id,
-            "contract_role": issue.contract.market_role.code,
+            "contract_role": issue.contract.party.market_role.code,
             "contract_name": issue.contract.name,
             "date_created": issue.date_created,
             "owner": None if owner is None else owner.username,

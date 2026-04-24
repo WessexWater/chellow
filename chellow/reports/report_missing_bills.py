@@ -121,7 +121,7 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
                             "site_code": site.code,
                             "site_name": site.name,
                             "account": account,
-                            "market_role_code": contract.market_role.code,
+                            "market_role_code": contract.party.market_role.code,
                         }
                         missing_bills[era.id] = values
                 for era_id, values in missing_bills.items():

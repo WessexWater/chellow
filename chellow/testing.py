@@ -90,8 +90,8 @@ def _test_report(logger, sess, report):
 
 def _test_contract(logger, sess, contract):
     logger(
-        f"Starting to test {contract.market_role.description} contract {contract.id} "
-        f"{contract.name}."
+        f"Starting to test {contract.party.market_role.description} contract "
+        f"{contract.id} {contract.name}."
     )
     code = compile(contract.charge_script, "<string>", "exec")
     ns = {"db_id": contract.id}

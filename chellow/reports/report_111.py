@@ -31,6 +31,7 @@ from chellow.models import (
     Era,
     Llfc,
     MtcParticipant,
+    Party,
     RSession,
     RegisterRead,
     ReportRun,
@@ -321,11 +322,12 @@ def _get_bill_status(sess, bill_statuses, bill):
                 select(Bill)
                 .join(Batch)
                 .join(Contract)
+                .join(Party)
                 .where(
                     Bill.supply == bill.supply,
                     Bill.start_date <= bill.finish_date,
                     Bill.finish_date >= bill.start_date,
-                    Contract.market_role == bill.batch.contract.market_role,
+                    Party.market_role == bill.batch.contract.party.market_role,
                 )
                 .order_by(Bill.start_date, Bill.issue_date)
             )
@@ -374,7 +376,7 @@ def _process_period(
     vels = {}
     val_elems = {}
     virtual_bill = {"problem": "", "elements": vels}
-    market_role_code = contract.market_role.code
+    market_role_code = contract.party.market_role.code
 
     vals = {
         "supply_id": supply.id,
@@ -382,7 +384,7 @@ def _process_period(
         "period_finish": period_finish,
         "contract_id": contract.id,
         "contract_name": contract.name,
-        "market_role_code": contract.market_role.code,
+        "market_role_code": market_role_code,
         "elements": val_elems,
         "virtual_net_gbp": 0,
         "actual_net_gbp": 0,
@@ -591,7 +593,7 @@ def _process_period(
             )
             continue
 
-        if contract.market_role.code == "X":
+        if market_role_code == "X":
             polarity = contract != era.exp_supplier_contract
         else:
             polarity = era.imp_supplier_contract is not None
@@ -724,7 +726,7 @@ def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, 
     gaps = {}
     bill_statuses = {}
     supply = Supply.get_by_id(sess, supply_id)
-    market_role_code = contract.market_role.code  # noqa: F841
+    market_role_code = contract.party.market_role.code  # noqa: F841
 
     # Find seed gaps
     while len(bill_ids) > 0:

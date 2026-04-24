@@ -29,6 +29,7 @@ from chellow.models import (
     Era,
     MOP_MARKET_ROLE_CODES,
     MeasurementRequirement,
+    Party,
     RSession,
     ReportRun,
     Scenario,
@@ -102,12 +103,13 @@ def _add_bills(sess, era, chunk_start, chunk_finish):
         .options(
             joinedload(Bill.batch)
             .joinedload(Batch.contract)
-            .joinedload(Contract.market_role)
+            .joinedload(Contract.party)
+            .joinedload(Party.market_role)
         )
     ):
         num += 1
         contract = bill.batch.contract
-        bill_role_code = contract.market_role.code
+        bill_role_code = contract.party.market_role.code
         bill_start = bill.start_date
         bill_finish = bill.finish_date
         bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
@@ -147,7 +149,7 @@ def _add_bills(sess, era, chunk_start, chunk_finish):
     ):
         num += 1
         contract = element.bill.batch.contract
-        bill_role_code = contract.market_role.code
+        bill_role_code = contract.party.market_role.code
         element_start = element.start_date
         element_finish = element.finish_date
         element_duration = (element_finish - element_start).total_seconds() + (30 * 60)

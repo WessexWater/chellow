@@ -1000,7 +1000,7 @@ class Bill(Base, PersistentClass):
         if kwh is None:
             raise Exception("kwh can't be null.")
 
-        if self.batch.contract.market_role.code != "X" and kwh != Decimal("0"):
+        if self.batch.contract.party.market_role.code != "X" and kwh != Decimal("0"):
             raise BadRequest("kWh can only be non-zero for a supplier bill.")
 
         self.kwh = kwh
@@ -1550,6 +1550,7 @@ class Contract(Base, PersistentClass):
     def find_by_role_codes_id(sess, role_codes, oid):
         return sess.scalars(
             select(Contract)
+            .join(Party)
             .join(MarketRole)
             .where(MarketRole.code.in_(role_codes), Contract.id == oid)
         ).first()
@@ -1569,6 +1570,7 @@ class Contract(Base, PersistentClass):
         return (
             sess.scalars(
                 select(Contract)
+                .join(Party)
                 .join(MarketRole)
                 .where(MarketRole.code.in_(role_codes), Contract.name == name)
             )
@@ -1603,12 +1605,10 @@ class Contract(Base, PersistentClass):
 
     __tablename__ = "contract"
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False, index=True, unique=True)
     charge_script = Column(Text, nullable=False)
     properties = Column(Text, nullable=False)
     state = Column(Text, nullable=False)
-    market_role_id = Column(Integer, ForeignKey("market_role.id"), index=True)
-    __table_args__ = (UniqueConstraint("name", "market_role_id"),)
     rate_scripts = relationship(
         "RateScript",
         back_populates="contract",
@@ -1629,7 +1629,6 @@ class Contract(Base, PersistentClass):
     issues = relationship("Issue", backref="contract")
 
     def __init__(self, name, party, charge_script, properties, state):
-        self.market_role = party.market_role
         self.update(name, party, charge_script, properties)
         self.update_state(state)
 
@@ -1638,12 +1637,30 @@ class Contract(Base, PersistentClass):
         if len(name) == 0:
             raise BadRequest("The contract name can't be blank.")
         self.name = name
-        if party.market_role.id != self.market_role.id:
-            raise BadRequest(
-                "The market role of the party doesn't match the market role of the "
-                "contract."
-            )
+
+        if self.party is not None:
+            old_role_code = self.party.market_role.code
+            new_role_code = party.market_role.code
+
+            if old_role_code in DC_MARKET_ROLE_CODES:
+                if new_role_code not in DC_MARKET_ROLE_CODES:
+                    raise BadRequest(
+                        "If the current party is a DC, then the updated party must "
+                        "also be a DC."
+                    )
+            elif old_role_code in MOP_MARKET_ROLE_CODES:
+                if new_role_code not in MOP_MARKET_ROLE_CODES:
+                    raise BadRequest(
+                        "If the current party is a MOP, then the updated party must "
+                        "also be a MOP."
+                    )
+            elif old_role_code != new_role_code:
+                raise BadRequest(
+                    "The market role of the party doesn't match the market role of "
+                    "the contract."
+                )
         self.party = party
+
         try:
             parse(charge_script)
         except SyntaxError as e:
@@ -2414,7 +2431,6 @@ class MarketRole(Base, PersistentClass):
     id = Column(Integer, primary_key=True)
     code = Column(String(length=1), unique=True, nullable=False)
     description = Column(String, nullable=False, unique=True)
-    contracts = relationship("Contract", backref="market_role")
     parties = relationship("Party", backref="market_role")
 
     def __init__(self, code, description):
@@ -2477,13 +2493,14 @@ class RateScript(Base, PersistentClass):
             return sess.scalars(
                 select(RateScript)
                 .join(Contract.rate_scripts)
+                .join(Party)
                 .join(MarketRole)
                 .where(RateScript.id == oid, MarketRole.code.in_(market_role_codes))
             ).one()
         except NoResultFound:
             raise NotFound(
                 f"There isn't a rate script with the id {oid} attached to a "
-                f"contract with a market role code in {market_role_codes}."
+                f"contract with a party with market role code in {market_role_codes}."
             )
 
     @staticmethod
@@ -7198,12 +7215,12 @@ def db_init(sess, root_path):
             f"'serializable' but in fact it's {isolation_level}."
         )
 
-    conf = (
-        sess.query(Contract)
+    conf = sess.scalars(
+        select(Contract)
+        .join(Party)
         .join(MarketRole)
-        .filter(Contract.name == "configuration", MarketRole.code == "Z")
-        .one()
-    )
+        .where(Contract.name == "configuration", MarketRole.code == "Z")
+    ).one()
     state = conf.make_state()
     new_state = dict(state)
     new_state["db_version"] = len(upgrade_funcs)
@@ -7902,6 +7919,29 @@ def db_upgrade_58_to_59(sess, root_path):
     );"""))
 
 
+def db_upgrade_59_to_60(sess, root_path):
+    sess.execute(
+        text(
+            "ALTER TABLE contract DROP CONSTRAINT IF EXISTS "
+            "contract_name_market_role_id_key;"
+        )
+    )
+    for contract_name, num in sess.execute(
+        select(Contract.name, func.count().label("count"))
+        .group_by(Contract.name)
+        .having(func.count() > 1)
+    ):
+        for contract in sess.scalars(
+            select(Contract).where(Contract.name == contract_name)
+        ):
+            contract.name = f"{contract.name}_{uuid4()}"
+            sess.commit()
+    sess.execute(text("ALTER TABLE contract ADD UNIQUE (name);"))
+    sess.execute(
+        text("ALTER TABLE contract DROP COLUMN IF EXISTS market_role_id CASCADE;")
+    )
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7946,6 +7986,7 @@ upgrade_funcs.extend(
         db_upgrade_56_to_57,
         db_upgrade_57_to_58,
         db_upgrade_58_to_59,
+        db_upgrade_59_to_60,
     ]
 )
 
@@ -7974,12 +8015,12 @@ def db_upgrade(root_path):
                 f"{db_version + 1}."
             )
             upgrade_funcs[db_version](sess, root_path)
-            conf = (
-                sess.query(Contract)
+            conf = sess.scalars(
+                select(Contract)
+                .join(Party)
                 .join(MarketRole)
-                .filter(Contract.name == "configuration", MarketRole.code == "Z")
-                .one()
-            )
+                .where(Contract.name == "configuration", MarketRole.code == "Z")
+            ).one()
             state = conf.make_state()
             state["db_version"] = db_version + 1
             conf.update_state(state)
@@ -7991,12 +8032,12 @@ def db_upgrade(root_path):
 
 
 def find_db_version(sess):
-    conf = (
-        sess.query(Contract)
+    conf = sess.scalars(
+        select(Contract)
+        .join(Party)
         .join(MarketRole)
-        .filter(Contract.name == "configuration", MarketRole.code == "Z")
-        .first()
-    )
+        .where(Contract.name == "configuration", MarketRole.code == "Z")
+    ).one_or_none()
     if conf is None:
         return None
     conf_state = loads(conf.state)

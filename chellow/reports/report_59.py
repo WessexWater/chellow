@@ -70,7 +70,7 @@ def make_bill_row(titles, bill):
 
 def _add_bills(month_data, bills, chunk_start, chunk_finish):
     for bill in bills:
-        bill_role_code = bill.batch.contract.market_role.code
+        bill_role_code = bill.batch.contract.party.market_role.code
         bill_start = bill.start_date
         bill_finish = bill.finish_date
         bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)
@@ -406,7 +406,7 @@ def _process_site(
                 Bill.start_date <= sss.finish_date,
                 Bill.finish_date >= sss.start_date,
             ):
-                bill_role_code = bill.batch.contract.market_role.code
+                bill_role_code = bill.batch.contract.party.market_role.code
                 bill_start = bill.start_date
                 bill_finish = bill.finish_date
                 bill_duration = (bill_finish - bill_start).total_seconds() + (30 * 60)

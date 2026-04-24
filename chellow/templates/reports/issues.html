@@ -42,7 +42,7 @@
 		<tbody>
 			{% for bundle in issue_bundles %}
 				{% set entry = bundle.latest_entry %}
-				{% set market_role_code = bundle.issue.contract.market_role.code %}
+				{% set market_role_code = bundle.issue.contract.party.market_role.code %}
 				<tr>
 					<td>
 						{% if market_role_code in DC_MARKET_ROLE_CODES %}
