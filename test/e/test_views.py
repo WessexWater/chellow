@@ -3183,6 +3183,23 @@ def test_mop_batch_file_get(sess, client):
     match(response, 200)
 
 
+def test_mop_issue_get(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+
+    market_role_M = MarketRole.insert(sess, "M", "HH MOP")
+    participant = Participant.insert(sess, "hhak", "AK Industries")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion MOP", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion MOP 2000", "", {}, vf, None, {}
+    )
+    issue = mop_contract.insert_issue(sess, vf, {})
+    sess.commit()
+    response = client.get(f"/e/mop_issues/{issue.id}")
+    match(response, 200)
+
+
 def test_mop_rate_script_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
     market_role_M = MarketRole.insert(sess, "4", "MA")

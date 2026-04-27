@@ -6747,8 +6747,9 @@ class Issue(Base, PersistentClass):
         issue = sess.scalars(
             select(Issue)
             .join(Contract)
+            .join(Party)
             .join(MarketRole)
-            .where(Issue.id == issue_id, MarketRole.code == "M")
+            .where(Issue.id == issue_id, MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         ).one_or_none()
         if issue is None:
             raise BadRequest(f"The MOP issue with id {issue_id} can't be found.")
