@@ -988,6 +988,16 @@ def test_site_edit_get(sess, client):
     match(response, 200, *patterns)
 
 
+def test_site_months_get(sess, client):
+    site = Site.insert(sess, "CI017", "Water Works")
+
+    sess.commit()
+
+    query_string = {"finish_year": "2026", "finish_month": "03"}
+    response = client.get(f"/sites/{site.id}/months", query_string=query_string)
+    match(response, 200)
+
+
 def test_rate_server_get(sess, client):
     response = client.get("/rate_server")
     match(response, 200)

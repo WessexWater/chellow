@@ -162,7 +162,7 @@
 						class="error"
 					{%- endif -%}
 				>
-					<td>{{month.start_date|date_format('date')}}</td>
+					<td>{{month.start_date|date_format('month_res')}}</td>
 
 					<td>{{ "{:,.1f}".format(month.used.md) }}</td>
 					<td>
