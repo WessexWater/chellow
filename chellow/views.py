@@ -92,6 +92,7 @@ from chellow.models import (
     GspGroup,
     HhDatum,
     Issue,
+    MOP_MARKET_ROLE_CODES,
     MarketRole,
     Participant,
     Party,
@@ -1447,6 +1448,8 @@ def report_run_get(run_id):
             element=element,
             hide_checked=hide_checked,
             ROW_LIMIT=ROW_LIMIT,
+            DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
+            MOP_MARKET_ROLE_CODES=MOP_MARKET_ROLE_CODES,
         )
     elif run.name == "g_bill_check":
         row = (
