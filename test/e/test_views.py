@@ -3390,6 +3390,19 @@ def test_mtc_llfc_ssc_pc_get(sess, client):
     match(response, 200)
 
 
+def test_party_get(sess, client):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(sess, "22", "", {}, vf, None, {})
+
+    sess.commit()
+    response = client.get(f"/e/parties/{dno_party.id}")
+
+    match(response, 200)
+
+
 class Sess:
     def __init__(self, *results):
         self.it = iter(results)

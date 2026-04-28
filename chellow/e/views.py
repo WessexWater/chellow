@@ -4561,7 +4561,12 @@ def participants_get():
 @e.route("/parties/<int:party_id>")
 def party_get(party_id):
     party = Party.get_by_id(g.sess, party_id)
-    return render_template("party.html", party=party)
+    return render_template(
+        "party.html",
+        party=party,
+        DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
+        MOP_MARKET_ROLE_CODE=MOP_MARKET_ROLE_CODES,
+    )
 
 
 @e.route("/parties")

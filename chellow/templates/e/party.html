@@ -61,19 +61,19 @@
 			{% for contract in party.contracts %}
 				<tr>
 					<td>
-						{% if contract.market_role.code == 'C' %}
+						{% if contract.party.market_role.code in DC_MARKET_ROLE_CODES %}
 							<a
 									href="/e/dc_contracts/{{contract.id}}"
 									>{{contract.name}}</a>
-						{% elif contract.market_role.code == 'R' %}
+						{% elif contract.party.market_role.code == 'R' %}
 							<a
 									href="/e/dno_contracts/{{contract.id}}"
 									>{{contract.name}}</a>
-						{% elif contract.market_role.code == 'X' %}
+						{% elif contract.party.market_role.code == 'X' %}
 							<a
 									href="/e/supplier_contracts/{{contract.id}}"
 									>{{contract.name}}</a>
-						{% elif contract.market_role.code == 'M' %}
+						{% elif contract.party.market_role.code in MOP_MARKET_ROLE_CODES %}
 							<a
 									href="/e/mop_contracts/{{contract.id}}"
 									>{{contract.name}}</a>
