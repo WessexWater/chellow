@@ -34,6 +34,7 @@ VL_LOOKUP = {
 }
 
 CA_EMAIL_ADDRESSES = {
+    "17": "authorised.capacity@sse.com",
     "22": "nged.connectionspolicy@nationalgrid.co.uk",
     "20": "authorised.capacity@sse.com",
 }
