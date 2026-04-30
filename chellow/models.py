@@ -1235,19 +1235,15 @@ class Batch(Base, PersistentClass):
 
     @staticmethod
     def get_mop_by_id(sess, batch_id):
-        batch = (
-            sess.query(Batch)
+        batch = sess.scalars(
+            select(Batch)
             .join(Contract)
+            .join(Party)
             .join(MarketRole)
-            .filter(Batch.id == batch_id, MarketRole.code == "M")
-            .first()
-        )
+            .where(Batch.id == batch_id, MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
+        ).one_or_none()
         if batch is None:
-            raise BadRequest(
-                "The MOP batch with id {batch_id} can't be found.".format(
-                    batch_id=batch_id
-                )
-            )
+            raise BadRequest(f"The MOP batch with id {batch_id} can't be found.")
         return batch
 
 

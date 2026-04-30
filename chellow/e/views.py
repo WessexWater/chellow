@@ -3317,9 +3317,9 @@ def mop_batch_edit_post(batch_id):
 @e.route("/mop_batches/<int:batch_id>")
 def mop_batch_get(batch_id):
     batch = Batch.get_mop_by_id(g.sess, batch_id)
-    bills = (
-        g.sess.query(Bill).filter(Bill.batch == batch).order_by(Bill.reference).all()
-    )
+    bills = g.sess.scalars(
+        select(Bill).where(Bill.batch == batch).order_by(Bill.reference)
+    ).all()
 
     config_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     properties = config_contract.make_properties()
@@ -3335,7 +3335,7 @@ def mop_batch_get(batch_id):
         .order_by(ReportRun.date_created.desc())
     )
     batch_reports = []
-    for report_id in properties["batch_reports"]:
+    for report_id in properties.get("batch_reports", []):
         batch_reports.append(Report.get_by_id(g.sess, report_id))
     return render_template(
         "mop_batch.html",
