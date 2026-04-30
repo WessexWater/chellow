@@ -2554,6 +2554,11 @@ def test_get_era_bundles_bill_in_correct_era(sess, client):
     assert len(bundles[1]["imp_bills"]["bill_dicts"]) == 1
 
 
+def test_issues_get(client):
+    response = client.get("/e/issues")
+    match(response, 200)
+
+
 def test_lafs_get(sess, client):
     vf = to_utc(ct_datetime(2000, 1, 1))
 

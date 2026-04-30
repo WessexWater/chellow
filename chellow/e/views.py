@@ -2967,6 +2967,7 @@ def issues_get():
     mop_contracts = g.sess.scalars(
         select(Contract)
         .join(Issue)
+        .join(Party)
         .join(MarketRole)
         .where(MarketRole.code.in_(MOP_MARKET_ROLE_CODES))
         .distinct()
@@ -2975,6 +2976,7 @@ def issues_get():
     dc_contracts = g.sess.scalars(
         select(Contract)
         .join(Issue)
+        .join(Party)
         .join(MarketRole)
         .where(MarketRole.code.in_(DC_MARKET_ROLE_CODES))
         .distinct()
@@ -2983,6 +2985,7 @@ def issues_get():
     supplier_contracts = g.sess.scalars(
         select(Contract)
         .join(Issue)
+        .join(Party)
         .join(MarketRole)
         .where(MarketRole.code == "X")
         .distinct()
