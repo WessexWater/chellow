@@ -33,7 +33,10 @@ VL_LOOKUP = {
     "EHV": {True: "ehv", False: "ehv"},
 }
 
-CA_EMAIL_ADDRESSES = {"22": "nged.connectionspolicy@nationalgrid.co.uk"}
+CA_EMAIL_ADDRESSES = {
+    "22": "nged.connectionspolicy@nationalgrid.co.uk",
+    "20": "authorised.capacity@sse.com",
+}
 
 
 def datum_beginning_22(ds, hh):
