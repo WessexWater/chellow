@@ -86,6 +86,16 @@
 					<a href="/e/mtc_llfc_ssc_pcs?dno_id={{dno.id}}">MTC LLFC SSC PCs</a>
 				</td>
 			</tr>
+			<tr>
+				<td>Email Address For Connection Agreements</td>
+				<td>
+					{% if ca_email_address is none %}
+						Not known. If you know, please log an issue in Chellow.
+					{% else %}
+						<a href="mailto:{{ca_email_address}}">{{ca_email_address}}</a>
+					{% endif %}
+				</td>
+			</tr>
 		</tbody>
 	</table>
 	<br>

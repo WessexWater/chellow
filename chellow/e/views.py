@@ -46,6 +46,7 @@ import chellow.e.dno_rate_parser
 import chellow.e.lccc
 import chellow.e.neso
 from chellow.e.computer import SupplySource, contract_func, forecast_date
+from chellow.e.duos import CA_EMAIL_ADDRESSES
 from chellow.e.elexon import ELEXON_PORTAL_SCRIPTING_KEY_KEY
 from chellow.e.energy_management import totals_runner
 from chellow.e.glossary import glossary_elements, glossary_intro, glossary_terms
@@ -2036,8 +2037,13 @@ def dno_get(dno_id):
         .where(RateScript.contract == dno_contract)
         .order_by(RateScript.start_date.desc())
     ).scalars()
+    ca_email_address = CA_EMAIL_ADDRESSES.get(dno.dno_code)
     return render_template(
-        "dno.html", dno=dno, dno_contract=dno_contract, rate_scripts=rate_scripts
+        "dno.html",
+        dno=dno,
+        dno_contract=dno_contract,
+        rate_scripts=rate_scripts,
+        ca_email_address=ca_email_address,
     )
 
 

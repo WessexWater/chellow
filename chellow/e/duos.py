@@ -33,6 +33,8 @@ VL_LOOKUP = {
     "EHV": {True: "ehv", False: "ehv"},
 }
 
+CA_EMAIL_ADDRESSES = {"22": "nged.connectionspolicy@nationalgrid.co.uk"}
+
 
 def datum_beginning_22(ds, hh):
     dno_rates = ds.hh_rate(ds.dno_contract.id, hh["start-date"])
