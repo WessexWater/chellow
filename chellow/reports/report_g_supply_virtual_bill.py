@@ -13,7 +13,7 @@ from chellow.dloads import open_file
 from chellow.e.computer import forecast_date
 from chellow.gas.engine import GDataSource, g_contract_func
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
-from chellow.utils import csv_make_val, date_format, hh_max, hh_min, req_date, req_int
+from chellow.utils import csv_make_val, hh_max, hh_min, req_date, req_int
 
 
 def content(g_supply_id, file_name, start_date, finish_date, user):
@@ -53,17 +53,16 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
                     sess, chunk_start, chunk_finish, forecast_dt, g_era, caches, None
                 )
 
-                titles = ["MPRN", "Site Code", "Site Name", "Account", "From", "To", ""]
+                titles = ["mprn", "site_code", "site_name", "account", "from", "to"]
 
-                output_line = [
-                    g_supply.mprn,
-                    site.code,
-                    site.name,
-                    ds.account,
-                    date_format(ds.start_date),
-                    date_format(ds.finish_date),
-                    "",
-                ]
+                vals = {
+                    "mprn": g_supply.mprn,
+                    "site_code": site.code,
+                    "site_name": site.name,
+                    "account": ds.account,
+                    "from": ds.start_date,
+                    "to": ds.finish_date,
+                }
 
                 contract_titles = g_contract_func(
                     caches, g_era.g_contract, "virtual_bill_titles"
@@ -72,21 +71,18 @@ def content(g_supply_id, file_name, start_date, finish_date, user):
 
                 g_contract_func(caches, g_era.g_contract, "virtual_bill")(ds)
                 bill = ds.bill
-
-                for title in contract_titles:
-                    if title in bill:
-                        output_line.append(csv_make_val(bill[title]))
-                        del bill[title]
+                for k, v in bill.items():
+                    if k == "elements":
+                        for elname, parts in v.items():
+                            for part_name, part_value in parts.items():
+                                vals[f"{elname}-{part_name}"] = part_value
                     else:
-                        output_line.append("")
-
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, bill[k]])
+                        vals[k] = v
 
                 if titles != prev_titles:
                     prev_titles = titles
                     writer.writerow([str(v) for v in titles])
-                writer.writerow(output_line)
+                writer.writerow([csv_make_val(vals.get(title)) for title in titles])
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
