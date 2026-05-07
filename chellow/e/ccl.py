@@ -22,9 +22,11 @@ def ccl(data_source):
             rates = data_source.non_core_rate("ccl", hh_start)
             rate = ccl_cache[hh_start] = float(rates["ccl_gbp_per_msp_kwh"])
 
-        hh["ccl-kwh"] = hh["msp-kwh"]
-        hh["ccl-rate"] = rate
-        hh["ccl-gbp"] = hh["msp-kwh"] * rate
+        hh["ccl"] = {
+            "kwh": hh["msp-kwh"],
+            "rate": {rate},
+            "gbp": hh["msp-kwh"] * rate,
+        }
 
 
 def rate_server_import(sess, log, set_progress, paths):

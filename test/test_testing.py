@@ -1,5 +1,7 @@
+from collections import deque
+
+import chellow.testing
 from chellow.models import MarketRole, Participant
-from chellow.testing import _test_contract
 from chellow.utils import ct_datetime, to_utc
 
 
@@ -20,6 +22,5 @@ def test_run_supplier_contract(sess):
         {},
     )
     sess.commit()
-    log = []
-    logger = log.append
-    _test_contract(logger, sess, contract)
+    messages = deque()
+    chellow.testing.test_contract(messages, sess, contract)

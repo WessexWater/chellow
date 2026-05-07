@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; MOP Contracts &raquo; {{contract.name}} &raquo; Test
+{% endblock %}
+
+{% block nav %}
+		<a href="/e/mop_contracts">MOP Contracts</a> &raquo; 
+		<a href="/e/mop_contracts/{{contract.id}}">{{contract.name}}</a>
+		&raquo; Test
+{% endblock %}
+
+{% block content %}
+
+		<table>
+			<tr>
+				<th>Is Alive?</th>
+				<td>{{tester.is_alive()}}</td>
+			</tr>
+		</table>
+
+		<form action="/e/mop_contracts/{{contract.id}}/test" method="post">
+			<fieldset {% if tester.is_alive() %}disabled{% endif %}>
+				<legend>Test Now</legend>
+				<input type="submit" value="Test" name="test">
+			</fieldset>
+		</form>
+
+		<h4>Log</h4>
+		<ul>
+			{% for message in tester.messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+{% endblock %}

@@ -2,7 +2,6 @@ import csv
 import sys
 import threading
 import traceback
-from datetime import datetime as Datetime
 
 from flask import g, redirect
 
@@ -12,19 +11,7 @@ from sqlalchemy.sql.expression import null
 from chellow.dloads import open_file
 from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
-from chellow.utils import c_months_u, date_format, hh_range, req_int
-
-
-def to_val(v):
-    if isinstance(v, Datetime):
-        return date_format(v)
-    elif isinstance(v, set):
-        if len(v) == 1:
-            return to_val(v.pop())
-        else:
-            return ""
-    else:
-        return str(v)
+from chellow.utils import c_months_u, csv_make_val, hh_range, req_int
 
 
 def content(contract_id, end_year, end_month, months, user):
@@ -34,18 +21,6 @@ def content(contract_id, end_year, end_month, months, user):
         with Session() as sess:
             f = open_file("displaced.csv", user, mode="w", newline="")
             writer = csv.writer(f, lineterminator="\n")
-            titles = [
-                "Site Code",
-                "Site Name",
-                "Associated Site Ids",
-                "From",
-                "To",
-                "Gen Types",
-                "CHP kWh",
-                "LM kWh",
-                "Turbine kWh",
-                "PV kWh",
-            ]
 
             month_list = list(
                 c_months_u(finish_year=end_year, finish_month=end_month, months=months)
@@ -74,11 +49,19 @@ def content(contract_id, end_year, end_month, months, user):
             bill_titles = contract_func(
                 caches, contract, "displaced_virtual_bill_titles"
             )()
+            titles = [
+                "site-code",
+                "site-name",
+                "associated-site-ids",
+                "from",
+                "to",
+                "gen-types",
+                "chp-kwh",
+                "lm-kwh",
+                "turb-kwh",
+                "pv-kwh",
+            ] + bill_titles
 
-            for title in bill_titles:
-                if title == "total-msp-kwh":
-                    title = "total-displaced-msp-kwh"
-                titles.append(title)
             writer.writerow(titles)
 
             for site in sites:
@@ -129,14 +112,14 @@ def content(contract_id, end_year, end_month, months, user):
                     ):
                         supply_ids.add(era.supply.id)
 
-                    vals = [
-                        site.code,
-                        site.name,
-                        ", ".join(list(linked_sites)),
-                        date_format(month_start),
-                        date_format(month_finish),
-                        ", ".join(list(generator_types)),
-                    ]
+                    vals = {
+                        "site-code": site.code,
+                        "site-name": site.name,
+                        "associated-site-ids": linked_sites,
+                        "from": month_start,
+                        "to": month_finish,
+                        "gen-types": generator_types,
+                    }
 
                     total_gen_breakdown = {}
 
@@ -229,7 +212,7 @@ def content(contract_id, end_year, end_month, months, user):
                                     added_so_far += kwh
 
                     for title in ["chp", "lm", "turb", "pv"]:
-                        vals.append(str(total_gen_breakdown.get(title, "")))
+                        vals[f"{title}-kwh"] = total_gen_breakdown.get(title)
 
                     site_ds = SiteSource(
                         sess,
@@ -247,15 +230,9 @@ def content(contract_id, end_year, end_month, months, user):
                     bill = site_ds.supplier_bill
                     for title in bill_titles:
                         if title in bill:
-                            vals.append(to_val(bill[title]))
-                            del bill[title]
-                        else:
-                            vals.append("")
+                            vals[title] = bill[title]
 
-                    for k in sorted(bill.keys()):
-                        vals.append(k)
-                        vals.append(str(bill[k]))
-                    writer.writerow(vals)
+                    writer.writerow([csv_make_val(vals.get(title)) for title in titles])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

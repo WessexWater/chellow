@@ -512,7 +512,7 @@ class GDataSource:
                 ][self.g_exit_zone_code]
             )
             self.hh_data.append(h)
-            self.bill_hhs[d["start_date"]] = {}
+            self.bill_hhs[d["start_date"]] = {"elements": {}}
 
     def g_industry_rates(self, g_contract_id_or_name, date):
         return g_industry_rates(self.sess, self.caches, g_contract_id_or_name, date)

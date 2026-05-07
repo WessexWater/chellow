@@ -166,21 +166,23 @@ from chellow.utils import reduce_bill_hhs
 
 def virtual_bill_titles():
     return [
-        'net-gbp', 'vat-gbp', 'gross-gbp', 'sum-msp-kwh', 'sum-msp-gbp', 'problem'
+        'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp', 'problem'
     ]
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill = ds.supplier_bill
+    bill['vat-gbp'] = 0
+    bill['gross-gbp'] = bill['net-gbp'] + bill['vat-gbp']
 """
     imp_supplier_contract = supplier_party.insert_contract(
         sess,
@@ -291,11 +293,11 @@ def virtual_bill(ds):
             "exp_is_substation",
             "exp_llfc_code",
             "exp_llfc_description",
+            "nrg-kwh",
+            "nrg-gbp",
             "net-gbp",
             "vat-gbp",
             "gross-gbp",
-            "sum-msp-kwh",
-            "sum-msp-gbp",
             "problem",
         ],
         [
@@ -317,8 +319,8 @@ def virtual_bill(ds):
             "",
             "",
             "",
-            "0.0",
             "0",
+            "0.0",
             "0.0",
             "0",
             "0.0",

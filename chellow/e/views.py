@@ -45,6 +45,7 @@ from zish import ZishException, dumps, loads
 import chellow.e.dno_rate_parser
 import chellow.e.lccc
 import chellow.e.neso
+import chellow.testing
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.duos import CA_EMAIL_ADDRESSES
 from chellow.e.elexon import ELEXON_PORTAL_SCRIPTING_KEY_KEY
@@ -1502,8 +1503,22 @@ def dc_contract_hh_imports_post(contract_id):
             )
 
 
+@e.route("/dc_contracts/<int:contract_id>/test")
+def dc_contract_test_get(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    tester = chellow.testing.get_single_tester_contract(contract_id)
+    return render_template("dc_contract_test.html", contract=contract, tester=tester)
+
+
+@e.route("/dc_contracts/<int:contract_id>/test", methods=["POST"])
+def dc_contract_test_post(contract_id):
+    contract = Contract.get_dc_by_id(g.sess, contract_id)
+    chellow.testing.run_single_tester_contract(contract_id)
+    return redirect(f"/e/dc_contracts/{contract.id}/test", 303)
+
+
 @e.route("/dc_contracts/<int:contract_id>/hh_imports/<int:import_id>")
-def dc_contracts_hh_import_get(contract_id, import_id):
+def dc_contract_hh_import_get(contract_id, import_id):
     contract = Contract.get_dc_by_id(g.sess, contract_id)
     process = chellow.e.hh_importer.get_hh_import_processes(contract_id)[import_id]
     return render_template(
@@ -3683,6 +3698,20 @@ def mop_contract_edit_post(contract_id):
             ),
             400,
         )
+
+
+@e.route("/mop_contracts/<int:contract_id>/test")
+def mop_contract_test_get(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    tester = chellow.testing.get_single_tester_contract(contract_id)
+    return render_template("mop_contract_test.html", contract=contract, tester=tester)
+
+
+@e.route("/mop_contracts/<int:contract_id>/test", methods=["POST"])
+def mop_contract_test_post(contract_id):
+    contract = Contract.get_mop_by_id(g.sess, contract_id)
+    chellow.testing.run_single_tester_contract(contract_id)
+    return redirect(f"/e/mop_contracts/{contract.id}/test", 303)
 
 
 @e.route("/mop_bills/<int:bill_id>/add_element")
@@ -6951,6 +6980,22 @@ def supplier_contract_get(contract_id):
     )
 
 
+@e.route("/supplier_contracts/<int:contract_id>/test")
+def supplier_contract_test_get(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    tester = chellow.testing.get_single_tester_contract(contract_id)
+    return render_template(
+        "supplier_contract_test.html", contract=contract, tester=tester
+    )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/test", methods=["POST"])
+def supplier_contract_test_post(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    chellow.testing.run_single_tester_contract(contract_id)
+    return redirect(f"/e/supplier_contracts/{contract.id}/test", 303)
+
+
 @e.route("/supplier_contracts/<int:contract_id>/add_rate_script")
 def supplier_rate_script_add_get(contract_id):
     now = utc_datetime_now()
@@ -7097,7 +7142,15 @@ def supply_get(supply_id):
             batch_reports.append(Report.get_by_id(g.sess, report_id))
 
     note = truncated_line = None
-    supply_note = {"notes": []} if len(supply.note.strip()) == 0 else loads(supply.note)
+    if len(supply.note) == 0:
+        supply_note = {"notes": []}
+    else:
+        try:
+            supply_note = loads(supply.note)
+        except ZishException:
+            supply_note = {
+                "notes": [{"body": supply.note, "timestamp": utc_datetime_now()}]
+            }
 
     notes = supply_note["notes"]
     if len(notes) > 0:

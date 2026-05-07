@@ -720,25 +720,66 @@ class PropDict(Mapping):
 
 
 def reduce_bill_hhs(bill_hhs):
-    bill = {}
+    bill_elements = {}
+    bill = {"elements": bill_elements}
     for bill_hh in bill_hhs.values():
+        els_hh = bill_hh["elements"]
+        try:
+            bill_hh["net-gbp"] = sum(v["gbp"] for v in els_hh.values())
+        except KeyError:
+            raise BadRequest(f"Not all the elements have a 'gbp' in {els_hh}")
         for k, v in bill_hh.items():
-            if isinstance(v, set):
-                if k in bill:
-                    bill[k].update(v)
-                else:
-                    bill[k] = v
+            if k == "elements":
+                for elname, valdict in bill_hh["elements"].items():
+                    try:
+                        bill_el = bill_elements[elname]
+                    except KeyError:
+                        bill_el = bill_elements[elname] = {}
 
+                    try:
+                        valdict_items = valdict.items()
+                    except AttributeError:
+                        raise BadRequest(
+                            f"For element name {elname}, the value {valdict} is "
+                            f"expected to be a Mapping type."
+                        )
+                    for valk, valv in valdict_items:
+                        if isinstance(valv, set):
+                            if valk in bill_el:
+                                bill_el[valk].update(valv)
+                            else:
+                                bill_el[valk] = valv
+
+                        else:
+                            try:
+                                bill_el[valk] += valv
+                            except KeyError:
+                                bill_el[valk] = valv
+                            except TypeError as e:
+                                raise BadRequest(
+                                    f"For [{elname}][{valk}] {bill_el[valk]} the "
+                                    f"value {valv} can't be added on. {e} "
+                                    f"{traceback.format_exc()}"
+                                )
+            elif k.endswith("-gbp") and k != "net-gbp":
+                raise BadRequest(f"Can't have a gbp outside elements bill[{k}]")
             else:
-                try:
-                    bill[k] += v
-                except KeyError:
-                    bill[k] = v
-                except TypeError as e:
-                    raise BadRequest(
-                        f"For bill[{k}] {bill[k]} the value {v} can't be added on. {e} "
-                        f"{traceback.format_exc()}"
-                    )
+                if isinstance(v, set):
+                    if k in bill:
+                        bill[k].update(v)
+                    else:
+                        bill[k] = v
+
+                else:
+                    try:
+                        bill[k] += v
+                    except KeyError:
+                        bill[k] = v
+                    except TypeError as e:
+                        raise BadRequest(
+                            f"For bill[{k}] {bill[k]} the value {v} can't be added "
+                            f"on. {e} {traceback.format_exc()}"
+                        )
 
     return bill
 

@@ -63,9 +63,7 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        els_hh = bill_hh['elements']
 
     ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -89,9 +87,6 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
 
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -124,12 +119,11 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """

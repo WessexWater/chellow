@@ -34,6 +34,8 @@ dependencies = [
 	"xlrd==2.0.2",
 	"zish==0.1.12",
 	"azure-identity",
+	"pytest",
+	"pytest-mock",
 ]
 
 [project.urls]
@@ -65,8 +67,6 @@ commands = [
 deps = [
     "black",
     "build",
-    "pytest",
-    "pytest-mock",
     "pytest-benchmark",
     "flake8",
     "flake8-alphabetize",

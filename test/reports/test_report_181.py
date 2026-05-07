@@ -61,7 +61,7 @@ def test_write_sites(mocker):
         }
     ]
 
-    ss_instance.supplier_bill_hhs = {month_start: {}}
+    ss_instance.supplier_bill_hhs = {month_start: {"elements": {}}}
 
     mocker.patch("chellow.e.duos.duos_vb", autospec=True)
     mocker.patch("chellow.e.tnuos.hh", autospec=True)

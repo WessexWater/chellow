@@ -13,7 +13,7 @@ from chellow.dloads import open_file
 from chellow.e.computer import contract_func
 from chellow.gas.engine import GDataSource
 from chellow.models import GEra, GSupply, Session, Site, SiteGEra
-from chellow.utils import csv_make_val, date_format, hh_range, req_date, req_int
+from chellow.utils import csv_make_val, hh_range, req_date, req_int
 
 
 def content(g_supply_id, start_date, finish_date, user):
@@ -54,40 +54,40 @@ def content(g_supply_id, start_date, finish_date, user):
                 ds = GDataSource(
                     sess, hh_start, hh_start, forecast_date, g_era, caches, None
                 )
-
-                titles = ["MPRN", "Site Code", "Site Name", "Account", "HH Start", ""]
-
-                output_line = [
-                    ds.mprn,
-                    site.code,
-                    site.name,
-                    ds.account,
-                    date_format(ds.start_date),
-                    "",
-                ]
-
                 contract = g_era.g_contract
-                output_line.append("")
                 contract_titles = contract_func(
                     caches, contract, "virtual_bill_titles"
                 )()
-                titles.append("")
-                titles.extend(contract_titles)
+
+                titles = [
+                    "mprn",
+                    "site_code",
+                    "site_name",
+                    "account",
+                    "hh_start",
+                ] + contract_titles
+
+                vals = {
+                    "mprn": ds.mprn,
+                    "site_code": site.code,
+                    "site_name": site.name,
+                    "account": ds.account,
+                    "hh_start": ds.start_date,
+                }
 
                 contract_func(caches, contract, "virtual_bill")(ds)
-                bill = ds.bill
-                for title in contract_titles:
-                    output_line.append(csv_make_val(bill.get(title, "")))
-                    if title in bill:
-                        del bill[title]
-
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, csv_make_val(bill[k])])
+                for k, v in ds.bill.items():
+                    if k == "elements":
+                        for elname, parts in v.items():
+                            for part_name, part_val in parts.items():
+                                vals[f"{elname}-{part_name}"] = part_val
+                    else:
+                        vals[k] = v
 
                 if titles != prev_titles:
                     prev_titles = titles
                     w.writerow(titles)
-                w.writerow(output_line)
+                w.writerow([csv_make_val(vals.get(title)) for title in titles])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)

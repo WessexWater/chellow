@@ -212,11 +212,9 @@ def _process_site(
             vals["metering-type"] = imp_ss.era.meter_category
             vals["source"] = "displaced"
 
-            for t in title_dict["imp-supplier"]:
-                try:
-                    vals[t] = disp_supplier_bill[t]
-                except KeyError:
-                    pass
+            for elname, eldict in disp_supplier_bill["elements"].items():
+                for part_name, part_value in eldict.items():
+                    vals[f"{elname}-{part_name}"] = part_value
 
         else:
             source_code = main_ss.source_code
@@ -266,11 +264,9 @@ def _process_site(
                 supply_data["imp-md-kw"] += imp_md_kw
                 supply_data["imp-md-kva"] += imp_md_kva
 
-                for t in title_dict["imp-supplier"]:
-                    try:
-                        vals[f"imp-supplier-{t}"] = imp_supplier_bill[t]
-                    except KeyError:
-                        pass
+                for elname, eldict in imp_supplier_bill["elements"].items():
+                    for part_name, part_value in eldict.items():
+                        vals[f"imp-supplier-{elname}-{part_name}"] = part_value
 
                 for n in imp_ss.normal_reads:
                     normal_reads.add((imp_mpan_core, n))
@@ -325,11 +321,9 @@ def _process_site(
                 supply_data["exp-md-kw"] += exp_md_kw
                 supply_data["exp-md-kva"] += exp_md_kva
 
-                for t in title_dict["exp-supplier"]:
-                    try:
-                        vals[f"exp-supplier-{t}"] = exp_supplier_bill[t]
-                    except KeyError:
-                        pass
+                for elname, eldict in exp_supplier_bill["elements"].items():
+                    for part_name, part_value in eldict.items():
+                        vals[f"exp-supplier-{elname}-{part_name}"] = part_value
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 gbp = exp_supplier_bill.get("net-gbp", 0)

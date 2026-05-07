@@ -193,13 +193,11 @@ def virtual_bill(ds):
 
     expected = [
         [
-            "MPRN",
-            "Site Code",
-            "Site Name",
-            "Account",
-            "HH Start",
-            "",
-            "",
+            "mprn",
+            "site_code",
+            "site_name",
+            "account",
+            "hh_start",
             "units_consumed",
             "correction_factor",
             "unit_code",
@@ -222,8 +220,6 @@ def virtual_bill(ds):
             "Water Works",
             "d7gthekrg",
             "2018-02-01 00:00",
-            "",
-            "",
             "0.6944444444444444",
             "1.0",
             "M3",
@@ -239,10 +235,6 @@ def virtual_bill(ds):
             "0",
             "0.7711450617283951",
             "",
-            "ccl_gbp",
-            "0.014972222222222222",
-            "ccl_kwh",
-            "7.561728395061729",
         ],
         [
             "87614362",
@@ -250,8 +242,6 @@ def virtual_bill(ds):
             "Water Works",
             "d7gthekrg",
             "2018-02-01 00:30",
-            "",
-            "",
             "0.6944444444444444",
             "1.0",
             "M3",
@@ -267,10 +257,6 @@ def virtual_bill(ds):
             "0",
             "0.7711450617283951",
             "",
-            "ccl_gbp",
-            "0.014972222222222222",
-            "ccl_kwh",
-            "7.561728395061729",
         ],
     ]
 

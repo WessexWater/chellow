@@ -250,35 +250,43 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp',
+        'gross-gbp', 'problem'
+    ]
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.supplier_bill['vat-gbp'] = 0
+    ds.supplier_bill['gross-gbp'] = (
+        ds.supplier_bill['net-gbp'] + ds.supplier_bill['vat-gbp']
+    )
 
 def displaced_virtual_bill(ds):
+    rate = 0.1
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['standing-gbp'] = 0.01
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * rate
+        }
+        els_hh['standing'] = {'gbp': 0.01}
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.supplier_bill['vat-gbp'] = 0
+    ds.supplier_bill['gross-gbp'] = (
+        ds.supplier_bill['net-gbp'] + ds.supplier_bill['vat-gbp']
+    )
 """
     imp_supplier_contract = supplier_party.insert_contract(
         sess,
@@ -527,7 +535,7 @@ def displaced_virtual_bill(ds):
             0.0,
         ],
     ]
-    assert site_expected == site_table
+    match_tables(site_expected, site_table)
 
     supply_table = sheet.tables[1].rows
     supply_expected = [
@@ -792,11 +800,11 @@ def displaced_virtual_bill(ds):
             "imp-supplier-ccl-kwh",
             "imp-supplier-ccl-rate",
             "imp-supplier-ccl-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -866,9 +874,9 @@ def displaced_virtual_bill(ds):
             None,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             None,
             None,
         ],
@@ -938,9 +946,9 @@ def displaced_virtual_bill(ds):
             None,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             None,
             None,
         ],
@@ -1184,21 +1192,23 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp',
+        'gross-gbp', 'problem']
 
 def virtual_bill(ds):
+    rate = 0.1
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1
+        }
 
-    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill = ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill['vat-gbp'] = 0
+    bill['gross-gbp'] = bill['net-gbp'] + bill['vat-gbp']
 """
     imp_supplier_contract = supplier_party.insert_contract(
         sess,
@@ -1630,11 +1640,11 @@ def virtual_bill(ds):
             "imp-supplier-ccl-kwh",
             "imp-supplier-ccl-rate",
             "imp-supplier-ccl-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -1704,9 +1714,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             None,
             None,
         ],
@@ -1757,12 +1767,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.mop_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.mop_bill = reduce_bill_hhs(ds.mop_bill_hhs)
 """
     mop_contract = mop_party.insert_contract(
         sess,
@@ -1783,12 +1790,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.dc_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.dc_bill = reduce_bill_hhs(ds.dc_bill_hhs)
 """
 
     dc_contract = dc_party.insert_contract(
@@ -1807,18 +1811,17 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 def virtual_bill_titles():
     return [
         'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'nrg-kwh', 'nrg-gbp', 'problem']
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -2228,8 +2231,8 @@ def virtual_bill(ds):
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -2297,9 +2300,9 @@ def virtual_bill(ds):
             None,
             None,
             None,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             0.0,
             0.0,
             None,
@@ -2472,21 +2475,24 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp',
+        'gross-gbp', 'problem']
 
 def virtual_bill(ds):
+    rate = 0.1
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill = ds.supplier_bill
+    bill['vat-gbp'] = 0
+    bill['gross-gbp'] = bill['net-gbp'] + bill['vat-gbp']
 """
     imp_supplier_contract = supplier_party.insert_contract(
         sess,
@@ -2891,11 +2897,11 @@ def virtual_bill(ds):
             "imp-supplier-ccl-kwh",
             "imp-supplier-ccl-rate",
             "imp-supplier-ccl-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -2965,9 +2971,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             None,
             None,
         ],
@@ -3091,9 +3097,6 @@ def virtual_bill(ds):
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
     ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
     mop_contract = mop_party.insert_contract(
@@ -3117,9 +3120,6 @@ def virtual_bill(ds):
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
 
@@ -3138,21 +3138,23 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp',
+        'gross-gbp', 'problem']
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill = ds.supplier_bill
+    bill['vat-gbp'] = 0
+    bill['gross-gbp'] = bill['net-gbp'] + bill['vat-gbp']
 """
     imp_supplier_contract = supplier_party.insert_contract(
         sess,
@@ -3557,11 +3559,11 @@ def virtual_bill(ds):
             "imp-supplier-ccl-kwh",
             "imp-supplier-ccl-rate",
             "imp-supplier-ccl-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -3631,9 +3633,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            None,
+            None,
+            None,
             None,
             None,
         ],
@@ -3702,12 +3704,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.dc_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.dc_bill = reduce_bill_hhs(ds.dc_bill_hhs)
 """
 
     dc_contract = dc_party.insert_contract(
@@ -3726,18 +3725,17 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 def virtual_bill_titles():
     return [
         'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'nrg-kwh', 'nrg-gbp', 'problem']
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -3993,8 +3991,8 @@ def virtual_bill(ds):
             "imp-supplier-net-gbp",
             "imp-supplier-vat-gbp",
             "imp-supplier-gross-gbp",
-            "imp-supplier-sum-msp-kwh",
-            "imp-supplier-sum-msp-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
             "imp-supplier-problem",
             None,
         ],
@@ -4044,12 +4042,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.mop_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.mop_bill = reduce_bill_hhs(ds.mop_bill_hhs)
 """
     mop_contract = mop_party.insert_contract(
         sess,
@@ -4070,12 +4065,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.dc_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.dc_bill = reduce_bill_hhs(ds.dc_bill_hhs)
 """
 
     dc_contract = dc_party.insert_contract(
@@ -4093,21 +4085,24 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-gbp', 'net-gbp', 'vat-gbp',
+        'gross-gbp', 'problem'
+    ]
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    bill = ds.supplier_bill
+    bill['vat-gbp'] = 0
+    bill['gross-gbp'] = bill['net-gbp'] + bill['vat-gbp']
 
 """
     exp_supplier_contract = supplier_party.insert_contract(
@@ -4310,14 +4305,14 @@ def virtual_bill(ds):
             0.0,
             0.0,
             0.0,
-            8.0,
+            0.0,
             1.0,
             0.0,
             0.0,
             0.0,
             0.0,
             0.0,
-            8.0,
+            0.0,
             0.0,
             0.0,
             0.0,
@@ -4334,7 +4329,7 @@ def virtual_bill(ds):
             0.0,
         ],
     ]
-    assert site_expected == site_table
+    match_tables(site_expected, site_table)
 
     supply_table = sheet.tables[1].rows
     supply_expected = [
@@ -4411,14 +4406,14 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            8.0,
+            0.0,
             1.0,
             0.0,
             0.0,
             0.0,
             0.0,
             None,
-            8.0,
+            0.0,
             0.0,
             0.0,
             0.0,
@@ -4504,11 +4499,11 @@ def virtual_bill(ds):
             "exp-supplier-ccl-kwh",
             "exp-supplier-ccl-rate",
             "exp-supplier-ccl-gbp",
+            "exp-supplier-nrg-kwh",
+            "exp-supplier-nrg-gbp",
             "exp-supplier-net-gbp",
             "exp-supplier-vat-gbp",
             "exp-supplier-gross-gbp",
-            "exp-supplier-sum-msp-kwh",
-            "exp-supplier-sum-msp-gbp",
             "exp-supplier-problem",
         ],
         [
@@ -4543,44 +4538,44 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            8.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            None,
-            8.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            None,
-            5.0,
-            None,
-            None,
-            3.0,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            1.0,
             0.0,
             1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            None,
+            0.0,
+            None,
+            None,
+            0.0,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
             10.0,
             1.0,
+            None,
+            None,
+            None,
             None,
         ],
     ]

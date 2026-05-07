@@ -105,6 +105,11 @@ def _process_era(
 
         vb_func(data_source)
         bill = data_source.supplier_bill
+
+        for elname, parts in bill["elements"].items():
+            for part_name, part_value in parts.items():
+                vals[f"{elname}-{part_name}"] = part_value
+
         for title in bill_titles:
             if title in bill:
                 vals[title] = bill[title]

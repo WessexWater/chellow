@@ -293,6 +293,20 @@ def local_report_post(report_id):
         return redirect(f"/local_reports/{report.id}", 303)
 
 
+@home.route("/local_reports/<int:report_id>/test")
+def local_report_test_get(report_id):
+    report = Report.get_by_id(g.sess, report_id)
+    tester = chellow.testing.get_single_tester_report(report_id)
+    return render_template("local_report_test.html", report=report, tester=tester)
+
+
+@home.route("/local_reports/<int:report_id>/test", methods=["POST"])
+def local_report_test_post(report_id):
+    report = Report.get_by_id(g.sess, report_id)
+    chellow.testing.run_single_tester_report(report_id)
+    return redirect(f"/local_reports/{report.id}/test", 303)
+
+
 @home.route("/scenarios")
 def scenarios_get():
     scenarios = g.sess.query(Scenario).order_by(Scenario.name).all()

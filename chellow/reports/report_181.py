@@ -83,7 +83,7 @@ def _write_sites(sess, caches, writer, year, site_id):
 
     scalar_names = {"triad-actual-gsp-kw", "triad-actual-gbp"}
 
-    rate_names = {"triad-actual-rate", "triad-estimate-rate"}
+    rate_names = {"triad-actual-rate"}
 
     for i in range(1, 4):
         pref = "triad-actual-" + str(i) + "-"
@@ -120,21 +120,26 @@ def _write_sites(sess, caches, writer, year, site_id):
 
         for hh in site_ds.hh_data:
             bill_hh = site_ds.supplier_bill_hhs[hh["start-date"]]
+            els_hh = bill_hh["elements"]
+            triad_hh = els_hh["triad"] = {}
             for k in scalar_names & hh.keys():
-                bill_hh[k] = hh[k]
+                triad_hh[k[13:]] = hh[k]
 
             for k in rate_names & hh.keys():
-                bill_hh[k] = {hh[k]}
+                triad_hh[k[13:]] = {hh[k]}
 
         bill = reduce_bill_hhs(site_ds.supplier_bill_hhs)
+        els_bill = bill["elements"]
+        triad_bill = els_bill["triad"]
         values = [site.code, site.name]
+
         for i in range(1, 4):
-            triad_prefix = "triad-actual-" + str(i) + "-"
+            triad_prefix = str(i) + "-"
             for suffix in ("date", "msp-kw", "laf", "gsp-kw"):
-                values.append(csv_make_val(bill[triad_prefix + suffix]))
+                values.append(csv_make_val(triad_bill[triad_prefix + suffix]))
 
         for suffix in ("gsp-kw", "rate", "gbp"):
-            values.append(csv_make_val(bill["triad-actual-" + suffix]))
+            values.append(csv_make_val(triad_bill[suffix]))
 
         writer.writerow(values)
 

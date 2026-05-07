@@ -853,9 +853,9 @@ class SiteSource(DataSource):
                 + max(datum["imp-msp-kvar"], datum["exp-msp-kvar"]) ** 2
             ) ** 0.5
             self.hh_data.append(datum)
-            self.supplier_bill_hhs[dtm["start-date"]] = {}
-            self.mop_bill_hhs[dtm["start-date"]] = {}
-            self.dc_bill_hhs[dtm["start-date"]] = {}
+            self.supplier_bill_hhs[dtm["start-date"]] = {"elements": {}}
+            self.mop_bill_hhs[dtm["start-date"]] = {"elements": {}}
+            self.dc_bill_hhs[dtm["start-date"]] = {"elements": {}}
 
         if self.deltas is not None:
             for hh in self.hh_data:
@@ -1433,9 +1433,9 @@ class SupplySource(DataSource):
             self.hh_data.append(datum)
 
             d_start = d["start-date"]
-            self.supplier_bill_hhs[d_start] = {}
-            self.mop_bill_hhs[d_start] = {}
-            self.dc_bill_hhs[d_start] = {}
+            self.supplier_bill_hhs[d_start] = {"elements": {}}
+            self.mop_bill_hhs[d_start] = {"elements": {}}
+            self.dc_bill_hhs[d_start] = {"elements": {}}
 
         if self.deltas is not None:
             site_deltas = self.deltas["site"]

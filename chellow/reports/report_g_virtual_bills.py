@@ -17,10 +17,9 @@ from chellow.gas.engine import GDataSource
 from chellow.models import GContract, GEra, Session, Site, SiteGEra, User
 from chellow.utils import (
     c_months_u,
-    date_format,
+    csv_make_val,
     hh_max,
     hh_min,
-    make_val,
     req_date,
     req_int,
     to_ct,
@@ -51,10 +50,15 @@ def content(start_date, finish_date, g_contract_id, user_id):
             bill_titles = contract_func(
                 report_context, g_contract, "virtual_bill_titles"
             )()
-            writer.writerow(
-                ["MPRN", "Site Code", "Site Name", "Account", "From", "To"]
-                + bill_titles
-            )
+            titles = [
+                "mpnn",
+                "site_code",
+                "site_name",
+                "account",
+                "from",
+                "to",
+            ] + bill_titles
+            writer.writerow(titles)
 
             for month_start, month_finish in month_pairs:
                 period_start = hh_max(start_date, month_start)
@@ -91,31 +95,28 @@ def content(start_date, finish_date, g_contract_id, user_id):
                         .one()
                     )
 
-                    vals = [
-                        data_source.mprn,
-                        site.code,
-                        site.name,
-                        data_source.account,
-                        date_format(data_source.start_date),
-                        date_format(data_source.finish_date),
-                    ]
+                    vals = {
+                        "mprn": data_source.mprn,
+                        "site_code": site.code,
+                        "site_name": site.name,
+                        "account": data_source.account,
+                        "from": data_source.start_date,
+                        "to": data_source.finish_date,
+                    }
 
                     contract_func(report_context, g_contract, "virtual_bill")(
                         data_source
                     )
                     bill = data_source.bill
-                    for title in bill_titles:
-                        if title in bill:
-                            val = make_val(bill[title])
-                            del bill[title]
+                    for k, v in bill.items():
+                        if k == "elements":
+                            for elname, parts in bill[k].items():
+                                for part_name, part_val in parts.items():
+                                    vals[f"{elname}-{part_name}"] = part_val
                         else:
-                            val = ""
-                        vals.append(val)
+                            vals[k] = v
 
-                    for k in sorted(bill.keys()):
-                        vals.append(k)
-                        vals.append(str(bill[k]))
-                    writer.writerow(vals)
+                    writer.writerow([csv_make_val(vals.get(title)) for title in titles])
 
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])

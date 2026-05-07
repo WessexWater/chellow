@@ -191,13 +191,12 @@ def virtual_bill(ds):
 
     expected = [
         [
-            "MPRN",
-            "Site Code",
-            "Site Name",
-            "Account",
-            "From",
-            "To",
-            "",
+            "mprn",
+            "site_code",
+            "site_name",
+            "account",
+            "from",
+            "to",
             "units_consumed",
             "correction_factor",
             "unit_code",
@@ -221,7 +220,6 @@ def virtual_bill(ds):
             "d7gthekrg",
             "2020-09-01 00:00",
             "2020-09-01 00:00",
-            "",
             "0.6944444444444444",
             "1.0",
             "M3",
@@ -237,14 +235,6 @@ def virtual_bill(ds):
             "0",
             "0.7958936913580247",
             "",
-            "aq",
-            "4",
-            "ccl_gbp",
-            "0.039720851851851854",
-            "ccl_kwh",
-            "7.561728395061729",
-            "soq",
-            "5",
         ],
     ]
 

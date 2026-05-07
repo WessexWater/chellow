@@ -517,23 +517,37 @@ def make_calcs(
                 ss_start,
                 ss_finish,
                 forecast_from,
+                {},
+                disp_era,
+            )
+            """
                 report_context,
                 disp_era,
                 era_maps=era_maps,
                 deltas=site_deltas,
                 bill=data_source_bill,
-            )
+            """
 
             disp_supplier_contract = disp_era.imp_supplier_contract
             disp_vb_function = contract_func(
-                report_context, disp_supplier_contract, "displaced_virtual_bill"
+                {}, disp_supplier_contract, "displaced_virtual_bill"
             )
             if disp_vb_function is None:
                 raise BadRequest(
                     f"The supplier contract {disp_supplier_contract.name} "
                     f" doesn't have the displaced_virtual_bill() function."
                 )
-            disp_vb_function(site_ds)
+            try:
+                disp_vb_function(site_ds)
+            except BaseException as e:
+                raise BadRequest(
+                    f"Displaced virtual bill of disp_supplier_contract "
+                    f"{disp_supplier_contract.id}  problem for site.id {site.id} "
+                    f"ss_start {date_format(ss_start)} ss_finish "
+                    f"{date_format(ss_finish)}."
+                    f"forecast_from {date_format(forecast_from)} disp_era.id "
+                    f"{disp_era.id} "
+                ) from e
 
             calcs.append(
                 (f"1_{date_format(ss_start)}", "displaced", None, site_ds, None)

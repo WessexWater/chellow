@@ -87,7 +87,23 @@ def write_spreadsheet(
 
 
 def make_bill_row(titles, bill):
-    return [bill.get(t) for t in titles]
+    vals = {}
+    for k, v in bill.items():
+        if k == "elements":
+            for elname, parts in v.items():
+                for part_name, part_val in parts.items():
+                    title = f"{elname}-{part_name}"
+                    vals[title] = part_val
+                    if part_name == "gbp" and title not in titles:
+                        raise BadRequest(
+                            f"There's an element '{elname}' with part '{part_name}' "
+                            f"in the virtual bill, but no title '{title}' in the "
+                            f"titles {titles}."
+                        )
+
+        else:
+            vals[k] = v
+    return [vals.get(t) for t in titles]
 
 
 def _add_bills(sess, era, chunk_start, chunk_finish):
@@ -1034,7 +1050,15 @@ def content(scenario_props, base_name, user_id, compression, now, report_run_id)
                                     org_month_data[k] += v
 
                         except BadRequest as e:
-                            raise BadRequest(f"Site Code {site.code}: {e.description}")
+                            raise BadRequest(
+                                f"Site Code {site.code} from start "
+                                f"{date_format(start)} : {e.description}"
+                            )
+                        except BaseException as e:
+                            raise BadRequest(
+                                f"Site Code {site.code} from start "
+                                f"{date_format(start)}: {e}"
+                            ) from e
 
                     sess.rollback()  # Evict from cache
 

@@ -1,7 +1,10 @@
+import csv
 from decimal import Decimal
 from io import StringIO
 
 from sqlalchemy import select
+
+from utils import match_tables
 
 from chellow.models import (
     BillType,
@@ -72,12 +75,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.mop_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.mop_bill = reduce_bill_hhs(ds.mop_bill_hhs)
 """
     mop_contract = mop_party.insert_contract(
         sess, "Fusion Mop Contract", mop_charge_script, {}, vf, None, {}
@@ -92,12 +92,9 @@ def virtual_bill_titles():
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
-        bill_hh = ds.supplier_bill_hhs[hh_start]
+        bill_hh = ds.dc_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
-    ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+    ds.dc_bill = reduce_bill_hhs(ds.dc_bill_hhs)
 """
 
     dc_contract = dc_party.insert_contract(
@@ -116,18 +113,17 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 def virtual_bill_titles():
     return [
         'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'nrg-kwh', 'nrg-gbp', 'problem']
 
 def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -232,7 +228,8 @@ def virtual_bill(ds):
 
     content(supply_id, start_date, start_date, user)
 
-    actual = mock_file.getvalue()
+    mock_file.seek(0)
+    actual = [line for line in csv.reader(mock_file)]
 
     expected = [
         [
@@ -253,8 +250,8 @@ def virtual_bill(ds):
             "imp_supplier_net-gbp",
             "imp_supplier_vat-gbp",
             "imp_supplier_gross-gbp",
-            "imp_supplier_sum-msp-kwh",
-            "imp_supplier_sum-msp-gbp",
+            "imp_supplier_nrg-kwh",
+            "imp_supplier_nrg-gbp",
             "imp_supplier_problem",
             "",
         ],
@@ -274,13 +271,12 @@ def virtual_bill(ds):
             "",
             "",
             "0.0",
-            "0",
-            "0.0",
-            "0",
-            "0.0",
+            "",
+            "",
+            "",
+            "",
             "",
             "",
         ],
     ]
-    expected_str = "\n".join([",".join(v) for v in expected]) + "\n"
-    assert expected_str == actual
+    match_tables(expected, actual)

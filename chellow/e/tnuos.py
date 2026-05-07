@@ -73,15 +73,19 @@ BAND_LOOKUP = {
 def _process_banded_hh(ds, hh):
     rates = ds.non_core_rate("tnuos", hh["start-date"])
     band_code = BAND_LOOKUP[hh["duos-description"]]
-    hh["tnuos-band"] = band_code
     if hh["ct-decimal-hour"] == 12:
         rate = float(rates["bands"][band_code]["TDR Tariff"])
-        hh["tnuos-rate"] = rate
         if band_code == "Unmetered":
-            hh["tnuos-gbp"] = rate / 100 * ds.sc / 365
+            tnuos_gbp = rate / 100 * ds.sc / 365
         else:
-            hh["tnuos-gbp"] = rate
-        hh["tnuos-days"] = 1
+            tnuos_gbp = rate
+
+        hh["tnuos"] = {
+            "days": 1,
+            "rate": {rate},
+            "band": {band_code},
+            "gbp": tnuos_gbp,
+        }
 
 
 def neso_import(sess, log, set_progress):

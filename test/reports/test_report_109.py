@@ -1,4 +1,7 @@
+import csv
 from io import StringIO
+
+from utils import match_tables
 
 from chellow.models import (
     Comm,
@@ -76,9 +79,6 @@ def virtual_bill(ds):
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
     ds.mop_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
     mop_contract = mop_party.insert_contract(
@@ -102,9 +102,6 @@ def virtual_bill(ds):
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
 
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-
     ds.dc_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
 
@@ -123,19 +120,21 @@ from chellow.utils import HH, reduce_bill_hhs, utc_datetime
 
 def displaced_virtual_bill_titles():
     return [
-        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
-        'sum-msp-kwh', 'sum-msp-gbp', 'problem']
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'nrg-kwh', 'nrg-rate', 'nrg-gbp', 'net-gbp',
+        'vat-gbp', 'gross-gbp', 'problem'
+    ]
 
 def displaced_virtual_bill(ds):
+    rate = 0.1
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['sum-msp-kwh'] = hh['msp-kwh']
-        bill_hh['sum-msp-gbp'] = hh['msp-kwh'] * 0.1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
-        bill_hh['vat-gbp'] = 0
-        bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'rate': {rate},
+            'gbp': hh['msp-kwh'] * rate,
+        }
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -236,29 +235,31 @@ def displaced_virtual_bill(ds):
 
     content(imp_supplier_contract.id, end_year, end_month, months, user)
 
-    actual = mock_file.getvalue()
+    mock_file.seek(0)
+    actual = [line for line in csv.reader(mock_file)]
     print(actual)
 
     expected = [
         [
-            "Site Code",
-            "Site Name",
-            "Associated Site Ids",
-            "From",
-            "To",
-            "Gen Types",
-            "CHP kWh",
-            "LM kWh",
-            "Turbine kWh",
-            "PV kWh",
+            "site-code",
+            "site-name",
+            "associated-site-ids",
+            "from",
+            "to",
+            "gen-types",
+            "chp-kwh",
+            "lm-kwh",
+            "turb-kwh",
+            "pv-kwh",
             "ccl-kwh",
             "ccl-rate",
             "ccl-gbp",
+            "nrg-kwh",
+            "nrg-rate",
+            "nrg-gbp",
             "net-gbp",
             "vat-gbp",
             "gross-gbp",
-            "sum-msp-kwh",
-            "sum-msp-gbp",
             "problem",
         ],
         [
@@ -275,13 +276,13 @@ def displaced_virtual_bill(ds):
             "",
             "",
             "",
+            "",
+            "",
+            "",
             "0.0",
-            "0",
-            "0.0",
-            "0",
-            "0.0",
+            "",
+            "",
             "",
         ],
     ]
-    expected_str = "\n".join([",".join(v) for v in expected]) + "\n"
-    assert expected_str == actual
+    match_tables(expected, actual)
