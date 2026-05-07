@@ -165,12 +165,11 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['nrg-kwh'] = hh['msp-kwh']
-        bill_hh['nrg-rate'] = {rate}
+        elems = bill_hh['elements'] = {}
+        elems['nrg'] = {'kwh': hh['msp-kwh'], 'rate': {rate},
+        'gbp': hh['msp-kwh'] * rate + 1}
         bill_hh['off-rate'] = {0.1}
-        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate + 1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['net-gbp'] = sum(v['gbp'] for k, v in elems.items())
         bill_hh['vat-gbp'] = 0
         bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
         bill_hh['problem'] = 'hello '
@@ -431,15 +430,16 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['nrg-kwh'] = hh['msp-kwh']
-        bill_hh['nrg-rate'] = {rate}
-        bill_hh['off-rate'] = {0.1}
-        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate + 1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        elems = bill_hh['elements'] = {}
+        elems['nrg'] = {'kwh': hh['msp-kwh'],
+        'rate': {rate},
+        'gbp': hh['msp-kwh'] * rate + 1
+        }
+        bill_hh['net-gbp'] = sum(v['gbp'] for k, v in elems.items())
         bill_hh['vat-gbp'] = 0
         bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
         bill_hh['problem'] = 'hello '
+        bill_hh['off-rate'] = {0.1}
 
     ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
 """
@@ -685,12 +685,14 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
-        bill_hh['nrg-kwh'] = hh['msp-kwh']
-        bill_hh['nrg-rate'] = {rate}
+        elems = bill_hh['elements'] = {}
+        elems['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'rate': {rate},
+            'gbp': hh['msp-kwh'] * rate + 1,
+        }
         bill_hh['off-rate'] = {0.1}
-        bill_hh['nrg-gbp'] = hh['msp-kwh'] * rate + 1
-        bill_hh['net-gbp'] = sum(
-            v for k, v in bill_hh.items() if k.endswith('gbp'))
+        bill_hh['net-gbp'] = sum(v['gbp'] for v in elems.values())
         bill_hh['vat-gbp'] = 0
         bill_hh['gross-gbp'] = bill_hh['net-gbp'] + bill_hh['vat-gbp']
         bill_hh['problem'] = 'hello '
@@ -1165,6 +1167,7 @@ def virtual_bill(ds):
     for hh in ds.hh_data:
         hh_start = hh['start-date']
         bill_hh = ds.supplier_bill_hhs[hh_start]
+        elems = bill_hh['elements'] = {}
         bill_hh['sum-msp-kwh'] = hh['msp-kwh']
         bill_hh['rate'] = {rate}
         bill_hh['off-rate'] = {0.1}
@@ -1349,7 +1352,7 @@ def virtual_bill(ds):
             "2009-07-10 01:00",
             "2009-07-10 01:00",
             "0",
-            "0.0",
-            "0.0",
+            "0",
+            "0",
         ],
     ]

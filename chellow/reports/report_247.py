@@ -87,7 +87,15 @@ def write_spreadsheet(
 
 
 def make_bill_row(titles, bill):
-    return [bill.get(t) for t in titles]
+    vals = {}
+    for k, v in bill.items():
+        if k == "elements":
+            for elname, parts in v.items():
+                for part_name, part_val in parts.items():
+                    vals[f"{elname}-{part_name}"] = part_val
+        else:
+            vals[k] = v
+    return [vals.get(t) for t in titles]
 
 
 def _add_bills(sess, era, chunk_start, chunk_finish):

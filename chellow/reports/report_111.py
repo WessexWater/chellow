@@ -27,9 +27,11 @@ from chellow.models import (
     Batch,
     Bill,
     Contract,
+    DC_MARKET_ROLE_CODES,
     Element,
     Era,
     Llfc,
+    MOP_MARKET_ROLE_CODES,
     MtcParticipant,
     Party,
     RSession,
@@ -613,43 +615,36 @@ def _process_period(
         match market_role_code:
             case "X":
                 vb = data_source.supplier_bill
-            case "C":
+            case v if v in DC_MARKET_ROLE_CODES:
                 vb = data_source.dc_bill
-            case "M":
+            case v if v in MOP_MARKET_ROLE_CODES:
                 vb = data_source.mop_bill
             case _:
                 raise BadRequest(f"Odd market role {market_role_code}")
 
-        for k, v in vb.items():
-            if k.endswith("-gbp") and k not in ("net-gbp", "vat-gbp", "gross-gbp"):
-                vel_name = k[:-4]
+        if "problem" in vb:
+            virtual_bill["problem"] += vb["problem"]
+
+        for elname, eldict in vb["elements"].items():
+            try:
+                vel = vels[elname]
+            except KeyError:
+                vel = vels[elname] = {"parts": {}, "elements": []}
+            vals["virtual_net_gbp"] += eldict["gbp"]
+
+            parts = vel["parts"]
+
+            for k, v in eldict.items():
                 try:
-                    vel = vels[vel_name]
+                    if isinstance(parts[k], set):
+                        parts[k].update(v)
+                    else:
+                        parts[k] += v
                 except KeyError:
-                    vel = vels[vel_name] = {"parts": {}, "elements": []}
+                    parts[k] = v
+                except TypeError as detail:
+                    raise BadRequest(f"For key {k} and value {v}. {detail}")
 
-                vals["virtual_net_gbp"] += v
-
-        for k, v in vb.items():
-            if k == "problem":
-                virtual_bill["problem"] += v
-            else:
-                for vel_name in sorted(vels.keys(), key=len, reverse=True):
-                    pref = f"{vel_name}-"
-                    if k.startswith(pref):
-                        vel = vels[vel_name]["parts"]
-                        vel_k = k[len(pref) :]
-                        try:
-                            if isinstance(vel[vel_k], set):
-                                vel[vel_k].update(v)
-                            else:
-                                vel[vel_k] += v
-                        except KeyError:
-                            vel[vel_k] = v
-                        except TypeError as detail:
-                            raise BadRequest(f"For key {vel_k} and value {v}. {detail}")
-
-                        break
     for typ, els in (("virtual", vels), ("actual", actual_elems)):
         for el_k, el in els.items():
             try:

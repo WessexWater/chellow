@@ -2,7 +2,6 @@ import csv
 import sys
 import threading
 import traceback
-from datetime import datetime as Datetime
 
 from flask import g, redirect
 
@@ -12,19 +11,7 @@ from sqlalchemy.sql.expression import null
 from chellow.dloads import open_file
 from chellow.e.computer import SiteSource, contract_func, displaced_era, forecast_date
 from chellow.models import Contract, Era, Session, Site, SiteEra, Source, Supply
-from chellow.utils import c_months_u, date_format, hh_range, req_int
-
-
-def to_val(v):
-    if isinstance(v, Datetime):
-        return date_format(v)
-    elif isinstance(v, set):
-        if len(v) == 1:
-            return to_val(v.pop())
-        else:
-            return ""
-    else:
-        return str(v)
+from chellow.utils import c_months_u, csv_make_val, date_format, hh_range, req_int
 
 
 def content(contract_id, end_year, end_month, months, user):
@@ -247,15 +234,21 @@ def content(contract_id, end_year, end_month, months, user):
                     bill = site_ds.supplier_bill
                     for title in bill_titles:
                         if title in bill:
-                            vals.append(to_val(bill[title]))
+                            vals.append(bill[title])
                             del bill[title]
                         else:
                             vals.append("")
 
                     for k in sorted(bill.keys()):
-                        vals.append(k)
-                        vals.append(str(bill[k]))
-                    writer.writerow(vals)
+                        if k == "elements":
+                            for elname, eldict in bill[k].items():
+                                for part_name, part_val in eldict.items():
+                                    vals.append(f"{elname}-{part_name}")
+                                    vals.append(part_val)
+                        else:
+                            vals.append(k)
+                            vals.append(bill[k])
+                    writer.writerow([csv_make_val(val) for val in vals])
     except BaseException:
         msg = traceback.format_exc()
         sys.stderr.write(msg)
