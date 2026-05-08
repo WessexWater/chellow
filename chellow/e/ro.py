@@ -17,17 +17,19 @@ def hh(supply_source):
 
     for hh in supply_source.hh_data:
         try:
-            hh["ro-rate"] = ro_rate = ro_cache[hh["start-date"]]
+            ro_rate = ro_cache[hh["start-date"]]
         except KeyError:
             h_start = hh["start-date"]
-            hh["ro-rate"] = ro_rate = ro_cache[h_start] = float(
+            ro_rate = ro_cache[h_start] = float(
                 supply_source.non_core_rate("ro", h_start)["ro_gbp_per_msp_kwh"]
             )
 
         ro_kwh = hh["msp-kwh"]
-        hh["ro-msp-kwh"] = ro_kwh
-        hh["ro-kwh"] = ro_kwh
-        hh["ro-gbp"] = ro_kwh * ro_rate
+        hh["ro"] = {
+            "kwh": ro_kwh,
+            "gbp": ro_kwh * ro_rate,
+            "rate": {ro_rate},
+        }
 
 
 def rate_server_import(sess, log, set_progress, paths):
