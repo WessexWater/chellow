@@ -17,16 +17,6 @@ from chellow.utils import (
 
 BANDS = ("black", "super-red", "red", "amber", "yellow", "green")
 
-KEYS = {
-    band: {
-        "kwh": f"duos-{band}-kwh",
-        "tariff-rate": f"{band}-gbp-per-kwh",
-        "bill-rate": f"duos-{band}-rate",
-        "gbp": f"duos-{band}-gbp",
-    }
-    for band in BANDS
-}
-
 VL_LOOKUP = {
     "LV": {True: "lv-sub", False: "lv-net"},
     "HV": {True: "hv", False: "hv"},
@@ -56,11 +46,9 @@ def datum_beginning_22(ds, hh):
 
         night_rate = float(tariff["night-gbp-per-kwh"])
         if 6 < hh["ct-decimal-hour"] <= 23:
-            hh["duos-day-kwh"] = hh["msp-kwh"]
-            hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
+            hh["duos-day"] = {"kwh": hh["msp-kwh"], "gbp": hh["msp-kwh"] * day_rate}
         else:
-            hh["duos-night-kwh"] = hh["msp-kwh"]
-            hh["duos-night-gbp"] = hh["msp-kwh"] * night_rate
+            hh["duos-night"] = {"kwh": hh["msp-kwh"], "gbp": hh["msp-kwh"] * night_rate}
 
     if 23 < hh["ct-decimal-hour"] <= 6:
         slot_name = "night"
@@ -104,24 +92,22 @@ def datum_beginning_22(ds, hh):
             reactive_rate = float(tariff["reactive-gbp-per-kvarh"])
         except KeyError as e:
             raise BadRequest(str(e))
-        hh["duos-reactive-rate"] = reactive_rate
+        hh["duos-reactive"] = {"rate": reactive_rate}
 
         if not ds.is_displaced:
-            hh["duos-availability-kva"] = ds.sc
-            hh["duos-excess-availability-kva"] = max(md_kva - ds.sc, 0)
+            hh["duos-availability"] = {"kva": ds.sc}
+            hh["duos-excess-availability"] = {"kva": max(md_kva - ds.sc, 0)}
             for prefix in ["", "excess-"]:
                 tariff_key = prefix + "gbp-per-kva-per-day"
                 if tariff_key in tariff:
-                    rate_key = "duos-" + prefix + "availability-rate"
-                    hh[rate_key] = float(tariff[tariff_key])
-                    hh["duos-" + prefix + "availability-days"] = days_in_month
-                    hh["duos-" + prefix + "availability-gbp"] = (
-                        hh[rate_key]
-                        * hh["duos-" + prefix + "availability-kva"]
-                        * hh["duos-" + prefix + "availability-days"]
+                    rate = float(tariff[tariff_key])
+                    hh[f"duos-{prefix}availability"]["rate"] = rate
+                    hh[f"duos-{prefix}availability"]["days"] = days_in_month
+                    hh[f"duos-{prefix}availability"]["gbp"] = (
+                        rate * hh[f"duos-{prefix}availability-kva"] * days_in_month
                     )
 
-        hh["duos-reactive-gbp"] = (
+        hh["duos-reactive"]["gbp"] = (
             max(0, month_imp_kvarh - month_kwh / 2) * reactive_rate
         )
 
@@ -135,11 +121,8 @@ def datum_beginning_20(ds, hh):
 
     if tariff is None:
         raise BadRequest(
-            "The tariff for the LLFC "
-            + ds.llfc_code
-            + " cannot be found for the DNO 20 at "
-            + date_format(hh["start-date"])
-            + "."
+            f"The tariff for the LLFC {ds.llfc_code} cannot be found for the DNO 20 at "
+            f"{date_format(hh['start-date'])}."
         )
 
     lafs = dno_rates["lafs"][ds.voltage_level_code.lower()]
@@ -152,14 +135,11 @@ def datum_beginning_20(ds, hh):
     if "night-gbp-per-kwh" in tariff:
         night_rate = float(tariff["night-gbp-per-kwh"])
         if 0 < hh["ct-decimal-hour"] <= 7:
-            hh["duos-night-kwh"] = hh["msp-kwh"]
-            hh["duos-night-gbp"] = hh["msp-kwh"] * night_rate
+            hh["duos-night"] = {"kwh": hh["msp-kwh"], "gbp": hh["msp-kwh"] * night_rate}
         else:
-            hh["duos-day-kwh"] = hh["msp-kwh"]
-            hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
+            hh["duos-day"] = {"kwh": hh["msp-kwh"], "gbp": hh["msp-kwh"] * day_rate}
     else:
-        hh["duos-day-kwh"] = hh["msp-kwh"]
-        hh["duos-day-gbp"] = hh["msp-kwh"] * day_rate
+        hh["duos-day"] = {"kwh": hh["msp-kwh"], "gbp": hh["msp-kwh"] * day_rate}
 
     if 0 < hh["ct-decimal-hour"] <= 7:
         slot_name = "night"
@@ -177,8 +157,9 @@ def datum_beginning_20(ds, hh):
         slot_name = "winter-weekday"
     else:
         slot_name = "other"
-    hh["laf"] = float(lafs[slot_name])
-    hh["gsp-kwh"] = hh["laf"] * hh["msp-kwh"]
+    laf = float(lafs[slot_name])
+    hh["laf"] = laf
+    hh["gsp-kwh"] = laf * hh["msp-kwh"]
     hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     if hh["ct-is-month-end"]:
@@ -189,18 +170,15 @@ def datum_beginning_20(ds, hh):
                 break
         if tariff is None:
             raise BadRequest(
-                "The tariff for the LLFC "
-                + ds.llfc_code
-                + " cannot be found for the DNO 20 at "
-                + date_format(hh["start-date"])
-                + "."
+                f"The tariff for the LLFC {ds.llfc_code} cannot be found for the "
+                f"DNO 20 at {date_format(hh['start-date'])}."
             )
         if not ds.is_displaced:
             year_md_kva_095 = year_md_095(ds, ds.finish_date)
 
-            hh["duos-excess-availability-kva"] = max(year_md_kva_095 - ds.sc, 0)
+            hh["duos-excess-availability"] = {"kva": max(year_md_kva_095 - ds.sc, 0)}
             billed_avail = max(ds.sc, year_md_kva_095)
-            hh["duos-availability-kva"] = ds.sc
+            hh["duos-availability"] = {"kva": ds.sc}
 
             for threshold, block in [
                 (15, 15),
@@ -221,7 +199,7 @@ def datum_beginning_20(ds, hh):
             except KeyError as e:
                 raise BadRequest(str(e))
 
-            hh["duos-availability-gbp"] = min(200, billed_avail) * le_200_avail_rate
+            hh["duos-availability"]["gbp"] = min(200, billed_avail) * le_200_avail_rate
 
             if billed_avail > 200:
                 try:
@@ -231,15 +209,17 @@ def datum_beginning_20(ds, hh):
                 except KeyError as e:
                     raise BadRequest(str(e))
 
-                hh["duos-availability-gbp"] += (billed_avail - 200) * gt_200_avail_rate
+                hh["duos-availability"]["gbp"] += (
+                    billed_avail - 200
+                ) * gt_200_avail_rate
 
         try:
             if "fixed-gbp-per-month" in tariff:
-                hh["duos-standing-gbp"] = float(tariff["fixed-gbp-per-month"])
+                hh["duos-standing"] = {"gbp": float(tariff["fixed-gbp-per-month"])}
             else:
-                hh["duos-standing-gbp"] = (
-                    float(tariff["fixed-gbp-per-day"]) * hh["utc-day"]
-                )
+                hh["duos-standing"] = {
+                    "gbp": (float(tariff["fixed-gbp-per-day"]) * hh["utc-day"])
+                }
         except KeyError as e:
             raise BadRequest(str(e))
 
@@ -343,11 +323,15 @@ def datum_beginning_14(ds, hh):
         raise BadRequest(str(e))
 
     if 0 < hh["ct-decimal-hour"] <= 7:
-        hh["duos-night-kwh"] = hh["msp-kwh"]
-        hh["duos-night-gbp"] = hh["msp-kwh"] * float(tariff["night-gbp-per-kwh"])
+        hh["duos-night"] = {
+            "kwh": hh["msp-kwh"],
+            "gbp": hh["msp-kwh"] * float(tariff["night-gbp-per-kwh"]),
+        }
     else:
-        hh["duos-day-kwh"] = hh["msp-kwh"]
-        hh["duos-day-gbp"] = hh["msp-kwh"] * float(tariff["day-gbp-per-kwh"])
+        hh["duos-day"] = {
+            "kwh": hh["msp-kwh"],
+            "gbp": hh["msp-kwh"] * float(tariff["day-gbp-per-kwh"]),
+        }
 
     if 0 < hh["ct-decimal-hour"] <= 7:
         slot = "night"
@@ -367,19 +351,19 @@ def datum_beginning_14(ds, hh):
     else:
         slot = "other"
 
-    hh["laf"] = float(rates["lafs"][ds.voltage_level_code.lower()][slot])
-    hh["gsp-kwh"] = hh["msp-kwh"] * hh["laf"]
+    laf = float(rates["lafs"][ds.voltage_level_code.lower()][slot])
+    hh["laf"] = laf
+    hh["gsp-kwh"] = hh["msp-kwh"] * laf
     hh["gsp-kw"] = hh["gsp-kwh"] * 2
 
     if hh["utc-decimal-hour"] == 0:
-        hh["duos-standing-gbp"] = float(tariff["fixed-gbp-per-day"])
+        hh["duos-standing"] = {"gbp": float(tariff["fixed-gbp-per-day"])}
 
     if hh["ct-is-month-end"]:
         month_to = hh["start-date"]
         month_from = month_to - relativedelta(months=1) + HH
         availability = ds.sc
         reactive_rate = float(tariff["reactive-gbp-per-kvarh"])
-        hh["duos-reactive-rate"] = reactive_rate
         imp_msp_kvarh = 0
         msp_kwh = 0
         md_kva = 0
@@ -392,14 +376,19 @@ def datum_beginning_14(ds, hh):
                     (h["msp-kw"] ** 2 + (h["imp-msp-kvar"] + h["exp-msp-kvar"]) ** 2)
                     ** 0.5,
                 )
-        hh["duos-reactive-gbp"] = max(0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate
+        hh["duos-reactive"] = {
+            "rate": reactive_rate,
+            "gbp": max(0, imp_msp_kvarh - msp_kwh / 3) * reactive_rate,
+        }
         if not ds.is_displaced:
             availability_rate = float(tariff["availability-gbp-per-kva-per-day"])
-            hh["duos-availability-rate"] = availability_rate
             billed_avail = max(availability, md_kva)
-            hh["duos-availability-gbp"] = availability_rate * billed_avail
-            hh["duos-availability-agreed-kva"] = ds.sc
-            hh["duos-availability-billed-kva"] = billed_avail
+            hh["duos-availability"] = {
+                "rate": availability_rate,
+                "gbp": availability_rate * billed_avail,
+                "agreed-kva": ds.sc,
+                "billed-kva": billed_avail,
+            }
 
 
 def datum_2010_04_01(ds, hh):
@@ -542,32 +531,35 @@ def datum_2010_04_01(ds, hh):
         max(imp_msp_kvarh, exp_msp_kvarh) - (0.95**-2 - 1) ** 0.5 * hh["msp-kwh"], 0
     )
 
-    hh["duos-reactive-kvarh"] = kvarh
-
     duos_reactive_rate = tariff.get("gbp-per-kvarh")
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
-            hh["duos-reactive-rate"] = duos_reactive_rate
-            hh["duos-reactive-gbp"] = kvarh * duos_reactive_rate
+            hh["duos-reactive"] = {
+                "kvarh": kvarh,
+                "reactive-rate": {duos_reactive_rate},
+                "reactive-gbp": kvarh * duos_reactive_rate,
+            }
 
-    rate = float(tariff[KEYS[band]["tariff-rate"]])
-    hh[KEYS[band]["bill-rate"]] = rate
-    hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
-    hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
+    rate = float(tariff[f"{band}-gbp-per-kwh"])
+    hh[f"duos-{band}"] = {
+        "rate": {rate},
+        "kwh": hh["msp-kwh"],
+        "gbp": rate * hh["msp-kwh"],
+    }
 
     if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
-        hh["duos-fixed-days"] = 1
         rate = float(tariff["gbp-per-mpan-per-day"])
-        hh["duos-fixed-rate"] = rate
-        hh["duos-fixed-gbp"] = rate
+        hh["duos-fixed"] = {"rate": {rate}, "gbp": rate, "days": 1}
 
-        hh["duos-availability-days"] = 1
         kva = ds.sc
-        hh["duos-availability-kva"] = kva
         rate = float(tariff["gbp-per-kva-per-day"])
-        hh["duos-availability-rate"] = rate
-        hh["duos-availability-gbp"] = rate * kva
+        hh["duos-availability"] = {
+            "days": 1,
+            "kva": kva,
+            "rate": {rate},
+            "gbp": rate * kva,
+        }
 
     if hh["ct-is-month-end"] and not ds.is_displaced:
         month_to = start_date
@@ -591,11 +583,12 @@ def datum_2010_04_01(ds, hh):
 
         if "excess-gbp-per-kva-per-day" in tariff and excess_kva != 0:
             rate = float(tariff["excess-gbp-per-kva-per-day"])
-            hh["duos-excess-availability-kva"] = excess_kva
-            rate = float(tariff["excess-gbp-per-kva-per-day"])
-            hh["duos-excess-availability-rate"] = rate
-            hh["duos-excess-availability-days"] = days_in_month
-            hh["duos-excess-availability-gbp"] = rate * excess_kva * days_in_month
+            hh["duos-excess-availability"] = {
+                "rate": {rate},
+                "kva": excess_kva,
+                "days": days_in_month,
+                "gbp": rate * excess_kva * days_in_month,
+            }
 
 
 def datum_2012_02_23(ds, hh):
@@ -663,7 +656,7 @@ def datum_2012_02_23(ds, hh):
 
             tariffs[start_date] = tariff
 
-    if KEYS["super-red"]["tariff-rate"] in tariff:
+    if "super-red-gbp-per-kwh" in tariff:
         try:
             band = gsp_group_cache["super-red-band"][start_date]
         except KeyError:
@@ -856,36 +849,39 @@ def datum_2012_02_23(ds, hh):
         max(imp_msp_kvarh, exp_msp_kvarh) - (0.95**-2 - 1) ** 0.5 * hh["msp-kwh"], 0
     )
 
-    hh["duos-reactive-kvarh"] = kvarh
-
     hh["duos-description"] = tariff["description"]
 
     duos_reactive_rate = tariff.get("gbp-per-kvarh")
     if duos_reactive_rate is not None:
         duos_reactive_rate = float(duos_reactive_rate)
         if duos_reactive_rate != 0:
-            hh["duos-reactive-rate"] = duos_reactive_rate
-            hh["duos-reactive-gbp"] = kvarh * duos_reactive_rate
+            hh["duos-reactive"] = {
+                "kvarh": kvarh,
+                "rate": duos_reactive_rate,
+                "gbp": kvarh * duos_reactive_rate,
+            }
 
     if band is not None:
-        rate = float(tariff[KEYS[band]["tariff-rate"]])
-        hh[KEYS[band]["bill-rate"]] = rate
-        hh[KEYS[band]["kwh"]] = hh["msp-kwh"]
-        hh[KEYS[band]["gbp"]] = rate * hh["msp-kwh"]
+        rate = float(tariff[f"{band}-gbp-per-kwh"])
+        hh[f"duos-{band}"] = {
+            "rate": {rate},
+            "kwh": hh["msp-kwh"],
+            "gbp": rate * hh["msp-kwh"],
+        }
 
     if hh["ct-decimal-hour"] == 23.5 and not ds.is_displaced:
         if "duos-fixed" not in ds.non_primary_elements:
-            hh["duos-fixed-days"] = 1
             rate = float(tariff["gbp-per-mpan-per-day"])
-            hh["duos-fixed-rate"] = rate
-            hh["duos-fixed-gbp"] = rate
+            hh["duos-fixed"] = {"days": 1, "rate": {rate}, "gbp": rate}
 
-        hh["duos-availability-days"] = 1
         kva = ds.sc
-        hh["duos-availability-kva"] = kva
         rate = float(tariff["gbp-per-kva-per-day"])
-        hh["duos-availability-rate"] = rate
-        hh["duos-availability-gbp"] = rate * kva
+        hh["duos-availability"] = {
+            "kva": {kva},
+            "rate": {rate},
+            "gbp": rate * kva,
+            "days": 1,
+        }
 
     if hh["ct-is-month-end"] and not ds.is_displaced:
         month_to = start_date
@@ -902,11 +898,12 @@ def datum_2012_02_23(ds, hh):
 
         if "excess-gbp-per-kva-per-day" in tariff and excess_kva != 0:
             rate = float(tariff["excess-gbp-per-kva-per-day"])
-            hh["duos-excess-availability-kva"] = excess_kva
-            rate = float(tariff["excess-gbp-per-kva-per-day"])
-            hh["duos-excess-availability-rate"] = rate
-            hh["duos-excess-availability-days"] = days_in_month
-            hh["duos-excess-availability-gbp"] = rate * excess_kva * days_in_month
+            hh["duos-excess-availability"] = {
+                "kva": excess_kva,
+                "rate": {rate},
+                "days": days_in_month,
+                "gbp": rate * excess_kva * days_in_month,
+            }
 
 
 CUTOFF_DATE_1 = utc_datetime(2010, 3, 31, 23, 0)
