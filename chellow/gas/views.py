@@ -1146,43 +1146,55 @@ def bill_edit_get(g_bill_id):
 def bill_edit_post(g_bill_id):
     try:
         g_bill = GBill.get_by_id(g.sess, g_bill_id)
-        if "delete" in request.values:
-            g_batch = g_bill.g_batch
-            g_bill.delete(g.sess)
-            g.sess.commit()
-            return chellow_redirect(f"/batches/{g_batch.id}", 303)
+        account = req_str("account")
+        reference = req_str("reference")
+        issue_date = req_date("issue")
+        start_date = req_date("start")
+        finish_date = req_date("finish")
+        kwh = req_decimal("kwh")
+        net_gbp = req_decimal("net_gbp")
+        vat_gbp = req_decimal("vat_gbp")
+        gross_gbp = req_decimal("gross_gbp")
+        type_id = req_int("bill_type_id")
+        raw_lines = req_str("raw_lines")
+        breakdown = req_zish("breakdown")
+        bill_type = BillType.get_by_id(g.sess, type_id)
 
-        else:
-            account = req_str("account")
-            reference = req_str("reference")
-            issue_date = req_date("issue")
-            start_date = req_date("start")
-            finish_date = req_date("finish")
-            kwh = req_decimal("kwh")
-            net_gbp = req_decimal("net_gbp")
-            vat_gbp = req_decimal("vat_gbp")
-            gross_gbp = req_decimal("gross_gbp")
-            type_id = req_int("bill_type_id")
-            raw_lines = req_str("raw_lines")
-            breakdown = req_zish("breakdown")
-            bill_type = BillType.get_by_id(g.sess, type_id)
+        g_bill.update(
+            bill_type,
+            reference,
+            account,
+            issue_date,
+            start_date,
+            finish_date,
+            kwh,
+            net_gbp,
+            vat_gbp,
+            gross_gbp,
+            raw_lines,
+            breakdown,
+        )
+        g.sess.commit()
+        return chellow_redirect(f"/bills/{g_bill.id}", 303)
 
-            g_bill.update(
-                bill_type,
-                reference,
-                account,
-                issue_date,
-                start_date,
-                finish_date,
-                kwh,
-                net_gbp,
-                vat_gbp,
-                gross_gbp,
-                raw_lines,
-                breakdown,
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/bills/{g_bill.id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        g_bill = GBill.get_by_id(g.sess, g_bill_id)
+        bill_types = g.sess.query(BillType).order_by(BillType.code).all()
+        return make_response(
+            render_template("bill_edit.html", g_bill=g_bill, bill_types=bill_types),
+            400,
+        )
+
+
+@gas.route("/bills/<int:g_bill_id>/edit", methods=["DELETE"])
+def bill_edit_delete(g_bill_id):
+    try:
+        g_bill = GBill.get_by_id(g.sess, g_bill_id)
+        g_batch = g_bill.g_batch
+        g_bill.delete(g.sess)
+        g.sess.commit()
+        return hx_redirect(f"/batches/{g_batch.id}", 303)
 
     except BadRequest as e:
         flash(e.description)

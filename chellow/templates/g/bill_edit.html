@@ -21,81 +21,73 @@
 {% endblock %}
 
 {% block content %}
-	{% if request.values.confirm_delete %}
-		<form method="post" action="/g/bills/{{g_bill.id}}/edit">
-			<fieldset>
-				<legend>Are you sure you want to delete this bill?</legend>
-				<input type="submit" name="delete" value="Delete">
-			</fieldset>
-		</form>
-		<p><a href="/g/bills/{{g_bill.id}}/edit">Cancel</a></p>
-	{% else %}
-		<p>
-			<a href="/g/supplies/{{g_bill.g_supply.id}}">Supply</a>
-		</p>
-		<form action="/g/bills/{{g_bill.id}}/edit" method="post">
-			<fieldset>
-				<legend>Update This Bill</legend>
-				<label>Reference</label>
-			 	{{input_text('reference', g_bill.reference)}}
+	<p>
+		<a href="/g/supplies/{{g_bill.g_supply.id}}">Supply</a>
+	</p>
 
-				<label>Account</label>
-			 	{{input_text('account', g_bill.account)}}
+	<form action="/g/bills/{{g_bill.id}}/edit" method="post">
+		<fieldset>
+			<legend>Update This Bill</legend>
+			<label>Reference</label>
+			{{input_text('reference', g_bill.reference)}}
 
-				<label>Issue Date</label>
-				{{input_date('issue', g_bill.issue_date)}}
+			<label>Account</label>
+			{{input_text('account', g_bill.account)}}
 
-				<label>Start Date</label>
-				{{input_date('start', g_bill.start_date)}}
+			<label>Issue Date</label>
+			{{input_date('issue', g_bill.issue_date)}}
 
-				<label>Finish Date</label>
-				{{input_date('finish', g_bill.finish_date)}}
+			<label>Start Date</label>
+			{{input_date('start', g_bill.start_date)}}
 
-				<label>kWh</label>
-			 	{{input_text('kwh', g_bill.kwh)}}
+			<label>Finish Date</label>
+			{{input_date('finish', g_bill.finish_date)}}
 
-				<label>Net GBP</label>
-			 	{{input_text('net_gbp', g_bill.net)}}
+			<label>kWh</label>
+			{{input_text('kwh', g_bill.kwh)}}
 
-				<label>VAT GBP</label>
-			 	{{input_text('vat_gbp', g_bill.vat)}}
+			<label>Net GBP</label>
+			{{input_text('net_gbp', g_bill.net)}}
 
-				<label>Gross GBP</label>
-			 	{{input_text('gross_gbp', g_bill.gross)}}
+			<label>VAT GBP</label>
+			{{input_text('vat_gbp', g_bill.vat)}}
 
-				<label>Type</label>
-				<select name="bill_type_id">
-					{% for type in bill_types %}
-						{{
-							input_option(
-								'type_id', type.id, type.code + ' ' + type.description,
-								initial=g_bill.bill_type.id)}}
-					{% endfor %}
-				</select>
+			<label>Gross GBP</label>
+			{{input_text('gross_gbp', g_bill.gross)}}
 
-				<label>Raw Lines</label>
-				{{input_textarea('raw_lines', g_bill.raw_lines, 10, 80)}}
+			<label>Type</label>
+			<select name="bill_type_id">
+				{% for type in bill_types %}
+					{{
+						input_option(
+							'type_id', type.id, type.code + ' ' + type.description,
+							initial=g_bill.bill_type.id)}}
+				{% endfor %}
+			</select>
 
-				<label>Breakdown</label>
-				{{input_textarea('breakdown', g_bill.breakdown, 10, 80)}}
-				<input type="submit" name="update" value="Update">
-			</fieldset>
-		</form>
+			<label>Raw Lines</label>
+			{{input_textarea('raw_lines', g_bill.raw_lines, 10, 80)}}
 
-		<p>Example Breakdown</p>
+			<label>Breakdown</label>
+			{{input_textarea('breakdown', g_bill.breakdown, 10, 80)}}
+			<input type="submit" name="update" value="Update">
+		</fieldset>
+	</form>
 
-		<pre>
+	<p>Example Breakdown</p>
+
+	<pre>
 {
-	"unrestricted_kwh": 1000,
-	"unrestricted_rate": 0.1,
-	"unrestricted_gbp": 100}
-		</pre>
+"unrestricted_kwh": 1000,
+"unrestricted_rate": 0.1,
+"unrestricted_gbp": 100}
+	</pre>
 
-		<form action="/g_bills/{{g_bill.id}}/edit">
-			<fieldset>
-				<legend>Delete This Bill</legend>
-				<input type="submit" name="confirm_delete" value="Delete">
-			</fieldset>
-		</form>
-	{% endif %}
+	<form hx-delete="/g/bills/{{g_bill.id}}/edit"
+			hx-confirm="Are you sure you want to delete this bill?">
+		<fieldset>
+			<legend>Delete This Bill</legend>
+			<input type="submit" name="delete" value="Delete">
+		</fieldset>
+	</form>
 {% endblock %}

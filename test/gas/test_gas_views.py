@@ -435,6 +435,62 @@ def test_bill_add_post(sess, client):
     match(response, 303, r"/g/bills/1")
 
 
+def test_bill_edit_delete(sess, client):
+    vf = utc_datetime(2000, 1, 1)
+    site = Site.insert(sess, "22488", "Water Works")
+    g_dn = GDn.insert(sess, "EE", "East of England")
+    g_ldz = g_dn.insert_g_ldz(sess, "EA")
+    g_exit_zone = g_ldz.insert_g_exit_zone(sess, "EA1")
+    insert_g_units(sess)
+    g_unit_M3 = GUnit.get_by_code(sess, "M3")
+    g_contract = GContract.insert(sess, False, "Fusion 2020", "", {}, vf, None, {})
+    insert_g_reading_frequencies(sess)
+    g_reading_frequency_M = GReadingFrequency.get_by_code(sess, "M")
+    g_supply = site.insert_g_supply(
+        sess,
+        "87614362",
+        "main",
+        g_exit_zone,
+        utc_datetime(2018, 1, 1),
+        None,
+        "hgeu8rhg",
+        1,
+        g_unit_M3,
+        g_contract,
+        "d7gthekrg",
+        g_reading_frequency_M,
+        1,
+        1,
+    )
+    g_batch = g_contract.insert_g_batch(sess, "b1", "Jan batch", vf)
+
+    breakdown = {"units_consumed": 771}
+    insert_bill_types(sess)
+    bill_type_n = BillType.get_by_code(sess, "N")
+    g_bill = g_batch.insert_g_bill(
+        sess,
+        g_supply,
+        bill_type_n,
+        "55h883",
+        "dhgh883",
+        utc_datetime(2019, 4, 3),
+        utc_datetime(2020, 1, 1),
+        utc_datetime(2020, 1, 31, 23, 30),
+        Decimal("45"),
+        Decimal("12.40"),
+        Decimal("1.20"),
+        Decimal("14.52"),
+        "",
+        breakdown,
+    )
+
+    sess.commit()
+
+    response = client.delete(f"/g/bills/{g_bill.id}/edit")
+
+    match(response, 303, rf"/g/batches/{g_batch.id}")
+
+
 def test_bill_edit_post(sess, client):
     vf = utc_datetime(2000, 1, 1)
     site = Site.insert(sess, "22488", "Water Works")
