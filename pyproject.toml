@@ -28,7 +28,7 @@ dependencies = [
 	"requests==2.33.0",
 	"waitress==3.0.2",
 	"pip>=9.0.1",
-	"paramiko==4.0.0",
+	"paramiko==5.0.0",
 	"pympler==1.1",
 	"psutil==7.1.1",
 	"xlrd==2.0.2",
