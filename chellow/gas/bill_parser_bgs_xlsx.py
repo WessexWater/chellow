@@ -4,6 +4,7 @@ from datetime import datetime as Datetime
 from decimal import Decimal, InvalidOperation
 from enum import Enum, auto
 from io import BytesIO
+from zipfile import BadZipFile
 
 from dateutil.relativedelta import relativedelta
 
@@ -250,7 +251,10 @@ def _make_raw_bills(sheet):
 
 class Parser:
     def __init__(self, f):
-        self.book = load_workbook(BytesIO(f), data_only=True)
+        try:
+            self.book = load_workbook(BytesIO(f), data_only=True)
+        except BadZipFile as e:
+            raise BadRequest(f"Problem parsing file as an xlsx file: {e}") from e
         self.sheet = self.book.worksheets[0]
 
         self.last_line = None
