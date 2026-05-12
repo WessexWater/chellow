@@ -401,11 +401,12 @@ def test_general_import_g_register_reads(sess):
     insert_bill_types(sess)
     bill_type_N = BillType.get_by_code(sess, "N")
     insert_g_read_types(sess)
+    bill_reference = "55h883"
     g_batch.insert_g_bill(
         sess,
         g_supply,
         bill_type_N,
-        "55h883",
+        bill_reference,
         "dhgh883",
         utc_datetime(2019, 4, 3),
         to_utc(ct_datetime(2015, 9, 1)),
@@ -423,8 +424,7 @@ def test_general_import_g_register_reads(sess):
     vals = [
         g_contract_name,
         batch_name,
-        mprn,
-        "2015-09-01 00:00",
+        bill_reference,
         msn,
         g_unit_code,
         "0.00",

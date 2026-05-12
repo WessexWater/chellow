@@ -21,7 +21,6 @@ from chellow.models import (
     DtcMeterType,
     EnergisationStatus,
     Era,
-    GBill,
     GContract,
     GEra,
     GExitZone,
@@ -1668,35 +1667,15 @@ def general_import_g_bill(sess, action, vals, args):
 def general_import_g_register_read(sess, action, vals, args):
     if action == "insert":
         contract_name = add_arg(args, "Supplier Contract Name", vals, 0)
-
         g_contract = GContract.get_supplier_by_name(sess, contract_name)
 
         batch_reference = add_arg(args, "Batch Reference", vals, 1)
-
         g_batch = g_contract.get_g_batch_by_reference(sess, batch_reference)
 
-        mprn = add_arg(args, "MPRN", vals, 2)
-        g_supply = GSupply.get_by_mprn(sess, mprn)
+        bill_reference = add_arg(args, "Bill Reference", vals, 2)
+        g_bill = g_batch.get_bill_by_reference(sess, bill_reference)
 
-        bill_start_date_str = add_arg(args, "Bill Start Date", vals, 3)
-        bill_start_date = parse_date(bill_start_date_str)
-
-        g_bill = sess.scalars(
-            select(GBill).where(
-                GBill.g_batch == g_batch,
-                GBill.g_supply == g_supply,
-                GBill.start_date == bill_start_date,
-            )
-        ).first()
-
-        if g_bill is None:
-            raise BadRequest(
-                f"Can't find a bill in batch {batch_reference} in contract "
-                f"{contract_name} with MPRN {mprn} starting at "
-                f"{date_format(bill_start_date)}"
-            )
-
-        for i in range(4, len(vals), 10):
+        for i in range(3, len(vals), 10):
             msn = add_arg(args, "Meter Serial Number", vals, i)
             g_unit_code = add_arg(args, "Unit", vals, i + 1)
             g_unit = GUnit.get_by_code(sess, g_unit_code)

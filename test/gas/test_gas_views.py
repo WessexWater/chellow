@@ -567,7 +567,7 @@ def test_bill_imports_post_full(mocker, app, client, sess):
         "MTR=14'",
         "MHD=2+UTLBIL:3'",
         "CLO=::10205041+Bill Paja Limited+Mole Hall, BATH::BA1 9MH'",
-        "BCD=171022+171022+7868273476++M+N++170601:170630'",
+        "BCD=171022+171022+7868273477++M+N++170601:170630'",
         "CCD=1+1::GAS+MARSH6:Meter Reading++hyygk4882+87614362+170701+170601++"
         "83551:01:81773:01+8746000+771000:M3+CF:102264+841349:M3++831200:KWH+"
         "170601+170701'",

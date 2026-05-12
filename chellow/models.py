@@ -5804,6 +5804,7 @@ class GBill(Base, PersistentClass):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    __table_args__ = (UniqueConstraint("g_batch_id", "reference"),)
 
     def __init__(
         self,
@@ -5992,6 +5993,16 @@ class GBatch(Base, PersistentClass):
         sess.add(g_bill)
         sess.flush()
         return g_bill
+
+    def get_bill_by_reference(self, sess, reference):
+        bill = sess.scalars(
+            select(GBill).where(GBill.g_batch == self, GBill.reference == reference)
+        ).one_or_none()
+        if bill is None:
+            raise BadRequest(
+                f"The bill with reference '{reference}' can't be found in this batch."
+            )
+        return bill
 
 
 class GReadingFrequency(Base, PersistentClass):
@@ -7939,6 +7950,23 @@ def db_upgrade_59_to_60(sess, root_path):
     )
 
 
+def db_upgrade_60_to_61(sess, root_path):
+    for g_batch_id, reference, num in sess.execute(
+        select(GBill.g_batch_id, GBill.reference, func.count().label("count"))
+        .group_by(GBill.g_batch_id, GBill.reference)
+        .having(func.count() > 1)
+    ):
+        for g_bill in sess.scalars(
+            select(GBill).where(
+                GBill.g_batch_id == g_batch_id, GBill.reference == reference
+            )
+        ):
+            g_bill.reference = f"{g_bill.reference}_{uuid4()}"
+            sess.commit()
+
+    sess.execute(text("ALTER TABLE g_bill ADD UNIQUE (g_batch_id, reference);"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -7984,6 +8012,7 @@ upgrade_funcs.extend(
         db_upgrade_57_to_58,
         db_upgrade_58_to_59,
         db_upgrade_59_to_60,
+        db_upgrade_60_to_61,
     ]
 )
 
