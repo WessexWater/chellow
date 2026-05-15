@@ -3421,6 +3421,13 @@ def test_party_get(sess, client):
     match(response, 200)
 
 
+def test_neso_get(sess, client):
+    sess.commit()
+    response = client.get("/e/neso")
+
+    match(response, 200)
+
+
 class Sess:
     def __init__(self, *results):
         self.it = iter(results)

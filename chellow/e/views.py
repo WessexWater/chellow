@@ -4521,6 +4521,7 @@ def neso_get():
     tnuos_rs = g.sess.scalars(
         select(RateScript)
         .join(RateScript.contract)
+        .join(Party)
         .join(MarketRole)
         .where(
             MarketRole.code == "Z",
