@@ -731,7 +731,14 @@ def reduce_bill_hhs(bill_hhs):
                     except KeyError:
                         bill_el = bill_elements[elname] = {}
 
-                    for valk, valv in valdict.items():
+                    try:
+                        valdict_items = valdict.items()
+                    except AttributeError:
+                        raise BadRequest(
+                            f"For element name {elname}, the value {valdict} is "
+                            f"expected to be a Mapping type."
+                        )
+                    for valk, valv in valdict_items:
                         if isinstance(valv, set):
                             if valk in bill_el:
                                 bill_el[valk].update(valv)
