@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo; Supplier Contracts &raquo; {{contract.name}} &raquo; Test
+{% endblock %}
+
+{% block nav %}
+		<a href="/e/supplier_contracts">Supplier Contracts</a> &raquo; 
+		<a href="/e/supplier_contracts/{{contract.id}}">{{contract.name}}</a>
+		&raquo; Test
+{% endblock %}
+
+{% block content %}
+
+		<ul>
+			{% for message in log_messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+	<p><a href="/e/supplier_contracts/{{contract.id}}/test">Run Test</a></p>
+
+{% endblock %}

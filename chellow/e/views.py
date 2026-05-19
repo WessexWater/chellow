@@ -1,7 +1,8 @@
 import csv
 import os
 import threading
-from collections import defaultdict
+import traceback
+from collections import defaultdict, deque
 from datetime import datetime as Datetime
 from decimal import Decimal
 from io import BytesIO, StringIO
@@ -45,6 +46,7 @@ from zish import ZishException, dumps, loads
 import chellow.e.dno_rate_parser
 import chellow.e.lccc
 import chellow.e.neso
+import chellow.testing
 from chellow.e.computer import SupplySource, contract_func, forecast_date
 from chellow.e.duos import CA_EMAIL_ADDRESSES
 from chellow.e.elexon import ELEXON_PORTAL_SCRIPTING_KEY_KEY
@@ -923,9 +925,9 @@ def dc_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -3399,9 +3401,9 @@ def mop_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -6086,9 +6088,9 @@ def supplier_batch_file_download_get(file_id):
     batch_file = BatchFile.get_by_id(g.sess, file_id)
 
     output = make_response(batch_file.data)
-    output.headers["Content-Disposition"] = (
-        f'attachment; filename="{batch_file.filename}"'
-    )
+    output.headers[
+        "Content-Disposition"
+    ] = f'attachment; filename="{batch_file.filename}"'
     output.headers["Content-type"] = "application/octet-stream"
     return output
 
@@ -6948,6 +6950,20 @@ def supplier_contract_get(contract_id):
         rate_scripts=rate_scripts,
         rate_script_example=rs_example,
         now=now,
+    )
+
+
+@e.route("/supplier_contracts/<int:contract_id>/test")
+def supplier_contract_test_get(contract_id):
+    contract = Contract.get_supplier_by_id(g.sess, contract_id)
+    messages = deque(maxlen=500)
+    try:
+        chellow.testing.test_contract(messages, g.sess, contract)
+    except BaseException:
+        chellow.testing.log(messages, traceback.format_exc())
+
+    return render_template(
+        "supplier_contract_test.html", contract=contract, log_messages=messages
     )
 
 

@@ -16,16 +16,22 @@ from chellow.utils import ct_datetime_now
 tester = None
 
 
-def _run(log_f, sess):
-    log_f("Starting to run tests.")
+def log(messages, message):
+    messages.appendleft(
+        f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
+    )
+
+
+def _run(messages, sess):
+    log(messages, "Starting to run tests.")
     for report in sess.execute(select(Report).order_by(Report.id)).scalars():
-        _test_report(log_f, sess, report)
+        _test_report(messages, sess, report)
         sess.rollback()  # Avoid long-running transaction
     for contract in sess.execute(select(Contract).order_by(Contract.id)).scalars():
-        _test_contract(log_f, sess, contract)
+        test_contract(messages, sess, contract)
         sess.rollback()  # Avoid long-running transaction
     for g_contract in sess.execute(select(GContract).order_by(GContract.id)).scalars():
-        _test_g_contract(log_f, sess, g_contract)
+        _test_g_contract(messages, sess, g_contract)
         sess.rollback()  # Avoid long-running transaction
 
 
@@ -52,20 +58,15 @@ class Tester(threading.Thread):
         else:
             return True
 
-    def log(self, message):
-        self.messages.appendleft(
-            f"{ct_datetime_now().strftime('%Y-%m-%d %H:%M:%S')} - {message}"
-        )
-
     def run(self):
         while not self.stopped.isSet():
             if self.lock.acquire(False):
                 self.global_alert = None
                 with RSession() as sess:
                     try:
-                        _run(self.log, sess)
+                        _run(self.messages, sess)
                     except BaseException:
-                        self.log(traceback.format_exc())
+                        log(self.messages, traceback.format_exc())
                         self.global_alert = (
                             "There's a problem with the "
                             "<a href='/tester'>Automatic Tester</a>."
@@ -73,14 +74,14 @@ class Tester(threading.Thread):
                         sess.rollback()
                     finally:
                         self.lock.release()
-                        self.log("Finished running tests.")
+                        log(self.messages, "Finished running tests.")
 
             self.going.wait(60 * 60 * 24)
             self.going.clear()
 
 
-def _test_report(logger, sess, report):
-    logger(f"Starting to test local report {report.id} {report.name}.")
+def _test_report(messages, sess, report):
+    log(messages, f"Starting to test local report {report.id} {report.name}.")
     code = compile(report.script, "<string>", "exec")
     ns = {"report_id": report.id, "template": report.template}
     exec(code, ns)
@@ -88,10 +89,11 @@ def _test_report(logger, sess, report):
         ns["test"]()
 
 
-def _test_contract(logger, sess, contract):
-    logger(
+def test_contract(messages, sess, contract):
+    log(
+        messages,
         f"Starting to test {contract.party.market_role.description} contract "
-        f"{contract.id} {contract.name}."
+        f"{contract.id} {contract.name}.",
     )
     code = compile(contract.charge_script, "<string>", "exec")
     ns = {"db_id": contract.id}
@@ -100,10 +102,11 @@ def _test_contract(logger, sess, contract):
         ns["test"]()
 
 
-def _test_g_contract(logger, sess, g_contract):
-    logger(
+def _test_g_contract(messages, sess, g_contract):
+    log(
+        messages,
         f"Starting to test gas {'industry' if g_contract.is_industry else 'supplier'} "
-        f"contract {g_contract.id} {g_contract.name}."
+        f"contract {g_contract.id} {g_contract.name}.",
     )
     code = compile(g_contract.charge_script, "<string>", "exec")
     ns = {"db_id": g_contract.id, "properties": g_contract.make_properties()}
