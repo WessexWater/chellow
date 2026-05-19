@@ -25,7 +25,7 @@ def log(messages, message):
 def _run(messages, sess):
     log(messages, "Starting to run tests.")
     for report in sess.execute(select(Report).order_by(Report.id)).scalars():
-        _test_report(messages, sess, report)
+        test_report(messages, sess, report)
         sess.rollback()  # Avoid long-running transaction
     for contract in sess.execute(select(Contract).order_by(Contract.id)).scalars():
         test_contract(messages, sess, contract)
@@ -80,7 +80,7 @@ class Tester(threading.Thread):
             self.going.clear()
 
 
-def _test_report(messages, sess, report):
+def test_report(messages, sess, report):
     log(messages, f"Starting to test local report {report.id} {report.name}.")
     code = compile(report.script, "<string>", "exec")
     ns = {"report_id": report.id, "template": report.template}

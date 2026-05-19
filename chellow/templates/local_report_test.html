@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+	&raquo;List of Local Reports &raquo; {{report.name}} &raquo; Test
+{% endblock %}
+
+{% block nav %}
+	<a href="/local_reports">List of Local Reports</a> &raquo;
+	<a href="/local_reports/{{report.id}}">{{report.name}}</a> &raquo; Test
+{% endblock %}
+
+{% block content %}
+
+		<ul>
+			{% for message in log_messages %}
+				<li>{{message}}</li>
+			{% endfor %}
+		</ul>
+
+	<p><a href="/local_reports/{{report.id}}/test">Run Test</a></p>
+
+{% endblock %}

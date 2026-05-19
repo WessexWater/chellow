@@ -20,9 +20,8 @@
 
 	{% else %}
 		<ul>
-			<li>
-				<a href="{{report.id}}/output">Output</a>
-			</li>
+			<li><a href="/local_reports/{{report.id}}/output">Output</a></li>
+			<li><a href="/local_reports/{{report.id}}/test">Run Test</a></li>
 		</ul>	
 
 		<form method="post" action="/local_reports/{{report.id}}">
