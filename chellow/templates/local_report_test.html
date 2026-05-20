@@ -10,13 +10,24 @@
 {% endblock %}
 
 {% block content %}
+		<table>
+			<tr>
+				<th>Is Alive?</th>
+				<td>{{tester.is_alive()}}</td>
+			</tr>
+		</table>
+		<form action="/local_reports/{{report.id}}/test" method="post">
+			<fieldset {% if tester.is_alive() %}disabled{% endif %}>
+				<legend>Test Now</legend>
+				<input type="submit" value="Test" name="test">
+			</fieldset>
+		</form>
 
+		<h4>Log</h4>
 		<ul>
-			{% for message in log_messages %}
+			{% for message in tester.messages %}
 				<li>{{message}}</li>
 			{% endfor %}
 		</ul>
-
-	<p><a href="/local_reports/{{report.id}}/test">Run Test</a></p>
 
 {% endblock %}

@@ -8,7 +8,7 @@ import platform
 import sys
 import traceback
 import types
-from collections import OrderedDict, deque
+from collections import OrderedDict
 from datetime import datetime as Datetime
 from functools import wraps
 from importlib import import_module
@@ -296,14 +296,15 @@ def local_report_post(report_id):
 @home.route("/local_reports/<int:report_id>/test")
 def local_report_test_get(report_id):
     report = Report.get_by_id(g.sess, report_id)
-    messages = deque(maxlen=500)
-    try:
-        chellow.testing.test_report(messages, g.sess, report)
-    except BaseException:
-        chellow.testing.log(messages, traceback.format_exc())
-    return render_template(
-        "local_report_test.html", report=report, log_messages=messages
-    )
+    tester = chellow.testing.get_single_tester_report(report_id)
+    return render_template("local_report_test.html", report=report, tester=tester)
+
+
+@home.route("/local_reports/<int:report_id>/test", methods=["POST"])
+def local_report_test_post(report_id):
+    report = Report.get_by_id(g.sess, report_id)
+    chellow.testing.run_single_tester_report(report_id)
+    return redirect(f"/local_reports/{report.id}/test", 303)
 
 
 @home.route("/scenarios")
@@ -449,7 +450,9 @@ def system_get():
                 traces.append(f"  {line.strip()}")
     pg_stats = g.sess.execute(text("select * from pg_stat_activity")).fetchall()
 
-    pg_indexes = g.sess.execute(text("""
+    pg_indexes = g.sess.execute(
+        text(
+            """
         select
             t.relname as table_name,
             i.relname as index_name,
@@ -471,7 +474,9 @@ def system_get():
         order by
             t.relname,
             i.relname;
-        """)).fetchall()
+        """
+        )
+    ).fetchall()
 
     version_number = chellow.__version__
 
@@ -1166,7 +1171,9 @@ def supplies_get():
 
         g_eras = (
             g.sess.query(GEra)
-            .from_statement(text("""
+            .from_statement(
+                text(
+                    """
 select e1.* from g_era as e1 inner join
   (select e2.g_supply_id, max(e2.start_date) as max_start_date
   from g_era as e2 join g_supply on e2.g_supply_id = g_supply.id
@@ -1176,7 +1183,9 @@ select e1.* from g_era as e1 inner join
     or lower(e2.msn) like lower(:pattern)
   group by e2.g_supply_id) as sq
 on e1.g_supply_id = sq.g_supply_id and e1.start_date = sq.max_start_date
-limit :max_results"""))
+limit :max_results"""
+                )
+            )
             .params(pattern="%" + pattern + "%", max_results=max_results)
             .all()
         )
