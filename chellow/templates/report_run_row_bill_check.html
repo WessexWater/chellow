@@ -16,9 +16,9 @@
 	{% set market_role_code = data['market_role_code'] %}
 	{% if market_role_code == 'X' %}
 		{% set contract_type = 'supplier' %}
-	{% elif market_role_code == 'C' %}
+	{% elif market_role_code in DC_MARKET_ROLE_CODES %}
 		{% set contract_type = 'dc' %}
-	{% elif market_role_code == 'M' %}
+	{% elif market_role_code == MOP_MARKET_ROLE_CODES %}
 		{% set contract_type = 'mop' %}
 	{% endif %}
 
@@ -68,10 +68,10 @@
 						<ul>
 							{% for issue in issues %}
 								<li>
-									{% if issue.contract.market_role.code == 'X' %}
+									{% if issue.contract.party.market_role.code == 'X' %}
 										<a href="/e/supplier_issues/{{issue.id}}">Supplier:
 											{{issue.id}} {{issue.properties['subject']}}</a>
-									{% elif issue.contract.market_role.code == 'C' %}
+									{% elif issue.contract.party.market_role.code == 'C' %}
 										<a href="/e/dc_issues/{{issue.id}}">DC:
 											{{issue.id}} {{issue.properties['subject']}}</a>
 									{% else %}
