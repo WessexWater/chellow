@@ -6150,15 +6150,15 @@ def supplier_bill_add_get(batch_id):
             mpan_core_raw = req_str("mpan_core")
             mpan_core = mpan_core_raw.strip()
             supply = Supply.get_by_mpan_core(g.sess, mpan_core)
-            latest_bill = (
-                g.sess.query(Bill)
+            latest_bill = g.sess.scalars(
+                select(Bill)
                 .join(Batch)
                 .join(Contract)
+                .join(Party)
                 .join(MarketRole)
-                .filter(Bill.supply == supply, MarketRole.code == "X")
+                .where(Bill.supply == supply, MarketRole.code == "X")
                 .order_by(Bill.start_date.desc())
-                .first()
-            )
+            ).first()
             if latest_bill is not None:
                 start_date = latest_bill.finish_date + HH
                 account = latest_bill.account
