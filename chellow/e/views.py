@@ -2779,15 +2779,15 @@ def era_supplier_bill_add_get(era_id):
     normal_bill_type_id = (
         g.sess.query(BillType.id).filter(BillType.code == "N").scalar()
     )
-    latest_bill = (
-        g.sess.query(Bill)
+    latest_bill = g.sess.scalars(
+        select(Bill)
         .join(Batch)
         .join(Contract)
+        .join(Party)
         .join(MarketRole)
-        .filter(Bill.supply == era.supply, MarketRole.code == "X")
+        .where(Bill.supply == era.supply, MarketRole.code == "X")
         .order_by(Bill.start_date.desc())
-        .first()
-    )
+    ).first()
 
     if latest_bill is None:
         next_batch_reference = next_batch_description = ""
