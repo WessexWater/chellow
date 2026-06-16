@@ -32,6 +32,7 @@ ELEMENT_MAP = {
             "064305": ("fit", None, None),
             "590346": ("cfd-obligation", None, None),
             "932997": ("cm-obligation", None, None),
+            "773384": ("gcf", "rate", "kwh"),
             "493988": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
             "346982": ("rab-obligation", "rate", "kwh"),
