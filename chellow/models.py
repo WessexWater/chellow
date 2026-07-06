@@ -2608,7 +2608,7 @@ class Llfc(Base, PersistentClass):
 
 class Laf(Base, PersistentClass):
     __tablename__ = "laf"
-    id = Column(Integer, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     llfc_id = Column(Integer, ForeignKey("llfc.id"), nullable=False, index=True)
     timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
     value = Column(Numeric, nullable=False)
@@ -7967,6 +7967,11 @@ def db_upgrade_60_to_61(sess, root_path):
     sess.execute(text("ALTER TABLE g_bill ADD UNIQUE (g_batch_id, reference);"))
 
 
+def db_upgrade_61_to_62(sess, root_path):
+    sess.execute(text("ALTER TABLE laf ALTER COLUMN id TYPE BIGINT;"))
+    sess.execute(text("ALTER SEQUENCE laf_id_seq AS BIGINT;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -8013,6 +8018,7 @@ upgrade_funcs.extend(
         db_upgrade_58_to_59,
         db_upgrade_59_to_60,
         db_upgrade_60_to_61,
+        db_upgrade_61_to_62,
     ]
 )
 

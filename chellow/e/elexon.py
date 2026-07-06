@@ -31,6 +31,7 @@ def run_import(sess, log, set_progress, scripting_key):
     log("Starting to import data from Elexon")
 
     for mod_name in (
+        "chellow.e.gcf",
         "chellow.e.system_price",
         "chellow.e.tlms",
         "chellow.e.rcrc",
