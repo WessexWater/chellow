@@ -149,7 +149,7 @@ def lccc_import(sess, log, set_progress):
 
 def _quarters(log):
     quarter = {}
-    for record in api_records(log, "003f527c-aa35-4198-adbb-21a61fc760eb"):
+    for record in api_records(log, "0102d28f-231f-41e8-9cd8-3884e25be9da"):
         settlement_date_str = record["Settlement_Date"]
         settlement_date_ct = to_ct(
             Datetime.strptime(settlement_date_str[:10], "%Y-%m-%d")
