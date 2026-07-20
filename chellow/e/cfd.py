@@ -90,13 +90,28 @@ def hh(data_source, use_bill_check=False):
 
                     if dt_str in records:
                         record = records[dt_str]
-                        gbp = _parse_number(
-                            record["Actual_CFD_Payments_GBP"]
-                        ) + _parse_number(record["Expected_CFD_Payments_GBP"])
-                        mwh = _parse_number(
-                            record["Actual_Eligible_Demand_MWh"]
-                        ) + _parse_number(record["Expected_Eligible_Demand_MWh"])
-
+                        if "Expected_CFD_Payments_GBP" in record:  # Old style
+                            gbp_titles = (
+                                "Actual_CFD_Payments_GBP",
+                                "Expected_CFD_Payments_GBP",
+                            )
+                            mwh_titles = (
+                                "Actual_Eligible_Demand_MWh",
+                                "Expected_Eligible_Demand_MWh",
+                            )
+                        else:
+                            gbp_titles = (
+                                "Actual_CFD_Payments_GBP",
+                                "Actual_LCDCFD_Payments_GBP",
+                                "Latest_Forecast_CFD_Payments_GBP",
+                                "Latest_Forecast_LCDCFD_Payments_GBP",
+                            )
+                            mwh_titles = (
+                                "Actual_Eligible_Demand_MWh",
+                                "Latest_Forecast_Eligible_Demand_MWh",
+                            )
+                        gbp = sum([_parse_number(record[t]) for t in gbp_titles])
+                        mwh = sum([_parse_number(record[t]) for t in mwh_titles])
                         base_rate = gbp / mwh / 1000
                     else:
                         base_rate = None
