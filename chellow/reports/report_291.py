@@ -4,7 +4,7 @@ import traceback
 
 from flask import g, redirect
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.sql.expression import null, true
 
 from werkzeug.exceptions import BadRequest
@@ -42,23 +42,22 @@ def content(supply_id, start_date, finish_date, user_id):
 
             prev_titles = None
 
-            for era in (
-                sess.query(Era)
-                .filter(
+            for era in sess.scalars(
+                select(Era)
+                .where(
                     Era.supply == supply,
-                    Era.start_date < finish_date,
-                    or_(Era.finish_date == null(), Era.finish_date > start_date),
+                    Era.start_date <= finish_date,
+                    or_(Era.finish_date == null(), Era.finish_date >= start_date),
                 )
                 .order_by(Era.start_date)
             ):
                 chunk_start = hh_max(era.start_date, start_date)
                 chunk_finish = hh_min(era.finish_date, finish_date)
-                site = (
-                    sess.query(Site)
+                site = sess.scalars(
+                    select(Site)
                     .join(SiteEra)
-                    .filter(SiteEra.era == era, SiteEra.is_physical == true())
-                    .one()
-                )
+                    .where(SiteEra.era == era, SiteEra.is_physical == true())
+                ).one()
 
                 ds = SupplySource(
                     sess,
@@ -71,62 +70,57 @@ def content(supply_id, start_date, finish_date, user_id):
                 )
 
                 titles = [
-                    "Imp MPAN Core",
-                    "Exp MPAN Core",
-                    "Site Code",
-                    "Site Name",
-                    "Account",
-                    "From",
-                    "To",
-                    "",
+                    "imp_mpan_core",
+                    "exp_mpan_core",
+                    "site_code",
+                    "site_name",
+                    "account",
+                    "from",
+                    "to",
                 ]
 
-                output_line = [
-                    era.imp_mpan_core,
-                    era.exp_mpan_core,
-                    site.code,
-                    site.name,
-                    ds.supplier_account,
-                    date_format(ds.start_date),
-                    date_format(ds.finish_date),
-                    "",
-                ]
+                vals = {
+                    "imp_mpan_core": era.imp_mpan_core,
+                    "exp_mpan_core": era.exp_mpan_core,
+                    "site_code": site.code,
+                    "site_name": site.name,
+                    "account": ds.supplier_account,
+                    "from": date_format(ds.start_date),
+                    "to": date_format(ds.finish_date),
+                }
 
                 mop_titles = ds.contract_func(era.mop_contract, "virtual_bill_titles")()
                 titles.extend(["mop-" + t for t in mop_titles])
 
                 ds.contract_func(era.mop_contract, "virtual_bill")(ds)
                 bill = ds.mop_bill
-                for title in mop_titles:
-                    if title in bill:
-                        output_line.append(bill[title])
-                        del bill[title]
+                for k, v in bill.items():
+                    if k == "elements":
+                        for elname, parts in v.items():
+                            for part_name, part_value in parts.items():
+                                vals[f"mop-{elname}-{part_name}"] = part_value
                     else:
-                        output_line.append("")
+                        vals[f"mop-{k}"] = v
 
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, bill[k]])
-
-                output_line.append("")
                 dc_titles = ds.contract_func(era.dc_contract, "virtual_bill_titles")()
-                titles.append("")
                 titles.extend(["dc-" + t for t in dc_titles])
 
                 ds.contract_func(era.dc_contract, "virtual_bill")(ds)
                 bill = ds.dc_bill
-                for title in dc_titles:
-                    output_line.append(bill.get(title, ""))
-                    if title in bill:
-                        del bill[title]
-                for k in sorted(bill.keys()):
-                    output_line.extend([k, bill[k]])
+                for k, v in bill.items():
+                    if k == "elements":
+                        for elname, parts in v.items():
+                            for part_name, part_value in parts.items():
+                                vals[f"dc-{elname}-{part_name}"] = part_value
+                    else:
+                        vals[f"dc-{k}"] = v
 
                 tpr_query = (
-                    sess.query(Tpr)
+                    select(Tpr)
                     .join(MeasurementRequirement)
                     .join(Ssc)
                     .join(Era)
-                    .filter(
+                    .where(
                         Era.start_date <= chunk_finish,
                         or_(Era.finish_date == null(), Era.finish_date >= chunk_start),
                     )
@@ -135,65 +129,63 @@ def content(supply_id, start_date, finish_date, user_id):
                 )
 
                 if era.imp_supplier_contract is not None:
-                    output_line.append("")
                     supplier_titles = ds.contract_func(
                         era.imp_supplier_contract, "virtual_bill_titles"
                     )()
-                    for tpr in tpr_query.filter(Era.imp_supplier_contract != null()):
+                    for tpr in sess.scalars(
+                        tpr_query.where(Era.imp_supplier_contract != null())
+                    ):
                         for suffix in ("-kwh", "-rate", "-gbp"):
                             supplier_titles.append(tpr.code + suffix)
-                    titles.append("")
                     titles.extend(["imp-supplier-" + t for t in supplier_titles])
 
                     ds.contract_func(era.imp_supplier_contract, "virtual_bill")(ds)
                     bill = ds.supplier_bill
-
-                    for title in supplier_titles:
-                        if title in bill:
-                            output_line.append(bill[title])
-                            del bill[title]
+                    for k, v in bill.items():
+                        if k == "elements":
+                            for elname, parts in v.items():
+                                for part_name, part_value in parts.items():
+                                    vals[f"imp-supplier-{elname}-{part_name}"] = (
+                                        part_value
+                                    )
                         else:
-                            output_line.append("")
-
-                    for k in sorted(bill.keys()):
-                        output_line.extend([k, bill[k]])
+                            vals[f"imp-supplier-{k}"] = v
 
                 if era.exp_supplier_contract is not None:
                     ds = SupplySource(
                         sess, chunk_start, chunk_finish, forecast_dt, era, False, caches
                     )
 
-                    output_line.append("")
                     supplier_titles = ds.contract_func(
                         era.exp_supplier_contract, "virtual_bill_titles"
                     )()
-                    for tpr in tpr_query.filter(Era.exp_supplier_contract != null()):
+                    for tpr in sess.scalars(
+                        tpr_query.filter(Era.exp_supplier_contract != null())
+                    ):
                         for suffix in ("-kwh", "-rate", "-gbp"):
                             supplier_titles.append(tpr.code + suffix)
-                    titles.append("")
                     titles.extend(["exp-supplier-" + t for t in supplier_titles])
 
                     ds.contract_func(era.exp_supplier_contract, "virtual_bill")(ds)
                     bill = ds.supplier_bill
-                    for title in supplier_titles:
-                        output_line.append(bill.get(title, ""))
-                        if title in bill:
-                            del bill[title]
-
-                    for k in sorted(bill.keys()):
-                        output_line.extend([k, bill[k]])
+                    for k, v in bill.items():
+                        if k == "elements":
+                            for elname, parts in v.items():
+                                for part_name, part_value in parts.items():
+                                    vals[f"exp-supplier-{elname}-{part_name}"] = (
+                                        part_value
+                                    )
+                        else:
+                            vals[f"exp-supplier-{k}"] = v
 
                 if titles != prev_titles:
                     prev_titles = titles
                     writer.writerow([str(v) for v in titles])
-                for i, val in enumerate(output_line):
-                    output_line[i] = csv_make_val(val)
-                writer.writerow(output_line)
+                writer.writerow([csv_make_val(vals.get(t)) for t in titles])
     except BadRequest as e:
         writer.writerow(["Problem: " + e.description])
     except BaseException:
         msg = traceback.format_exc()
-        print(msg)
         if f is not None:
             writer.writerow([msg])
     finally:

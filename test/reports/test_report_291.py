@@ -1,6 +1,7 @@
-from utils import match
+import csv
+from io import StringIO
+from utils import match, match_tables
 
-import chellow.dloads
 from chellow.models import (
     Comm,
     Cop,
@@ -228,15 +229,66 @@ def test_content(mocker, sess):
     dc_party = participant.insert_party(
         sess, market_role_C, "Fusion DC", vf, None, None
     )
-    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
-    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
+    mop_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+    ds.mop_bill = reduce_bill_hhs(ds.mop_bill_hhs)
+"""
+    mop_contract = mop_party.insert_contract(
+        sess, "Fusion", mop_charge_script, {}, vf, None, {}
+    )
+    dc_charge_script = """
+from chellow.utils import reduce_bill_hhs
+
+def virtual_bill_titles():
+    return ['net-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+
+    ds.dc_bill = reduce_bill_hhs(ds.dc_bill_hhs)
+"""
+    dc_contract = dc_party.insert_contract(
+        sess, "Fusion DC 2000", dc_charge_script, {}, vf, None, {}
+    )
     pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
+    supplier_charge_script = """
+import chellow.e.ccl
+from chellow.utils import HH, reduce_bill_hhs, utc_datetime
+
+def virtual_bill_titles():
+    return [
+        'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'net-gbp', 'vat-gbp', 'gross-gbp',
+        'nrg-kwh', 'nrg-gbp', 'problem']
+
+def virtual_bill(ds):
+    for hh in ds.hh_data:
+        hh_start = hh['start-date']
+        bill_hh = ds.supplier_bill_hhs[hh_start]
+        els_hh = bill_hh['elements']
+        els_hh['nrg'] = {
+            'kwh': hh['msp-kwh'],
+            'gbp': hh['msp-kwh'] * 0.1,
+        }
+
+    ds.supplier_bill = reduce_bill_hhs(ds.supplier_bill_hhs)
+"""
     imp_supplier_contract = supplier_party.insert_contract(
-        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
+        sess, "Fusion Supplier 2000", supplier_charge_script, {}, vf, None, {}
     )
     dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
     dno_party.insert_contract(sess, dno_party.dno_code, "", {}, vf, None, {})
@@ -277,7 +329,7 @@ def test_content(mocker, sess):
         source,
         None,
         "Bob",
-        utc_datetime(2000, 1, 1),
+        to_utc(ct_datetime(2000, 1, 1)),
         None,
         gsp_group,
         mop_contract,
@@ -306,11 +358,60 @@ def test_content(mocker, sess):
     user = User.insert(sess, "admin", editor, None)
     user_id = user.id
     sess.commit()
+    f = StringIO()
+    f.close = mocker.Mock()
+    mocker.patch("chellow.reports.report_291.open_file", return_value=f)
 
     supply_id = supply.id
     start_date = to_utc(ct_datetime(2000, 1, 1))
     finish_date = to_utc(ct_datetime(2000, 1, 1))
     content(supply_id, start_date, finish_date, user_id)
-
-    files = list(p.name for p in chellow.dloads.download_path.iterdir())
-    assert files == ["00000_FINISHED_admin_supply_virtual_bills_1.csv"]
+    f.seek(0)
+    actual = list(csv.reader(f))
+    expected = [
+        [
+            "imp_mpan_core",
+            "exp_mpan_core",
+            "site_code",
+            "site_name",
+            "account",
+            "from",
+            "to",
+            "mop-net-gbp",
+            "mop-problem",
+            "dc-net-gbp",
+            "dc-problem",
+            "imp-supplier-ccl-kwh",
+            "imp-supplier-ccl-rate",
+            "imp-supplier-ccl-gbp",
+            "imp-supplier-net-gbp",
+            "imp-supplier-vat-gbp",
+            "imp-supplier-gross-gbp",
+            "imp-supplier-nrg-kwh",
+            "imp-supplier-nrg-gbp",
+            "imp-supplier-problem",
+        ],
+        [
+            "22 7867 6232 781",
+            "",
+            "CI017",
+            "Water Works",
+            "7748",
+            "2000-01-01 00:00",
+            "2000-01-01 00:00",
+            "0",
+            "",
+            "0",
+            "",
+            "",
+            "",
+            "",
+            "0.0",
+            "",
+            "",
+            "0",
+            "0.0",
+            "",
+        ],
+    ]
+    match_tables(expected, actual)
