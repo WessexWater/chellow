@@ -6998,14 +6998,11 @@ def supplier_contract_test_post(contract_id):
 
 @e.route("/supplier_contracts/<int:contract_id>/add_rate_script")
 def supplier_rate_script_add_get(contract_id):
-    now = utc_datetime_now()
-    initial_date = utc_datetime(now.year, now.month)
+    now_ct = ct_datetime_now()
+    initial_date = to_utc(ct_datetime(now_ct.year, now_ct.month))
     contract = Contract.get_supplier_by_id(g.sess, contract_id)
     return render_template(
-        "supplier_rate_script_add.html",
-        now=now,
-        contract=contract,
-        initial_date=initial_date,
+        "supplier_rate_script_add.html", contract=contract, initial_date=initial_date
     )
 
 
