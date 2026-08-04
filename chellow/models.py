@@ -6866,6 +6866,8 @@ def insert_cops(sess):
         Cop.insert(sess, code, desc)
 
 
+# EMDS Data Item J0386
+# https://www.elexon.co.uk/bsc/documents/training-guidance/bsc-guidance-notes/approved-communications-methods/
 def insert_comms(sess):
     for code, desc in (
         ("IP", "Internet Protocol"),
