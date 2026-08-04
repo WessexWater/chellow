@@ -471,18 +471,25 @@ def channel_edit_get(channel_id):
     return render_template("channel_edit.html", channel=channel, now=now)
 
 
+@e.route("/channels/<int:channel_id>/edit", methods=["DELETE"])
+def channel_edit_delete(channel_id):
+    try:
+        channel = Channel.get_by_id(g.sess, channel_id)
+        supply_id = channel.era.supply.id
+        channel.era.delete_channel(g.sess, channel.imp_related, channel.channel_type)
+        g.sess.commit()
+        return hx_redirect(f"/supplies/{supply_id}", 303)
+    except BadRequest as e:
+        flash(e.description)
+        now = utc_datetime_now()
+        return render_template("channel_edit.html", channel=channel, now=now)
+
+
 @e.route("/channels/<int:channel_id>/edit", methods=["POST"])
 def channel_edit_post(channel_id):
     try:
         channel = Channel.get_by_id(g.sess, channel_id)
-        if "delete" in request.values:
-            supply_id = channel.era.supply.id
-            channel.era.delete_channel(
-                g.sess, channel.imp_related, channel.channel_type
-            )
-            g.sess.commit()
-            return chellow_redirect(f"/supplies/{supply_id}", 303)
-        elif "delete_data" in request.values:
+        if "delete_data" in request.values:
             start_date = req_hh_date("start")
             finish_date = req_hh_date("finish")
             channel.delete_data(g.sess, start_date, finish_date)
