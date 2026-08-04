@@ -4,25 +4,6 @@
 	&raquo; Connection Agreements &raquo; {{ca.id}} {{ca.start_date|date_format}}
 {% endblock %}
 
-
-{% block inside_head %}
-	<style>
-		#doc {
-			resize: both;
-			overflow: auto;
-			width: 40em;
-			height: 20em;
-			border: thin solid;
-		}
-
-		#doc iframe {
-			width: 100%;
-			height: 100%;
-			border: none;
-		}
-	</style>
-{% endblock %}
-
 {% block nav %}
 	<a href="/e/cas">Connection Agreements</a> &raquo; 
 	<a href="/e/cas/{{ca.id}}">{{ca.id}} {{ca.start_date|date_format}}</a>
@@ -45,9 +26,15 @@
 			<tr>
 				<td>{{ca.start_date|date_format}}</td>
 				<td>{{ca.finish_date|date_format}}</td>
-				<td>{{ca.properties.get('title')}}</td>
 				<td>
-					<a href="{{props.get('url')}}" target="_blank" rel="noopener noreferrer">Document</a>
+					{% if 'title' in props %}
+						{{ca.properties['title']}}
+					{% endif %}
+				</td>
+				<td>
+					{% if 'url' in props %}
+						<a href="{{props['url']}}" target="_blank" rel="noopener noreferrer">Document</a>
+					{% endif %}
 				</td>
 			</tr>
 		</tbody>
