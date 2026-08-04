@@ -1210,32 +1210,33 @@ def report_post(report_id):
 def site_get(site_id):
     configuration_contract = Contract.get_non_core_by_name(g.sess, "configuration")
     site = Site.get_by_id(g.sess, site_id)
+    SORT_ORDER = {
+        "grid": 0,
+        "3rd-party": 1,
+        "3rd-party-reverse": 2,
+        "gen-grid": 3,
+        "gen": 4,
+        "sub": 5,
+    }
 
-    eras = (
-        g.sess.query(Era)
+    eras = g.sess.scalars(
+        select(Era)
         .join(SiteEra)
-        .filter(SiteEra.site == site)
+        .where(SiteEra.site == site)
         .order_by(Era.supply_id, Era.start_date.desc())
-        .all()
-    )
+    ).all()
 
     groups = []
     for idx, era in enumerate(eras):
         if idx == 0 or eras[idx - 1].supply_id != era.supply_id:
-            if era.pc.code == "00":
-                meter_cat = "HH"
-            elif len(era.channels) > 0:
-                meter_cat = "AMR"
-            elif era.mtc_participant.meter_type.code in ["UM", "PH"]:
-                meter_cat = "Unmetered"
-            else:
-                meter_cat = "NHH"
-
+            is_ongoing = era.finish_date is None
             groups.append(
                 {
+                    "sort_order": f"{0 if is_ongoing else 1}_"
+                    f"{SORT_ORDER[era.supply.source.code]}",
                     "last_era": era,
                     "is_ongoing": era.finish_date is None,
-                    "meter_category": meter_cat,
+                    "meter_category": era.meter_category,
                     "issues": g.sess.scalars(
                         select(Issue)
                         .where(
@@ -1252,7 +1253,7 @@ def site_get(site_id):
         if era == eras[-1] or era.supply_id != eras[idx + 1]:
             groups[-1]["first_era"] = era
 
-    groups = sorted(groups, key=itemgetter("is_ongoing"), reverse=True)
+    groups = sorted(groups, key=itemgetter("sort_order"))
 
     g_eras = (
         g.sess.query(GEra)
