@@ -161,19 +161,9 @@
 						<tr>
 							<td>gbp</td>
 							{% set part = parts['gbp'] %}
-							{% for k in ('actual', 'virtual', 'difference') %}
+							{% for k in ('actual_str', 'virtual_str', 'difference_str') %}
 								<td style="text-align: right;">
-									{% if k in part %}
-										{% set val = part[k] %}
-									{% else %}
-										{% set val = '' %}
-									{% endif %}
-									{% if val is none %}
-									{% elif val is number %}
-										{{"{:0,.2f}".format(val)}}
-									{% else %}
-										{{val}}
-									{% endif %}
+									{{part[k]}}
 								</td>
 							{% endfor %}
 							<td>{{part['passed']}}</td>
@@ -182,42 +172,9 @@
 							{% if part_name != 'gbp' %}
 								<tr>
 									<td>{{part_name}}</td>
-									{% for k in ('actual', 'virtual', 'difference') %}
+									{% for k in ('actual_str', 'virtual_str', 'difference_str') %}
 										<td style="text-align: right;">
-											{% if k in part %}
-												{% set val = part[k] %}
-											{% else %}
-												{% set val = '' %}
-											{% endif %}
-											{% if val is none %}
-											{% elif val is number %}
-												{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
-													{{"{:0,.1f}".format(val)}}
-												{% elif part_name.endswith('-kw') %}
-													{{"{:0,.2f}".format(val)}}
-												{% else %}
-													{{val}}
-												{% endif %}
-											{% elif (val is string) or (val is boolean) %}
-												{{val}}
-											{% else %}
-												{% for v in val %}
-													{% if v is number %}
-														{% if part_name in ('kwh', 'kvarh') or part_name.endswith('-kwh') %}
-															{{"{:0,.1f}".format(v)}}
-														{% elif part_name.endswith('-kw') %}
-															{{"{:0,.2f}".format(v)}}
-														{% else %}
-															{{v}}
-														{% endif %}
-													{% else %}
-														{{v}}
-													{% endif %}
-													{% if not loop.last %}
-														|
-													{% endif %}
-												{% endfor %}
-											{% endif %}
+											{{part[k]}}
 										</td>
 									{% endfor %}
 									<td>{{part['passed']}}</td>

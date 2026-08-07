@@ -363,6 +363,26 @@ def _get_bill_status(sess, bill_statuses, bill):
     return bill_status
 
 
+def _format_part(name, value):
+    if value is None:
+        return ""
+
+    if isinstance(value, Number):
+        if name in ("kwh", "kvarh") or name.endswith("-kwh"):
+            format_str = "{:0,.1f}"
+        elif name == "gbp" or name.endswith("-kw"):
+            format_str = "{:0,.2f}"
+        else:
+            format_str = "{}"
+        return format_str.format(value)
+    elif isinstance(value, (str, bool)):
+        return "{}".format(value)
+    elif isinstance(value, Datetime):
+        return date_format(value)
+    else:
+        return " | ".join([_format_part(name, v) for v in value])
+
+
 def _process_period(
     sess,
     caches,
@@ -676,27 +696,36 @@ def _process_period(
     for elname, val_elem in val_elems.items():
         for part_name, part in val_elem["parts"].items():
             if part_name == "gbp":
-                virtual_part = round(part.get("virtual", 0), 2)
+                virt_part = round(part.get("virtual", 0), 2)
                 actual_part = part.get("actual", 0)
             else:
-                virtual_part = part.get("virtual")
+                virt_part = part.get("virtual")
                 actual_part = part.get("actual")
 
-            if isinstance(virtual_part, set) and len(virtual_part) == 1:
-                virtual_part = next(iter(virtual_part))
+            if isinstance(virt_part, set) and len(virt_part) == 1:
+                virt_part = next(iter(virt_part))
             if isinstance(actual_part, set) and len(actual_part) == 1:
                 actual_part = next(iter(actual_part))
 
-            if virtual_part is None or actual_part is None:
+            if virt_part is None or actual_part is None:
                 diff = None
-                passed = "❔"
-            elif isinstance(virtual_part, Number) and isinstance(actual_part, Number):
-                diff = float(actual_part) - float(virtual_part)
-                passed = "✅" if diff == 0 else "❌"
+            elif isinstance(virt_part, Number) and isinstance(actual_part, Number):
+                diff = float(actual_part) - float(virt_part)
             else:
                 diff = None
-                passed = "✅" if virtual_part == actual_part else "❌"
 
+            actual_str = _format_part(part_name, actual_part)
+            virt_str = _format_part(part_name, virt_part)
+            diff_str = _format_part(part_name, diff)
+
+            if actual_str == "" or virt_str == "":
+                passed = "❔"
+            else:
+                passed = "✅" if virt_str == actual_str else "❌"
+
+            part["actual_str"] = actual_str
+            part["virtual_str"] = virt_str
+            part["difference_str"] = diff_str
             part["difference"] = diff
             part["passed"] = passed
 

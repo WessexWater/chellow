@@ -2,6 +2,8 @@ import csv
 from decimal import Decimal
 from io import StringIO
 
+import pytest
+
 from utils import match
 
 from chellow.e.computer import contract_func
@@ -35,6 +37,7 @@ from chellow.models import (
     insert_voltage_levels,
 )
 from chellow.reports.report_111 import (
+    _format_part,
     _process_period,
     _process_supply,
     content,
@@ -115,6 +118,18 @@ def test_http_supplier_batch_with_mpan_cores(mocker, client, sess):
 
 
 # Worker level tests
+
+
+@pytest.mark.parametrize(
+    "name,value,expected",
+    [
+        ("is_green", True, "True"),
+        ("is_green", "true", "true"),
+        ("triad_date", to_utc(ct_datetime(2023, 1, 1)), "2023-01-01 00:00"),
+    ],
+)
+def test_format_part(name, value, expected):
+    assert expected == _format_part(name, value)
 
 
 def test_process_period(sess):
@@ -329,23 +344,32 @@ def virtual_bill(ds):
                 "parts": {
                     "gbp": {
                         "actual": Decimal("10.00"),
+                        "actual_str": "10.00",
                         "difference": 9.0,
+                        "difference_str": "9.00",
                         "virtual": 1.0,
+                        "virtual_str": "1.00",
                         "passed": "❌",
                     },
                     "kwh": {
                         "difference": None,
+                        "difference_str": "",
                         "virtual": 0,
+                        "virtual_str": "0.0",
                         "passed": "❔",
+                        "actual_str": "",
                     },
                     "rate": {
                         "actual": {
                             Decimal("0.1"),
                         },
+                        "actual_str": "0.1",
                         "difference": 0.0,
+                        "difference_str": "0.0",
                         "virtual": {
                             0.1,
                         },
+                        "virtual_str": "0.1",
                         "passed": "✅",
                     },
                 },
@@ -593,14 +617,20 @@ def virtual_bill(ds):
                 "parts": {
                     "gbp": {
                         "actual": Decimal("10.00"),
+                        "actual_str": "10.00",
+                        "virtual_str": "0.00",
                         "difference": 10.0,
+                        "difference_str": "10.00",
                         "passed": "❌",
                     },
                     "rate": {
                         "actual": {
                             Decimal("0.1"),
                         },
+                        "actual_str": "0.1",
+                        "virtual_str": "",
                         "difference": None,
+                        "difference_str": "",
                         "passed": "❔",
                     },
                 },
@@ -845,23 +875,32 @@ def virtual_bill(ds):
                     "parts": {
                         "gbp": {
                             "actual": Decimal("10.00"),
-                            "difference": 9.0,
+                            "actual_str": "10.00",
                             "virtual": 1.0,
+                            "virtual_str": "1.00",
+                            "difference": 9.0,
+                            "difference_str": "9.00",
                             "passed": "❌",
                         },
                         "kwh": {
-                            "difference": None,
+                            "actual_str": "",
                             "virtual": 0,
+                            "virtual_str": "0.0",
+                            "difference": None,
+                            "difference_str": "",
                             "passed": "❔",
                         },
                         "rate": {
                             "actual": {
                                 Decimal("0.1"),
                             },
-                            "difference": 0.0,
+                            "actual_str": "0.1",
                             "virtual": {
                                 0.1,
                             },
+                            "virtual_str": "0.1",
+                            "difference": 0.0,
+                            "difference_str": "0.0",
                             "passed": "✅",
                         },
                     },
