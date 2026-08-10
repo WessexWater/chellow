@@ -29,8 +29,16 @@ ELEMENT_MAP = {
     "ADH": {
         "ADHOC": {
             "020330": ("eii", None, None),
+            "169540": ("eii", None, None),
+            "930504": ("eii", None, None),
             "064305": ("fit", None, None),
             "590346": ("cfd-obligation", None, None),
+            "764913": ("class-a-exemption-gbp", "rate", "kwh"),
+            "722658": ("class-a-exemption-gbp", "rate", "kwh"),
+            "937505": ("class-a-exemption-gbp", "rate", "kwh"),
+            "350901": ("class-a-exemption-gbp", "rate", "kwh"),
+            "966850": ("class-a-exemption-gbp", "rate", "kwh"),
+            "897647": ("class-a-exemption-gbp", "rate", "kwh"),
             "932997": ("cm-obligation", None, None),
             "773384": ("gcf", "rate", "kwh"),
             "493988": ("reconciliation", None, None),
@@ -43,6 +51,7 @@ ELEMENT_MAP = {
             "633675": ("vtp", "rate", "kwh"),
             "183968": ("vtp", "rate", "kwh"),
             "627692": ("vtp", "rate", "kwh"),
+            "196135": ("vtp", "rate", "kwh"),
         },
     },
     "BUS": {
@@ -95,6 +104,7 @@ ELEMENT_MAP = {
             "180397": ("rab-obligation", "rate", "kwh"),
             "563194": ("rab-obligation", "rate", "kwh"),
             "183968": ("vtp", "rate", "kwh"),
+            "627692": ("vtp", "rate", "kwh"),
         },
         "DUSDIS": {
             "122568": ("nrg-gsp-losses", "rate", "kwh"),
