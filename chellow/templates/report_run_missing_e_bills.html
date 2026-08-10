@@ -55,6 +55,7 @@
 				<th>Export MPAN</th>
 				<th>Account</th>
 				<th>Site</th>
+				<th>Open Issues</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -89,6 +90,27 @@
 						<a href="/sites/{{values['site_id']}}" title="{{values['site_name']}}">
 							{{values['site_code']}}
 						</a>
+					</td>
+					<td>
+						{% set issues = values['issues'] %}
+						{% if issues|length > 0 %}
+							<ul>
+								{% for issue in issues %}
+									<li>
+										{% if issue.contract.party.market_role.code == 'X' %}
+											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% elif issue.contract.party.market_role.code in DC_MARKET_ROLE_CODES %}
+											<a href="/e/dc_issues/{{issue.id}}">DC:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% else %}
+											<a href="/e/mop_issues/{{issue.id}}">MOP:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
 					</td>
 				</tr>
 			{% endfor %}

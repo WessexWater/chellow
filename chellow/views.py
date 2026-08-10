@@ -1636,10 +1636,29 @@ def report_run_get(run_id):
                 ReportRunRow.data["values"]["month_start"],
             )
         ).all()
+        for row in g.sess.scalars(
+            select(ReportRunRow)
+            .filter(ReportRunRow.report_run == run)
+            .order_by(
+                ReportRunRow.data["values"]["month_start"],
+            )
+        ):
+            supply_id = row.data["values"]["supply_id"]
+            issues = g.sess.scalars(
+                select(Issue)
+                .where(
+                    Issue.is_open == true(),
+                    Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+                )
+                .order_by(Issue.date_created)
+            ).all()
+            row.data["values"]["issues"] = issues
         return render_template(
             "report_run_missing_e_bills.html",
             run=run,
             rows=rows,
+            MOP_MARKET_ROLE_CODES=MOP_MARKET_ROLE_CODES,
+            DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
         )
 
     else:
