@@ -9,7 +9,16 @@ from sqlalchemy import null, or_, select
 from sqlalchemy.orm import joinedload
 
 from chellow.dloads import open_file
-from chellow.models import Batch, Bill, Contract, Era, RSession, ReportRun, User
+from chellow.models import (
+    Batch,
+    Bill,
+    Contract,
+    EnergisationStatus,
+    Era,
+    RSession,
+    ReportRun,
+    User,
+)
 from chellow.utils import (
     c_months_u,
     csv_make_val,
@@ -57,7 +66,9 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
                 account_missing_tuple = hh_range(caches, month_start, month_finish)
                 for era in sess.scalars(
                     select(Era)
+                    .join(EnergisationStatus)
                     .where(
+                        EnergisationStatus.code != "D",
                         Era.start_date <= month_finish,
                         or_(Era.finish_date == null(), Era.finish_date >= month_start),
                         or_(
