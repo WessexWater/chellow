@@ -45,6 +45,7 @@ def content(year, month, months, supply_id, user_id):
                 "bill_issue_date",
                 "bill_type",
                 "register_read_id",
+                "msn",
                 "tpr",
                 "coefficient",
                 "prev_read_date",
@@ -108,12 +109,11 @@ def content(year, month, months, supply_id, user_id):
                 ):
                     era = supply.find_era_at(sess, bill.start_date)
                     if era is None:
-                        eras = (
-                            sess.query(Era)
-                            .filter(Era.supply == supply)
+                        eras = sess.scalars(
+                            select(Era)
+                            .where(Era.supply == supply)
                             .order_by(Era.start_date)
-                            .all()
-                        )
+                        ).all()
                         if bill.start_date < eras[0].start_date:
                             era = eras[0]
                         else:
@@ -121,9 +121,9 @@ def content(year, month, months, supply_id, user_id):
 
                     site = era.get_physical_site(sess)
 
-                    for read in (
-                        sess.query(RegisterRead)
-                        .filter(
+                    for read in sess.scalars(
+                        select(RegisterRead)
+                        .where(
                             RegisterRead.bill == bill,
                             or_(
                                 and_(
@@ -156,6 +156,7 @@ def content(year, month, months, supply_id, user_id):
                             "bill_issue_date": bill.issue_date,
                             "bill_type": bill_type.code,
                             "register_read_id": read.id,
+                            "msn": read.msn,
                             "tpr": "md" if read.tpr is None else read.tpr.code,
                             "coefficient": read.coefficient,
                             "prev_read_date": read.previous_date,
