@@ -99,6 +99,19 @@ def _add_bills(month_data, bills, chunk_start, chunk_finish):
         month_data[f"billed-import-{role_name}-gross-gbp"] += bill_prop_gross_gbp
 
 
+def _flatten_bill(bill, prefix):
+    vals = {}
+    for k, v in bill.items():
+        if k == "elements":
+            for elname, parts in v.items():
+                for part_name, part_val in parts.items():
+                    vals[f"{prefix}{elname}-{part_name}"] = part_val
+
+        else:
+            vals[f"{prefix}{k}"] = v
+    return vals
+
+
 def _process_site(
     sess,
     report_context,
@@ -212,9 +225,7 @@ def _process_site(
             vals["metering-type"] = imp_ss.era.meter_category
             vals["source"] = "displaced"
 
-            for elname, eldict in disp_supplier_bill["elements"].items():
-                for part_name, part_value in eldict.items():
-                    vals[f"{elname}-{part_name}"] = part_value
+            vals.update(_flatten_bill(disp_supplier_bill, ""))
 
         else:
             source_code = main_ss.source_code
@@ -264,9 +275,7 @@ def _process_site(
                 supply_data["imp-md-kw"] += imp_md_kw
                 supply_data["imp-md-kva"] += imp_md_kva
 
-                for elname, eldict in imp_supplier_bill["elements"].items():
-                    for part_name, part_value in eldict.items():
-                        vals[f"imp-supplier-{elname}-{part_name}"] = part_value
+                vals.update(_flatten_bill(imp_supplier_bill, "imp-supplier-"))
 
                 for n in imp_ss.normal_reads:
                     normal_reads.add((imp_mpan_core, n))
@@ -321,9 +330,7 @@ def _process_site(
                 supply_data["exp-md-kw"] += exp_md_kw
                 supply_data["exp-md-kva"] += exp_md_kva
 
-                for elname, eldict in exp_supplier_bill["elements"].items():
-                    for part_name, part_value in eldict.items():
-                        vals[f"exp-supplier-{elname}-{part_name}"] = part_value
+                vals.update(_flatten_bill(exp_supplier_bill, "exp-supplier-"))
 
                 kwh = sum(hh["msp-kwh"] for hh in exp_ss.hh_data)
                 gbp = exp_supplier_bill.get("net-gbp", 0)
@@ -446,17 +453,8 @@ def _process_site(
             vals["msn"] = sss.msn
             vals["pc"] = sss.pc_code
 
-            for t in title_dict["mop"]:
-                try:
-                    vals[f"mop-{t}"] = mop_bill[t]
-                except KeyError:
-                    pass
-
-            for t in title_dict["dc"]:
-                try:
-                    vals[f"dc-{t}"] = dc_bill[t]
-                except KeyError:
-                    pass
+            vals.update(_flatten_bill(mop_bill, "mop-"))
+            vals.update(_flatten_bill(dc_bill, "dc-"))
 
             supply_data["imp-mpan-core"] = imp_mpan_core
             supply_data["exp-mpan-core"] = exp_mpan_core

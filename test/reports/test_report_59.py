@@ -39,7 +39,7 @@ from chellow.models import (
     insert_sources,
     insert_voltage_levels,
 )
-from chellow.reports.report_59 import content
+from chellow.reports.report_59 import _flatten_bill, content
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
@@ -874,9 +874,9 @@ def displaced_virtual_bill(ds):
             None,
             0.0,
             0.0,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
             None,
             None,
         ],
@@ -946,9 +946,9 @@ def displaced_virtual_bill(ds):
             None,
             0.0,
             0.0,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
             None,
             None,
         ],
@@ -1714,9 +1714,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
             None,
             None,
         ],
@@ -2300,7 +2300,7 @@ def virtual_bill(ds):
             None,
             None,
             None,
-            None,
+            0.0,
             None,
             None,
             0.0,
@@ -2971,9 +2971,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
             None,
             None,
         ],
@@ -3633,9 +3633,9 @@ def virtual_bill(ds):
             None,
             0.0,
             0.0,
-            None,
-            None,
-            None,
+            0.0,
+            0.0,
+            0.0,
             None,
             None,
         ],
@@ -4573,10 +4573,16 @@ def virtual_bill(ds):
             None,
             10.0,
             1.0,
-            None,
-            None,
-            None,
+            1.0,
+            0.0,
+            1.0,
             None,
         ],
     ]
     match_tables(era_expected, era_table)
+
+
+def test_flatten_bill():
+    actual = _flatten_bill({"msp-kwh": 0}, "imp-supplier-")
+    expected = {"imp-supplier-msp-kwh": 0}
+    assert actual == expected
