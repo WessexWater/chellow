@@ -1767,6 +1767,8 @@ def report_run_row_get(row_id):
             raw_data=raw_data,
             tables=tables,
             issues=issues,
+            DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
+            MOP_MARKET_ROLE_CODES=MOP_MARKET_ROLE_CODES,
         )
     elif row.report_run.name == "g_bill_check":
         g_contract = GContract.get_by_id(g.sess, row.report_run.data["g_contract_id"])
