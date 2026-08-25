@@ -20,6 +20,19 @@ from chellow.utils import (
 )
 
 
+def _flatten_bill(bill, prefix):
+    vals = {}
+    for k, v in bill.items():
+        if k == "elements":
+            for elname, parts in v.items():
+                for part_name, part_val in parts.items():
+                    vals[f"{prefix}_{elname}-{part_name}"] = part_val
+
+        else:
+            vals[f"{prefix}_{k}"] = v
+    return vals
+
+
 def content(supply_id, start_date, finish_date, user):
     caches = {}
     f = None
@@ -123,25 +136,21 @@ def content(supply_id, start_date, finish_date, user):
                 }
 
                 ds.contract_func(era.mop_contract, "virtual_bill")(ds)
-                for k, v in ds.mop_bill.items():
-                    vals[f"mop_{k}"] = v
+                vals.update(_flatten_bill(ds.mop_bill, "mop"))
 
                 ds.contract_func(era.dc_contract, "virtual_bill")(ds)
-                for k, v in ds.dc_bill.items():
-                    vals[f"dc_{k}"] = v
+                vals.update(_flatten_bill(ds.dc_bill, "dc"))
 
                 if era.imp_supplier_contract is not None:
                     ds.contract_func(era.imp_supplier_contract, "virtual_bill")(ds)
-                    for k, v in ds.supplier_bill.items():
-                        vals[f"imp_supplier_{k}"] = v
+                    vals.update(_flatten_bill(ds.supplier_bill, "imp_supplier"))
 
                 if era.exp_supplier_contract is not None:
                     ds = SupplySource(
                         sess, hh_start, hh_start, f_date, era, False, caches
                     )
                     ds.contract_func(era.exp_supplier_contract, "virtual_bill")(ds)
-                    for k, v in ds.supplier_bill.items():
-                        vals[f"exp_supplier_{k}"] = v
+                    vals.update(_flatten_bill(ds.supplier_bill, "exp_supplier"))
 
                 w.writerow([csv_make_val(vals.get(t)) for t in titles])
     except BaseException:
