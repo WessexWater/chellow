@@ -10,55 +10,59 @@
 {% endblock %}
 
 {% block content %}
-	{% if importer.line_number %}
-		<p>Line number {{importer.line_number}}.</p>
-	{% endif %}
+	{% if importer %}
+		{% if importer.line_number %}
+			<p>Line number {{importer.line_number}}.</p>
+		{% endif %}
 
-	{% if importer.is_alive() %}
-			<p>Still running. Refresh the page to see latest progress.</p>
-	{% else %}
-		{% if importer.failed_args|length > 0 %}
-				<p>
-					The import has failed and so the whole import has been rolled back.
-				</p>
+		{% if importer.is_alive() %}
+				<p>Still running. Refresh the page to see latest progress.</p>
+		{% else %}
+			{% if importer.failed_args|length > 0 %}
+					<p>
+						The import has failed and so the whole import has been rolled back.
+					</p>
 
-				<h3>Failed Lines</h3>
+					<h3>Failed Lines</h3>
 
-				{% for line in importer.failed_args %}
+					{% for line in importer.failed_args %}
+
+						<table>
+							<tbody>
+								<tr>
+									{% for title, value in line %}
+										<th>{{title}}</th>
+									{% endfor %}
+								</tr>
+								<tr>
+									{% for title, value in line %}
+										<td>{{value}}</td>
+									{% endfor %}
+								</tr>
+							</tbody>
+						</table>
+					{% endfor %}
+
+					<h3>Failed Input</h3>
 
 					<table>
 						<tbody>
-							<tr>
-								{% for title, value in line %}
-									<th>{{title}}</th>
-								{% endfor %}
-							</tr>
-							<tr>
-								{% for title, value in line %}
-									<td>{{value}}</td>
-								{% endfor %}
-							</tr>
+							{% for line in importer.failed_lines %}
+								<tr>
+									{% for value in line %}
+										<td>{{value}}</td>
+									{% endfor %}
+								</tr>
+							{% endfor %}
 						</tbody>
 					</table>
-				{% endfor %}
-
-				<h3>Failed Input</h3>
-
-				<table>
-					<tbody>
-						{% for line in importer.failed_lines %}
-							<tr>
-								{% for value in line %}
-									<td>{{value}}</td>
-								{% endfor %}
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			{% elif importer.error_message %}
-				<p>{{importer.error_message}}</p>
-			{% else %}
-				<p>The file has been imported successfully.</p>
-			{% endif %}
+				{% elif importer.error_message %}
+					<p>{{importer.error_message}}</p>
+				{% else %}
+					<p>The file has been imported successfully.</p>
+				{% endif %}
+		{% endif %}
+	{% else %}
+		<p>No importer</p>
 	{% endif %}
 {% endblock %}

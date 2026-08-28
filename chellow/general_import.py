@@ -2230,5 +2230,8 @@ def get_process_ids():
         return processes.keys()
 
 
-def get_process(id):
-    return processes[id]
+def get_process(pid):
+    try:
+        return processes[pid]
+    except KeyError:
+        raise BadRequest(f"The general import with id {pid} can't be found.")
