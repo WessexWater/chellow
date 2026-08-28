@@ -638,7 +638,7 @@ def tab_ehv(sheet, gsp_rates):
 
 
 def find_rates(file_name, file_like):
-    rates = {"a_file_name": file_name}
+    rates = {}
     vls = []
 
     if file_name.endswith(".zip"):
@@ -809,10 +809,11 @@ def rate_server_import(sess, log, set_progress, paths):
             file_name, url = sorted(fl_entries.items())[-1]
 
             rs_script = rs.make_script()
-            if rs_script.get("a_file_name") != file_name:
+            if rs_script.get("a_url") != url:
                 try:
                     fl = BytesIO(download(url))
                     rates, vls = find_rates(file_name, fl)
+                    rates["a_url"] = url
                     rs.update(rates)
                     log(
                         f"Updated DNO {dno_code} rate script for "
