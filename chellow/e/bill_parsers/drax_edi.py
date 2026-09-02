@@ -45,7 +45,7 @@ ELEMENT_MAP = {
             "055837": ("reconciliation", None, None),
             "637050": ("meter-rental", "rate", "days"),
             "346982": ("rab-obligation", "rate", "kwh"),
-            "187658": ("tnuos", "rate", "days"),
+            "187658": ("triad", "rate", "days"),
             "080788": ("vtp", "rate", "kwh"),
             "467705": ("vtp", "rate", "kwh"),
             "633675": ("vtp", "rate", "kwh"),
