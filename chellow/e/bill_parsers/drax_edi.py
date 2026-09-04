@@ -332,7 +332,11 @@ def _process_CCD3(elements, headers):
     cons = elements["CONS"]
     if len(cons[0]) > 0:
         el_cons = to_decimal(cons) / Decimal("1000")
-        elem_bd[eln_cons] = el_cons
+        if eln_cons == "kva":
+            elem_bd[eln_cons] = {el_cons}
+        else:
+            elem_bd[eln_cons] = el_cons
+
         if eln_name == "nrg-msp":
             headers["kwh"] += el_cons
 
