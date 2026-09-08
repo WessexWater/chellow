@@ -61,7 +61,7 @@ def to_decimal(vals, dec_index, dec_name, is_money=False):
         )
 
 
-def _process_row(vals):
+def _process_bill(vals):
     bill_type_code = vals[0]
     account = vals[1]
     mpan_core = parse_mpan_core(vals[2])
@@ -74,78 +74,14 @@ def _process_row(vals):
     net = to_decimal(vals, 8, "net", is_money=True)
     vat = to_decimal(vals, 9, "vat", is_money=True)
     gross = to_decimal(vals, 10, "gross", is_money=True)
-
-    if len(vals) > 11:
-        breakdown_str = vals[11].strip()
-        if len(breakdown_str) == 0:
-            breakdown = {}
-        else:
-            try:
-                breakdown = loads(breakdown_str)
-            except ZishLocationException as e:
-                raise BadRequest(str(e))
+    breakdown_str = vals[11].strip()
+    if len(breakdown_str) == 0:
+        breakdown = {}
     else:
-        raise BadRequest("There isn't a 'breakdown' field on the end.")
-
-    while vals[-1] == "" and len(vals) > 12:
-        del vals[-1]
-
-    reads = []
-    elements = []
-    i = 12
-    while i < len(vals):
-        typ = vals[i].strip().lower()
-        if typ == "read":
-            tpr_str = vals[i + 5].strip()
-            tpr_code = None if len(tpr_str) == 0 else tpr_str.zfill(5)
-            reads.append(
-                {
-                    "msn": vals[i + 1],
-                    "mpan": vals[i + 2],
-                    "coefficient": to_decimal(vals, i + 3, "coefficient"),
-                    "units": vals[i + 4],
-                    "tpr_code": tpr_code,
-                    "prev_date": parse_date(vals, i + 6),
-                    "prev_value": Decimal(vals[i + 7]),
-                    "prev_type_code": vals[i + 8],
-                    "pres_date": parse_date(vals, i + 9),
-                    "pres_value": Decimal(vals[i + 10]),
-                    "pres_type_code": vals[i + 11],
-                }
-            )
-            i += 12
-        elif typ == "element":
-            breakdown_str = vals[i + 5].strip()
-            if len(breakdown_str) == 0:
-                breakdown = {}
-            else:
-                try:
-                    breakdown = loads(breakdown_str)
-                except ZishLocationException as e:
-                    raise BadRequest(str(e))
-            elements.append(
-                {
-                    "name": vals[i + 1],
-                    "start_date": parse_date(vals, i + 2),
-                    "finish_date": parse_date(vals, i + 3),
-                    "net": to_decimal(vals, i + 4, "net", is_money=True),
-                    "breakdown": breakdown,
-                }
-            )
-            i += 6
-        else:
-            raise BadRequest("Record type {type} not recognized.")
-
-    if len(elements) == 0:
-        elements.append(
-            {
-                "name": "net",
-                "start_date": start_date,
-                "finish_date": finish_date,
-                "net": net,
-                "breakdown": {},
-            }
-        )
+        try:
+            breakdown = loads(breakdown_str)
+        except ZishLocationException as e:
+            raise BadRequest(str(e))
 
     return {
         "bill_type_code": bill_type_code,
@@ -160,8 +96,52 @@ def _process_row(vals):
         "vat": vat,
         "gross": gross,
         "breakdown": breakdown,
-        "reads": reads,
-        "elements": elements,
+        "reads": [],
+        "elements": [],
+    }
+
+
+def _process_element(vals):
+    bill_reference = vals[0]
+    name = vals[1]
+    start_date = parse_date(vals, 2)
+    finish_date = parse_date(vals, 3)
+    net = to_decimal(vals, 4, "net", is_money=True)
+    breakdown_str = vals[5].strip()
+    if len(breakdown_str) == 0:
+        breakdown = {}
+    else:
+        try:
+            breakdown = loads(breakdown_str)
+        except ZishLocationException as e:
+            raise BadRequest(str(e))
+
+    return {
+        "bill_reference": bill_reference,
+        "name": name,
+        "start_date": start_date,
+        "finish_date": finish_date,
+        "net": net,
+        "breakdown": breakdown,
+    }
+
+
+def _process_read(vals):
+    tpr_str = vals[5].strip()
+    tpr_code = None if len(tpr_str) == 0 else tpr_str.zfill(5)
+    return {
+        "bill_reference": vals[0],
+        "msn": vals[1],
+        "mpan": vals[2],
+        "coefficient": to_decimal(vals, 3, "coefficient"),
+        "units": vals[4],
+        "tpr_code": tpr_code,
+        "prev_date": parse_date(vals, 6),
+        "prev_value": Decimal(vals[7]),
+        "prev_type_code": vals[8],
+        "pres_date": parse_date(vals, 9),
+        "pres_value": Decimal(vals[10]),
+        "pres_type_code": vals[11],
     }
 
 
@@ -173,6 +153,7 @@ class Parser:
         self.line_number = None
 
     def make_raw_bills(self):
+        bills = {}
         for self.line_number, self.vals in enumerate(self.reader, start=2):
             try:
                 # skip blank lines and comment lines
@@ -182,7 +163,23 @@ class Parser:
                     or self.vals[0].strip().startswith("#")
                 ):
                     continue
-                yield _process_row(self.vals)
+                action = self.vals[0]
+                if action == "bill":
+                    bill = _process_bill(self.vals)
+                    bills[bill["reference"]] = bill
+                elif action == "element":
+                    element = _process_element(self.vals)
+                    bill = bills[element["bill_reference"]]
+                    bill["elements"].apppend(element)
+                elif action == "read":
+                    read = _process_read(self.vals)
+                    bill = bills[element["bill_reference"]]
+                    bill["reads"].apppend(read)
+                else:
+                    raise BadRequest(
+                        "The type {action} must be either 'bill' or 'element'"
+                    )
+
             except BadRequest as e:
                 raise BadRequest(
                     f"Problem at line {self.line_number} {self.vals}: {e.description}"

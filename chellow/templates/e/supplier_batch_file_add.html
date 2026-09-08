@@ -39,7 +39,8 @@
 		<caption>The '.csv' Format</caption>
 		<tbody>
 			<tr>
-				<td># Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
+				<td># bill</td>
+				<td>Bill Type (N - Normal, W - Withdrawn or F -Final)</td>
 				<td>Account Reference</td>
 				<td>MPAN Core</td>
 				<td>Invoice Reference</td>
@@ -63,21 +64,33 @@
 				<td>Read Present Read Date</td>
 				<td>Read Present Read Value</td>
 				<td>Read Present Read Type</td>
-				<td>Following Type (Read or Element)</td>
+			</tr>
+			<tr>
+				<td># element</td>
+				<td>Bill Reference</td>
 				<td>Element Name</td>
 				<td>Element Start Date (YYYY-mm-dd HH:MM)</td>
 				<td>Element Finish Date (YYYY-mm-dd HH:MM)</td>
 				<td>Element Net GBP</td>
 				<td>Element Breakdown</td>
 			</tr>
+			<tr>
+				<td># read</td>
+				<td>Bill Reference</td>
+				<td>Read Serial Number</td>
+				<td>Read MPAN</td>
+				<td>Read Coefficient</td>
+				<td>Read Units (kWh, kW, kVA or kVArh)</td>
+				<td>Read TPR (Blank if kW or kVA)</td>
+				<td>Read Previous Read Date</td>
+				<td>Read Previous Read Value</td>
+				<td>Read Previous Read Type</td>
+				<td>Read Present Read Date</td>
+				<td>Read Present Read Value</td>
+				<td>Read Present Read Type</td>
+			</tr>
 		</tbody>
 	</table>
-
-	<p>
-		The register read block of fields can be repeated for each
-		register, or can be left out entirely if the bill doesn't have
-		any readings associated with it.
-	</p>
 
 	<table>
 		<caption>
