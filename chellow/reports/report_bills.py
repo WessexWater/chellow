@@ -74,7 +74,7 @@ def _make_rows(sess, batch_id):
             "contract": batch.contract.name,
             "batch_reference": batch.reference,
             "reference": bill.reference,
-            "mpan_core": bill.supply.find_last_era().imp_mpan_core,
+            "mpan_core": bill.supply.find_last_era(sess).imp_mpan_core,
             "account": bill.account,
             "issue_date": bill.issue_date,
             "start_date": bill.start_date,
