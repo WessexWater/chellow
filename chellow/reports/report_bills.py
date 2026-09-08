@@ -57,7 +57,6 @@ def _make_rows(sess, batch_id):
         .order_by(Bill.reference, Bill.start_date)
         .options(joinedload(Bill.bill_type), joinedload(Bill.supply))
     ):
-        era = bill.supply.find_era_at(sess, bill.start_date)
         vat_breakdown = {}
 
         bd = bill.bd
@@ -75,7 +74,7 @@ def _make_rows(sess, batch_id):
             "contract": batch.contract.name,
             "batch_reference": batch.reference,
             "reference": bill.reference,
-            "mpan_core": None if era is None else era.imp_mpan_core,
+            "mpan_core": bill.supply.find_last_era().imp_mpan_core,
             "account": bill.account,
             "issue_date": bill.issue_date,
             "start_date": bill.start_date,
