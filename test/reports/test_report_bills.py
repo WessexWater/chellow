@@ -4,6 +4,8 @@ from io import BytesIO
 
 from odio import parse_spreadsheet
 
+from utils import match_tables
+
 from chellow.models import (
     BillType,
     Comm,
@@ -173,30 +175,31 @@ def test_content(mocker, sess):
         [
             "contract",
             "batch_reference",
-            "bill_reference",
-            "imp_mpan_core",
+            "reference",
+            "mpan_core",
+            "type",
             "account",
-            "issued",
-            "from",
-            "to",
+            "issue_date",
+            "start_date",
+            "finish_date",
             "kwh",
             "net",
             "vat",
             "gross",
-            "type",
+            "breakdown",
             "vat_1_percent",
             "vat_1_net",
             "vat_1_vat",
             "vat_2_percent",
             "vat_2_net",
             "vat_2_vat",
-            "breakdown",
         ],
         [
             "Fusion Supplier 2000",
             "b",
             "ref",
             "22 7867 6232 781",
+            "N",
             "acc",
             datetime(2020, 1, 1),
             datetime(2019, 1, 1),
@@ -205,14 +208,13 @@ def test_content(mocker, sess):
             0.0,
             0.0,
             0.0,
-            "N",
+            '{"vat": {5: {"net": 3,"vat": 6,},},}',
             None,
             3.0,
             6.0,
             None,
             None,
             None,
-            '{"vat": {5: {"net": 3,"vat": 6,},},}',
         ],
     ]
-    assert expected == table
+    match_tables(expected, table)
