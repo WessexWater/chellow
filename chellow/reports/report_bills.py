@@ -19,24 +19,24 @@ def _make_rows(sess, batch_id):
     bill_titles = [
         "contract",
         "batch_reference",
-        "bill_reference",
-        "imp_mpan_core",
+        "reference",
+        "type",
         "account",
-        "issued",
-        "from",
-        "to",
+        "mpan_core",
+        "issue_date",
+        "start_date",
+        "finish_date",
         "kwh",
         "net",
         "vat",
         "gross",
-        "type",
+        "breakdown",
         "vat_1_percent",
         "vat_1_net",
         "vat_1_vat",
         "vat_2_percent",
         "vat_2_net",
         "vat_2_vat",
-        "breakdown",
     ]
     element_titles = [
         "contract",
@@ -57,7 +57,6 @@ def _make_rows(sess, batch_id):
         .order_by(Bill.reference, Bill.start_date)
         .options(joinedload(Bill.bill_type), joinedload(Bill.supply))
     ):
-        era = bill.supply.find_era_at(sess, bill.start_date)
         vat_breakdown = {}
 
         bd = bill.bd
@@ -71,15 +70,19 @@ def _make_rows(sess, batch_id):
                 vbd["vat"] += vat_vals["vat"]
                 vbd["net"] += vat_vals["net"]
 
+        latest_era = bill.supply.find_last_era(sess)
+        imp_mpan_core = latest_era.imp_mpan_core
+        mpan_core = latest_era.exp_mpan_core if imp_mpan_core is None else imp_mpan_core
+
         bill_vals = {
             "contract": batch.contract.name,
             "batch_reference": batch.reference,
-            "bill_reference": bill.reference,
-            "imp_mpan_core": None if era is None else era.imp_mpan_core,
+            "reference": bill.reference,
+            "mpan_core": mpan_core,
             "account": bill.account,
-            "issued": bill.issue_date,
-            "from": bill.start_date,
-            "to": bill.finish_date,
+            "issue_date": bill.issue_date,
+            "start_date": bill.start_date,
+            "finish_date": bill.finish_date,
             "kwh": bill.kwh,
             "net": bill.net,
             "vat": bill.vat,
