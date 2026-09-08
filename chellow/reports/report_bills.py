@@ -70,11 +70,15 @@ def _make_rows(sess, batch_id):
                 vbd["vat"] += vat_vals["vat"]
                 vbd["net"] += vat_vals["net"]
 
+        latest_era = bill.supply.find_last_era(sess)
+        imp_mpan_core = latest_era.imp_mpan_core
+        mpan_core = latest_era.exp_mpan_core if imp_mpan_core is None else imp_mpan_core
+
         bill_vals = {
             "contract": batch.contract.name,
             "batch_reference": batch.reference,
             "reference": bill.reference,
-            "mpan_core": bill.supply.find_last_era(sess).imp_mpan_core,
+            "mpan_core": mpan_core,
             "account": bill.account,
             "issue_date": bill.issue_date,
             "start_date": bill.start_date,
