@@ -224,30 +224,36 @@ def test_BillImport_run(sess):
     insert_bill_types(sess)
 
     data = [
-        "N",
-        "sla;dkjhgf8u",
-        "22 7867 6232 781",
-        "sdalhgfuwr",
-        "2025-01-01 00:00",
-        "2025-03-01 00:00",
-        "2025-03-31 23:30",
-        "34",
-        "81.53",
-        "12.89",
-        "16.88",
-        "{}",
-        "Element",
-        "nrg",
-        "2025-03-01 00:00",
-        "2025-03-31 23:30",
-        "81.53",
-        '{"nrg-kwh": 981}',
+        [
+            "bill",
+            "N",
+            "sla;dkjhgf8u",
+            "22 7867 6232 781",
+            "sdalhgfuwr",
+            "2025-01-01 00:00",
+            "2025-03-01 00:00",
+            "2025-03-31 23:30",
+            "34",
+            "81.53",
+            "12.89",
+            "16.88",
+            "{}",
+        ],
+        [
+            "element",
+            "sdalhgfuwr",
+            "nrg",
+            "2025-03-01 00:00",
+            "2025-03-31 23:30",
+            "81.53",
+            '{"nrg-kwh": 981}',
+        ],
     ]
 
     with BytesIO() as f:
         text_stream = TextIOWrapper(f, write_through=True)
         writer = csv.writer(text_stream)
-        writer.writerow(data)
+        writer.writerows(data)
         f.seek(0)
 
         batch.insert_file(sess, "file 1", f.read(), "csv")

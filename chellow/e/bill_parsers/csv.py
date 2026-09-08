@@ -177,7 +177,7 @@ class Parser:
                     bill["reads"].append(read)
                 else:
                     raise BadRequest(
-                        "The type {action} must be either 'bill', 'element' or 'read'."
+                        f"The type {action} must be either 'bill', 'element' or 'read'."
                     )
 
             except BadRequest as e:
