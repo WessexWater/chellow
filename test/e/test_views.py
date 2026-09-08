@@ -3213,6 +3213,7 @@ def test_mop_batches_edit_post(sess, client):
     )
     batch = mop_contract.insert_batch(sess, "01", "ksdhfll", vf)
     data = [
+        "bill",
         "N",
         "xhhl",
         "20 7462 1997 847",
