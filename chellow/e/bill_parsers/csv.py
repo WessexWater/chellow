@@ -165,22 +165,23 @@ class Parser:
                     continue
                 action = self.vals[0]
                 if action == "bill":
-                    bill = _process_bill(self.vals)
+                    bill = _process_bill(self.vals[1:])
                     bills[bill["reference"]] = bill
                 elif action == "element":
-                    element = _process_element(self.vals)
+                    element = _process_element(self.vals[1:])
                     bill = bills[element["bill_reference"]]
-                    bill["elements"].apppend(element)
+                    bill["elements"].append(element)
                 elif action == "read":
-                    read = _process_read(self.vals)
-                    bill = bills[element["bill_reference"]]
-                    bill["reads"].apppend(read)
+                    read = _process_read(self.vals[1:])
+                    bill = bills[read["bill_reference"]]
+                    bill["reads"].append(read)
                 else:
                     raise BadRequest(
-                        "The type {action} must be either 'bill' or 'element'"
+                        "The type {action} must be either 'bill', 'element' or 'read'."
                     )
 
             except BadRequest as e:
                 raise BadRequest(
                     f"Problem at line {self.line_number} {self.vals}: {e.description}"
                 )
+        return bills.values()

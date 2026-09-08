@@ -3,11 +3,16 @@ from decimal import Decimal
 
 from io import BytesIO, TextIOWrapper
 
-from chellow.e.bill_parsers.csv import Parser, _process_row
+from chellow.e.bill_parsers.csv import (
+    Parser,
+    _process_bill,
+    _process_element,
+    _process_read,
+)
 from chellow.utils import ct_datetime, to_utc
 
 
-def test_process_row():
+def test_process_bill():
     vals = [
         "N",
         "SA342376000",
@@ -21,7 +26,51 @@ def test_process_row():
         "15.01",
         "0",
         "",
-        "read",
+    ]
+    actual = _process_bill(vals)
+    expected = {
+        "account": "SA342376000",
+        "bill_type_code": "N",
+        "breakdown": {},
+        "elements": [],
+        "finish_date": to_utc(ct_datetime(2010, 1, 10, 23, 30)),
+        "gross": Decimal("0.00"),
+        "issue_date": to_utc(ct_datetime(2010, 2, 2, 0, 0)),
+        "kwh": Decimal("150"),
+        "mpan_core": "22 1065 3921 534",
+        "net": Decimal("98.17"),
+        "reads": [],
+        "reference": "3423760004",
+        "start_date": to_utc(ct_datetime(2010, 1, 5, 0, 0)),
+        "vat": Decimal("15.01"),
+    }
+    assert actual == expected
+
+
+def test_process_element():
+    vals = [
+        "3423760004",
+        "nrg",
+        "2010-01-06 00:00",
+        "2010-01-11 23:30",
+        "5.123",
+        "{}",
+    ]
+    actual = _process_element(vals)
+    expected = {
+        "breakdown": {},
+        "finish_date": to_utc(ct_datetime(2010, 1, 11, 23, 30)),
+        "name": "nrg",
+        "net": Decimal("5.12"),
+        "start_date": to_utc(ct_datetime(2010, 1, 6, 0, 0)),
+        "bill_reference": "3423760004",
+    }
+    assert actual == expected
+
+
+def test_process_read():
+    vals = [
+        "3423760004",
         "I02D89150",
         "22 1065 3921 534",
         "1",
@@ -33,51 +82,21 @@ def test_process_row():
         "2010-01-06 23:30",
         "15924",
         "N",
-        "element",
-        "nrg",
-        "2010-01-06 00:00",
-        "2010-01-11 23:30",
-        "5.123",
-        "{}",
     ]
-    actual = _process_row(vals)
+    actual = _process_read(vals)
     expected = {
-        "account": "SA342376000",
-        "bill_type_code": "N",
-        "breakdown": {},
-        "elements": [
-            {
-                "breakdown": {},
-                "finish_date": to_utc(ct_datetime(2010, 1, 11, 23, 30)),
-                "name": "nrg",
-                "net": Decimal("5.12"),
-                "start_date": to_utc(ct_datetime(2010, 1, 6, 0, 0)),
-            },
-        ],
-        "finish_date": to_utc(ct_datetime(2010, 1, 10, 23, 30)),
-        "gross": Decimal("0.00"),
-        "issue_date": to_utc(ct_datetime(2010, 2, 2, 0, 0)),
-        "kwh": Decimal("150"),
-        "mpan_core": "22 1065 3921 534",
-        "net": Decimal("98.17"),
-        "reads": [
-            {
-                "coefficient": Decimal("1"),
-                "mpan": "22 1065 3921 534",
-                "msn": "I02D89150",
-                "pres_date": to_utc(ct_datetime(2010, 1, 6, 23, 30)),
-                "pres_type_code": "N",
-                "pres_value": Decimal("15924"),
-                "prev_date": to_utc(ct_datetime(2010, 1, 4, 23, 30)),
-                "prev_type_code": "E",
-                "prev_value": Decimal("14281"),
-                "tpr_code": "00001",
-                "units": "kWh",
-            },
-        ],
-        "reference": "3423760004",
-        "start_date": to_utc(ct_datetime(2010, 1, 5, 0, 0)),
-        "vat": Decimal("15.01"),
+        "coefficient": Decimal("1"),
+        "mpan": "22 1065 3921 534",
+        "msn": "I02D89150",
+        "pres_date": to_utc(ct_datetime(2010, 1, 6, 23, 30)),
+        "pres_type_code": "N",
+        "pres_value": Decimal("15924"),
+        "prev_date": to_utc(ct_datetime(2010, 1, 4, 23, 30)),
+        "prev_type_code": "E",
+        "prev_value": Decimal("14281"),
+        "tpr_code": "00001",
+        "units": "kWh",
+        "bill_reference": "3423760004",
     }
     assert actual == expected
 
@@ -89,7 +108,8 @@ def test_bill_parser_csv():
 
     vals = [
         [
-            "#InvoiceType",
+            "# Type",
+            "InvoiceType",
             "Account Reference",
             "Mpans",
             "Invoice Reference",
@@ -115,6 +135,7 @@ def test_bill_parser_csv():
             "R1 Present Read Type",
         ],
         [
+            "bill",
             "N",
             "SA342376000",
             "22 1065 3921 534",
@@ -127,7 +148,10 @@ def test_bill_parser_csv():
             "15.01",
             "0",
             "",
+        ],
+        [
             "read",
+            "3423760004",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -141,6 +165,7 @@ def test_bill_parser_csv():
             "N",
         ],
         [
+            "bill",
             "N",
             "SA342376000",
             "22 1065 3921 534",
@@ -153,7 +178,10 @@ def test_bill_parser_csv():
             "15.01",
             "0",
             "",
+        ],
+        [
             "read",
+            "3423760005",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -165,7 +193,10 @@ def test_bill_parser_csv():
             "2011-01-06 23:30",
             "25927",
             "E",
+        ],
+        [
             "read",
+            "3423760005",
             "I02D89150",
             "22 1065 3921 534",
             "1",
@@ -177,7 +208,10 @@ def test_bill_parser_csv():
             "2011-02-06 23:30",
             "46883",
             "E",
+        ],
+        [
             "read",
+            "3423760005",
             "I02D89150",
             "22 1065 3921 534",
             "1",
