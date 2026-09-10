@@ -62,10 +62,10 @@ def to_decimal(vals, dec_index, dec_name, is_money=False):
 
 
 def _process_bill(vals):
-    bill_type_code = vals[0]
-    account = vals[1]
-    mpan_core = parse_mpan_core(vals[2])
-    reference = vals[3]
+    reference = vals[0]
+    bill_type_code = vals[1]
+    account = vals[2]
+    mpan_core = parse_mpan_core(vals[3])
     issue_date = parse_date(vals, 4)
     start_date = parse_date(vals, 5)
     finish_date = parse_date(vals, 6, True)
