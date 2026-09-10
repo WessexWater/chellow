@@ -226,10 +226,10 @@ def test_BillImport_run(sess):
     data = [
         [
             "bill",
+            "sdalhgfuwr",
             "N",
             "sla;dkjhgf8u",
             "22 7867 6232 781",
-            "sdalhgfuwr",
             "2025-01-01 00:00",
             "2025-03-01 00:00",
             "2025-03-31 23:30",
