@@ -34,9 +34,7 @@
 				<th>Issues</th>
 				<th>From</th>
 				<th>To</th>
-				<th>Actual Net GBP</th>
-				<th>Virtual Net GBP</th>
-				<th>Difference Net GBP</th>
+				<th>Element</th>
 				<th>Problem</th>
 			</tr>
 		</thead>
@@ -85,82 +83,39 @@
 				</td>
 				<td>{{data['period_start']}}</td>
 				<td>{{data['period_finish']}}</td>
-				<td>{{"{:0,.2f}".format(data['actual_net_gbp'])}}</td>
-				<td>{{"{:0,.2f}".format(data['virtual_net_gbp'])}}</td>
-				<td>{{"{:0,.2f}".format(data['difference_net_gbp'])}}</td>
+				<td>{{data['element_name']}}</td>
 				<td><strong style="color: red">{{data['problem']}}</strong></td>
 			</tr>
 		</tbody>
 	</table>
 
-	<table>
-		<caption>Actual Bills</caption>	
-		<thead>
-			<tr>
-				<th>Batch</th>
-				<th>View</th>
-				<th>Start Date</th>
-				<th>Finish Date</th>
-				<th>Net GBP</th>
-				<th>Vat GBP</th>
-				<th>Gross GBP</th>
-				<th>Problem</th>
-				<th>Breakdown</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for bill in data.actual_bills %}
+	<div style="display: flex; gap: 4rem;">
+		<table>
+			<caption>Actual vs Virtual</caption>
+			<thead>
 				<tr>
-					<td>
-						{% if data.contract_id is not none %}
-							<a href="/e/{{contract_type}}_batches/{{bill.batch_id}}">{{bill.batch_reference}}</a>
-						{% endif %}
-					</td>
-					<td>
-						{% if data.contract_id is not none %}
-							<a href="/e/{{contract_type}}_bills/{{bill.id}}">view</a>
-						{% endif %}
-					</td>
-					<td>{{bill.start_date}}</td>
-					<td>{{bill.finish_date}}</td>
-					<td>{{bill.net}}</td>
-					<td>{{bill.vat}}</td>
-					<td>{{bill.gross}}</td>
-					<td>
-						<strong style="color: red">{{bill.problem}}</strong>
-					</td>
-					<td>
-						<details>
-							<summary>Breakdown</summary>
-							<pre>{{bill.breakdown}}</pre>
-						</details>
-					</td>
+					<th>Part</th>
+					<th>Actual</th>
+					<th>Virtual</th>
+					<th>Difference</th>
+					<th>Status</th>
 				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
-  
-	<section class="elements">
-		{% for table in tables %}
-			{% set element = data['elements'][table] %}
-			{% set parts = element['parts'] %}
-
-			<div style="display: flex; gap: 4rem;">
-				<table>
-					<caption>{{table}}</caption>
-					<thead>
+			</thead>
+			<tbody>
+				<tr>
+					<td>gbp</td>
+					{% set part = data['parts']['gbp'] %}
+					{% for k in ('actual_str', 'virtual_str', 'difference_str') %}
+						<td style="text-align: right;">
+							{{part[k]}}
+						</td>
+					{% endfor %}
+					<td>{{part['passed']}}</td>
+				</tr>
+				{% for part_name, part in data['parts'].items()|sort %}
+					{% if part_name != 'gbp' %}
 						<tr>
-							<th>Part</th>
-							<th>Actual</th>
-							<th>Virtual</th>
-							<th>Difference</th>
-							<th>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>gbp</td>
-							{% set part = parts['gbp'] %}
+							<td>{{part_name}}</td>
 							{% for k in ('actual_str', 'virtual_str', 'difference_str') %}
 								<td style="text-align: right;">
 									{{part[k]}}
@@ -168,57 +123,43 @@
 							{% endfor %}
 							<td>{{part['passed']}}</td>
 						</tr>
-						{% for part_name, part in parts.items()|sort %}
-							{% if part_name != 'gbp' %}
-								<tr>
-									<td>{{part_name}}</td>
-									{% for k in ('actual_str', 'virtual_str', 'difference_str') %}
-										<td style="text-align: right;">
-											{{part[k]}}
-										</td>
-									{% endfor %}
-									<td>{{part['passed']}}</td>
-								</tr>
-							{% endif %}
-						{% endfor %}
-					</tbody>
-				</table>
+					{% endif %}
+				{% endfor %}
+			</tbody>
+		</table>
 
-				<table>
-					<caption>Actual {{table}} Elements</caption>
-					<thead>
-						<tr>
-							<th>View</th>
-							<th>Batch</th>
-							<th>Bill</th>
-							<th>Start Date</th>
-							<th>Finish Date</th>
-							<th>Net GBP</th>
-							<th>Breakdown</th>
-						</tr>
-					</thead>
-					<tbody>
-						{% for el in element['actual_elements'] %}
-							<tr>
-								<td><a href="/e/{{contract_type}}_elements/{{el.id}}">View</a></td>
-								<td>
-									<a href="/e/{{contract_type}}_batches/{{el.bill.batch.id}}"
-										  >{{el.bill.batch.reference}}</a>
-								</td>
-								<td><a href="/e/{{contract_type}}_bills/{{el.bill.id}}">View</a></td>
-								<td>{{el.start_date}}</td>
-								<td>{{el.finish_date}}</td>
-								<td>{{"{:0,.2f}".format(el.net)}}</td>
-								<td>{{el.breakdown}}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
+		<table>
+			<caption>Actual {{data['element_name']}} Elements</caption>
+			<thead>
+				<tr>
+					<th>View</th>
+					<th>Batch</th>
+					<th>Bill</th>
+					<th>Start Date</th>
+					<th>Finish Date</th>
+					<th>Net GBP</th>
+					<th>Breakdown</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for el in data['actual_elements'] %}
+					<tr>
+						<td><a href="/e/{{contract_type}}_elements/{{el.id}}">View</a></td>
+						<td>
+							<a href="/e/{{contract_type}}_batches/{{el.bill.batch.id}}"
+									>{{el.bill.batch.reference}}</a>
+						</td>
+						<td><a href="/e/{{contract_type}}_bills/{{el.bill.id}}">View</a></td>
+						<td>{{el.start_date}}</td>
+						<td>{{el.finish_date}}</td>
+						<td>{{"{:0,.2f}".format(el.net)}}</td>
+						<td>{{el.breakdown}}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 
-			</div>
-		{% endfor %}
-
-	</section>
+	</div>
 
 	<h2>Raw</h2>	
 	<pre>{{raw_data}}</pre>

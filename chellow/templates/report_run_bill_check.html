@@ -43,63 +43,120 @@
 	</table>
 
 	<table class="sticky">
-		<caption>Periods - Ordered By Difference In {{element}}</caption>
+		<caption>Bill Level</caption>
 		<thead>
 			<tr>
-				<th rowspan="3">View</th>
-				<th rowspan="3">Contract</th>
-				<th rowspan="3">Supply</th>
-				<th rowspan="3">Import MPAN Core</th>
-				<th rowspan="3">Export MPAN Core</th>
-				<th rowspan="3">Site</th>
-				<th rowspan="3">Issues</th>
-				<th rowspan="3">Period Start</th>
-				<th rowspan="3">Period Finish</th>
-				<th rowspan="3" style="white-space: nowrap">
-					{% if element == 'problem' %}
-						&uparrow;
-					{% else %}
-						<a href="/report_runs/{{run.id}}?element=problem">&uparrow;</a>
-					{% endif %}
-					Problem	
-				</th>
-				<th colspan="{{elements|length + 1}}">Difference GBP</th>
-			</tr>
-			<tr>
-				<th>
-					{% if 'sum_difference' in summary and summary.sum_difference is not none %}
-					  {{"{:0,.2f}".format(summary.sum_difference)}}
-					{% endif %}
-				</th>
-				{% for elem, diff in elements %}
-				  <th style="white-space: nowrap">
-						{{"{:0,.2f}".format(diff)}}
-					</th>
-				{% endfor %}
-			</tr>
-			<tr>
-				<th style="white-space: nowrap">
-					{% if element == 'net' %}
-						&uparrow;
-					{% else %}
-						<a href="/report_runs/{{run.id}}?element=net">&uparrow;</a>
-					{% endif %}
-					Total	
-				</th>
-				{% for elem, diff in elements %}
-				  <th style="white-space: nowrap">
-						{% if elem == element %}
-							&uparrow;
-						{% else %}
-							<a href="/report_runs/{{run.id}}?element={{elem}}">&uparrow;</a>
-						{% endif %}
-						{{elem}}
-					</th>
-				{% endfor %}
+				<th>Bill</th>
+				<th>Contract</th>
+				<th>Supply</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+				<th>Site</th>
+				<th>Issues</th>
+				<th>Start</th>
+				<th>Finish</th>
+				<th>Problem</th>
 			</tr>
 		</thead>
 		<tbody>
-			{% for row_bundle in row_bundles %}
+			{% for row_bundle in bill_row_bundles %}
+				{% set row = row_bundle['row'] %}
+				{% set data = row.data['data'] %}
+				{% set properties = row.data.get('properties', {}) %}
+				{% set market_role_code = data['market_role_code'] %}
+				<tr>
+					<td>
+						{% if market_role_code == 'X' %}
+							<a href="/e/supplier_bills/{{data['id']}}">View</a>
+						{% elif market_role_code in DC_MARKET_ROLE_CODES %}
+							<a href="/e/dc_bills/{{data['id']}}">View</a>
+						{% elif market_role_code == MOP_MARKET_ROLE_CODES %}
+							<a href="/e/mop_bills/{{data['id']}}">View</a>
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+						{% if market_role_code == 'X' %}
+							<a href="/e/supplier_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% elif market_role_code in DC_MARKET_ROLE_CODES %}
+							<a href="/e/dc_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% elif market_role_code == MOP_MARKET_ROLE_CODES %}
+							<a href="/e/mop_contracts/{{data['contract_id']}}">{{data['contract_name']}}</a>
+						{% endif %}
+					</td>
+					<td>
+						<a href="/e/supplies/{{data['supply_id']}}">View</a>
+					</td>
+					<td style="white-space: nowrap">
+						{% if data['imp_mpan_core'] is not none %}
+							{{data['imp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+						{% if data['exp_mpan_core'] is not none %}
+							{{data['exp_mpan_core']}}
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+						{% if data['site_id'] is not none %}
+						  <a href="/sites/{{data['site_id']}}" title="{{data.site_name}}">{{data.site_code}}</a>
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+						{% if row_bundle['issues']|length > 0 %}
+							<ul>
+								{% for issue in row_bundle['issues'] %}
+									<li>
+										{% if issue.contract.party.market_role.code == 'X' %}
+											<a href="/e/supplier_issues/{{issue.id}}">Supplier:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% elif issue.contract.party.market_role.code in DC_MARKET_ROLE_CODES %}
+											<a href="/e/dc_issues/{{issue.id}}">DC:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% else %}
+											<a href="/e/mop_issues/{{issue.id}}">MOP:
+												{{issue.id}} {{issue.properties['subject']}}</a>
+										{% endif %}
+									</li>
+								{% endfor %}
+							</ul>
+						{% endif %}
+					</td>
+					<td style="white-space: nowrap">
+					 {{data['start_date']}}
+					</td>
+					<td style="white-space: nowrap">
+					 {{data['finish_date']}}
+					</td>
+					<td style="text-align: right;">
+					  {{data['problem']}}
+					</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<table class="sticky">
+		<caption>Element Level</caption>
+		<thead>
+			<tr>
+				<th>View</th>
+				<th>Contract</th>
+				<th>Supply</th>
+				<th>Import MPAN Core</th>
+				<th>Export MPAN Core</th>
+				<th>Site</th>
+				<th>Issues</th>
+				<th>Period Start</th>
+				<th>Period Finish</th>
+				<th>Element Name</th>
+				<th>Problem</th>
+				<th>Difference GBP</th>
+				<th>Actual GBP</th>
+				<th>Virtual GBP</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for row_bundle in element_row_bundles %}
 				{% set row = row_bundle['row'] %}
 				{% set data = row.data['data'] %}
 				{% set properties = row.data.get('properties', {}) %}
@@ -159,21 +216,19 @@
 					<td style="white-space: nowrap">
 					 {{data['period_finish']}}
 					</td>
+					<td>{{data['element_name']}}</td>
 					<td style="text-align: right;">
 					  {{data['problem']}}
 					</td>
 					<td style="text-align: right;">
-					  {{"{:0,.2f}".format(data['difference_net_gbp'])}}
+					  {{"{:0,.2f}".format(data['parts']['gbp']['difference'])}}
 					</td>
-					{% for elem, diff in elements %}
-						<td style="text-align: right;">	
-							{% if elem in data.elements %}
-								{% if val is not none %}
-									{{"{:0,.2f}".format(data.elements[elem]['parts']['gbp']['difference'])}}
-								{% endif %}
-							{% endif %}
-						</td>
-					{% endfor %}
+					<td style="text-align: right;">
+					  {{data['parts']['gbp']['actual_str']}}
+					</td>
+					<td style="text-align: right;">
+					  {{data['parts']['gbp']['virtual_str']}}
+					</td>
 				</tr>
 			{% endfor %}
 		</tbody>

@@ -1,10 +1,13 @@
-import csv
+from datetime import datetime
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO
+
+from odio import parse_spreadsheet
 
 import pytest
 
-from utils import match
+from utils import match, match_tables
+
 
 from chellow.e.computer import contract_func
 from chellow.models import (
@@ -41,18 +44,18 @@ from chellow.reports.report_111 import (
     _process_period,
     _process_supply,
     content,
-    find_gaps,
+    find_blocks,
 )
 from chellow.utils import ct_datetime, to_utc, utc_datetime
 
 
-def test_find_gaps():
-    gaps = {
+def test_find_blocks():
+    blockvals = {
         to_utc(ct_datetime(2025, 1, 1)): "start",
         to_utc(ct_datetime(2025, 1, 1, 0, 30)): "start_finish",
         to_utc(ct_datetime(2025, 1, 1, 1, 0)): "finish",
     }
-    assert list(find_gaps(gaps)) == [
+    assert list(find_blocks(blockvals)) == [
         (
             to_utc(ct_datetime(2025, 1, 1, 0, 0)),
             to_utc(ct_datetime(2025, 1, 1, 0, 0)),
@@ -297,100 +300,73 @@ def virtual_bill(ds):
     vbf = contract_func(report_context, supplier_contract, "virtual_bill")
     period_start = to_utc(ct_datetime(2009, 7, 10, 0, 0))
     period_finish = to_utc(ct_datetime(2009, 7, 10, 0, 0))
+    vb_cache = {}
 
     data = _process_period(
         sess,
         report_context,
         supply,
+        vb_cache,
         supplier_contract,
         bill_ids,
         forecast_date,
         vbf,
+        "nrg",
         period_start,
         period_finish,
     )
     expected = {
-        "actual_bills": [
-            {
-                "batch_id": 1,
-                "batch_reference": "a b",
-                "breakdown": "{\n"
-                '  "vat": {\n'
-                "    20: {\n"
-                '      "net": 10.00,\n'
-                '      "vat": 10.00,\n'
-                "    },\n"
-                "  },\n"
-                "}",
-                "gross": Decimal("10.00"),
-                "id": 1,
-                "kwh": Decimal("10.00"),
-                "net": Decimal("10.00"),
-                "problem": "The Gross GBP (10.00) of the bill isn't equal "
-                "to the Net GBP "
-                "(10.00) + VAT GBP (10.00) of the bill.",
-                "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                "vat": Decimal("10.00"),
-            },
-        ],
-        "actual_net_gbp": 10.0,
-        "difference_net_gbp": 9.0,
         "contract_id": 4,
         "contract_name": "Fusion Supplier 2000",
         "market_role_code": "X",
-        "elements": {
-            "nrg": {
-                "parts": {
-                    "gbp": {
-                        "actual": Decimal("10.00"),
-                        "actual_str": "10.00",
-                        "difference": 9.0,
-                        "difference_str": "9.00",
-                        "virtual": 1.0,
-                        "virtual_str": "1.00",
-                        "passed": "❌",
-                    },
-                    "kwh": {
-                        "difference": None,
-                        "difference_str": "",
-                        "virtual": 0,
-                        "virtual_str": "0.0",
-                        "passed": "❔",
-                        "actual_str": "",
-                    },
-                    "rate": {
-                        "actual": {
-                            Decimal("0.1"),
-                        },
-                        "actual_str": "0.1",
-                        "difference": 0.0,
-                        "difference_str": "0.0",
-                        "virtual": {
-                            0.1,
-                        },
-                        "virtual_str": "0.1",
-                        "passed": "✅",
-                    },
+        "parts": {
+            "gbp": {
+                "actual": Decimal("10.00"),
+                "actual_str": "10.00",
+                "difference": 9.0,
+                "difference_str": "9.00",
+                "virtual": 1.0,
+                "virtual_str": "1.00",
+                "passed": "❌",
+            },
+            "kwh": {
+                "difference": None,
+                "difference_str": "",
+                "virtual": 0,
+                "virtual_str": "0.0",
+                "passed": "❔",
+                "actual_str": "",
+            },
+            "rate": {
+                "actual": {
+                    Decimal("0.1"),
                 },
-                "actual_elements": [
-                    {
-                        "bill": {
-                            "batch": {
-                                "id": 1,
-                                "reference": "a b",
-                            },
-                            "id": 1,
-                        },
-                        "breakdown": "{\n" '  "rate": [\n' "    0.1,\n" "  ],\n" "}",
-                        "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                        "id": 1,
-                        "net": Decimal("10.00"),
-                        "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                    },
-                ],
+                "actual_str": "0.1",
+                "difference": 0.0,
+                "difference_str": "0.0",
+                "virtual": {
+                    0.1,
+                },
+                "virtual_str": "0.1",
+                "passed": "✅",
             },
         },
+        "actual_elements": [
+            {
+                "bill": {
+                    "batch": {
+                        "id": 1,
+                        "reference": "a b",
+                    },
+                    "id": 1,
+                },
+                "breakdown": "{\n" '  "rate": [\n' "    0.1,\n" "  ],\n" "}",
+                "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
+                "id": 1,
+                "net": Decimal("10.00"),
+                "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
+            }
+        ],
         "exp_mpan_core": None,
         "imp_mpan_core": "22 7867 6232 781",
         "period_start": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
@@ -399,8 +375,8 @@ def virtual_bill(ds):
         "site_code": "CI017",
         "site_name": "Water Works",
         "supply_id": 1,
-        "virtual_net_gbp": 1.0,
-        "problem": "Bills have problems. hello ",
+        "problem": "hello ",
+        "element_name": "nrg",
     }
 
     assert data == expected
@@ -568,6 +544,7 @@ def virtual_bill(ds):
     report_context = {}
     bill_ids = {bill.id: bill}
     forecast_date = utc_datetime(2020, 7, 10)
+    vb_cache = {}
     vbf = contract_func(report_context, supplier_contract, "virtual_bill")
     period_start = to_utc(ct_datetime(2009, 7, 10, 0, 0))
     period_finish = to_utc(ct_datetime(2009, 7, 10, 0, 0))
@@ -576,82 +553,55 @@ def virtual_bill(ds):
         sess,
         report_context,
         supply,
+        vb_cache,
         supplier_contract,
         bill_ids,
         forecast_date,
         vbf,
+        "nrg",
         period_start,
         period_finish,
     )
     expected = {
-        "actual_bills": [
-            {
-                "batch_id": 1,
-                "batch_reference": "a b",
-                "breakdown": "{\n"
-                '  "vat": {\n'
-                "    20: {\n"
-                '      "net": 10.00,\n'
-                '      "vat": 10.00,\n'
-                "    },\n"
-                "  },\n"
-                "}",
-                "gross": Decimal("10.00"),
-                "id": 1,
-                "kwh": Decimal("10.00"),
-                "net": Decimal("10.00"),
-                "problem": "The Gross GBP (10.00) of the bill isn't equal "
-                "to the Net GBP (10.00) + VAT GBP (10.00) of the bill.",
-                "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                "vat": Decimal("10.00"),
-            },
-        ],
-        "actual_net_gbp": 10.0,
-        "difference_net_gbp": 10.0,
         "contract_id": 4,
         "contract_name": "Fusion Supplier 2000",
         "market_role_code": "X",
-        "elements": {
-            "nrg": {
-                "parts": {
-                    "gbp": {
-                        "actual": Decimal("10.00"),
-                        "actual_str": "10.00",
-                        "virtual_str": "0.00",
-                        "difference": 10.0,
-                        "difference_str": "10.00",
-                        "passed": "❌",
-                    },
-                    "rate": {
-                        "actual": {
-                            Decimal("0.1"),
-                        },
-                        "actual_str": "0.1",
-                        "virtual_str": "",
-                        "difference": None,
-                        "difference_str": "",
-                        "passed": "❔",
-                    },
+        "parts": {
+            "gbp": {
+                "actual": Decimal("10.00"),
+                "actual_str": "10.00",
+                "virtual_str": "0.00",
+                "difference": 10.0,
+                "difference_str": "10.00",
+                "passed": "❌",
+            },
+            "rate": {
+                "actual": {
+                    Decimal("0.1"),
                 },
-                "actual_elements": [
-                    {
-                        "bill": {
-                            "batch": {
-                                "id": 1,
-                                "reference": "a b",
-                            },
-                            "id": 1,
-                        },
-                        "breakdown": "{\n" '  "rate": [\n' "    0.1,\n" "  ],\n" "}",
-                        "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                        "id": 1,
-                        "net": Decimal("10.00"),
-                        "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
-                    },
-                ],
+                "actual_str": "0.1",
+                "virtual_str": "",
+                "difference": None,
+                "difference_str": "",
+                "passed": "❔",
             },
         },
+        "actual_elements": [
+            {
+                "bill": {
+                    "batch": {
+                        "id": 1,
+                        "reference": "a b",
+                    },
+                    "id": 1,
+                },
+                "breakdown": "{\n" '  "rate": [\n' "    0.1,\n" "  ],\n" "}",
+                "finish_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
+                "id": 1,
+                "net": Decimal("10.00"),
+                "start_date": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
+            },
+        ],
         "exp_mpan_core": None,
         "imp_mpan_core": "22 7867 6232 781",
         "period_start": to_utc(ct_datetime(2009, 7, 10, 0, 0)),
@@ -660,8 +610,8 @@ def virtual_bill(ds):
         "site_code": "CI017",
         "site_name": "Water Works",
         "supply_id": 1,
-        "virtual_net_gbp": 0,
-        "problem": "Bills have problems. No eras for this period of the supply. ",
+        "problem": "No eras for this period of the supply. ",
+        "element_name": "nrg",
     }
 
     assert data == expected
@@ -844,99 +794,101 @@ def virtual_bill(ds):
         )
     )
     expected = [
-        {
-            "actual_bills": [
-                {
-                    "batch_id": 1,
-                    "batch_reference": "a b",
-                    "breakdown": "{}",
-                    "gross": Decimal("10.00"),
-                    "id": 1,
-                    "kwh": Decimal("10.00"),
-                    "net": Decimal("10.00"),
-                    "problem": "The Gross GBP (10.00) of the bill isn't equal "
-                    "to the Net GBP "
-                    "(10.00) + VAT GBP (10.00) of the bill.The total 'net' 0.00 in "
-                    "the VAT breakdown doesn't match the 'net' 10.00 of the "
-                    "bill.The total VAT 0.00 in the VAT breakdown doesn't match the "
-                    "VAT 10.00 of the bill.",
-                    "vat": Decimal("10.00"),
-                    "start_date": utc_datetime(2009, 7, 10, 0, 0),
-                    "finish_date": utc_datetime(2009, 7, 10, 0, 0),
-                },
-            ],
-            "actual_net_gbp": 10.0,
-            "difference_net_gbp": 9.0,
-            "contract_id": 4,
-            "contract_name": "Fusion Supplier 2000",
-            "market_role_code": "X",
-            "elements": {
-                "nrg": {
-                    "parts": {
-                        "gbp": {
-                            "actual": Decimal("10.00"),
-                            "actual_str": "10.00",
-                            "virtual": 1.0,
-                            "virtual_str": "1.00",
-                            "difference": 9.0,
-                            "difference_str": "9.00",
-                            "passed": "❌",
-                        },
-                        "kwh": {
-                            "actual_str": "",
-                            "virtual": 0,
-                            "virtual_str": "0.0",
-                            "difference": None,
-                            "difference_str": "",
-                            "passed": "❔",
-                        },
-                        "rate": {
-                            "actual": {
-                                Decimal("0.1"),
-                            },
-                            "actual_str": "0.1",
-                            "virtual": {
-                                0.1,
-                            },
-                            "virtual_str": "0.1",
-                            "difference": 0.0,
-                            "difference_str": "0.0",
-                            "passed": "✅",
-                        },
-                    },
-                    "actual_elements": [
-                        {
-                            "bill": {
-                                "batch": {
-                                    "id": 1,
-                                    "reference": "a b",
-                                },
-                                "id": 1,
-                            },
-                            "breakdown": "{\n"
-                            '  "rate": [\n'
-                            "    0.1,\n"
-                            "  ],\n"
-                            "}",
-                            "finish_date": utc_datetime(2009, 7, 10, 0, 0),
-                            "id": 1,
-                            "net": Decimal("10.00"),
-                            "start_date": utc_datetime(2009, 7, 10, 0, 0),
-                        },
-                    ],
-                },
+        [
+            {
+                "batch_id": 1,
+                "contract_id": 4,
+                "contract_name": "Fusion Supplier 2000",
+                "supply_id": 1,
+                "reference": "hjk",
+                "site_code": "CI017",
+                "site_id": 1,
+                "exp_mpan_core": None,
+                "imp_mpan_core": "22 7867 6232 781",
+                "market_role_code": "X",
+                "site_name": "Water Works",
+                "batch_reference": "a b",
+                "breakdown": "{}",
+                "gross": Decimal("10.00"),
+                "id": 1,
+                "kwh": Decimal("10.00"),
+                "net": Decimal("10.00"),
+                "problem": "The Gross GBP (10.00) of the bill isn't equal "
+                "to the Net GBP "
+                "(10.00) + VAT GBP (10.00) of the bill. The total 'net' 0.00 in "
+                "the VAT breakdown doesn't match the 'net' 10.00 of the "
+                "bill. The total VAT 0.00 in the VAT breakdown doesn't match the "
+                "VAT 10.00 of the bill.",
+                "vat": Decimal("10.00"),
+                "start_date": utc_datetime(2009, 7, 10, 0, 0),
+                "finish_date": utc_datetime(2009, 7, 10, 0, 0),
             },
-            "exp_mpan_core": None,
-            "imp_mpan_core": "22 7867 6232 781",
-            "period_start": utc_datetime(2009, 7, 10, 0, 0),
-            "period_finish": utc_datetime(2009, 7, 10, 0, 0),
-            "site_id": 1,
-            "site_code": "CI017",
-            "site_name": "Water Works",
-            "supply_id": 1,
-            "virtual_net_gbp": 1.0,
-            "problem": "Bills have problems. hello ",
-        },
+        ],
+        [
+            {
+                "element_name": "nrg",
+                "contract_id": 4,
+                "contract_name": "Fusion Supplier 2000",
+                "market_role_code": "X",
+                "parts": {
+                    "gbp": {
+                        "actual": Decimal("10.00"),
+                        "actual_str": "10.00",
+                        "virtual": 1.0,
+                        "virtual_str": "1.00",
+                        "difference": 9.0,
+                        "difference_str": "9.00",
+                        "passed": "❌",
+                    },
+                    "kwh": {
+                        "actual_str": "",
+                        "virtual": 0,
+                        "virtual_str": "0.0",
+                        "difference": None,
+                        "difference_str": "",
+                        "passed": "❔",
+                    },
+                    "rate": {
+                        "actual": {
+                            Decimal("0.1"),
+                        },
+                        "actual_str": "0.1",
+                        "virtual": {
+                            0.1,
+                        },
+                        "virtual_str": "0.1",
+                        "difference": 0.0,
+                        "difference_str": "0.0",
+                        "passed": "✅",
+                    },
+                },
+                "actual_elements": [
+                    {
+                        "bill": {
+                            "batch": {
+                                "id": 1,
+                                "reference": "a b",
+                            },
+                            "id": 1,
+                        },
+                        "breakdown": "{\n" '  "rate": [\n' "    0.1,\n" "  ],\n" "}",
+                        "finish_date": utc_datetime(2009, 7, 10, 0, 0),
+                        "id": 1,
+                        "net": Decimal("10.00"),
+                        "start_date": utc_datetime(2009, 7, 10, 0, 0),
+                    },
+                ],
+                "exp_mpan_core": None,
+                "imp_mpan_core": "22 7867 6232 781",
+                "period_start": utc_datetime(2009, 7, 10, 0, 0),
+                "period_finish": utc_datetime(2009, 7, 10, 0, 0),
+                "site_id": 1,
+                "site_code": "CI017",
+                "site_name": "Water Works",
+                "supply_id": 1,
+                "problem": "hello ",
+            },
+        ],
     ]
 
     assert vals == expected
@@ -1135,7 +1087,7 @@ def virtual_bill(ds):
         if t.endswith("-gbp"):
             titles.append("difference-" + t)
 
-    mock_file = StringIO()
+    mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_111.open_file", return_value=mock_file)
 
@@ -1290,9 +1242,9 @@ def virtual_bill(ds):
         sess,
         "dd",
         "hjk",
-        utc_datetime(2009, 7, 10),
-        utc_datetime(2009, 7, 10),
-        utc_datetime(2009, 7, 10),
+        to_utc(ct_datetime(2009, 7, 10)),
+        to_utc(ct_datetime(2009, 7, 10)),
+        to_utc(ct_datetime(2009, 7, 10)),
         Decimal("10.00"),
         Decimal("10.00"),
         Decimal("10.00"),
@@ -1347,7 +1299,7 @@ def virtual_bill(ds):
         if t.endswith("-gbp"):
             titles.append("difference-" + t)
 
-    mock_file = StringIO()
+    mock_file = BytesIO()
     mock_file.close = mocker.Mock()
     mocker.patch("chellow.reports.report_111.open_file", return_value=mock_file)
 
@@ -1365,8 +1317,53 @@ def virtual_bill(ds):
         report_run_id,
     )
     mock_file.seek(0)
-    actual_rows = [row for row in csv.reader(mock_file)]
-    assert actual_rows == [
+    sheet = parse_spreadsheet(mock_file)
+    actual_bills = sheet.tables[0].rows
+    expected_bills = [
+        [
+            "reference",
+            "start_date",
+            "finish_date",
+            "problem",
+            "net",
+            "vat",
+            "gross",
+            "kwh",
+            "breakdown",
+            "batch_reference",
+            "imp_mpan_core",
+            "exp_mpan_core",
+            "site_code",
+            "site_name",
+        ],
+        [
+            "hjk",
+            datetime(2009, 7, 10),
+            datetime(2009, 7, 10),
+            "The Net GBP total of the elements is 0 doesn't match the bill Net GBP "
+            "value of 10.00. The Gross GBP (10.00) of the bill isn't equal to the "
+            "Net GBP (10.00) + VAT GBP (10.00) of the bill. The total 'net' 0.00 "
+            "in the VAT breakdown doesn't match the 'net' 10.00 of the bill. The "
+            "total VAT 0.00 in the VAT breakdown doesn't match the VAT 10.00 of "
+            "the bill.",
+            10.0,
+            10.0,
+            10.0,
+            10.0,
+            '{"rate": [0.1,],}',
+            "a b",
+            "22 7867 6232 781",
+            None,
+            "CI017",
+            "Water Works",
+        ],
+    ]
+    match_tables(
+        expected_bills,
+        actual_bills,
+    )
+    actual_elements = sheet.tables[1].rows
+    expected_elements = [
         [
             "imp_mpan_core",
             "exp_mpan_core",
@@ -1374,19 +1371,10 @@ def virtual_bill(ds):
             "site_name",
             "period_start",
             "period_finish",
-            "actual_net_gbp",
-            "virtual_net_gbp",
-            "difference_net_gbp",
-        ],
-        [
-            "22 7867 6232 781",
-            "",
-            "CI017",
-            "Water Works",
-            "2009-07-10 01:00",
-            "2009-07-10 01:00",
-            "0",
-            "0.0",
-            "0.0",
+            "element_name",
         ],
     ]
+    match_tables(
+        expected_elements,
+        actual_elements,
+    )

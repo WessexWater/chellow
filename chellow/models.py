@@ -4917,6 +4917,13 @@ class Supply(Base, PersistentClass):
                     sess, start, finish
                 )
 
+    def get_physical_site(self, sess):
+        return sess.scalar(
+            select(Site)
+            .join(SiteEra)
+            .where(SiteEra.era == self, SiteEra.is_physical == true())
+        )
+
 
 class Report(Base, PersistentClass):
     __tablename__ = "report"

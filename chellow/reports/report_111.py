@@ -1,4 +1,3 @@
-import csv
 import sys
 import threading
 import traceback
@@ -11,6 +10,8 @@ from numbers import Number
 from dateutil.relativedelta import relativedelta
 
 from flask import g, redirect, request
+
+from odio import create_spreadsheet
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload, subqueryload
@@ -42,11 +43,11 @@ from chellow.models import (
 )
 from chellow.utils import (
     HH,
-    csv_make_val,
     date_format,
     hh_max,
     hh_min,
     hh_range,
+    make_val,
     parse_mpan_core,
     req_date,
     req_int,
@@ -55,22 +56,35 @@ from chellow.utils import (
 )
 
 
-def _add_gap_hh(gaps, hh_start, gap_type):
+def write_spreadsheet(fl, compressed, bill_rows, element_rows):
+    fl.seek(0)
+    fl.truncate()
+    with create_spreadsheet(fl, compressed=compressed) as sheet:
+        sheet.append_table("bills", bill_rows)
+        sheet.append_table("elements", element_rows)
+
+
+def _add_gap_hh(gaps, element_name, hh_start, gap_type):
     try:
-        hh = gaps[hh_start]
+        elgaps = gaps[element_name]
+    except KeyError:
+        elgaps = gaps[element_name] = {}
+
+    try:
+        hh = elgaps[hh_start]
         match (hh, gap_type):
             case ("middle", _):
                 pass
             case (_, "middle"):
-                gaps[hh_start] = "middle"
+                elgaps[hh_start] = "middle"
             case ("start", "start"):
                 pass
             case ("start", "finish"):
-                gaps[hh_start] = "start_finish"
+                elgaps[hh_start] = "start_finish"
             case ("finish", "finish"):
                 pass
             case ("finish", "start"):
-                gaps[hh_start] = "start_finish"
+                elgaps[hh_start] = "start_finish"
             case ("start_finish", "finish"):
                 pass
             case ("start_finish", "start"):
@@ -79,25 +93,25 @@ def _add_gap_hh(gaps, hh_start, gap_type):
                 raise BadRequest(f"Gap combination ({hh}, {gap_type}) not recognized.")
 
     except KeyError:
-        hh = gaps[hh_start] = gap_type
+        hh = elgaps[hh_start] = gap_type
 
 
-def _add_gap(caches, gaps, start_date, finish_date):
-    hhs = hh_range(caches, start_date, finish_date)
-    _add_gap_hh(gaps, hhs[0], "start")
-    _add_gap_hh(gaps, hhs[-1] + HH, "finish")
+def _add_el(caches, gaps, element):
+    hhs = hh_range(caches, element.start_date, element.finish_date)
+    _add_gap_hh(gaps, element.name, hhs[0], "start")
+    _add_gap_hh(gaps, element.name, hhs[-1] + HH, "finish")
     for hh_start in hhs[1:]:
-        _add_gap_hh(gaps, hh_start, "middle")
+        _add_gap_hh(gaps, element.name, hh_start, "middle")
 
 
-def find_gaps(gaps):
-    if len(gaps) > 0:
-        gap_start = None
-        for ghh, gtype in sorted(gaps.items()):
+def find_blocks(blockvals):
+    if len(blockvals) > 0:
+        block_start = None
+        for ghh, gtype in sorted(blockvals.items()):
             if "finish" in gtype:
-                yield gap_start, ghh - HH
+                yield block_start, ghh - HH
             if "start" in gtype:
-                gap_start = ghh
+                block_start = ghh
 
 
 def content(
@@ -114,14 +128,13 @@ def content(
     caches = {}
     tmp_file = sess = supply_id = None
     forecast_date = to_utc(Datetime.max)
+    bill_rows = []
+    element_rows = []
 
     try:
         with RSession() as sess:
             user = User.get_by_id(sess, user_id)
-            tmp_file = open_file(
-                f"bill_check_{fname_additional}.csv", user, mode="w", newline=""
-            )
-            writer = csv.writer(tmp_file, lineterminator="\n")
+            tmp_file = open_file(f"bill_check_{fname_additional}.ods", user, mode="wb")
 
             bills_q = (
                 select(Bill)
@@ -182,53 +195,98 @@ def content(
                 )
             virtual_bill_titles = virtual_bill_titles_func()
 
-            titles = []
-            header_titles = [
+            bill_titles = [
+                "reference",
+                "start_date",
+                "finish_date",
+                "problem",
+                "net",
+                "vat",
+                "gross",
+                "kwh",
+                "breakdown",
+                "batch_reference",
+                "imp_mpan_core",
+                "exp_mpan_core",
+                "site_code",
+                "site_name",
+            ]
+            bill_rows.append(bill_titles)
+
+            element_titles = []
+            element_header_titles = [
                 "imp_mpan_core",
                 "exp_mpan_core",
                 "site_code",
                 "site_name",
                 "period_start",
                 "period_finish",
-                "actual_net_gbp",
-                "virtual_net_gbp",
-                "difference_net_gbp",
+                "element_name",
             ]
-            titles.extend(header_titles)
+            element_titles.extend(element_header_titles)
             for t in virtual_bill_titles:
                 if t not in ("net-gbp", "vat-gbp", "gross-gbp"):
-                    titles.append("actual-" + t)
-                    titles.append("virtual-" + t)
+                    element_titles.append("actual-" + t)
+                    element_titles.append("virtual-" + t)
                     if t.endswith("-gbp"):
-                        titles.append("difference-" + t)
+                        element_titles.append("difference-" + t)
 
-            writer.writerow(titles)
+            element_rows.append(element_titles)
 
             bill_map = defaultdict(set, {})
             for bill in sess.scalars(bills_q):
                 bill_map[bill.supply.id].add(bill.id)
 
             for supply_id, bill_ids in bill_map.items():
-                for data in _process_supply(
+                data_bills, data_elements = _process_supply(
                     sess, caches, supply_id, bill_ids, forecast_date, contract, vbf
-                ):
+                )
+                for data in data_bills:
                     vals = {}
-                    for title in header_titles:
-                        vals[title] = data[title]
-                    for el_name, el in data["elements"].items():
-                        for part_name, part in el["parts"].items():
-                            for typ, value in part.items():
-                                vals[f"{typ}-{el_name}-{part_name}"] = value
 
-                    writer.writerow(csv_make_val(vals.get(title)) for title in titles)
+                    for title in bill_titles:
+                        vals[title] = data[title]
+
+                    bill_row = [make_val(vals.get(title)) for title in bill_titles]
+                    bill_rows.append(bill_row)
+
                     ReportRun.w_insert_row(
                         report_run_id,
-                        "",
-                        titles,
+                        "bills",
+                        bill_titles,
                         vals,
                         {"is_checked": False},
                         data=data,
                     )
+
+                for data in data_elements:
+                    vals = {}
+
+                    for title in element_header_titles:
+                        vals[title] = data[title]
+
+                    for part_name, part in data["parts"].items():
+                        for typ, value in part.items():
+                            vals[f"{typ}-{part_name}"] = value
+
+                    row = [make_val(vals.get(title)) for title in element_titles]
+                    element_rows.append(row)
+
+                    ReportRun.w_insert_row(
+                        report_run_id,
+                        "elements",
+                        element_titles,
+                        vals,
+                        {"is_checked": False},
+                        data=data,
+                    )
+
+        write_spreadsheet(
+            tmp_file,
+            True,
+            bill_rows,
+            element_rows,
+        )
         ReportRun.w_update(report_run_id, "finished")
 
     except BadRequest as e:
@@ -236,17 +294,36 @@ def content(
             prefix = "Problem: "
         else:
             prefix = f"Problem with supply {supply_id}:"
-        tmp_file.write(prefix + e.description)
-        ReportRun.w_update(report_run_id, "problem")
-    except BaseException:
-        msg = traceback.format_exc()
+        msg = prefix + e.description + traceback.format_exc()
         sys.stderr.write(msg + "\n")
+        bill_rows.append(["Problem " + msg])
+        write_spreadsheet(tmp_file, True, bill_rows, element_rows)
+        if report_run_id is not None:
+            ReportRun.w_update(report_run_id, "interrupted")
+            ReportRun.w_insert_row(
+                report_run_id, "bills", ["problem"], {"problem": msg}, {}
+            )
+    except BaseException:
         if supply_id is None:
             prefix = "Problem: "
         else:
             prefix = f"Problem with supply {supply_id}:"
-        tmp_file.write(prefix + msg)
-        ReportRun.w_update(report_run_id, "interrupted")
+
+        msg = prefix + traceback.format_exc()
+        sys.stderr.write(msg + "\n")
+        bill_rows.append(["Problem " + msg])
+        if tmp_file is None:
+            msg = traceback.format_exc()
+            ef = open_file("error.txt", None, mode="w")
+            ef.write(msg + "\n")
+            ef.close()
+        else:
+            write_spreadsheet(tmp_file, True, bill_rows, element_rows)
+        if report_run_id is not None:
+            ReportRun.w_update(report_run_id, "interrupted")
+            ReportRun.w_insert_row(
+                report_run_id, "bills", ["problem"], {"problem": msg}, {}
+            )
     finally:
         if tmp_file is not None:
             tmp_file.close()
@@ -387,17 +464,16 @@ def _process_period(
     sess,
     caches,
     supply,
+    vb_cache,
     contract,
     bill_statuses,
     forecast_date,
     vbf,
+    elname,
     period_start,
     period_finish,
 ):
-    actual_elems = {}
-    vels = {}
-    val_elems = {}
-    virtual_bill = {"problem": "", "elements": vels}
+    virtual_parts = {}
     market_role_code = contract.party.market_role.code
 
     vals = {
@@ -407,108 +483,13 @@ def _process_period(
         "contract_id": contract.id,
         "contract_name": contract.name,
         "market_role_code": market_role_code,
-        "elements": val_elems,
-        "virtual_net_gbp": 0,
-        "actual_net_gbp": 0,
-        "actual_bills": [],
+        "element_name": elname,
+        "parts": {},
+        "actual_elements": [],
         "problem": "",
     }
 
-    for bill in sess.scalars(
-        select(Bill)
-        .join(Batch)
-        .where(
-            Bill.supply == supply,
-            Bill.start_date <= period_finish,
-            Bill.finish_date >= period_start,
-            Batch.contract == contract,
-        )
-    ):
-        if _get_bill_status(sess, bill_statuses, bill) is not None:
-            actual_bill = {
-                "id": bill.id,
-                "start_date": bill.start_date,
-                "finish_date": bill.finish_date,
-                "problem": "",
-                "net": bill.net,
-                "vat": bill.vat,
-                "gross": bill.gross,
-                "kwh": bill.kwh,
-                "breakdown": bill.breakdown,
-                "batch_id": bill.batch_id,
-                "batch_reference": bill.batch.reference,
-            }
-
-            read_dict = {}
-            for read in bill.reads:
-                gen_start = read.present_date.replace(hour=0).replace(minute=0)
-                gen_finish = gen_start + relativedelta(days=1) - HH
-                msn_match = False
-                read_msn = read.msn
-                for read_era in supply.find_eras(sess, gen_start, gen_finish):
-                    if read_msn == read_era.msn:
-                        msn_match = True
-                        break
-
-                if not msn_match:
-                    virtual_bill["problem"] += (
-                        f"The MSN {read_msn} of the register read {read.id} "
-                        f"doesn't match the MSN of the era."
-                    )
-
-                for dt, typ in [
-                    (read.present_date, read.present_type),
-                    (read.previous_date, read.previous_type),
-                ]:
-                    key = f"{dt}-{read.msn}"
-                    try:
-                        if typ != read_dict[key]:
-                            virtual_bill[
-                                "problem"
-                            ] += f" Reads taken on {dt} have differing read types."
-                    except KeyError:
-                        read_dict[key] = typ
-
-            element_net = sum(el.net for el in bill.elements)
-            vals["actual_bills"].append(actual_bill)
-            if element_net != bill.net:
-                actual_bill["problem"] += (
-                    f"The Net GBP total of the elements is {element_net} doesn't "
-                    f"match the bill Net GBP value of {bill.net}. "
-                )
-            if bill.gross != bill.vat + bill.net:
-                actual_bill["problem"] += (
-                    f"The Gross GBP ({bill.gross}) of the bill isn't equal to "
-                    f"the Net GBP ({bill.net}) + VAT GBP ({bill.vat}) of the bill."
-                )
-
-            vat_net = Decimal("0.00")
-            vat_vat = Decimal("0.00")
-
-            try:
-                bd = bill.bd
-
-                if "vat" in bd:
-                    for vat_percentage, vat_vals in bd["vat"].items():
-                        vat_net += vat_vals["net"]
-                        vat_vat += vat_vals["vat"]
-            except ZishException as e:
-                actual_bill["problem"] += f"Problem parsing the breakdown: {e}"
-
-            if vat_net != bill.net:
-                actual_bill["problem"] += (
-                    f"The total 'net' {vat_net} in the VAT breakdown doesn't "
-                    f"match the 'net' {bill.net} of the bill."
-                )
-            if vat_vat != bill.vat:
-                actual_bill["problem"] += (
-                    f"The total VAT {vat_vat} in the VAT breakdown doesn't "
-                    f"match the VAT {bill.vat} of the bill."
-                )
-
-            if len(actual_bill["problem"]) > 0:
-                vals["problem"] += "Bills have problems. "
-
+    actual_parts = {"gbp": Decimal("0.00")}
     for element in sess.scalars(
         select(Element)
         .join(Bill)
@@ -518,20 +499,13 @@ def _process_period(
             Element.start_date <= period_finish,
             Element.finish_date >= period_start,
             Batch.contract == contract,
+            Element.name == elname,
         )
     ):
         if _get_bill_status(sess, bill_statuses, element.bill) is None:
             continue
 
-        try:
-            actual_elem = actual_elems[element.name]
-        except KeyError:
-            actual_elem = actual_elems[element.name] = {
-                "parts": {"gbp": Decimal("0.00")},
-                "elements": [],
-            }
-        parts = actual_elem["parts"]
-        actual_elem["elements"].append(
+        vals["actual_elements"].append(
             {
                 "id": element.id,
                 "start_date": element.start_date,
@@ -548,8 +522,7 @@ def _process_period(
             }
         )
 
-        parts["gbp"] += element.net
-        vals["actual_net_gbp"] += float(element.net)
+        actual_parts["gbp"] += element.net
 
         for k, v in element.bd.items():
             if isinstance(v, Decimal):
@@ -560,15 +533,15 @@ def _process_period(
 
             try:
                 if isinstance(v, set):
-                    parts[k].update(v)
+                    actual_parts[k].update(v)
                 else:
-                    parts[k] += v
+                    actual_parts[k] += v
             except KeyError:
-                parts[k] = v
+                actual_parts[k] = v
             except TypeError as detail:
                 raise BadRequest(
                     f"For key {k} in {element.bd} the value {v} can't be added to "
-                    f"the existing value {parts[k]}. {detail}"
+                    f"the existing value {actual_parts[k]}. {detail}"
                 )
 
     first_era = None
@@ -609,7 +582,7 @@ def _process_period(
             era.imp_supplier_contract,
             era.exp_supplier_contract,
         ):
-            virtual_bill["problem"] += (
+            vals["problem"] += (
                 f"From {date_format(chunk_start)} to {date_format(chunk_finish)} "
                 f"the contract of the era doesn't match the contract of the bill."
             )
@@ -620,114 +593,94 @@ def _process_period(
         else:
             polarity = era.imp_supplier_contract is not None
 
-        data_source = SupplySource(
-            sess,
-            chunk_start,
-            chunk_finish,
-            forecast_date,
-            era,
-            polarity,
-            caches,
-            bill=True,
-        )
-        vbf(data_source)
+        cache_key = (chunk_start, chunk_finish, era, polarity)
+        try:
+            vb = vb_cache[cache_key]
+        except KeyError:
+            data_source = SupplySource(
+                sess,
+                chunk_start,
+                chunk_finish,
+                forecast_date,
+                era,
+                polarity,
+                caches,
+                bill=True,
+            )
+            vbf(data_source)
 
-        match market_role_code:
-            case "X":
-                vb = data_source.supplier_bill
-            case v if v in DC_MARKET_ROLE_CODES:
-                vb = data_source.dc_bill
-            case v if v in MOP_MARKET_ROLE_CODES:
-                vb = data_source.mop_bill
-            case _:
-                raise BadRequest(f"Odd market role {market_role_code}")
+            match market_role_code:
+                case "X":
+                    vb = data_source.supplier_bill
+                case v if v in DC_MARKET_ROLE_CODES:
+                    vb = data_source.dc_bill
+                case v if v in MOP_MARKET_ROLE_CODES:
+                    vb = data_source.mop_bill
+                case _:
+                    raise BadRequest(f"Odd market role {market_role_code}")
+            vb_cache[cache_key] = vb
 
         if "problem" in vb:
-            virtual_bill["problem"] += vb["problem"]
+            vals["problem"] += vb["problem"]
 
-        for elname, eldict in vb["elements"].items():
-            try:
-                vel = vels[elname]
-            except KeyError:
-                vel = vels[elname] = {"parts": {}, "elements": []}
-            vals["virtual_net_gbp"] += eldict["gbp"]
-
-            parts = vel["parts"]
+        if elname in vb["elements"]:
+            eldict = vb["elements"][elname]
 
             for k, v in eldict.items():
                 try:
-                    if isinstance(parts[k], set):
-                        parts[k].update(v)
+                    if isinstance(virtual_parts[k], set):
+                        virtual_parts[k].update(v)
                     else:
-                        parts[k] += v
+                        virtual_parts[k] += v
                 except KeyError:
-                    parts[k] = v
+                    virtual_parts[k] = v
                 except TypeError as detail:
                     raise BadRequest(f"For key {k} and value {v}. {detail}")
 
-    for typ, els in (("virtual", vels), ("actual", actual_elems)):
-        for el_k, el in els.items():
+    val_parts = vals["parts"]
+    for typ, parts in (("virtual", virtual_parts), ("actual", actual_parts)):
+        for k, v in parts.items():
             try:
-                val_elem = val_elems[el_k]
+                val_part = val_parts[k]
             except KeyError:
-                val_elem = val_elems[el_k] = {}
+                val_part = val_parts[k] = {}
 
-            for k, v in el["parts"].items():
-                try:
-                    val_parts = val_elem["parts"]
-                except KeyError:
-                    val_parts = val_elem["parts"] = {}
+            val_part[typ] = v
 
-                try:
-                    val_part = val_parts[k]
-                except KeyError:
-                    val_part = val_parts[k] = {}
+    for part_name, part in vals["parts"].items():
+        if part_name == "gbp":
+            virt_part = round(part.get("virtual", 0), 2)
+            actual_part = part.get("actual", 0)
+        else:
+            virt_part = part.get("virtual")
+            actual_part = part.get("actual")
 
-                val_part[typ] = v
+        if isinstance(virt_part, set) and len(virt_part) == 1:
+            virt_part = next(iter(virt_part))
+        if isinstance(actual_part, set) and len(actual_part) == 1:
+            actual_part = next(iter(actual_part))
 
-            for el in el["elements"]:
-                try:
-                    elements = val_elem[f"{typ}_elements"]
-                except KeyError:
-                    elements = val_elem[f"{typ}_elements"] = []
+        if virt_part is None or actual_part is None:
+            diff = None
+        elif isinstance(virt_part, Number) and isinstance(actual_part, Number):
+            diff = float(actual_part) - float(virt_part)
+        else:
+            diff = None
 
-                elements.append(el)
+        actual_str = _format_part(part_name, actual_part)
+        virt_str = _format_part(part_name, virt_part)
+        diff_str = _format_part(part_name, diff)
 
-    for elname, val_elem in val_elems.items():
-        for part_name, part in val_elem["parts"].items():
-            if part_name == "gbp":
-                virt_part = round(part.get("virtual", 0), 2)
-                actual_part = part.get("actual", 0)
-            else:
-                virt_part = part.get("virtual")
-                actual_part = part.get("actual")
+        if actual_str == "" or virt_str == "":
+            passed = "❔"
+        else:
+            passed = "✅" if virt_str == actual_str else "❌"
 
-            if isinstance(virt_part, set) and len(virt_part) == 1:
-                virt_part = next(iter(virt_part))
-            if isinstance(actual_part, set) and len(actual_part) == 1:
-                actual_part = next(iter(actual_part))
-
-            if virt_part is None or actual_part is None:
-                diff = None
-            elif isinstance(virt_part, Number) and isinstance(actual_part, Number):
-                diff = float(actual_part) - float(virt_part)
-            else:
-                diff = None
-
-            actual_str = _format_part(part_name, actual_part)
-            virt_str = _format_part(part_name, virt_part)
-            diff_str = _format_part(part_name, diff)
-
-            if actual_str == "" or virt_str == "":
-                passed = "❔"
-            else:
-                passed = "✅" if virt_str == actual_str else "❌"
-
-            part["actual_str"] = actual_str
-            part["virtual_str"] = virt_str
-            part["difference_str"] = diff_str
-            part["difference"] = diff
-            part["passed"] = passed
+        part["actual_str"] = actual_str
+        part["virtual_str"] = virt_str
+        part["difference_str"] = diff_str
+        part["difference"] = diff
+        part["passed"] = passed
 
     if first_era is None:
         vals["problem"] += "No eras for this period of the supply. "
@@ -740,17 +693,17 @@ def _process_period(
     vals["site_name"] = site.name
     vals["imp_mpan_core"] = first_era.imp_mpan_core
     vals["exp_mpan_core"] = first_era.exp_mpan_core
-    vals["difference_net_gbp"] = vals["actual_net_gbp"] - vals["virtual_net_gbp"]
-    vals["problem"] += virtual_bill["problem"]
 
     return vals
 
 
 def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, vbf):
-    gaps = {}
+    elblocks = {}
     bill_statuses = {}
     supply = Supply.get_by_id(sess, supply_id)
     market_role_code = contract.party.market_role.code  # noqa: F841
+    data_bills = []
+    data_elements = []
 
     # Find seed gaps
     while len(bill_ids) > 0:
@@ -758,7 +711,6 @@ def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, 
         bill_ids.remove(bill_id)
         bill = Bill.get_by_id(sess, bill_id)
         if _get_bill_status(sess, bill_statuses, bill) is not None:
-            _add_gap(caches, gaps, bill.start_date, bill.finish_date)
             for element in sess.scalars(
                 select(Element)
                 .join(Bill)
@@ -770,39 +722,148 @@ def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, 
                     Bill.finish_date >= bill.start_date,
                 )
             ):
-                _add_gap(caches, gaps, element.start_date, element.finish_date)
+                _add_el(caches, elblocks, element)
 
-    # Find enlarged gaps
-    enlarged = True
-    while enlarged:
-        enlarged = False
-        for gap_start, gap_finish in find_gaps(gaps):
-            for element in sess.scalars(
-                select(Element)
-                .join(Bill)
-                .join(Batch)
-                .where(
-                    Bill.supply == supply,
-                    Bill.start_date <= gap_finish,
-                    Bill.finish_date >= gap_start,
-                    Batch.contract == contract,
+            supply = bill.supply
+            era = supply.find_last_era(sess)
+            site = era.get_physical_site(sess)
+            batch = bill.batch
+            contract = batch.contract
+            problems = []
+
+            read_dict = {}
+            for read in bill.reads:
+                gen_start = read.present_date.replace(hour=0).replace(minute=0)
+                gen_finish = gen_start + relativedelta(days=1) - HH
+                msn_match = False
+                read_msn = read.msn
+                for read_era in supply.find_eras(sess, gen_start, gen_finish):
+                    if read_msn == read_era.msn:
+                        msn_match = True
+                        break
+
+                if not msn_match:
+                    problems.append(
+                        f"The MSN {read_msn} of the register read {read.id} "
+                        f"doesn't match the MSN of the era."
+                    )
+
+                for dt, typ in [
+                    (read.present_date, read.present_type),
+                    (read.previous_date, read.previous_type),
+                ]:
+                    key = f"{dt}-{read.msn}"
+                    try:
+                        if typ != read_dict[key]:
+                            problems.append(
+                                f" Reads taken on {dt} have differing read types."
+                            )
+                    except KeyError:
+                        read_dict[key] = typ
+
+            element_net = sum(el.net for el in bill.elements)
+            if element_net != bill.net:
+                problems.append(
+                    f"The Net GBP total of the elements is {element_net} doesn't "
+                    f"match the bill Net GBP value of {bill.net}."
                 )
-            ):
-                if _add_gap(caches, gaps, element.start_date, element.finish_date):
-                    enlarged = True
+            if bill.gross != bill.vat + bill.net:
+                problems.append(
+                    f"The Gross GBP ({bill.gross}) of the bill isn't equal to "
+                    f"the Net GBP ({bill.net}) + VAT GBP ({bill.vat}) of the bill."
+                )
 
-    for period_start, period_finish in find_gaps(gaps):
-        yield _process_period(
-            sess,
-            caches,
-            supply,
-            contract,
-            bill_statuses,
-            forecast_date,
-            vbf,
-            period_start,
-            period_finish,
-        )
+            vat_net = Decimal("0.00")
+            vat_vat = Decimal("0.00")
 
-        # Avoid long-running transactions
-        sess.rollback()
+            try:
+                bd = bill.bd
+
+                if "vat" in bd:
+                    for vat_percentage, vat_vals in bd["vat"].items():
+                        vat_net += vat_vals["net"]
+                        vat_vat += vat_vals["vat"]
+            except ZishException as e:
+                problems.append(f"Problem parsing the breakdown: {e}")
+
+            if vat_net != bill.net:
+                problems.append(
+                    f"The total 'net' {vat_net} in the VAT breakdown doesn't "
+                    f"match the 'net' {bill.net} of the bill."
+                )
+            if vat_vat != bill.vat:
+                problems.append(
+                    f"The total VAT {vat_vat} in the VAT breakdown doesn't "
+                    f"match the VAT {bill.vat} of the bill."
+                )
+
+            if len(problems) > 0:
+                data_bill = {
+                    "id": bill.id,
+                    "supply_id": supply.id,
+                    "reference": bill.reference,
+                    "start_date": bill.start_date,
+                    "finish_date": bill.finish_date,
+                    "problem": " ".join(problems),
+                    "net": bill.net,
+                    "vat": bill.vat,
+                    "gross": bill.gross,
+                    "kwh": bill.kwh,
+                    "breakdown": bill.breakdown,
+                    "batch_id": batch.id,
+                    "batch_reference": bill.batch.reference,
+                    "imp_mpan_core": era.imp_mpan_core,
+                    "exp_mpan_core": era.exp_mpan_core,
+                    "site_id": site.id,
+                    "site_code": site.code,
+                    "site_name": site.name,
+                    "contract_id": contract.id,
+                    "contract_name": contract.name,
+                    "market_role_code": contract.party.market_role.code,
+                }
+
+                data_bills.append(data_bill)
+
+    vb_cache = {}
+
+    # Find enlarged blocks
+    for elname, blockvals in elblocks.items():
+        enlarged = True
+        while enlarged:
+            enlarged = False
+            for block_start, block_finish in find_blocks(blockvals):
+                for element in sess.scalars(
+                    select(Element)
+                    .join(Bill)
+                    .join(Batch)
+                    .where(
+                        Bill.supply == supply,
+                        Bill.start_date <= block_finish,
+                        Bill.finish_date >= block_start,
+                        Batch.contract == contract,
+                        Element.name == elname,
+                    )
+                ):
+                    if _add_el(caches, elblocks, element):
+                        enlarged = True
+
+        for period_start, period_finish in find_blocks(blockvals):
+            data_element = _process_period(
+                sess,
+                caches,
+                supply,
+                vb_cache,
+                contract,
+                bill_statuses,
+                forecast_date,
+                vbf,
+                elname,
+                period_start,
+                period_finish,
+            )
+            data_elements.append(data_element)
+
+            # Avoid long-running transactions
+            sess.rollback()
+
+    return data_bills, data_elements

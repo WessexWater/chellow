@@ -1032,7 +1032,7 @@ def test_report_run_row_get_bill_check(sess, client):
             "actual_net_gbp": 10,
             "virtual_net_gbp": 20.32,
             "difference_net_gbp": 23.6,
-            "elements": {},
+            "parts": {"gbp": 10},
             "supply_id": 4,
         },
     )
@@ -1158,7 +1158,7 @@ def test_report_run_row_get_bill_check_issue(sess, client):
             "actual_net_gbp": 10,
             "virtual_net_gbp": 20.32,
             "difference_net_gbp": 23.6,
-            "elements": {},
+            "parts": {"gbp": 10},
             "supply_id": 1,
         },
     )

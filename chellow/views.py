@@ -1365,18 +1365,13 @@ def report_runs_get():
 def report_run_get(run_id):
     run = g.sess.query(ReportRun).filter(ReportRun.id == run_id).one()
     if run.name == "bill_check":
-        row = (
-            g.sess.query(ReportRunRow)
-            .filter(ReportRunRow.report_run == run)
-            .order_by(ReportRunRow.id)
-            .first()
+        row = g.sess.scalar(
+            select(ReportRunRow).where(ReportRunRow.report_run == run).limit(1)
         )
         elements = []
         summary = {}
-        if row is None:
-            pass
-
-        else:
+        if row is not None:
+            """
             summary["sum_difference"] = g.sess.scalar(
                 select(
                     func.sum(ReportRunRow.data["data"]["difference_net_gbp"].as_float())
@@ -1409,6 +1404,7 @@ def report_run_get(run_id):
                 elements.sort(
                     key=lambda x: 0 if x[1] is None else abs(x[1]), reverse=True
                 )
+            """
 
         if "element" in request.values:
             element = req_str("element")
@@ -1417,32 +1413,44 @@ def report_run_get(run_id):
 
         hide_checked = req_checkbox("hide_checked")
 
-        ROW_LIMIT = 200
-        q = select(ReportRunRow).where(ReportRunRow.report_run == run).limit(ROW_LIMIT)
+        bill_row_bundles = []
+        for row in g.sess.scalars(
+            select(ReportRunRow).where(
+                ReportRunRow.report_run == run, ReportRunRow.tab == "bills"
+            )
+        ):
+            supply_id = row.data["data"]["supply_id"]
+            issues = g.sess.scalars(
+                select(Issue)
+                .where(
+                    Issue.is_open == true(),
+                    Issue.properties["supply_ids"].op("@>")(cast([supply_id], JSONB)),
+                )
+                .order_by(Issue.date_created)
+            ).all()
+            bill_row_bundles.append({"row": row, "issues": issues})
+
+        ROW_LIMIT = 100
+        q = (
+            select(ReportRunRow)
+            .where(ReportRunRow.report_run == run, ReportRunRow.tab == "elements")
+            .limit(ROW_LIMIT)
+        )
         if hide_checked:
             q = q.where(
                 ReportRunRow.data["properties"]["is_checked"].as_boolean() == false()
             )
-        if element == "problem":
-            order_by = (
-                ReportRunRow.data["data"]["problem"].as_string().desc(),
-                func.abs(
-                    func.coalesce(
-                        ReportRunRow.data["data"]["difference_net_gbp"].as_float(), 0
-                    )
-                ).desc(),
-            )
-        else:
-            if element == "net":
-                ob = ReportRunRow.data["data"]["difference_net_gbp"]
-            else:
-                ob = ReportRunRow.data["data"]["elements"][element]["parts"]["gbp"][
-                    "difference"
-                ]
-            order_by = (func.abs(func.coalesce(ob.as_float(), 0)).desc(),)
+        q = q.order_by(
+            ReportRunRow.data["data"]["problem"].as_string().desc(),
+            func.abs(
+                func.coalesce(
+                    ReportRunRow.data["data"]["parts"]["gbp"]["difference"].as_float(),
+                    0,
+                )
+            ).desc(),
+        )
 
-        q = q.order_by(*order_by)
-        row_bundles = []
+        element_row_bundles = []
         for row in g.sess.scalars(q):
             supply_id = row.data["data"]["supply_id"]
             issues = g.sess.scalars(
@@ -1453,11 +1461,12 @@ def report_run_get(run_id):
                 )
                 .order_by(Issue.date_created)
             ).all()
-            row_bundles.append({"row": row, "issues": issues})
+            element_row_bundles.append({"row": row, "issues": issues})
         return render_template(
             "report_run_bill_check.html",
             run=run,
-            row_bundles=row_bundles,
+            bill_row_bundles=bill_row_bundles,
+            element_row_bundles=element_row_bundles,
             summary=summary,
             elements=elements,
             element=element,
@@ -1745,13 +1754,6 @@ def report_run_row_get(row_id):
     tables = []
 
     if row.report_run.name == "bill_check":
-        elements = row.data["data"]["elements"]
-        for el_name, _ in sorted(
-            list(elements.items()),
-            key=lambda x: abs(x[1]["parts"]["gbp"]["difference"]),
-            reverse=True,
-        ):
-            tables.append(el_name)
         supply_id = row.data["data"]["supply_id"]
         issues = g.sess.scalars(
             select(Issue)
@@ -1765,7 +1767,6 @@ def report_run_row_get(row_id):
             "report_run_row_bill_check.html",
             row=row,
             raw_data=raw_data,
-            tables=tables,
             issues=issues,
             DC_MARKET_ROLE_CODES=DC_MARKET_ROLE_CODES,
             MOP_MARKET_ROLE_CODES=MOP_MARKET_ROLE_CODES,
