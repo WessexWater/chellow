@@ -3820,7 +3820,7 @@ class Era(Base, PersistentClass):
                             f"only valid until {date_format(mtc_llfc.valid_to)} but "
                             f"the era ends at {date_format(finish_date)}."
                         )
-                else:
+                elif self.mtc_participant.mtc.code != "800":
                     mtc_ssc = MtcSsc.get_by_values(
                         sess, self.mtc_participant, self.ssc, start_date
                     )
