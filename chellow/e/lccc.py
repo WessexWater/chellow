@@ -19,8 +19,8 @@ importer = None
 
 
 def api_records(log, resource_id, skip=0):
-    url = f"https://dp.lowcarboncontracts.uk/datastore/dump/{resource_id}"
-    params = {"format": "json"}
+    url = "https://dp.lowcarboncontracts.uk/api/action/datastore_search"
+    params = {"resource_id": resource_id, "limit": 32000}
     res = requests.get(url, params=params, timeout=120)
     log(f"Requested URL {res.url}")
     try:
@@ -34,10 +34,7 @@ def api_records(log, resource_id, skip=0):
     if "success" in res_j and not res_j["success"]:
         raise BadRequest(res_j)
 
-    field_titles = [f["id"] for f in res_j["fields"]]
-
-    for record in res_j["records"][skip:]:
-        yield {k: v for k, v in zip(field_titles, record)}
+    return res_j["result"]["records"][skip:]
 
 
 def run_import(sess, log, set_progress):
