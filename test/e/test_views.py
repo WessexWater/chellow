@@ -1221,6 +1221,36 @@ def test_em_hh_data(sess, client):
     match(response, 200, "88.7")
 
 
+def test_em_months(sess, client):
+    vf = to_utc(ct_datetime(1996, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.get_by_code(sess, "Z")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    non_core_party.insert_contract(
+        sess,
+        "bank_holidays",
+        "",
+        {},
+        vf,
+        None,
+        bank_holiday_rate_script,
+    )
+    sess.commit()
+    query_string = {
+        "finish_year": "2020",
+        "finish_month": "01",
+    }
+
+    response = client.get(
+        f"/e/sites/{site.id}/energy_management/months", query_string=query_string
+    )
+    match(response, 200)
+
+
 def test_era_edit_get(client, sess):
     vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
