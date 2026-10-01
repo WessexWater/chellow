@@ -2343,8 +2343,14 @@ def era_edit_form_get(era_id):
         else:
             mtc_participant = mtc_participants[0]
 
+        dtc_meter_type_id = req_int_none("dtc_meter_type_id")
+        if dtc_meter_type_id is None:
+            dtc_meter_type = None
+        else:
+            dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
+
         pcs_q = select(Pc).order_by(Pc.code)
-        if mtc_participant.is_hh:
+        if mtc_participant.is_hh or dtc_meter_type is None:
             pcs_q = pcs_q.where(Pc.code == "00")
         else:
             if mtc_participant.mtc.code == "800":
@@ -2364,12 +2370,6 @@ def era_edit_form_get(era_id):
             pc = Pc.get_by_id(g.sess, pc_id)
         else:
             pc = pcs[0]
-
-        dtc_meter_type_id = req_int_none("dtc_meter_type_id")
-        if dtc_meter_type_id is None:
-            dtc_meter_type = None
-        else:
-            dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
 
         if pc.code == "00":
             sscs = None
