@@ -3362,12 +3362,16 @@ def mop_batch_edit_post(batch_id):
         else:
             reference = req_str("reference")
             description = req_str("description")
-            batch.update(g.sess, reference, description)
+            date_created = req_date("date_created", resolution="microsecond")
+            batch.update(g.sess, reference, description, date_created)
             g.sess.commit()
             return chellow_redirect(f"/mop_batches/{batch.id}", 303)
     except BadRequest as e:
         flash(e.description)
-        return render_template("mop_batch_edit.html", batch=batch)
+        return make_response(
+            render_template("mop_batch_edit.html", batch=batch),
+            400,
+        )
 
 
 @e.route("/mop_batches/<int:batch_id>")
