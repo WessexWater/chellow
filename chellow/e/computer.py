@@ -1215,7 +1215,19 @@ class SupplySource(DataSource):
             ):
                 hist_measurement_type = "hh"
 
-            if hist_measurement_type == "unmetered":
+            if hist_measurement_type == "hh" or (
+                hist_measurement_type == "unmetered"
+                and hist_era.pc.code == "00"
+                and len(hist_era.channels) > 0
+            ):
+                full_channels, hhd = _init_hh_data(
+                    sess, caches, hist_era, chunk_start, chunk_finish, is_import
+                )
+                if not full_channels:
+                    self.full_channels = False
+                hist_map.update(hhd)
+
+            elif hist_measurement_type == "unmetered":
                 kwh = (
                     hist_era.imp_sc
                     * 60
@@ -1410,14 +1422,6 @@ class SupplySource(DataSource):
                                 )
 
                     hist_map.update(hhd)
-            elif hist_measurement_type == "hh":
-                full_channels, hhd = _init_hh_data(
-                    sess, caches, hist_era, chunk_start, chunk_finish, is_import
-                )
-                if not full_channels:
-                    self.full_channels = False
-                hist_map.update(hhd)
-
             else:
                 raise BadRequest("gen type not recognized")
 
