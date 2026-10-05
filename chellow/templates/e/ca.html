@@ -55,12 +55,17 @@
 		</thead>
 		<tbody>
 			{% for elname, sup in elements.items() %}
-				{% set era = sup.eras[-1] %}
 				<tr>
-					<td>{{elname}}</td>
-					<td><a href="/e/supplies/{{sup.id}}">View</a></td>
-					<td>{{era.imp_mpan_core or ''}}</td>
-					<td>{{era.exp_mpan_core or ''}}</td>
+					{% if sup %}
+						{% set era = sup.eras[-1] %}
+						<td>{{elname}}</td>
+						<td><a href="/e/supplies/{{sup.id}}">View</a></td>
+						<td>{{era.imp_mpan_core or ''}}</td>
+						<td>{{era.exp_mpan_core or ''}}</td>
+					{% else %}
+						<td>{{elname}}</td>
+						<td colspan="3"></td>
+					{% endif %}
 				</tr>
 			{% endfor %}
 		</tbody>

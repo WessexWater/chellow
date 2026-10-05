@@ -275,7 +275,7 @@ def ca_get(ca_id):
     ca = Ca.get_by_id(g.sess, ca_id)
     elements = {}
     for elname, sup_id in ca.properties.get("elements", {}).items():
-        elements[elname] = Supply.get_by_id(g.sess, sup_id)
+        elements[elname] = None if sup_id is None else Supply.get_by_id(g.sess, sup_id)
     eras = g.sess.scalars(
         select(Era)
         .where(or_(Era.imp_ca == ca, Era.exp_ca == ca))
@@ -315,7 +315,8 @@ def ca_edit_post(ca_id):
         url = req_str("url")
         title = req_str("title")
         for _, sup_id in props_elements.items():
-            Supply.get_by_id(g.sess, sup_id)  # Check exists
+            if sup_id is not None:
+                Supply.get_by_id(g.sess, sup_id)  # Check exists
         props["elements"] = props_elements
         props["url"] = url
         props["title"] = title
