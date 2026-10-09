@@ -322,7 +322,7 @@ def _import_Meter_Timeswitch_Class(sess, rows, ctx):
             meter_payment_type_code = values[7]  # MTC Payment Type ID
             meter_payment_type = meter_payment_types[meter_payment_type_code]
             has_comms_str = values[8]  # MTC Communication Indicator
-            has_comms = parse_bool(has_comms_str)
+            has_comms = has_comms_str == "Y"
             is_hh_str = values[9]  # MTC Type Indicator
             is_hh = is_hh_str == "H"
             tpr_count_str = values[10]  # TPR Count
@@ -421,13 +421,13 @@ def _import_MTC_in_PES_Area(sess, rows, ctx):
             )
 
         else:
-            mtc.description = description
-            mtc.has_comms = has_comms
-            mtc.is_hh = is_hh
-            mtc.meter_type = meter_type
-            mtc.meter_payment_type = meter_payment_type
-            mtc.tpr_count = tpr_count
-            mtc.valid_to = valid_to
+            mtc_participant.description = description
+            mtc_participant.has_comms = has_comms
+            mtc_participant.is_hh = is_hh
+            mtc_participant.meter_type = meter_type
+            mtc_participant.meter_payment_type = meter_payment_type
+            mtc_participant.tpr_count = tpr_count
+            mtc_participant.valid_to = valid_to
             sess.flush()
 
 

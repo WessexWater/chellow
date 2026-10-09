@@ -125,8 +125,8 @@ def test_import_Meter_Timeswitch_Class(sess):
 
 def test_import_Meter_Timeswitch_Class_no_tpr_count(sess):
     vf = to_utc(ct_datetime(1996, 4, 1))
-    MeterType.insert(sess, "C5", "A c5 meter", vf, None)
-    MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    meter_type = MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "credit", vf, None)
     rows = [
         [
             "845",
@@ -144,9 +144,153 @@ def test_import_Meter_Timeswitch_Class_no_tpr_count(sess):
     ]
     ctx = {}
     _import_Meter_Timeswitch_Class(sess, rows, ctx)
+    expected_ctx = {
+        "mtcs": {
+            ("845", to_utc(ct_datetime(1996, 4, 1))): {
+                "code": "845",
+                "description": "HH COP5 And Above With Comms",
+                "has_comms": True,
+                "has_related_metering": False,
+                "is_common": True,
+                "is_hh": True,
+                "meter_payment_type": meter_payment_type,
+                "meter_type": meter_type,
+                "tpr_count": None,
+                "valid_from": to_utc(ct_datetime(1996, 4, 1)),
+                "valid_to": None,
+            },
+        },
+    }
+    assert expected_ctx == ctx
 
 
-def test_import_MTC_in_PES_Area(sess):
+def test_import_MTC_in_PES_Area_common(sess):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "845"
+    is_common = True
+    has_related = False
+    Mtc.insert(
+        sess,
+        mtc_code,
+        is_common,
+        has_related,
+        vf,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "01/04/1996",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
+    ]
+    ctx = {
+        "mtcs": {
+            ("845", to_utc(ct_datetime(1996, 4, 1))): {
+                "code": "845",
+                "description": "HH COP5 And Above With Comms",
+                "has_comms": True,
+                "has_related_metering": False,
+                "is_common": True,
+                "is_hh": True,
+                "meter_payment_type": meter_payment_type,
+                "meter_type": meter_type,
+                "tpr_count": None,
+                "valid_from": to_utc(ct_datetime(1996, 4, 1)),
+                "valid_to": None,
+            },
+        },
+    }
+    _import_MTC_in_PES_Area(sess, rows, ctx)
+    sess.commit()
+    mtc = Mtc.get_by_code(sess, mtc_code, vf)
+    mtc_participant = mtc.mtc_participants[0]
+    assert mtc_participant.is_hh is True
+
+
+def test_import_MTC_in_PES_Area_common_existing_update(sess):
+    vf = to_utc(ct_datetime(1996, 4, 1))
+    participant_code = "HYDE"
+    participant = Participant.insert(sess, participant_code, "hyde participant")
+    mtc_code = "845"
+    is_common = True
+    has_related = False
+    mtc = Mtc.insert(
+        sess,
+        mtc_code,
+        is_common,
+        has_related,
+        vf,
+        None,
+    )
+    meter_type = MeterType.insert(sess, "C5", "A c5 meter", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "credit", vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        False,
+        meter_type,
+        meter_payment_type,
+        None,
+        vf,
+        None,
+    )
+
+    rows = [
+        [
+            mtc_code,
+            "01/04/1996",
+            participant_code,
+            "01/04/1996",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
+    ]
+    ctx = {
+        "mtcs": {
+            ("845", to_utc(ct_datetime(1996, 4, 1))): {
+                "code": "845",
+                "description": "HH COP5 And Above With Comms",
+                "has_comms": True,
+                "has_related_metering": True,
+                "is_common": True,
+                "is_hh": True,
+                "meter_payment_type": meter_payment_type,
+                "meter_type": meter_type,
+                "tpr_count": None,
+                "valid_from": to_utc(ct_datetime(1996, 4, 1)),
+                "valid_to": None,
+            },
+        },
+    }
+    _import_MTC_in_PES_Area(sess, rows, ctx)
+    sess.commit()
+    mtc = Mtc.get_by_code(sess, mtc_code, vf)
+    mtc_participant = mtc.mtc_participants[0]
+    assert mtc_participant.is_hh is True
+
+
+def test_import_MTC_in_PES_Area_not_common(sess):
     vf = to_utc(ct_datetime(1996, 4, 1))
     participant_code = "HYDE"
     Participant.insert(sess, participant_code, "hyde participant")
@@ -178,6 +322,7 @@ def test_import_MTC_in_PES_Area(sess):
     ]
     ctx = {}
     _import_MTC_in_PES_Area(sess, rows, ctx)
+    sess.commit()
 
 
 def test_import_Time_Pattern_Regime(sess):
