@@ -5,8 +5,6 @@ from openpyxl.utils.datetime import from_excel
 
 from werkzeug.exceptions import BadRequest
 
-from chellow.e.computer import hh_rate
-from chellow.models import Session
 from chellow.utils import ct_datetime, parse_mpan_core, to_ct, to_utc
 
 
@@ -33,10 +31,7 @@ def get_value(title_row, row, name):
             break
 
     if idx is None:
-        raise BadRequest(
-            "The name '{name}' can't be found in the titles "
-            "{title_row}.".format(name=name, title_row=title_row)
-        )
+        raise BadRequest(f"The name '{name}' can't be found in the titles {title_row}.")
 
     try:
         return row[idx].value
@@ -53,16 +48,21 @@ def get_str(title_row, row, name):
 
 def get_dec(title_row, row, name):
     try:
-        return Decimal(str(get_value(title_row, row, name)))
-    except InvalidOperation:
-        return None
+        dec_str = str(get_value(title_row, row, name))
+        return Decimal(dec_str)
+    except InvalidOperation as e:
+        raise BadRequest(f"Can't parse '{dec_str}' as a decimal. {e}")
+
+
+def get_gbp(title_row, row, name):
+    return Decimal("0.00") + round(get_dec(title_row, row, name), 2)
 
 
 def get_int(title_row, row, name):
     return int(get_value(title_row, row, name))
 
 
-def _process_row(caches, sess, title_row, row):
+def _process_row(title_row, row):
     msn = str(get_value(title_row, row, "meter")).strip()
     mpan_core = parse_mpan_core(str(get_int(title_row, row, "mpan ref")))
     start_date_ct = get_ct_date(title_row, row, "start")
@@ -74,15 +74,14 @@ def _process_row(caches, sess, title_row, row):
             finish_date_ct.year, finish_date_ct.month, finish_date_ct.day, 23, 30
         )
     )
-    rates = hh_rate(sess, caches, 0, start_date)
-    meter_rate = rates["annual_rates"]["non_settlement"]["*"]["IP"]["*"][
-        "gbp_per_meter"
-    ]
     months = (finish_date_ct.year - start_date_ct.year) * 12 + (
         finish_date_ct.month - start_date_ct.month + 1
     )
-    net = round(Decimal(float(meter_rate) / 12 * months), 2)
-    vat = round(net * Decimal("0.2"), 2)
+
+    meter_rate = get_dec(title_row, row, "rate")
+    net = get_gbp(title_row, row, "net total")
+    vat = get_gbp(title_row, row, "vat @ 20%")
+    gross = get_gbp(title_row, row, "grand total")
     elements = [
         {
             "name": "meter",
@@ -110,7 +109,7 @@ def _process_row(caches, sess, title_row, row):
         "kwh": Decimal(0),
         "vat": vat,
         "net": net,
-        "gross": net + vat,
+        "gross": gross,
         "reads": [],
         "breakdown": breakdown,
         "account": mpan_core,
@@ -132,7 +131,7 @@ def _process_row(caches, sess, title_row, row):
 
 class Parser:
     def __init__(self, f):
-        self.book = load_workbook(f)
+        self.book = load_workbook(f, data_only=True)
         self.sheet = self.book.worksheets[0]
 
         self.last_line = None
@@ -152,23 +151,20 @@ class Parser:
 
     def make_raw_bills(self):
         row_index = None
-        caches = {}
         try:
-            with Session() as sess:
-                bills = []
-                row_iter = self.sheet.iter_rows()
-                title_row = next(row_iter)
-                for row in row_iter:
-                    val = get_value(title_row, row, "mpan ref")
-                    if val is None or val == "":
-                        break
-                    if get_str(title_row, row, "check") != "Billed":
-                        continue
+            bills = []
+            row_iter = self.sheet.iter_rows()
+            title_row = next(row_iter)
+            for row in row_iter:
+                val = get_value(title_row, row, "mpan ref")
+                if val is None or val == "":
+                    break
+                if get_str(title_row, row, "check") != "Billed":
+                    continue
 
-                    self._set_last_line(row_index, val)
-                    bill = _process_row(caches, sess, title_row, row)
-                    bills.append(bill)
-                    sess.rollback()
+                self._set_last_line(row_index, val)
+                bill = _process_row(title_row, row)
+                bills.append(bill)
         except BadRequest as e:
             raise BadRequest(f"Row number: {row_index} {e.description}")
 
