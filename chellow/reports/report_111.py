@@ -300,9 +300,6 @@ def content(
         write_spreadsheet(tmp_file, True, bill_rows, element_rows)
         if report_run_id is not None:
             ReportRun.w_update(report_run_id, "interrupted")
-            ReportRun.w_insert_row(
-                report_run_id, "bills", ["problem"], {"problem": msg}, {}
-            )
     except BaseException:
         if supply_id is None:
             prefix = "Problem: "
@@ -321,9 +318,6 @@ def content(
             write_spreadsheet(tmp_file, True, bill_rows, element_rows)
         if report_run_id is not None:
             ReportRun.w_update(report_run_id, "interrupted")
-            ReportRun.w_insert_row(
-                report_run_id, "bills", ["problem"], {"problem": msg}, {}
-            )
     finally:
         if tmp_file is not None:
             tmp_file.close()
