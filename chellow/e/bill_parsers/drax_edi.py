@@ -90,7 +90,7 @@ ELEMENT_MAP = {
             "209269": ("tnuos", "rate", "days"),
         },
         "DUS002": {
-            "448223": ("dc", None, None),  # Provisional
+            "448223": ("dc", "rate", "days"),  # Provisional
             "185913": ("duos-yellow", "rate", "kwh"),
             "517270": ("duos-black", "rate", "kwh"),
             "797790": ("duos-reactive", "rate", "kvarh"),
