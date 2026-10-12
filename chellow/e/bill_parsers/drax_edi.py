@@ -32,6 +32,7 @@ ELEMENT_MAP = {
             "169540": ("eii", None, None),
             "930504": ("eii", None, None),
             "064305": ("fit", None, None),
+            "350844": ("fit", None, None),
             "590346": ("cfd-obligation", None, None),
             "764913": ("class-a-exemption", "rate", "kwh"),
             "722658": ("class-a-exemption", "rate", "kwh"),
@@ -89,14 +90,17 @@ ELEMENT_MAP = {
             "209269": ("tnuos", "rate", "days"),
         },
         "DUS002": {
+            "448223": ("dc", None, None),  # Provisional
             "185913": ("duos-yellow", "rate", "kwh"),
             "517270": ("duos-black", "rate", "kwh"),
             "797790": ("duos-reactive", "rate", "kvarh"),
             "806318": ("duos-green", "rate", "kwh"),
+            "662915": ("duos-green", "rate", "kwh"),  # Provisional
             "716514": ("duos-amber", "rate", "kwh"),
             "709522": ("duos-excess-availability", "rate", "kva"),
             "769979": ("duos-red", "rate", "kwh"),
             "644819": ("duos-fixed", "rate", "days"),
+            "700285": ("duos-fixed", "rate", "days"),  # Provisional
             "794486": ("duos-availability", "rate", "kva"),
             "209269": ("tnuos", "rate", "days"),
             "065950": ("eii", "rate", "kwh"),
