@@ -180,7 +180,7 @@ def dashboard_ecoes():
             ReportRun.state == "finished",
             ReportRun.data["keep"].as_boolean() == true(),
         )
-        .order_by(ReportRun.date_created.desc())
+        .order_by(ReportRun.date_created)
     ).all()
     return render_template("dashboard_ecoes.html", ecoes_runs=ecoes_runs)
 
