@@ -731,16 +731,17 @@ def _process_supply(sess, caches, supply_id, bill_ids, forecast_date, contract, 
                 gen_finish = gen_start + relativedelta(days=1) - HH
                 msn_match = False
                 read_msn = read.msn
-                for read_era in supply.find_eras(sess, gen_start, gen_finish):
-                    if read_msn == read_era.msn:
-                        msn_match = True
-                        break
+                if read.present_type.code != "F":
+                    for read_era in supply.find_eras(sess, gen_start, gen_finish):
+                        if read_msn == read_era.msn:
+                            msn_match = True
+                            break
 
-                if not msn_match:
-                    problems.append(
-                        f"The MSN {read_msn} of the register read {read.id} "
-                        f"doesn't match the MSN of the era."
-                    )
+                    if not msn_match:
+                        problems.append(
+                            f"The MSN {read_msn} of the register read {read.id} "
+                            f"doesn't match the MSN of the era."
+                        )
 
                 for dt, typ in [
                     (read.present_date, read.present_type),
