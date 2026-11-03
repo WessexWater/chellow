@@ -9,6 +9,7 @@ def test_elexon_import(mocker, sess):
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     sess.commit()
+    mocker.patch("chellow.e.gcf.elexon_import", autospec=True)
     mocker.patch("chellow.e.system_price.elexon_import", autospec=True)
     mocker.patch("chellow.e.tlms.elexon_import", autospec=True)
     mocker.patch("chellow.e.rcrc.elexon_import", autospec=True)

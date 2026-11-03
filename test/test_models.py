@@ -671,46 +671,39 @@ def test_Era_update(sess):
     assert era.msn == msn
 
 
-def test_Era_meter_category_dumb(sess):
-    """Successful"""
-    valid_from = utc_datetime(1996, 1, 1)
+def test_Era_update_RCAMR(sess):
+    vf = to_utc(ct_datetime(1996, 1, 1))
     site = Site.insert(sess, "CI017", "Water Works")
     market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
     participant = Participant.insert(sess, "CALB", "AK Industries")
-    participant.insert_party(sess, market_role_Z, "None core", valid_from, None, None)
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
     market_role_X = MarketRole.insert(sess, "X", "Supplier")
     market_role_M = MarketRole.insert(sess, "M", "Mop")
     market_role_C = MarketRole.insert(sess, "C", "HH Dc")
     market_role_R = MarketRole.insert(sess, "R", "Distributor")
     mop_party = participant.insert_party(
-        sess, market_role_M, "Fusion Mop", valid_from, None, None
+        sess, market_role_M, "Fusion Mop", vf, None, None
     )
     supplier_party = participant.insert_party(
-        sess, market_role_X, "Fusion", valid_from, None, None
+        sess, market_role_X, "Fusion", vf, None, None
     )
     dc_party = participant.insert_party(
-        sess, market_role_C, "Fusion DC", valid_from, None, None
+        sess, market_role_C, "Fusion DC", vf, None, None
     )
-    mop_contract = mop_party.insert_contract(
-        sess, "Fusion", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    dc_contract = dc_party.insert_contract(
-        sess, "Fusion DC 2000", "", {}, utc_datetime(2000, 1, 1), None, {}
-    )
-    pc = Pc.insert(sess, "02", "nhh", utc_datetime(2000, 1, 1), None)
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
+    pc = Pc.insert(sess, "00", "hh", vf, None)
     insert_cops(sess)
     cop = Cop.get_by_code(sess, "5")
     insert_comms(sess)
     comm = Comm.get_by_code(sess, "GSM")
     imp_supplier_contract = supplier_party.insert_contract(
-        sess, "Fusion Supplier 2000", "", {}, valid_from, None, {}
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
     )
-    dno_party = participant.insert_party(
-        sess, market_role_R, "WPD", valid_from, None, "22"
-    )
-    meter_type = MeterType.insert(sess, "C5", "COP 1-5", utc_datetime(2000, 1, 1), None)
-    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", valid_from, None)
-    mtc = Mtc.insert(sess, "845", False, True, valid_from, None)
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
     mtc_participant = MtcParticipant.insert(
         sess,
         mtc,
@@ -721,7 +714,135 @@ def test_Era_meter_category_dumb(sess):
         meter_type,
         meter_payment_type,
         0,
-        valid_from,
+        vf,
+        None,
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    llfc = dno_party.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "grid")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
+    imp_mpan_core = "22 7867 6232 781"
+    ssc = Ssc.insert(sess, "0001", "All", True, vf, None)
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        dc_contract,
+        "e1msn",
+        dno_party,
+        pc,
+        "845",
+        cop,
+        comm,
+        ssc.code,
+        energisation_status,
+        dtc_meter_type,
+        imp_mpan_core,
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+    era = supply.eras[0]
+    msn = "e2msn"
+    era.update(
+        sess,
+        era.start_date,
+        None,
+        mop_contract,
+        dc_contract,
+        msn,
+        pc,
+        "845",
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        imp_mpan_core,
+        "510",
+        imp_supplier_contract,
+        "9745y6",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    sess.commit()
+    era = Era.get_by_id(sess, era.id)
+
+    assert era.msn == msn
+
+
+def test_Era_meter_category_dumb(sess):
+    """Successful"""
+    vf = utc_datetime(1996, 1, 1)
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    participant.insert_party(sess, market_role_Z, "None core", vf, None, None)
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
+    pc = Pc.insert(sess, "02", "nhh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
+    )
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    meter_type = MeterType.insert(sess, "C5", "COP 1-5", vf, None)
+    meter_payment_type = MeterPaymentType.insert(sess, "CR", "Credit", vf, None)
+    mtc = Mtc.insert(sess, "845", False, True, vf, None)
+    mtc_participant = MtcParticipant.insert(
+        sess,
+        mtc,
+        participant,
+        "HH COP5 And Above With Comms",
+        False,
+        True,
+        meter_type,
+        meter_payment_type,
+        0,
+        vf,
         None,
     )
     insert_voltage_levels(sess)
@@ -733,7 +854,7 @@ def test_Era_meter_category_dumb(sess):
         voltage_level,
         False,
         True,
-        utc_datetime(1996, 1, 1),
+        vf,
         None,
     )
     insert_sources(sess)
@@ -741,13 +862,13 @@ def test_Era_meter_category_dumb(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
-    ssc = Ssc.insert(sess, "0001", "All", True, utc_datetime(1996, 1), None)
-    MtcLlfc.insert(sess, mtc_participant, llfc, valid_from, None)
-    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, valid_from, None)
-    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
-    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
+    ssc = Ssc.insert(sess, "0001", "All", True, vf, None)
+    MtcLlfc.insert(sess, mtc_participant, llfc, vf, None)
+    mtc_ssc = MtcSsc.insert(sess, mtc_participant, ssc, vf, None)
+    mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, vf, None)
+    MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, vf, None)
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(
         sess,
@@ -1438,7 +1559,7 @@ def test_Supply_insert_era_at_nhh(sess):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     era1_msn = "e1msn"
     imp_mpan_core = "22 7867 6232 781"
     supply = site.insert_e_supply(

@@ -2339,7 +2339,9 @@ def era_edit_form_get(era_id):
             )
         ]
         mtc_participant_id = req_int_none("mtc_participant_id")
-        if mtc_participant_id in {m.id for m in mtc_participants}:
+        if mtc_participant_id is None:
+            mtc_participant = None
+        elif mtc_participant_id in {m.id for m in mtc_participants}:
             mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
         else:
             mtc_participant = mtc_participants[0]
@@ -2351,7 +2353,7 @@ def era_edit_form_get(era_id):
             dtc_meter_type = DtcMeterType.get_by_id(g.sess, dtc_meter_type_id)
 
         pcs_q = select(Pc).order_by(Pc.code)
-        if mtc_participant.is_hh or dtc_meter_type is None:
+        if mtc_participant is None or mtc_participant.is_hh or dtc_meter_type is None:
             pcs_q = pcs_q.where(Pc.code == "00")
         else:
             if mtc_participant.mtc.code == "800":
@@ -2372,10 +2374,10 @@ def era_edit_form_get(era_id):
         else:
             pc = pcs[0]
 
-        if pc.code == "00":
+        if dtc_meter_type.code == "H":
             sscs = None
         else:
-            if mtc_participant.mtc.code == "800":
+            if mtc_participant is None or mtc_participant.mtc.code == "800":
                 sscs_q = (
                     select(Ssc).distinct().order_by(Ssc.code, Ssc.valid_from.desc())
                 )
@@ -2422,9 +2424,50 @@ def era_edit_form_get(era_id):
             else:
                 ssc = None
 
-        cops = Cop.get_valid(g.sess, mtc_participant.meter_type)
+        if mtc_participant is None:
+            cops = g.sess.scalars(select(Cop).order_by(Cop.code))
+        else:
+            cops = Cop.get_valid(g.sess, mtc_participant.meter_type)
 
-        if pc.code == "00":
+        if mtc_participant is None:
+            imp_llfcs_q = (
+                select(Llfc)
+                .join(MtcLlfc)
+                .where(
+                    Llfc.dno == dno,
+                    start_date >= Llfc.valid_from,
+                    Llfc.is_import == true(),
+                )
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+                .distinct()
+            )
+            if finish_date is None:
+                imp_llfcs_q = imp_llfcs_q.where(Llfc.valid_to == null())
+            else:
+                imp_llfcs_q = imp_llfcs_q.where(
+                    or_(Llfc.valid_to == null(), Llfc.valid_to >= finish_date)
+                )
+            imp_llfcs = g.sess.scalars(imp_llfcs_q)
+
+            exp_llfcs_q = (
+                select(Llfc)
+                .join(MtcLlfc)
+                .where(
+                    Llfc.dno == dno,
+                    start_date >= Llfc.valid_from,
+                    Llfc.is_import == false(),
+                )
+                .order_by(Llfc.code, Llfc.valid_from.desc())
+                .distinct()
+            )
+            if finish_date is None:
+                exp_llfcs_q = exp_llfcs_q.where(Llfc.valid_to == null())
+            else:
+                exp_llfcs_q = exp_llfcs_q.where(
+                    or_(Llfc.valid_to == null(), Llfc.valid_to >= finish_date)
+                )
+            exp_llfcs = g.sess.scalars(exp_llfcs_q)
+        elif pc.code == "00":
             imp_llfcs_q = (
                 select(Llfc)
                 .join(MtcLlfc)
@@ -2665,8 +2708,12 @@ def era_edit_post(era_id):
             msn = req_str("msn")
             pc_id = req_int("pc_id")
             pc = Pc.get_by_id(g.sess, pc_id)
-            mtc_participant_id = req_int("mtc_participant_id")
-            mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
+            mtc_participant_id = req_int_none("mtc_participant_id")
+            if mtc_participant_id is None:
+                mtc_code = None
+            else:
+                mtc_participant = MtcParticipant.get_by_id(g.sess, mtc_participant_id)
+                mtc_code = mtc_participant.mtc.code
             cop_id = req_int("cop_id")
             cop = Cop.get_by_id(g.sess, cop_id)
             comm_id = req_int("comm_id")
@@ -2738,7 +2785,7 @@ def era_edit_post(era_id):
                 dc_contract,
                 msn,
                 pc,
-                mtc_participant.mtc.code,
+                mtc_code,
                 cop,
                 comm,
                 ssc_code,

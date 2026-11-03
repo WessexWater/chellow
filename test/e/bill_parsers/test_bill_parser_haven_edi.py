@@ -125,7 +125,7 @@ def test_process_BTL_zeroes(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "N")
     site.insert_e_supply(
         sess,
         source,
@@ -313,7 +313,7 @@ def test_process_BTL_non_zeroes(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     site.insert_e_supply(
         sess,
         source,
@@ -518,7 +518,7 @@ def test_process_BTL_multiple_charges_one_tpr(sess):
     insert_energisation_statuses(sess)
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "N")
     site.insert_e_supply(
         sess,
         source,

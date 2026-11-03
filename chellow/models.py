@@ -3469,7 +3469,7 @@ class Era(Base, PersistentClass):
     msn = Column(String)
     pc_id = Column(Integer, ForeignKey("pc.id"), nullable=False, index=True)
     mtc_participant_id = Column(
-        Integer, ForeignKey("mtc_participant.id"), nullable=False, index=True
+        Integer, ForeignKey("mtc_participant.id"), nullable=True, index=True
     )
     cop_id = Column(Integer, ForeignKey("cop.id"), nullable=False, index=True)
     comm_id = Column(Integer, ForeignKey("comm.id"), nullable=False, index=True)
@@ -3688,9 +3688,13 @@ class Era(Base, PersistentClass):
             None if ssc_code is None else Ssc.get_by_code(sess, ssc_code, start_date)
         )
 
-        if pc.code == "00" and self.ssc is not None:
+        if (
+            dtc_meter_type is not None
+            and dtc_meter_type.code == "H"
+            and self.ssc is not None
+        ):
             raise BadRequest(
-                "A supply with Profile Class 00 can't have a Standard Settlement "
+                "A supply with DTC Meter Type H can't have a Standard Settlement "
                 "Configuration."
             )
         if pc.code != "00" and self.ssc is None:
@@ -3705,10 +3709,13 @@ class Era(Base, PersistentClass):
         self.cop = cop
         self.comm = comm
 
-        mtc = Mtc.get_by_code(sess, mtc_code, start_date)
-        self.mtc_participant = MtcParticipant.get_by_values(
-            sess, mtc, self.supply.dno.participant, start_date
-        )
+        if mtc_code is None:
+            self.mtc_participant = None
+        else:
+            mtc = Mtc.get_by_code(sess, mtc_code, start_date)
+            self.mtc_participant = MtcParticipant.get_by_values(
+                sess, mtc, self.supply.dno.participant, start_date
+            )
 
         self.start_date = start_date
         self.finish_date = finish_date
@@ -3820,7 +3827,10 @@ class Era(Base, PersistentClass):
                             f"only valid until {date_format(mtc_llfc.valid_to)} but "
                             f"the era ends at {date_format(finish_date)}."
                         )
-                elif self.mtc_participant.mtc.code != "800":
+                elif (
+                    self.mtc_participant is not None
+                    and self.mtc_participant.mtc.code != "800"
+                ):
                     mtc_ssc = MtcSsc.get_by_values(
                         sess, self.mtc_participant, self.ssc, start_date
                     )
@@ -3841,7 +3851,7 @@ class Era(Base, PersistentClass):
                             f"{date_format(finish_date)}."
                         )
 
-        if cop.code not in [
+        if self.mtc_participant is not None and cop.code not in [
             c.code for c in Cop.get_valid(sess, self.mtc_participant.meter_type)
         ]:
             raise BadRequest(
@@ -7984,6 +7994,10 @@ def db_upgrade_61_to_62(sess, root_path):
     sess.execute(text("ALTER SEQUENCE laf_id_seq AS BIGINT;"))
 
 
+def db_upgrade_62_to_63(sess, root_path):
+    sess.execute(text("ALTER TABLE era ALTER COLUMN mtc_participant_id DROP NOT NULL;"))
+
+
 upgrade_funcs = [None] * 18
 upgrade_funcs.extend(
     [
@@ -8031,6 +8045,7 @@ upgrade_funcs.extend(
         db_upgrade_59_to_60,
         db_upgrade_60_to_61,
         db_upgrade_61_to_62,
+        db_upgrade_62_to_63,
     ]
 )
 

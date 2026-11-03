@@ -418,7 +418,7 @@ def test_site_get_dumb(client, sess):
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     site.insert_e_supply(
         sess,
         source,
@@ -560,7 +560,7 @@ def test_supplies_get_e(sess, client):
     mtc_llfc_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_ssc, pc, valid_from, None)
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     site.insert_e_supply(
         sess,
         source,

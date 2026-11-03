@@ -1012,7 +1012,7 @@ def test_general_import_era_insert_nhh_no_change(sess):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "N")
     site.insert_e_supply(
         sess,
         source,
@@ -1148,7 +1148,7 @@ def test_general_import_era_insert_nhh_change(sess):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "N")
     site.insert_e_supply(
         sess,
         source,
@@ -1404,7 +1404,7 @@ def test_general_import_era_update_nhh(sess):
     energisation_status = EnergisationStatus.get_by_code(sess, "E")
     gsp_group = GspGroup.insert(sess, "_L", "South Western")
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "RCAMR")
     site.insert_e_supply(
         sess,
         source,

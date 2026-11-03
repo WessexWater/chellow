@@ -1082,7 +1082,7 @@ def test_SupplySource_init_nhh(sess, mocker):
     mtc_llfc_exp_ssc = MtcLlfcSsc.insert(sess, mtc_ssc, llfc_exp, valid_from, None)
     MtcLlfcSscPc.insert(sess, mtc_llfc_exp_ssc, pc, valid_from, None)
     insert_dtc_meter_types(sess)
-    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "N")
     supply = site.insert_e_supply(
         sess,
         source,

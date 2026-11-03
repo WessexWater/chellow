@@ -206,10 +206,10 @@ def _process(
             "dno-name",
             "dno-dip",
             "Domestic Premises Indicator",
-            "Duos Tariff Id",
-            "Duos Tariff Id Effective From Date",
-            "Market Segment Indicator",
-            "Market Segment Indicator Effective From Date",
+            "duos-tariff-id",
+            "duos-tariff-id-effective-from-date",
+            "market-segment-indicator",
+            "market-segment-indicator-effective-from-date",
             "Data Service Dip Id",
             "Data Service Effective From Date",
             "Data Service Effective To Date",
@@ -225,6 +225,10 @@ def _process(
         ]
 
         ecoes_row = dict(zip(ecoes_titles, map(str.strip, values)))
+        if len(ecoes_row["market-segment-indicator"]) > 0:
+            ecoes_row["llfc"] = ecoes_row["duos-tariff-id"]
+            ecoes_row["llfc-from"] = ecoes_row["duos-tariff-id-effective-from-date"]
+
         mpan_core = ecoes_row["mpan-core"]
         mpan_spaces = " ".join(
             (
@@ -397,132 +401,133 @@ def _process(
                 ignore = False
                 diffs.append("es")
 
-            if not (ecoes_es == "D" and chellow_es == "D"):
-                if era.imp_mpan_core == mpan_spaces:
-                    supplier_contract = era.imp_supplier_contract
-                    llfc = era.imp_llfc
-                else:
-                    supplier_contract = era.exp_supplier_contract
-                    llfc = era.exp_llfc
+            if era.imp_mpan_core == mpan_spaces:
+                supplier_contract = era.imp_supplier_contract
+                llfc = era.imp_llfc
+            else:
+                supplier_contract = era.exp_supplier_contract
+                llfc = era.exp_llfc
 
-                chellow_pc = era.pc.code
-                try:
-                    if int(ecoes["pc"]) != int(chellow_pc):
-                        problem += "The PCs don't match. "
-                        ignore = False
-                        diffs.append("pc")
-                except ValueError:
-                    problem += "Can't parse the PC. "
+            chellow_pc = era.pc.code
+            try:
+                if int(ecoes["pc"]) != int(chellow_pc):
+                    problem += "The PCs don't match. "
                     ignore = False
+                    diffs.append("pc")
+            except ValueError:
+                problem += "Can't parse the PC. "
+                ignore = False
 
-                chellow_mtc = era.mtc_participant.mtc.code
-                try:
-                    if int(ecoes["mtc"]) != int(chellow_mtc):
-                        problem += "The MTCs don't match. "
-                        ignore = False
-                        diffs.append("mtc")
-                except ValueError:
-                    problem += "Can't parse the MTC. "
+            chellow_mtc = era.mtc_participant.mtc.code
+            try:
+                if int(ecoes["mtc"]) != int(chellow_mtc):
+                    problem += "The MTCs don't match. "
                     ignore = False
+                    diffs.append("mtc")
+            except ValueError:
+                problem += "Can't parse the MTC. "
+                ignore = False
 
-                chellow_llfc = llfc.code
-                chellow_llfc_desc = llfc.description
-                ecoes_llfc_code = ecoes["llfc"].zfill(3)
+            chellow_llfc = llfc.code
+            chellow_llfc_desc = llfc.description
+            ecoes_llfc_code = ecoes["llfc"].zfill(3)
+            if ecoes_llfc_code != chellow_llfc:
+                ecoes_llfc_code = ecoes["duos-tariff-id"].zfill(3)
                 if ecoes_llfc_code != chellow_llfc:
                     problem += "The LLFCs don't match. "
                     ignore = False
                     diffs.append("llfc")
 
-                ecoes_llfc = ecoes_dno.find_llfc_by_code(sess, ecoes_llfc_code, now)
-                if ecoes_llfc is not None:
-                    ecoes_llfc_desc = ecoes_llfc.description
+            ecoes_llfc = ecoes_dno.find_llfc_by_code(sess, ecoes_llfc_code, now)
+            if ecoes_llfc is not None:
+                ecoes_llfc_desc = ecoes_llfc.description
 
-                chellow_ssc = era.ssc
-                if chellow_ssc is None:
-                    chellow_ssc = ""
-                    chellow_ssc_int = None
-                else:
-                    chellow_ssc = chellow_ssc.code
-                    chellow_ssc_int = int(chellow_ssc)
+            chellow_ssc = era.ssc
+            if chellow_ssc is None:
+                chellow_ssc = ""
+                chellow_ssc_int = None
+            else:
+                chellow_ssc = chellow_ssc.code
+                chellow_ssc_int = int(chellow_ssc)
 
-                if len(ecoes["ssc"]) > 0:
-                    ecoes_ssc_int = int(ecoes["ssc"])
-                else:
-                    ecoes_ssc_int = None
+            if len(ecoes["ssc"]) > 0:
+                ecoes_ssc_int = int(ecoes["ssc"])
+            else:
+                ecoes_ssc_int = None
 
-                if ecoes_ssc_int != chellow_ssc_int and not (
-                    ecoes_ssc_int is None and chellow_ssc_int is None
-                ):
-                    problem += "The SSCs don't match. "
+            if ecoes_ssc_int != chellow_ssc_int and not (
+                ecoes_ssc_int is None and chellow_ssc_int is None
+            ):
+                problem += "The SSCs don't match. "
+                ignore = False
+                diffs.append("ssc")
+
+            chellow_supplier = supplier_contract.party.participant.code
+            chellow_supplier_contract_name = supplier_contract.name
+            chellow_supplier_contract_id = supplier_contract.id
+            if chellow_supplier != ecoes["supplier"]:
+                problem += "The supplier codes don't match. "
+                ignore = False
+                diffs.append("supplier")
+
+            dc_contract = era.dc_contract
+            chellow_dc_props = dc_contract.make_properties()
+            if "nhh_participant" in chellow_dc_props:
+                chellow_dc = chellow_dc_props["nhh_participant"]
+            else:
+                chellow_dc = dc_contract.party.participant.code
+
+            if chellow_dc != ecoes["dc"]:
+                problem += "The DC codes don't match. "
+                ignore = False
+                diffs.append("dc")
+
+            mop_contract = era.mop_contract
+            if mop_contract is None:
+                chellow_mop = ""
+            else:
+                chellow_mop = mop_contract.party.participant.code
+
+            if chellow_mop != ecoes["mop"]:
+                problem += "The MOP codes don't match. "
+                ignore = False
+                diffs.append("mop")
+
+            chellow_gsp_group = era.supply.gsp_group.code
+            if chellow_gsp_group != ecoes["gsp-group"]:
+                problem += "The GSP group codes don't match. "
+                ignore = False
+                diffs.append("gsp_group")
+
+            chellow_site = era.get_physical_site(sess)
+            chellow_site_code = chellow_site.code
+            chellow_site_name = chellow_site.name
+
+            chellow_msn = era.msn
+
+            if set([m.strip() for m in chellow_msn.split(",")]) != set(
+                [m.strip() for m in ecoes["msn"].split(",")]
+            ):
+                problem += "The meter serial numbers don't match. "
+                diffs.append("msn")
+                if mpan_spaces not in ignore_mpan_cores_msn:
                     ignore = False
-                    diffs.append("ssc")
+            elif mpan_spaces in ignore_mpan_cores_msn:
+                problem += (
+                    "This MPAN core is in mpan_cores_ignore and yet the meter "
+                    "serial numbers do match. "
+                )
 
-                chellow_supplier = supplier_contract.party.participant.code
-                chellow_supplier_contract_name = supplier_contract.name
-                chellow_supplier_contract_id = supplier_contract.id
-                if chellow_supplier != ecoes["supplier"]:
-                    problem += "The supplier codes don't match. "
-                    ignore = False
-                    diffs.append("supplier")
+            chellow_dtc_meter_type = era.dtc_meter_type
+            if chellow_dtc_meter_type is None:
+                chellow_meter_type = ""
+            else:
+                chellow_meter_type = chellow_dtc_meter_type.code
 
-                dc_contract = era.dc_contract
-                chellow_dc_props = dc_contract.make_properties()
-                if "nhh_participant" in chellow_dc_props:
-                    chellow_dc = chellow_dc_props["nhh_participant"]
-                else:
-                    chellow_dc = dc_contract.party.participant.code
-
-                if chellow_dc != ecoes["dc"]:
-                    problem += "The DC codes don't match. "
-                    ignore = False
-                    diffs.append("dc")
-
-                mop_contract = era.mop_contract
-                if mop_contract is None:
-                    chellow_mop = ""
-                else:
-                    chellow_mop = mop_contract.party.participant.code
-
-                if chellow_mop != ecoes["mop"]:
-                    problem += "The MOP codes don't match. "
-                    ignore = False
-                    diffs.append("mop")
-
-                chellow_gsp_group = era.supply.gsp_group.code
-                if chellow_gsp_group != ecoes["gsp-group"]:
-                    problem += "The GSP group codes don't match. "
-                    ignore = False
-                    diffs.append("gsp_group")
-
-                chellow_site = era.get_physical_site(sess)
-                chellow_site_code = chellow_site.code
-                chellow_site_name = chellow_site.name
-
-                chellow_msn = era.msn
-
-                if set([m.strip() for m in chellow_msn.split(",")]) != set(
-                    [m.strip() for m in ecoes["msn"].split(",")]
-                ):
-                    problem += "The meter serial numbers don't match. "
-                    diffs.append("msn")
-                    if mpan_spaces not in ignore_mpan_cores_msn:
-                        ignore = False
-                elif mpan_spaces in ignore_mpan_cores_msn:
-                    problem += (
-                        "This MPAN core is in mpan_cores_ignore and yet the meter "
-                        "serial numbers do match. "
-                    )
-
-                chellow_dtc_meter_type = era.dtc_meter_type
-                if chellow_dtc_meter_type is None:
-                    chellow_meter_type = ""
-                else:
-                    chellow_meter_type = chellow_dtc_meter_type.code
-
-                if chellow_meter_type != ecoes["meter-type"]:
-                    problem += "The DTC meter types don't match."
-                    ignore = False
-                    diffs.append("meter_type")
+            if chellow_meter_type != ecoes["meter-type"]:
+                problem += "The DTC meter types don't match."
+                ignore = False
+                diffs.append("meter_type")
 
         if len(problem) > 0 and not (not show_ignored and ignore):
             address_lines = [ecoes[f"address-line-{i}"] for i in range(1, 10)]
