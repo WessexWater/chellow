@@ -35,12 +35,24 @@ def _find_triad_rate(ds, date, polarity, gsp_group_code):
     trt = ds.non_core_rate("triad_rates", date)["triad_gbp_per_gsp_kw"][polarity][
         gsp_group_code
     ]
+    rt = None
     if isinstance(trt, Decimal):
         rt = trt
     elif polarity == "import":
-        rt = trt["HHTariff(Floored)_£/kW"]
+        IMP_KEY_1 = "HHTariff(Floored)_£/kW"
+        IMP_KEY_2 = "HHTariff Floored GBP per kW"  # In later data
+        if IMP_KEY_1 in trt:
+            rt = trt[IMP_KEY_1]
+        else:
+            rt = trt[IMP_KEY_2]
+
     elif polarity == "export":
-        rt = trt["EET(Floored)_£/kW"]
+        EXP_KEY_1 = "EET(Floored)_£/kW"
+        EXP_KEY_2 = "EET Floored GBP per kW"  # In later data
+        if EXP_KEY_1 in trt:
+            rt = trt[EXP_KEY_1]
+        else:
+            rt = trt[EXP_KEY_2]
     return float(rt)
 
 
