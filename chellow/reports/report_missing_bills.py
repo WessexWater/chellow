@@ -68,7 +68,6 @@ def content(user_id, report_run_id, contract_id, months_length, finish_date):
                     select(Era)
                     .join(EnergisationStatus)
                     .where(
-                        EnergisationStatus.code != "D",
                         Era.start_date <= month_finish,
                         or_(Era.finish_date == null(), Era.finish_date >= month_start),
                         or_(
