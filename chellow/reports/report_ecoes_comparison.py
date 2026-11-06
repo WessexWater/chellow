@@ -210,14 +210,14 @@ def _process(
             "duos-tariff-id-effective-from-date",
             "market-segment-indicator",
             "market-segment-indicator-effective-from-date",
-            "Data Service Dip Id",
-            "Data Service Effective From Date",
-            "Data Service Effective To Date",
-            "Data Service Mpid",
-            "Metering Service Dip Id",
-            "Metering Service Effective From Date",
-            "Metering Service Effective To Date",
-            "Metering Service Mpid",
+            "data-service-dip-id",
+            "data-service-effective-from-date",
+            "data-service-effective-to-date",
+            "data-service-mpid",
+            "metering-service-dip-id",
+            "metering-service-effective-from-date",
+            "metering-service-effective-to-date",
+            "metering-service-mpid",
             "msn",
             "meter-install-date",
             "meter-type",
@@ -228,6 +228,10 @@ def _process(
         if len(ecoes_row["market-segment-indicator"]) > 0:
             ecoes_row["llfc"] = ecoes_row["duos-tariff-id"]
             ecoes_row["llfc-from"] = ecoes_row["duos-tariff-id-effective-from-date"]
+            ecoes_row["mop"] = ecoes_row["metering-service-mpid"]
+            ecoes_row["mop-from"] = ecoes_row["data-service-effective-from-date"]
+            ecoes_row["dc"] = ecoes_row["data-service-mpid"]
+            ecoes_row["dc-from"] = ecoes_row["data-service-effective-from-date"]
 
         mpan_core = ecoes_row["mpan-core"]
         mpan_spaces = " ".join(
@@ -418,15 +422,24 @@ def _process(
                 problem += "Can't parse the PC. "
                 ignore = False
 
-            chellow_mtc = era.mtc_participant.mtc.code
-            try:
-                if int(ecoes["mtc"]) != int(chellow_mtc):
+            chellow_mtc_participant = era.mtc_participant
+            if chellow_mtc_participant is None:
+                chellow_mtc = ""
+                if ecoes["mtc"] != chellow_mtc:
                     problem += "The MTCs don't match. "
                     ignore = False
                     diffs.append("mtc")
-            except ValueError:
-                problem += "Can't parse the MTC. "
-                ignore = False
+            else:
+                chellow_mtc = era.mtc_participant.mtc.code
+
+                try:
+                    if int(ecoes["mtc"]) != int(chellow_mtc):
+                        problem += "The MTCs don't match. "
+                        ignore = False
+                        diffs.append("mtc")
+                except ValueError:
+                    problem += "Can't parse the MTC. "
+                    ignore = False
 
             chellow_llfc = llfc.code
             chellow_llfc_desc = llfc.description
@@ -608,6 +621,8 @@ def _process(
         dtc_meter_type = era.dtc_meter_type
         meter_type = "" if dtc_meter_type is None else dtc_meter_type.code
 
+        mtc = "" if era.mtc_participant is None else era.mtc_participant.mtc.code
+
         values = {
             "mpan_core": mpan_core,
             "mpan_core_no_spaces": mpan_core.replace(" ", ""),
@@ -615,7 +630,7 @@ def _process(
             "chellow_pc": era.pc.code,
             "ecoes_mtc": "",
             "ecoes_mtc_date": "",
-            "chellow_mtc": era.mtc_participant.mtc.code,
+            "chellow_mtc": mtc,
             "ecoes_llfc": "",
             "ecoes_llfc_from": "",
             "chellow_llfc": llfc.code,
