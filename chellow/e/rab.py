@@ -40,7 +40,8 @@ def lccc_import(sess, log, set_progress):
 
 
 def _parse_date(date_str):
-    return to_utc(to_ct(Datetime.strptime(date_str[:10], "%Y-%m-%d")))
+    pattern = "%d/%m/%Y" if "/" in date_str else "%Y-%m-%d"
+    return to_utc(to_ct(Datetime.strptime(date_str[:10], pattern)))
 
 
 def import_forecast_ilr_tra(sess, log, set_progress):
