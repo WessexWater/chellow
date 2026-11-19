@@ -131,7 +131,11 @@ def general_import_era(sess, action, vals, args):
 
         mtc_code_raw = add_arg(args, "Meter Timeswitch Class", vals, 8)
         if mtc_code_raw == NO_CHANGE:
-            mtc_code = era.mtc_participant.mtc.code
+            mtc_code = (
+                None if era.mtc_participant is None else era.mtc_participant.mtc.code
+            )
+        elif len(mtc_code_raw) == 0:
+            mtc_code = None
         else:
             mtc_code = mtc_code_raw
 
@@ -341,9 +345,15 @@ def general_import_era(sess, action, vals, args):
 
         mtc_code_raw = add_arg(args, "Meter Timeswitch Class", vals, 7)
         if mtc_code_raw == NO_CHANGE:
-            mtc_code = existing_era.mtc_participant.mtc.code
-        else:
+            mtc_participant = existing_era.mtc_participant
+            if mtc_participant is None:
+                mtc_code = None
+            else:
+                mtc_code = mtc_participant.mtc.code
+        elif len(mtc_code_raw) > 0:
             mtc_code = mtc_code_raw
+        else:
+            mtc_code = None
 
         cop_code = add_arg(args, "CoP", vals, 8)
         if cop_code == NO_CHANGE:
