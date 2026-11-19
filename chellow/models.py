@@ -3813,7 +3813,10 @@ class Era(Base, PersistentClass):
                     )
             setattr(self, f"{polarity}_ca", ca)
 
-            if self.supply.dno.dno_code not in ("99", "88"):
+            if (
+                self.supply.dno.dno_code not in ("99", "88")
+                and self.mtc_participant is not None
+            ):
                 if pc.code == "00":
                     mtc_llfc = MtcLlfc.get_by_values(
                         sess, self.mtc_participant, llfc, start_date
@@ -3827,10 +3830,7 @@ class Era(Base, PersistentClass):
                             f"only valid until {date_format(mtc_llfc.valid_to)} but "
                             f"the era ends at {date_format(finish_date)}."
                         )
-                elif (
-                    self.mtc_participant is not None
-                    and self.mtc_participant.mtc.code != "800"
-                ):
+                elif self.mtc_participant.mtc.code != "800":
                     mtc_ssc = MtcSsc.get_by_values(
                         sess, self.mtc_participant, self.ssc, start_date
                     )
@@ -4757,7 +4757,7 @@ class Supply(Base, PersistentClass):
         dc_contract,
         msn,
         pc,
-        mtc,
+        mtc_code,
         cop,
         comm,
         ssc_code,
@@ -4822,7 +4822,7 @@ class Supply(Base, PersistentClass):
                 dc_contract,
                 msn,
                 pc,
-                mtc,
+                mtc_code,
                 cop,
                 comm,
                 ssc_code,
