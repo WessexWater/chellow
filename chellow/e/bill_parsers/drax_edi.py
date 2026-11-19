@@ -41,6 +41,7 @@ ELEMENT_MAP = {
             "966850": ("class-a-exemption", "rate", "kwh"),
             "897647": ("class-a-exemption", "rate", "kwh"),
             "932997": ("cm-obligation", None, None),
+            "879609": ("cm-obligation", None, None),
             "773384": ("gcf", "rate", "kwh"),
             "493988": ("reconciliation", None, None),
             "055837": ("reconciliation", None, None),
@@ -103,6 +104,7 @@ ELEMENT_MAP = {
             "700285": ("duos-fixed", "rate", "days"),  # Provisional
             "794486": ("duos-availability", "rate", "kva"),
             "209269": ("tnuos", "rate", "days"),
+            "307253": ("eii", "rate", "kwh"),
             "065950": ("eii", "rate", "kwh"),
             "188466": ("rab-operational", "rate", "kwh"),
             "180397": ("rab-obligation", "rate", "kwh"),
