@@ -1862,11 +1862,14 @@ def dc_rate_script_get(dc_rate_script_id):
         .order_by(RateScript.start_date.desc())
         .first()
     )
+    rs_example_func = contract_func({}, contract, "rate_script_example")
+    rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
         "dc_rate_script.html",
         dc_rate_script=rate_script,
         previous_rate_script=previous_rate_script,
         next_rate_script=next_rate_script,
+        rate_script_example=rs_example,
     )
 
 
@@ -4089,11 +4092,14 @@ def mop_rate_script_get(rate_script_id):
         .order_by(RateScript.start_date.desc())
         .first()
     )
+    rs_example_func = contract_func({}, contract, "rate_script_example")
+    rs_example = None if rs_example_func is None else rs_example_func()
     return render_template(
         "mop_rate_script.html",
         rate_script=rate_script,
         previous_rate_script=previous_rate_script,
         next_rate_script=next_rate_script,
+        rate_script_example=rs_example,
     )
 
 
