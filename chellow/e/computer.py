@@ -1119,10 +1119,15 @@ class SupplySource(DataSource):
         self.voltage_level_code = self.voltage_level.code
         self.is_substation = self.llfc.is_substation
         self.is_new = False
-        self.mtc_participant = self.era.mtc_participant
-        self.meter_type = self.mtc_participant.meter_type
-        self.meter_type_code = self.meter_type.code
-        self.mtc = self.mtc_participant.mtc
+        if self.era.mtc_participant is None:
+            self.mtc_participant = self.meter_type = self.meter_type_code = self.mtc = (
+                None
+            )
+        else:
+            self.mtc_participant = self.era.mtc_participant
+            self.meter_type = self.mtc_participant.meter_type
+            self.meter_type_code = self.meter_type.code
+            self.mtc = self.mtc_participant.mtc
 
         if era.pc.code in self.era_map_pcs:
             self.pc_code = self.era_map_pcs[era.pc.code]
