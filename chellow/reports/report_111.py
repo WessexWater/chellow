@@ -185,16 +185,6 @@ def content(
                     f"virtual_bill."
                 )
 
-            virtual_bill_titles_func = contract_func(
-                caches, contract, "virtual_bill_titles"
-            )
-            if virtual_bill_titles_func is None:
-                raise BadRequest(
-                    f"The contract {contract.name} doesn't have a function "
-                    f"virtual_bill_titles."
-                )
-            virtual_bill_titles = virtual_bill_titles_func()
-
             bill_titles = [
                 "reference",
                 "start_date",
@@ -222,14 +212,10 @@ def content(
                 "period_start",
                 "period_finish",
                 "element_name",
+                "problem",
             ]
             element_titles.extend(element_header_titles)
-            for t in virtual_bill_titles:
-                if t not in ("net-gbp", "vat-gbp", "gross-gbp"):
-                    element_titles.append("actual-" + t)
-                    element_titles.append("virtual-" + t)
-                    if t.endswith("-gbp"):
-                        element_titles.append("difference-" + t)
+            element_titles.extend(["actual_gbp", "virtual_gbp", "difference_gbp"])
 
             element_rows.append(element_titles)
 
@@ -266,8 +252,11 @@ def content(
                         vals[title] = data[title]
 
                     for part_name, part in data["parts"].items():
-                        for typ, value in part.items():
-                            vals[f"{typ}-{part_name}"] = value
+                        for typ in ("actual", "virtual", "difference"):
+                            val_key = f"{typ}_{part_name}"
+                            vals[val_key] = part.get(f"{typ}")
+                            if val_key not in element_titles:
+                                element_titles.append(val_key)
 
                     row = [make_val(vals.get(title)) for title in element_titles]
                     element_rows.append(row)
