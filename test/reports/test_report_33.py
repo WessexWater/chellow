@@ -638,3 +638,232 @@ def test_process_2024(mocker, sess):
         ],
     ]
     match_tables(expected, actual)
+
+
+def test_process_mhhs(mocker, sess):
+    vf = to_utc(ct_datetime(2000, 1, 1))
+    site = Site.insert(sess, "CI017", "Water Works")
+    market_role_Z = MarketRole.insert(sess, "Z", "Non-core")
+    participant = Participant.insert(sess, "CALB", "AK Industries")
+    non_core_party = participant.insert_party(
+        sess, market_role_Z, "None core", vf, None, None
+    )
+    bank_holiday_rate_script = {"bank_holidays": []}
+    non_core_party.insert_contract(
+        sess, "bank_holidays", "", {}, vf, None, bank_holiday_rate_script
+    )
+    market_role_X = MarketRole.insert(sess, "X", "Supplier")
+    market_role_M = MarketRole.insert(sess, "M", "Mop")
+    market_role_C = MarketRole.insert(sess, "C", "HH Dc")
+    market_role_R = MarketRole.insert(sess, "R", "Distributor")
+    mop_party = participant.insert_party(
+        sess, market_role_M, "Fusion Mop", vf, None, None
+    )
+    supplier_party = participant.insert_party(
+        sess, market_role_X, "Fusion", vf, None, None
+    )
+    dc_party = participant.insert_party(
+        sess, market_role_C, "Fusion DC", vf, None, None
+    )
+    mop_contract = mop_party.insert_contract(sess, "Fusion", "", {}, vf, None, {})
+    dc_contract = dc_party.insert_contract(sess, "Fusion DC 2000", "", {}, vf, None, {})
+    pc = Pc.insert(sess, "00", "hh", vf, None)
+    insert_cops(sess)
+    cop = Cop.get_by_code(sess, "5")
+    insert_comms(sess)
+    comm = Comm.get_by_code(sess, "GSM")
+    imp_supplier_contract = supplier_party.insert_contract(
+        sess, "Fusion Supplier 2000", "", {}, vf, None, {}
+    )
+    dno_party = participant.insert_party(sess, market_role_R, "WPD", vf, None, "22")
+    dno_party.insert_contract(
+        sess,
+        dno_party.dno_code,
+        "",
+        {},
+        vf,
+        None,
+        {
+            "_L": {
+                "bands": {},
+                "tariffs": {
+                    "510": {
+                        "description": "HV Site Specific Band 1",
+                        "gbp-per-kvarh": 1,
+                        "green-gbp-per-kwh": 1,
+                    }
+                },
+            },
+        },
+    )
+    insert_voltage_levels(sess)
+    voltage_level = VoltageLevel.get_by_code(sess, "HV")
+    dno_party.insert_llfc(
+        sess, "510", "PC 5-8 & HH HV", voltage_level, False, True, vf, None
+    )
+    insert_sources(sess)
+    source = Source.get_by_code(sess, "grid")
+    insert_energisation_statuses(sess)
+    energisation_status = EnergisationStatus.get_by_code(sess, "E")
+    gsp_group = GspGroup.insert(sess, "_L", "South Western")
+    insert_dtc_meter_types(sess)
+    dtc_meter_type = DtcMeterType.get_by_code(sess, "H")
+    supply = site.insert_e_supply(
+        sess,
+        source,
+        None,
+        "Bob",
+        utc_datetime(2000, 1, 1),
+        None,
+        gsp_group,
+        mop_contract,
+        dc_contract,
+        "hgjeyhuw",
+        dno_party,
+        pc,
+        None,
+        cop,
+        comm,
+        None,
+        energisation_status,
+        dtc_meter_type,
+        "22 7867 6232 781",
+        "510",
+        imp_supplier_contract,
+        "7748",
+        361,
+        None,
+        None,
+        None,
+        None,
+        None,
+    )
+
+    sess.commit()
+    f = StringIO()
+    mocker.patch("chellow.reports.report_33.open_file", return_value=f)
+    date = utc_datetime(2024, 1, 1)
+    supply_id = supply.id
+    mpan_cores = None
+    _process(sess, f, date, supply_id, mpan_cores)
+    f.seek(0)
+    actual = list(csv.reader(f))
+    expected = [
+        [
+            "Date",
+            "Import MPAN Core",
+            "Export MPAN Core",
+            "Physical Site Id",
+            "Physical Site Name",
+            "Other Site Ids",
+            "Other Site Names",
+            "Supply Id",
+            "Source",
+            "Generator Type",
+            "GSP Group",
+            "DNO Name",
+            "Voltage Level",
+            "Is Substations",
+            "Metering Type",
+            "Mandatory HH",
+            "PC",
+            "MTC",
+            "CoP",
+            "Comms Type",
+            "SSC Code",
+            "SSC Description",
+            "Energisation Status",
+            "Number Of Registers",
+            "MOP Contract",
+            "DC Contract",
+            "Meter Serial Number",
+            "Meter Installation Date",
+            "Latest Normal Meter Read Date",
+            "Latest Normal Meter Read Type",
+            "Latest DC Bill Date",
+            "Latest MOP Bill Date",
+            "Supply Start Date",
+            "Supply Finish Date",
+            "DTC Meter Type",
+            "tnuos_band",
+            "Import ACTIVE?",
+            "Import REACTIVE_IMPORT?",
+            "Import REACTIVE_EXPORT?",
+            "Export ACTIVE?",
+            "Export REACTIVE_IMPORT?",
+            "Export REACTIVE_EXPORT?",
+            "Import Agreed Supply Capacity (kVA)",
+            "Import LLFC Code",
+            "Import LLFC Description",
+            "Import Supplier Contract",
+            "Import Supplier Account",
+            "Import Mandatory kW",
+            "Latest Import Supplier Bill Date",
+            "Export Agreed Supply Capacity (kVA)",
+            "Export LLFC Code",
+            "Export LLFC Description",
+            "Export Supplier Contract",
+            "Export Supplier Account",
+            "Export Mandatory kW",
+            "Latest Export Supplier Bill Date",
+        ],
+        [
+            "2024-01-01 00:00",
+            "22 7867 6232 781",
+            "",
+            "CI017",
+            "Water Works",
+            "",
+            "",
+            "1",
+            "grid",
+            "",
+            "_L",
+            "22",
+            "HV",
+            "False",
+            "hh",
+            "no",
+            "00",
+            "",
+            "5",
+            "GSM",
+            "",
+            "",
+            "E",
+            "",
+            "Fusion",
+            "Fusion DC 2000",
+            "hgjeyhuw",
+            "2000-01-01 00:00",
+            "hh",
+            "",
+            "",
+            "",
+            "2000-01-01 00:00",
+            "",
+            "H",
+            "HV1",
+            "false",
+            "false",
+            "false",
+            "false",
+            "false",
+            "false",
+            "361",
+            "510",
+            "PC 5-8 & HH HV",
+            "Fusion Supplier 2000",
+            "7748",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ],
+    ]
+    match_tables(expected, actual)
