@@ -17,6 +17,7 @@ from paramiko import AutoAddPolicy, RSAKey, SFTPError, SSHClient
 
 
 import requests
+from requests.auth import HTTPBasicAuth
 
 from sqlalchemy import null, or_, select
 
@@ -581,6 +582,26 @@ def https_handler(sess, log_f, properties, contract, now=None):
     url_values = properties.get("url_values", {})
     download_days = properties["download_days"]
     parser_name = properties["parser"]
+    headers = {}
+
+    if "oauth" in properties:
+        oauth_props = properties["oauth"]
+        oauth_url = oauth_props["url"]
+        oauth_client_id = oauth_props["client_id"]
+        oauth_client_secret = oauth_props["client_secret"]
+
+        auth = HTTPBasicAuth(oauth_client_id, oauth_client_secret)
+        response = requests.post(
+            oauth_url,
+            data={
+                "grant_type": "client_credentials",
+            },
+            auth=auth,
+        )
+
+        response.raise_for_status()
+        access_token = response.json()["access_token"]
+        headers["Authorization"] = f"Bearer {access_token}"
 
     if now is None:
         now = utc_datetime_now()
@@ -624,7 +645,7 @@ def https_handler(sess, log_f, properties, contract, now=None):
 
             sess.rollback()  # Avoid long transactions
 
-            res = requests.get(url, timeout=120)
+            res = requests.get(url, timeout=120, headers=headers)
             res.raise_for_status()
 
             raw_data = PARSERS[parser_name](log_f, res.json(), properties, mpan_core)
